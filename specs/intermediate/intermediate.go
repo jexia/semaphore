@@ -35,7 +35,7 @@ type Header struct {
 type ParameterMap struct {
 	Options    *Options               `hcl:"options,block"`
 	Header     *Header                `hcl:"header,block"`
-	Message    []NestedParameterMap   `hcl:"message,block"`
+	Nested     []NestedParameterMap   `hcl:"message,block"`
 	Repeated   []RepeatedParameterMap `hcl:"repeated,block"`
 	Properties hcl.Body               `hcl:",remain"`
 }
@@ -48,7 +48,7 @@ type Options struct {
 // NestedParameterMap is a map of parameter names (keys) and their (templated) values (values)
 type NestedParameterMap struct {
 	Name       string                 `hcl:"name,label"`
-	Message    []NestedParameterMap   `hcl:"message,block"`
+	Nested     []NestedParameterMap   `hcl:"message,block"`
 	Repeated   []RepeatedParameterMap `hcl:"repeated,block"`
 	Properties hcl.Body               `hcl:",remain"`
 }
@@ -57,7 +57,7 @@ type NestedParameterMap struct {
 type RepeatedParameterMap struct {
 	Name       string                 `hcl:"name,label"`
 	Template   string                 `hcl:"template,label"`
-	Message    []NestedParameterMap   `hcl:"message,block"`
+	Nested     []NestedParameterMap   `hcl:"message,block"`
 	Repeated   []RepeatedParameterMap `hcl:"repeated,block"`
 	Properties hcl.Body               `hcl:",remain"`
 }

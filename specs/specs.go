@@ -50,7 +50,7 @@ type Property struct {
 type ParameterMap struct {
 	Options    map[string]interface{}
 	Header     Header
-	Message    []NestedParameterMap
+	Nested     []NestedParameterMap
 	Repeated   []RepeatedParameterMap
 	Properties map[string]Property
 }
@@ -58,7 +58,7 @@ type ParameterMap struct {
 // NestedParameterMap is a map of parameter names (keys) and their (templated) values (values)
 type NestedParameterMap struct {
 	Name       string
-	Message    []NestedParameterMap
+	Nested     []NestedParameterMap
 	Repeated   []RepeatedParameterMap
 	Properties map[string]Property
 }
@@ -67,7 +67,7 @@ type NestedParameterMap struct {
 type RepeatedParameterMap struct {
 	Name       string
 	Template   string
-	Message    []NestedParameterMap
+	Nested     []NestedParameterMap
 	Repeated   []RepeatedParameterMap
 	Properties map[string]Property
 }
