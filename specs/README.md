@@ -147,6 +147,16 @@ call "log" "logger.Log" {
 }
 ```
 
+#### Options
+Options could be consumed by implementations. The defined key/values are implementation specific.
+
+```hcl
+options {
+    // HTTP method
+    method = "GET"
+}
+```
+
 #### Header
 Headers are represented as keys and values. Both keys and values are strings. Values could reference properties from other resources.
 
@@ -231,6 +241,10 @@ Represents a caller implementation. Each implementation has to be configured and
 
 ```hcl
 caller "http" {
+    header {
+        X-Forward = "ABC"
+    }
+
   base = "/v1"
 }
 ```
