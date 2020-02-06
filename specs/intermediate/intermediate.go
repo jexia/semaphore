@@ -33,11 +33,16 @@ type Header struct {
 
 // ParameterMap is the initial map of parameter names (keys) and their (templated) values (values)
 type ParameterMap struct {
-	Options    hcl.Body               `hcl:"options,block"`
+	Options    *ParameterMapOptions   `hcl:"options,block"`
 	Header     *Header                `hcl:"header,block"`
 	Message    []NestedParameterMap   `hcl:"message,block"`
 	Repeated   []RepeatedParameterMap `hcl:"repeated,block"`
 	Properties hcl.Body               `hcl:",remain"`
+}
+
+// ParameterMapOptions holds the raw parameter options
+type ParameterMapOptions struct {
+	Body hcl.Body `hcl:",remain"`
 }
 
 // NestedParameterMap is a map of parameter names (keys) and their (templated) values (values)
