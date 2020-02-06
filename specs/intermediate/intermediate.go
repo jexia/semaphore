@@ -33,15 +33,15 @@ type Header struct {
 
 // ParameterMap is the initial map of parameter names (keys) and their (templated) values (values)
 type ParameterMap struct {
-	Options    *ParameterMapOptions   `hcl:"options,block"`
+	Options    *Options               `hcl:"options,block"`
 	Header     *Header                `hcl:"header,block"`
 	Message    []NestedParameterMap   `hcl:"message,block"`
 	Repeated   []RepeatedParameterMap `hcl:"repeated,block"`
 	Properties hcl.Body               `hcl:",remain"`
 }
 
-// ParameterMapOptions holds the raw parameter options
-type ParameterMapOptions struct {
+// Options holds the raw options
+type Options struct {
 	Body hcl.Body `hcl:",remain"`
 }
 
@@ -79,10 +79,11 @@ type RollbackCall struct {
 
 // Service specification
 type Service struct {
-	Alias  string `hcl:"alias,label"`
-	Caller string `hcl:"caller,label"`
-	Host   string `hcl:"host"`
-	Proto  string `hcl:"proto"`
+	Options *Options `hcl:"options,block"`
+	Alias   string   `hcl:"alias,label"`
+	Caller  string   `hcl:"caller,label"`
+	Host    string   `hcl:"host"`
+	Proto   string   `hcl:"proto"`
 }
 
 // Caller specification

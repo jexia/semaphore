@@ -99,10 +99,11 @@ type RollbackCall struct {
 // The FQN (fully qualified name) of the proto method should be used.
 // Each service references a caller implementation to be used.
 type Service struct {
-	Alias  string
-	Caller string
-	Host   string
-	Proto  string
+	Options map[string]interface{}
+	Alias   string
+	Caller  string
+	Host    string
+	Proto   string
 }
 
 // Caller Each implementation has to be configured and defined before running the service.

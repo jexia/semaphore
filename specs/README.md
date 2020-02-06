@@ -24,6 +24,7 @@ Messages are strictly typed and are type-checked. Payloads such as protobuf and 
     + [Rollback](#rollback)
   * [Proxy](#proxy)
   * [Service](#service)
+    + [Options](#options)
   * [Caller](#caller)
   * [Endpoint](#endpoint)
 
@@ -237,8 +238,17 @@ service "logger" "http" {
 }
 ```
 
+#### Options
+Options could be consumed by implementations. The defined key/values are implementation specific.
+
+```hcl
+options {
+    port = 8080
+}
+```
+
 ### Caller
-Represents a caller implementation. Each implementation has to be configured and defined before running the service. All values are passed as attributes (from the hcl2 package) to the callers. These attributes could be used for configuration purposes
+Represents a caller implementation. All values are parsed by the defined implementation. These attributes could be used for configuration purposes
 
 ```hcl
 caller "http" {
@@ -246,7 +256,7 @@ caller "http" {
         X-Forward = "ABC"
     }
 
-  base = "/v1"
+    base = "/v1"
 }
 ```
 
