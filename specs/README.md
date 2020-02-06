@@ -102,12 +102,12 @@ flow "Logger" {
 ```
 
 #### Input
-The input acts as a message. The input could contain nested messages and repeated messages. Input properties could reference types and or constant values. Input types are defined by wrapping the type inside parenthesis.
+The input acts as a message. The input could contain nested messages and repeated messages. Input properties could reference types and or constant values. Input types are defined by wrapping the type inside angle brackets.
 
 ```hcl
 input {
     type = "sync"
-    message = "(string)"
+    message = "<string>"
 }
 ```
 #### Output

@@ -28,7 +28,9 @@ type Endpoint struct {
 }
 
 // Header represents a collection of key values
-type Header map[string]string
+type Header struct {
+	Body hcl.Body `hcl:",remain"`
+}
 
 // ParameterMap is the initial map of parameter names (keys) and their (templated) values (values)
 type ParameterMap struct {
