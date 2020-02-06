@@ -2,11 +2,10 @@ package specs
 
 // Manifest holds a collection of definitions and resources
 type Manifest struct {
-	Flows      []Flow
-	Middleware []Flow
-	Endpoints  []Endpoint
-	Services   []Service
-	Callers    []Caller
+	Flows     []Flow
+	Endpoints []Endpoint
+	Services  []Service
+	Callers   []Caller
 }
 
 // Flow defines a set of calls that should be called chronologically and produces an output message.

@@ -6,11 +6,10 @@ import (
 
 // Manifest intermediate specs
 type Manifest struct {
-	Flows      []Flow     `hcl:"flow,block"`
-	Middleware []Flow     `hcl:"middleware,block"`
-	Endpoints  []Endpoint `hcl:"endpoint,block"`
-	Services   []Service  `hcl:"service,block"`
-	Callers    []Caller   `hcl:"caller,block"`
+	Flows     []Flow     `hcl:"flow,block"`
+	Endpoints []Endpoint `hcl:"endpoint,block"`
+	Services  []Service  `hcl:"service,block"`
+	Callers   []Caller   `hcl:"caller,block"`
 }
 
 // Flow intermediate specification
