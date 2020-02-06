@@ -1,5 +1,7 @@
 package specs
 
+import "github.com/hashicorp/hcl/v2"
+
 // Manifest holds a collection of definitions and resources
 type Manifest struct {
 	Flows     []Flow
@@ -33,7 +35,7 @@ type Endpoint struct {
 type Options map[string]interface{}
 
 // Header represents a collection of key values
-type Header map[string]string
+type Header map[string]Property
 
 // Reference represents a mustach template reference
 type Reference struct {
@@ -47,6 +49,7 @@ type Property struct {
 	Default   string
 	Constant  bool
 	Reference Reference
+	Expr      hcl.Expression
 }
 
 // ParameterMap is the initial map of parameter names (keys) and their (templated) values (values)
