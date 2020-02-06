@@ -49,6 +49,7 @@ type Property struct {
 
 // ParameterMap is the initial map of parameter names (keys) and their (templated) values (values)
 type ParameterMap struct {
+	Options    map[string]interface{}
 	Header     Header
 	Message    []NestedParameterMap
 	Repeated   []RepeatedParameterMap

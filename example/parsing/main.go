@@ -17,6 +17,19 @@ flow "user" {
 			country = "<string>"
 		}
 	}
+
+	call "logging" "logger.Log" {
+		request {
+			options {
+				method = "GET"
+			}
+
+			header {
+			}
+
+			message = "{{ input:name }}"
+		}
+	}
 }
 `
 
