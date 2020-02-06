@@ -29,6 +29,9 @@ type Endpoint struct {
 	Body map[string]interface{}
 }
 
+// Options represents a collection of options
+type Options map[string]interface{}
+
 // Header represents a collection of key values
 type Header map[string]string
 
@@ -48,7 +51,7 @@ type Property struct {
 
 // ParameterMap is the initial map of parameter names (keys) and their (templated) values (values)
 type ParameterMap struct {
-	Options    map[string]interface{}
+	Options    Options
 	Header     Header
 	Nested     []NestedParameterMap
 	Repeated   []RepeatedParameterMap
@@ -99,7 +102,7 @@ type RollbackCall struct {
 // The FQN (fully qualified name) of the proto method should be used.
 // Each service references a caller implementation to be used.
 type Service struct {
-	Options map[string]interface{}
+	Options Options
 	Alias   string
 	Caller  string
 	Host    string
