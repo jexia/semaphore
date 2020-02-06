@@ -76,7 +76,8 @@ type RollbackCall struct {
 type Service struct {
 	Alias  string `hcl:"alias,label"`
 	Caller string `hcl:"caller,label"`
-	Proto  string `hcl:"proto,optional"`
+	Host   string `hcl:"host"`
+	Proto  string `hcl:"proto"`
 }
 
 // Caller specification

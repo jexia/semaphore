@@ -133,7 +133,7 @@ flow "GetUsers" {
 ```
 
 ### Call
-A call calls the given service and method. Calls could be executed synchronously or asynchronously. All calls are referencing a service method, the service should match the alias defined inside the service. The request and response messages are used for type definitions.
+A call calls the given service and method. Calls could be executed synchronously or asynchronously. All calls are referencing a service method, the service should match the alias defined inside the service. The request and response proto messages are used for type definitions.
 A call could contain the request headers, request body, rollback, and the execution type.
 
 ```hcl
@@ -212,7 +212,7 @@ proxy "upload" {
 ```
 
 ### Service
-Services define an external service which could be called inside the flows.
+Services represent external service which could be called inside the flows.
 The service name is an alias which could be referenced inside calls.
 The host of the service and proto service method should be defined for each service.
 The request and response message defined inside the proto buffers are used for type definitions.
