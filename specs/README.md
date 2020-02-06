@@ -18,6 +18,7 @@ Messages are strictly typed and are type-checked. Payloads such as protobuf and 
     + [Output](#output)
     + [Dependency](#dependency)
   * [Call](#call-1)
+    + [Options](#options)
     + [Header](#header)
     + [Request](#request)
     + [Rollback](#rollback)
