@@ -4,6 +4,28 @@ Maestro is a tool to orchestrate your microservices by providing a powerful tool
 Maestro is built on top of proto buffers and flows.
 Messages are strictly typed and are type-checked. Payloads such as protobuf and JSON could be generated from the same definitions.
 
+## Table of contents
+
+- [Specification](#specification)
+  * [Resources](#resources)
+    + [Input](#input)
+    + [Call](#call)
+  * [Template reference](#template-reference)
+  * [Message](#message)
+  * [Repeated message](#repeated-message)
+  * [Flow](#flow)
+    + [Input](#input-1)
+    + [Output](#output)
+    + [Dependency](#dependency)
+  * [Call](#call-1)
+    + [Header](#header)
+    + [Request](#request)
+    + [Rollback](#rollback)
+  * [Proxy](#proxy)
+  * [Service](#service)
+  * [Caller](#caller)
+  * [Endpoint](#endpoint)
+
 ## Specification
 
 ### Resources
@@ -58,6 +80,7 @@ repeated "address" "{{ input:address }}" {
 A flow defines a set of calls that should be called chronologically and produces an output message. Calls could reference other resources when constructing messages. All references are strictly typed. Properties are fetched from the given proto buffers or inputs.
 
 All flows should contain a unique name. Calls are nested inside of flows and contain two labels, a unique name within the flow and the service and method to be called.
+A dependency reference structure is generated within the flow which allows Maestro to figure out which calls could be called parallel to improve performance.
 
 ```hcl
 flow "Logger" {
@@ -100,12 +123,12 @@ output {
 }
 ```
 
-#### Middleware
-Middleware are flows that need to be called before the given flow is executed. Middleware could call reference other middleware when called.
+#### Dependency
+Dependencies are flows that need to be called before the given flow is executed. Dependencies could have other dependencies which have to be called.
 
 ```hcl
 flow "GetUsers" {
-    middleware = ["Auth", "HasGetPolicy"]
+    dependency = ["Auth", "HasGetPolicy"]
 }
 ```
 
