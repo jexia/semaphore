@@ -73,8 +73,8 @@ type Call struct {
 
 // RollbackCall intermediate specification
 type RollbackCall struct {
-	Endpoint string       `hcl:"endpoint,label"`
-	Request  ParameterMap `hcl:"request,block"`
+	Endpoint string        `hcl:"endpoint,label"`
+	Request  *ParameterMap `hcl:"request,block"`
 }
 
 // Service specification
