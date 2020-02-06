@@ -88,8 +88,8 @@ type Service struct {
 
 // Caller specification
 type Caller struct {
-	Name       string   `hcl:"name,label"`
-	Properties hcl.Body `hcl:",remain"`
+	Name string   `hcl:"name,label"`
+	Body hcl.Body `hcl:",remain"`
 }
 
 // Proxy specification

@@ -110,8 +110,8 @@ type Service struct {
 // All values are passed as attributes to the callers to be unmarshalled.
 // These attributes could be used for configuration purposes
 type Caller struct {
-	Name       string
-	Properties map[string]interface{}
+	Name string
+	Body map[string]interface{}
 }
 
 // Proxy streams the incoming request to the given service.
