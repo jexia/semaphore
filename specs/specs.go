@@ -1,9 +1,13 @@
 package specs
 
-import "github.com/hashicorp/hcl/v2"
+import (
+	"github.com/hashicorp/hcl/v2"
+	"github.com/jexia/maestro/utils"
+)
 
 // Manifest holds a collection of definitions and resources
 type Manifest struct {
+	File      utils.FileInfo
 	Flows     []Flow
 	Endpoints []Endpoint
 	Services  []Service
@@ -18,10 +22,11 @@ type Manifest struct {
 // Calls are nested inside of flows and contain two labels, a unique name within the flow and the service and method to be called.
 // A dependency reference structure is generated within the flow which allows Maestro to figure out which calls could be called parallel to improve performance.
 type Flow struct {
-	Name   string
-	Input  ParameterMap
-	Calls  []Call
-	Output ParameterMap
+	Name      string
+	DependsOn map[string]*Flow
+	Input     ParameterMap
+	Calls     []Call
+	Output    ParameterMap
 }
 
 // Endpoint exposes a flow. Endpoints are not parsed by Maestro and have custom implementations in each caller.
@@ -46,6 +51,7 @@ type Reference struct {
 // Property represents a value property.
 // A value property could contain a constant value or a value reference.
 type Property struct {
+	Path      string
 	Default   string
 	Constant  bool
 	Reference Reference
@@ -56,16 +62,16 @@ type Property struct {
 type ParameterMap struct {
 	Options    Options
 	Header     Header
-	Nested     []NestedParameterMap
-	Repeated   []RepeatedParameterMap
+	Nested     map[string]NestedParameterMap
+	Repeated   map[string]RepeatedParameterMap
 	Properties map[string]Property
 }
 
 // NestedParameterMap is a map of parameter names (keys) and their (templated) values (values)
 type NestedParameterMap struct {
 	Name       string
-	Nested     []NestedParameterMap
-	Repeated   []RepeatedParameterMap
+	Nested     map[string]NestedParameterMap
+	Repeated   map[string]RepeatedParameterMap
 	Properties map[string]Property
 }
 
@@ -73,8 +79,8 @@ type NestedParameterMap struct {
 type RepeatedParameterMap struct {
 	Name       string
 	Template   string
-	Nested     []NestedParameterMap
-	Repeated   []RepeatedParameterMap
+	Nested     map[string]NestedParameterMap
+	Repeated   map[string]RepeatedParameterMap
 	Properties map[string]Property
 }
 
@@ -84,11 +90,12 @@ type RepeatedParameterMap struct {
 // The request and response proto messages are used for type definitions.
 // A call could contain the request headers, request body, rollback, and the execution type.
 type Call struct {
-	Name     string
-	Endpoint string
-	Type     string
-	Request  ParameterMap
-	Rollback RollbackCall
+	Name      string
+	DependsOn map[string]*Call
+	Endpoint  string
+	Type      string
+	Request   ParameterMap
+	Rollback  RollbackCall
 }
 
 // RollbackCall represents the rollback call which is executed when a call inside a flow failed.

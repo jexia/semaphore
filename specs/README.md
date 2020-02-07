@@ -159,6 +159,18 @@ options {
 }
 ```
 
+#### Dependency
+Dependencies define call dependencies without having a direct reference dependency.
+Defining a dependency prevents both calls to be executed in parallel.
+
+```hcl
+call "log" "logger.Log" {
+    dependency = [
+        "billing",
+    ]
+}
+```
+
 #### Header
 Headers are represented as keys and values. Both keys and values are strings. Values could reference properties from other resources.
 
