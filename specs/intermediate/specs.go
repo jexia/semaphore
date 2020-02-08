@@ -4,15 +4,16 @@ import (
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/gohcl"
 	"github.com/jexia/maestro/specs"
+	"github.com/zclconf/go-cty/cty"
 )
 
 // ParseManifest parses the given intermediate manifest to a specs manifest
 func ParseManifest(manifest Manifest) specs.Manifest {
 	result := specs.Manifest{
-		Callers:   make([]specs.Caller, len(manifest.Callers)),
-		Endpoints: make([]specs.Endpoint, len(manifest.Endpoints)),
-		Services:  make([]specs.Service, len(manifest.Services)),
-		Flows:     make([]specs.Flow, len(manifest.Flows)),
+		Callers:   make([]*specs.Caller, len(manifest.Callers)),
+		Endpoints: make([]*specs.Endpoint, len(manifest.Endpoints)),
+		Services:  make([]*specs.Service, len(manifest.Services)),
+		Flows:     make([]*specs.Flow, len(manifest.Flows)),
 	}
 
 	for index, caller := range manifest.Callers {
@@ -35,29 +36,29 @@ func ParseManifest(manifest Manifest) specs.Manifest {
 }
 
 // ParseIntermediateCaller parses the given intermediate caller to a specs caller
-func ParseIntermediateCaller(caller Caller) specs.Caller {
+func ParseIntermediateCaller(caller Caller) *specs.Caller {
 	result := specs.Caller{
 		Name: caller.Name,
 		Body: make(map[string]interface{}),
 	}
 
 	gohcl.DecodeBody(caller.Body, nil, &result.Body)
-	return result
+	return &result
 }
 
 // ParseIntermediateEndpoint parses the given intermediate endpoint to a specs endpoint
-func ParseIntermediateEndpoint(endpoint Endpoint) specs.Endpoint {
+func ParseIntermediateEndpoint(endpoint Endpoint) *specs.Endpoint {
 	result := specs.Endpoint{
 		Flow: endpoint.Flow,
 		Body: make(map[string]interface{}),
 	}
 
 	gohcl.DecodeBody(endpoint.Body, nil, &result.Body)
-	return result
+	return &result
 }
 
 // ParseIntermediateService parses the given intermediate service to a specs service
-func ParseIntermediateService(service Service) specs.Service {
+func ParseIntermediateService(service Service) *specs.Service {
 	result := specs.Service{
 		Options: ParseIntermediateOptions(service.Options),
 		Alias:   service.Alias,
@@ -66,16 +67,16 @@ func ParseIntermediateService(service Service) specs.Service {
 		Proto:   service.Proto,
 	}
 
-	return result
+	return &result
 }
 
 // ParseIntermediateFlow parses the given intermediate flow to a specs flow
-func ParseIntermediateFlow(flow Flow) specs.Flow {
+func ParseIntermediateFlow(flow Flow) *specs.Flow {
 	result := specs.Flow{
 		Name:      flow.Name,
 		DependsOn: make(map[string]*specs.Flow, len(flow.DependsOn)),
 		Input:     ParseIntermediateParameterMap(flow.Input),
-		Calls:     make([]specs.Call, len(flow.Calls)),
+		Calls:     make([]*specs.Call, len(flow.Calls)),
 		Output:    ParseIntermediateParameterMap(flow.Output),
 	}
 
@@ -87,13 +88,13 @@ func ParseIntermediateFlow(flow Flow) specs.Flow {
 		result.Calls[index] = ParseIntermediateCall(call)
 	}
 
-	return result
+	return &result
 }
 
 // ParseIntermediateParameterMap parses the given intermediate parameter map to a spec parameter map
-func ParseIntermediateParameterMap(params *ParameterMap) specs.ParameterMap {
+func ParseIntermediateParameterMap(params *ParameterMap) *specs.ParameterMap {
 	if params == nil {
-		return specs.ParameterMap{}
+		return nil
 	}
 
 	properties, _ := params.Properties.JustAttributes()
@@ -101,9 +102,9 @@ func ParseIntermediateParameterMap(params *ParameterMap) specs.ParameterMap {
 	result := specs.ParameterMap{
 		Options:    ParseIntermediateOptions(params.Options),
 		Header:     ParseIntermediateHeader(params.Header),
-		Nested:     make(map[string]specs.NestedParameterMap, len(params.Nested)),
-		Repeated:   make(map[string]specs.RepeatedParameterMap, len(params.Repeated)),
-		Properties: make(map[string]specs.Property, len(properties)),
+		Nested:     make(map[string]*specs.NestedParameterMap, len(params.Nested)),
+		Repeated:   make(map[string]*specs.RepeatedParameterMap, len(params.Repeated)),
+		Properties: make(map[string]*specs.Property, len(properties)),
 	}
 
 	for _, attr := range properties {
@@ -118,64 +119,66 @@ func ParseIntermediateParameterMap(params *ParameterMap) specs.ParameterMap {
 		result.Repeated[repeated.Name] = ParseIntermediateRepeatedParameterMap(repeated, repeated.Name)
 	}
 
-	return result
+	return &result
 }
 
 // ParseIntermediateNestedParameterMap parses the given intermediate parameter map to a spec parameter map
-func ParseIntermediateNestedParameterMap(params NestedParameterMap, path string) specs.NestedParameterMap {
+func ParseIntermediateNestedParameterMap(params NestedParameterMap, path string) *specs.NestedParameterMap {
 	properties, _ := params.Properties.JustAttributes()
 	result := specs.NestedParameterMap{
 		Name:       params.Name,
-		Nested:     make(map[string]specs.NestedParameterMap, len(params.Nested)),
-		Repeated:   make(map[string]specs.RepeatedParameterMap, len(params.Repeated)),
-		Properties: make(map[string]specs.Property, len(properties)),
+		Path:       path,
+		Nested:     make(map[string]*specs.NestedParameterMap, len(params.Nested)),
+		Repeated:   make(map[string]*specs.RepeatedParameterMap, len(params.Repeated)),
+		Properties: make(map[string]*specs.Property, len(properties)),
 	}
 
 	for _, nested := range params.Nested {
-		result.Nested[nested.Name] = ParseIntermediateNestedParameterMap(nested, JoinPath(path, nested.Name))
+		result.Nested[nested.Name] = ParseIntermediateNestedParameterMap(nested, specs.JoinPath(path, nested.Name))
 	}
 
 	for _, repeated := range params.Repeated {
-		result.Repeated[repeated.Name] = ParseIntermediateRepeatedParameterMap(repeated, JoinPath(path, repeated.Name))
+		result.Repeated[repeated.Name] = ParseIntermediateRepeatedParameterMap(repeated, specs.JoinPath(path, repeated.Name))
 	}
 
 	for _, attr := range properties {
-		result.Properties[attr.Name] = ParseIntermediateProperty(JoinPath(path, attr.Name), attr)
+		result.Properties[attr.Name] = ParseIntermediateProperty(specs.JoinPath(path, attr.Name), attr)
 	}
 
-	return result
+	return &result
 }
 
 // ParseIntermediateRepeatedParameterMap parses the given intermediate repeated parameter map to a spec repeated parameter map
-func ParseIntermediateRepeatedParameterMap(params RepeatedParameterMap, path string) specs.RepeatedParameterMap {
+func ParseIntermediateRepeatedParameterMap(params RepeatedParameterMap, path string) *specs.RepeatedParameterMap {
 	properties, _ := params.Properties.JustAttributes()
 	result := specs.RepeatedParameterMap{
 		Name:       params.Name,
+		Path:       path,
 		Template:   params.Template,
-		Nested:     make(map[string]specs.NestedParameterMap, len(params.Nested)),
-		Repeated:   make(map[string]specs.RepeatedParameterMap, len(params.Repeated)),
-		Properties: make(map[string]specs.Property, len(properties)),
+		Nested:     make(map[string]*specs.NestedParameterMap, len(params.Nested)),
+		Repeated:   make(map[string]*specs.RepeatedParameterMap, len(params.Repeated)),
+		Properties: make(map[string]*specs.Property, len(properties)),
 	}
 
 	for _, nested := range params.Nested {
-		result.Nested[nested.Name] = ParseIntermediateNestedParameterMap(nested, JoinPath(path, nested.Name))
+		result.Nested[nested.Name] = ParseIntermediateNestedParameterMap(nested, specs.JoinPath(path, nested.Name))
 	}
 
 	for _, repeated := range params.Repeated {
-		result.Repeated[repeated.Name] = ParseIntermediateRepeatedParameterMap(repeated, JoinPath(path, repeated.Name))
+		result.Repeated[repeated.Name] = ParseIntermediateRepeatedParameterMap(repeated, specs.JoinPath(path, repeated.Name))
 	}
 
 	for _, attr := range properties {
-		result.Properties[attr.Name] = ParseIntermediateProperty(JoinPath(path, attr.Name), attr)
+		result.Properties[attr.Name] = ParseIntermediateProperty(specs.JoinPath(path, attr.Name), attr)
 	}
 
-	return result
+	return &result
 }
 
 // ParseIntermediateHeader parses the given intermediate header to a spec header
 func ParseIntermediateHeader(header *Header) specs.Header {
 	if header == nil {
-		return specs.Header{}
+		return nil
 	}
 
 	attributes, _ := header.Body.JustAttributes()
@@ -201,7 +204,7 @@ func ParseIntermediateOptions(options *Options) specs.Options {
 }
 
 // ParseIntermediateCall parses the given intermediate call to a spec call
-func ParseIntermediateCall(call Call) specs.Call {
+func ParseIntermediateCall(call Call) *specs.Call {
 	result := specs.Call{
 		DependsOn: make(map[string]*specs.Call, len(call.DependsOn)),
 		Name:      call.Name,
@@ -215,35 +218,45 @@ func ParseIntermediateCall(call Call) specs.Call {
 		result.DependsOn[dependency] = nil
 	}
 
-	return result
+	return &result
 }
 
 // ParseIntermediateRollbackCall parses the given intermediate rollback call to a spec rollback call
-func ParseIntermediateRollbackCall(call *RollbackCall) specs.RollbackCall {
+func ParseIntermediateRollbackCall(call *RollbackCall) *specs.RollbackCall {
 	if call == nil {
-		return specs.RollbackCall{}
+		return nil
 	}
 
 	result := specs.RollbackCall{
 		Endpoint: call.Endpoint,
 		Request:  ParseIntermediateParameterMap(call.Request),
 	}
-	return result
+	return &result
 }
 
 // ParseIntermediateProperty parses the given intermediate property to a spec property
-func ParseIntermediateProperty(path string, property *hcl.Attribute) specs.Property {
+func ParseIntermediateProperty(path string, property *hcl.Attribute) *specs.Property {
 	if property == nil {
-		return specs.Property{}
+		return nil
 	}
 
-	// TODO: parse the property value (template, type, default value)
 	value, _ := property.Expr.Value(nil)
 	result := specs.Property{
-		Path:    path,
-		Default: value.AsString(),
-		Expr:    property.Expr,
+		Path: path,
+		Expr: property.Expr,
 	}
 
-	return result
+	// Template definitions could be improved to be more consistent
+	if value.Type() == cty.String && specs.IsType(value.AsString()) {
+		specs.SetType(&result, value)
+		return &result
+	}
+
+	if value.Type() != cty.String || !specs.IsTemplate(value.AsString()) {
+		specs.SetDefaultValue(&result, value)
+		return &result
+	}
+
+	specs.SetTemplate(&result, value)
+	return &result
 }
