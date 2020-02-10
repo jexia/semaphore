@@ -1,6 +1,6 @@
 package schema
 
-import "github.com/jexia/maestro/specs"
+import "github.com/jexia/maestro/specs/types"
 
 // Collection represents a collection of schemas.
 type Collection interface {
@@ -28,7 +28,7 @@ type Object interface {
 // Field represents a object field
 type Field interface {
 	GetName() string
-	GetType() specs.Type
-	GetLabel() specs.Label
+	GetType() types.Type
+	GetLabel() types.Label
 	GetObject() Object
 }

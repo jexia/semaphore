@@ -1,6 +1,10 @@
 package specs
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/jexia/maestro/specs/types"
+)
 
 func CompareProperties(t *testing.T, left Property, right Property) {
 	if left.Path != right.Path {
@@ -97,21 +101,21 @@ func TestParseReference(t *testing.T) {
 			Reference: &PropertyReference{
 				Resource: "input",
 				Path:     "message",
-				Label:    LabelOptional,
+				Label:    types.LabelOptional,
 			},
 		},
 		"input:": Property{
 			Path: path,
 			Reference: &PropertyReference{
 				Resource: "input",
-				Label:    LabelOptional,
+				Label:    types.LabelOptional,
 			},
 		},
 		"input": Property{
 			Path: path,
 			Reference: &PropertyReference{
 				Resource: "input",
-				Label:    LabelOptional,
+				Label:    types.LabelOptional,
 			},
 		},
 	}
@@ -127,7 +131,7 @@ func TestParseFunction(t *testing.T) {
 	static := Property{
 		Path:    path,
 		Default: "message",
-		Type:    TypeString,
+		Type:    types.TypeString,
 	}
 
 	functions := CustomDefinedFunctions{
@@ -172,7 +176,7 @@ func TestParseTemplate(t *testing.T) {
 	static := Property{
 		Path:    path,
 		Default: "message",
-		Type:    TypeString,
+		Type:    types.TypeString,
 	}
 
 	functions := CustomDefinedFunctions{

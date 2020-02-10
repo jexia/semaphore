@@ -2,7 +2,7 @@ package protoc
 
 import (
 	"github.com/jexia/maestro/schema"
-	"github.com/jexia/maestro/specs"
+	"github.com/jexia/maestro/specs/types"
 	"github.com/jhump/protoreflect/desc"
 )
 
@@ -163,11 +163,11 @@ func (field *field) GetName() string {
 	return field.descriptor.GetFullyQualifiedName()
 }
 
-func (field *field) GetType() specs.Type {
+func (field *field) GetType() types.Type {
 	return Types[field.descriptor.GetType()]
 }
 
-func (field *field) GetLabel() specs.Label {
+func (field *field) GetLabel() types.Label {
 	return Labels[field.descriptor.GetLabel()]
 }
 

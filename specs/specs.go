@@ -2,6 +2,8 @@ package specs
 
 import (
 	"github.com/hashicorp/hcl/v2"
+	"github.com/jexia/maestro/schema"
+	"github.com/jexia/maestro/specs/types"
 	"github.com/jexia/maestro/utils"
 	"github.com/jhump/protoreflect/desc"
 )
@@ -11,7 +13,7 @@ type Object interface {
 	GetProperties() map[string]*Property
 	GetNestedProperties() map[string]*NestedParameterMap
 	GetRepeatedProperties() map[string]*RepeatedParameterMap
-	GetLabel() Label
+	GetLabel() types.Label
 }
 
 // FlowCaller represents a flow caller
@@ -20,7 +22,7 @@ type FlowCaller interface {
 	GetEndpoint() string
 	GetRequest() Object
 	GetResponse() Object
-	SetDescriptor(*desc.MethodDescriptor)
+	SetDescriptor(schema.Method)
 }
 
 // Manifest holds a collection of definitions and resources
@@ -75,7 +77,7 @@ type HandleCustomFunction func(args ...interface{}) interface{}
 type PropertyReference struct {
 	Resource string
 	Path     string
-	Label    Label
+	Label    types.Label
 	Object   Object
 }
 
@@ -88,7 +90,7 @@ func (reference *PropertyReference) String() string {
 type Property struct {
 	Path       string
 	Default    interface{}
-	Type       Type
+	Type       types.Type
 	Reference  *PropertyReference
 	Expr       hcl.Expression
 	Descriptor *desc.FieldDescriptor
@@ -106,7 +108,7 @@ func (property *Property) GetDefault() interface{} {
 }
 
 // GetType returns the property type
-func (property *Property) GetType() Type {
+func (property *Property) GetType() types.Type {
 	return property.Type
 }
 
@@ -152,8 +154,8 @@ func (parameters *ParameterMap) GetRepeatedProperties() map[string]*RepeatedPara
 }
 
 // GetLabel returns the parameter map label
-func (parameters *ParameterMap) GetLabel() Label {
-	return LabelOptional
+func (parameters *ParameterMap) GetLabel() types.Label {
+	return types.LabelOptional
 }
 
 // NestedParameterMap is a map of parameter names (keys) and their (templated) values (values)
@@ -191,8 +193,8 @@ func (nested *NestedParameterMap) GetDefault() interface{} {
 }
 
 // GetType returns the nested parameter map type
-func (nested *NestedParameterMap) GetType() Type {
-	return TypeMessage
+func (nested *NestedParameterMap) GetType() types.Type {
+	return types.TypeMessage
 }
 
 // GetObject returns the nested parameter map type
@@ -201,8 +203,8 @@ func (nested *NestedParameterMap) GetObject() Object {
 }
 
 // GetLabel returns the nested parameter map label
-func (nested *NestedParameterMap) GetLabel() Label {
-	return LabelOptional
+func (nested *NestedParameterMap) GetLabel() types.Label {
+	return types.LabelOptional
 }
 
 // Clone returns a clone of the nested parameter map
@@ -266,8 +268,8 @@ func (repeated *RepeatedParameterMap) GetDefault() interface{} {
 }
 
 // GetType returns the parameter map type
-func (repeated *RepeatedParameterMap) GetType() Type {
-	return TypeMessage
+func (repeated *RepeatedParameterMap) GetType() types.Type {
+	return types.TypeMessage
 }
 
 // GetObject returns the repeated parameter map type
@@ -276,8 +278,8 @@ func (repeated *RepeatedParameterMap) GetObject() Object {
 }
 
 // GetLabel returns the repeated parameter map label
-func (repeated *RepeatedParameterMap) GetLabel() Label {
-	return LabelRepeated
+func (repeated *RepeatedParameterMap) GetLabel() types.Label {
+	return types.LabelRepeated
 }
 
 // Clone returns a clone of the nested parameter map
@@ -319,7 +321,7 @@ type Call struct {
 	Request    *ParameterMap
 	Response   *ParameterMap
 	Rollback   *RollbackCall
-	Descriptor *desc.MethodDescriptor
+	Descriptor schema.Method
 }
 
 // GetName returns the call name
@@ -338,7 +340,7 @@ func (call *Call) GetResponse() Object {
 }
 
 // SetDescriptor sets the call method descriptor
-func (call *Call) SetDescriptor(descriptor *desc.MethodDescriptor) {
+func (call *Call) SetDescriptor(descriptor schema.Method) {
 	call.Descriptor = descriptor
 }
 
@@ -352,7 +354,7 @@ type RollbackCall struct {
 	Parent     *Call
 	Endpoint   string
 	Request    *ParameterMap
-	Descriptor *desc.MethodDescriptor
+	Descriptor schema.Method
 }
 
 // GetName returns the call name
@@ -375,7 +377,7 @@ func (call *RollbackCall) GetResponse() Object {
 }
 
 // SetDescriptor sets the call method descriptor
-func (call *RollbackCall) SetDescriptor(descriptor *desc.MethodDescriptor) {
+func (call *RollbackCall) SetDescriptor(descriptor schema.Method) {
 	call.Descriptor = descriptor
 }
 
