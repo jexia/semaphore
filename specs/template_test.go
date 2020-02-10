@@ -151,6 +151,22 @@ func TestParseFunction(t *testing.T) {
 	}
 }
 
+func TestParseUnavailableFunction(t *testing.T) {
+	path := "message"
+	functions := CustomDefinedFunctions{}
+
+	tests := []string{
+		"add(input:message)",
+	}
+
+	for _, input := range tests {
+		_, err := ParseFunction(path, functions, input)
+		if err == nil {
+			t.Error("unexpected pass")
+		}
+	}
+}
+
 func TestParseTemplate(t *testing.T) {
 	path := "message"
 	static := Property{
