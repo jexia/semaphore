@@ -60,6 +60,17 @@ type Options map[string]interface{}
 // Header represents a collection of key values
 type Header map[string]*Property
 
+// CustomDefinedFunctions represents a collection of custom defined functions that could be called inside a template
+type CustomDefinedFunctions map[string]PrepareCustomFunction
+
+// PrepareCustomFunction prepares the custom defined function.
+// The given arguments represent the exprected types that are passed when called.
+type PrepareCustomFunction func(path string, args ...*Property) (*Property, error)
+
+// HandleCustomFunction executes the function and passes the expected types as interface{}.
+// The expected property type should always be returned.
+type HandleCustomFunction func(args ...interface{}) interface{}
+
 // PropertyReference represents a mustach template reference
 type PropertyReference struct {
 	Resource string
@@ -81,6 +92,7 @@ type Property struct {
 	Reference  *PropertyReference
 	Expr       hcl.Expression
 	Descriptor *desc.FieldDescriptor
+	Function   HandleCustomFunction
 }
 
 // GetPath returns the property path

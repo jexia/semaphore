@@ -1,9 +1,15 @@
 package specs
 
 import (
+	"regexp"
 	"strings"
 
-	"github.com/zclconf/go-cty/cty"
+	"github.com/jexia/maestro/specs/trace"
+)
+
+var (
+	// FunctionPattern is the matching pattern for custom defined functions
+	FunctionPattern = regexp.MustCompile(`(\w+)\((.*)\)$`)
 )
 
 const (
@@ -11,6 +17,9 @@ const (
 	TemplateOpen = "{{"
 	// TemplateClose tag
 	TemplateClose = "}}"
+
+	// FunctionArgumentDelimiter represents the character delimiting function arguments
+	FunctionArgumentDelimiter = ","
 	// ReferenceDelimiter represents the value resource reference delimiter
 	ReferenceDelimiter = ":"
 	// PathDelimiter represents the path reference delimiter
@@ -47,32 +56,73 @@ func GetTemplateContent(value string) string {
 }
 
 // ParseReference parses the given value as a template reference
-func ParseReference(value string) *PropertyReference {
+func ParseReference(path string, value string) *Property {
 	rv := strings.Split(value, ReferenceDelimiter)
 
-	reference := PropertyReference{
-		Resource: rv[0],
-		Label:    LabelOptional,
+	reference := &Property{
+		Path: path,
+		Reference: &PropertyReference{
+			Resource: rv[0],
+			Label:    LabelOptional,
+		},
 	}
 
 	if len(rv) == 1 {
-		return &reference
+		return reference
 	}
 
-	reference.Path = rv[1]
-	return &reference
+	reference.Reference.Path = rv[1]
+	return reference
 }
 
-// SetTemplate parses the given value template and sets the resource and path
-func SetTemplate(property *Property, value cty.Value) {
-	if value.Type() != cty.String {
-		return
+// ParseFunction attempts to parses the given function
+func ParseFunction(path string, functions CustomDefinedFunctions, content string) (*Property, error) {
+	pattern := FunctionPattern.FindStringSubmatch(content)
+	name := pattern[1]
+	args := strings.Split(pattern[2], FunctionArgumentDelimiter)
+
+	if functions[name] == nil {
+		return nil, trace.New(trace.WithMessage("undefined custom function '%s' in '%s'", name, content))
 	}
 
-	content := GetTemplateContent(value.AsString())
+	arguments := make([]*Property, len(args))
 
-	// Currently only references could be defined inside templates, possible features could be added in the future
-	property.Reference = ParseReference(content)
+	for index, arg := range args {
+		result, err := ParseTemplateContent(path, functions, strings.TrimSpace(arg))
+		if err != nil {
+			return nil, err
+		}
+
+		arguments[index] = result
+	}
+
+	property, err := functions[name](path, arguments...)
+	if err != nil {
+		return nil, err
+	}
+
+	return property, nil
+}
+
+// ParseTemplateContent parses the given template function
+func ParseTemplateContent(path string, functions CustomDefinedFunctions, content string) (*Property, error) {
+	if FunctionPattern.MatchString(content) {
+		return ParseFunction(path, functions, content)
+	}
+
+	// TODO: handle constant
+	return ParseReference(path, content), nil
+}
+
+// ParseTemplate parses the given value template and sets the resource and path
+func ParseTemplate(path string, functions CustomDefinedFunctions, value string) (*Property, error) {
+	content := GetTemplateContent(value)
+	result, err := ParseTemplateContent(path, functions, content)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
 
 // JoinPath joins the given flow paths
