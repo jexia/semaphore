@@ -238,15 +238,15 @@ proxy "upload" {
 ### Service
 Services represent external service which could be called inside the flows.
 The service name is an alias which could be referenced inside calls.
-The host of the service and proto service method should be defined for each service.
-The request and response message defined inside the proto buffers are used for type definitions.
-The FQN (fully qualified name) of the proto method should be used.
+The host of the service and schema service method should be defined for each service.
+The request and response message defined inside the schema are used for type definitions.
+The FQN (fully qualified name) of the schema method should be used.
 Each service references a caller implementation to be used.
 
 ```hcl
 service "logger" "http" {
     host = "https://service.prod.svc.cluster.local"
-    proto = "proto.Logger"
+    schema = "proto.Logger"
 }
 ```
 

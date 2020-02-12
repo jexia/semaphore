@@ -398,7 +398,7 @@ type Service struct {
 	Alias   string
 	Caller  string
 	Host    string
-	Proto   string
+	Schema  string
 }
 
 // Caller Each implementation has to be configured and defined before running the service.
