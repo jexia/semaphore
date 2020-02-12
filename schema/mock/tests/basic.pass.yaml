@@ -8,4 +8,6 @@ services:
             call:
                 input:
                     fields:
-                        message: "string"
+                        message:
+                            type: "string"
+                            label: "optional"
