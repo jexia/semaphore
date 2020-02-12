@@ -111,7 +111,7 @@ func (method *method) GetDescriptor() *desc.MethodDescriptor {
 }
 
 // NewObject constructs a schema Object with the given descriptor
-func NewObject(descriptor *desc.MessageDescriptor) schema.Object {
+func NewObject(descriptor *desc.MessageDescriptor) Object {
 	return &object{
 		descriptor: descriptor,
 	}
@@ -119,7 +119,7 @@ func NewObject(descriptor *desc.MessageDescriptor) schema.Object {
 
 // Object represents a proto message
 type Object interface {
-	schema.Method
+	schema.Object
 	GetDescriptor() *desc.MessageDescriptor
 }
 
@@ -143,7 +143,7 @@ func (object *object) GetDescriptor() *desc.MessageDescriptor {
 }
 
 // NewField constructs a new object field with the given descriptor
-func NewField(descriptor *desc.FieldDescriptor) schema.Field {
+func NewField(descriptor *desc.FieldDescriptor) Field {
 	return &field{
 		descriptor: descriptor,
 	}
