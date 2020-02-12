@@ -16,7 +16,7 @@ Messages are strictly typed and are type-checked. Payloads such as protobuf and 
   * [Flow](#flow)
     + [Input](#input-1)
     + [Output](#output)
-    + [Dependency](#dependency)
+    + [Depends on](#depends-on)
   * [Call](#call-1)
     + [Options](#options)
     + [Header](#header)
@@ -125,12 +125,12 @@ output {
 }
 ```
 
-#### Dependency
+#### Depends on
 Dependencies are flows that need to be called before the given flow is executed. Dependencies could have other dependencies which have to be called.
 
 ```hcl
 flow "GetUsers" {
-    dependency = ["Auth", "HasGetPolicy"]
+    depends_on = ["Auth", "HasGetPolicy"]
 }
 ```
 
