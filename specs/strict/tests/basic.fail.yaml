@@ -1,0 +1,13 @@
+exception:
+    file: basic
+    line: 10
+    message: cannot use (string) type (int32) in 'message'
+services:
+    caller:
+        methods:
+            Open:
+                input:
+                    fields:
+                        message:
+                            type: "int32"
+                            label: "optional"

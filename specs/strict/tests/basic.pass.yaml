@@ -1,0 +1,9 @@
+services:
+    caller:
+        methods:
+            Open:
+                input:
+                    fields:
+                        message:
+                            type: "string"
+                            label: "optional"

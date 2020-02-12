@@ -43,9 +43,9 @@ func DefineCall(schema schema.Collection, manifest *specs.Manifest, call specs.F
 		return nil
 	}
 
-	service := schema.GetService(GetSchemaService(manifest, GetService(call.GetEndpoint())))
+	service := schema.GetService(GetService(call.GetEndpoint()))
 	if service == nil {
-		return trace.New(trace.WithMessage("undefined service alias '%s' in flow '%s'", GetSchemaService(manifest, GetService(call.GetEndpoint())), flow.Name))
+		return trace.New(trace.WithMessage("undefined service alias '%s' in flow '%s'", GetService(call.GetEndpoint()), flow.Name))
 	}
 
 	method := service.GetMethod(GetMethod(call.GetEndpoint()))
