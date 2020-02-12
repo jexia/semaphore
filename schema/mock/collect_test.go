@@ -1,6 +1,7 @@
 package mock
 
 import (
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -28,7 +29,12 @@ func TestUnmarshalFile(t *testing.T) {
 		t.Run(file.Name(), func(t *testing.T) {
 			clean := file.Name()[:len(file.Name())-len(filepath.Ext(file.Name()))]
 
-			_, err := UnmarshalFile(filepath.Join(file.Path, file.Name()))
+			reader, err := os.Open(filepath.Join(file.Path, file.Name()))
+			if err != nil {
+				t.Error(err)
+			}
+
+			_, err = UnmarshalFile(reader)
 			if strings.HasSuffix(clean, pass) && err != nil {
 				t.Errorf("expected test to pass but failed instead %s, %v", file.Name(), err)
 			}
