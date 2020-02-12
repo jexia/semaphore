@@ -43,9 +43,9 @@ func DefineCall(schema schema.Collection, manifest *specs.Manifest, call specs.F
 		return nil
 	}
 
-	service := schema.GetService(GetServiceProto(manifest, GetService(call.GetEndpoint())))
+	service := schema.GetService(GetSchemaService(manifest, GetService(call.GetEndpoint())))
 	if service == nil {
-		return trace.New(trace.WithMessage("undefined service alias '%s' in flow '%s'", GetServiceProto(manifest, GetService(call.GetEndpoint())), flow.Name))
+		return trace.New(trace.WithMessage("undefined service alias '%s' in flow '%s'", GetSchemaService(manifest, GetService(call.GetEndpoint())), flow.Name))
 	}
 
 	method := service.GetMethod(GetMethod(call.GetEndpoint()))
@@ -124,12 +124,12 @@ func DefineProperty(call specs.FlowCaller, property *specs.Property, flow *specs
 	return nil
 }
 
-// CheckTypes checks the given call against the given proto method types
+// CheckTypes checks the given call against the given schema method types
 func CheckTypes(object specs.Object, message schema.Object, flow *specs.Flow) (err error) {
 	for key, property := range object.GetProperties() {
 		field := message.GetField(key)
 		if field == nil {
-			return trace.New(trace.WithExpression(property.Expr), trace.WithMessage("undefined proto field '%s' in flow '%s'", property.Path, flow.Name))
+			return trace.New(trace.WithExpression(property.Expr), trace.WithMessage("undefined schema field '%s' in flow '%s'", property.Path, flow.Name))
 		}
 
 		if property.Type != field.GetType() {
@@ -140,11 +140,11 @@ func CheckTypes(object specs.Object, message schema.Object, flow *specs.Flow) (e
 	for key, nested := range object.GetNestedProperties() {
 		field := message.GetField(key)
 		if field == nil {
-			return trace.New(trace.WithMessage("undefined proto nested message '%s' in flow '%s'", nested.Path, flow.Name))
+			return trace.New(trace.WithMessage("undefined schema nested message '%s' in flow '%s'", nested.Path, flow.Name))
 		}
 
 		if field.GetType() != types.TypeMessage {
-			return trace.New(trace.WithMessage("cannot use (%s) type in proto (%s)", types.TypeMessage, field.GetType()))
+			return trace.New(trace.WithMessage("cannot use (%s) type in schema (%s)", types.TypeMessage, field.GetType()))
 		}
 
 		err = CheckTypes(nested.GetObject(), field.GetObject(), flow)
@@ -156,11 +156,11 @@ func CheckTypes(object specs.Object, message schema.Object, flow *specs.Flow) (e
 	for key, repeated := range object.GetRepeatedProperties() {
 		field := message.GetField(key)
 		if field == nil {
-			return trace.New(trace.WithMessage("undefined proto repeated message '%s' in flow '%s'", repeated.Path, flow.Name))
+			return trace.New(trace.WithMessage("undefined schema repeated message '%s' in flow '%s'", repeated.Path, flow.Name))
 		}
 
 		if field.GetType() != types.TypeMessage {
-			return trace.New(trace.WithMessage("cannot use (%s) type in proto (%s)", types.TypeMessage, field.GetType()))
+			return trace.New(trace.WithMessage("cannot use (%s) type in schema (%s)", types.TypeMessage, field.GetType()))
 		}
 
 		err = CheckTypes(repeated.GetObject(), field.GetObject(), flow)

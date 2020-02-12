@@ -15,14 +15,18 @@ func GetService(endpoint string) string {
 // GetMethod returns the method from the given endpoint
 func GetMethod(endpoint string) string {
 	path := strings.Split(endpoint, ".")
+	if len(path) <= 1 {
+		return ""
+	}
+
 	return strings.Join(path[1:], ".")
 }
 
-// GetServiceProto attempts to find the service proto matching the given alias
-func GetServiceProto(manifest *specs.Manifest, alias string) string {
+// GetSchemaService attempts to find the schema service matching the given alias
+func GetSchemaService(manifest *specs.Manifest, alias string) string {
 	for _, service := range manifest.Services {
 		if service.Alias == alias {
-			return service.Proto
+			return service.Schema
 		}
 	}
 
