@@ -14,10 +14,11 @@ type Manifest struct {
 
 // Flow intermediate specification
 type Flow struct {
-	Name   string        `hcl:"name,label"`
-	Input  *ParameterMap `hcl:"input,block"`
-	Calls  []Call        `hcl:"call,block"`
-	Output *ParameterMap `hcl:"output,block"`
+	Name      string        `hcl:"name,label"`
+	DependsOn []string      `hcl:"depends_on,optional"`
+	Input     *ParameterMap `hcl:"input,block"`
+	Calls     []Call        `hcl:"call,block"`
+	Output    *ParameterMap `hcl:"output,block"`
 }
 
 // Endpoint intermediate specification
@@ -64,11 +65,12 @@ type RepeatedParameterMap struct {
 
 // Call intermediate specification
 type Call struct {
-	Name     string        `hcl:"name,label"`
-	Endpoint string        `hcl:"endpoint,label"`
-	Type     string        `hcl:"type,optional"`
-	Request  *ParameterMap `hcl:"request,block"`
-	Rollback *RollbackCall `hcl:"rollback,block"`
+	DependsOn []string      `hcl:"depends_on,optional"`
+	Name      string        `hcl:"name,label"`
+	Endpoint  string        `hcl:"endpoint,label"`
+	Type      string        `hcl:"type,optional"`
+	Request   *ParameterMap `hcl:"request,block"`
+	Rollback  *RollbackCall `hcl:"rollback,block"`
 }
 
 // RollbackCall intermediate specification
