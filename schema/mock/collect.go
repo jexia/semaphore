@@ -1,14 +1,15 @@
 package mock
 
 import (
+	"io"
 	"io/ioutil"
 
 	"gopkg.in/yaml.v2"
 )
 
 // UnmarshalFile attempts to parse the given Mock YAML file to intermediate resources.
-func UnmarshalFile(path string) (*Collection, error) {
-	bb, err := ioutil.ReadFile(path)
+func UnmarshalFile(reader io.Reader) (*Collection, error) {
+	bb, err := ioutil.ReadAll(reader)
 	if err != nil {
 		return nil, err
 	}
