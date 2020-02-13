@@ -2,7 +2,7 @@ caller "http" {}
 
 service "caller" "http" {
 	host = ""
-	schema = ""
+	schema = "caller"
 }
 
 flow "echo" {
