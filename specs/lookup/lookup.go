@@ -161,6 +161,12 @@ func NestedParameterMapLookup(params *specs.NestedParameterMap) PathLookup {
 			return params
 		}
 
+		for _, param := range params.Properties {
+			if param.Path == path {
+				return param
+			}
+		}
+
 		for _, nested := range params.Nested {
 			prop := NestedParameterMapLookup(nested)(path)
 			if prop != nil {
@@ -184,6 +190,12 @@ func RepeatedParameterMapLookup(params *specs.RepeatedParameterMap) PathLookup {
 	return func(path string) Reference {
 		if path == params.Path {
 			return params
+		}
+
+		for _, param := range params.Properties {
+			if param.Path == path {
+				return param
+			}
 		}
 
 		for _, nested := range params.Nested {

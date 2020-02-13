@@ -47,25 +47,25 @@ func TestGetDefaultProp(t *testing.T) {
 	}
 }
 
-func NewInputMockProperties() map[string]*specs.Property {
+func NewInputMockProperties(path string) map[string]*specs.Property {
 	return map[string]*specs.Property{
 		"message": &specs.Property{
-			Path:    "message",
+			Path:    specs.JoinPath(path, "message"),
 			Default: "hello world",
 			Type:    types.TypeString,
 		},
 		"active": &specs.Property{
-			Path:    "active",
+			Path:    specs.JoinPath(path, "active"),
 			Default: false,
 			Type:    types.TypeBool,
 		},
 	}
 }
 
-func NewOutputMockProperties() map[string]*specs.Property {
+func NewOutputMockProperties(path string) map[string]*specs.Property {
 	return map[string]*specs.Property{
 		"result": &specs.Property{
-			Path:    "result",
+			Path:    specs.JoinPath(path, "result"),
 			Default: "hello world",
 			Type:    types.TypeString,
 		},
@@ -83,7 +83,19 @@ func NewMockCall(name string) *specs.Call {
 					Type:    types.TypeString,
 				},
 			},
-			Properties: NewInputMockProperties(),
+			Nested: map[string]*specs.NestedParameterMap{
+				"nested": &specs.NestedParameterMap{
+					Path:       "nested",
+					Properties: NewInputMockProperties("nested"),
+				},
+			},
+			Repeated: map[string]*specs.RepeatedParameterMap{
+				"repeated": &specs.RepeatedParameterMap{
+					Path:       "repeated",
+					Properties: NewInputMockProperties("repeated"),
+				},
+			},
+			Properties: NewInputMockProperties(""),
 		},
 		Response: &specs.ParameterMap{
 			Header: specs.Header{
@@ -93,7 +105,19 @@ func NewMockCall(name string) *specs.Call {
 					Type:    types.TypeString,
 				},
 			},
-			Properties: NewOutputMockProperties(),
+			Properties: NewOutputMockProperties(""),
+			Nested: map[string]*specs.NestedParameterMap{
+				"nested": &specs.NestedParameterMap{
+					Path:       "nested",
+					Properties: NewInputMockProperties("nested"),
+				},
+			},
+			Repeated: map[string]*specs.RepeatedParameterMap{
+				"repeated": &specs.RepeatedParameterMap{
+					Path:       "repeated",
+					Properties: NewInputMockProperties("repeated"),
+				},
+			},
 		},
 	}
 }
@@ -102,7 +126,7 @@ func NewMockFlow(name string) *specs.Flow {
 	return &specs.Flow{
 		Name: name,
 		Input: &specs.ParameterMap{
-			Properties: NewInputMockProperties(),
+			Properties: NewInputMockProperties(""),
 		},
 		Calls: []*specs.Call{
 			NewMockCall("first"),
@@ -110,7 +134,7 @@ func NewMockFlow(name string) *specs.Flow {
 			NewMockCall("third"),
 		},
 		Output: &specs.ParameterMap{
-			Properties: NewOutputMockProperties(),
+			Properties: NewOutputMockProperties(""),
 		},
 	}
 }
@@ -229,6 +253,9 @@ func TestGetResourceReference(t *testing.T) {
 		NewPropertyReference("first.request", "message"):        flow.Calls[0].Request.Properties["message"],
 		NewPropertyReference("first.request.header", "cookie"):  flow.Calls[0].Request.Header["cookie"],
 		NewPropertyReference("first.response.header", "cookie"): flow.Calls[0].Response.Header["cookie"],
+		NewPropertyReference("first.request", "nested"):         flow.Calls[0].Request.Nested["nested"],
+		NewPropertyReference("first.request", "nested.message"): flow.Calls[0].Request.Nested["nested"].Properties["message"],
+		NewPropertyReference("first", "nested.message"):         flow.Calls[0].Request.Nested["nested"].Properties["message"],
 	}
 
 	t.Log(references)
