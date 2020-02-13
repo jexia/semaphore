@@ -156,6 +156,37 @@ func TestResolveFlowDependencies(t *testing.T) {
 	}
 }
 
+func TestFlowCircularDependenciesDetection(t *testing.T) {
+	manifest := &Manifest{
+		Flows: []*Flow{
+			&Flow{
+				Name: "first",
+				DependsOn: map[string]*Flow{
+					"second": nil,
+				},
+			},
+			&Flow{
+				Name: "second",
+				DependsOn: map[string]*Flow{
+					"first": nil,
+				},
+			},
+		},
+	}
+
+	tests := []*Flow{
+		manifest.Flows[0],
+		manifest.Flows[1],
+	}
+
+	for _, input := range tests {
+		err := ResolveFlowDependencies(manifest, input, make(map[string]*Flow))
+		if err == nil {
+			t.Fatalf("unexpected pass %s", input.Name)
+		}
+	}
+}
+
 func TestResolveCallDependencies(t *testing.T) {
 	flow := &Flow{
 		Calls: []*Call{
@@ -193,6 +224,37 @@ func TestResolveCallDependencies(t *testing.T) {
 			if val == nil {
 				t.Fatalf("dependency not resolved %s.%s", input.Name, key)
 			}
+		}
+	}
+}
+
+func TestCallCircularDependenciesDetection(t *testing.T) {
+	flow := &Flow{
+		Calls: []*Call{
+			{
+				Name: "first",
+				DependsOn: map[string]*Call{
+					"second": nil,
+				},
+			},
+			{
+				Name: "second",
+				DependsOn: map[string]*Call{
+					"first": nil,
+				},
+			},
+		},
+	}
+
+	tests := []*Call{
+		flow.Calls[0],
+		flow.Calls[1],
+	}
+
+	for _, input := range tests {
+		err := ResolveCallDependencies(flow, input, make(map[string]*Call))
+		if err == nil {
+			t.Fatalf("unexpected pass %s", input.Name)
 		}
 	}
 }
