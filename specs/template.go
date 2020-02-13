@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/jexia/maestro/specs/trace"
+	"github.com/jexia/maestro/specs/types"
 )
 
 var (
@@ -63,7 +64,7 @@ func ParseReference(path string, value string) *Property {
 		Path: path,
 		Reference: &PropertyReference{
 			Resource: rv[0],
-			Label:    LabelOptional,
+			Label:    types.LabelOptional,
 		},
 	}
 
