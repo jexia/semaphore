@@ -83,19 +83,43 @@ func NewMockCall(name string) *specs.Call {
 					Type:    types.TypeString,
 				},
 			},
+			Properties: NewInputMockProperties(""),
 			Nested: map[string]*specs.NestedParameterMap{
 				"nested": &specs.NestedParameterMap{
 					Path:       "nested",
 					Properties: NewInputMockProperties("nested"),
+					Nested: map[string]*specs.NestedParameterMap{
+						"nested": &specs.NestedParameterMap{
+							Path:       "nested.nested",
+							Properties: NewInputMockProperties("nested.nested"),
+						},
+					},
+					Repeated: map[string]*specs.RepeatedParameterMap{
+						"repeated": &specs.RepeatedParameterMap{
+							Path:       "nested.repeated",
+							Properties: NewInputMockProperties("nested.repeated"),
+						},
+					},
 				},
 			},
 			Repeated: map[string]*specs.RepeatedParameterMap{
 				"repeated": &specs.RepeatedParameterMap{
 					Path:       "repeated",
 					Properties: NewInputMockProperties("repeated"),
+					Nested: map[string]*specs.NestedParameterMap{
+						"nested": &specs.NestedParameterMap{
+							Path:       "repeated.nested",
+							Properties: NewInputMockProperties("repeated.nested"),
+						},
+					},
+					Repeated: map[string]*specs.RepeatedParameterMap{
+						"repeated": &specs.RepeatedParameterMap{
+							Path:       "repeated.repeated",
+							Properties: NewInputMockProperties("repeated.nested"),
+						},
+					},
 				},
 			},
-			Properties: NewInputMockProperties(""),
 		},
 		Response: &specs.ParameterMap{
 			Header: specs.Header{
@@ -109,13 +133,37 @@ func NewMockCall(name string) *specs.Call {
 			Nested: map[string]*specs.NestedParameterMap{
 				"nested": &specs.NestedParameterMap{
 					Path:       "nested",
-					Properties: NewInputMockProperties("nested"),
+					Properties: NewOutputMockProperties("nested"),
+					Nested: map[string]*specs.NestedParameterMap{
+						"nested": &specs.NestedParameterMap{
+							Path:       "nested.nested",
+							Properties: NewOutputMockProperties("nested.nested"),
+						},
+					},
+					Repeated: map[string]*specs.RepeatedParameterMap{
+						"repeated": &specs.RepeatedParameterMap{
+							Path:       "nested.repeated",
+							Properties: NewOutputMockProperties("nested.repeated"),
+						},
+					},
 				},
 			},
 			Repeated: map[string]*specs.RepeatedParameterMap{
 				"repeated": &specs.RepeatedParameterMap{
 					Path:       "repeated",
-					Properties: NewInputMockProperties("repeated"),
+					Properties: NewOutputMockProperties("repeated"),
+					Nested: map[string]*specs.NestedParameterMap{
+						"nested": &specs.NestedParameterMap{
+							Path:       "repeated.nested",
+							Properties: NewOutputMockProperties("repeated.nested"),
+						},
+					},
+					Repeated: map[string]*specs.RepeatedParameterMap{
+						"repeated": &specs.RepeatedParameterMap{
+							Path:       "repeated.repeated",
+							Properties: NewOutputMockProperties("repeated.repeated"),
+						},
+					},
 				},
 			},
 		},
@@ -246,16 +294,27 @@ func TestGetResourceReference(t *testing.T) {
 	references := GetAvailableResources(flow, "output")
 
 	tests := map[*specs.PropertyReference]Reference{
-		NewPropertyReference("input", "message"):                flow.Input.Properties["message"],
-		NewPropertyReference("first", "result"):                 flow.Calls[0].Response.Properties["result"],
-		NewPropertyReference("first.response", "result"):        flow.Calls[0].Response.Properties["result"],
-		NewPropertyReference("first.request", "message"):        flow.Calls[0].Request.Properties["message"],
-		NewPropertyReference("first.request", "message"):        flow.Calls[0].Request.Properties["message"],
-		NewPropertyReference("first.request.header", "cookie"):  flow.Calls[0].Request.Header["cookie"],
-		NewPropertyReference("first.response.header", "cookie"): flow.Calls[0].Response.Header["cookie"],
-		NewPropertyReference("first.request", "nested"):         flow.Calls[0].Request.Nested["nested"],
-		NewPropertyReference("first.request", "nested.message"): flow.Calls[0].Request.Nested["nested"].Properties["message"],
-		NewPropertyReference("first", "nested.message"):         flow.Calls[0].Request.Nested["nested"].Properties["message"],
+		NewPropertyReference("input", "message"):                           flow.Input.Properties["message"],
+		NewPropertyReference("first", "result"):                            flow.Calls[0].Response.Properties["result"],
+		NewPropertyReference("first.response", "result"):                   flow.Calls[0].Response.Properties["result"],
+		NewPropertyReference("first.request", "message"):                   flow.Calls[0].Request.Properties["message"],
+		NewPropertyReference("first.request", "message"):                   flow.Calls[0].Request.Properties["message"],
+		NewPropertyReference("first.request.header", "cookie"):             flow.Calls[0].Request.Header["cookie"],
+		NewPropertyReference("first.response.header", "cookie"):            flow.Calls[0].Response.Header["cookie"],
+		NewPropertyReference("first.request", "nested"):                    flow.Calls[0].Request.Nested["nested"],
+		NewPropertyReference("first.request", "nested.message"):            flow.Calls[0].Request.Nested["nested"].Properties["message"],
+		NewPropertyReference("first", "nested.result"):                     flow.Calls[0].Response.Nested["nested"].Properties["result"],
+		NewPropertyReference("first", "nested.nested.result"):              flow.Calls[0].Response.Nested["nested"].Nested["nested"].Properties["result"],
+		NewPropertyReference("first.response", "nested.nested.result"):     flow.Calls[0].Response.Nested["nested"].Nested["nested"].Properties["result"],
+		NewPropertyReference("first.request", "nested.repeated.message"):   flow.Calls[0].Request.Nested["nested"].Repeated["repeated"].Properties["message"],
+		NewPropertyReference("first.response", "nested.repeated.result"):   flow.Calls[0].Response.Nested["nested"].Repeated["repeated"].Properties["result"],
+		NewPropertyReference("first.response", "repeated.repeated.result"): flow.Calls[0].Response.Repeated["repeated"].Repeated["repeated"].Properties["result"],
+		NewPropertyReference("first.response", "nested.repeated.result"):   flow.Calls[0].Response.Nested["nested"].Repeated["repeated"].Properties["result"],
+		NewPropertyReference("first.response", "nested.nested.result"):     flow.Calls[0].Response.Nested["nested"].Nested["nested"].Properties["result"],
+		NewPropertyReference("first.response", "nested.repeated.result"):   flow.Calls[0].Response.Nested["nested"].Repeated["repeated"].Properties["result"],
+		NewPropertyReference("first.request", "nested.repeated.message"):   flow.Calls[0].Request.Nested["nested"].Repeated["repeated"].Properties["message"],
+		NewPropertyReference("first.request", "nested.nested.message"):     flow.Calls[0].Request.Nested["nested"].Nested["nested"].Properties["message"],
+		NewPropertyReference("first.request", "nested.repeated.message"):   flow.Calls[0].Request.Nested["nested"].Repeated["repeated"].Properties["message"],
 	}
 
 	for input, expected := range tests {
