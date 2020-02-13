@@ -43,7 +43,7 @@ func DefineCall(schema schema.Collection, manifest *specs.Manifest, call specs.F
 		return nil
 	}
 
-	service := schema.GetService(GetService(call.GetEndpoint()))
+	service := schema.GetService(GetSchemaService(manifest, GetService(call.GetEndpoint())))
 	if service == nil {
 		return trace.New(trace.WithMessage("undefined service alias '%s' in flow '%s'", GetService(call.GetEndpoint()), flow.Name))
 	}
@@ -194,4 +194,15 @@ func ResolvePropertyObjectReferences(params specs.Object) {
 		nested := property.Reference.Object.(*specs.NestedParameterMap)
 		params.GetNestedProperties()[key] = nested.Clone(key, property.Path)
 	}
+}
+
+// GetSchemaService attempts to find a service matching the alias name and return the schema name
+func GetSchemaService(manifest *specs.Manifest, alias string) string {
+	for _, service := range manifest.Services {
+		if service.Alias == alias {
+			return service.Schema
+		}
+	}
+
+	return ""
 }
