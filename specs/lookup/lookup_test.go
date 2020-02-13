@@ -35,8 +35,8 @@ func TestGetFlow(t *testing.T) {
 
 func TestGetDefaultProp(t *testing.T) {
 	tests := map[string]string{
-		specs.ResourceRequest: specs.InputResource,
-		"unkown":              specs.ResourceResponse,
+		specs.InputResource: specs.ResourceRequest,
+		"unkown":            specs.ResourceResponse,
 	}
 
 	for input, expected := range tests {
