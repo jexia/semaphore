@@ -1,6 +1,9 @@
 package specs
 
-import "testing"
+import (
+	"log"
+	"testing"
+)
 
 func TestResolveManifestDependencies(t *testing.T) {
 	manifest := &Manifest{
@@ -84,9 +87,15 @@ func TestResolveManifestDependencies(t *testing.T) {
 	}
 
 	for _, flow := range manifest.Flows {
+		if len(flow.DependsOn) == 0 {
+			continue
+		}
+
 		for key, val := range flow.DependsOn {
 			if val == nil {
-				t.Fatalf("flow dependency not resolved %s", key)
+				log.Println(val, val == nil)
+				log.Println(flow.DependsOn)
+				t.Fatalf("flow dependency not resolved %s.%s", flow.Name, key)
 			}
 		}
 
@@ -97,7 +106,9 @@ func TestResolveManifestDependencies(t *testing.T) {
 
 			for key, val := range call.DependsOn {
 				if val == nil {
-					t.Fatalf("call dependency not resolved %s", key)
+					log.Println(val, val == nil)
+					log.Println(call.DependsOn)
+					t.Fatalf("call dependency not resolved %s.%s", call.Name, key)
 				}
 			}
 		}
@@ -132,14 +143,14 @@ func TestResolveFlowDependencies(t *testing.T) {
 	}
 
 	for _, input := range tests {
-		err := ResolveFlowDependencies(manifest, input, make(map[string]*Flow), make(map[string]*Flow))
+		err := ResolveFlowDependencies(manifest, input, make(map[string]*Flow))
 		if err != nil {
 			t.Fatalf("unexpected error %s", err)
 		}
 
 		for key, val := range input.DependsOn {
 			if val == nil {
-				t.Fatalf("dependency not resolved %s", key)
+				t.Fatalf("dependency not resolved %s.%s", input.Name, key)
 			}
 		}
 	}
@@ -173,14 +184,14 @@ func TestResolveCallDependencies(t *testing.T) {
 	}
 
 	for _, input := range tests {
-		err := ResolveCallDependencies(flow, input, make(map[string]*Call), make(map[string]*Call))
+		err := ResolveCallDependencies(flow, input, make(map[string]*Call))
 		if err != nil {
 			t.Fatalf("unexpected error %s", err)
 		}
 
 		for key, val := range input.DependsOn {
 			if val == nil {
-				t.Fatalf("dependency not resolved %s", key)
+				t.Fatalf("dependency not resolved %s.%s", input.Name, key)
 			}
 		}
 	}
