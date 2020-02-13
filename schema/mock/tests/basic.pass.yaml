@@ -4,6 +4,10 @@ exception:
     message: unhandled error
 services:
     caller:
-        call:
-            input:
-                message: "string"
+        methods:
+            call:
+                input:
+                    fields:
+                        message:
+                            type: "string"
+                            label: "optional"
