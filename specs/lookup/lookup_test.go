@@ -258,8 +258,6 @@ func TestGetResourceReference(t *testing.T) {
 		NewPropertyReference("first", "nested.message"):         flow.Calls[0].Request.Nested["nested"].Properties["message"],
 	}
 
-	t.Log(references)
-
 	for input, expected := range tests {
 		t.Run(input.String(), func(t *testing.T) {
 			result := GetResourceReference(input, references)
