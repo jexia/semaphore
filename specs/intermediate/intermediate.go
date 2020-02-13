@@ -85,7 +85,7 @@ type Service struct {
 	Alias   string   `hcl:"alias,label"`
 	Caller  string   `hcl:"caller,label"`
 	Host    string   `hcl:"host"`
-	Proto   string   `hcl:"proto"`
+	Schema  string   `hcl:"schema"`
 }
 
 // Caller specification
