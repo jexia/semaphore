@@ -204,7 +204,7 @@ rollback "logger.Log" {
 ### Proxy
 A proxy streams the incoming request to the given service.
 Proxies could define calls that are executed before the request body is forwarded.
-The `input.request` resource could not reference within calls since it is not parsed.
+The `input.request` resource is unavailable in proxy calls.
 A proxy forward could ideally be used for file uploads or large messages which could not be stored in memory.
 
 ```hcl
@@ -227,10 +227,6 @@ proxy "upload" {
         header {
             StorageKey = "{{ auth:key }}"
         }
-    }
-
-    output {
-        id = "{{ uploader:id }}"
     }
 }
 ```
