@@ -14,11 +14,11 @@ type Manifest struct {
 
 // Flow intermediate specification
 type Flow struct {
-	Name      string        `hcl:"name,label"`
-	DependsOn []string      `hcl:"depends_on,optional"`
-	Input     *ParameterMap `hcl:"input,block"`
-	Calls     []Call        `hcl:"call,block"`
-	Output    *ParameterMap `hcl:"output,block"`
+	Name      string             `hcl:"name,label"`
+	DependsOn []string           `hcl:"depends_on,optional"`
+	Input     *InputParameterMap `hcl:"input,block"`
+	Calls     []Call             `hcl:"call,block"`
+	Output    *ParameterMap      `hcl:"output,block"`
 }
 
 // Endpoint intermediate specification
@@ -30,6 +30,15 @@ type Endpoint struct {
 // Header represents a collection of key values
 type Header struct {
 	Body hcl.Body `hcl:",remain"`
+}
+
+// InputParameterMap is the initial map of parameter names (keys) and their (templated) values (values)
+type InputParameterMap struct {
+	Options    *Options                    `hcl:"options,block"`
+	Header     *Header                     `hcl:"header,block"`
+	Nested     []NestedParameterMap        `hcl:"message,block"`
+	Repeated   []InputRepeatedParameterMap `hcl:"repeated,block"`
+	Properties hcl.Body                    `hcl:",remain"`
 }
 
 // ParameterMap is the initial map of parameter names (keys) and their (templated) values (values)
@@ -52,6 +61,14 @@ type NestedParameterMap struct {
 	Nested     []NestedParameterMap   `hcl:"message,block"`
 	Repeated   []RepeatedParameterMap `hcl:"repeated,block"`
 	Properties hcl.Body               `hcl:",remain"`
+}
+
+// InputRepeatedParameterMap is a map of repeated message blocks/values
+type InputRepeatedParameterMap struct {
+	Name       string                      `hcl:"name,label"`
+	Nested     []NestedParameterMap        `hcl:"message,block"`
+	Repeated   []InputRepeatedParameterMap `hcl:"repeated,block"`
+	Properties hcl.Body                    `hcl:",remain"`
 }
 
 // RepeatedParameterMap is a map of repeated message blocks/values

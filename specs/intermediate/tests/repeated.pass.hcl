@@ -1,9 +1,9 @@
 flow "echo" {
     input {
-        repeated "nested" "" {
+        repeated "nested" {
             name = "<string>"
 
-            repeated "sub" "" {
+            repeated "sub" {
                 message = "<string>"
             }
         }
