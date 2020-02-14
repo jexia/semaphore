@@ -1,7 +1,7 @@
 # Maestro
 Maestro is a tool to orchestrate your microservices by providing a powerful toolset for manipulating, forwarding and returning properties from and to multiple services.
 
-Maestro is built on top of proto buffers and flows.
+Maestro is built on top of schema definitions and flows.
 Messages are strictly typed and are type-checked. Payloads such as protobuf and JSON could be generated from the same definitions.
 
 ## Table of contents
@@ -54,9 +54,9 @@ Paths reference a property within the resource. Paths could target nested messag
 
 
 ### Message
-A message holds properties, nested messages and/or repeated messages. All of these properties could be referenced. Messages reference a protobuf message.
+A message holds properties, nested messages and/or repeated messages. All of these properties could be referenced. Messages reference a schema message.
 Properties
-Properties hold constant values and/or references. Properties are strictly typed and use the referenced protobuf message for type checks. Properties could also hold references which should match the given property type.
+Properties hold constant values and/or references. Properties are strictly typed and use the referenced schema message for type checks. Properties could also hold references which should match the given property type.
 Nested messages
 You can define and use message types inside other message types, as in the following example.
 
@@ -79,7 +79,7 @@ repeated "address" "{{ input:address }}" {
 ```
 
 ### Flow
-A flow defines a set of calls that should be called chronologically and produces an output message. Calls could reference other resources when constructing messages. All references are strictly typed. Properties are fetched from the given proto buffers or inputs.
+A flow defines a set of calls that should be called chronologically and produces an output message. Calls could reference other resources when constructing messages. All references are strictly typed. Properties are fetched from the given schema or inputs.
 
 All flows should contain a unique name. Calls are nested inside of flows and contain two labels, a unique name within the flow and the service and method to be called.
 A dependency reference structure is generated within the flow which allows Maestro to figure out which calls could be called parallel to improve performance.
@@ -135,7 +135,7 @@ flow "GetUsers" {
 ```
 
 ### Call
-A call calls the given service and method. Calls could be executed synchronously or asynchronously. All calls are referencing a service method, the service should match the alias defined inside the service. The request and response proto messages are used for type definitions.
+A call calls the given service and method. Calls could be executed synchronously or asynchronously. All calls are referencing a service method, the service should match the alias defined inside the service. The request and response schema messages are used for type definitions.
 A call could contain the request headers, request body, rollback, and the execution type.
 
 ```hcl
