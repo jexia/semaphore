@@ -77,7 +77,7 @@ func ParseIntermediateService(service Service) *specs.Service {
 
 // ParseIntermediateFlow parses the given intermediate flow to a specs flow
 func ParseIntermediateFlow(flow Flow, functions specs.CustomDefinedFunctions) (*specs.Flow, error) {
-	input, err := ParseIntermediateParameterMap(flow.Input, functions)
+	input, err := ParseIntermediateParameterMap(ParseIntermediateInputParameterMap(flow.Input), functions)
 	if err != nil {
 		return nil, err
 	}
@@ -109,6 +109,43 @@ func ParseIntermediateFlow(flow Flow, functions specs.CustomDefinedFunctions) (*
 	}
 
 	return &result, nil
+}
+
+// ParseIntermediateInputParameterMap parses the given input parameter map
+func ParseIntermediateInputParameterMap(params *InputParameterMap) *ParameterMap {
+	if params == nil {
+		return nil
+	}
+
+	result := &ParameterMap{
+		Options:    params.Options,
+		Header:     params.Header,
+		Nested:     params.Nested,
+		Repeated:   make([]RepeatedParameterMap, len(params.Repeated)),
+		Properties: params.Properties,
+	}
+
+	for index, repeated := range params.Repeated {
+		result.Repeated[index] = ParseIntermediateInputRepeatedParameterMap(repeated)
+	}
+
+	return result
+}
+
+// ParseIntermediateInputRepeatedParameterMap parses the given input repeated parameter map
+func ParseIntermediateInputRepeatedParameterMap(repeated InputRepeatedParameterMap) RepeatedParameterMap {
+	result := RepeatedParameterMap{
+		Name:       repeated.Name,
+		Nested:     repeated.Nested,
+		Repeated:   make([]RepeatedParameterMap, len(repeated.Repeated)),
+		Properties: repeated.Properties,
+	}
+
+	for index, repeated := range repeated.Repeated {
+		result.Repeated[index] = ParseIntermediateInputRepeatedParameterMap(repeated)
+	}
+
+	return result
 }
 
 // ParseIntermediateParameterMap parses the given intermediate parameter map to a spec parameter map
