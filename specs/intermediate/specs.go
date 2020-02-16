@@ -69,6 +69,7 @@ func ParseIntermediateService(service Service) *specs.Service {
 		Alias:   service.Alias,
 		Caller:  service.Caller,
 		Host:    service.Host,
+		Codec:   service.Codec,
 		Schema:  service.Schema,
 	}
 
