@@ -6,9 +6,11 @@ import (
 
 func TestGetService(t *testing.T) {
 	tests := map[string]string{
-		"service.Call": "service",
-		"service":      "service",
-		"service.":     "service",
+		"service.Call":    "service",
+		"service":         "service",
+		"service.":        "service",
+		"schema.service.": "schema",
+		"schema.service":  "schema",
 	}
 
 	for input, expected := range tests {
@@ -21,9 +23,9 @@ func TestGetService(t *testing.T) {
 
 func TestGetMethod(t *testing.T) {
 	tests := map[string]string{
-		"service.Call":     "Call",
-		"service":          "",
-		"service.Call.sub": "Call.sub",
+		"service.Call":        "Call",
+		"service":             "",
+		"schema.service.Call": "Call",
 	}
 
 	for input, expected := range tests {
