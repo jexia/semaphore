@@ -103,6 +103,15 @@ flow "Logger" {
 }
 ```
 
+#### Schema
+A schema definition defines the input and output message types. When a flow schema is defined are the input properties (except header) ignored.
+
+```hcl
+flow "Logger" {
+    schema = "exposed.Logger.Log"
+}
+```
+
 #### Input
 The input acts as a message. The input could contain nested messages and repeated messages. Input properties could reference types and or constant values. Input types are defined by wrapping the type inside angle brackets.
 
