@@ -1,6 +1,8 @@
 package refs
 
-import "github.com/jexia/maestro/specs"
+import (
+	"github.com/jexia/maestro/specs"
+)
 
 // New constructs a new reference with the given path
 func New(path string) Reference {
