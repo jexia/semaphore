@@ -24,10 +24,20 @@ type FlowCaller interface {
 	SetDescriptor(schema.Method)
 }
 
+// FlowManager represents a flow manager
+type FlowManager interface {
+	GetName() string
+	GetDependencies() map[string]*Flow
+	GetCalls() []*Call
+	GetInput() *ParameterMap
+	GetOutput() *ParameterMap
+}
+
 // Manifest holds a collection of definitions and resources
 type Manifest struct {
 	File      utils.FileInfo
 	Flows     []*Flow
+	Proxy     []*Proxy
 	Endpoints []*Endpoint
 	Services  []*Service
 	Callers   []*Caller
@@ -48,6 +58,31 @@ type Flow struct {
 	Calls      []*Call
 	Output     *ParameterMap
 	Descriptor schema.Method
+}
+
+// GetName returns the flow name
+func (flow *Flow) GetName() string {
+	return flow.Name
+}
+
+// GetDependencies returns the dependencies of the given flow
+func (flow *Flow) GetDependencies() map[string]*Flow {
+	return flow.DependsOn
+}
+
+// GetCalls returns the calls of the given flow
+func (flow *Flow) GetCalls() []*Call {
+	return flow.Calls
+}
+
+// GetInput returns the input of the given flow
+func (flow *Flow) GetInput() *ParameterMap {
+	return flow.Input
+}
+
+// GetOutput returns the output of the given flow
+func (flow *Flow) GetOutput() *ParameterMap {
+	return flow.Output
 }
 
 // Endpoint exposes a flow. Endpoints are not parsed by Maestro and have custom implementations in each caller.
@@ -417,15 +452,40 @@ type Caller struct {
 // Proxies could define calls that are executed before the request body is forwarded.
 // A proxy forward could ideally be used for file uploads or large messages which could not be stored in memory.
 type Proxy struct {
-	Name    string
-	Calls   []*Call
-	Forward *ProxyForward
-	Output  *ParameterMap
+	Name      string
+	DependsOn map[string]*Flow
+	Calls     []*Call
+	Forward   *ProxyForward
+}
+
+// GetName returns the flow name
+func (proxy *Proxy) GetName() string {
+	return proxy.Name
+}
+
+// GetDependencies returns the dependencies of the given flow
+func (proxy *Proxy) GetDependencies() map[string]*Flow {
+	return proxy.DependsOn
+}
+
+// GetCalls returns the calls of the given flow
+func (proxy *Proxy) GetCalls() []*Call {
+	return proxy.Calls
+}
+
+// GetInput returns the input of the given flow
+func (proxy *Proxy) GetInput() *ParameterMap {
+	return nil
+}
+
+// GetOutput returns the output of the given flow
+func (proxy *Proxy) GetOutput() *ParameterMap {
+	return nil
 }
 
 // ProxyForward represents the service endpoint where the proxy should forward the stream to when all calls succeed.
 type ProxyForward struct {
-	Name     string
 	Endpoint string
+	Header   Header
 	Rollback *RollbackCall
 }

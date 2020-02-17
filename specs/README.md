@@ -232,7 +232,7 @@ proxy "upload" {
         }
     }
 
-    forward "uploader" "uploader.File" {
+    forward "uploader.File" {
         header {
             StorageKey = "{{ auth:key }}"
         }

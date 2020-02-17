@@ -143,7 +143,7 @@ func TestResolveFlowDependencies(t *testing.T) {
 	}
 
 	for _, input := range tests {
-		err := ResolveFlowDependencies(manifest, input, make(map[string]*Flow))
+		err := ResolveFlowManagerDependencies(manifest, input, make(map[string]FlowManager))
 		if err != nil {
 			t.Fatalf("unexpected error %s", err)
 		}
@@ -180,7 +180,7 @@ func TestFlowCircularDependenciesDetection(t *testing.T) {
 	}
 
 	for _, input := range tests {
-		err := ResolveFlowDependencies(manifest, input, make(map[string]*Flow))
+		err := ResolveFlowManagerDependencies(manifest, input, make(map[string]FlowManager))
 		if err == nil {
 			t.Fatalf("unexpected pass %s", input.Name)
 		}

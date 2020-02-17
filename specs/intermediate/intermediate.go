@@ -7,6 +7,7 @@ import (
 // Manifest intermediate specs
 type Manifest struct {
 	Flows     []Flow     `hcl:"flow,block"`
+	Proxy     []Proxy    `hcl:"proxy,block"`
 	Endpoints []Endpoint `hcl:"endpoint,block"`
 	Services  []Service  `hcl:"service,block"`
 	Callers   []Caller   `hcl:"caller,block"`
@@ -115,15 +116,15 @@ type Caller struct {
 
 // Proxy specification
 type Proxy struct {
-	Name    string        `hcl:"name,label"`
-	Calls   []Call        `hcl:"call,block"`
-	Forward ProxyForward  `hcl:"forward,block"`
-	Output  *ParameterMap `hcl:"output,block"`
+	Name      string       `hcl:"name,label"`
+	DependsOn []string     `hcl:"depends_on,optional"`
+	Calls     []Call       `hcl:"call,block"`
+	Forward   ProxyForward `hcl:"forward,block"`
 }
 
 // ProxyForward specification
 type ProxyForward struct {
-	Name     string        `hcl:"name,label"`
 	Endpoint string        `hcl:"endpoint,label"`
+	Header   *Header       `hcl:"header,block"`
 	Rollback *RollbackCall `hcl:"rollback,block"`
 }

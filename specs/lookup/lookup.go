@@ -41,17 +41,17 @@ func GetDefaultProp(resource string) string {
 
 // GetAvailableResources fetches the available resources able to be referenced
 // untill the given breakpoint (call.Name) has been reached.
-func GetAvailableResources(flow *specs.Flow, breakpoint string) map[string]ReferenceMap {
-	references := make(map[string]ReferenceMap, len(flow.Calls)+1)
+func GetAvailableResources(flow specs.FlowManager, breakpoint string) map[string]ReferenceMap {
+	references := make(map[string]ReferenceMap, len(flow.GetCalls())+1)
 
-	if flow.Input != nil {
+	if flow.GetInput() != nil {
 		references[specs.InputResource] = ReferenceMap{
-			specs.ResourceRequest:       ParameterMapLookup(flow.Input),
-			specs.ResourceRequestHeader: HeaderLookup(flow.Input.Header),
+			specs.ResourceRequest:       ParameterMapLookup(flow.GetInput()),
+			specs.ResourceRequestHeader: HeaderLookup(flow.GetInput().Header),
 		}
 	}
 
-	for _, call := range flow.Calls {
+	for _, call := range flow.GetCalls() {
 		if call.Name == breakpoint {
 			break
 		}
