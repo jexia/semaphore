@@ -7,13 +7,15 @@ service "caller" "http" {
 }
 
 flow "echo" {
-    input {
-        message = "<string>"
-    }
+    schema = "caller.Open"
 
 	call "opening" "caller.Open" {
 		request {
 			message = "{{ input:message }}"
 		}
+	}
+
+	output {
+		message = "{{ input:message }}"
 	}
 }

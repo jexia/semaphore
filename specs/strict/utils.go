@@ -5,17 +5,25 @@ import (
 )
 
 // GetService returns the service from the given endpoint
-func GetService(endpoint string) string {
-	path := strings.Split(endpoint, ".")
-	return path[0]
+func GetService(path string) string {
+	if strings.HasSuffix(path, ".") {
+		path = path[:len(path)-1]
+	}
+
+	parts := strings.Split(path, ".")
+	if len(parts) == 1 {
+		return parts[0]
+	}
+
+	return strings.Join(parts[:len(parts)-1], ".")
 }
 
 // GetMethod returns the method from the given endpoint
-func GetMethod(endpoint string) string {
-	path := strings.Split(endpoint, ".")
-	if len(path) <= 1 {
+func GetMethod(path string) string {
+	parts := strings.Split(path, ".")
+	if len(parts) == 1 {
 		return ""
 	}
 
-	return strings.Join(path[1:], ".")
+	return parts[len(parts)-1]
 }

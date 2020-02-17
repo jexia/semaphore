@@ -9,3 +9,8 @@ services:
                         message:
                             type: "int32"
                             label: "optional"
+                output:
+                    fields:
+                        message:
+                            type: "int32"
+                            label: "optional"

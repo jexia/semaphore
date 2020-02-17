@@ -1,7 +1,6 @@
 package specs
 
 import (
-	"log"
 	"testing"
 )
 
@@ -93,8 +92,6 @@ func TestResolveManifestDependencies(t *testing.T) {
 
 		for key, val := range flow.DependsOn {
 			if val == nil {
-				log.Println(val, val == nil)
-				log.Println(flow.DependsOn)
 				t.Fatalf("flow dependency not resolved %s.%s", flow.Name, key)
 			}
 		}
@@ -106,8 +103,6 @@ func TestResolveManifestDependencies(t *testing.T) {
 
 			for key, val := range call.DependsOn {
 				if val == nil {
-					log.Println(val, val == nil)
-					log.Println(call.DependsOn)
 					t.Fatalf("call dependency not resolved %s.%s", call.Name, key)
 				}
 			}
@@ -143,7 +138,7 @@ func TestResolveFlowDependencies(t *testing.T) {
 	}
 
 	for _, input := range tests {
-		err := ResolveFlowDependencies(manifest, input, make(map[string]*Flow))
+		err := ResolveFlowManagerDependencies(manifest, input, make(map[string]FlowManager))
 		if err != nil {
 			t.Fatalf("unexpected error %s", err)
 		}
@@ -180,7 +175,7 @@ func TestFlowCircularDependenciesDetection(t *testing.T) {
 	}
 
 	for _, input := range tests {
-		err := ResolveFlowDependencies(manifest, input, make(map[string]*Flow))
+		err := ResolveFlowManagerDependencies(manifest, input, make(map[string]FlowManager))
 		if err == nil {
 			t.Fatalf("unexpected pass %s", input.Name)
 		}

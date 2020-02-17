@@ -12,3 +12,8 @@ services:
                         message:
                             type: "string"
                             label: "optional"
+            Upload:
+                input:
+                    fields:
+                output:
+                    fields:

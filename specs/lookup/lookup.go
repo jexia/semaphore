@@ -41,17 +41,17 @@ func GetDefaultProp(resource string) string {
 
 // GetAvailableResources fetches the available resources able to be referenced
 // untill the given breakpoint (call.Name) has been reached.
-func GetAvailableResources(flow *specs.Flow, breakpoint string) map[string]ReferenceMap {
-	references := make(map[string]ReferenceMap, len(flow.Calls)+1)
+func GetAvailableResources(flow specs.FlowManager, breakpoint string) map[string]ReferenceMap {
+	references := make(map[string]ReferenceMap, len(flow.GetCalls())+1)
 
-	if flow.Input != nil {
+	if flow.GetInput() != nil {
 		references[specs.InputResource] = ReferenceMap{
-			specs.ResourceRequest:       ParameterMapLookup(flow.Input),
-			specs.ResourceRequestHeader: HeaderLookup(flow.Input.Header),
+			specs.ResourceRequest:       ParameterMapLookup(flow.GetInput()),
+			specs.ResourceRequestHeader: HeaderLookup(flow.GetInput().Header),
 		}
 	}
 
-	for _, call := range flow.Calls {
+	for _, call := range flow.GetCalls() {
 		if call.Name == breakpoint {
 			break
 		}
@@ -65,7 +65,6 @@ func GetAvailableResources(flow *specs.Flow, breakpoint string) map[string]Refer
 
 		if call.Response != nil {
 			resources[specs.ResourceResponse] = ParameterMapLookup(call.Response)
-			resources[specs.ResourceResponseHeader] = HeaderLookup(call.Response.Header)
 		}
 
 		references[call.Name] = resources
@@ -120,93 +119,31 @@ func HeaderLookup(header specs.Header) PathLookup {
 }
 
 // ParameterMapLookup attempts to lookup the given path inside the params collection
-func ParameterMapLookup(params *specs.ParameterMap) PathLookup {
+func ParameterMapLookup(params specs.Object) PathLookup {
 	return func(path string) Reference {
-		for _, param := range params.Properties {
-			if param.Path == path {
+		for _, param := range params.GetProperties() {
+			if param.GetPath() == path {
 				return param
 			}
 		}
 
-		for _, nested := range params.Nested {
-			if nested.Path == path {
+		for _, nested := range params.GetNestedProperties() {
+			if nested.GetPath() == path {
 				return nested
 			}
 
-			prop := NestedParameterMapLookup(nested)(path)
+			prop := ParameterMapLookup(nested)(path)
 			if prop != nil {
 				return prop
 			}
 		}
 
-		for _, repeated := range params.Repeated {
-			if repeated.Path == path {
+		for _, repeated := range params.GetRepeatedProperties() {
+			if repeated.GetPath() == path {
 				return repeated
 			}
 
-			prop := RepeatedParameterMapLookup(repeated)(path)
-			if prop != nil {
-				return prop
-			}
-		}
-
-		return nil
-	}
-}
-
-// NestedParameterMapLookup attempts to lookup the given path inside the nested params collection
-func NestedParameterMapLookup(params *specs.NestedParameterMap) PathLookup {
-	return func(path string) Reference {
-		if path == params.Path {
-			return params
-		}
-
-		for _, param := range params.Properties {
-			if param.Path == path {
-				return param
-			}
-		}
-
-		for _, nested := range params.Nested {
-			prop := NestedParameterMapLookup(nested)(path)
-			if prop != nil {
-				return prop
-			}
-		}
-
-		for _, repeated := range params.Repeated {
-			prop := RepeatedParameterMapLookup(repeated)(path)
-			if prop != nil {
-				return prop
-			}
-		}
-
-		return nil
-	}
-}
-
-// RepeatedParameterMapLookup attempts to lookup the given path inside the repeated params collection
-func RepeatedParameterMapLookup(params *specs.RepeatedParameterMap) PathLookup {
-	return func(path string) Reference {
-		if path == params.Path {
-			return params
-		}
-
-		for _, param := range params.Properties {
-			if param.Path == path {
-				return param
-			}
-		}
-
-		for _, nested := range params.Nested {
-			prop := NestedParameterMapLookup(nested)(path)
-			if prop != nil {
-				return prop
-			}
-		}
-
-		for _, repeated := range params.Repeated {
-			prop := RepeatedParameterMapLookup(repeated)(path)
+			prop := ParameterMapLookup(repeated)(path)
 			if prop != nil {
 				return prop
 			}

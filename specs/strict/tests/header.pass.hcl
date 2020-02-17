@@ -8,12 +8,16 @@ service "caller" "http" {
 
 flow "echo" {
     input {
-        message = "<string>"
+        header {
+            Authorization = "<string>"
+        }
     }
 
 	call "opening" "caller.Open" {
 		request {
-			message = "{{ input:message }}"
+			header {
+                Authorization = "{{ input.request.header:Authorization }}"
+            }
 		}
 	}
 }

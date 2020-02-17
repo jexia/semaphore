@@ -6,14 +6,16 @@ service "caller" "http" {
 	codec = "json"
 }
 
-flow "echo" {
-    input {
-        message = "<string>"
-    }
-
+proxy "echo" {
 	call "opening" "caller.Open" {
+		request {}
+	}
+
+	call "reference" "caller.Open" {
 		request {
-			message = "{{ input:message }}"
+			message = "{{ opening:message }}"
 		}
 	}
+
+	forward "caller.Upload" {}
 }

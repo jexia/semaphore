@@ -8,12 +8,14 @@ service "caller" "http" {
 
 flow "echo" {
     input {
-        message = "<string>"
+        ammount = "<int32>"
     }
 
 	call "opening" "caller.Open" {
 		request {
-			message = "{{ input:message }}"
+			header {
+                Ammount = "{{ input:ammount }}"
+            }
 		}
 	}
 }

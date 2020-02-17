@@ -22,6 +22,7 @@ type Method interface {
 
 // Object represents a data object
 type Object interface {
+	GetFields() []Field
 	GetField(name string) Field
 }
 

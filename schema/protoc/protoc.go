@@ -138,6 +138,17 @@ func (object *object) GetField(name string) schema.Field {
 	return nil
 }
 
+// GetFields returns all available fields inside the given object
+func (object *object) GetFields() []schema.Field {
+	result := make([]schema.Field, len(object.descriptor.GetFields()))
+
+	for index, field := range object.descriptor.GetFields() {
+		result[index] = NewField(field)
+	}
+
+	return result
+}
+
 func (object *object) GetDescriptor() *desc.MessageDescriptor {
 	return object.descriptor
 }
@@ -160,7 +171,7 @@ type field struct {
 }
 
 func (field *field) GetName() string {
-	return field.descriptor.GetFullyQualifiedName()
+	return field.descriptor.GetName()
 }
 
 func (field *field) GetType() types.Type {

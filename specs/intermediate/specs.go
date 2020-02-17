@@ -14,6 +14,7 @@ func ParseManifest(manifest Manifest, functions specs.CustomDefinedFunctions) (*
 		Endpoints: make([]*specs.Endpoint, len(manifest.Endpoints)),
 		Services:  make([]*specs.Service, len(manifest.Services)),
 		Flows:     make([]*specs.Flow, len(manifest.Flows)),
+		Proxy:     make([]*specs.Proxy, len(manifest.Proxy)),
 	}
 
 	for index, caller := range manifest.Callers {
@@ -35,6 +36,15 @@ func ParseManifest(manifest Manifest, functions specs.CustomDefinedFunctions) (*
 		}
 
 		result.Flows[index] = flow
+	}
+
+	for index, proxy := range manifest.Proxy {
+		proxy, err := ParseIntermediateProxy(proxy, functions)
+		if err != nil {
+			return nil, err
+		}
+
+		result.Proxy[index] = proxy
 	}
 
 	return result, nil
@@ -69,6 +79,7 @@ func ParseIntermediateService(service Service) *specs.Service {
 		Alias:   service.Alias,
 		Caller:  service.Caller,
 		Host:    service.Host,
+		Codec:   service.Codec,
 		Schema:  service.Schema,
 	}
 
@@ -90,6 +101,7 @@ func ParseIntermediateFlow(flow Flow, functions specs.CustomDefinedFunctions) (*
 	result := specs.Flow{
 		Name:      flow.Name,
 		DependsOn: make(map[string]*specs.Flow, len(flow.DependsOn)),
+		Schema:    flow.Schema,
 		Input:     input,
 		Calls:     make([]*specs.Call, len(flow.Calls)),
 		Output:    output,
@@ -106,6 +118,63 @@ func ParseIntermediateFlow(flow Flow, functions specs.CustomDefinedFunctions) (*
 		}
 
 		result.Calls[index] = call
+	}
+
+	return &result, nil
+}
+
+// ParseIntermediateProxy parses the given intermediate proxy to a specs proxy
+func ParseIntermediateProxy(proxy Proxy, functions specs.CustomDefinedFunctions) (*specs.Proxy, error) {
+	forward, err := ParseIntermediateProxyForward(proxy.Forward, functions)
+	if err != nil {
+		return nil, err
+	}
+
+	result := specs.Proxy{
+		Name:      proxy.Name,
+		DependsOn: make(map[string]*specs.Flow, len(proxy.DependsOn)),
+		Calls:     make([]*specs.Call, len(proxy.Calls)),
+		Forward:   forward,
+	}
+
+	for _, dependency := range proxy.DependsOn {
+		result.DependsOn[dependency] = nil
+	}
+
+	for index, call := range proxy.Calls {
+		call, err := ParseIntermediateCall(call, functions)
+		if err != nil {
+			return nil, err
+		}
+
+		result.Calls[index] = call
+	}
+
+	return &result, nil
+}
+
+// ParseIntermediateProxyForward parses the given intermediate proxy forward to a specs proxy forward
+func ParseIntermediateProxyForward(proxy ProxyForward, functions specs.CustomDefinedFunctions) (*specs.ProxyForward, error) {
+	result := specs.ProxyForward{
+		Endpoint: proxy.Endpoint,
+	}
+
+	if proxy.Header != nil {
+		header, err := ParseIntermediateHeader(proxy.Header, functions)
+		if err != nil {
+			return nil, err
+		}
+
+		result.Header = header
+	}
+
+	if proxy.Rollback != nil {
+		rollback, err := ParseIntermediateRollbackCall(proxy.Rollback, functions)
+		if err != nil {
+			return nil, err
+		}
+
+		result.Rollback = rollback
 	}
 
 	return &result, nil

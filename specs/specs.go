@@ -4,8 +4,6 @@ import (
 	"github.com/hashicorp/hcl/v2"
 	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/specs/types"
-	"github.com/jexia/maestro/utils"
-	"github.com/jhump/protoreflect/desc"
 )
 
 // Object represents a parameter collection
@@ -14,6 +12,7 @@ type Object interface {
 	GetNestedProperties() map[string]*NestedParameterMap
 	GetRepeatedProperties() map[string]*RepeatedParameterMap
 	GetLabel() types.Label
+	GetHeader() Header
 }
 
 // FlowCaller represents a flow caller
@@ -25,13 +24,31 @@ type FlowCaller interface {
 	SetDescriptor(schema.Method)
 }
 
+// FlowManager represents a flow manager
+type FlowManager interface {
+	GetName() string
+	GetDependencies() map[string]*Flow
+	GetCalls() []*Call
+	GetInput() *ParameterMap
+	GetOutput() *ParameterMap
+}
+
 // Manifest holds a collection of definitions and resources
 type Manifest struct {
-	File      utils.FileInfo
 	Flows     []*Flow
+	Proxy     []*Proxy
 	Endpoints []*Endpoint
 	Services  []*Service
 	Callers   []*Caller
+}
+
+// MergeLeft merges the incoming manifest to the existing (left) manifest
+func (manifest *Manifest) MergeLeft(incoming *Manifest) {
+	manifest.Flows = append(manifest.Flows, incoming.Flows...)
+	manifest.Proxy = append(manifest.Proxy, incoming.Proxy...)
+	manifest.Endpoints = append(manifest.Endpoints, incoming.Endpoints...)
+	manifest.Services = append(manifest.Services, incoming.Services...)
+	manifest.Callers = append(manifest.Callers, incoming.Callers...)
 }
 
 // Flow defines a set of calls that should be called chronologically and produces an output message.
@@ -42,11 +59,38 @@ type Manifest struct {
 // Calls are nested inside of flows and contain two labels, a unique name within the flow and the service and method to be called.
 // A dependency reference structure is generated within the flow which allows Maestro to figure out which calls could be called parallel to improve performance.
 type Flow struct {
-	Name      string
-	DependsOn map[string]*Flow
-	Input     *ParameterMap
-	Calls     []*Call
-	Output    *ParameterMap
+	Name       string
+	DependsOn  map[string]*Flow
+	Schema     string
+	Input      *ParameterMap
+	Calls      []*Call
+	Output     *ParameterMap
+	Descriptor schema.Method
+}
+
+// GetName returns the flow name
+func (flow *Flow) GetName() string {
+	return flow.Name
+}
+
+// GetDependencies returns the dependencies of the given flow
+func (flow *Flow) GetDependencies() map[string]*Flow {
+	return flow.DependsOn
+}
+
+// GetCalls returns the calls of the given flow
+func (flow *Flow) GetCalls() []*Call {
+	return flow.Calls
+}
+
+// GetInput returns the input of the given flow
+func (flow *Flow) GetInput() *ParameterMap {
+	return flow.Input
+}
+
+// GetOutput returns the output of the given flow
+func (flow *Flow) GetOutput() *ParameterMap {
+	return flow.Output
 }
 
 // Endpoint exposes a flow. Endpoints are not parsed by Maestro and have custom implementations in each caller.
@@ -88,13 +132,12 @@ func (reference *PropertyReference) String() string {
 // Property represents a value property.
 // A value property could contain a constant value or a value reference.
 type Property struct {
-	Path       string
-	Default    interface{}
-	Type       types.Type
-	Reference  *PropertyReference
-	Expr       hcl.Expression
-	Descriptor *desc.FieldDescriptor
-	Function   HandleCustomFunction
+	Path      string
+	Default   interface{}
+	Type      types.Type
+	Reference *PropertyReference
+	Expr      hcl.Expression
+	Function  HandleCustomFunction
 }
 
 // GetPath returns the property path
@@ -120,12 +163,11 @@ func (property *Property) GetObject() Object {
 // Clone returns a clone of the property
 func (property *Property) Clone() *Property {
 	return &Property{
-		Path:       property.Path,
-		Default:    property.Default,
-		Type:       property.Type,
-		Reference:  property.Reference,
-		Expr:       property.Expr,
-		Descriptor: property.Descriptor,
+		Path:      property.Path,
+		Default:   property.Default,
+		Type:      property.Type,
+		Reference: property.Reference,
+		Expr:      property.Expr,
 	}
 }
 
@@ -151,6 +193,11 @@ func (parameters *ParameterMap) GetNestedProperties() map[string]*NestedParamete
 // GetRepeatedProperties returns the repeated parameter map inside the given parameter map
 func (parameters *ParameterMap) GetRepeatedProperties() map[string]*RepeatedParameterMap {
 	return parameters.Repeated
+}
+
+// GetHeader returns the parameter map header
+func (parameters *ParameterMap) GetHeader() Header {
+	return parameters.Header
 }
 
 // GetLabel returns the parameter map label
@@ -200,6 +247,11 @@ func (nested *NestedParameterMap) GetType() types.Type {
 // GetObject returns the nested parameter map type
 func (nested *NestedParameterMap) GetObject() Object {
 	return nested
+}
+
+// GetHeader returns the nested parameter map header
+func (nested *NestedParameterMap) GetHeader() Header {
+	return nil
 }
 
 // GetLabel returns the nested parameter map label
@@ -277,6 +329,11 @@ func (repeated *RepeatedParameterMap) GetObject() Object {
 	return repeated
 }
 
+// GetHeader returns the repeated parameter map header
+func (repeated *RepeatedParameterMap) GetHeader() Header {
+	return nil
+}
+
 // GetLabel returns the repeated parameter map label
 func (repeated *RepeatedParameterMap) GetLabel() types.Label {
 	return types.LabelRepeated
@@ -341,6 +398,10 @@ func (call *Call) GetResponse() Object {
 
 // SetDescriptor sets the call method descriptor
 func (call *Call) SetDescriptor(descriptor schema.Method) {
+	if descriptor != nil {
+		call.Response = ToParameterMap(nil, "", descriptor.GetOutput())
+	}
+
 	call.Descriptor = descriptor
 }
 
@@ -398,6 +459,7 @@ type Service struct {
 	Alias   string
 	Caller  string
 	Host    string
+	Codec   string
 	Schema  string
 }
 
@@ -413,15 +475,40 @@ type Caller struct {
 // Proxies could define calls that are executed before the request body is forwarded.
 // A proxy forward could ideally be used for file uploads or large messages which could not be stored in memory.
 type Proxy struct {
-	Name    string
-	Calls   []*Call
-	Forward *ProxyForward
-	Output  *ParameterMap
+	Name      string
+	DependsOn map[string]*Flow
+	Calls     []*Call
+	Forward   *ProxyForward
+}
+
+// GetName returns the flow name
+func (proxy *Proxy) GetName() string {
+	return proxy.Name
+}
+
+// GetDependencies returns the dependencies of the given flow
+func (proxy *Proxy) GetDependencies() map[string]*Flow {
+	return proxy.DependsOn
+}
+
+// GetCalls returns the calls of the given flow
+func (proxy *Proxy) GetCalls() []*Call {
+	return proxy.Calls
+}
+
+// GetInput returns the input of the given flow
+func (proxy *Proxy) GetInput() *ParameterMap {
+	return nil
+}
+
+// GetOutput returns the output of the given flow
+func (proxy *Proxy) GetOutput() *ParameterMap {
+	return nil
 }
 
 // ProxyForward represents the service endpoint where the proxy should forward the stream to when all calls succeed.
 type ProxyForward struct {
-	Name     string
 	Endpoint string
+	Header   Header
 	Rollback *RollbackCall
 }

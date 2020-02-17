@@ -84,11 +84,11 @@ A flow defines a set of calls that should be called chronologically and produces
 All flows should contain a unique name. Calls are nested inside of flows and contain two labels, a unique name within the flow and the service and method to be called.
 A dependency reference structure is generated within the flow which allows Maestro to figure out which calls could be called parallel to improve performance.
 
+An optional schema could be defined which defines the request/response messages.
+
 ```hcl
 flow "Logger" {
-    input {
-        message = "string"
-    }
+    schema = "exposed.Logger.Log"
 
     call "log" "logger.Log" {
         request {
@@ -100,6 +100,15 @@ flow "Logger" {
         status = "{{ log:status }}"
         code = "{{ log:code }}"
     }   
+}
+```
+
+#### Schema
+A schema definition defines the input and output message types. When a flow schema is defined are the input properties (except header) ignored.
+
+```hcl
+flow "Logger" {
+    schema = "exposed.Logger.Log"
 }
 ```
 
@@ -223,7 +232,7 @@ proxy "upload" {
         }
     }
 
-    forward "uploader" "uploader.File" {
+    forward "uploader.File" {
         header {
             StorageKey = "{{ auth:key }}"
         }
@@ -239,9 +248,12 @@ The request and response message defined inside the schema are used for type def
 The FQN (fully qualified name) of the schema method should be used.
 Each service references a caller implementation to be used.
 
+Codec is the message format used for request and response messages.
+
 ```hcl
 service "logger" "http" {
     host = "https://service.prod.svc.cluster.local"
+    codec = "proto"
     schema = "proto.Logger"
 }
 ```
@@ -270,6 +282,8 @@ caller "http" {
 
 ### Endpoint
 An endpoint exposes a flow. Endpoints are not parsed by Maestro and have custom implementations in each caller. The name of the endpoint represents the flow which should be executed.
+
+All servers should define their own request/response message formats.
 
 ```hcl
 endpoint "users" {

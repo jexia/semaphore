@@ -1,3 +1,5 @@
+exception:
+    message: cannot use type int32 for header.Ammount in flow echo
 services:
     caller:
         methods:

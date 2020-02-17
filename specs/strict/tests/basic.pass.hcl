@@ -3,6 +3,7 @@ caller "http" {}
 service "caller" "http" {
 	host = ""
 	schema = "caller"
+	codec = "json"
 }
 
 flow "echo" {
@@ -14,5 +15,9 @@ flow "echo" {
 		request {
 			message = "{{ input:message }}"
 		}
+	}
+
+	output {
+		message = "{{ opening:message }}"
 	}
 }

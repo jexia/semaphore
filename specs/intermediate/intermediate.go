@@ -4,9 +4,15 @@ import (
 	"github.com/hashicorp/hcl/v2"
 )
 
+const (
+	// Ext represents the intermediate file extention
+	Ext = ".hcl"
+)
+
 // Manifest intermediate specs
 type Manifest struct {
 	Flows     []Flow     `hcl:"flow,block"`
+	Proxy     []Proxy    `hcl:"proxy,block"`
 	Endpoints []Endpoint `hcl:"endpoint,block"`
 	Services  []Service  `hcl:"service,block"`
 	Callers   []Caller   `hcl:"caller,block"`
@@ -16,6 +22,7 @@ type Manifest struct {
 type Flow struct {
 	Name      string             `hcl:"name,label"`
 	DependsOn []string           `hcl:"depends_on,optional"`
+	Schema    string             `hcl:"schema,optional"`
 	Input     *InputParameterMap `hcl:"input,block"`
 	Calls     []Call             `hcl:"call,block"`
 	Output    *ParameterMap      `hcl:"output,block"`
@@ -102,6 +109,7 @@ type Service struct {
 	Alias   string   `hcl:"alias,label"`
 	Caller  string   `hcl:"caller,label"`
 	Host    string   `hcl:"host"`
+	Codec   string   `hcl:"codec"`
 	Schema  string   `hcl:"schema"`
 }
 
@@ -113,15 +121,15 @@ type Caller struct {
 
 // Proxy specification
 type Proxy struct {
-	Name    string        `hcl:"name,label"`
-	Calls   []Call        `hcl:"call,block"`
-	Forward ProxyForward  `hcl:"forward,block"`
-	Output  *ParameterMap `hcl:"output,block"`
+	Name      string       `hcl:"name,label"`
+	DependsOn []string     `hcl:"depends_on,optional"`
+	Calls     []Call       `hcl:"call,block"`
+	Forward   ProxyForward `hcl:"forward,block"`
 }
 
 // ProxyForward specification
 type ProxyForward struct {
-	Name     string        `hcl:"name,label"`
 	Endpoint string        `hcl:"endpoint,label"`
+	Header   *Header       `hcl:"header,block"`
 	Rollback *RollbackCall `hcl:"rollback,block"`
 }
