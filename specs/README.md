@@ -239,9 +239,12 @@ The request and response message defined inside the schema are used for type def
 The FQN (fully qualified name) of the schema method should be used.
 Each service references a caller implementation to be used.
 
+Codec is the message format used for request and response messages.
+
 ```hcl
 service "logger" "http" {
     host = "https://service.prod.svc.cluster.local"
+    codec = "proto"
     schema = "proto.Logger"
 }
 ```
@@ -270,6 +273,8 @@ caller "http" {
 
 ### Endpoint
 An endpoint exposes a flow. Endpoints are not parsed by Maestro and have custom implementations in each caller. The name of the endpoint represents the flow which should be executed.
+
+All servers should define their own request/response message formats.
 
 ```hcl
 endpoint "users" {

@@ -102,6 +102,7 @@ type Service struct {
 	Alias   string   `hcl:"alias,label"`
 	Caller  string   `hcl:"caller,label"`
 	Host    string   `hcl:"host"`
+	Codec   string   `hcl:"codec"`
 	Schema  string   `hcl:"schema"`
 }
 

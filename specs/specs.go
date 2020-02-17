@@ -5,7 +5,6 @@ import (
 	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/specs/types"
 	"github.com/jexia/maestro/utils"
-	"github.com/jhump/protoreflect/desc"
 )
 
 // Object represents a parameter collection
@@ -88,13 +87,12 @@ func (reference *PropertyReference) String() string {
 // Property represents a value property.
 // A value property could contain a constant value or a value reference.
 type Property struct {
-	Path       string
-	Default    interface{}
-	Type       types.Type
-	Reference  *PropertyReference
-	Expr       hcl.Expression
-	Descriptor *desc.FieldDescriptor
-	Function   HandleCustomFunction
+	Path      string
+	Default   interface{}
+	Type      types.Type
+	Reference *PropertyReference
+	Expr      hcl.Expression
+	Function  HandleCustomFunction
 }
 
 // GetPath returns the property path
@@ -120,12 +118,11 @@ func (property *Property) GetObject() Object {
 // Clone returns a clone of the property
 func (property *Property) Clone() *Property {
 	return &Property{
-		Path:       property.Path,
-		Default:    property.Default,
-		Type:       property.Type,
-		Reference:  property.Reference,
-		Expr:       property.Expr,
-		Descriptor: property.Descriptor,
+		Path:      property.Path,
+		Default:   property.Default,
+		Type:      property.Type,
+		Reference: property.Reference,
+		Expr:      property.Expr,
 	}
 }
 
@@ -398,6 +395,7 @@ type Service struct {
 	Alias   string
 	Caller  string
 	Host    string
+	Codec   string
 	Schema  string
 }
 
