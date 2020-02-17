@@ -13,6 +13,7 @@ type Object interface {
 	GetNestedProperties() map[string]*NestedParameterMap
 	GetRepeatedProperties() map[string]*RepeatedParameterMap
 	GetLabel() types.Label
+	GetHeader() Header
 }
 
 // FlowCaller represents a flow caller
@@ -187,6 +188,11 @@ func (parameters *ParameterMap) GetRepeatedProperties() map[string]*RepeatedPara
 	return parameters.Repeated
 }
 
+// GetHeader returns the parameter map header
+func (parameters *ParameterMap) GetHeader() Header {
+	return parameters.Header
+}
+
 // GetLabel returns the parameter map label
 func (parameters *ParameterMap) GetLabel() types.Label {
 	return types.LabelOptional
@@ -234,6 +240,11 @@ func (nested *NestedParameterMap) GetType() types.Type {
 // GetObject returns the nested parameter map type
 func (nested *NestedParameterMap) GetObject() Object {
 	return nested
+}
+
+// GetHeader returns the nested parameter map header
+func (nested *NestedParameterMap) GetHeader() Header {
+	return nil
 }
 
 // GetLabel returns the nested parameter map label
@@ -309,6 +320,11 @@ func (repeated *RepeatedParameterMap) GetType() types.Type {
 // GetObject returns the repeated parameter map type
 func (repeated *RepeatedParameterMap) GetObject() Object {
 	return repeated
+}
+
+// GetHeader returns the repeated parameter map header
+func (repeated *RepeatedParameterMap) GetHeader() Header {
+	return nil
 }
 
 // GetLabel returns the repeated parameter map label

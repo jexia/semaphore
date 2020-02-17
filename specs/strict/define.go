@@ -139,6 +139,13 @@ func DefineCall(schema schema.Collection, manifest *specs.Manifest, call specs.F
 
 // DefineParameterMap defines the types for the given parameter map
 func DefineParameterMap(call specs.FlowCaller, params specs.Object, flow specs.FlowManager) (err error) {
+	for _, header := range params.GetHeader() {
+		err = DefineProperty(call, header, flow)
+		if err != nil {
+			return err
+		}
+	}
+
 	for _, property := range params.GetProperties() {
 		err = DefineProperty(call, property, flow)
 		if err != nil {
@@ -198,6 +205,12 @@ func DefineProperty(call specs.FlowCaller, property *specs.Property, flow specs.
 
 // CheckTypes checks the given call against the given schema method types
 func CheckTypes(object specs.Object, message schema.Object, flow specs.FlowManager) (err error) {
+	for _, header := range object.GetHeader() {
+		if header.GetType() != types.TypeString {
+			return trace.New(trace.WithMessage("cannot use type %s for header.%s in flow %s", header.GetType(), header.GetPath(), flow.GetName()))
+		}
+	}
+
 	for key, property := range object.GetProperties() {
 		field := message.GetField(key)
 		if field == nil {
