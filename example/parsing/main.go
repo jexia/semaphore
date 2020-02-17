@@ -2,42 +2,32 @@ package main
 
 import (
 	"fmt"
-	"strings"
+	"path/filepath"
 
-	"github.com/jexia/maestro/specs/intermediate"
+	"github.com/jexia/maestro"
+	"github.com/jexia/maestro/schema/protoc"
 )
 
-const definition = `
-flow "user" {
-	input {
-		name = "<string>"
-		message "address" {
-			city = "<string>"
-			state = "<string>"
-			country = "<string>"
-		}
-	}
-
-	call "logging" "logger.Log" {
-		request {
-			options {
-				method = "GET"
-			}
-
-			header {
-			}
-
-			message = "{{ input:name }}"
-		}
-	}
-}
-`
-
 func main() {
-	manifest, err := intermediate.UnmarshalHCL("flows.hcl", strings.NewReader(definition))
+	path, err := filepath.Abs(".")
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println(manifest)
+	collection, err := protoc.Collect([]string{path}, path)
+	if err != nil {
+		panic(err)
+	}
+
+	manifest, err := maestro.New(maestro.WithPath(".", false), maestro.WithSchemaCollection(collection))
+	if err != nil {
+		panic(err)
+	}
+
+	for _, flow := range manifest.Flows {
+		fmt.Println("flow:", flow.Name)
+		for _, call := range flow.Calls {
+			fmt.Println("  - call", call.Name)
+		}
+	}
 }

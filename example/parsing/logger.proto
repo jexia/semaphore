@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package proto;
+
+service Logger {
+    rpc Append(Message) returns (Record);
+}
+
+message Message {
+    string message = 1;
+}
+
+message Record {
+    int64 id = 1;
+}
