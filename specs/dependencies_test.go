@@ -1,7 +1,6 @@
 package specs
 
 import (
-	"log"
 	"testing"
 )
 
@@ -93,8 +92,6 @@ func TestResolveManifestDependencies(t *testing.T) {
 
 		for key, val := range flow.DependsOn {
 			if val == nil {
-				log.Println(val, val == nil)
-				log.Println(flow.DependsOn)
 				t.Fatalf("flow dependency not resolved %s.%s", flow.Name, key)
 			}
 		}
@@ -106,8 +103,6 @@ func TestResolveManifestDependencies(t *testing.T) {
 
 			for key, val := range call.DependsOn {
 				if val == nil {
-					log.Println(val, val == nil)
-					log.Println(call.DependsOn)
 					t.Fatalf("call dependency not resolved %s.%s", call.Name, key)
 				}
 			}
