@@ -3,6 +3,7 @@ caller "http" {}
 service "caller" "http" {
 	host = ""
 	schema = "caller"
+	codec = "json"
 }
 
 flow "echo" {
