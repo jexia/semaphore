@@ -11,28 +11,69 @@ import (
 // Define checks and defines the types for the given manifest
 func Define(schema schema.Collection, manifest *specs.Manifest) (err error) {
 	for _, flow := range manifest.Flows {
-		for _, call := range flow.Calls {
-			err = DefineCall(schema, manifest, call, flow)
-			if err != nil {
-				return err
-			}
+		err := DefineFlow(schema, manifest, flow)
+		if err != nil {
+			return err
+		}
+	}
 
-			if call.Rollback != nil {
-				err = DefineCall(schema, manifest, call.Rollback, flow)
-				if err != nil {
-					return err
-				}
-			}
+	return nil
+}
+
+// DefineFlow checks and defines the types for the given flow
+func DefineFlow(schema schema.Collection, manifest *specs.Manifest, flow *specs.Flow) (err error) {
+	if flow.Schema != "" {
+		err = DefineFlowSchema(schema, flow)
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, call := range flow.Calls {
+		err = DefineCall(schema, manifest, call, flow)
+		if err != nil {
+			return err
 		}
 
-		if flow.Output != nil {
-			final := flow.Calls[len(flow.Calls)-1]
-			err = DefineParameterMap(final, flow.Output, flow)
+		if call.Rollback != nil {
+			err = DefineCall(schema, manifest, call.Rollback, flow)
 			if err != nil {
 				return err
 			}
 		}
 	}
+
+	if flow.Output != nil {
+		err = DefineParameterMap(nil, flow.Output, flow)
+		if err != nil {
+			return err
+		}
+
+		if flow.Descriptor != nil {
+			err = CheckTypes(flow.Output, flow.Descriptor.GetOutput(), flow)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+// DefineFlowSchema attempts to define the flow input and output based on the given schema method
+func DefineFlowSchema(schema schema.Collection, flow *specs.Flow) error {
+	service := schema.GetService(GetService(flow.Schema))
+	if service == nil {
+		return trace.New(trace.WithMessage("undefined service alias '%s' in flow schema '%s'", GetService(flow.Schema), flow.Name))
+	}
+
+	method := service.GetMethod(GetMethod(flow.Schema))
+	if method == nil {
+		return trace.New(trace.WithMessage("undefined method '%s' in flow schema '%s'", GetMethod(flow.Schema), flow.Name))
+	}
+
+	flow.Descriptor = method
+	flow.Input = specs.ToParameterMap(flow.Input, "", method.GetInput())
 
 	return nil
 }
@@ -105,10 +146,15 @@ func DefineProperty(call specs.FlowCaller, property *specs.Property, flow *specs
 		return nil
 	}
 
-	references := lookup.GetAvailableResources(flow, call.GetName())
+	breakpoint := "output"
+	if call != nil {
+		breakpoint = call.GetName()
+	}
+
+	references := lookup.GetAvailableResources(flow, breakpoint)
 	reference := lookup.GetResourceReference(property.Reference, references)
 	if reference == nil {
-		return trace.New(trace.WithExpression(property.Expr), trace.WithMessage("undefined resource '%s' in '%s.%s.%s'", property.Reference, flow.Name, call.GetName(), property.Path))
+		return trace.New(trace.WithExpression(property.Expr), trace.WithMessage("undefined resource '%s' in '%s.%s.%s'", property.Reference, flow.Name, breakpoint, property.Path))
 	}
 
 	property.Type = reference.GetType()

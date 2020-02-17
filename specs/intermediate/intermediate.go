@@ -16,6 +16,7 @@ type Manifest struct {
 type Flow struct {
 	Name      string             `hcl:"name,label"`
 	DependsOn []string           `hcl:"depends_on,optional"`
+	Schema    string             `hcl:"schema,optional"`
 	Input     *InputParameterMap `hcl:"input,block"`
 	Calls     []Call             `hcl:"call,block"`
 	Output    *ParameterMap      `hcl:"output,block"`

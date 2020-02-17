@@ -91,6 +91,7 @@ func ParseIntermediateFlow(flow Flow, functions specs.CustomDefinedFunctions) (*
 	result := specs.Flow{
 		Name:      flow.Name,
 		DependsOn: make(map[string]*specs.Flow, len(flow.DependsOn)),
+		Schema:    flow.Schema,
 		Input:     input,
 		Calls:     make([]*specs.Call, len(flow.Calls)),
 		Output:    output,

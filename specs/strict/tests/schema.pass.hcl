@@ -3,13 +3,10 @@ caller "http" {}
 service "caller" "http" {
 	host = ""
 	schema = "caller"
-	codec = "json"
 }
 
 flow "echo" {
-    input {
-        message = "<string>"
-    }
+    schema = "caller.Open"
 
 	call "opening" "caller.Open" {
 		request {
@@ -18,6 +15,6 @@ flow "echo" {
 	}
 
 	output {
-		message = "{{ opening:message }}"
+		message = "{{ input:message }}"
 	}
 }

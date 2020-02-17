@@ -41,11 +41,13 @@ type Manifest struct {
 // Calls are nested inside of flows and contain two labels, a unique name within the flow and the service and method to be called.
 // A dependency reference structure is generated within the flow which allows Maestro to figure out which calls could be called parallel to improve performance.
 type Flow struct {
-	Name      string
-	DependsOn map[string]*Flow
-	Input     *ParameterMap
-	Calls     []*Call
-	Output    *ParameterMap
+	Name       string
+	DependsOn  map[string]*Flow
+	Schema     string
+	Input      *ParameterMap
+	Calls      []*Call
+	Output     *ParameterMap
+	Descriptor schema.Method
 }
 
 // Endpoint exposes a flow. Endpoints are not parsed by Maestro and have custom implementations in each caller.
@@ -338,6 +340,10 @@ func (call *Call) GetResponse() Object {
 
 // SetDescriptor sets the call method descriptor
 func (call *Call) SetDescriptor(descriptor schema.Method) {
+	if descriptor != nil {
+		call.Response = ToParameterMap(nil, "", descriptor.GetOutput())
+	}
+
 	call.Descriptor = descriptor
 }
 

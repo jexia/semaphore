@@ -84,11 +84,11 @@ A flow defines a set of calls that should be called chronologically and produces
 All flows should contain a unique name. Calls are nested inside of flows and contain two labels, a unique name within the flow and the service and method to be called.
 A dependency reference structure is generated within the flow which allows Maestro to figure out which calls could be called parallel to improve performance.
 
+An optional schema could be defined which defines the request/response messages.
+
 ```hcl
 flow "Logger" {
-    input {
-        message = "string"
-    }
+    schema = "exposed.Logger.Log"
 
     call "log" "logger.Log" {
         request {
@@ -100,6 +100,15 @@ flow "Logger" {
         status = "{{ log:status }}"
         code = "{{ log:code }}"
     }   
+}
+```
+
+#### Schema
+A schema definition defines the input and output message types. When a flow schema is defined are the input properties (except header) ignored.
+
+```hcl
+flow "Logger" {
+    schema = "exposed.Logger.Log"
 }
 ```
 

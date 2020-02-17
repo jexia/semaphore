@@ -101,15 +101,23 @@ type Object struct {
 
 // GetField attempts to return a field matching the given name
 func (object *Object) GetField(name string) schema.Field {
-	for key, field := range object.Fields {
-		if key != name {
-			continue
-		}
-
-		return NewField(name, field)
+	field, has := object.Fields[name]
+	if !has {
+		return nil
 	}
 
-	return nil
+	return NewField(name, field)
+}
+
+// GetFields returns the available field inside the given object
+func (object *Object) GetFields() []schema.Field {
+	result := []schema.Field{}
+
+	for key, field := range object.Fields {
+		result = append(result, NewField(key, field))
+	}
+
+	return result
 }
 
 // NewField constructs a new object field with the given descriptor
