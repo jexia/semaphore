@@ -4,6 +4,11 @@ import (
 	"github.com/hashicorp/hcl/v2"
 )
 
+const (
+	// Ext represents the intermediate file extention
+	Ext = ".hcl"
+)
+
 // Manifest intermediate specs
 type Manifest struct {
 	Flows     []Flow     `hcl:"flow,block"`

@@ -2,8 +2,6 @@ package specs
 
 import (
 	"testing"
-
-	"github.com/jexia/maestro/utils"
 )
 
 func TestDuplicateManifests(t *testing.T) {
@@ -66,7 +64,7 @@ func TestDuplicateManifests(t *testing.T) {
 	}
 
 	for _, input := range tests {
-		err := CheckManifestDuplicates(input)
+		err := CheckManifestDuplicates("test.hcl", input)
 		if err == nil {
 			t.Fatal("unexpected pass", input)
 		}
@@ -74,12 +72,6 @@ func TestDuplicateManifests(t *testing.T) {
 }
 
 func TestDuplicateFlow(t *testing.T) {
-	manifest := &Manifest{
-		File: utils.FileInfo{
-			Path: "test",
-		},
-	}
-
 	tests := []*Flow{
 		{
 			Name: "first",
@@ -95,7 +87,7 @@ func TestDuplicateFlow(t *testing.T) {
 	}
 
 	for _, input := range tests {
-		err := CheckFlowDuplicates(manifest, input)
+		err := CheckFlowDuplicates("test.hcl", input)
 		if err == nil {
 			t.Fatal("unexpected pass", input)
 		}
