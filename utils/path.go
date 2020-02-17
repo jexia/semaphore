@@ -4,7 +4,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"
 )
 
 // A FileInfo describes a file
@@ -46,13 +45,4 @@ func ReadDir(path string, recursive bool, ext string) (files []FileInfo, _ error
 	}
 
 	return files, nil
-}
-
-// RelativePath returns the relative path
-func RelativePath(root, path string) string {
-	if !strings.HasSuffix(path, "/") {
-		path += "/"
-	}
-
-	return strings.Replace(path, root, "", 1)
 }

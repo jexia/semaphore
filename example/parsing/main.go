@@ -2,19 +2,13 @@ package main
 
 import (
 	"fmt"
-	"path/filepath"
 
 	"github.com/jexia/maestro"
 	"github.com/jexia/maestro/schema/protoc"
 )
 
 func main() {
-	path, err := filepath.Abs(".")
-	if err != nil {
-		panic(err)
-	}
-
-	collection, err := protoc.Collect([]string{path}, path)
+	collection, err := protoc.Collect(nil, ".")
 	if err != nil {
 		panic(err)
 	}

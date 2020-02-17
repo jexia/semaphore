@@ -13,12 +13,26 @@ var ProtoExt = ".proto"
 
 // Collect attempts to collect all the available proto files inside the given path and parses them to resources
 func Collect(imports []string, path string) (Collection, error) {
+	path, err := filepath.Abs(path)
+	if err != nil {
+		return nil, err
+	}
+
+	for index, path := range imports {
+		path, err := filepath.Abs(path)
+		if err != nil {
+			return nil, err
+		}
+
+		imports[index] = path
+	}
+
 	files, err := utils.ReadDir(path, true, ProtoExt)
 	if err != nil {
 		return nil, err
 	}
 
-	descriptors, err := UnmarshalFiles(imports, path, files)
+	descriptors, err := UnmarshalFiles(imports, files)
 	if err != nil {
 		return nil, err
 	}
@@ -28,7 +42,7 @@ func Collect(imports []string, path string) (Collection, error) {
 
 // UnmarshalFiles attempts to parse the given HCL files to intermediate resources.
 // Files are parsed based from the given import paths
-func UnmarshalFiles(imports []string, path string, files []utils.FileInfo) ([]*desc.FileDescriptor, error) {
+func UnmarshalFiles(imports []string, files []utils.FileInfo) ([]*desc.FileDescriptor, error) {
 	parser := &protoparse.Parser{
 		ImportPaths: imports,
 	}
@@ -36,7 +50,7 @@ func UnmarshalFiles(imports []string, path string, files []utils.FileInfo) ([]*d
 	results := []*desc.FileDescriptor{}
 
 	for _, file := range files {
-		descs, err := parser.ParseFiles(utils.RelativePath(path, filepath.Join(file.Path, file.Name())))
+		descs, err := parser.ParseFiles(filepath.Join(file.Path, file.Name()))
 		if err != nil {
 			return nil, err
 		}
