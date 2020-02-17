@@ -7,7 +7,7 @@ import (
 )
 
 // CheckManifestDuplicates checks for duplicate definitions
-func CheckManifestDuplicates(manifest *Manifest) error {
+func CheckManifestDuplicates(file string, manifest *Manifest) error {
 	callers := sync.Map{}
 	endpoints := sync.Map{}
 	flows := sync.Map{}
@@ -16,31 +16,31 @@ func CheckManifestDuplicates(manifest *Manifest) error {
 	for _, caller := range manifest.Callers {
 		_, duplicate := callers.LoadOrStore(caller.Name, caller)
 		if duplicate {
-			return trace.New(trace.WithMessage("%s duplicate caller '%s'", manifest.File.Path, caller.Name))
+			return trace.New(trace.WithMessage("%s duplicate caller '%s'", file, caller.Name))
 		}
 	}
 
 	for _, endpoint := range manifest.Endpoints {
 		_, duplicate := endpoints.LoadOrStore(endpoint.Flow, endpoint)
 		if duplicate {
-			return trace.New(trace.WithMessage("%s duplicate flow endpoint '%s'", manifest.File.Path, endpoint.Flow))
+			return trace.New(trace.WithMessage("%s duplicate flow endpoint '%s'", file, endpoint.Flow))
 		}
 	}
 
 	for _, service := range manifest.Services {
 		_, duplicate := services.LoadOrStore(service.Alias, service)
 		if duplicate {
-			return trace.New(trace.WithMessage("%s duplicate service alias '%s'", manifest.File.Path, service.Alias))
+			return trace.New(trace.WithMessage("%s duplicate service alias '%s'", file, service.Alias))
 		}
 	}
 
 	for _, flow := range manifest.Flows {
 		_, duplicate := flows.LoadOrStore(flow.Name, flow)
 		if duplicate {
-			return trace.New(trace.WithMessage("%s duplicate flow '%s'", manifest.File.Path, flow.Name))
+			return trace.New(trace.WithMessage("%s duplicate flow '%s'", file, flow.Name))
 		}
 
-		err := CheckFlowDuplicates(manifest, flow)
+		err := CheckFlowDuplicates(file, flow)
 		if err != nil {
 			return err
 		}
@@ -50,13 +50,13 @@ func CheckManifestDuplicates(manifest *Manifest) error {
 }
 
 // CheckFlowDuplicates checks for duplicate definitions
-func CheckFlowDuplicates(manifest *Manifest, flow *Flow) error {
+func CheckFlowDuplicates(file string, flow *Flow) error {
 	calls := sync.Map{}
 
 	for _, call := range flow.Calls {
 		_, duplicate := calls.LoadOrStore(call.Name, call)
 		if duplicate {
-			return trace.New(trace.WithMessage("%s duplicate call '%s' in flow '%s'", manifest.File.Path, call.Name, flow.Name))
+			return trace.New(trace.WithMessage("%s duplicate call '%s' in flow '%s'", file, call.Name, flow.Name))
 		}
 	}
 
