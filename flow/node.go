@@ -3,18 +3,50 @@ package flow
 import (
 	"context"
 
-	"github.com/jexia/maestro/codec"
 	"github.com/jexia/maestro/refs"
+	"github.com/jexia/maestro/specs"
+	"github.com/jexia/maestro/specs/strict"
 )
+
+// NewNode constructs a new node for the given call
+func NewNode(call *specs.Call, services Services) *Node {
+	service := services.Get(strict.GetService(call.GetEndpoint()))
+	return &Node{
+		Name:       call.GetName(),
+		Previous:   []*Node{},
+		Codec:      service.Codec,
+		Call:       service.Call,
+		Rollback:   service.Rollback,
+		DependsOn:  call.DependsOn,
+		References: refs.References(call.GetRequest()),
+		Next:       []*Node{},
+	}
+}
+
+// Nodes represents a node colleciton
+type Nodes []*Node
+
+// Has checks whether the given node collection has a node with the given name inside
+func (nodes Nodes) Has(name string) bool {
+	for _, node := range nodes {
+		if node.Name == name {
+			return true
+		}
+	}
+
+	return false
+}
 
 // Node represents a collection of callers and rollbacks which could be executed parallel.
 type Node struct {
-	Name     string
-	Previous []*Node
-	Call     Call
-	Rollback Call
-	Codec    codec.Manager
-	Next     []*Node
+	Name       string
+	Previous   Nodes
+	Call       Call
+	Rollback   Call
+	Codec      Codec
+	DependsOn  map[string]*specs.Call
+	References map[string]*specs.PropertyReference
+	Next       Nodes
 }
 
 // Do executes the given node an calls the next nodes, if the call or process failed the next nodes are note called.

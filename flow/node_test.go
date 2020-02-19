@@ -5,20 +5,23 @@ import (
 	"testing"
 
 	"github.com/jexia/maestro/refs"
+	"github.com/jexia/maestro/specs"
 )
 
-func NewNode(name string, caller Call, rollback Call) *Node {
+func NewMockNode(name string, caller Call, rollback Call) *Node {
 	return &Node{
-		Name:     name,
-		Codec:    &MockCodec{},
-		Call:     caller,
-		Rollback: rollback,
+		Name:       name,
+		Codec:      &MockCodec{},
+		Call:       caller,
+		Rollback:   rollback,
+		DependsOn:  map[string]*specs.Call{},
+		References: map[string]*specs.PropertyReference{},
 	}
 }
 
 func BenchmarkSingleNodeCalling(b *testing.B) {
 	caller := &caller{}
-	node := NewNode("first", caller.Call, nil)
+	node := NewMockNode("first", caller.Call, nil)
 
 	b.ReportAllocs()
 	b.ResetTimer()
@@ -36,9 +39,9 @@ func BenchmarkSingleNodeCalling(b *testing.B) {
 func BenchmarkBranchedNodeCalling(b *testing.B) {
 	caller := &caller{}
 	nodes := []*Node{
-		NewNode("first", caller.Call, nil),
-		NewNode("second", caller.Call, nil),
-		NewNode("third", caller.Call, nil),
+		NewMockNode("first", caller.Call, nil),
+		NewMockNode("second", caller.Call, nil),
+		NewMockNode("third", caller.Call, nil),
 	}
 
 	nodes[0].Next = []*Node{nodes[1]}
@@ -63,9 +66,9 @@ func TestNodeCalling(t *testing.T) {
 	caller := &caller{}
 
 	nodes := []*Node{
-		NewNode("first", caller.Call, nil),
-		NewNode("second", caller.Call, nil),
-		NewNode("third", caller.Call, nil),
+		NewMockNode("first", caller.Call, nil),
+		NewMockNode("second", caller.Call, nil),
+		NewMockNode("third", caller.Call, nil),
 	}
 
 	nodes[0].Next = []*Node{nodes[1]}
@@ -93,9 +96,9 @@ func TestNodeRevert(t *testing.T) {
 	rollback := &caller{}
 
 	nodes := []*Node{
-		NewNode("first", nil, rollback.Call),
-		NewNode("second", nil, rollback.Call),
-		NewNode("third", nil, rollback.Call),
+		NewMockNode("first", nil, rollback.Call),
+		NewMockNode("second", nil, rollback.Call),
+		NewMockNode("third", nil, rollback.Call),
 	}
 
 	nodes[0].Next = []*Node{nodes[1]}
@@ -123,10 +126,10 @@ func TestNodeBranchesCalling(t *testing.T) {
 	caller := &caller{}
 
 	nodes := []*Node{
-		NewNode("first", caller.Call, nil),
-		NewNode("second", caller.Call, nil),
-		NewNode("third", caller.Call, nil),
-		NewNode("fourth", caller.Call, nil),
+		NewMockNode("first", caller.Call, nil),
+		NewMockNode("second", caller.Call, nil),
+		NewMockNode("third", caller.Call, nil),
+		NewMockNode("fourth", caller.Call, nil),
 	}
 
 	nodes[0].Next = []*Node{nodes[1], nodes[2]}

@@ -28,12 +28,12 @@ func (caller *caller) Call(context.Context, io.Reader) (io.Reader, error) {
 	return nil, nil
 }
 
-func NewFlowManager(caller Call, revert Call) ([]*Node, *Manager) {
+func NewMockFlowManager(caller Call, revert Call) ([]*Node, *Manager) {
 	nodes := []*Node{
-		NewNode("first", caller, revert),
-		NewNode("second", caller, revert),
-		NewNode("third", caller, revert),
-		NewNode("fourth", caller, revert),
+		NewMockNode("first", caller, revert),
+		NewMockNode("second", caller, revert),
+		NewMockNode("third", caller, revert),
+		NewMockNode("fourth", caller, revert),
 	}
 
 	nodes[0].Next = []*Node{nodes[1], nodes[2]}
@@ -47,7 +47,7 @@ func NewFlowManager(caller Call, revert Call) ([]*Node, *Manager) {
 
 	return nodes, &Manager{
 		Codec:      &MockCodec{},
-		Node:       nodes[0],
+		Seed:       []*Node{nodes[0]},
 		References: 0,
 		Nodes:      len(nodes),
 		Ends:       1,
@@ -56,7 +56,7 @@ func NewFlowManager(caller Call, revert Call) ([]*Node, *Manager) {
 
 func TestCallFlowManager(t *testing.T) {
 	caller := &caller{}
-	nodes, manager := NewFlowManager(caller.Call, nil)
+	nodes, manager := NewMockFlowManager(caller.Call, nil)
 	_, err := manager.Call(context.Background(), nil)
 	if err != nil {
 		t.Error(err)
@@ -75,7 +75,7 @@ func TestFailFlowManager(t *testing.T) {
 	rollback := &caller{}
 	caller := &caller{}
 
-	nodes, manager := NewFlowManager(caller.Call, rollback.Call)
+	nodes, manager := NewMockFlowManager(caller.Call, rollback.Call)
 
 	nodes[2].Call = func(context.Context, io.Reader) (io.Reader, error) {
 		return nil, expected
