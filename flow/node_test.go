@@ -10,7 +10,7 @@ import (
 func NewNode(name string, caller Call, rollback Call) *Node {
 	return &Node{
 		Name:     name,
-		Codec:    &codec{},
+		Codec:    &MockCodec{},
 		Call:     caller,
 		Rollback: rollback,
 	}

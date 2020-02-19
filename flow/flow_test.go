@@ -9,13 +9,13 @@ import (
 	"github.com/jexia/maestro/refs"
 )
 
-type codec struct{}
+type MockCodec struct{}
 
-func (codec *codec) Marshal(*refs.Store) (io.Reader, error) {
+func (codec *MockCodec) Marshal(*refs.Store) (io.Reader, error) {
 	return nil, nil
 }
 
-func (codec *codec) Unmarshal(io.Reader, *refs.Store) error {
+func (codec *MockCodec) Unmarshal(io.Reader, *refs.Store) error {
 	return nil
 }
 
@@ -46,7 +46,7 @@ func NewFlowManager(caller Call, revert Call) ([]*Node, *Manager) {
 	nodes[3].Previous = []*Node{nodes[1], nodes[2]}
 
 	return nodes, &Manager{
-		Codec:      &codec{},
+		Codec:      &MockCodec{},
 		Node:       nodes[0],
 		References: 0,
 		Nodes:      len(nodes),

@@ -5,6 +5,7 @@ import (
 	"io"
 	"sync"
 
+	"github.com/jexia/maestro/codec"
 	"github.com/jexia/maestro/refs"
 )
 
@@ -13,7 +14,7 @@ type Call func(context.Context, io.Reader) (io.Reader, error)
 
 // Manager is responsible for the handling of a flow and it's setps
 type Manager struct {
-	Codec      Codec
+	Codec      codec.Manager
 	Node       *Node
 	References int
 	Nodes      int

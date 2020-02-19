@@ -3,6 +3,7 @@ package flow
 import (
 	"context"
 
+	"github.com/jexia/maestro/codec"
 	"github.com/jexia/maestro/refs"
 )
 
@@ -12,7 +13,7 @@ type Node struct {
 	Previous []*Node
 	Call     Call
 	Rollback Call
-	Codec    Codec
+	Codec    codec.Manager
 	Next     []*Node
 }
 
