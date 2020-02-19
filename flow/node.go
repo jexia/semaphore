@@ -3,13 +3,15 @@ package flow
 import (
 	"context"
 
+	"github.com/jexia/maestro/codec"
 	"github.com/jexia/maestro/refs"
+	"github.com/jexia/maestro/services"
 	"github.com/jexia/maestro/specs"
 	"github.com/jexia/maestro/specs/strict"
 )
 
 // NewNode constructs a new node for the given call
-func NewNode(call *specs.Call, services Services) *Node {
+func NewNode(call *specs.Call, services services.Collection) *Node {
 	service := services.Get(strict.GetService(call.GetEndpoint()))
 	return &Node{
 		Name:       call.GetName(),
@@ -41,9 +43,9 @@ func (nodes Nodes) Has(name string) bool {
 type Node struct {
 	Name       string
 	Previous   Nodes
-	Call       Call
-	Rollback   Call
-	Codec      Codec
+	Call       services.Call
+	Rollback   services.Call
+	Codec      codec.Manager
 	DependsOn  map[string]*specs.Call
 	References map[string]*specs.PropertyReference
 	Next       Nodes
@@ -116,7 +118,7 @@ func (node *Node) Revert(ctx context.Context, tracker *Tracker, processes *Proce
 }
 
 // Execute marshals the given reference store into the needed codec and calls the given call.
-func (node *Node) Execute(ctx context.Context, caller Call, refs *refs.Store) error {
+func (node *Node) Execute(ctx context.Context, caller services.Call, refs *refs.Store) error {
 	reader, err := node.Codec.Marshal(refs)
 	if err != nil {
 		return err

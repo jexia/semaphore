@@ -5,12 +5,14 @@ import (
 	"io"
 	"sync"
 
+	"github.com/jexia/maestro/codec"
 	"github.com/jexia/maestro/refs"
+	"github.com/jexia/maestro/services"
 	"github.com/jexia/maestro/specs"
 )
 
 // NewManager constructs a new manager for the given flow
-func NewManager(flow specs.FlowManager, codec Codec, services Services) *Manager {
+func NewManager(flow specs.FlowManager, codec codec.Manager, services services.Collection) *Manager {
 	nodes := make([]*Node, len(flow.GetCalls()))
 
 	for index, call := range flow.GetCalls() {
@@ -37,12 +39,9 @@ func NewManager(flow specs.FlowManager, codec Codec, services Services) *Manager
 	return manager
 }
 
-// Call represents a caller which could be called
-type Call func(context.Context, io.Reader) (io.Reader, error)
-
 // Manager is responsible for the handling of a flow and it's setps
 type Manager struct {
-	Codec      Codec
+	Codec      codec.Manager
 	Seed       []*Node
 	References int
 	Nodes      int

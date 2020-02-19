@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/jexia/maestro/refs"
+	"github.com/jexia/maestro/services"
 )
 
 type MockCodec struct{}
@@ -28,7 +29,7 @@ func (caller *caller) Call(context.Context, io.Reader) (io.Reader, error) {
 	return nil, nil
 }
 
-func NewMockFlowManager(caller Call, revert Call) ([]*Node, *Manager) {
+func NewMockFlowManager(caller services.Call, revert services.Call) ([]*Node, *Manager) {
 	nodes := []*Node{
 		NewMockNode("first", caller, revert),
 		NewMockNode("second", caller, revert),

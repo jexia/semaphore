@@ -1,4 +1,4 @@
-package flow
+package codec
 
 import (
 	"io"
@@ -6,8 +6,8 @@ import (
 	"github.com/jexia/maestro/refs"
 )
 
-// Codec represents a marshal/unmarshal codec for a given caller
-type Codec interface {
+// Manager represents a marshal/unmarshal codec for a given caller
+type Manager interface {
 	Marshal(*refs.Store) (io.Reader, error)
 	Unmarshal(io.Reader, *refs.Store) error
 }

@@ -5,10 +5,11 @@ import (
 	"testing"
 
 	"github.com/jexia/maestro/refs"
+	"github.com/jexia/maestro/services"
 	"github.com/jexia/maestro/specs"
 )
 
-func NewMockNode(name string, caller Call, rollback Call) *Node {
+func NewMockNode(name string, caller services.Call, rollback services.Call) *Node {
 	return &Node{
 		Name:       name,
 		Codec:      &MockCodec{},
