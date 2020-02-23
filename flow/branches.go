@@ -31,8 +31,8 @@ func ConstructDependency(node *Node, target string, nodes []*Node) {
 	}
 }
 
-// ConstructSeeds constructs the starting seeds for the given nodes
-func ConstructSeeds(nodes []*Node) (result []*Node) {
+// FetchStarting constructs the starting seeds for the given nodes
+func FetchStarting(nodes []*Node) (result []*Node) {
 	for _, node := range nodes {
 		if len(node.Previous) == 0 {
 			result = append(result, node)

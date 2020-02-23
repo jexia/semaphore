@@ -48,7 +48,7 @@ func NewMockFlowManager(caller services.Call, revert services.Call) ([]*Node, *M
 
 	return nodes, &Manager{
 		Codec:      &MockCodec{},
-		Seed:       []*Node{nodes[0]},
+		Starting:   []*Node{nodes[0]},
 		References: 0,
 		Nodes:      len(nodes),
 		Ends:       1,

@@ -10,7 +10,9 @@ import (
 	"github.com/jexia/maestro/specs/strict"
 )
 
-// NewNode constructs a new node for the given call
+// NewNode constructs a new node for the given call.
+// The service called inside the call endpoint is retrieved from the services collection.
+// The call, codec and rollback are defined inside the node and used while processing requests.
 func NewNode(call *specs.Call, services services.Collection) *Node {
 	service := services.Get(strict.GetService(call.GetEndpoint()))
 	return &Node{
@@ -51,7 +53,8 @@ type Node struct {
 	Next       Nodes
 }
 
-// Do executes the given node an calls the next nodes, if the call or process failed the next nodes are note called.
+// Do executes the given node an calls the next nodes.
+// If one of the nodes fails is the error marked and are the processes aborted.
 func (node *Node) Do(ctx context.Context, tracker *Tracker, processes *Processes, refs *refs.Store) {
 	defer processes.Done()
 
@@ -83,7 +86,8 @@ func (node *Node) Do(ctx context.Context, tracker *Tracker, processes *Processes
 	}
 }
 
-// Revert reverts the given call if a rollback call is defined, once the rollback is completed the previous rollbacks are called.
+// Revert executes the given node rollback an calls the previous nodes.
+// If one of the nodes fails is the error marked but execution is not aborted.
 func (node *Node) Revert(ctx context.Context, tracker *Tracker, processes *Processes, refs *refs.Store) {
 	defer processes.Done()
 
@@ -111,10 +115,6 @@ func (node *Node) Revert(ctx context.Context, tracker *Tracker, processes *Proce
 	}
 
 	tracker.Mark(node)
-
-	if processes.Err() != nil {
-		return
-	}
 }
 
 // Execute marshals the given reference store into the needed codec and calls the given call.
