@@ -22,6 +22,10 @@ func main() {
 		fmt.Println("flow:", flow.Name)
 		for _, call := range flow.Calls {
 			fmt.Println("  - call", call.Name)
+
+			for _, prop := range call.GetRequest().GetProperties() {
+				fmt.Println("    - ", prop.GetPath(), prop.Reference)
+			}
 		}
 	}
 }

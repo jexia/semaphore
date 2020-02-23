@@ -30,6 +30,20 @@ func GetFlow(manifest specs.Manifest, name string) *specs.Flow {
 	return nil
 }
 
+// ParseResource parses the given resource into the resource and props
+func ParseResource(resource string) (string, string) {
+	resources := specs.SplitPath(resource)
+
+	target := resources[0]
+	prop := GetDefaultProp(target)
+
+	if len(resources) > 1 {
+		prop = specs.JoinPath(resources[1:]...)
+	}
+
+	return target, prop
+}
+
 // GetDefaultProp returns the default resource for the given resource
 func GetDefaultProp(resource string) string {
 	if resource == specs.InputResource {
@@ -75,14 +89,7 @@ func GetAvailableResources(flow specs.FlowManager, breakpoint string) map[string
 
 // GetResourceReference attempts to return the resource reference property
 func GetResourceReference(reference *specs.PropertyReference, references map[string]ReferenceMap) Reference {
-	resources := specs.SplitPath(reference.Resource)
-
-	target := resources[0]
-	prop := GetDefaultProp(target)
-
-	if len(resources) > 1 {
-		prop = specs.JoinPath(resources[1:]...)
-	}
+	target, prop := ParseResource(reference.Resource)
 
 	for resource, refs := range references {
 		if resource != target {

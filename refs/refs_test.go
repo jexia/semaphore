@@ -75,7 +75,7 @@ func TestStoreReference(t *testing.T) {
 	store := NewStore(10)
 
 	resource := "input"
-	ref := Reference{
+	ref := &Reference{
 		Path:  "test",
 		Value: "hello world",
 	}
