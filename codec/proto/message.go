@@ -65,7 +65,7 @@ func (message *Message) Marshal(refs *refs.Store) (io.Reader, error) {
 // References inside the specs are attempted to be fetched from the reference store.
 func (message *Message) Encode(proto *dynamic.Message, schema protoc.Object, specs specs.Object, store *refs.Store) (err error) {
 	for key, prop := range specs.GetProperties() {
-		field := schema.GetField(key).(protoc.Field)
+		field := schema.GetProtoField(key)
 		val := prop.Default
 
 		if prop.Reference != nil {
@@ -86,7 +86,7 @@ func (message *Message) Encode(proto *dynamic.Message, schema protoc.Object, spe
 	}
 
 	for key, nested := range specs.GetNestedProperties() {
-		field := schema.GetField(key).(protoc.Field)
+		field := schema.GetProtoField(key)
 		dynamic := dynamic.NewMessage(field.GetDescriptor().GetMessageType())
 		err = message.Encode(dynamic, field.GetObject().(protoc.Object), nested.GetObject(), store)
 		if err != nil {
@@ -105,7 +105,7 @@ func (message *Message) Encode(proto *dynamic.Message, schema protoc.Object, spe
 			continue
 		}
 
-		field := schema.GetField(key).(protoc.Field)
+		field := schema.GetProtoField(key)
 
 		for _, store := range ref.Repeated {
 			dynamic := dynamic.NewMessage(field.GetDescriptor().GetMessageType())

@@ -120,6 +120,7 @@ func NewObject(descriptor *desc.MessageDescriptor) Object {
 // Object represents a proto message
 type Object interface {
 	schema.Object
+	GetProtoField(name string) Field
 	GetDescriptor() *desc.MessageDescriptor
 }
 
@@ -129,6 +130,17 @@ type object struct {
 
 // GetField attempts to return a field matching the given name
 func (object *object) GetField(name string) schema.Field {
+	for _, field := range object.descriptor.GetFields() {
+		if field.GetName() == name {
+			return NewField(field)
+		}
+	}
+
+	return nil
+}
+
+// GetProtoField attempts to return a proto field matching the given name
+func (object *object) GetProtoField(name string) Field {
 	for _, field := range object.descriptor.GetFields() {
 		if field.GetName() == name {
 			return NewField(field)
