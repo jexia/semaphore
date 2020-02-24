@@ -16,11 +16,18 @@ import (
 	"github.com/jhump/protoreflect/dynamic"
 )
 
+// ErrUnkownSchema is thrown when the schema is not defined or then it is not a protoc object
+var ErrUnkownSchema = trace.New(trace.WithMessage("unexpected schema type, a proto schema collection required for protobuf encoding/decoding"))
+
 // New constructs a new proto message encoder/decoder for the given schema object and specifications
 func New(resource string, schema schema.Object, specs specs.Object) (codec.Manager, error) {
+	if schema == nil {
+		return nil, ErrUnkownSchema
+	}
+
 	object, is := schema.(protoc.Object)
 	if !is {
-		return nil, trace.New(trace.WithMessage("unexpected schema type, a proto schema collection required for protobuf encoding/decoding"))
+		return nil, ErrUnkownSchema
 	}
 
 	message := &Message{
