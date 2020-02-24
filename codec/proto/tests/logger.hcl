@@ -14,6 +14,14 @@ flow "logger" {
 	call "logging" "logger.Append" {
 		request {
 			message = "{{ input:message }}"
+
+			message "nested" {
+				value = "{{ input:nested.value }}"
+			}
+
+			repeated "repeating" "input:repeating" {
+				value = "{{input:repeating.value}}"
+			}
 		}
 	}
 
