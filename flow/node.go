@@ -67,7 +67,7 @@ func (node *Node) Do(ctx context.Context, tracker *Tracker, processes *Processes
 	}
 
 	if node.Call != nil {
-		err := node.Execute(ctx, node.Call, refs)
+		err := node.Call(ctx, refs)
 		if err != nil {
 			processes.Fatal(err)
 			return
@@ -107,7 +107,7 @@ func (node *Node) Revert(ctx context.Context, tracker *Tracker, processes *Proce
 	}
 
 	if node.Rollback != nil {
-		err := node.Execute(ctx, node.Rollback, refs)
+		err := node.Rollback(ctx, refs)
 		if err != nil {
 			processes.Fatal(err)
 			return
@@ -115,26 +115,6 @@ func (node *Node) Revert(ctx context.Context, tracker *Tracker, processes *Proce
 	}
 
 	tracker.Mark(node)
-}
-
-// Execute marshals the given reference store into the needed codec and calls the given call.
-func (node *Node) Execute(ctx context.Context, caller services.Call, refs *refs.Store) error {
-	reader, err := node.Codec.Marshal(refs)
-	if err != nil {
-		return err
-	}
-
-	reader, err = caller(ctx, reader)
-	if err != nil {
-		return err
-	}
-
-	err = node.Codec.Unmarshal(reader, refs)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 // Walk iterates over all nodes and returns the lose ends nodes

@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package proto;
+
+service Logger {
+    rpc Append(Message) returns (Record);
+}
+
+message Message {
+    string message = 1;
+    repeated Repeated repeating = 2;
+    Nested nested = 3;
+}
+
+message Repeated {
+    string value = 1;
+}
+
+message Nested {
+    string age = 1;
+}
+
+message Record {
+    int64 id = 1;
+}

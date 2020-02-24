@@ -24,9 +24,9 @@ type caller struct {
 	Counter int
 }
 
-func (caller *caller) Call(context.Context, io.Reader) (io.Reader, error) {
+func (caller *caller) Call(context.Context, *refs.Store) error {
 	caller.Counter++
-	return nil, nil
+	return nil
 }
 
 func NewMockFlowManager(caller services.Call, revert services.Call) ([]*Node, *Manager) {
@@ -78,8 +78,8 @@ func TestFailFlowManager(t *testing.T) {
 
 	nodes, manager := NewMockFlowManager(caller.Call, rollback.Call)
 
-	nodes[2].Call = func(context.Context, io.Reader) (io.Reader, error) {
-		return nil, expected
+	nodes[2].Call = func(context.Context, *refs.Store) error {
+		return expected
 	}
 
 	_, err := manager.Call(context.Background(), nil)

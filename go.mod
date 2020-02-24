@@ -4,7 +4,7 @@ go 1.13
 
 require (
 	github.com/coreos/etcd v3.3.18+incompatible // indirect
-	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b // indirect
+	github.com/francoispqt/gojay v1.2.13
 	github.com/golang/protobuf v1.3.2
 	github.com/hashicorp/hcl/v2 v2.3.0
 	github.com/jhump/protoreflect v1.6.0

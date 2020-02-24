@@ -2,13 +2,13 @@ package services
 
 import (
 	"context"
-	"io"
 
 	"github.com/jexia/maestro/codec"
+	"github.com/jexia/maestro/refs"
 )
 
 // Call represents a caller which could be called
-type Call func(context.Context, io.Reader) (io.Reader, error)
+type Call func(context.Context, *refs.Store) error
 
 // Collection represents a collection of services
 type Collection map[string]*Service

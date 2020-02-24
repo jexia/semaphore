@@ -315,7 +315,7 @@ func ParseIntermediateRepeatedParameterMap(params RepeatedParameterMap, function
 	result := specs.RepeatedParameterMap{
 		Name:       params.Name,
 		Path:       path,
-		Template:   params.Template,
+		Template:   specs.ParsePropertyReference(params.Template),
 		Nested:     make(map[string]*specs.NestedParameterMap, len(params.Nested)),
 		Repeated:   make(map[string]*specs.RepeatedParameterMap, len(params.Repeated)),
 		Properties: make(map[string]*specs.Property, len(properties)),
@@ -439,6 +439,7 @@ func ParseIntermediateProperty(path string, functions specs.CustomDefinedFunctio
 
 	value, _ := property.Expr.Value(nil)
 	result := &specs.Property{
+		Name: property.Name,
 		Path: path,
 		Expr: property.Expr,
 	}

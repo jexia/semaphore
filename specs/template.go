@@ -54,24 +54,30 @@ func GetTemplateContent(value string) string {
 	return value
 }
 
-// ParseReference parses the given value as a template reference
-func ParseReference(path string, value string) *Property {
+// ParsePropertyReference parses the given value to a property reference
+func ParsePropertyReference(value string) *PropertyReference {
 	rv := strings.Split(value, ReferenceDelimiter)
-
-	reference := &Property{
-		Path: path,
-		Reference: &PropertyReference{
-			Resource: rv[0],
-			Label:    types.LabelOptional,
-		},
+	reference := &PropertyReference{
+		Resource: rv[0],
 	}
 
 	if len(rv) == 1 {
 		return reference
 	}
 
-	reference.Reference.Path = rv[1]
+	reference.Path = rv[1]
 	return reference
+}
+
+// ParseReference parses the given value as a template reference
+func ParseReference(path string, value string) *Property {
+	prop := &Property{
+		Path:      path,
+		Reference: ParsePropertyReference(value),
+	}
+
+	prop.Reference.Label = types.LabelOptional
+	return prop
 }
 
 // ParseFunction attempts to parses the given function

@@ -77,7 +77,7 @@ func (store *Store) StoreValues(resource string, path string, values map[string]
 			continue
 		}
 
-		repeated, is := val.([]interface{})
+		repeated, is := val.([]map[string]interface{})
 		if is {
 			reference := New(path)
 			store.NewRepeating(resource, path, reference, repeated)
@@ -98,19 +98,11 @@ func (store *Store) StoreValue(resource string, path string, value interface{}) 
 }
 
 // NewRepeating appends the given repeating values to the given reference
-func (store *Store) NewRepeating(resource string, path string, reference *Reference, values []interface{}) {
+func (store *Store) NewRepeating(resource string, path string, reference *Reference, values []map[string]interface{}) {
 	reference.Repeating(len(values))
 
-	for index, value := range values {
-		values, is := value.(map[string]interface{})
-		if !is {
-			continue
-		}
-
-		store := &Store{
-			values: make(map[string]*Reference, len(values)),
-		}
-
+	for index, values := range values {
+		store := NewStore(len(values))
 		store.StoreValues(resource, path, values)
 		reference.Set(index, store)
 	}
