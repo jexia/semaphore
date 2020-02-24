@@ -7,34 +7,26 @@ import (
 	"github.com/jexia/maestro/specs"
 )
 
-// TODO: configure whether to set default value, nil or ignore
-
-func NewObject(object specs.Object, refs *refs.Store) *Object {
-	keys := len(object.GetProperties()) + len(object.GetNestedProperties()) + len(object.GetRepeatedProperties())
-
+// NewObject constructs a new object encoder/decoder for the given specs
+func NewObject(resource string, specs specs.Object, refs *refs.Store) *Object {
+	keys := len(specs.GetProperties()) + len(specs.GetNestedProperties()) + len(specs.GetRepeatedProperties())
 	return &Object{
-		specs: object,
-		keys:  keys,
-		refs:  refs,
+		resource: resource,
+		keys:     keys,
+		refs:     refs,
+		specs:    specs,
 	}
 }
 
+// Object represents a JSON object
 type Object struct {
-	specs specs.Object
-	refs  *refs.Store
-	keys  int
+	resource string
+	specs    specs.Object
+	refs     *refs.Store
+	keys     int
 }
 
-func (object *Object) UnmarshalJSONObject(dec *gojay.Decoder, k string) error {
-	// TODO: unmarshal JSON
-
-	return nil
-}
-
-func (object *Object) NKeys() int {
-	return object.keys
-}
-
+// MarshalJSONObject encodes the given specs object into the given gojay encoder
 func (object *Object) MarshalJSONObject(encoder *gojay.Encoder) {
 	for key, prop := range object.specs.GetProperties() {
 		val := prop.Default
@@ -46,12 +38,16 @@ func (object *Object) MarshalJSONObject(encoder *gojay.Encoder) {
 			}
 		}
 
+		if val == nil {
+			continue
+		}
+
 		types.Add(encoder, key, prop.Type, val)
 	}
 
 	for key, nested := range object.specs.GetNestedProperties() {
-		object := NewObject(nested, object.refs)
-		encoder.AddObjectKey(key, object)
+		result := NewObject(object.resource, nested, object.refs)
+		encoder.AddObjectKey(key, result)
 	}
 
 	for key, repeated := range object.specs.GetRepeatedProperties() {
@@ -60,34 +56,53 @@ func (object *Object) MarshalJSONObject(encoder *gojay.Encoder) {
 			continue
 		}
 
-		array := NewArray(repeated, ref.Repeated)
+		array := NewArray(object.resource, repeated, ref.Repeated)
 		encoder.AddArrayKey(key, array)
 	}
 }
 
+// UnmarshalJSONObject unmarshals the given specs into the configured reference store
+func (object *Object) UnmarshalJSONObject(dec *gojay.Decoder, k string) error {
+	// TODO: unmarshal JSON
+
+	return nil
+}
+
+// NKeys returns the ammount of available keys inside the given object
+func (object *Object) NKeys() int {
+	return object.keys
+}
+
+// IsNil returns whether the given object is null or not
 func (object *Object) IsNil() bool {
 	return false
 }
 
-func NewArray(object specs.Object, refs []*refs.Store) *Array {
+// NewArray constructs a new JSON array encoder/decoder
+func NewArray(resource string, object specs.Object, refs []*refs.Store) *Array {
 	return &Array{
-		specs: object,
-		refs:  refs,
+		resource: resource,
+		specs:    object,
+		items:    refs,
 	}
 }
 
+// Array represents a JSON array
 type Array struct {
-	specs specs.Object
-	refs  []*refs.Store
+	resource string
+	specs    specs.Object
+	items    []*refs.Store
 }
 
+// MarshalJSONArray encodes the array into the given gojay encoder
 func (array *Array) MarshalJSONArray(enc *gojay.Encoder) {
-	for _, store := range array.refs {
-		object := NewObject(array.specs, store)
+	for _, store := range array.items {
+		object := NewObject(array.resource, array.specs, store)
 		enc.AddObject(object)
 	}
 }
 
+// IsNil returns whether the given array is null or not
 func (array *Array) IsNil() bool {
 	return false
 }
