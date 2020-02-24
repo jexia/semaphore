@@ -2,8 +2,8 @@ syntax = "proto3";
 
 package proto;
 
-service Logger {
-    rpc Append(Message) returns (Record);
+service test {
+    rpc complete(Message) returns (Empty);
 }
 
 message Message {
@@ -20,6 +20,5 @@ message Nested {
     string value = 1;
 }
 
-message Record {
-    int64 id = 1;
+message Empty {
 }

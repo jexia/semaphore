@@ -2,16 +2,16 @@ caller "http" {
 	base = "/v1"
 }
 
-service "logger" "http" {
-	host = "logger.local"
-	schema = "proto.Logger"
+service "test" "http" {
+	host = "test.local"
+	schema = "proto.test"
     codec = "proto"
 }
 
-flow "logger" {
-	schema = "proto.Logger.Append"
+flow "complete" {
+	schema = "proto.test.complete"
 
-	call "logging" "logger.Append" {
+	call "first" "test.complete" {
 		request {
 			message = "{{ input:message }}"
 
@@ -24,8 +24,4 @@ flow "logger" {
 			}
 		}
 	}
-
-	output {
-        id = "{{ logging:id }}"
-    }
 }
