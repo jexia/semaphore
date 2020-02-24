@@ -74,7 +74,7 @@ func (object *Object) UnmarshalJSONObject(dec *gojay.Decoder, key string) error 
 	nested, has := object.specs.GetNestedProperties()[key]
 	if has {
 		dynamic := NewObject(object.resource, nested.GetObject(), object.refs)
-		err := dec.Object(dynamic)
+		err := dec.AddObject(dynamic)
 		if err != nil {
 			return err
 		}
@@ -86,7 +86,7 @@ func (object *Object) UnmarshalJSONObject(dec *gojay.Decoder, key string) error 
 	if has {
 		ref := refs.New(repeated.GetPath())
 		array := NewArray(object.resource, repeated.GetObject(), ref, nil)
-		err := dec.Array(array)
+		err := dec.AddArray(array)
 		if err != nil {
 			return err
 		}
@@ -141,7 +141,7 @@ func (array *Array) MarshalJSONArray(enc *gojay.Encoder) {
 func (array *Array) UnmarshalJSONArray(dec *gojay.Decoder) error {
 	store := refs.NewStore(array.keys)
 	object := NewObject(array.resource, array.specs, store)
-	dec.Object(object)
+	dec.AddObject(object)
 
 	array.ref.Append(store)
 	return nil

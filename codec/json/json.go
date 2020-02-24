@@ -1,7 +1,9 @@
 package json
 
 import (
+	"bytes"
 	"io"
+	"io/ioutil"
 
 	"github.com/francoispqt/gojay"
 	"github.com/jexia/maestro/codec"
@@ -28,31 +30,25 @@ type Manager struct {
 // Marshal marshals the given reference store into a JSON message.
 // This method is called during runtime to encode a new message with the values stored inside the given reference store
 func (manager *Manager) Marshal(refs *refs.Store) (io.Reader, error) {
-	reader, writer := io.Pipe()
-	encoder := gojay.BorrowEncoder(writer)
+	object := NewObject(manager.resource, manager.specs, refs)
+	bb, err := gojay.MarshalJSONObject(object)
+	if err != nil {
+		return nil, err
+	}
 
-	go func() {
-		defer writer.Close()
-		defer encoder.Release()
-
-		object := NewObject(manager.resource, manager.specs, refs)
-		err := encoder.Encode(object)
-		if err != nil {
-			return
-		}
-	}()
-
-	return reader, nil
+	return bytes.NewBuffer(bb), nil
 }
 
 // Unmarshal unmarshals the given JSON io reader into the given reference store.
 // This method is called during runtime to decode a new message and store it inside the given reference store
 func (manager *Manager) Unmarshal(reader io.Reader, refs *refs.Store) error {
-	object := NewObject(manager.resource, manager.specs, refs)
-	decoder := gojay.BorrowDecoder(reader)
-	defer decoder.Release()
+	bb, err := ioutil.ReadAll(reader)
+	if err != nil {
+		return err
+	}
 
-	err := decoder.DecodeObject(object)
+	object := NewObject(manager.resource, manager.specs, refs)
+	err = gojay.UnmarshalJSONObject(bb, object)
 	if err != nil {
 		return err
 	}

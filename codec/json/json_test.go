@@ -15,24 +15,44 @@ import (
 	"github.com/jexia/maestro/specs"
 )
 
-func NewMock(t *testing.T) specs.Object {
-	path, err := filepath.Abs("./tests/logger.yaml")
+func FindFlow(manifest *specs.Manifest, name string) *specs.Flow {
+	for _, flow := range manifest.Flows {
+		if flow.GetName() == name {
+			return flow
+		}
+	}
+
+	return nil
+}
+
+func FindCall(flow *specs.Flow, name string) *specs.Call {
+	for _, call := range flow.GetCalls() {
+		if call.GetName() == name {
+			return call
+		}
+	}
+
+	return nil
+}
+
+func NewMock() (*specs.Manifest, error) {
+	path, err := filepath.Abs("./tests/schema.yaml")
 	if err != nil {
-		t.Fatal(err)
+		return nil, err
 	}
 
 	reader, err := os.Open(path)
 	collection, err := mock.UnmarshalFile(reader)
 	if err != nil {
-		t.Fatal(err)
+		return nil, err
 	}
 
 	manifest, err := maestro.New(maestro.WithPath("./tests", false), maestro.WithSchemaCollection(collection))
 	if err != nil {
-		t.Fatal(err)
+		return nil, err
 	}
 
-	return manifest.Flows[0].GetCalls()[0].Request
+	return manifest, nil
 }
 
 func ValidateStore(t *testing.T, resource string, origin string, input map[string]interface{}, store *refs.Store) {
@@ -64,8 +84,234 @@ func ValidateStore(t *testing.T, resource string, origin string, input map[strin
 	}
 }
 
+func BenchmarkSimpleMarshal(b *testing.B) {
+	input := map[string]interface{}{
+		"message": "message",
+	}
+
+	refs := refs.NewStore(len(input))
+	refs.StoreValues("input", "", input)
+
+	manifest, err := NewMock()
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	flow := FindFlow(manifest, "simple")
+	specs := FindCall(flow, "first").GetRequest()
+
+	manager, err := New("input", nil, specs)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		reader, err := manager.Marshal(refs)
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		ioutil.ReadAll(reader)
+	}
+}
+
+func BenchmarkNestedMarshal(b *testing.B) {
+	input := map[string]interface{}{
+		"nested": map[string]interface{}{
+			"value": "message",
+		},
+	}
+
+	refs := refs.NewStore(len(input))
+	refs.StoreValues("input", "", input)
+
+	manifest, err := NewMock()
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	flow := FindFlow(manifest, "nested")
+	specs := FindCall(flow, "first").GetRequest()
+
+	manager, err := New("input", nil, specs)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		reader, err := manager.Marshal(refs)
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		ioutil.ReadAll(reader)
+	}
+}
+
+func BenchmarkRepeatedMarshal(b *testing.B) {
+	input := map[string]interface{}{
+		"repeating": []map[string]interface{}{
+			{
+				"value": "message",
+			},
+		},
+	}
+
+	refs := refs.NewStore(len(input))
+	refs.StoreValues("input", "", input)
+
+	manifest, err := NewMock()
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	flow := FindFlow(manifest, "repeated")
+	specs := FindCall(flow, "first").GetRequest()
+
+	manager, err := New("input", nil, specs)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		reader, err := manager.Marshal(refs)
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		ioutil.ReadAll(reader)
+	}
+}
+
+func BenchmarkSimpleUnmarshal(b *testing.B) {
+	input := map[string]interface{}{
+		"message": "message",
+	}
+
+	bb, err := json.Marshal(input)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	refs := refs.NewStore(len(input))
+	manifest, err := NewMock()
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	flow := FindFlow(manifest, "simple")
+	specs := FindCall(flow, "first").GetRequest()
+
+	manager, err := New("input", nil, specs)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		err := manager.Unmarshal(bytes.NewBuffer(bb), refs)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+func BenchmarkNestedUnmarshal(b *testing.B) {
+	input := map[string]interface{}{
+		"nested": map[string]interface{}{
+			"value": "message",
+		},
+	}
+
+	bb, err := json.Marshal(input)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	refs := refs.NewStore(len(input))
+	manifest, err := NewMock()
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	flow := FindFlow(manifest, "nested")
+	specs := FindCall(flow, "first").GetRequest()
+
+	manager, err := New("input", nil, specs)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		err := manager.Unmarshal(bytes.NewBuffer(bb), refs)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+func BenchmarkRepeatedUnmarshal(b *testing.B) {
+	input := map[string]interface{}{
+		"repeating": []map[string]interface{}{
+			{
+				"value": "message",
+			},
+		},
+	}
+
+	bb, err := json.Marshal(input)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	refs := refs.NewStore(len(input))
+	manifest, err := NewMock()
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	flow := FindFlow(manifest, "repeated")
+	specs := FindCall(flow, "first").GetRequest()
+
+	manager, err := New("input", nil, specs)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		err := manager.Unmarshal(bytes.NewBuffer(bb), refs)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
 func TestMarshal(t *testing.T) {
-	specs := NewMock(t)
+	manifest, err := NewMock()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	flow := FindFlow(manifest, "complete")
+	specs := FindCall(flow, "first").GetRequest()
+
 	manager, err := New("input", nil, specs)
 	if err != nil {
 		t.Fatal(err)
@@ -148,7 +394,14 @@ func TestMarshal(t *testing.T) {
 }
 
 func TestUnmarshal(t *testing.T) {
-	specs := NewMock(t)
+	manifest, err := NewMock()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	flow := FindFlow(manifest, "complete")
+	specs := FindCall(flow, "first").GetRequest()
+
 	manager, err := New("input", nil, specs)
 	if err != nil {
 		t.Fatal(err)

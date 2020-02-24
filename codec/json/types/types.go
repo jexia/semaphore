@@ -24,19 +24,19 @@ func Decode(decoder *gojay.Decoder, prop *specs.Property, store *refs.Store) int
 	switch prop.GetType() {
 	case types.TypeDouble:
 		var value float64
-		decoder.Float64(&value)
+		decoder.AddFloat64(&value)
 		return value
 	case types.TypeFloat:
 		var value float32
-		decoder.Float32(&value)
+		decoder.AddFloat32(&value)
 		return value
 	case types.TypeString:
 		var value string
-		decoder.String(&value)
+		decoder.AddString(&value)
 		return value
 	case types.TypeBool:
 		var value bool
-		decoder.Bool(&value)
+		decoder.AddBool(&value)
 		return value
 	}
 
