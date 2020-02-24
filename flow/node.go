@@ -3,7 +3,6 @@ package flow
 import (
 	"context"
 
-	"github.com/jexia/maestro/codec"
 	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/services"
 	"github.com/jexia/maestro/specs"
@@ -18,7 +17,6 @@ func NewNode(call *specs.Call, services services.Collection) *Node {
 	return &Node{
 		Name:       call.GetName(),
 		Previous:   []*Node{},
-		Codec:      service.Codec,
 		Call:       service.Call,
 		Rollback:   service.Rollback,
 		DependsOn:  call.DependsOn,
@@ -47,7 +45,6 @@ type Node struct {
 	Previous   Nodes
 	Call       services.Call
 	Rollback   services.Call
-	Codec      codec.Manager
 	DependsOn  map[string]*specs.Call
 	References map[string]*specs.PropertyReference
 	Next       Nodes

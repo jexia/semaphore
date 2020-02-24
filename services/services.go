@@ -3,7 +3,6 @@ package services
 import (
 	"context"
 
-	"github.com/jexia/maestro/codec"
 	"github.com/jexia/maestro/refs"
 )
 
@@ -20,7 +19,6 @@ func (collection Collection) Get(name string) *Service {
 
 // Service represents a flow service
 type Service struct {
-	Codec    codec.Manager
 	Call     Call
 	Rollback Call
 }
