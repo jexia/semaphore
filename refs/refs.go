@@ -26,6 +26,14 @@ func (reference *Reference) Repeating(size int) {
 	reference.Repeated = make([]*Store, size)
 }
 
+// Append appends the given store to the repeating value reference.
+// This method uses append, it is adviced to use Set & Repeating when the length of the repeated message is known.
+func (reference *Reference) Append(val *Store) {
+	reference.mutex.Lock()
+	reference.Repeated = append(reference.Repeated, val)
+	reference.mutex.Unlock()
+}
+
 // Set sets the given repeating value reference on the given index
 func (reference *Reference) Set(index int, val *Store) {
 	reference.mutex.Lock()

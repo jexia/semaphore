@@ -33,6 +33,7 @@ func (manager *Manager) Marshal(refs *refs.Store) (io.Reader, error) {
 
 	go func() {
 		defer writer.Close()
+		defer encoder.Release()
 
 		object := NewObject(manager.resource, manager.specs, refs)
 		err := encoder.Encode(object)
@@ -47,5 +48,14 @@ func (manager *Manager) Marshal(refs *refs.Store) (io.Reader, error) {
 // Unmarshal unmarshals the given JSON io reader into the given reference store.
 // This method is called during runtime to decode a new message and store it inside the given reference store
 func (manager *Manager) Unmarshal(reader io.Reader, refs *refs.Store) error {
+	object := NewObject(manager.resource, manager.specs, refs)
+	decoder := gojay.BorrowDecoder(reader)
+	defer decoder.Release()
+
+	err := decoder.DecodeObject(object)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

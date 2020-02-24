@@ -180,7 +180,7 @@ func TestUnmarshal(t *testing.T) {
 			}
 
 			bb, _ := inputAsProto.Marshal()
-			store := refs.NewStore(3)
+			store := refs.NewStore(len(input))
 
 			manager, err := New("input", schema, specs)
 			if err != nil {

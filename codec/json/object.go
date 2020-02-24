@@ -56,14 +56,44 @@ func (object *Object) MarshalJSONObject(encoder *gojay.Encoder) {
 			continue
 		}
 
-		array := NewArray(object.resource, repeated, ref.Repeated)
+		array := NewArray(object.resource, repeated, ref, ref.Repeated)
 		encoder.AddArrayKey(key, array)
 	}
 }
 
 // UnmarshalJSONObject unmarshals the given specs into the configured reference store
-func (object *Object) UnmarshalJSONObject(dec *gojay.Decoder, k string) error {
-	// TODO: unmarshal JSON
+func (object *Object) UnmarshalJSONObject(dec *gojay.Decoder, key string) error {
+	prop, has := object.specs.GetProperties()[key]
+	if has {
+		ref := refs.New(prop.GetPath())
+		ref.Value = types.Decode(dec, prop, object.refs)
+		object.refs.StoreReference(object.resource, ref)
+		return nil
+	}
+
+	nested, has := object.specs.GetNestedProperties()[key]
+	if has {
+		dynamic := NewObject(object.resource, nested.GetObject(), object.refs)
+		err := dec.Object(dynamic)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}
+
+	repeated, has := object.specs.GetRepeatedProperties()[key]
+	if has {
+		ref := refs.New(repeated.GetPath())
+		array := NewArray(object.resource, repeated.GetObject(), ref, nil)
+		err := dec.Array(array)
+		if err != nil {
+			return err
+		}
+
+		object.refs.StoreReference(object.resource, ref)
+		return nil
+	}
 
 	return nil
 }
@@ -79,11 +109,14 @@ func (object *Object) IsNil() bool {
 }
 
 // NewArray constructs a new JSON array encoder/decoder
-func NewArray(resource string, object specs.Object, refs []*refs.Store) *Array {
+func NewArray(resource string, object specs.Object, ref *refs.Reference, refs []*refs.Store) *Array {
+	keys := len(object.GetProperties()) + len(object.GetNestedProperties()) + len(object.GetRepeatedProperties())
 	return &Array{
 		resource: resource,
 		specs:    object,
 		items:    refs,
+		ref:      ref,
+		keys:     keys,
 	}
 }
 
@@ -92,6 +125,8 @@ type Array struct {
 	resource string
 	specs    specs.Object
 	items    []*refs.Store
+	ref      *refs.Reference
+	keys     int
 }
 
 // MarshalJSONArray encodes the array into the given gojay encoder
@@ -100,6 +135,16 @@ func (array *Array) MarshalJSONArray(enc *gojay.Encoder) {
 		object := NewObject(array.resource, array.specs, store)
 		enc.AddObject(object)
 	}
+}
+
+// UnmarshalJSONArray unmarshals the given specs into the configured reference store
+func (array *Array) UnmarshalJSONArray(dec *gojay.Decoder) error {
+	store := refs.NewStore(array.keys)
+	object := NewObject(array.resource, array.specs, store)
+	dec.Object(object)
+
+	array.ref.Append(store)
+	return nil
 }
 
 // IsNil returns whether the given array is null or not

@@ -1,6 +1,7 @@
 package json
 
 import (
+	"bytes"
 	"encoding/json"
 	"io/ioutil"
 	"os"
@@ -34,6 +35,35 @@ func NewMock(t *testing.T) specs.Object {
 	return manifest.Flows[0].GetCalls()[0].Request
 }
 
+func ValidateStore(t *testing.T, resource string, origin string, input map[string]interface{}, store *refs.Store) {
+	for key, value := range input {
+		path := specs.JoinPath(origin, key)
+		nested, is := value.(map[string]interface{})
+		if is {
+			ValidateStore(t, resource, path, nested, store)
+			continue
+		}
+
+		repeated, is := value.([]map[string]interface{})
+		if is {
+			repeating := store.Load(resource, path)
+			for index, store := range repeating.Repeated {
+				ValidateStore(t, resource, path, repeated[index], store)
+			}
+			continue
+		}
+
+		ref := store.Load(resource, path)
+		if ref == nil {
+			t.Fatalf("resource not found %s", path)
+		}
+
+		if ref.Value != value {
+			t.Fatalf("unexpected value at %s '%+v', expected '%+v'", path, ref.Value, value)
+		}
+	}
+}
+
 func TestMarshal(t *testing.T) {
 	specs := NewMock(t)
 	manager, err := New("input", nil, specs)
@@ -51,12 +81,26 @@ func TestMarshal(t *testing.T) {
 				"value": "some message",
 			},
 		},
+		"repeating": map[string]interface{}{
+			"nested": map[string]interface{}{},
+			"repeating": []map[string]interface{}{
+				{
+					"value": "repeating value",
+				},
+				{
+					"value": "repeating value",
+				},
+			},
+		},
 		"complex": map[string]interface{}{
 			"message": "hello world",
 			"nested": map[string]interface{}{
 				"value": "nested value",
 			},
 			"repeating": []map[string]interface{}{
+				{
+					"value": "repeating value",
+				},
 				{
 					"value": "repeating value",
 				},
@@ -99,6 +143,70 @@ func TestMarshal(t *testing.T) {
 			if !reflect.DeepEqual(expected, result) {
 				t.Errorf("unexpected response %s, expected %s", string(responseAsJSON), string(inputAsJSON))
 			}
+		})
+	}
+}
+
+func TestUnmarshal(t *testing.T) {
+	specs := NewMock(t)
+	manager, err := New("input", nil, specs)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	tests := map[string]map[string]interface{}{
+		"simple": map[string]interface{}{
+			"message": "some message",
+			"nested":  map[string]interface{}{},
+		},
+		"nested": map[string]interface{}{
+			"nested": map[string]interface{}{
+				"value": "some message",
+			},
+		},
+		"repeating": map[string]interface{}{
+			"nested": map[string]interface{}{},
+			"repeating": []map[string]interface{}{
+				{
+					"value": "repeating value",
+				},
+				{
+					"value": "repeating value",
+				},
+			},
+		},
+		"complex": map[string]interface{}{
+			"message": "hello world",
+			"nested": map[string]interface{}{
+				"value": "nested value",
+			},
+			"repeating": []map[string]interface{}{
+				{
+					"value": "repeating value",
+				},
+				{
+					"value": "repeating value",
+				},
+			},
+		},
+	}
+
+	for key, input := range tests {
+		t.Run(key, func(t *testing.T) {
+			inputAsJSON, err := json.Marshal(input)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			store := refs.NewStore(len(input))
+			err = manager.Unmarshal(bytes.NewBuffer(inputAsJSON), store)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			t.Log(store)
+
+			ValidateStore(t, "input", "", input, store)
 		})
 	}
 }
