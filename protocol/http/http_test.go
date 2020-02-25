@@ -9,6 +9,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/jexia/maestro/codec/json"
 	"github.com/jexia/maestro/protocol"
@@ -130,6 +131,9 @@ func TestListener(t *testing.T) {
 	go listener.Serve(func(writer protocol.ResponseWriter, request protocol.Request) {
 		codec.Unmarshal(request.Body, refs)
 	})
+
+	// Some CI pipelines take a little while before the listener is active
+	time.Sleep(100 * time.Millisecond)
 
 	endpoint := fmt.Sprintf("http://127.0.0.1:%d/", port)
 	http.Post(endpoint, "application/json", strings.NewReader(`{"message":"`+message+`"}`))
