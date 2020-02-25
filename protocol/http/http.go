@@ -3,42 +3,20 @@ package http
 import (
 	"net/http"
 	"net/http/httputil"
+	"time"
 
 	"github.com/jexia/maestro/protocol"
 	"github.com/jexia/maestro/specs"
 )
 
-// NewResponseWriter constructs a new HTTP response writer of the given protocol response writer
-func NewResponseWriter(rw protocol.ResponseWriter) *ResponseWriter {
-	return &ResponseWriter{
-		header:   CopyHeader(rw.Header()),
-		protocol: rw,
+// NewCaller constructs a new caller for the given host
+func NewCaller(url string, options specs.Options) protocol.Caller {
+	return &Caller{
+		url: url,
+		proxy: &httputil.ReverseProxy{
+			Director: func(*http.Request) {},
+		},
 	}
-}
-
-// A ResponseWriter interface is used by an HTTP handler to
-// construct an HTTP response.
-type ResponseWriter struct {
-	header   http.Header
-	protocol protocol.ResponseWriter
-}
-
-// Header returns the header map that will be sent by
-// WriteHeader. The Header map also is the mechanism with which
-// Handlers can set HTTP trailers.
-func (rw *ResponseWriter) Header() http.Header {
-	return rw.header
-}
-
-// Write writes the data to the connection as part of an HTTP reply.
-func (rw *ResponseWriter) Write(bb []byte) (int, error) {
-	return rw.protocol.Write(bb)
-}
-
-// WriteHeader sends an HTTP response header with the provided
-// status code.
-func (rw *ResponseWriter) WriteHeader(status int) {
-	rw.protocol.WriteHeader(status)
 }
 
 // Caller represents the HTTP caller implementation
@@ -48,16 +26,6 @@ type Caller struct {
 	proxy  *httputil.ReverseProxy
 }
 
-// Open opens a new caller for the given host
-func (caller *Caller) Open(url string, options specs.Options) protocol.Caller {
-	return &Caller{
-		url: url,
-		proxy: &httputil.ReverseProxy{
-			Director: func(*http.Request) {},
-		},
-	}
-}
-
 // Call opens a new connection to the configured host and attempts to send the given headers and stream
 func (caller *Caller) Call(rw protocol.ResponseWriter, incoming protocol.Request) error {
 	req, err := http.NewRequestWithContext(incoming.Context, caller.method, caller.url, incoming.Body)
@@ -65,8 +33,49 @@ func (caller *Caller) Call(rw protocol.ResponseWriter, incoming protocol.Request
 		return err
 	}
 
-	req.Header = CopyHeader(incoming.Header)
-	caller.proxy.ServeHTTP(NewResponseWriter(rw), req)
+	req.Header = CopyProtocolHeader(incoming.Header)
+	caller.proxy.ServeHTTP(NewProtocolResponseWriter(rw), req)
 
 	return nil
+}
+
+// Close closes the given caller
+func (caller *Caller) Close() error {
+	return nil
+}
+
+// NewListener constructs a new listener for the given addr
+func NewListener(addr string, options specs.Options) protocol.Listener {
+	return &Listener{
+		server: &http.Server{
+			Addr:         addr,
+			ReadTimeout:  5 * time.Second,
+			WriteTimeout: 5 * time.Second,
+		},
+	}
+}
+
+// Listener represents a HTTP listener
+type Listener struct {
+	server *http.Server
+}
+
+// Serve opens the HTTP listener and calls the given handler function on reach request
+func (listener *Listener) Serve(handler protocol.Handler) error {
+	listener.server.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		req := protocol.Request{
+			Context: r.Context(),
+			Header:  CopyHTTPHeader(w.Header()),
+			Body:    r.Body,
+		}
+
+		handler(NewResponseWriter(w), req)
+	})
+
+	return listener.server.ListenAndServe()
+}
+
+// Close closes the given listener
+func (listener *Listener) Close() error {
+	return listener.server.Close()
 }

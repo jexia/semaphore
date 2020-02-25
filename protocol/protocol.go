@@ -40,14 +40,23 @@ type Request struct {
 	Context context.Context
 }
 
+// NewCaller constructs a new caller for the given url
+type NewCaller func(url string, options specs.Options) Caller
+
 // Caller specifies the caller implementation.
 type Caller interface {
-	Open(url string, options specs.Options) Caller
 	Call(writer ResponseWriter, request Request) error
+	Close() error
 }
 
-// Server specifies the server implementation
-type Server interface {
-	Open(addr string, options specs.Options) Server
-	Serve() error
+// Handler represents a handler function which should be called once a request has been received
+type Handler func(writer ResponseWriter, request Request)
+
+// NewListener constructs a new listener for the given addr
+type NewListener func(addr string, options specs.Options) Listener
+
+// Listener specifies the listener implementation
+type Listener interface {
+	Serve(Handler) error
+	Close() error
 }

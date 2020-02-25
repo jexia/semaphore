@@ -2,9 +2,12 @@ package http
 
 import (
 	"context"
+	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/jexia/maestro/codec/json"
@@ -28,6 +31,16 @@ func (rw *MockResponseWriter) Write(bb []byte) (int, error) {
 }
 
 func (rw *MockResponseWriter) WriteHeader(int) {}
+
+func AvailablePort(t *testing.T) int {
+	listener, err := net.Listen("tcp", ":0")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer listener.Close()
+	return listener.Addr().(*net.TCPAddr).Port
+}
 
 func TestProxyForward(t *testing.T) {
 	message := "hello world"
@@ -58,8 +71,7 @@ func TestProxyForward(t *testing.T) {
 		Context: ctx,
 	}
 
-	manager := new(Caller)
-	caller := manager.Open(server.URL, nil)
+	caller := NewCaller(server.URL, nil)
 
 	r, w := io.Pipe()
 	rw := &MockResponseWriter{
@@ -76,6 +88,51 @@ func TestProxyForward(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	ref := refs.Load("input", "message")
+	if ref == nil {
+		t.Fatal("input:message reference not set")
+	}
+
+	result, is := ref.Value.(string)
+	if !is {
+		t.Fatal("input:message reference is not a string")
+	}
+
+	if result != message {
+		t.Fatalf("unexpected input:message %s, expected %s", result, message)
+	}
+}
+
+func TestListener(t *testing.T) {
+	message := "hello world"
+	specs := &specs.ParameterMap{
+		Properties: map[string]*specs.Property{
+			"message": &specs.Property{
+				Name: "message",
+				Path: "message",
+				Type: types.TypeString,
+			},
+		},
+	}
+
+	refs := refs.NewStore(1)
+	codec, err := json.New("input", nil, specs)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	port := AvailablePort(t)
+	addr := fmt.Sprintf(":%d", port)
+	listener := NewListener(addr, nil)
+	defer listener.Close()
+
+	go listener.Serve(func(writer protocol.ResponseWriter, request protocol.Request) {
+		codec.Unmarshal(request.Body, refs)
+	})
+
+	endpoint := fmt.Sprintf("http://127.0.0.1:%d/", port)
+	http.Post(endpoint, "application/json", strings.NewReader(`{"message":"`+message+`"}`))
 
 	ref := refs.Load("input", "message")
 	if ref == nil {
