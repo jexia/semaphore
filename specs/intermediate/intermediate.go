@@ -30,8 +30,10 @@ type Flow struct {
 
 // Endpoint intermediate specification
 type Endpoint struct {
-	Flow string   `hcl:"flow,label"`
-	Body hcl.Body `hcl:",remain"`
+	Flow     string   `hcl:"flow,label"`
+	Listener string   `hcl:"listener,label"`
+	Codec    string   `hcl:"codec"`
+	Body     hcl.Body `hcl:",remain"`
 }
 
 // Header represents a collection of key values

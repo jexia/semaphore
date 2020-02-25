@@ -53,22 +53,24 @@ func ParseManifest(manifest Manifest, functions specs.CustomDefinedFunctions) (*
 // ParseIntermediateCaller parses the given intermediate caller to a specs caller
 func ParseIntermediateCaller(caller Caller) *specs.Caller {
 	result := specs.Caller{
-		Name: caller.Name,
-		Body: make(map[string]interface{}),
+		Name:    caller.Name,
+		Options: make(specs.Options),
 	}
 
-	gohcl.DecodeBody(caller.Body, nil, &result.Body)
+	gohcl.DecodeBody(caller.Body, nil, &result.Options)
 	return &result
 }
 
 // ParseIntermediateEndpoint parses the given intermediate endpoint to a specs endpoint
 func ParseIntermediateEndpoint(endpoint Endpoint) *specs.Endpoint {
 	result := specs.Endpoint{
-		Flow: endpoint.Flow,
-		Body: make(map[string]interface{}),
+		Flow:     endpoint.Flow,
+		Listener: endpoint.Listener,
+		Codec:    endpoint.Codec,
+		Options:  make(specs.Options),
 	}
 
-	gohcl.DecodeBody(endpoint.Body, nil, &result.Body)
+	gohcl.DecodeBody(endpoint.Body, nil, &result.Options)
 	return &result
 }
 

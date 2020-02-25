@@ -4,6 +4,10 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/jexia/maestro/flow"
+
+	"github.com/jexia/maestro/codec"
+	"github.com/jexia/maestro/protocol"
 	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/specs"
 	"github.com/jexia/maestro/specs/intermediate"
@@ -12,6 +16,13 @@ import (
 	"github.com/jexia/maestro/utils"
 )
 
+// Client represents a maestro instance
+type Client struct {
+	Manifest  *specs.Manifest
+	Listeners []protocol.Listener
+	Options   Options
+}
+
 // Option represents a constructor func which sets a given option
 type Option func(*Options)
 
@@ -19,6 +30,9 @@ type Option func(*Options)
 type Options struct {
 	Path      string
 	Recursive bool
+	Codec     map[string]codec.Constructor
+	Callers   map[string]protocol.Caller
+	Listeners []protocol.Listener
 	Schema    schema.Collection
 	Functions specs.CustomDefinedFunctions
 }
@@ -40,6 +54,13 @@ func WithPath(path string, recursive bool) Option {
 	}
 }
 
+// WithCodec appends the given codec to the collection of available codecs
+func WithCodec(constructor codec.Constructor) Option {
+	return func(options *Options) {
+		options.Codec[constructor.Name()] = constructor
+	}
+}
+
 // WithSchemaCollection defines the schema collection to be used
 func WithSchemaCollection(collection schema.Collection) Option {
 	return func(options *Options) {
@@ -55,7 +76,7 @@ func WithFunctions(functions specs.CustomDefinedFunctions) Option {
 }
 
 // New constructs a new Maestro instance
-func New(opts ...Option) (*specs.Manifest, error) {
+func New(opts ...Option) (*Client, error) {
 	options := NewOptions(opts...)
 
 	if options.Path == "" {
@@ -66,6 +87,32 @@ func New(opts ...Option) (*specs.Manifest, error) {
 		return nil, trace.New(trace.WithMessage("undefined schema in options"))
 	}
 
+	manifest, err := ConstructSpecs(options)
+	if err != nil {
+		return nil, err
+	}
+
+	endpoints, err := ConstructEndpoints(manifest, options)
+	if err != nil {
+		return nil, err
+	}
+
+	err = ConstructListeners(endpoints, options)
+	if err != nil {
+		return nil, err
+	}
+
+	client := &Client{
+		Manifest:  manifest,
+		Listeners: options.Listeners,
+		Options:   options,
+	}
+
+	return client, nil
+}
+
+// ConstructSpecs construct a specs manifest from the given options
+func ConstructSpecs(options Options) (*specs.Manifest, error) {
 	files, err := utils.ReadDir(options.Path, options.Recursive, intermediate.Ext)
 	if err != nil {
 		return nil, err
@@ -108,4 +155,96 @@ func New(opts ...Option) (*specs.Manifest, error) {
 	}
 
 	return manifest, nil
+}
+
+// ConstructEndpoints constructs the flow managers from the given specs manifest
+func ConstructEndpoints(manifest *specs.Manifest, options Options) ([]*flow.Endpoint, error) {
+	result := make([]*flow.Endpoint, len(manifest.Endpoints))
+
+	for index, endpoint := range manifest.Endpoints {
+		f := GetFlow(manifest, endpoint.Flow)
+		nodes := make([]*flow.Node, len(f.Calls))
+
+		for index, call := range f.Calls {
+			nodes[index] = flow.NewNode(call, ConstructCall(call), ConstructCall(call.Rollback))
+		}
+
+		collection, has := options.Codec[endpoint.Codec]
+		if !has {
+			return nil, trace.New(trace.WithMessage("unkown endpoint codec %s", endpoint.Codec))
+		}
+
+		req, err := collection.New(specs.InputResource, f.GetInput())
+		if err != nil {
+			return nil, err
+		}
+
+		res, err := collection.New(specs.InputResource, f.GetOutput())
+		if err != nil {
+			return nil, err
+		}
+
+		manager := flow.NewManager(f.GetName(), nodes)
+
+		result[index] = &flow.Endpoint{
+			Flow:     manager,
+			Listener: endpoint.Listener,
+			Options:  endpoint.Options,
+			Request:  req,
+			Response: res,
+		}
+	}
+
+	return result, nil
+}
+
+func ConstructCall(caller specs.FlowCaller) flow.Call {
+
+	return nil
+}
+
+// ConstructListeners constructs the listeners from the given collection of endpoints
+func ConstructListeners(endpoints []*flow.Endpoint, options Options) error {
+	collections := make(map[string][]*flow.Endpoint, len(options.Listeners))
+
+	for _, endpoint := range endpoints {
+		listener := GetListener(options.Listeners, endpoint.Listener)
+		if listener == nil {
+			return trace.New(trace.WithMessage("unkown listener %s", endpoint.Listener))
+		}
+
+		collections[endpoint.Listener] = append(collections[endpoint.Listener], endpoint)
+	}
+
+	for key, collection := range collections {
+		listener := GetListener(options.Listeners, key)
+		err := listener.Handle(collection)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// GetListener attempts to retrieve the requested listener
+func GetListener(listeners []protocol.Listener, name string) protocol.Listener {
+	for _, listener := range listeners {
+		if listener.Name() == name {
+			return listener
+		}
+	}
+
+	return nil
+}
+
+// GetFlow attempts to retrieve a flow from the given manifest matching the given name
+func GetFlow(manifest *specs.Manifest, name string) *specs.Flow {
+	for _, flow := range manifest.Flows {
+		if flow.GetName() == name {
+			return flow
+		}
+	}
+
+	return nil
 }

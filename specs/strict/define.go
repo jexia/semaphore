@@ -49,10 +49,12 @@ func DefineProxy(schema schema.Collection, manifest *specs.Manifest, proxy *spec
 // DefineFlow checks and defines the types for the given flow
 func DefineFlow(schema schema.Collection, manifest *specs.Manifest, flow *specs.Flow) (err error) {
 	if flow.Schema != "" {
-		err = DefineFlowSchema(schema, flow)
+		method, err := GetFlowSchema(schema, flow)
 		if err != nil {
 			return err
 		}
+
+		flow.Input = specs.ToParameterMap(flow.Input, "", method.GetInput())
 	}
 
 	for _, call := range flow.Calls {
@@ -75,8 +77,13 @@ func DefineFlow(schema schema.Collection, manifest *specs.Manifest, flow *specs.
 			return err
 		}
 
-		if flow.Descriptor != nil {
-			err = CheckTypes(flow.Output, flow.Descriptor.GetOutput(), flow)
+		if flow.Schema != "" {
+			method, err := GetFlowSchema(schema, flow)
+			if err != nil {
+				return err
+			}
+
+			err = CheckTypes(flow.Output, method.GetOutput(), flow)
 			if err != nil {
 				return err
 			}
@@ -86,22 +93,19 @@ func DefineFlow(schema schema.Collection, manifest *specs.Manifest, flow *specs.
 	return nil
 }
 
-// DefineFlowSchema attempts to define the flow input and output based on the given schema method
-func DefineFlowSchema(schema schema.Collection, flow *specs.Flow) error {
+// GetFlowSchema attempts to define the flow input and output based on the given schema method
+func GetFlowSchema(schema schema.Collection, flow *specs.Flow) (schema.Method, error) {
 	service := schema.GetService(GetService(flow.Schema))
 	if service == nil {
-		return trace.New(trace.WithMessage("undefined service alias '%s' in flow schema '%s'", GetService(flow.Schema), flow.Name))
+		return nil, trace.New(trace.WithMessage("undefined service alias '%s' in flow schema '%s'", GetService(flow.Schema), flow.Name))
 	}
 
 	method := service.GetMethod(GetMethod(flow.Schema))
 	if method == nil {
-		return trace.New(trace.WithMessage("undefined method '%s' in flow schema '%s'", GetMethod(flow.Schema), flow.Name))
+		return nil, trace.New(trace.WithMessage("undefined method '%s' in flow schema '%s'", GetMethod(flow.Schema), flow.Name))
 	}
 
-	flow.Descriptor = method
-	flow.Input = specs.ToParameterMap(flow.Input, "", method.GetInput())
-
-	return nil
+	return method, nil
 }
 
 // DefineCall defineds the types for the given parameter map
@@ -205,6 +209,8 @@ func DefineProperty(call specs.FlowCaller, property *specs.Property, flow specs.
 
 // CheckTypes checks the given call against the given schema method types
 func CheckTypes(object specs.Object, message schema.Object, flow specs.FlowManager) (err error) {
+	object.SetDescriptor(message)
+
 	for _, header := range object.GetHeader() {
 		if header.GetType() != types.TypeString {
 			return trace.New(trace.WithMessage("cannot use type %s for header.%s in flow %s", header.GetType(), header.GetPath(), flow.GetName()))

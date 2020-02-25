@@ -286,9 +286,10 @@ An endpoint exposes a flow. Endpoints are not parsed by Maestro and have custom 
 All servers should define their own request/response message formats.
 
 ```hcl
-endpoint "users" {
-    http "GET" "/users/:project" {
-        status = "202"
-    }
+endpoint "users" "http" {
+    codec = "json"
+    method = "GET"
+    endpoint = "/users/:project"
+    status = "202"
 }
 ```

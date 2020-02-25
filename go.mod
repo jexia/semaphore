@@ -8,6 +8,7 @@ require (
 	github.com/google/go-cmp v0.4.0 // indirect
 	github.com/hashicorp/hcl/v2 v2.3.0
 	github.com/jhump/protoreflect v1.6.0
+	github.com/julienschmidt/httprouter v1.3.0
 	github.com/stretchr/testify v1.4.0 // indirect
 	github.com/zclconf/go-cty v1.2.0
 	golang.org/x/net v0.0.0-20191109021931-daa7c04131f5 // indirect

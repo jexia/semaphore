@@ -20,12 +20,12 @@ func NewMock() (protoc.Collection, *specs.Manifest, error) {
 		return nil, nil, err
 	}
 
-	manifest, err := maestro.New(maestro.WithPath("./tests", false), maestro.WithSchemaCollection(collection))
+	client, err := maestro.New(maestro.WithPath("./tests", false), maestro.WithSchemaCollection(collection))
 	if err != nil {
 		return nil, nil, err
 	}
 
-	return collection, manifest, nil
+	return collection, client.Manifest, nil
 }
 
 func FindFlow(manifest *specs.Manifest, name string) *specs.Flow {

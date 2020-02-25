@@ -47,12 +47,12 @@ func NewMock() (*specs.Manifest, error) {
 		return nil, err
 	}
 
-	manifest, err := maestro.New(maestro.WithPath("./tests", false), maestro.WithSchemaCollection(collection))
+	client, err := maestro.New(maestro.WithPath("./tests", false), maestro.WithSchemaCollection(collection))
 	if err != nil {
 		return nil, err
 	}
 
-	return manifest, nil
+	return client.Manifest, nil
 }
 
 func ValidateStore(t *testing.T, resource string, origin string, input map[string]interface{}, store *refs.Store) {

@@ -2,29 +2,33 @@ package flow
 
 import (
 	"context"
-	"io"
 	"sync"
 
 	"github.com/jexia/maestro/codec"
 	"github.com/jexia/maestro/refs"
-	"github.com/jexia/maestro/services"
 	"github.com/jexia/maestro/specs"
 )
+
+// Call represents a caller which could be called
+type Call func(context.Context, *refs.Store) error
+
+// Endpoint represents a protocol listener endpoint
+type Endpoint struct {
+	Flow     *Manager
+	Listener string
+	Request  codec.Manager
+	Response codec.Manager
+	Options  specs.Options
+}
 
 // NewManager constructs a new manager for the given flow.
 // Branches are constructed for the constructed nodes to optimalise performance.
 // Various variables such as the ammount of nodes, references and loose ends are collected to optimalise allocations during runtime.
-func NewManager(flow specs.FlowManager, codec codec.Manager, services services.Collection) *Manager {
-	nodes := make([]*Node, len(flow.GetCalls()))
-
-	for index, call := range flow.GetCalls() {
-		nodes[index] = NewNode(call, services)
-	}
-
+func NewManager(name string, nodes []*Node) *Manager {
 	ConstructBranches(nodes)
 
 	manager := &Manager{
-		Codec:    codec,
+		Name:     name,
 		Starting: FetchStarting(nodes),
 		Nodes:    len(nodes),
 	}
@@ -43,7 +47,7 @@ func NewManager(flow specs.FlowManager, codec codec.Manager, services services.C
 
 // Manager is responsible for the handling of a flow and its steps
 type Manager struct {
-	Codec      codec.Manager
+	Name       string
 	Starting   []*Node
 	References int
 	Nodes      int
@@ -53,15 +57,9 @@ type Manager struct {
 
 // Call calls all the nodes inside the manager if a error is returned is a rollback of all the already executed steps triggered.
 // Nodes are executed concurrently to one another.
-func (manager *Manager) Call(ctx context.Context, reader io.Reader) (io.Reader, error) {
+func (manager *Manager) Call(ctx context.Context, refs *refs.Store) error {
 	manager.wg.Add(1)
 	defer manager.wg.Done()
-
-	refs := refs.NewStore(manager.References)
-	err := manager.Codec.Unmarshal(reader, refs)
-	if err != nil {
-		return nil, err
-	}
 
 	processes := NewProcesses(len(manager.Starting))
 	tracker := NewTracker(manager.Nodes)
@@ -75,15 +73,10 @@ func (manager *Manager) Call(ctx context.Context, reader io.Reader) (io.Reader, 
 	if processes.Err() != nil {
 		manager.wg.Add(1)
 		go manager.Revert(tracker, refs)
-		return nil, processes.Err()
+		return processes.Err()
 	}
 
-	reader, err = manager.Codec.Marshal(refs)
-	if err != nil {
-		return nil, err
-	}
-
-	return reader, nil
+	return nil
 }
 
 // Revert reverts the executed nodes found inside the given tracker.

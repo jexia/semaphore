@@ -13,6 +13,8 @@ type Object interface {
 	GetRepeatedProperties() map[string]*RepeatedParameterMap
 	GetLabel() types.Label
 	GetHeader() Header
+	GetDescriptor() schema.Object
+	SetDescriptor(schema.Object)
 }
 
 // FlowCaller represents a flow caller
@@ -21,6 +23,7 @@ type FlowCaller interface {
 	GetEndpoint() string
 	GetRequest() Object
 	GetResponse() Object
+	GetDescriptor() schema.Method
 	SetDescriptor(schema.Method)
 }
 
@@ -59,13 +62,12 @@ func (manifest *Manifest) MergeLeft(incoming *Manifest) {
 // Calls are nested inside of flows and contain two labels, a unique name within the flow and the service and method to be called.
 // A dependency reference structure is generated within the flow which allows Maestro to figure out which calls could be called parallel to improve performance.
 type Flow struct {
-	Name       string
-	DependsOn  map[string]*Flow
-	Schema     string
-	Input      *ParameterMap
-	Calls      []*Call
-	Output     *ParameterMap
-	Descriptor schema.Method
+	Name      string
+	DependsOn map[string]*Flow
+	Schema    string
+	Input     *ParameterMap
+	Calls     []*Call
+	Output    *ParameterMap
 }
 
 // GetName returns the flow name
@@ -96,8 +98,10 @@ func (flow *Flow) GetOutput() *ParameterMap {
 // Endpoint exposes a flow. Endpoints are not parsed by Maestro and have custom implementations in each caller.
 // The name of the endpoint represents the flow which should be executed.
 type Endpoint struct {
-	Flow string
-	Body map[string]interface{}
+	Flow     string
+	Listener string
+	Codec    string
+	Options  Options
 }
 
 // Options represents a collection of options
@@ -179,6 +183,7 @@ type ParameterMap struct {
 	Nested     map[string]*NestedParameterMap
 	Repeated   map[string]*RepeatedParameterMap
 	Properties map[string]*Property
+	Desciptor  schema.Object
 }
 
 // GetProperties returns the properties inside the given parameter map
@@ -206,6 +211,16 @@ func (parameters *ParameterMap) GetLabel() types.Label {
 	return types.LabelOptional
 }
 
+// SetDescriptor sets the given schema descriptor for the given object
+func (parameters *ParameterMap) SetDescriptor(descriptor schema.Object) {
+	parameters.Desciptor = descriptor
+}
+
+// GetDescriptor gets the schema descriptor for the given object
+func (parameters *ParameterMap) GetDescriptor() schema.Object {
+	return parameters.Desciptor
+}
+
 // NestedParameterMap is a map of parameter names (keys) and their (templated) values (values)
 type NestedParameterMap struct {
 	Path       string
@@ -213,6 +228,7 @@ type NestedParameterMap struct {
 	Nested     map[string]*NestedParameterMap
 	Repeated   map[string]*RepeatedParameterMap
 	Properties map[string]*Property
+	Descriptor schema.Object
 }
 
 // GetPath returns the parameter map path
@@ -260,6 +276,16 @@ func (nested *NestedParameterMap) GetLabel() types.Label {
 	return types.LabelOptional
 }
 
+// SetDescriptor sets the given schema descriptor for the given object
+func (nested *NestedParameterMap) SetDescriptor(descriptor schema.Object) {
+	nested.Descriptor = descriptor
+}
+
+// GetDescriptor gets the schema descriptor for the given object
+func (nested *NestedParameterMap) GetDescriptor() schema.Object {
+	return nested.Descriptor
+}
+
 // Clone returns a clone of the nested parameter map
 func (nested *NestedParameterMap) Clone(name string, path string) *NestedParameterMap {
 	returns := &NestedParameterMap{
@@ -293,6 +319,7 @@ type RepeatedParameterMap struct {
 	Nested     map[string]*NestedParameterMap
 	Repeated   map[string]*RepeatedParameterMap
 	Properties map[string]*Property
+	Descriptor schema.Object
 }
 
 // GetPath returns the repeated path
@@ -338,6 +365,16 @@ func (repeated *RepeatedParameterMap) GetHeader() Header {
 // GetLabel returns the repeated parameter map label
 func (repeated *RepeatedParameterMap) GetLabel() types.Label {
 	return types.LabelRepeated
+}
+
+// SetDescriptor sets the given schema descriptor for the given object
+func (repeated *RepeatedParameterMap) SetDescriptor(descriptor schema.Object) {
+	repeated.Descriptor = descriptor
+}
+
+// GetDescriptor gets the schema descriptor for the given object
+func (repeated *RepeatedParameterMap) GetDescriptor() schema.Object {
+	return repeated.Descriptor
 }
 
 // Clone returns a clone of the nested parameter map
@@ -397,7 +434,17 @@ func (call *Call) GetResponse() Object {
 	return call.Response
 }
 
-// SetDescriptor sets the call method descriptor
+// GetEndpoint returns the call endpoint
+func (call *Call) GetEndpoint() string {
+	return call.Endpoint
+}
+
+// GetDescriptor returns the call descriptor
+func (call *Call) GetDescriptor() schema.Method {
+	return call.Descriptor
+}
+
+// SetDescriptor sets the call descriptor
 func (call *Call) SetDescriptor(descriptor schema.Method) {
 	if descriptor != nil {
 		call.Response = ToParameterMap(nil, "", descriptor.GetOutput())
@@ -406,16 +453,12 @@ func (call *Call) SetDescriptor(descriptor schema.Method) {
 	call.Descriptor = descriptor
 }
 
-// GetEndpoint returns the call endpoint
-func (call *Call) GetEndpoint() string {
-	return call.Endpoint
-}
-
 // RollbackCall represents the rollback call which is executed when a call inside a flow failed.
 type RollbackCall struct {
 	Parent     *Call
 	Endpoint   string
 	Request    *ParameterMap
+	Response   *ParameterMap
 	Descriptor schema.Method
 }
 
@@ -438,14 +481,23 @@ func (call *RollbackCall) GetResponse() Object {
 	return nil
 }
 
-// SetDescriptor sets the call method descriptor
-func (call *RollbackCall) SetDescriptor(descriptor schema.Method) {
-	call.Descriptor = descriptor
-}
-
 // GetEndpoint returns the call endpoint
 func (call *RollbackCall) GetEndpoint() string {
 	return call.Endpoint
+}
+
+// GetDescriptor returns the call descriptor
+func (call *RollbackCall) GetDescriptor() schema.Method {
+	return call.Descriptor
+}
+
+// SetDescriptor sets the call descriptor
+func (call *RollbackCall) SetDescriptor(descriptor schema.Method) {
+	if descriptor != nil {
+		call.Response = ToParameterMap(nil, "", descriptor.GetOutput())
+	}
+
+	call.Descriptor = descriptor
 }
 
 // Service represent external service which could be called inside the flows.
@@ -468,8 +520,8 @@ type Service struct {
 // All values are passed as attributes to the callers to be unmarshalled.
 // These attributes could be used for configuration purposes
 type Caller struct {
-	Name string
-	Body map[string]interface{}
+	Name    string
+	Options Options
 }
 
 // Proxy streams the incoming request to the given service.

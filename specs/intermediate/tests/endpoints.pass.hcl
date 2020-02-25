@@ -1,8 +1,11 @@
-endpoint "echo" {
+endpoint "echo" "http" {
+    codec = "json"
     random = "value"
 }
 
-endpoint "ping" {
+endpoint "ping" "http" {
+    codec = "proto"
+
     message "random" {
         value = "message"
     }

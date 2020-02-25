@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 
+	"github.com/jexia/maestro/flow"
 	"github.com/jexia/maestro/specs"
 )
 
@@ -45,18 +46,18 @@ type NewCaller func(url string, options specs.Options) Caller
 
 // Caller specifies the caller implementation.
 type Caller interface {
+	Name() string
 	Call(writer ResponseWriter, request Request) error
 	Close() error
 }
-
-// Handler represents a handler function which should be called once a request has been received
-type Handler func(writer ResponseWriter, request Request)
 
 // NewListener constructs a new listener for the given addr
 type NewListener func(addr string, options specs.Options) Listener
 
 // Listener specifies the listener implementation
 type Listener interface {
-	Serve(Handler) error
+	Name() string
+	Serve() error
 	Close() error
+	Handle([]*flow.Endpoint) error
 }

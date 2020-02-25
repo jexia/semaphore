@@ -13,12 +13,12 @@ func main() {
 		panic(err)
 	}
 
-	manifest, err := maestro.New(maestro.WithPath(".", false), maestro.WithSchemaCollection(collection))
+	client, err := maestro.New(maestro.WithPath(".", false), maestro.WithSchemaCollection(collection))
 	if err != nil {
 		panic(err)
 	}
 
-	for _, flow := range manifest.Flows {
+	for _, flow := range client.Manifest.Flows {
 		fmt.Println("flow:", flow.Name)
 		for _, call := range flow.Calls {
 			fmt.Println("  - call", call.Name)

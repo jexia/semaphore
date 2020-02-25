@@ -43,9 +43,6 @@ func TestUnmarshalFile(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if len(manifest.Flows) > 0 {
-				// t.Log(manifest.Flows[0].GetCalls()[0].GetRequest().GetHeader())
-			}
 
 			clean := file.Name()[:len(file.Name())-len(filepath.Ext(file.Name()))]
 			file, err := os.Open(filepath.Join(file.Path, clean+".yaml"))

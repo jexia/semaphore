@@ -4,23 +4,20 @@ import (
 	"context"
 
 	"github.com/jexia/maestro/refs"
-	"github.com/jexia/maestro/services"
 	"github.com/jexia/maestro/specs"
-	"github.com/jexia/maestro/specs/strict"
 )
 
 // NewNode constructs a new node for the given call.
 // The service called inside the call endpoint is retrieved from the services collection.
 // The call, codec and rollback are defined inside the node and used while processing requests.
-func NewNode(call *specs.Call, services services.Collection) *Node {
-	service := services.Get(strict.GetService(call.GetEndpoint()))
+func NewNode(specs *specs.Call, call, rollback Call) *Node {
 	return &Node{
-		Name:       call.GetName(),
+		Name:       specs.GetName(),
 		Previous:   []*Node{},
-		Call:       service.Call,
-		Rollback:   service.Rollback,
-		DependsOn:  call.DependsOn,
-		References: refs.References(call.GetRequest()),
+		Call:       call,
+		Rollback:   rollback,
+		DependsOn:  specs.DependsOn,
+		References: refs.References(specs.GetRequest()),
 		Next:       []*Node{},
 	}
 }
@@ -43,8 +40,8 @@ func (nodes Nodes) Has(name string) bool {
 type Node struct {
 	Name       string
 	Previous   Nodes
-	Call       services.Call
-	Rollback   services.Call
+	Call       Call
+	Rollback   Call
 	DependsOn  map[string]*specs.Call
 	References map[string]*specs.PropertyReference
 	Next       Nodes
