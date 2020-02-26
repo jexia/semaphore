@@ -1,10 +1,12 @@
 package maestro
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 
 	"github.com/jexia/maestro/flow"
+	"github.com/jexia/maestro/refs"
 
 	"github.com/jexia/maestro/codec"
 	"github.com/jexia/maestro/protocol"
@@ -23,6 +25,11 @@ type Client struct {
 	Options   Options
 }
 
+// Serve opens the client listeners
+func (client *Client) Serve() {
+
+}
+
 // Option represents a constructor func which sets a given option
 type Option func(*Options)
 
@@ -31,7 +38,7 @@ type Options struct {
 	Path      string
 	Recursive bool
 	Codec     map[string]codec.Constructor
-	Callers   map[string]protocol.Caller
+	Callers   []protocol.Caller
 	Listeners []protocol.Listener
 	Schema    schema.Collection
 	Functions specs.CustomDefinedFunctions
@@ -166,7 +173,7 @@ func ConstructEndpoints(manifest *specs.Manifest, options Options) ([]*flow.Endp
 		nodes := make([]*flow.Node, len(f.Calls))
 
 		for index, call := range f.Calls {
-			nodes[index] = flow.NewNode(call, ConstructCall(call), ConstructCall(call.Rollback))
+			nodes[index] = flow.NewNode(call, ConstructCall(manifest, call, options), ConstructCall(manifest, call.Rollback, options))
 		}
 
 		collection, has := options.Codec[endpoint.Codec]
@@ -198,9 +205,28 @@ func ConstructEndpoints(manifest *specs.Manifest, options Options) ([]*flow.Endp
 	return result, nil
 }
 
-func ConstructCall(caller specs.FlowCaller) flow.Call {
+func ConstructCall(manifest *specs.Manifest, call specs.FlowCaller, options Options) flow.Call {
+	// service := GetService(manifest, strict.GetService(call.GetEndpoint()))
+	// if service == nil {
+	// 	// handle err
+	// }
 
-	return nil
+	// caller := options.Callers[service.Caller]
+	// codec := options.Codec[service.Codec]
+	// call.GetDescriptor()
+
+	// req, err := codec.New(call.GetName(), call.GetRequest())
+	// res, err := codec.New(call.GetName(), call.GetResponse())
+
+	return func(ctx context.Context, refs *refs.Store) error {
+		// reader, err := req.Marshal(refs)
+
+		// caller.Call()
+
+		// res.Unmarshal()
+
+		return nil
+	}
 }
 
 // ConstructListeners constructs the listeners from the given collection of endpoints
@@ -232,6 +258,17 @@ func GetListener(listeners []protocol.Listener, name string) protocol.Listener {
 	for _, listener := range listeners {
 		if listener.Name() == name {
 			return listener
+		}
+	}
+
+	return nil
+}
+
+// GetService attempts to retrieve a service from the given manifest matching the given name
+func GetService(manifest *specs.Manifest, name string) *specs.Service {
+	for _, service := range manifest.Services {
+		if service.Alias == name {
+			return service
 		}
 	}
 
