@@ -1,11 +1,16 @@
-caller "http" {
-	base = "/v1"
+endpoint "logger" "http" {
+	codec = "json"
 }
 
 service "logger" "http" {
 	host = "logger.local"
 	schema = "proto.Logger"
     codec = "proto"
+
+	options {
+		endpoint = "/"
+		method = "GET"
+	}
 }
 
 flow "logger" {
