@@ -50,7 +50,7 @@ func (caller *Caller) Name() string {
 }
 
 // Call opens a new connection to the configured host and attempts to send the given headers and stream
-func (caller *Caller) Call(rw protocol.ResponseWriter, incoming protocol.Request) error {
+func (caller *Caller) Call(rw protocol.ResponseWriter, incoming protocol.Request, refs *refs.Store) error {
 	req, err := http.NewRequestWithContext(incoming.Context, caller.method, caller.url, incoming.Body)
 	if err != nil {
 		return err
