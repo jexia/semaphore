@@ -99,12 +99,12 @@ func New(opts ...Option) (*specs.Manifest, error) {
 
 	err = specs.ResolveManifestDependencies(manifest)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	err = strict.Define(options.Schema, manifest)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	return manifest, nil

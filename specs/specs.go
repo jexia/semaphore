@@ -133,6 +133,7 @@ func (reference *PropertyReference) String() string {
 // A value property could contain a constant value or a value reference.
 type Property struct {
 	Path      string
+	Name      string
 	Default   interface{}
 	Type      types.Type
 	Reference *PropertyReference
@@ -288,7 +289,7 @@ func (nested *NestedParameterMap) Clone(name string, path string) *NestedParamet
 type RepeatedParameterMap struct {
 	Path       string
 	Name       string
-	Template   string
+	Template   *PropertyReference
 	Nested     map[string]*NestedParameterMap
 	Repeated   map[string]*RepeatedParameterMap
 	Properties map[string]*Property

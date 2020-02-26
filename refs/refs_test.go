@@ -7,6 +7,23 @@ import (
 	"github.com/jexia/maestro/specs"
 )
 
+func BenchmarkSimpleFetching(b *testing.B) {
+	input := []byte(`{"message":"hello world"}`)
+
+	data := map[string]interface{}{}
+	json.Unmarshal(input, &data)
+
+	store := NewStore(len(data))
+	store.StoreValues("input", "", data)
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		store.Load("input", "message")
+	}
+}
+
 func BenchmarkSimpleUnmarshal(b *testing.B) {
 	input := []byte(`{"message":"hello world"}`)
 
@@ -161,7 +178,7 @@ func TestStoreRepeatedValues(t *testing.T) {
 
 	resource := "input"
 	values := map[string]interface{}{
-		nested: []interface{}{
+		nested: []map[string]interface{}{
 			map[string]interface{}{
 				key: value,
 			},

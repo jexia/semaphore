@@ -12,7 +12,6 @@ import (
 func NewMockNode(name string, caller services.Call, rollback services.Call) *Node {
 	return &Node{
 		Name:       name,
-		Codec:      &MockCodec{},
 		Call:       caller,
 		Rollback:   rollback,
 		DependsOn:  map[string]*specs.Call{},
