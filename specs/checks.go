@@ -8,17 +8,9 @@ import (
 
 // CheckManifestDuplicates checks for duplicate definitions
 func CheckManifestDuplicates(file string, manifest *Manifest) error {
-	callers := sync.Map{}
 	endpoints := sync.Map{}
 	flows := sync.Map{}
 	services := sync.Map{}
-
-	for _, caller := range manifest.Callers {
-		_, duplicate := callers.LoadOrStore(caller.Name, caller)
-		if duplicate {
-			return trace.New(trace.WithMessage("%s duplicate caller '%s'", file, caller.Name))
-		}
-	}
 
 	for _, endpoint := range manifest.Endpoints {
 		_, duplicate := endpoints.LoadOrStore(endpoint.Flow, endpoint)

@@ -15,7 +15,6 @@ type Manifest struct {
 	Proxy     []Proxy    `hcl:"proxy,block"`
 	Endpoints []Endpoint `hcl:"endpoint,block"`
 	Services  []Service  `hcl:"service,block"`
-	Callers   []Caller   `hcl:"caller,block"`
 }
 
 // Flow intermediate specification
@@ -113,12 +112,6 @@ type Service struct {
 	Host    string   `hcl:"host"`
 	Codec   string   `hcl:"codec"`
 	Schema  string   `hcl:"schema"`
-}
-
-// Caller specification
-type Caller struct {
-	Name string   `hcl:"name,label"`
-	Body hcl.Body `hcl:",remain"`
 }
 
 // Proxy specification

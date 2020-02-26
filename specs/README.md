@@ -25,7 +25,6 @@ Messages are strictly typed and are type-checked. Payloads such as protobuf and 
   * [Proxy](#proxy)
   * [Service](#service)
     + [Options](#options)
-  * [Caller](#caller)
   * [Endpoint](#endpoint)
 
 ## Specification
@@ -264,19 +263,6 @@ Options could be consumed by implementations. The defined key/values are impleme
 ```hcl
 options {
     port = 8080
-}
-```
-
-### Caller
-Represents a caller implementation. All values are parsed by the defined implementation. These attributes could be used for configuration purposes
-
-```hcl
-caller "http" {
-    header {
-        X-Forward = "ABC"
-    }
-
-    base = "/v1"
 }
 ```
 

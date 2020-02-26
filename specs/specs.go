@@ -42,7 +42,6 @@ type Manifest struct {
 	Proxy     []*Proxy
 	Endpoints []*Endpoint
 	Services  []*Service
-	Callers   []*Caller
 }
 
 // MergeLeft merges the incoming manifest to the existing (left) manifest
@@ -51,7 +50,6 @@ func (manifest *Manifest) MergeLeft(incoming *Manifest) {
 	manifest.Proxy = append(manifest.Proxy, incoming.Proxy...)
 	manifest.Endpoints = append(manifest.Endpoints, incoming.Endpoints...)
 	manifest.Services = append(manifest.Services, incoming.Services...)
-	manifest.Callers = append(manifest.Callers, incoming.Callers...)
 }
 
 // Flow defines a set of calls that should be called chronologically and produces an output message.
@@ -514,14 +512,6 @@ type Service struct {
 	Host    string
 	Codec   string
 	Schema  string
-}
-
-// Caller Each implementation has to be configured and defined before running the service.
-// All values are passed as attributes to the callers to be unmarshalled.
-// These attributes could be used for configuration purposes
-type Caller struct {
-	Name    string
-	Options Options
 }
 
 // Proxy streams the incoming request to the given service.

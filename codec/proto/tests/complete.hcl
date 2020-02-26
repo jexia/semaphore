@@ -1,7 +1,3 @@
-caller "http" {
-	base = "/v1"
-}
-
 service "test" "http" {
 	host = "test.local"
 	schema = "proto.test"
