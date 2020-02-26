@@ -274,8 +274,20 @@ All servers should define their own request/response message formats.
 ```hcl
 endpoint "users" "http" {
     codec = "json"
-    method = "GET"
-    endpoint = "/users/:project"
-    status = "202"
+
+    options {
+        method = "GET"
+        endpoint = "/users/:project"
+        status = "202"
+    }
+}
+```
+
+#### Options
+Options could be consumed by implementations. The defined key/values are implementation specific.
+
+```hcl
+options {
+    port = 8080
 }
 ```
