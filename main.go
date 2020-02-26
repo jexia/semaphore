@@ -99,12 +99,7 @@ func New(opts ...Option) (*Client, error) {
 		return nil, err
 	}
 
-	endpoints, err := ConstructEndpoints(manifest, options)
-	if err != nil {
-		return nil, err
-	}
-
-	err = ConstructListeners(endpoints, options)
+	err = ConstructFlowManager(manifest, options)
 	if err != nil {
 		return nil, err
 	}
@@ -164,9 +159,9 @@ func ConstructSpecs(options Options) (*specs.Manifest, error) {
 	return manifest, nil
 }
 
-// ConstructEndpoints constructs the flow managers from the given specs manifest
-func ConstructEndpoints(manifest *specs.Manifest, options Options) ([]*flow.Endpoint, error) {
-	result := make([]*flow.Endpoint, len(manifest.Endpoints))
+// ConstructFlowManager constructs the flow managers from the given specs manifest
+func ConstructFlowManager(manifest *specs.Manifest, options Options) error {
+	endpoints := make([]*flow.Endpoint, len(manifest.Endpoints))
 
 	for index, endpoint := range manifest.Endpoints {
 		f := GetFlow(manifest, endpoint.Flow)
@@ -178,22 +173,22 @@ func ConstructEndpoints(manifest *specs.Manifest, options Options) ([]*flow.Endp
 
 		collection, has := options.Codec[endpoint.Codec]
 		if !has {
-			return nil, trace.New(trace.WithMessage("unkown endpoint codec %s", endpoint.Codec))
+			return trace.New(trace.WithMessage("unkown endpoint codec %s", endpoint.Codec))
 		}
 
 		req, err := collection.New(specs.InputResource, f.GetInput())
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		res, err := collection.New(specs.InputResource, f.GetOutput())
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		manager := flow.NewManager(f.GetName(), nodes)
 
-		result[index] = &flow.Endpoint{
+		endpoints[index] = &flow.Endpoint{
 			Flow:     manager,
 			Listener: endpoint.Listener,
 			Options:  endpoint.Options,
@@ -202,7 +197,12 @@ func ConstructEndpoints(manifest *specs.Manifest, options Options) ([]*flow.Endp
 		}
 	}
 
-	return result, nil
+	err := ConstructListeners(endpoints, options)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func ConstructCall(manifest *specs.Manifest, call specs.FlowCaller, options Options) flow.Call {
