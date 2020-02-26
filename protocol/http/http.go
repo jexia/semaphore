@@ -4,8 +4,8 @@ import (
 	"io"
 	"net/http"
 	"net/http/httputil"
+	"net/url"
 	"sync"
-	"time"
 
 	"github.com/jexia/maestro/flow"
 	"github.com/jexia/maestro/protocol"
@@ -15,13 +15,26 @@ import (
 )
 
 // NewCaller constructs a new caller for the given host
-func NewCaller(url string, options specs.Options) protocol.Caller {
+func NewCaller(host string, opts specs.Options) (protocol.Caller, error) {
+	options, err := ParseCallerOptions(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	url, err := url.Parse(host)
+	if err != nil {
+		return nil, err
+	}
+
+	url.Path = options.Endpoint
+
 	return &Caller{
-		url: url,
+		method: options.Method,
+		url:    url.String(),
 		proxy: &httputil.ReverseProxy{
 			Director: func(*http.Request) {},
 		},
-	}
+	}, nil
 }
 
 // Caller represents the HTTP caller implementation
@@ -55,14 +68,19 @@ func (caller *Caller) Close() error {
 }
 
 // NewListener constructs a new listener for the given addr
-func NewListener(addr string, options specs.Options) protocol.Listener {
+func NewListener(addr string, opts specs.Options) (protocol.Listener, error) {
+	options, err := ParseEndpointOptions(opts)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Listener{
 		server: &http.Server{
 			Addr:         addr,
-			ReadTimeout:  5 * time.Second,
-			WriteTimeout: 5 * time.Second,
+			ReadTimeout:  options.ReadTimeout,
+			WriteTimeout: options.WriteTimeout,
 		},
-	}
+	}, nil
 }
 
 // Listener represents a HTTP listener
@@ -93,9 +111,9 @@ func (listener *Listener) Handle(endpoints []*flow.Endpoint) error {
 	router := httprouter.New()
 
 	for _, endpoint := range endpoints {
-		options := ParseEndpoint(endpoint.Options)
-		if options == nil {
-			continue
+		options, err := ParseEndpointOptions(endpoint.Options)
+		if err != nil {
+			return err
 		}
 
 		router.Handle(options.Method, options.Endpoint, Handle(endpoint))

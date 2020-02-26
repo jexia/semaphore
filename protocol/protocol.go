@@ -42,7 +42,7 @@ type Request struct {
 }
 
 // NewCaller constructs a new caller for the given url
-type NewCaller func(url string, options specs.Options) Caller
+type NewCaller func(url string, options specs.Options) (Caller, error)
 
 // Caller specifies the caller implementation.
 type Caller interface {
@@ -52,7 +52,7 @@ type Caller interface {
 }
 
 // NewListener constructs a new listener for the given addr
-type NewListener func(addr string, options specs.Options) Listener
+type NewListener func(addr string, options specs.Options) (Listener, error)
 
 // Listener specifies the listener implementation
 type Listener interface {

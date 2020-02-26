@@ -69,7 +69,10 @@ func TestProxyForward(t *testing.T) {
 		Context: ctx,
 	}
 
-	caller := NewCaller(server.URL, nil)
+	caller, err := NewCaller(server.URL, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	r, w := io.Pipe()
 	rw := &MockResponseWriter{
