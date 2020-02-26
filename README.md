@@ -14,32 +14,32 @@ Flows are exposed through endpoints. Each endpoint could contain server specific
 
 ```hcl
 flow "checkout" {
-	input {
+    input {
         id = "<string>"
         customer = "<string>"
 
         message "address" {
             city = "<string>"
         }
-	}
+    }
 
-	call "prepare" "warehouse.Prepare" {
-		request {
-			cart = "{{ input:id }}"
+    call "prepare" "warehouse.Prepare" {
+        request {
+            cart = "{{ input:id }}"
 
             rollback "warehouse.Cancel" {
                 cart = "{{ input:id }}"
             }
-		}
-	}
+        }
+    }
 
-	call "send" "shipping.Send" {
-		request {
-			order = "{{ prepare:order }}"
-			customer = "{{ input:id }}"
-			city = "{{ input:address.city }}"
-		}
-	}
+    call "send" "shipping.Send" {
+        request {
+            order = "{{ prepare:order }}"
+            customer = "{{ input:id }}"
+            city = "{{ input:address.city }}"
+        }
+    }
 
     output {
         ref = "{{ prepare:order }}"
