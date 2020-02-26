@@ -40,7 +40,7 @@ flow "checkout" {
 
 service "warehouse" "proto" {
     host = "warehouse.local"
-	schema = "proto.Warehouse"
+    schema = "proto.Warehouse"
     codec = "proto"
 }
 ```
