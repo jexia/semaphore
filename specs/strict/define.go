@@ -278,7 +278,10 @@ func ResolvePropertyObjectReferences(params specs.Object) {
 
 		if property.Reference.Object.GetLabel() == types.LabelRepeated {
 			repeated := property.Reference.Object.(*specs.RepeatedParameterMap)
-			params.GetRepeatedProperties()[key] = repeated.Clone(key, property.Path)
+			clone := repeated.Clone(key, property.Path)
+			clone.Template = property.Reference
+
+			params.GetRepeatedProperties()[key] = clone
 			continue
 		}
 
