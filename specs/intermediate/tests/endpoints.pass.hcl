@@ -1,12 +1,17 @@
 endpoint "echo" "http" {
     codec = "json"
-    random = "value"
+    
+    options {
+        random = "value"
+    }
 }
 
 endpoint "ping" "http" {
     codec = "proto"
 
-    message "random" {
-        value = "message"
+    options {
+        message "random" {
+            value = "message"
+        }
     }
 }

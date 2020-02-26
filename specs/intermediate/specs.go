@@ -48,13 +48,12 @@ func ParseManifest(manifest Manifest, functions specs.CustomDefinedFunctions) (*
 // ParseIntermediateEndpoint parses the given intermediate endpoint to a specs endpoint
 func ParseIntermediateEndpoint(endpoint Endpoint) *specs.Endpoint {
 	result := specs.Endpoint{
+		Options:  ParseIntermediateOptions(endpoint.Options),
 		Flow:     endpoint.Flow,
 		Listener: endpoint.Listener,
 		Codec:    endpoint.Codec,
-		Options:  make(specs.Options),
 	}
 
-	gohcl.DecodeBody(endpoint.Body, nil, &result.Options)
 	return &result
 }
 

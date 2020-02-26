@@ -1,5 +1,10 @@
 endpoint "logger" "http" {
 	codec = "json"
+
+	options {
+		endpoint = "/"
+		method = "GET"
+	}
 }
 
 service "logger" "http" {

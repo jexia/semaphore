@@ -32,7 +32,7 @@ type Endpoint struct {
 	Flow     string   `hcl:"flow,label"`
 	Listener string   `hcl:"listener,label"`
 	Codec    string   `hcl:"codec"`
-	Body     hcl.Body `hcl:",remain"`
+	Options  *Options `hcl:"options,block"`
 }
 
 // Header represents a collection of key values
