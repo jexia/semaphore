@@ -2,13 +2,16 @@ package http
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"net"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/jexia/maestro/codec/json"
+	"github.com/jexia/maestro/flow"
 	"github.com/jexia/maestro/protocol"
 	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/specs"
@@ -40,7 +43,7 @@ func AvailablePort(t *testing.T) int {
 	return listener.Addr().(*net.TCPAddr).Port
 }
 
-func TestProxyForward(t *testing.T) {
+func TestCaller(t *testing.T) {
 	message := "hello world"
 	specs := &specs.ParameterMap{
 		Properties: map[string]*specs.Property{
@@ -105,52 +108,49 @@ func TestProxyForward(t *testing.T) {
 	}
 }
 
-// func TestListener(t *testing.T) {
-// 	message := "hello world"
-// 	specs := &specs.ParameterMap{
-// 		Properties: map[string]*specs.Property{
-// 			"message": &specs.Property{
-// 				Name: "message",
-// 				Path: "message",
-// 				Type: types.TypeString,
-// 			},
-// 		},
-// 	}
+func TestListener(t *testing.T) {
+	called := 0
+	port := AvailablePort(t)
+	addr := fmt.Sprintf(":%d", port)
+	listener, err := NewListener(addr, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-// 	refs := refs.NewStore(1)
-// 	codec, err := json.New("input", nil, specs)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
+	defer listener.Close()
 
-// 	port := AvailablePort(t)
-// 	addr := fmt.Sprintf(":%d", port)
-// 	listener := NewListener(addr, nil)
-// 	defer listener.Close()
+	nodes := flow.Nodes{
+		{
+			Name:     "first",
+			Previous: flow.Nodes{},
+			Call: func(ctx context.Context, refs *refs.Store) error {
+				called++
+				return nil
+			},
+			Next: flow.Nodes{},
+		},
+	}
 
-// 	func(writer protocol.ResponseWriter, request protocol.Request) {
-// 		codec.Unmarshal(request.Body, refs)
-// 	}
-// 	listener.Handle()
-// 	go listener.Serve()
+	endpoints := []*protocol.Endpoint{
+		{
+			Flow: flow.NewManager("test", nodes),
+			Options: specs.Options{
+				"endpoint": "/",
+				"method":   "GET",
+			},
+		},
+	}
 
-// 	// Some CI pipelines take a little while before the listener is active
-// 	time.Sleep(100 * time.Millisecond)
+	listener.Handle(endpoints)
+	go listener.Serve()
 
-// 	endpoint := fmt.Sprintf("http://127.0.0.1:%d/", port)
-// 	http.Post(endpoint, "application/json", strings.NewReader(`{"message":"`+message+`"}`))
+	// Some CI pipelines take a little while before the listener is active
+	time.Sleep(100 * time.Millisecond)
 
-// 	ref := refs.Load("input", "message")
-// 	if ref == nil {
-// 		t.Fatal("input:message reference not set")
-// 	}
+	endpoint := fmt.Sprintf("http://127.0.0.1:%d/", port)
+	http.Get(endpoint)
 
-// 	result, is := ref.Value.(string)
-// 	if !is {
-// 		t.Fatal("input:message reference is not a string")
-// 	}
-
-// 	if result != message {
-// 		t.Fatalf("unexpected input:message %s, expected %s", result, message)
-// 	}
-// }
+	if called != 1 {
+		t.Errorf("unexpected called %d, expected %d", called, len(nodes))
+	}
+}
