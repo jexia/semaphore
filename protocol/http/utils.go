@@ -2,7 +2,6 @@ package http
 
 import (
 	"net/http"
-	"strings"
 
 	"github.com/jexia/maestro/protocol"
 )
@@ -12,16 +11,6 @@ func CopyProtocolHeader(header protocol.Header) http.Header {
 	result := http.Header{}
 	for key, val := range header {
 		result.Set(key, val)
-	}
-
-	return result
-}
-
-// CopyHTTPHeader copies the given HTTP header into a protocol header
-func CopyHTTPHeader(header http.Header) protocol.Header {
-	result := protocol.Header{}
-	for key, val := range header {
-		result.Set(key, strings.Join(val, ";"))
 	}
 
 	return result
