@@ -60,6 +60,15 @@ func (rw *ProtocolResponseWriter) WriteHeader(status int) {
 	rw.protocol.WriteHeader(status)
 }
 
+// NewRequest constructs a new protocol request of the given http request
+func NewRequest(req *http.Request) *protocol.Request {
+	return &protocol.Request{
+		Context: req.Context(),
+		Header:  protocol.Header{},
+		Body:    req.Body,
+	}
+}
+
 // NewResponseWriter constructs a new HTTP response writer of the given HTTP response writer
 func NewResponseWriter(rw http.ResponseWriter) *ResponseWriter {
 	return &ResponseWriter{

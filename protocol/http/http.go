@@ -49,7 +49,7 @@ func (caller *Caller) Name() string {
 }
 
 // Call opens a new connection to the configured host and attempts to send the given headers and stream
-func (caller *Caller) Call(rw protocol.ResponseWriter, incoming protocol.Request, refs *refs.Store) error {
+func (caller *Caller) Call(rw protocol.ResponseWriter, incoming *protocol.Request, refs *refs.Store) error {
 	req, err := http.NewRequestWithContext(incoming.Context, caller.method, caller.url, incoming.Body)
 	if err != nil {
 		return err
@@ -133,10 +133,14 @@ func (listener *Listener) Close() error {
 // Handle constructs a new handle function for the given endpoint to the given flow
 func Handle(endpoint *protocol.Endpoint) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+		var err error
 		refs := endpoint.Flow.NewStore()
-		err := endpoint.Request.Unmarshal(r.Body, refs)
-		if err != nil {
-			// TODO: handle err
+
+		if endpoint.Request != nil {
+			err = endpoint.Request.Unmarshal(r.Body, refs)
+			if err != nil {
+				// TODO: handle err
+			}
 		}
 
 		defer r.Body.Close()
@@ -146,16 +150,28 @@ func Handle(endpoint *protocol.Endpoint) httprouter.Handle {
 			return
 		}
 
-		reader, err := endpoint.Response.Marshal(refs)
-		if err != nil {
-			// TODO: handle err
+		if endpoint.Response != nil {
+			reader, err := endpoint.Response.Marshal(refs)
+			if err != nil {
+				// TODO: handle err
+				return
+			}
+
+			_, err = io.Copy(w, reader)
+			if err != nil {
+				// TODO: handle err
+				return
+			}
+
 			return
 		}
 
-		_, err = io.Copy(w, reader)
-		if err != nil {
-			// TODO: handle err
-			return
+		if endpoint.Forward != nil {
+			err := endpoint.Forward.Call(NewResponseWriter(w), NewRequest(r), refs)
+			if err != nil {
+				// TODO: handle err
+				return
+			}
 		}
 	}
 }

@@ -59,7 +59,7 @@ type NewCaller func(url string, options specs.Options) (Caller, error)
 // Caller specifies the caller implementation.
 type Caller interface {
 	Name() string
-	Call(writer ResponseWriter, request Request, refs *refs.Store) error
+	Call(writer ResponseWriter, request *Request, refs *refs.Store) error
 	Close() error
 }
 

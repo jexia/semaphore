@@ -81,7 +81,7 @@ func TestProxyForward(t *testing.T) {
 	}
 
 	go func() {
-		caller.Call(rw, req, refs)
+		caller.Call(rw, &req, refs)
 		w.Close()
 	}()
 
