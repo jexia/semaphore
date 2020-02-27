@@ -12,10 +12,11 @@ import (
 
 // Endpoint represents a protocol listener endpoint
 type Endpoint struct {
-	Flow     *flow.Manager
 	Listener string
+	Flow     *flow.Manager
 	Request  codec.Manager
 	Response codec.Manager
+	Forward  Caller
 	Options  specs.Options
 }
 
