@@ -139,27 +139,28 @@ func Handle(endpoint *protocol.Endpoint) httprouter.Handle {
 		if endpoint.Request != nil {
 			err = endpoint.Request.Unmarshal(r.Body, refs)
 			if err != nil {
-				// TODO: handle err
+				w.WriteHeader(http.StatusBadRequest)
+				return
 			}
 		}
 
 		defer r.Body.Close()
 		err = endpoint.Flow.Call(r.Context(), refs)
 		if err != nil {
-			// TODO: handle err
+			w.WriteHeader(http.StatusServiceUnavailable)
 			return
 		}
 
 		if endpoint.Response != nil {
 			reader, err := endpoint.Response.Marshal(refs)
 			if err != nil {
-				// TODO: handle err
+				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
 
 			_, err = io.Copy(w, reader)
 			if err != nil {
-				// TODO: handle err
+				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
 
@@ -169,7 +170,7 @@ func Handle(endpoint *protocol.Endpoint) httprouter.Handle {
 		if endpoint.Forward != nil {
 			err := endpoint.Forward.Call(NewResponseWriter(w), NewRequest(r), refs)
 			if err != nil {
-				// TODO: handle err
+				w.WriteHeader(http.StatusBadGateway)
 				return
 			}
 		}
