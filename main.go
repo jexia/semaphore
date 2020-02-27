@@ -278,8 +278,9 @@ func ConstructCall(manifest *specs.Manifest, node *specs.Node, call *specs.Call,
 
 		reader, writer := io.Pipe()
 		req := &protocol.Request{
-			Context: ctx,
-			Body:    body,
+			Endpoint: call.GetEndpoint(),
+			Context:  ctx,
+			Body:     body,
 			// Header:  protocol.Header{},
 		}
 
@@ -287,7 +288,10 @@ func ConstructCall(manifest *specs.Manifest, node *specs.Node, call *specs.Call,
 			writer: writer,
 		}
 
-		go caller.Call(w, req, refs)
+		go func() {
+			defer writer.Close()
+			caller.Call(w, req, refs)
+		}()
 
 		err = res.Unmarshal(reader, refs)
 		if err != nil {

@@ -285,12 +285,34 @@ func ResolvePropertyObjectReferences(params specs.Object) {
 			clone := repeated.Clone(key, property.Path)
 			clone.Template = property.Reference
 
+			SetObjectReferences(property.Reference, clone)
 			params.GetRepeatedProperties()[key] = clone
 			continue
 		}
 
 		nested := property.Reference.Object.(*specs.NestedParameterMap)
 		params.GetNestedProperties()[key] = nested.Clone(key, property.Path)
+	}
+}
+
+// SetObjectReferences sets all the references within a given object to the given resource and path
+func SetObjectReferences(ref *specs.PropertyReference, object specs.Object) {
+	for key, prop := range object.GetProperties() {
+		ref := ref.Clone()
+		ref.Path = specs.JoinPath(ref.Path, key)
+		prop.Reference = ref
+	}
+
+	for key, nested := range object.GetNestedProperties() {
+		ref := ref.Clone()
+		ref.Path = specs.JoinPath(ref.Path, key)
+		SetObjectReferences(ref, nested)
+	}
+
+	for key, repeated := range object.GetRepeatedProperties() {
+		ref := ref.Clone()
+		ref.Path = specs.JoinPath(ref.Path, key)
+		SetObjectReferences(ref, repeated)
 	}
 }
 

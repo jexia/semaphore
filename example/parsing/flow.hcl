@@ -4,8 +4,9 @@ endpoint "logger" "http" "json" {
 }
 
 service "logger" "http" "json" {
-	host = "https://jsonplaceholder.typicode.com"
+	host = "https://my-json-server.typicode.com"
 	schema = "proto.Logger"
+	method = "GET"
 }
 
 flow "logger" {
@@ -18,6 +19,6 @@ flow "logger" {
 	}
 
 	output {
-        id = "{{ logging:id }}"
+        posts = "{{ logging:posts }}"
     }
 }

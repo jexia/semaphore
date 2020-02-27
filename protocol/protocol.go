@@ -48,9 +48,10 @@ type ResponseWriter interface {
 
 // Request represents the request object given to a caller implementation used to make calls
 type Request struct {
-	Header  Header
-	Body    io.Reader
-	Context context.Context
+	Endpoint string
+	Header   Header
+	Body     io.Reader
+	Context  context.Context
 }
 
 // Caller constructs new calls which could be used to call services

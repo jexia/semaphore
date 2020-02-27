@@ -121,6 +121,16 @@ func (reference *PropertyReference) String() string {
 	return reference.Resource + ReferenceDelimiter + reference.Path
 }
 
+// Clone returns a clone of the given property reference
+func (reference *PropertyReference) Clone() *PropertyReference {
+	return &PropertyReference{
+		Resource: reference.Resource,
+		Path:     reference.Path,
+		Label:    reference.Label,
+		Object:   reference.Object,
+	}
+}
+
 // Property represents a value property.
 // A value property could contain a constant value or a value reference.
 type Property struct {
@@ -431,7 +441,7 @@ func (call *Call) GetRequest() Object {
 
 // GetResponse returns the call response parameter map
 func (call *Call) GetResponse() Object {
-	return nil
+	return call.Response
 }
 
 // GetService returns the call service

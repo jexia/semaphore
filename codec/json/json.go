@@ -9,6 +9,7 @@ import (
 	"github.com/jexia/maestro/codec"
 	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/specs"
+	"github.com/jexia/maestro/specs/trace"
 )
 
 // Constructor is capable of constructing new codec managers for the given resource and specs
@@ -20,6 +21,10 @@ func (constructor *Constructor) Name() string {
 }
 
 func (constructor *Constructor) New(resource string, specs specs.Object) (codec.Manager, error) {
+	if specs == nil {
+		return nil, trace.New(trace.WithMessage("no object specs defined"))
+	}
+
 	return &Manager{
 		resource: resource,
 		specs:    specs,

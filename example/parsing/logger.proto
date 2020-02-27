@@ -3,12 +3,12 @@ syntax = "proto3";
 package proto;
 
 service Logger {
-    rpc Call(Message) returns (Response);
+    rpc Call(Message) returns (Record);
     rpc Append(Message) returns (Record);
 }
 
 message Response {
-    int32 id = 1;
+    repeated Post posts = 1;
 }
 
 message Message {
@@ -16,8 +16,10 @@ message Message {
 }
 
 message Record {
-    int32 userId = 1;
-    int32 id = 2;
-    string title = 3;
-    bool completed = 4;
+    repeated Post posts = 1;
+}
+
+message Post {
+    int32 id = 1;
+    string title = 2;
 }

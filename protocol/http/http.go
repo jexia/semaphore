@@ -29,16 +29,14 @@ func (caller *Caller) New(host string, opts specs.Options) (protocol.Call, error
 		return nil, err
 	}
 
-	url, err := url.Parse(host)
+	_, err = url.Parse(host)
 	if err != nil {
 		return nil, err
 	}
 
-	url.Path = options.Endpoint
-
 	return &Call{
 		method: options.Method,
-		url:    url.String(),
+		host:   host,
 		proxy: &httputil.ReverseProxy{
 			Director: func(*http.Request) {},
 		},
@@ -48,13 +46,20 @@ func (caller *Caller) New(host string, opts specs.Options) (protocol.Call, error
 // Call represents the HTTP caller implementation
 type Call struct {
 	method string
-	url    string
+	host   string
 	proxy  *httputil.ReverseProxy
 }
 
 // Call opens a new connection to the configured host and attempts to send the given headers and stream
 func (call *Call) Call(rw protocol.ResponseWriter, incoming *protocol.Request, refs *refs.Store) error {
-	req, err := http.NewRequestWithContext(incoming.Context, call.method, call.url, incoming.Body)
+	url, err := url.Parse(call.host)
+	if err != nil {
+		return err
+	}
+
+	url.Path = "typicode/demo/db"
+
+	req, err := http.NewRequestWithContext(incoming.Context, call.method, url.String(), incoming.Body)
 	if err != nil {
 		return err
 	}
@@ -137,6 +142,7 @@ func (listener *Listener) Close() error {
 // Handle constructs a new handle function for the given endpoint to the given flow
 func Handle(endpoint *protocol.Endpoint) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+		defer r.Body.Close()
 		var err error
 		refs := endpoint.Flow.NewStore()
 
@@ -148,7 +154,6 @@ func Handle(endpoint *protocol.Endpoint) httprouter.Handle {
 			}
 		}
 
-		defer r.Body.Close()
 		err = endpoint.Flow.Call(r.Context(), refs)
 		if err != nil {
 			w.WriteHeader(http.StatusServiceUnavailable)
