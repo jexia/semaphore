@@ -161,7 +161,7 @@ func ConstructSpecs(options Options) (*specs.Manifest, error) {
 
 // ConstructFlowManager constructs the flow managers from the given specs manifest
 func ConstructFlowManager(manifest *specs.Manifest, options Options) error {
-	endpoints := make([]*flow.Endpoint, len(manifest.Endpoints))
+	endpoints := make([]*protocol.Endpoint, len(manifest.Endpoints))
 
 	for index, endpoint := range manifest.Endpoints {
 		f := GetFlow(manifest, endpoint.Flow)
@@ -188,7 +188,7 @@ func ConstructFlowManager(manifest *specs.Manifest, options Options) error {
 
 		manager := flow.NewManager(f.GetName(), nodes)
 
-		endpoints[index] = &flow.Endpoint{
+		endpoints[index] = &protocol.Endpoint{
 			Flow:     manager,
 			Listener: endpoint.Listener,
 			Options:  endpoint.Options,
@@ -230,8 +230,8 @@ func ConstructCall(manifest *specs.Manifest, call specs.FlowCaller, options Opti
 }
 
 // ConstructListeners constructs the listeners from the given collection of endpoints
-func ConstructListeners(endpoints []*flow.Endpoint, options Options) error {
-	collections := make(map[string][]*flow.Endpoint, len(options.Listeners))
+func ConstructListeners(endpoints []*protocol.Endpoint, options Options) error {
+	collections := make(map[string][]*protocol.Endpoint, len(options.Listeners))
 
 	for _, endpoint := range endpoints {
 		listener := GetListener(options.Listeners, endpoint.Listener)

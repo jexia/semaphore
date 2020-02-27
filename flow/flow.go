@@ -4,22 +4,11 @@ import (
 	"context"
 	"sync"
 
-	"github.com/jexia/maestro/codec"
 	"github.com/jexia/maestro/refs"
-	"github.com/jexia/maestro/specs"
 )
 
 // Call represents a caller which could be called
 type Call func(context.Context, *refs.Store) error
-
-// Endpoint represents a protocol listener endpoint
-type Endpoint struct {
-	Flow     *Manager
-	Listener string
-	Request  codec.Manager
-	Response codec.Manager
-	Options  specs.Options
-}
 
 // NewManager constructs a new manager for the given flow.
 // Branches are constructed for the constructed nodes to optimalise performance.

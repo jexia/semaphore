@@ -7,7 +7,6 @@ import (
 	"net/url"
 	"sync"
 
-	"github.com/jexia/maestro/flow"
 	"github.com/jexia/maestro/protocol"
 	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/specs"
@@ -107,7 +106,7 @@ func (listener *Listener) Serve() error {
 }
 
 // Handle parses the given endpoints and constructs route handlers
-func (listener *Listener) Handle(endpoints []*flow.Endpoint) error {
+func (listener *Listener) Handle(endpoints []*protocol.Endpoint) error {
 	router := httprouter.New()
 
 	for _, endpoint := range endpoints {
@@ -132,7 +131,7 @@ func (listener *Listener) Close() error {
 }
 
 // Handle constructs a new handle function for the given endpoint to the given flow
-func Handle(endpoint *flow.Endpoint) httprouter.Handle {
+func Handle(endpoint *protocol.Endpoint) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		refs := endpoint.Flow.NewStore()
 		err := endpoint.Request.Unmarshal(r.Body, refs)

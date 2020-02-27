@@ -4,10 +4,20 @@ import (
 	"context"
 	"io"
 
+	"github.com/jexia/maestro/codec"
 	"github.com/jexia/maestro/flow"
 	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/specs"
 )
+
+// Endpoint represents a protocol listener endpoint
+type Endpoint struct {
+	Flow     *flow.Manager
+	Listener string
+	Request  codec.Manager
+	Response codec.Manager
+	Options  specs.Options
+}
 
 // A Header represents the key-value pairs.
 type Header map[string]string
@@ -60,5 +70,5 @@ type Listener interface {
 	Name() string
 	Serve() error
 	Close() error
-	Handle([]*flow.Endpoint) error
+	Handle([]*Endpoint) error
 }
