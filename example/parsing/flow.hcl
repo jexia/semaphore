@@ -9,7 +9,7 @@ service "logger" "http" "json" {
 }
 
 flow "logger" {
-	schema = "proto.Logger.Append"
+	schema = "proto.Logger.Call"
 
 	call "logging" {
 		request "logger" "Append" {

@@ -30,13 +30,15 @@ func Define(schema schema.Collection, manifest *specs.Manifest) (err error) {
 // DefineProxy checks and defines the types for the given proxy
 func DefineProxy(schema schema.Collection, manifest *specs.Manifest, proxy *specs.Proxy) (err error) {
 	for _, node := range proxy.Nodes {
-		err = DefineCall(schema, manifest, node.Call, proxy)
-		if err != nil {
-			return err
+		if node.Call != nil {
+			err = DefineCall(schema, manifest, node, node.Call, proxy)
+			if err != nil {
+				return err
+			}
 		}
 
 		if node.Rollback != nil {
-			err = DefineCall(schema, manifest, node.Rollback, proxy)
+			err = DefineCall(schema, manifest, node, node.Rollback, proxy)
 			if err != nil {
 				return err
 			}
@@ -57,14 +59,16 @@ func DefineFlow(schema schema.Collection, manifest *specs.Manifest, flow *specs.
 		flow.Input = specs.ToParameterMap(flow.Input, "", method.GetInput())
 	}
 
-	for _, call := range flow.Nodes {
-		err = DefineCall(schema, manifest, call.Call, flow)
-		if err != nil {
-			return err
+	for _, node := range flow.Nodes {
+		if node.Call != nil {
+			err = DefineCall(schema, manifest, node, node.Call, flow)
+			if err != nil {
+				return err
+			}
 		}
 
-		if call.Rollback != nil {
-			err = DefineCall(schema, manifest, call.Rollback, flow)
+		if node.Rollback != nil {
+			err = DefineCall(schema, manifest, node, node.Rollback, flow)
 			if err != nil {
 				return err
 			}
@@ -72,7 +76,7 @@ func DefineFlow(schema schema.Collection, manifest *specs.Manifest, flow *specs.
 	}
 
 	if flow.Output != nil {
-		err = DefineParameterMap(nil, flow.Output, flow)
+		err = DefineParameterMap(nil, nil, flow.Output, flow)
 		if err != nil {
 			return err
 		}
@@ -109,7 +113,7 @@ func GetFlowSchema(schema schema.Collection, flow *specs.Flow) (schema.Method, e
 }
 
 // DefineCall defineds the types for the given parameter map
-func DefineCall(schema schema.Collection, manifest *specs.Manifest, call *specs.Call, flow specs.FlowManager) (err error) {
+func DefineCall(schema schema.Collection, manifest *specs.Manifest, node *specs.Node, call *specs.Call, flow specs.FlowManager) (err error) {
 	if call.GetEndpoint() == "" {
 		return nil
 	}
@@ -127,7 +131,7 @@ func DefineCall(schema schema.Collection, manifest *specs.Manifest, call *specs.
 	call.SetDescriptor(method)
 
 	if call.GetRequest() != nil {
-		err = DefineParameterMap(call, call.GetRequest(), flow)
+		err = DefineParameterMap(node, call, call.GetRequest(), flow)
 		if err != nil {
 			return err
 		}
@@ -142,30 +146,30 @@ func DefineCall(schema schema.Collection, manifest *specs.Manifest, call *specs.
 }
 
 // DefineParameterMap defines the types for the given parameter map
-func DefineParameterMap(call *specs.Call, params specs.Object, flow specs.FlowManager) (err error) {
+func DefineParameterMap(node *specs.Node, call *specs.Call, params specs.Object, flow specs.FlowManager) (err error) {
 	for _, header := range params.GetHeader() {
-		err = DefineProperty(call, header, flow)
+		err = DefineProperty(node, call, header, flow)
 		if err != nil {
 			return err
 		}
 	}
 
 	for _, property := range params.GetProperties() {
-		err = DefineProperty(call, property, flow)
+		err = DefineProperty(node, call, property, flow)
 		if err != nil {
 			return err
 		}
 	}
 
 	for _, nested := range params.GetNestedProperties() {
-		err = DefineParameterMap(call, nested, flow)
+		err = DefineParameterMap(node, call, nested, flow)
 		if err != nil {
 			return err
 		}
 	}
 
 	for _, repeated := range params.GetRepeatedProperties() {
-		err = DefineParameterMap(call, repeated, flow)
+		err = DefineParameterMap(node, call, repeated, flow)
 		if err != nil {
 			return err
 		}
@@ -178,14 +182,14 @@ func DefineParameterMap(call *specs.Call, params specs.Object, flow specs.FlowMa
 
 // DefineProperty defines the given property type.
 // If any object is references it has to be fixed afterwards and moved into the correct dataset
-func DefineProperty(call *specs.Call, property *specs.Property, flow specs.FlowManager) error {
+func DefineProperty(node *specs.Node, call *specs.Call, property *specs.Property, flow specs.FlowManager) error {
 	if property.Reference == nil {
 		return nil
 	}
 
 	breakpoint := "output"
-	if call != nil {
-		breakpoint = call.GetName()
+	if node != nil {
+		breakpoint = node.GetName()
 	}
 
 	references := lookup.GetAvailableResources(flow, breakpoint)

@@ -187,7 +187,7 @@ func ConstructFlowManager(manifest *specs.Manifest, options Options) error {
 		nodes := make([]*flow.Node, len(f.Nodes))
 
 		for index, node := range f.Nodes {
-			caller, err := ConstructCall(manifest, node.Call, options)
+			caller, err := ConstructCall(manifest, node, node.Call, options)
 			if err != nil {
 				return err
 			}
@@ -246,8 +246,8 @@ func (rw *rw) Write(bb []byte) (int, error) {
 }
 func (rw *rw) WriteHeader(int) {}
 
-func ConstructCall(manifest *specs.Manifest, call *specs.Call, options Options) (flow.Call, error) {
-	service := GetService(manifest, strict.GetService(call.GetEndpoint()))
+func ConstructCall(manifest *specs.Manifest, node *specs.Node, call *specs.Call, options Options) (flow.Call, error) {
+	service := GetService(manifest, call.GetService())
 	if service == nil {
 		return nil, trace.New(trace.WithMessage("the service for %s was not found", call.GetEndpoint()))
 	}
@@ -255,12 +255,12 @@ func ConstructCall(manifest *specs.Manifest, call *specs.Call, options Options) 
 	constructor := GetCaller(options.Callers, service.Caller)
 	codec := options.Codec[service.Codec]
 
-	req, err := codec.New(call.GetName(), call.GetRequest())
+	req, err := codec.New(node.GetName(), call.GetRequest())
 	if err != nil {
 		return nil, err
 	}
 
-	res, err := codec.New(call.GetName(), call.GetResponse())
+	res, err := codec.New(node.GetName(), call.GetResponse())
 	if err != nil {
 		return nil, err
 	}

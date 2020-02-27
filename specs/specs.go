@@ -417,21 +417,11 @@ func (call *Node) GetDescriptor() schema.Method {
 
 // Call represents a call which is executed during runtime
 type Call struct {
-	Parent     *Node
 	Service    string
 	Endpoint   string
 	Request    *ParameterMap
 	Response   *ParameterMap
 	Descriptor schema.Method
-}
-
-// GetName returns the call name
-func (call *Call) GetName() string {
-	if call.Parent == nil {
-		return ""
-	}
-
-	return call.Parent.Name
 }
 
 // GetRequest returns the call request parameter map
