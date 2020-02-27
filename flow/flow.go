@@ -79,6 +79,11 @@ func (manager *Manager) Call(ctx context.Context, refs *refs.Store) error {
 	return nil
 }
 
+// NewStore constructs a new reference store for the given manager
+func (manager *Manager) NewStore() *refs.Store {
+	return refs.NewStore(manager.References)
+}
+
 // Revert reverts the executed nodes found inside the given tracker.
 // All nodes that have not been executed will be ignored.
 func (manager *Manager) Revert(executed *Tracker, refs *refs.Store) {

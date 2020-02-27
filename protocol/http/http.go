@@ -134,7 +134,7 @@ func (listener *Listener) Close() error {
 // Handle constructs a new handle function for the given endpoint to the given flow
 func Handle(endpoint *flow.Endpoint) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-		refs := refs.NewStore(endpoint.Flow.References)
+		refs := endpoint.Flow.NewStore()
 		err := endpoint.Request.Unmarshal(r.Body, refs)
 		if err != nil {
 			// TODO: handle err
