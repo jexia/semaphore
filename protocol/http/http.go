@@ -13,8 +13,17 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-// NewCaller constructs a new caller for the given host
-func NewCaller(host string, opts specs.Options) (protocol.Caller, error) {
+// Caller represents the caller constructor
+type Caller struct {
+}
+
+// Name returns the name of the given caller
+func (caller *Caller) Name() string {
+	return "http"
+}
+
+// New constructs a new caller for the given host
+func (caller *Caller) New(host string, opts specs.Options) (protocol.Call, error) {
 	options, err := ParseCallerOptions(opts)
 	if err != nil {
 		return nil, err
@@ -27,7 +36,7 @@ func NewCaller(host string, opts specs.Options) (protocol.Caller, error) {
 
 	url.Path = options.Endpoint
 
-	return &Caller{
+	return &Call{
 		method: options.Method,
 		url:    url.String(),
 		proxy: &httputil.ReverseProxy{
@@ -36,33 +45,28 @@ func NewCaller(host string, opts specs.Options) (protocol.Caller, error) {
 	}, nil
 }
 
-// Caller represents the HTTP caller implementation
-type Caller struct {
+// Call represents the HTTP caller implementation
+type Call struct {
 	method string
 	url    string
 	proxy  *httputil.ReverseProxy
 }
 
-// Name returns the name of the given caller
-func (caller *Caller) Name() string {
-	return "http"
-}
-
 // Call opens a new connection to the configured host and attempts to send the given headers and stream
-func (caller *Caller) Call(rw protocol.ResponseWriter, incoming *protocol.Request, refs *refs.Store) error {
-	req, err := http.NewRequestWithContext(incoming.Context, caller.method, caller.url, incoming.Body)
+func (call *Call) Call(rw protocol.ResponseWriter, incoming *protocol.Request, refs *refs.Store) error {
+	req, err := http.NewRequestWithContext(incoming.Context, call.method, call.url, incoming.Body)
 	if err != nil {
 		return err
 	}
 
 	req.Header = CopyProtocolHeader(incoming.Header)
-	caller.proxy.ServeHTTP(NewProtocolResponseWriter(rw), req)
+	call.proxy.ServeHTTP(NewProtocolResponseWriter(rw), req)
 
 	return nil
 }
 
 // Close closes the given caller
-func (caller *Caller) Close() error {
+func (call *Call) Close() error {
 	return nil
 }
 

@@ -1,28 +1,18 @@
-endpoint "logger" "http" {
-	codec = "json"
-
-	options {
-		endpoint = "/"
-		method = "GET"
-	}
+endpoint "logger" "http" "json" {
+	endpoint = "/"
+	method = "POST"
 }
 
-service "logger" "http" {
-	host = "logger.local"
+service "logger" "http" "json" {
+	host = "https://jsonplaceholder.typicode.com"
 	schema = "proto.Logger"
-    codec = "proto"
-
-	options {
-		endpoint = "/"
-		method = "GET"
-	}
 }
 
 flow "logger" {
 	schema = "proto.Logger.Append"
 
-	call "logging" "logger.Append" {
-		request {
+	call "logging" {
+		request "logger" "Append" {
 			message = "{{ input:message }}"
 		}
 	}

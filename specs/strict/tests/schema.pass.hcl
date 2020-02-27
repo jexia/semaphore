@@ -1,14 +1,13 @@
-service "caller" "http" {
+service "caller" "http" "json" {
 	host = ""
 	schema = "caller"
-	codec = "json"
 }
 
 flow "echo" {
     schema = "caller.Open"
 
-	call "opening" "caller.Open" {
-		request {
+	call "opening" {
+		request "caller" "Open" {
 			message = "{{ input:message }}"
 		}
 	}

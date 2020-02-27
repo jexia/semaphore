@@ -56,7 +56,7 @@ func GetDefaultProp(resource string) string {
 // GetAvailableResources fetches the available resources able to be referenced
 // untill the given breakpoint (call.Name) has been reached.
 func GetAvailableResources(flow specs.FlowManager, breakpoint string) map[string]ReferenceMap {
-	references := make(map[string]ReferenceMap, len(flow.GetCalls())+1)
+	references := make(map[string]ReferenceMap, len(flow.GetNodes())+1)
 
 	if flow.GetInput() != nil {
 		references[specs.InputResource] = ReferenceMap{
@@ -65,23 +65,25 @@ func GetAvailableResources(flow specs.FlowManager, breakpoint string) map[string
 		}
 	}
 
-	for _, call := range flow.GetCalls() {
-		if call.Name == breakpoint {
+	for _, node := range flow.GetNodes() {
+		if node.Name == breakpoint {
 			break
 		}
 
 		resources := ReferenceMap{}
 
-		if call.Request != nil {
-			resources[specs.ResourceRequest] = ParameterMapLookup(call.Request)
-			resources[specs.ResourceRequestHeader] = HeaderLookup(call.Request.Header)
+		if node.Call != nil {
+			if node.Call.Request != nil {
+				resources[specs.ResourceRequest] = ParameterMapLookup(node.Call.Request)
+				resources[specs.ResourceRequestHeader] = HeaderLookup(node.Call.Request.Header)
+			}
+
+			if node.Call.Response != nil {
+				resources[specs.ResourceResponse] = ParameterMapLookup(node.Call.Response)
+			}
 		}
 
-		if call.Response != nil {
-			resources[specs.ResourceResponse] = ParameterMapLookup(call.Response)
-		}
-
-		references[call.Name] = resources
+		references[node.Name] = resources
 	}
 
 	return references

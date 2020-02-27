@@ -1,14 +1,13 @@
-service "service" "http" {
+service "service" "http" "json" {
 	host = "service.local"
 	schema = "test"
-    codec = "json"
 }
 
 flow "complete" {
 	schema = "test.complete"
 
-	call "first" "service.complete" {
-		request {
+	call "first" {
+		request "service" "complete" {
 			message = "{{ input:message }}"
 
 			message "nested" {

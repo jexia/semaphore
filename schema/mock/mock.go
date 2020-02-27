@@ -53,8 +53,8 @@ func (service *Service) GetName() string {
 	return service.Name
 }
 
-// GetMethod attempts to return the given service method
-func (service *Service) GetMethod(name string) schema.Method {
+// GetEndpoint attempts to return the given service method
+func (service *Service) GetEndpoint(name string) schema.Method {
 	for key, method := range service.Methods {
 		if key != name {
 			continue

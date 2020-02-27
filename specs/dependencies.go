@@ -12,8 +12,8 @@ func ResolveManifestDependencies(manifest *Manifest) error {
 			return err
 		}
 
-		for _, call := range flow.Calls {
-			err := ResolveCallDependencies(flow, call, make(map[string]*Call))
+		for _, call := range flow.Nodes {
+			err := ResolveCallDependencies(flow, call, make(map[string]*Node))
 			if err != nil {
 				return err
 			}
@@ -26,8 +26,8 @@ func ResolveManifestDependencies(manifest *Manifest) error {
 			return err
 		}
 
-		for _, call := range proxy.Calls {
-			err := ResolveCallDependencies(proxy, call, make(map[string]*Call))
+		for _, call := range proxy.Nodes {
+			err := ResolveCallDependencies(proxy, call, make(map[string]*Node))
 			if err != nil {
 				return err
 			}
@@ -38,7 +38,7 @@ func ResolveManifestDependencies(manifest *Manifest) error {
 }
 
 // ResolveCallDependencies resolves the given call dependencies and attempts to detect any circular dependencies
-func ResolveCallDependencies(manager FlowManager, node *Call, unresolved map[string]*Call) error {
+func ResolveCallDependencies(manager FlowManager, node *Node, unresolved map[string]*Node) error {
 	unresolved[node.Name] = node
 
 lookup:
@@ -48,7 +48,7 @@ lookup:
 			return fmt.Errorf("Circular dependency detected: %s.%s <-> %s.%s", manager.GetName(), node.Name, manager.GetName(), edge)
 		}
 
-		for _, call := range manager.GetCalls() {
+		for _, call := range manager.GetNodes() {
 			if call.Name == edge {
 				err := ResolveCallDependencies(manager, call, unresolved)
 				if err != nil {

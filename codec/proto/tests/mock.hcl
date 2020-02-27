@@ -1,14 +1,13 @@
-service "mock" "http" {
+service "mock" "http" "json" {
 	host = "mock.local"
 	schema = "proto.mock"
-    codec = "json"
 }
 
 flow "simple" {
 	schema = "proto.mock.simple"
 
-	call "first" "mock.simple" {
-		request {
+	call "first" {
+		request "mock" "simple" {
 			message = "{{ input:message }}"
 		}
 	}
@@ -17,8 +16,8 @@ flow "simple" {
 flow "nested" {
 	schema = "proto.mock.nested"
 
-	call "first" "mock.nested" {
-		request {
+	call "first" {
+		request "mock" "nested" {
 			message "nested" {
 				value = "{{ input:nested.value }}"
 			}
@@ -29,8 +28,8 @@ flow "nested" {
 flow "repeated" {
 	schema = "proto.mock.repeated"
 
-	call "first" "mock.repeated" {
-		request {
+	call "first" {
+		request "mock" "repeated" {
 			repeated "repeating" "input:repeating" {
 				value = "{{ input:repeating.value }}"
 			}

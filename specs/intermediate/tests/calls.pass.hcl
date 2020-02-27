@@ -1,9 +1,9 @@
 flow "echo" {
-    call "set" "setter.Set" {
+    call "set" {
         
     }
 
-    call "get" "getter.Get" {
+    call "get" {
 
     }
 }

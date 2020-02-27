@@ -38,10 +38,10 @@ func FindFlow(manifest *specs.Manifest, name string) *specs.Flow {
 	return nil
 }
 
-func FindCall(flow *specs.Flow, name string) *specs.Call {
-	for _, call := range flow.GetCalls() {
-		if call.GetName() == name {
-			return call
+func FindNode(flow *specs.Flow, name string) *specs.Node {
+	for _, node := range flow.GetNodes() {
+		if node.GetName() == name {
+			return node
 		}
 	}
 
@@ -90,10 +90,10 @@ func BenchmarkSimpleMarshal(b *testing.B) {
 		b.Fatal(err)
 	}
 
-	method := collection.GetService("proto.mock").GetMethod("simple")
+	method := collection.GetService("proto.mock").GetEndpoint("simple")
 	schema := method.GetInput().(protoc.Object)
 	flow := FindFlow(manifest, "simple")
-	specs := FindCall(flow, "first").GetRequest()
+	specs := FindNode(flow, "first").Call.GetRequest()
 
 	manager, err := New("input", schema, specs)
 	if err != nil {
@@ -128,10 +128,10 @@ func BenchmarkNestedMarshal(b *testing.B) {
 		b.Fatal(err)
 	}
 
-	method := collection.GetService("proto.mock").GetMethod("nested")
+	method := collection.GetService("proto.mock").GetEndpoint("nested")
 	schema := method.GetInput().(protoc.Object)
 	flow := FindFlow(manifest, "nested")
-	specs := FindCall(flow, "first").GetRequest()
+	specs := FindNode(flow, "first").Call.GetRequest()
 
 	manager, err := New("input", schema, specs)
 	if err != nil {
@@ -168,10 +168,10 @@ func BenchmarkRepeatedMarshal(b *testing.B) {
 		b.Fatal(err)
 	}
 
-	method := collection.GetService("proto.mock").GetMethod("repeated")
+	method := collection.GetService("proto.mock").GetEndpoint("repeated")
 	schema := method.GetInput().(protoc.Object)
 	flow := FindFlow(manifest, "repeated")
-	specs := FindCall(flow, "first").GetRequest()
+	specs := FindNode(flow, "first").Call.GetRequest()
 
 	manager, err := New("input", schema, specs)
 	if err != nil {
@@ -207,10 +207,10 @@ func BenchmarkSimpleUnmarshal(b *testing.B) {
 		b.Fatal(err)
 	}
 
-	method := collection.GetService("proto.mock").GetMethod("simple")
+	method := collection.GetService("proto.mock").GetEndpoint("simple")
 	schema := method.GetInput().(protoc.Object)
 	flow := FindFlow(manifest, "simple")
-	specs := FindCall(flow, "first").GetRequest()
+	specs := FindNode(flow, "first").Call.GetRequest()
 
 	msg := dynamic.NewMessage(schema.GetDescriptor())
 	err = msg.UnmarshalJSON(jsonBB)
@@ -257,10 +257,10 @@ func BenchmarkNestedUnmarshal(b *testing.B) {
 		b.Fatal(err)
 	}
 
-	method := collection.GetService("proto.mock").GetMethod("nested")
+	method := collection.GetService("proto.mock").GetEndpoint("nested")
 	schema := method.GetInput().(protoc.Object)
 	flow := FindFlow(manifest, "nested")
-	specs := FindCall(flow, "first").GetRequest()
+	specs := FindNode(flow, "first").Call.GetRequest()
 
 	msg := dynamic.NewMessage(schema.GetDescriptor())
 	err = msg.UnmarshalJSON(jsonBB)
@@ -309,10 +309,10 @@ func BenchmarkRepeatedUnmarshal(b *testing.B) {
 		b.Fatal(err)
 	}
 
-	method := collection.GetService("proto.mock").GetMethod("repeated")
+	method := collection.GetService("proto.mock").GetEndpoint("repeated")
 	schema := method.GetInput().(protoc.Object)
 	flow := FindFlow(manifest, "repeated")
-	specs := FindCall(flow, "first").GetRequest()
+	specs := FindNode(flow, "first").Call.GetRequest()
 
 	msg := dynamic.NewMessage(schema.GetDescriptor())
 	err = msg.UnmarshalJSON(jsonBB)
@@ -347,10 +347,10 @@ func TestMarshal(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	method := collection.GetService("proto.test").GetMethod("complete")
+	method := collection.GetService("proto.test").GetEndpoint("complete")
 	schema := method.GetInput().(protoc.Object)
 	flow := FindFlow(manifest, "complete")
-	specs := FindCall(flow, "first").GetRequest()
+	specs := FindNode(flow, "first").Call.GetRequest()
 
 	tests := map[string]map[string]interface{}{
 		"simple": map[string]interface{}{
@@ -436,10 +436,10 @@ func TestUnmarshal(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	method := collection.GetService("proto.test").GetMethod("complete")
+	method := collection.GetService("proto.test").GetEndpoint("complete")
 	schema := method.GetInput().(protoc.Object)
 	flow := FindFlow(manifest, "complete")
-	specs := FindCall(flow, "first").GetRequest()
+	specs := FindNode(flow, "first").Call.GetRequest()
 
 	tests := map[string]map[string]interface{}{
 		"simple": map[string]interface{}{

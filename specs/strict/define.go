@@ -29,14 +29,14 @@ func Define(schema schema.Collection, manifest *specs.Manifest) (err error) {
 
 // DefineProxy checks and defines the types for the given proxy
 func DefineProxy(schema schema.Collection, manifest *specs.Manifest, proxy *specs.Proxy) (err error) {
-	for _, call := range proxy.Calls {
-		err = DefineCall(schema, manifest, call, proxy)
+	for _, node := range proxy.Nodes {
+		err = DefineCall(schema, manifest, node.Call, proxy)
 		if err != nil {
 			return err
 		}
 
-		if call.Rollback != nil {
-			err = DefineCall(schema, manifest, call.Rollback, proxy)
+		if node.Rollback != nil {
+			err = DefineCall(schema, manifest, node.Rollback, proxy)
 			if err != nil {
 				return err
 			}
@@ -57,8 +57,8 @@ func DefineFlow(schema schema.Collection, manifest *specs.Manifest, flow *specs.
 		flow.Input = specs.ToParameterMap(flow.Input, "", method.GetInput())
 	}
 
-	for _, call := range flow.Calls {
-		err = DefineCall(schema, manifest, call, flow)
+	for _, call := range flow.Nodes {
+		err = DefineCall(schema, manifest, call.Call, flow)
 		if err != nil {
 			return err
 		}
@@ -100,7 +100,7 @@ func GetFlowSchema(schema schema.Collection, flow *specs.Flow) (schema.Method, e
 		return nil, trace.New(trace.WithMessage("undefined service alias '%s' in flow schema '%s'", GetService(flow.Schema), flow.Name))
 	}
 
-	method := service.GetMethod(GetMethod(flow.Schema))
+	method := service.GetEndpoint(GetMethod(flow.Schema))
 	if method == nil {
 		return nil, trace.New(trace.WithMessage("undefined method '%s' in flow schema '%s'", GetMethod(flow.Schema), flow.Name))
 	}
@@ -109,19 +109,19 @@ func GetFlowSchema(schema schema.Collection, flow *specs.Flow) (schema.Method, e
 }
 
 // DefineCall defineds the types for the given parameter map
-func DefineCall(schema schema.Collection, manifest *specs.Manifest, call specs.FlowCaller, flow specs.FlowManager) (err error) {
+func DefineCall(schema schema.Collection, manifest *specs.Manifest, call *specs.Call, flow specs.FlowManager) (err error) {
 	if call.GetEndpoint() == "" {
 		return nil
 	}
 
-	service := schema.GetService(GetSchemaService(manifest, GetService(call.GetEndpoint())))
+	service := schema.GetService(GetSchemaService(manifest, call.GetService()))
 	if service == nil {
-		return trace.New(trace.WithMessage("undefined service alias '%s' in flow '%s'", GetService(call.GetEndpoint()), flow.GetName()))
+		return trace.New(trace.WithMessage("undefined service alias '%s' in flow '%s'", call.GetService(), flow.GetName()))
 	}
 
-	method := service.GetMethod(GetMethod(call.GetEndpoint()))
+	method := service.GetEndpoint(call.GetEndpoint())
 	if method == nil {
-		return trace.New(trace.WithMessage("undefined method '%s' in flow '%s'", GetMethod(call.GetEndpoint()), flow.GetName()))
+		return trace.New(trace.WithMessage("undefined method '%s' in flow '%s'", call.GetEndpoint(), flow.GetName()))
 	}
 
 	call.SetDescriptor(method)
@@ -142,7 +142,7 @@ func DefineCall(schema schema.Collection, manifest *specs.Manifest, call specs.F
 }
 
 // DefineParameterMap defines the types for the given parameter map
-func DefineParameterMap(call specs.FlowCaller, params specs.Object, flow specs.FlowManager) (err error) {
+func DefineParameterMap(call *specs.Call, params specs.Object, flow specs.FlowManager) (err error) {
 	for _, header := range params.GetHeader() {
 		err = DefineProperty(call, header, flow)
 		if err != nil {
@@ -178,7 +178,7 @@ func DefineParameterMap(call specs.FlowCaller, params specs.Object, flow specs.F
 
 // DefineProperty defines the given property type.
 // If any object is references it has to be fixed afterwards and moved into the correct dataset
-func DefineProperty(call specs.FlowCaller, property *specs.Property, flow specs.FlowManager) error {
+func DefineProperty(call *specs.Call, property *specs.Property, flow specs.FlowManager) error {
 	if property.Reference == nil {
 		return nil
 	}
@@ -291,9 +291,9 @@ func ResolvePropertyObjectReferences(params specs.Object) {
 }
 
 // GetSchemaService attempts to find a service matching the alias name and return the schema name
-func GetSchemaService(manifest *specs.Manifest, alias string) string {
+func GetSchemaService(manifest *specs.Manifest, name string) string {
 	for _, service := range manifest.Services {
-		if service.Alias == alias {
+		if service.Name == name {
 			return service.Schema
 		}
 	}

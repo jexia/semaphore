@@ -2,7 +2,6 @@ package intermediate
 
 import (
 	"github.com/hashicorp/hcl/v2"
-	"github.com/hashicorp/hcl/v2/gohcl"
 	"github.com/jexia/maestro/specs"
 	"github.com/zclconf/go-cty/cty"
 )
@@ -61,7 +60,7 @@ func ParseIntermediateEndpoint(endpoint Endpoint) *specs.Endpoint {
 func ParseIntermediateService(service Service) *specs.Service {
 	result := specs.Service{
 		Options: ParseIntermediateOptions(service.Options),
-		Alias:   service.Alias,
+		Name:    service.Name,
 		Caller:  service.Caller,
 		Host:    service.Host,
 		Codec:   service.Codec,
@@ -88,7 +87,7 @@ func ParseIntermediateFlow(flow Flow, functions specs.CustomDefinedFunctions) (*
 		DependsOn: make(map[string]*specs.Flow, len(flow.DependsOn)),
 		Schema:    flow.Schema,
 		Input:     input,
-		Calls:     make([]*specs.Call, len(flow.Calls)),
+		Nodes:     make([]*specs.Node, len(flow.Calls)),
 		Output:    output,
 	}
 
@@ -97,69 +96,12 @@ func ParseIntermediateFlow(flow Flow, functions specs.CustomDefinedFunctions) (*
 	}
 
 	for index, call := range flow.Calls {
-		call, err := ParseIntermediateCall(call, functions)
+		node, err := ParseIntermediateNode(call, functions)
 		if err != nil {
 			return nil, err
 		}
 
-		result.Calls[index] = call
-	}
-
-	return &result, nil
-}
-
-// ParseIntermediateProxy parses the given intermediate proxy to a specs proxy
-func ParseIntermediateProxy(proxy Proxy, functions specs.CustomDefinedFunctions) (*specs.Proxy, error) {
-	forward, err := ParseIntermediateProxyForward(proxy.Forward, functions)
-	if err != nil {
-		return nil, err
-	}
-
-	result := specs.Proxy{
-		Name:      proxy.Name,
-		DependsOn: make(map[string]*specs.Flow, len(proxy.DependsOn)),
-		Calls:     make([]*specs.Call, len(proxy.Calls)),
-		Forward:   forward,
-	}
-
-	for _, dependency := range proxy.DependsOn {
-		result.DependsOn[dependency] = nil
-	}
-
-	for index, call := range proxy.Calls {
-		call, err := ParseIntermediateCall(call, functions)
-		if err != nil {
-			return nil, err
-		}
-
-		result.Calls[index] = call
-	}
-
-	return &result, nil
-}
-
-// ParseIntermediateProxyForward parses the given intermediate proxy forward to a specs proxy forward
-func ParseIntermediateProxyForward(proxy ProxyForward, functions specs.CustomDefinedFunctions) (*specs.ProxyForward, error) {
-	result := specs.ProxyForward{
-		Endpoint: proxy.Endpoint,
-	}
-
-	if proxy.Header != nil {
-		header, err := ParseIntermediateHeader(proxy.Header, functions)
-		if err != nil {
-			return nil, err
-		}
-
-		result.Header = header
-	}
-
-	if proxy.Rollback != nil {
-		rollback, err := ParseIntermediateRollbackCall(proxy.Rollback, functions)
-		if err != nil {
-			return nil, err
-		}
-
-		result.Rollback = rollback
+		result.Nodes[index] = node
 	}
 
 	return &result, nil
@@ -184,6 +126,64 @@ func ParseIntermediateInputParameterMap(params *InputParameterMap) *ParameterMap
 	}
 
 	return result
+}
+
+// ParseIntermediateProxy parses the given intermediate proxy to a specs proxy
+func ParseIntermediateProxy(proxy Proxy, functions specs.CustomDefinedFunctions) (*specs.Proxy, error) {
+	forward, err := ParseIntermediateProxyForward(proxy.Forward, functions)
+	if err != nil {
+		return nil, err
+	}
+
+	result := specs.Proxy{
+		Name:      proxy.Name,
+		DependsOn: make(map[string]*specs.Flow, len(proxy.DependsOn)),
+		Nodes:     make([]*specs.Node, len(proxy.Calls)),
+		Forward:   forward,
+	}
+
+	for _, dependency := range proxy.DependsOn {
+		result.DependsOn[dependency] = nil
+	}
+
+	for index, node := range proxy.Calls {
+		node, err := ParseIntermediateNode(node, functions)
+		if err != nil {
+			return nil, err
+		}
+
+		result.Nodes[index] = node
+	}
+
+	return &result, nil
+}
+
+// ParseIntermediateProxyForward parses the given intermediate proxy forward to a specs proxy forward
+func ParseIntermediateProxyForward(proxy ProxyForward, functions specs.CustomDefinedFunctions) (*specs.ProxyForward, error) {
+	result := specs.ProxyForward{
+		Service:  proxy.Service,
+		Endpoint: proxy.Endpoint,
+	}
+
+	if proxy.Header != nil {
+		header, err := ParseIntermediateHeader(proxy.Header, functions)
+		if err != nil {
+			return nil, err
+		}
+
+		result.Header = header
+	}
+
+	if proxy.Rollback != nil {
+		rollback, err := ParseIntermediateCall(proxy.Rollback, functions)
+		if err != nil {
+			return nil, err
+		}
+
+		result.Rollback = rollback
+	}
+
+	return &result, nil
 }
 
 // ParseIntermediateInputRepeatedParameterMap parses the given input repeated parameter map
@@ -216,11 +216,15 @@ func ParseIntermediateParameterMap(params *ParameterMap, functions specs.CustomD
 	}
 
 	result := specs.ParameterMap{
-		Options:    ParseIntermediateOptions(params.Options),
+		Options:    make(specs.Options),
 		Header:     header,
 		Nested:     make(map[string]*specs.NestedParameterMap, len(params.Nested)),
 		Repeated:   make(map[string]*specs.RepeatedParameterMap, len(params.Repeated)),
 		Properties: make(map[string]*specs.Property, len(properties)),
+	}
+
+	if params.Options != nil {
+		result.Options = ParseIntermediateOptions(params.Options.Body)
 	}
 
 	for _, attr := range properties {
@@ -358,59 +362,123 @@ func ParseIntermediateHeader(header *Header, functions specs.CustomDefinedFuncti
 }
 
 // ParseIntermediateOptions parses the given intermediate options to a spec options
-func ParseIntermediateOptions(options *Options) specs.Options {
+func ParseIntermediateOptions(options hcl.Body) specs.Options {
 	if options == nil {
 		return specs.Options{}
 	}
 
 	result := specs.Options{}
-	gohcl.DecodeBody(options.Body, nil, &result)
+	attrs, _ := options.JustAttributes()
+
+	for key, val := range attrs {
+		val, _ := val.Expr.Value(nil)
+		if val.Type() != cty.String {
+			continue
+		}
+
+		result[key] = val.AsString()
+	}
 
 	return result
 }
 
-// ParseIntermediateCall parses the given intermediate call to a spec call
-func ParseIntermediateCall(call Call, functions specs.CustomDefinedFunctions) (*specs.Call, error) {
-	request, err := ParseIntermediateParameterMap(call.Request, functions)
+// ParseIntermediateNode parses the given intermediate call to a spec call
+func ParseIntermediateNode(node Node, functions specs.CustomDefinedFunctions) (*specs.Node, error) {
+	call, err := ParseIntermediateCall(node.Request, functions)
 	if err != nil {
 		return nil, err
 	}
 
-	rollback, err := ParseIntermediateRollbackCall(call.Rollback, functions)
+	rollback, err := ParseIntermediateCall(node.Rollback, functions)
 	if err != nil {
 		return nil, err
 	}
 
-	result := specs.Call{
-		DependsOn: make(map[string]*specs.Call, len(call.DependsOn)),
-		Name:      call.Name,
-		Endpoint:  call.Endpoint,
-		Type:      call.Type,
-		Request:   request,
+	result := specs.Node{
+		DependsOn: make(map[string]*specs.Node, len(node.DependsOn)),
+		Name:      node.Name,
+		Type:      node.Type,
+		Call:      call,
 		Rollback:  rollback,
 	}
 
-	for _, dependency := range call.DependsOn {
+	for _, dependency := range node.DependsOn {
 		result.DependsOn[dependency] = nil
 	}
 
 	return &result, nil
 }
 
-// ParseIntermediateRollbackCall parses the given intermediate rollback call to a spec rollback call
-func ParseIntermediateRollbackCall(call *RollbackCall, functions specs.CustomDefinedFunctions) (*specs.RollbackCall, error) {
+// ParseIntermediateCall parses the given intermediate call to a spec call
+func ParseIntermediateCall(call *Call, functions specs.CustomDefinedFunctions) (*specs.Call, error) {
 	if call == nil {
 		return nil, nil
 	}
 
-	results, err := ParseIntermediateParameterMap(call.Request, functions)
+	results, err := ParseIntermediateCallParameterMap(call, functions)
 	if err != nil {
 		return nil, err
 	}
 
-	result := specs.RollbackCall{
+	result := specs.Call{
+		Service:  call.Service,
 		Endpoint: call.Endpoint,
 		Request:  results,
+	}
+
+	return &result, nil
+}
+
+// ParseIntermediateCallParameterMap parses the given intermediate parameter map to a spec parameter map
+func ParseIntermediateCallParameterMap(params *Call, functions specs.CustomDefinedFunctions) (*specs.ParameterMap, error) {
+	if params == nil {
+		return nil, nil
+	}
+
+	properties, _ := params.Properties.JustAttributes()
+
+	header, err := ParseIntermediateHeader(params.Header, functions)
+	if err != nil {
+		return nil, err
+	}
+
+	result := specs.ParameterMap{
+		Options:    make(specs.Options),
+		Header:     header,
+		Nested:     make(map[string]*specs.NestedParameterMap, len(params.Nested)),
+		Repeated:   make(map[string]*specs.RepeatedParameterMap, len(params.Repeated)),
+		Properties: make(map[string]*specs.Property, len(properties)),
+	}
+
+	if params.Options != nil {
+		result.Options = ParseIntermediateOptions(params.Options.Body)
+	}
+
+	for _, attr := range properties {
+		results, err := ParseIntermediateProperty(attr.Name, functions, attr)
+		if err != nil {
+			return nil, err
+		}
+
+		result.Properties[attr.Name] = results
+	}
+
+	for _, nested := range params.Nested {
+		results, err := ParseIntermediateNestedParameterMap(nested, functions, nested.Name)
+		if err != nil {
+			return nil, err
+		}
+
+		result.Nested[nested.Name] = results
+	}
+
+	for _, repeated := range params.Repeated {
+		results, err := ParseIntermediateRepeatedParameterMap(repeated, functions, repeated.Name)
+		if err != nil {
+			return nil, err
+		}
+
+		result.Repeated[repeated.Name] = results
 	}
 
 	return &result, nil

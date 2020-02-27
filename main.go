@@ -2,6 +2,7 @@ package maestro
 
 import (
 	"context"
+	"io"
 	"os"
 	"path/filepath"
 
@@ -46,10 +47,14 @@ type Options struct {
 
 // NewOptions constructs a options object from the given option constructors
 func NewOptions(options ...Option) Options {
-	result := Options{}
+	result := Options{
+		Codec: make(map[string]codec.Constructor),
+	}
+
 	for _, option := range options {
 		option(&result)
 	}
+
 	return result
 }
 
@@ -65,6 +70,20 @@ func WithPath(path string, recursive bool) Option {
 func WithCodec(constructor codec.Constructor) Option {
 	return func(options *Options) {
 		options.Codec[constructor.Name()] = constructor
+	}
+}
+
+// WithCaller appends the given caller to the collection of available callers
+func WithCaller(caller protocol.Caller) Option {
+	return func(options *Options) {
+		options.Callers = append(options.Callers, caller)
+	}
+}
+
+// WithListener appends the given listener to the collection of available listeners
+func WithListener(listener protocol.Listener) Option {
+	return func(options *Options) {
+		options.Listeners = append(options.Listeners, listener)
 	}
 }
 
@@ -165,10 +184,20 @@ func ConstructFlowManager(manifest *specs.Manifest, options Options) error {
 
 	for index, endpoint := range manifest.Endpoints {
 		f := GetFlow(manifest, endpoint.Flow)
-		nodes := make([]*flow.Node, len(f.Calls))
+		nodes := make([]*flow.Node, len(f.Nodes))
 
-		for index, call := range f.Calls {
-			nodes[index] = flow.NewNode(call, ConstructCall(manifest, call, options), ConstructCall(manifest, call.Rollback, options))
+		for index, node := range f.Nodes {
+			caller, err := ConstructCall(manifest, node.Call, options)
+			if err != nil {
+				return err
+			}
+
+			// rollback, err := ConstructCall(manifest, call.Rollback, options)
+			// if err != nil {
+			// 	return err
+			// }
+
+			nodes[index] = flow.NewNode(node, caller, nil)
 		}
 
 		collection, has := options.Codec[endpoint.Codec]
@@ -205,28 +234,68 @@ func ConstructFlowManager(manifest *specs.Manifest, options Options) error {
 	return nil
 }
 
-func ConstructCall(manifest *specs.Manifest, call specs.FlowCaller, options Options) flow.Call {
-	// service := GetService(manifest, strict.GetService(call.GetEndpoint()))
-	// if service == nil {
-	// 	// handle err
-	// }
+type rw struct {
+	writer io.Writer
+}
 
-	// caller := options.Callers[service.Caller]
-	// codec := options.Codec[service.Codec]
-	// call.GetDescriptor()
+func (rw *rw) Header() protocol.Header {
+	return nil
+}
+func (rw *rw) Write(bb []byte) (int, error) {
+	return rw.writer.Write(bb)
+}
+func (rw *rw) WriteHeader(int) {}
 
-	// req, err := codec.New(call.GetName(), call.GetRequest())
-	// res, err := codec.New(call.GetName(), call.GetResponse())
+func ConstructCall(manifest *specs.Manifest, call *specs.Call, options Options) (flow.Call, error) {
+	service := GetService(manifest, strict.GetService(call.GetEndpoint()))
+	if service == nil {
+		return nil, trace.New(trace.WithMessage("the service for %s was not found", call.GetEndpoint()))
+	}
+
+	constructor := GetCaller(options.Callers, service.Caller)
+	codec := options.Codec[service.Codec]
+
+	req, err := codec.New(call.GetName(), call.GetRequest())
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := codec.New(call.GetName(), call.GetResponse())
+	if err != nil {
+		return nil, err
+	}
+
+	caller, err := constructor.New(service.Host, service.Options)
+	if err != nil {
+		return nil, err
+	}
 
 	return func(ctx context.Context, refs *refs.Store) error {
-		// reader, err := req.Marshal(refs)
+		body, err := req.Marshal(refs)
+		if err != nil {
+			return err
+		}
 
-		// caller.Call()
+		reader, writer := io.Pipe()
+		req := &protocol.Request{
+			Context: ctx,
+			Body:    body,
+			// Header:  protocol.Header{},
+		}
 
-		// res.Unmarshal()
+		w := &rw{
+			writer: writer,
+		}
+
+		go caller.Call(w, req, refs)
+
+		err = res.Unmarshal(reader, refs)
+		if err != nil {
+			return nil
+		}
 
 		return nil
-	}
+	}, nil
 }
 
 // ConstructListeners constructs the listeners from the given collection of endpoints
@@ -264,10 +333,21 @@ func GetListener(listeners []protocol.Listener, name string) protocol.Listener {
 	return nil
 }
 
+// GetCaller attempts to retrieve a caller from the given options matching the given name
+func GetCaller(callers []protocol.Caller, name string) protocol.Caller {
+	for _, caller := range callers {
+		if caller.Name() == name {
+			return caller
+		}
+	}
+
+	return nil
+}
+
 // GetService attempts to retrieve a service from the given manifest matching the given name
 func GetService(manifest *specs.Manifest, name string) *specs.Service {
 	for _, service := range manifest.Services {
-		if service.Alias == name {
+		if service.Name == name {
 			return service
 		}
 	}

@@ -10,14 +10,14 @@ import (
 // NewNode constructs a new node for the given call.
 // The service called inside the call endpoint is retrieved from the services collection.
 // The call, codec and rollback are defined inside the node and used while processing requests.
-func NewNode(specs *specs.Call, call, rollback Call) *Node {
+func NewNode(node *specs.Node, call, rollback Call) *Node {
 	return &Node{
-		Name:       specs.GetName(),
+		Name:       node.GetName(),
 		Previous:   []*Node{},
 		Call:       call,
 		Rollback:   rollback,
-		DependsOn:  specs.DependsOn,
-		References: refs.References(specs.GetRequest()),
+		DependsOn:  node.DependsOn,
+		References: refs.References(node.Call.GetRequest()),
 		Next:       []*Node{},
 	}
 }
@@ -42,7 +42,7 @@ type Node struct {
 	Previous   Nodes
 	Call       Call
 	Rollback   Call
-	DependsOn  map[string]*specs.Call
+	DependsOn  map[string]*specs.Node
 	References map[string]*specs.PropertyReference
 	Next       Nodes
 }

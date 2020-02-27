@@ -16,7 +16,7 @@ type Endpoint struct {
 	Flow     *flow.Manager
 	Request  codec.Manager
 	Response codec.Manager
-	Forward  Caller
+	Forward  Call
 	Options  specs.Options
 }
 
@@ -49,22 +49,21 @@ type ResponseWriter interface {
 // Request represents the request object given to a caller implementation used to make calls
 type Request struct {
 	Header  Header
-	Body    io.ReadCloser
+	Body    io.Reader
 	Context context.Context
 }
 
-// NewCaller constructs a new caller for the given url
-type NewCaller func(url string, options specs.Options) (Caller, error)
-
-// Caller specifies the caller implementation.
+// Caller constructs new calls which could be used to call services
 type Caller interface {
 	Name() string
+	New(host string, options specs.Options) (Call, error)
+}
+
+// Call is a preconfigured interface for a single service
+type Call interface {
 	Call(writer ResponseWriter, request *Request, refs *refs.Store) error
 	Close() error
 }
-
-// NewListener constructs a new listener for the given addr
-type NewListener func(addr string, options specs.Options) (Listener, error)
 
 // Listener specifies the listener implementation
 type Listener interface {

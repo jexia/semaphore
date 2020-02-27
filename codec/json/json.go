@@ -8,12 +8,18 @@ import (
 	"github.com/francoispqt/gojay"
 	"github.com/jexia/maestro/codec"
 	"github.com/jexia/maestro/refs"
-	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/specs"
 )
 
-// New constructs a new JSON encode/decode manager
-func New(resource string, schema schema.Object, specs specs.Object) (codec.Manager, error) {
+// Constructor is capable of constructing new codec managers for the given resource and specs
+type Constructor struct {
+}
+
+func (constructor *Constructor) Name() string {
+	return "json"
+}
+
+func (constructor *Constructor) New(resource string, specs specs.Object) (codec.Manager, error) {
 	return &Manager{
 		resource: resource,
 		specs:    specs,

@@ -1,7 +1,6 @@
-service "caller" "http" {
+service "caller" "http" "json" {
 	host = ""
 	schema = "caller"
-	codec = "json"
 }
 
 flow "echo" {
@@ -9,8 +8,8 @@ flow "echo" {
         ammount = "<int32>"
     }
 
-	call "opening" "caller.Open" {
-		request {
+	call "opening" {
+		request "caller" "Open" {
 			header {
                 Ammount = "{{ input:ammount }}"
             }

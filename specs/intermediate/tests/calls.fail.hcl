@@ -1,9 +1,9 @@
 flow "echo" {
-    call "set" {
+    call {
         
     }
 
-    call "get" {
+    call {
 
     }
 }

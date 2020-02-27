@@ -1,19 +1,18 @@
-service "caller" "http" {
+service "caller" "http" "json" {
 	host = ""
 	schema = "caller"
-	codec = "json"
 }
 
 proxy "echo" {
-	call "opening" "caller.Open" {
-		request {}
+	call "opening" {
+		request "caller" "Open" {}
 	}
 
-	call "reference" "caller.Open" {
-		request {
+	call "reference" {
+		request "caller" "Open" {
 			message = "{{ opening:message }}"
 		}
 	}
 
-	forward "caller.Upload" {}
+	forward "caller" "Upload" {}
 }

@@ -1,11 +1,9 @@
-service "auth" "http" {
+service "auth" "http" "json" {
     host = "https://auth.com"
     schema = "proto.Auth"
-    codec = "json"
 }
 
-service "users" "http" {
+service "users" "http" "proto" {
     host = "https://users.com"
     schema = "proto.Users"
-    codec = "proto"
 }

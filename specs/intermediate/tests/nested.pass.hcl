@@ -5,8 +5,8 @@ flow "echo" {
         }
     }
 
-    call "get" "getter.Get" {
-        request {
+    call "get" {
+        request "getter" "Get" {
             message "nested" {
                 name = "{{ input:nested.name }}"
 

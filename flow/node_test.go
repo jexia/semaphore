@@ -13,7 +13,7 @@ func NewMockNode(name string, caller Call, rollback Call) *Node {
 		Name:       name,
 		Call:       caller,
 		Rollback:   rollback,
-		DependsOn:  map[string]*specs.Call{},
+		DependsOn:  map[string]*specs.Node{},
 		References: map[string]*specs.PropertyReference{},
 	}
 }

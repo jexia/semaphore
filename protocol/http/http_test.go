@@ -55,7 +55,8 @@ func TestCaller(t *testing.T) {
 		},
 	}
 
-	codec, err := json.New("input", nil, specs)
+	cons := &json.Constructor{}
+	codec, err := cons.New("input", specs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -72,7 +73,8 @@ func TestCaller(t *testing.T) {
 		Context: ctx,
 	}
 
-	caller, err := NewCaller(server.URL, nil)
+	constructor := &Caller{}
+	caller, err := constructor.New(server.URL, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

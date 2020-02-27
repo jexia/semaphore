@@ -9,10 +9,10 @@ func TestDuplicateManifests(t *testing.T) {
 		{
 			Services: []*Service{
 				{
-					Alias: "dup",
+					Name: "dup",
 				},
 				{
-					Alias: "dup",
+					Name: "dup",
 				},
 			},
 		},
@@ -40,7 +40,7 @@ func TestDuplicateManifests(t *testing.T) {
 			Flows: []*Flow{
 				{
 					Name: "first",
-					Calls: []*Call{
+					Nodes: []*Node{
 						{
 							Name: "dup",
 						},
@@ -65,7 +65,7 @@ func TestDuplicateFlow(t *testing.T) {
 	tests := []*Flow{
 		{
 			Name: "first",
-			Calls: []*Call{
+			Nodes: []*Node{
 				{
 					Name: "dup",
 				},

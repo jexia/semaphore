@@ -3,13 +3,19 @@ syntax = "proto3";
 package proto;
 
 service Logger {
-    rpc Append(Message) returns (Record);
+    rpc Call(Message) returns (Empty);
+    rpc Append(Empty) returns (Record);
 }
+
+message Empty {}
 
 message Message {
     string message = 1;
 }
 
 message Record {
-    int64 id = 1;
+    int32 userId = 1;
+    int32 id = 2;
+    string title = 3;
+    bool completed = 4;
 }

@@ -17,21 +17,11 @@ type Object interface {
 	SetDescriptor(schema.Object)
 }
 
-// FlowCaller represents a flow caller
-type FlowCaller interface {
-	GetName() string
-	GetEndpoint() string
-	GetRequest() Object
-	GetResponse() Object
-	GetDescriptor() schema.Method
-	SetDescriptor(schema.Method)
-}
-
 // FlowManager represents a flow manager
 type FlowManager interface {
 	GetName() string
 	GetDependencies() map[string]*Flow
-	GetCalls() []*Call
+	GetNodes() []*Node
 	GetInput() *ParameterMap
 	GetOutput() *ParameterMap
 }
@@ -64,7 +54,7 @@ type Flow struct {
 	DependsOn map[string]*Flow
 	Schema    string
 	Input     *ParameterMap
-	Calls     []*Call
+	Nodes     []*Node
 	Output    *ParameterMap
 }
 
@@ -78,9 +68,9 @@ func (flow *Flow) GetDependencies() map[string]*Flow {
 	return flow.DependsOn
 }
 
-// GetCalls returns the calls of the given flow
-func (flow *Flow) GetCalls() []*Call {
-	return flow.Calls
+// GetNodes returns the calls of the given flow
+func (flow *Flow) GetNodes() []*Node {
+	return flow.Nodes
 }
 
 // GetInput returns the input of the given flow
@@ -103,7 +93,7 @@ type Endpoint struct {
 }
 
 // Options represents a collection of options
-type Options map[string]interface{}
+type Options map[string]string
 
 // Header represents a collection of key values
 type Header map[string]*Property
@@ -401,25 +391,47 @@ func (repeated *RepeatedParameterMap) Clone(name string, path string) *RepeatedP
 	return returns
 }
 
-// Call calls the given service and method.
-// Calls could be executed synchronously or asynchronously.
+// Node represents a point inside a given flow where a request or rollback could be preformed.
+// Nodes could be executed synchronously or asynchronously.
 // All calls are referencing a service method, the service should match the alias defined inside the service.
 // The request and response proto messages are used for type definitions.
 // A call could contain the request headers, request body, rollback, and the execution type.
-type Call struct {
+type Node struct {
 	Name       string
-	DependsOn  map[string]*Call
-	Endpoint   string
+	DependsOn  map[string]*Node
 	Type       string
+	Call       *Call
+	Rollback   *Call
+	Descriptor schema.Method
+}
+
+// GetName returns the call name
+func (call *Node) GetName() string {
+	return call.Name
+}
+
+// GetDescriptor returns the call descriptor
+func (call *Node) GetDescriptor() schema.Method {
+	return call.Descriptor
+}
+
+// Call represents a call which is executed during runtime
+type Call struct {
+	Parent     *Node
+	Service    string
+	Endpoint   string
 	Request    *ParameterMap
 	Response   *ParameterMap
-	Rollback   *RollbackCall
 	Descriptor schema.Method
 }
 
 // GetName returns the call name
 func (call *Call) GetName() string {
-	return call.Name
+	if call.Parent == nil {
+		return ""
+	}
+
+	return call.Parent.Name
 }
 
 // GetRequest returns the call request parameter map
@@ -429,7 +441,12 @@ func (call *Call) GetRequest() Object {
 
 // GetResponse returns the call response parameter map
 func (call *Call) GetResponse() Object {
-	return call.Response
+	return nil
+}
+
+// GetService returns the call service
+func (call *Call) GetService() string {
+	return call.Service
 }
 
 // GetEndpoint returns the call endpoint
@@ -451,55 +468,8 @@ func (call *Call) SetDescriptor(descriptor schema.Method) {
 	call.Descriptor = descriptor
 }
 
-// RollbackCall represents the rollback call which is executed when a call inside a flow failed.
-type RollbackCall struct {
-	Parent     *Call
-	Endpoint   string
-	Request    *ParameterMap
-	Response   *ParameterMap
-	Descriptor schema.Method
-}
-
-// GetName returns the call name
-func (call *RollbackCall) GetName() string {
-	if call.Parent == nil {
-		return ""
-	}
-
-	return call.Parent.Name
-}
-
-// GetRequest returns the call request parameter map
-func (call *RollbackCall) GetRequest() Object {
-	return call.Request
-}
-
-// GetResponse returns the call response parameter map
-func (call *RollbackCall) GetResponse() Object {
-	return nil
-}
-
-// GetEndpoint returns the call endpoint
-func (call *RollbackCall) GetEndpoint() string {
-	return call.Endpoint
-}
-
-// GetDescriptor returns the call descriptor
-func (call *RollbackCall) GetDescriptor() schema.Method {
-	return call.Descriptor
-}
-
-// SetDescriptor sets the call descriptor
-func (call *RollbackCall) SetDescriptor(descriptor schema.Method) {
-	if descriptor != nil {
-		call.Response = ToParameterMap(nil, "", descriptor.GetOutput())
-	}
-
-	call.Descriptor = descriptor
-}
-
 // Service represent external service which could be called inside the flows.
-// The service name is an alias which could be referenced inside calls.
+// The service name could be referenced inside calls.
 // The host of the service and proto service method should be defined for each service.
 //
 // The request and response message defined inside the proto buffers are used for type definitions.
@@ -507,7 +477,7 @@ func (call *RollbackCall) SetDescriptor(descriptor schema.Method) {
 // Each service references a caller implementation to be used.
 type Service struct {
 	Options Options
-	Alias   string
+	Name    string
 	Caller  string
 	Host    string
 	Codec   string
@@ -520,7 +490,7 @@ type Service struct {
 type Proxy struct {
 	Name      string
 	DependsOn map[string]*Flow
-	Calls     []*Call
+	Nodes     []*Node
 	Forward   *ProxyForward
 }
 
@@ -534,9 +504,9 @@ func (proxy *Proxy) GetDependencies() map[string]*Flow {
 	return proxy.DependsOn
 }
 
-// GetCalls returns the calls of the given flow
-func (proxy *Proxy) GetCalls() []*Call {
-	return proxy.Calls
+// GetNodes returns the calls of the given flow
+func (proxy *Proxy) GetNodes() []*Node {
+	return proxy.Nodes
 }
 
 // GetInput returns the input of the given flow
@@ -551,7 +521,8 @@ func (proxy *Proxy) GetOutput() *ParameterMap {
 
 // ProxyForward represents the service endpoint where the proxy should forward the stream to when all calls succeed.
 type ProxyForward struct {
+	Service  string
 	Endpoint string
 	Header   Header
-	Rollback *RollbackCall
+	Rollback *Call
 }

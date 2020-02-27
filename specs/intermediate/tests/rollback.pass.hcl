@@ -1,6 +1,6 @@
 flow "echo" {
-    call "get" "getter.Get" {
-        rollback "getter.Remove" {
+    call "get" {
+        rollback "getter" "Remove" {
         }
     }
 }

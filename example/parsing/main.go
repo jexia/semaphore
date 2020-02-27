@@ -1,10 +1,11 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/jexia/maestro"
+	"github.com/jexia/maestro/codec/json"
+	"github.com/jexia/maestro/protocol/http"
 	"github.com/jexia/maestro/schema/protoc"
+	"github.com/jexia/maestro/specs"
 )
 
 func main() {
@@ -13,19 +14,20 @@ func main() {
 		panic(err)
 	}
 
-	client, err := maestro.New(maestro.WithPath(".", false), maestro.WithSchemaCollection(collection))
+	listener, err := http.NewListener(":8080", specs.Options{})
 	if err != nil {
 		panic(err)
 	}
 
-	for _, flow := range client.Manifest.Flows {
-		fmt.Println("flow:", flow.Name)
-		for _, call := range flow.Calls {
-			fmt.Println("  - call", call.Name)
+	json := &json.Constructor{}
 
-			for _, prop := range call.GetRequest().GetProperties() {
-				fmt.Println("    - ", prop.GetPath(), prop.Reference)
-			}
-		}
+	_, err = maestro.New(maestro.WithPath(".", false), maestro.WithSchemaCollection(collection), maestro.WithCodec(json), maestro.WithCaller(&http.Caller{}), maestro.WithListener(listener))
+	if err != nil {
+		panic(err)
+	}
+
+	err = listener.Serve()
+	if err != nil {
+		panic(err)
 	}
 }

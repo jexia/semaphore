@@ -61,7 +61,7 @@ func (service *service) GetName() string {
 	return service.descriptor.GetName()
 }
 
-func (service *service) GetMethod(name string) schema.Method {
+func (service *service) GetEndpoint(name string) schema.Method {
 	for _, method := range service.descriptor.GetMethods() {
 		if method.GetName() != name {
 			continue
