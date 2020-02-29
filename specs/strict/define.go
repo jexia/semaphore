@@ -57,6 +57,7 @@ func DefineFlow(schema schema.Collection, manifest *specs.Manifest, flow *specs.
 		}
 
 		flow.Input = specs.ToParameterMap(flow.Input, "", method.GetInput())
+		flow.Input.SetDescriptor(method.GetInput())
 	}
 
 	for _, node := range flow.Nodes {
@@ -91,6 +92,8 @@ func DefineFlow(schema schema.Collection, manifest *specs.Manifest, flow *specs.
 			if err != nil {
 				return err
 			}
+
+			flow.Output.SetDescriptor(method.GetOutput())
 		}
 	}
 

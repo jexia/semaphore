@@ -63,6 +63,10 @@ func (manager *Manager) Unmarshal(reader io.Reader, refs *refs.Store) error {
 		return err
 	}
 
+	if len(bb) == 0 {
+		return nil
+	}
+
 	object := NewObject(manager.resource, manager.specs, refs)
 	err = gojay.UnmarshalJSONObject(bb, object)
 	if err != nil {

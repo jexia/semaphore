@@ -1,4 +1,4 @@
-endpoint "todo" "http" "json" {
+endpoint "todo" "http" "proto" {
 	endpoint = "/"
 	method = "GET"
 }
@@ -9,6 +9,8 @@ service "todo" "http" "json" {
 }
 
 flow "todo" {
+	schema = "proto.TODO.Get"
+
 	call "query" {
 		request "todo" "Get" {
 		}
