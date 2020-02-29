@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/jexia/maestro"
 	"github.com/jexia/maestro/codec/json"
 	"github.com/jexia/maestro/protocol/http"
@@ -19,13 +21,19 @@ func main() {
 		panic(err)
 	}
 
-	json := &json.Constructor{}
+	_, err = maestro.New(
+		maestro.WithPath(".", false),
+		maestro.WithSchemaCollection(collection),
+		maestro.WithCodec(json.NewConstructor()),
+		maestro.WithCaller(http.NewCaller()),
+		maestro.WithListener(listener),
+	)
 
-	_, err = maestro.New(maestro.WithPath(".", false), maestro.WithSchemaCollection(collection), maestro.WithCodec(json), maestro.WithCaller(&http.Caller{}), maestro.WithListener(listener))
 	if err != nil {
 		panic(err)
 	}
 
+	fmt.Println("listening on :8080")
 	err = listener.Serve()
 	if err != nil {
 		panic(err)

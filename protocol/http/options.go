@@ -49,16 +49,22 @@ func ParseEndpointOptions(options specs.Options) (*EndpointOptions, error) {
 
 // CallerOptions represents the available HTTP options
 type CallerOptions struct {
-	Method   string
-	Endpoint string
+	FlushInterval time.Duration
 }
 
 // ParseCallerOptions parses the given specs options into HTTP options
 func ParseCallerOptions(options specs.Options) (*CallerOptions, error) {
 	result := &CallerOptions{}
 
-	result.Method = options["method"]
-	result.Endpoint = options["endpoint"]
+	flush, has := options["flush_interval"]
+	if has {
+		duration, err := time.ParseDuration(flush)
+		if err != nil {
+			return nil, err
+		}
+
+		result.FlushInterval = duration
+	}
 
 	return result, nil
 }

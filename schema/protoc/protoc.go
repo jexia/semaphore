@@ -109,6 +109,7 @@ func NewMethod(descriptor *desc.MethodDescriptor) Method {
 	if err == nil {
 		ext := ext.(*annotations.HTTP)
 		options[http.EndpointOption] = ext.GetEndpoint()
+		options[http.MethodOption] = ext.GetMethod()
 	}
 
 	return &method{

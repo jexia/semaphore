@@ -12,4 +12,5 @@ extend google.protobuf.MethodOptions {
 
 message HTTP {
   string endpoint = 1;
+  string method = 2;
 }

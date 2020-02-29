@@ -17,7 +17,14 @@ import (
 const (
 	// EndpointOption represents the HTTP endpoints option key
 	EndpointOption = "http.endpoint"
+	// MethodOption represents the HTTP method option key
+	MethodOption = "http.method"
 )
+
+// NewCaller constructs a new HTTP caller
+func NewCaller() *Caller {
+	return &Caller{}
+}
 
 // Caller represents the caller constructor
 type Caller struct {
@@ -41,11 +48,11 @@ func (caller *Caller) New(host string, schema schema.Service, opts specs.Options
 	}
 
 	return &Call{
-		method: options.Method,
 		host:   host,
 		schema: schema,
 		proxy: &httputil.ReverseProxy{
-			Director: func(*http.Request) {},
+			Director:      func(*http.Request) {},
+			FlushInterval: options.FlushInterval,
 		},
 	}, nil
 }
@@ -67,9 +74,10 @@ func (call *Call) Call(rw protocol.ResponseWriter, incoming *protocol.Request, r
 
 	method := call.schema.GetMethod(incoming.Method)
 	options := method.GetOptions()
+
 	url.Path = options[EndpointOption]
 
-	req, err := http.NewRequestWithContext(incoming.Context, call.method, url.String(), incoming.Body)
+	req, err := http.NewRequestWithContext(incoming.Context, options[MethodOption], url.String(), incoming.Body)
 	if err != nil {
 		return err
 	}

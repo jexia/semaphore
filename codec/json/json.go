@@ -12,6 +12,11 @@ import (
 	"github.com/jexia/maestro/specs/trace"
 )
 
+// NewConstructor constructs a new JSON constructor
+func NewConstructor() *Constructor {
+	return &Constructor{}
+}
+
 // Constructor is capable of constructing new codec managers for the given resource and specs
 type Constructor struct {
 }

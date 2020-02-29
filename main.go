@@ -186,6 +186,11 @@ func ConstructFlowManager(manifest *specs.Manifest, options Options) error {
 		f := GetFlow(manifest, endpoint.Flow)
 		nodes := make([]*flow.Node, len(f.Nodes))
 
+		result := &protocol.Endpoint{
+			Listener: endpoint.Listener,
+			Options:  endpoint.Options,
+		}
+
 		for index, node := range f.Nodes {
 			caller, err := ConstructCall(manifest, node, node.Call, options)
 			if err != nil {
@@ -205,25 +210,26 @@ func ConstructFlowManager(manifest *specs.Manifest, options Options) error {
 			return trace.New(trace.WithMessage("unkown endpoint codec %s", endpoint.Codec))
 		}
 
-		req, err := collection.New(specs.InputResource, f.GetInput())
-		if err != nil {
-			return err
+		if f.GetInput() != nil {
+			req, err := collection.New(specs.InputResource, f.GetInput())
+			if err != nil {
+				return err
+			}
+
+			result.Request = req
 		}
 
-		res, err := collection.New(specs.InputResource, f.GetOutput())
-		if err != nil {
-			return err
+		if f.GetOutput() != nil {
+			res, err := collection.New(specs.InputResource, f.GetOutput())
+			if err != nil {
+				return err
+			}
+
+			result.Response = res
 		}
 
-		manager := flow.NewManager(f.GetName(), nodes)
-
-		endpoints[index] = &protocol.Endpoint{
-			Flow:     manager,
-			Listener: endpoint.Listener,
-			Options:  endpoint.Options,
-			Request:  req,
-			Response: res,
-		}
+		result.Flow = flow.NewManager(f.GetName(), nodes)
+		endpoints[index] = result
 	}
 
 	err := ConstructListeners(endpoints, options)
