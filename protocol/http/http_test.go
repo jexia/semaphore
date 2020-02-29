@@ -14,9 +14,61 @@ import (
 	"github.com/jexia/maestro/flow"
 	"github.com/jexia/maestro/protocol"
 	"github.com/jexia/maestro/refs"
+	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/specs"
 	"github.com/jexia/maestro/specs/types"
 )
+
+type MockService struct {
+	name    string
+	methods []schema.Method
+	options schema.Options
+}
+
+func (service *MockService) GetName() string {
+	return service.name
+}
+
+func (service *MockService) GetMethod(name string) schema.Method {
+	for _, method := range service.methods {
+		if method.GetName() == name {
+			return method
+		}
+	}
+
+	return nil
+}
+
+func (service *MockService) GetMethods() []schema.Method {
+	return service.methods
+}
+
+func (service *MockService) GetOptions() schema.Options {
+	return service.options
+}
+
+type MockMethod struct {
+	name    string
+	options schema.Options
+	input   schema.Object
+	output  schema.Object
+}
+
+func (method *MockMethod) GetName() string {
+	return method.name
+}
+
+func (method *MockMethod) GetInput() schema.Object {
+	return method.input
+}
+
+func (method *MockMethod) GetOutput() schema.Object {
+	return method.output
+}
+
+func (method *MockMethod) GetOptions() schema.Options {
+	return method.options
+}
 
 type MockResponseWriter struct {
 	header protocol.Header
@@ -73,8 +125,18 @@ func TestCaller(t *testing.T) {
 		Context: ctx,
 	}
 
+	service := &MockService{
+		methods: []schema.Method{
+			&MockMethod{
+				options: schema.Options{
+					EndpointOption: "/",
+					MethodOption:   "GET",
+				},
+			},
+		},
+	}
 	constructor := &Caller{}
-	caller, err := constructor.New(server.URL, nil, nil)
+	caller, err := constructor.New(server.URL, service, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
