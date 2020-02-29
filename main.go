@@ -249,7 +249,7 @@ func (rw *rw) WriteHeader(int) {}
 func ConstructCall(manifest *specs.Manifest, node *specs.Node, call *specs.Call, options Options) (flow.Call, error) {
 	service := GetService(manifest, call.GetService())
 	if service == nil {
-		return nil, trace.New(trace.WithMessage("the service for %s was not found", call.GetEndpoint()))
+		return nil, trace.New(trace.WithMessage("the service for %s was not found", call.GetMethod()))
 	}
 
 	constructor := GetCaller(options.Callers, service.Caller)
@@ -265,7 +265,7 @@ func ConstructCall(manifest *specs.Manifest, node *specs.Node, call *specs.Call,
 		return nil, err
 	}
 
-	caller, err := constructor.New(service.Host, service.Options)
+	caller, err := constructor.New(service.Host, options.Schema.GetService(service.Schema), service.Options)
 	if err != nil {
 		return nil, err
 	}
@@ -278,7 +278,7 @@ func ConstructCall(manifest *specs.Manifest, node *specs.Node, call *specs.Call,
 
 		reader, writer := io.Pipe()
 		req := &protocol.Request{
-			Endpoint: call.GetEndpoint(),
+			Endpoint: call.GetMethod(),
 			Context:  ctx,
 			Body:     body,
 			// Header:  protocol.Header{},

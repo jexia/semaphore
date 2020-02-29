@@ -61,7 +61,7 @@ func (service *service) GetName() string {
 	return service.descriptor.GetName()
 }
 
-func (service *service) GetEndpoint(name string) schema.Method {
+func (service *service) GetMethod(name string) schema.Method {
 	for _, method := range service.descriptor.GetMethods() {
 		if method.GetName() != name {
 			continue
@@ -71,6 +71,15 @@ func (service *service) GetEndpoint(name string) schema.Method {
 	}
 
 	return nil
+}
+
+func (service *service) GetMethods() []schema.Method {
+	result := make([]schema.Method, len(service.descriptor.GetMethods()))
+	for index, method := range service.descriptor.GetMethods() {
+		result[index] = NewMethod(method)
+	}
+
+	return result
 }
 
 func (service *service) GetDescriptor() *desc.ServiceDescriptor {

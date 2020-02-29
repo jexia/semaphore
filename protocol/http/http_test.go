@@ -74,7 +74,7 @@ func TestCaller(t *testing.T) {
 	}
 
 	constructor := &Caller{}
-	caller, err := constructor.New(server.URL, nil)
+	caller, err := constructor.New(server.URL, nil, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

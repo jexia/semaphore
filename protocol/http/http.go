@@ -9,6 +9,7 @@ import (
 
 	"github.com/jexia/maestro/protocol"
 	"github.com/jexia/maestro/refs"
+	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/specs"
 	"github.com/julienschmidt/httprouter"
 )
@@ -23,7 +24,7 @@ func (caller *Caller) Name() string {
 }
 
 // New constructs a new caller for the given host
-func (caller *Caller) New(host string, opts specs.Options) (protocol.Call, error) {
+func (caller *Caller) New(host string, schema schema.Service, opts specs.Options) (protocol.Call, error) {
 	options, err := ParseCallerOptions(opts)
 	if err != nil {
 		return nil, err
@@ -57,7 +58,7 @@ func (call *Call) Call(rw protocol.ResponseWriter, incoming *protocol.Request, r
 		return err
 	}
 
-	url.Path = "typicode/demo/db"
+	url.Path = incoming.Endpoint
 
 	req, err := http.NewRequestWithContext(incoming.Context, call.method, url.String(), incoming.Body)
 	if err != nil {

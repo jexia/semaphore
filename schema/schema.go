@@ -10,7 +10,8 @@ type Collection interface {
 // Service represents a service which could be called in one of the flows
 type Service interface {
 	GetName() string
-	GetEndpoint(name string) Method
+	GetMethod(name string) Method
+	GetMethods() []Method
 }
 
 // Method represents a service method

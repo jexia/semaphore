@@ -27,7 +27,7 @@ flow "checkout" {
         id = "<string>"
     }
 
-    call "shipping" "warehouse.Send" {
+    call "shipping" "warehouse" "Send" {
         request {
             user = "{{ input:id }}"
         }

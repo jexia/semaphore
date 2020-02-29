@@ -90,7 +90,7 @@ func BenchmarkSimpleMarshal(b *testing.B) {
 		b.Fatal(err)
 	}
 
-	method := collection.GetService("proto.mock").GetEndpoint("simple")
+	method := collection.GetService("proto.mock").GetMethod("simple")
 	schema := method.GetInput().(protoc.Object)
 	flow := FindFlow(manifest, "simple")
 	specs := FindNode(flow, "first").Call.GetRequest()
@@ -128,7 +128,7 @@ func BenchmarkNestedMarshal(b *testing.B) {
 		b.Fatal(err)
 	}
 
-	method := collection.GetService("proto.mock").GetEndpoint("nested")
+	method := collection.GetService("proto.mock").GetMethod("nested")
 	schema := method.GetInput().(protoc.Object)
 	flow := FindFlow(manifest, "nested")
 	specs := FindNode(flow, "first").Call.GetRequest()
@@ -168,7 +168,7 @@ func BenchmarkRepeatedMarshal(b *testing.B) {
 		b.Fatal(err)
 	}
 
-	method := collection.GetService("proto.mock").GetEndpoint("repeated")
+	method := collection.GetService("proto.mock").GetMethod("repeated")
 	schema := method.GetInput().(protoc.Object)
 	flow := FindFlow(manifest, "repeated")
 	specs := FindNode(flow, "first").Call.GetRequest()
@@ -207,7 +207,7 @@ func BenchmarkSimpleUnmarshal(b *testing.B) {
 		b.Fatal(err)
 	}
 
-	method := collection.GetService("proto.mock").GetEndpoint("simple")
+	method := collection.GetService("proto.mock").GetMethod("simple")
 	schema := method.GetInput().(protoc.Object)
 	flow := FindFlow(manifest, "simple")
 	specs := FindNode(flow, "first").Call.GetRequest()
@@ -257,7 +257,7 @@ func BenchmarkNestedUnmarshal(b *testing.B) {
 		b.Fatal(err)
 	}
 
-	method := collection.GetService("proto.mock").GetEndpoint("nested")
+	method := collection.GetService("proto.mock").GetMethod("nested")
 	schema := method.GetInput().(protoc.Object)
 	flow := FindFlow(manifest, "nested")
 	specs := FindNode(flow, "first").Call.GetRequest()
@@ -309,7 +309,7 @@ func BenchmarkRepeatedUnmarshal(b *testing.B) {
 		b.Fatal(err)
 	}
 
-	method := collection.GetService("proto.mock").GetEndpoint("repeated")
+	method := collection.GetService("proto.mock").GetMethod("repeated")
 	schema := method.GetInput().(protoc.Object)
 	flow := FindFlow(manifest, "repeated")
 	specs := FindNode(flow, "first").Call.GetRequest()
@@ -347,7 +347,7 @@ func TestMarshal(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	method := collection.GetService("proto.test").GetEndpoint("complete")
+	method := collection.GetService("proto.test").GetMethod("complete")
 	schema := method.GetInput().(protoc.Object)
 	flow := FindFlow(manifest, "complete")
 	specs := FindNode(flow, "first").Call.GetRequest()
@@ -436,7 +436,7 @@ func TestUnmarshal(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	method := collection.GetService("proto.test").GetEndpoint("complete")
+	method := collection.GetService("proto.test").GetMethod("complete")
 	schema := method.GetInput().(protoc.Object)
 	flow := FindFlow(manifest, "complete")
 	specs := FindNode(flow, "first").Call.GetRequest()

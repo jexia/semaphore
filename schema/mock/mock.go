@@ -53,17 +53,30 @@ func (service *Service) GetName() string {
 	return service.Name
 }
 
-// GetEndpoint attempts to return the given service method
-func (service *Service) GetEndpoint(name string) schema.Method {
+// GetMethod attempts to return the given service method
+func (service *Service) GetMethod(name string) schema.Method {
 	for key, method := range service.Methods {
 		if key != name {
 			continue
 		}
 
-		return NewMethod(name, method)
+		return NewMethod(key, method)
 	}
 
 	return nil
+}
+
+// GetMethods attempts to return the given service methods
+func (service *Service) GetMethods() []schema.Method {
+	result := make([]schema.Method, len(service.Methods))
+
+	index := 0
+	for key, method := range service.Methods {
+		result[index] = NewMethod(key, method)
+		index++
+	}
+
+	return result
 }
 
 // Method represents a mock YAML service method

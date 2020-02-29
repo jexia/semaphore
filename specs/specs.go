@@ -449,8 +449,8 @@ func (call *Call) GetService() string {
 	return call.Service
 }
 
-// GetEndpoint returns the call endpoint
-func (call *Call) GetEndpoint() string {
+// GetMethod returns the call endpoint
+func (call *Call) GetMethod() string {
 	return call.Endpoint
 }
 

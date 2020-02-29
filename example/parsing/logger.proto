@@ -1,10 +1,14 @@
 syntax = "proto3";
 
+import "annotations/annotations.proto";
+
 package proto;
 
 service Logger {
     rpc Call(Message) returns (Record);
-    rpc Append(Message) returns (Record);
+    rpc Append(Message) returns (Record) {
+        option (maestro.http_endpoint) = "typicode/demo/db";
+    };
 }
 
 message Response {

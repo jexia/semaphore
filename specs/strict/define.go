@@ -104,7 +104,7 @@ func GetFlowSchema(schema schema.Collection, flow *specs.Flow) (schema.Method, e
 		return nil, trace.New(trace.WithMessage("undefined service alias '%s' in flow schema '%s'", GetService(flow.Schema), flow.Name))
 	}
 
-	method := service.GetEndpoint(GetMethod(flow.Schema))
+	method := service.GetMethod(GetMethod(flow.Schema))
 	if method == nil {
 		return nil, trace.New(trace.WithMessage("undefined method '%s' in flow schema '%s'", GetMethod(flow.Schema), flow.Name))
 	}
@@ -114,7 +114,7 @@ func GetFlowSchema(schema schema.Collection, flow *specs.Flow) (schema.Method, e
 
 // DefineCall defineds the types for the given parameter map
 func DefineCall(schema schema.Collection, manifest *specs.Manifest, node *specs.Node, call *specs.Call, flow specs.FlowManager) (err error) {
-	if call.GetEndpoint() == "" {
+	if call.GetMethod() == "" {
 		return nil
 	}
 
@@ -123,9 +123,9 @@ func DefineCall(schema schema.Collection, manifest *specs.Manifest, node *specs.
 		return trace.New(trace.WithMessage("undefined service alias '%s' in flow '%s'", call.GetService(), flow.GetName()))
 	}
 
-	method := service.GetEndpoint(call.GetEndpoint())
+	method := service.GetMethod(call.GetMethod())
 	if method == nil {
-		return trace.New(trace.WithMessage("undefined method '%s' in flow '%s'", call.GetEndpoint(), flow.GetName()))
+		return trace.New(trace.WithMessage("undefined method '%s' in flow '%s'", call.GetMethod(), flow.GetName()))
 	}
 
 	call.SetDescriptor(method)

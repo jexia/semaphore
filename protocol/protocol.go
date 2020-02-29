@@ -7,6 +7,7 @@ import (
 	"github.com/jexia/maestro/codec"
 	"github.com/jexia/maestro/flow"
 	"github.com/jexia/maestro/refs"
+	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/specs"
 )
 
@@ -57,7 +58,7 @@ type Request struct {
 // Caller constructs new calls which could be used to call services
 type Caller interface {
 	Name() string
-	New(host string, options specs.Options) (Call, error)
+	New(host string, schema schema.Service, options specs.Options) (Call, error)
 }
 
 // Call is a preconfigured interface for a single service

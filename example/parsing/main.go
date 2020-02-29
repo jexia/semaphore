@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	collection, err := protoc.Collect(nil, ".")
+	collection, err := protoc.Collect([]string{"../../", "."}, ".")
 	if err != nil {
 		panic(err)
 	}

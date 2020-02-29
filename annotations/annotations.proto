@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package maestro;
+
+import "google/protobuf/descriptor.proto";
+
+option go_package = "github.com/jexia/maestro/annotations";
+
+extend google.protobuf.MethodOptions {
+  string http_endpoint = 50011;
+}
