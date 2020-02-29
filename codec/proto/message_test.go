@@ -9,13 +9,14 @@ import (
 
 	"github.com/jexia/maestro"
 	"github.com/jexia/maestro/refs"
+	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/schema/protoc"
 	"github.com/jexia/maestro/specs"
 	"github.com/jhump/protoreflect/dynamic"
 )
 
-func NewMock() (protoc.Collection, *specs.Manifest, error) {
-	collection, err := protoc.Collect(nil, "./tests")
+func NewMock() (schema.Collection, *specs.Manifest, error) {
+	collection, err := protoc.Collect([]string{"./tests"}, "./tests")
 	if err != nil {
 		return nil, nil, err
 	}
@@ -85,17 +86,16 @@ func BenchmarkSimpleMarshal(b *testing.B) {
 	refs := refs.NewStore(len(input))
 	refs.StoreValues("input", "", input)
 
-	collection, manifest, err := NewMock()
+	_, manifest, err := NewMock()
 	if err != nil {
 		b.Fatal(err)
 	}
 
-	method := collection.GetService("proto.mock").GetMethod("simple")
-	schema := method.GetInput().(protoc.Object)
 	flow := FindFlow(manifest, "simple")
 	specs := FindNode(flow, "first").Call.GetRequest()
 
-	manager, err := New("input", schema, specs)
+	constructor := NewConstructor()
+	manager, err := constructor.New("input", specs)
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -123,17 +123,16 @@ func BenchmarkNestedMarshal(b *testing.B) {
 	refs := refs.NewStore(len(input))
 	refs.StoreValues("input", "", input)
 
-	collection, manifest, err := NewMock()
+	_, manifest, err := NewMock()
 	if err != nil {
 		b.Fatal(err)
 	}
 
-	method := collection.GetService("proto.mock").GetMethod("nested")
-	schema := method.GetInput().(protoc.Object)
-	flow := FindFlow(manifest, "nested")
+	flow := FindFlow(manifest, "simple")
 	specs := FindNode(flow, "first").Call.GetRequest()
 
-	manager, err := New("input", schema, specs)
+	constructor := NewConstructor()
+	manager, err := constructor.New("input", specs)
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -163,17 +162,16 @@ func BenchmarkRepeatedMarshal(b *testing.B) {
 	refs := refs.NewStore(len(input))
 	refs.StoreValues("input", "", input)
 
-	collection, manifest, err := NewMock()
+	_, manifest, err := NewMock()
 	if err != nil {
 		b.Fatal(err)
 	}
 
-	method := collection.GetService("proto.mock").GetMethod("repeated")
-	schema := method.GetInput().(protoc.Object)
-	flow := FindFlow(manifest, "repeated")
+	flow := FindFlow(manifest, "simple")
 	specs := FindNode(flow, "first").Call.GetRequest()
 
-	manager, err := New("input", schema, specs)
+	constructor := NewConstructor()
+	manager, err := constructor.New("input", specs)
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -223,7 +221,8 @@ func BenchmarkSimpleUnmarshal(b *testing.B) {
 		b.Fatal(err)
 	}
 
-	manager, err := New("input", schema, specs)
+	constructor := NewConstructor()
+	manager, err := constructor.New("input", specs)
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -273,7 +272,8 @@ func BenchmarkNestedUnmarshal(b *testing.B) {
 		b.Fatal(err)
 	}
 
-	manager, err := New("input", schema, specs)
+	constructor := NewConstructor()
+	manager, err := constructor.New("input", specs)
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -325,7 +325,8 @@ func BenchmarkRepeatedUnmarshal(b *testing.B) {
 		b.Fatal(err)
 	}
 
-	manager, err := New("input", schema, specs)
+	constructor := NewConstructor()
+	manager, err := constructor.New("input", specs)
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -385,7 +386,8 @@ func TestMarshal(t *testing.T) {
 			store := refs.NewStore(3)
 			store.StoreValues("input", "", input)
 
-			manager, err := New("input", schema, specs)
+			constructor := NewConstructor()
+			manager, err := constructor.New("input", specs)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -480,7 +482,8 @@ func TestUnmarshal(t *testing.T) {
 			bb, _ := inputAsProto.Marshal()
 			store := refs.NewStore(len(input))
 
-			manager, err := New("input", schema, specs)
+			constructor := NewConstructor()
+			manager, err := constructor.New("input", specs)
 			if err != nil {
 				t.Fatal(err)
 			}
