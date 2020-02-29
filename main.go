@@ -278,9 +278,9 @@ func ConstructCall(manifest *specs.Manifest, node *specs.Node, call *specs.Call,
 
 		reader, writer := io.Pipe()
 		req := &protocol.Request{
-			Endpoint: call.GetMethod(),
-			Context:  ctx,
-			Body:     body,
+			Method:  call.GetMethod(),
+			Context: ctx,
+			Body:    body,
 			// Header:  protocol.Header{},
 		}
 

@@ -7,5 +7,9 @@ import "google/protobuf/descriptor.proto";
 option go_package = "github.com/jexia/maestro/annotations";
 
 extend google.protobuf.MethodOptions {
-  string http_endpoint = 50011;
+  HTTP http = 50011;
+}
+
+message HTTP {
+  string endpoint = 1;
 }

@@ -6,8 +6,11 @@ package proto;
 
 service Logger {
     rpc Call(Message) returns (Record);
+    
     rpc Append(Message) returns (Record) {
-        option (maestro.http_endpoint) = "typicode/demo/db";
+        option (maestro.http) = {
+            endpoint: "typicode/demo/db"
+        };
     };
 }
 

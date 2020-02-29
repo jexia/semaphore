@@ -14,6 +14,11 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
+const (
+	// EndpointOption represents the HTTP endpoints option key
+	EndpointOption = "http.endpoint"
+)
+
 // Caller represents the caller constructor
 type Caller struct {
 }
@@ -38,6 +43,7 @@ func (caller *Caller) New(host string, schema schema.Service, opts specs.Options
 	return &Call{
 		method: options.Method,
 		host:   host,
+		schema: schema,
 		proxy: &httputil.ReverseProxy{
 			Director: func(*http.Request) {},
 		},
@@ -48,6 +54,7 @@ func (caller *Caller) New(host string, schema schema.Service, opts specs.Options
 type Call struct {
 	method string
 	host   string
+	schema schema.Service
 	proxy  *httputil.ReverseProxy
 }
 
@@ -58,7 +65,9 @@ func (call *Call) Call(rw protocol.ResponseWriter, incoming *protocol.Request, r
 		return err
 	}
 
-	url.Path = incoming.Endpoint
+	method := call.schema.GetMethod(incoming.Method)
+	options := method.GetOptions()
+	url.Path = options[EndpointOption]
 
 	req, err := http.NewRequestWithContext(incoming.Context, call.method, url.String(), incoming.Body)
 	if err != nil {
