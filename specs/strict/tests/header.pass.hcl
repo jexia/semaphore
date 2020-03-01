@@ -13,7 +13,7 @@ flow "echo" {
 	call "opening" {
 		request "caller" "Open" {
 			header {
-                Authorization = "{{ input.request.header:Authorization }}"
+                Authorization = "{{ input.header:Authorization }}"
             }
 		}
 	}

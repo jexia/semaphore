@@ -164,8 +164,10 @@ func Handle(endpoint *protocol.Endpoint) httprouter.Handle {
 		var err error
 		refs := endpoint.Flow.NewStore()
 
-		header := CopyHTTPHeader(r.Header)
-		endpoint.Header.Unmarshal(header, refs)
+		if endpoint.Header != nil {
+			header := CopyHTTPHeader(r.Header)
+			endpoint.Header.Unmarshal(header, refs)
+		}
 
 		if endpoint.Request != nil {
 			err = endpoint.Request.Unmarshal(r.Body, refs)

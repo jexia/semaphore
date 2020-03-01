@@ -60,8 +60,8 @@ func GetAvailableResources(flow specs.FlowManager, breakpoint string) map[string
 
 	if flow.GetInput() != nil {
 		references[specs.InputResource] = ReferenceMap{
-			specs.ResourceRequest:       ParameterMapLookup(flow.GetInput()),
-			specs.ResourceRequestHeader: HeaderLookup(flow.GetInput().Header),
+			specs.ResourceRequest: ParameterMapLookup(flow.GetInput()),
+			specs.ResourceHeader:  HeaderLookup(flow.GetInput().Header),
 		}
 	}
 
@@ -75,11 +75,11 @@ func GetAvailableResources(flow specs.FlowManager, breakpoint string) map[string
 		if node.Call != nil {
 			if node.Call.Request != nil {
 				resources[specs.ResourceRequest] = ParameterMapLookup(node.Call.Request)
-				resources[specs.ResourceRequestHeader] = HeaderLookup(node.Call.Request.Header)
 			}
 
 			if node.Call.Response != nil {
 				resources[specs.ResourceResponse] = ParameterMapLookup(node.Call.Response)
+				resources[specs.ResourceHeader] = HeaderLookup(node.Call.Response.Header)
 			}
 		}
 
