@@ -197,12 +197,12 @@ func ConstructFlowManager(manifest *specs.Manifest, options Options) error {
 				return err
 			}
 
-			// rollback, err := ConstructCall(manifest, call.Rollback, options)
-			// if err != nil {
-			// 	return err
-			// }
+			rollback, err := ConstructCall(manifest, node, node.Rollback, options)
+			if err != nil {
+				return err
+			}
 
-			nodes[index] = flow.NewNode(node, caller, nil)
+			nodes[index] = flow.NewNode(node, caller, rollback)
 		}
 
 		collection, has := options.Codec[endpoint.Codec]
@@ -252,7 +252,12 @@ func (rw *rw) Write(bb []byte) (int, error) {
 }
 func (rw *rw) WriteHeader(int) {}
 
+// ConstructCall constructs a flow caller for the given node call.
 func ConstructCall(manifest *specs.Manifest, node *specs.Node, call *specs.Call, options Options) (flow.Call, error) {
+	if call == nil {
+		return nil, nil
+	}
+
 	service := GetService(manifest, call.GetService())
 	if service == nil {
 		return nil, trace.New(trace.WithMessage("the service for %s was not found", call.GetMethod()))
