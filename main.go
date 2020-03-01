@@ -26,11 +26,6 @@ type Client struct {
 	Options   Options
 }
 
-// Serve opens the client listeners
-func (client *Client) Serve() {
-
-}
-
 // Option represents a constructor func which sets a given option
 type Option func(*Options)
 
@@ -241,19 +236,6 @@ func ConstructFlowManager(manifest *specs.Manifest, options Options) error {
 	return nil
 }
 
-type rw struct {
-	writer io.Writer
-	header protocol.Header
-}
-
-func (rw *rw) Header() protocol.Header {
-	return rw.header
-}
-func (rw *rw) Write(bb []byte) (int, error) {
-	return rw.writer.Write(bb)
-}
-func (rw *rw) WriteHeader(int) {}
-
 // ConstructCall constructs a flow caller for the given node call.
 func ConstructCall(manifest *specs.Manifest, node *specs.Node, call *specs.Call, options Options) (flow.Call, error) {
 	if call == nil {
@@ -291,20 +273,18 @@ func ConstructCall(manifest *specs.Manifest, node *specs.Node, call *specs.Call,
 		}
 
 		reader, writer := io.Pipe()
-		req := &protocol.Request{
+
+		w := protocol.NewResponseWriter(writer)
+		r := &protocol.Request{
 			Method:  call.GetMethod(),
 			Context: ctx,
 			Body:    body,
 			Header:  header.Marshal(refs),
 		}
 
-		w := &rw{
-			writer: writer,
-		}
-
 		go func() {
 			defer writer.Close()
-			caller.Call(w, req, refs)
+			caller.Call(w, r, refs)
 		}()
 
 		err = res.Unmarshal(reader, refs)

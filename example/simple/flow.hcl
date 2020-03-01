@@ -16,9 +16,14 @@ flow "todo" {
 		}
 	}
 
+	call "user" {
+		request "todo" "User" {
+		}
+	}
+
 	output {
 		header {
-			example = "{{query:title}}"
+			username = "{{ user:username }}"
 		}
 
 		id = "{{ query:id }}"
