@@ -1,4 +1,4 @@
-endpoint "todo" "http" "proto" {
+endpoint "todo" "http" "json" {
 	endpoint = "/"
 	method = "GET"
 }
@@ -17,6 +17,10 @@ flow "todo" {
 	}
 
 	output {
+		header {
+			example = "{{query:title}}"
+		}
+
 		id = "{{ query:id }}"
 		title = "{{ query:title }}"
 		completed = "{{ query:completed }}"

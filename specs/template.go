@@ -30,10 +30,14 @@ const (
 	InputResource = "input"
 	// ResourceRequest property
 	ResourceRequest = "request"
+	// ResourceHeader property
+	ResourceHeader = "header"
 	// ResourceRequestHeader property
 	ResourceRequestHeader = "request.header"
 	// ResourceResponse property
 	ResourceResponse = "response"
+	// ResourceResponseHeader property
+	ResourceResponseHeader = "response.header"
 
 	// DefaultInputProperty represents the default input property on resource select
 	DefaultInputProperty = ResourceRequest

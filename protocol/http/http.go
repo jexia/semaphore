@@ -164,6 +164,9 @@ func Handle(endpoint *protocol.Endpoint) httprouter.Handle {
 		var err error
 		refs := endpoint.Flow.NewStore()
 
+		header := CopyHTTPHeader(r.Header)
+		endpoint.Header.Unmarshal(header, refs)
+
 		if endpoint.Request != nil {
 			err = endpoint.Request.Unmarshal(r.Body, refs)
 			if err != nil {
@@ -177,6 +180,8 @@ func Handle(endpoint *protocol.Endpoint) httprouter.Handle {
 			w.WriteHeader(http.StatusServiceUnavailable)
 			return
 		}
+
+		SetHTTPHeader(w.Header(), endpoint.Header.Marshal(refs))
 
 		if endpoint.Response != nil {
 			reader, err := endpoint.Response.Marshal(refs)

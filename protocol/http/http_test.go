@@ -12,6 +12,7 @@ import (
 
 	"github.com/jexia/maestro/codec/json"
 	"github.com/jexia/maestro/flow"
+	"github.com/jexia/maestro/headers"
 	"github.com/jexia/maestro/protocol"
 	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/schema"
@@ -71,11 +72,11 @@ func (method *MockMethod) GetOptions() schema.Options {
 }
 
 type MockResponseWriter struct {
-	header protocol.Header
+	header headers.Header
 	writer io.Writer
 }
 
-func (rw *MockResponseWriter) Header() protocol.Header {
+func (rw *MockResponseWriter) Header() headers.Header {
 	return rw.header
 }
 
@@ -143,7 +144,7 @@ func TestCaller(t *testing.T) {
 
 	r, w := io.Pipe()
 	rw := &MockResponseWriter{
-		header: protocol.Header{},
+		header: headers.Header{},
 		writer: w,
 	}
 

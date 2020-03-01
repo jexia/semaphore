@@ -6,6 +6,7 @@ import (
 
 	"github.com/jexia/maestro/codec"
 	"github.com/jexia/maestro/flow"
+	"github.com/jexia/maestro/headers"
 	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/specs"
@@ -17,32 +18,14 @@ type Endpoint struct {
 	Flow     *flow.Manager
 	Request  codec.Manager
 	Response codec.Manager
+	Header   *headers.Manager
 	Forward  Call
 	Options  specs.Options
 }
 
-// A Header represents the key-value pairs.
-type Header map[string]string
-
-// Clone returns a copy of h or nil if h is nil.
-func (h Header) Clone() Header {
-	return h
-}
-
-// Del deletes the values associated with key.
-func (h Header) Del(key string) {}
-
-// Get gets the first value associated with the given key. If there are no values associated with the key, Get returns "".
-func (h Header) Get(key string) string {
-	return ""
-}
-
-// Set sets the header entries associated with key to the single element value. It replaces any existing values associated with key.
-func (h Header) Set(key, value string) {}
-
 // ResponseWriter specifies the response writer implementation which could be used to both proxy forward a request or used to call a service
 type ResponseWriter interface {
-	Header() Header
+	Header() headers.Header
 	Write([]byte) (int, error)
 	WriteHeader(int)
 }
@@ -50,7 +33,7 @@ type ResponseWriter interface {
 // Request represents the request object given to a caller implementation used to make calls
 type Request struct {
 	Method  string
-	Header  Header
+	Header  headers.Header
 	Body    io.Reader
 	Context context.Context
 }
