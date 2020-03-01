@@ -6,7 +6,6 @@ import (
 
 	"github.com/jexia/maestro/codec"
 	"github.com/jexia/maestro/flow"
-	"github.com/jexia/maestro/headers"
 	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/specs"
@@ -18,14 +17,14 @@ type Endpoint struct {
 	Flow     *flow.Manager
 	Request  codec.Manager
 	Response codec.Manager
-	Header   *headers.Manager
+	Header   *HeaderManager
 	Forward  Call
 	Options  specs.Options
 }
 
 // ResponseWriter specifies the response writer implementation which could be used to both proxy forward a request or used to call a service
 type ResponseWriter interface {
-	Header() headers.Header
+	Header() Header
 	Write([]byte) (int, error)
 	WriteHeader(int)
 }
@@ -33,7 +32,7 @@ type ResponseWriter interface {
 // Request represents the request object given to a caller implementation used to make calls
 type Request struct {
 	Method  string
-	Header  headers.Header
+	Header  Header
 	Body    io.Reader
 	Context context.Context
 }

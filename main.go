@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 
 	"github.com/jexia/maestro/flow"
-	"github.com/jexia/maestro/headers"
 	"github.com/jexia/maestro/refs"
 
 	"github.com/jexia/maestro/codec"
@@ -229,7 +228,7 @@ func ConstructFlowManager(manifest *specs.Manifest, options Options) error {
 			result.Response = res
 		}
 
-		result.Header = headers.NewManager(specs.InputResource, f.GetOutput())
+		result.Header = protocol.NewHeaderManager(specs.InputResource, f.GetOutput())
 		result.Flow = flow.NewManager(f.GetName(), nodes)
 		endpoints[index] = result
 	}
@@ -244,10 +243,10 @@ func ConstructFlowManager(manifest *specs.Manifest, options Options) error {
 
 type rw struct {
 	writer io.Writer
-	header headers.Header
+	header protocol.Header
 }
 
-func (rw *rw) Header() headers.Header {
+func (rw *rw) Header() protocol.Header {
 	return rw.header
 }
 func (rw *rw) Write(bb []byte) (int, error) {
@@ -279,8 +278,7 @@ func ConstructCall(manifest *specs.Manifest, node *specs.Node, call *specs.Call,
 		return nil, err
 	}
 
-	header := headers.NewManager(node.GetName(), call.GetRequest())
-
+	header := protocol.NewHeaderManager(node.GetName(), call.GetRequest())
 	caller, err := constructor.New(service.Host, options.Schema.GetService(service.Schema), service.Options)
 	if err != nil {
 		return nil, err

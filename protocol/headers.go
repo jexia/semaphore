@@ -1,4 +1,4 @@
-package headers
+package protocol
 
 import (
 	"github.com/jexia/maestro/refs"
@@ -24,22 +24,22 @@ func (h Header) Get(key string) string {
 // Set sets the header entries associated with key to the single element value. It replaces any existing values associated with key.
 func (h Header) Set(key, value string) {}
 
-// NewManager constructs a new header manager for the given resource
-func NewManager(resource string, object specs.Object) *Manager {
-	return &Manager{
+// NewHeaderManager constructs a new header manager for the given resource
+func NewHeaderManager(resource string, object specs.Object) *HeaderManager {
+	return &HeaderManager{
 		Resource: specs.JoinPath(resource, specs.ResourceHeader),
 		Object:   object,
 	}
 }
 
-// Manager represents a header manager for a given resource
-type Manager struct {
+// HeaderManager represents a header manager for a given resource
+type HeaderManager struct {
 	Resource string
 	Object   specs.Object
 }
 
 // Marshal attempts to marshal the given header specs from the given refs store
-func (manager *Manager) Marshal(store *refs.Store) Header {
+func (manager *HeaderManager) Marshal(store *refs.Store) Header {
 	if manager.Object == nil {
 		return make(Header, 0)
 	}
@@ -66,7 +66,7 @@ func (manager *Manager) Marshal(store *refs.Store) Header {
 }
 
 // Unmarshal unmarshals the given protocol header into the given reference store
-func (manager *Manager) Unmarshal(header Header, store *refs.Store) {
+func (manager *HeaderManager) Unmarshal(header Header, store *refs.Store) {
 	for key, value := range header {
 		ref := refs.New(key)
 		ref.Value = value
