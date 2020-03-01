@@ -8,7 +8,6 @@ import (
 	"github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/jexia/maestro/codec"
 	"github.com/jexia/maestro/refs"
-	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/schema/protoc"
 	"github.com/jexia/maestro/specs"
 	"github.com/jexia/maestro/specs/trace"
@@ -19,25 +18,36 @@ import (
 // ErrUnkownSchema is thrown when the schema is not defined or then it is not a protoc object
 var ErrUnkownSchema = trace.New(trace.WithMessage("unexpected schema type, a proto schema collection required for protobuf encoding/decoding"))
 
-// New constructs a new proto message encoder/decoder for the given schema object and specifications
-func New(resource string, schema schema.Object, specs specs.Object) (codec.Manager, error) {
-	if schema == nil {
-		return nil, ErrUnkownSchema
+// NewConstructor constructs a new JSON constructor
+func NewConstructor() *Constructor {
+	return &Constructor{}
+}
+
+// Constructor is capable of constructing new codec managers for the given resource and specs
+type Constructor struct {
+}
+
+func (constructor *Constructor) Name() string {
+	return "proto"
+}
+
+func (constructor *Constructor) New(resource string, specs specs.Object) (codec.Manager, error) {
+	if specs == nil {
+		return nil, trace.New(trace.WithMessage("no object specs defined"))
 	}
 
+	schema := specs.GetDescriptor()
 	object, is := schema.(protoc.Object)
 	if !is {
 		return nil, ErrUnkownSchema
 	}
 
-	message := &Message{
+	return &Message{
 		resource:   resource,
 		specs:      specs,
 		schema:     object,
 		descriptor: object.GetDescriptor(),
-	}
-
-	return message, nil
+	}, nil
 }
 
 // Message represents a proto message encoder/decoder

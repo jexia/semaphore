@@ -25,7 +25,6 @@ Messages are strictly typed and are type-checked. Payloads such as protobuf and 
   * [Proxy](#proxy)
   * [Service](#service)
     + [Options](#options)
-  * [Caller](#caller)
   * [Endpoint](#endpoint)
 
 ## Specification
@@ -90,8 +89,8 @@ An optional schema could be defined which defines the request/response messages.
 flow "Logger" {
     schema = "exposed.Logger.Log"
 
-    call "log" "logger.Log" {
-        request {
+    call "log" {
+        request "logger" "Log" {
             message = "{{ input:message }}"
         }
     }
@@ -117,7 +116,6 @@ The input acts as a message. The input could contain nested messages and repeate
 
 ```hcl
 input {
-    type = "sync"
     message = "<string>"
 }
 ```
@@ -149,10 +147,10 @@ A call could contain the request headers, request body, rollback, and the execut
 
 ```hcl
 # Calling service alias logger.Log
-call "log" "logger.Log" {
+call "log" {
   type = "sync" # default value
 
-  request {
+  request "logger" "Log" {
     message = "{{ input:message }}"
   }
 }
@@ -173,7 +171,7 @@ Dependencies define call dependencies without having a direct reference dependen
 Defining a dependency prevents both calls to be executed in parallel.
 
 ```hcl
-call "log" "logger.Log" {
+call "log" {
     depends_on = [
         "billing",
     ]
@@ -199,14 +197,12 @@ Rollbacks consist of a call endpoint and a request message.
 Rollback templates could only reference properties from any previous calls and the input.
 
 ```hcl
-rollback "logger.Log" {
+rollback "logger" "Log" {
     header {
         Claim = "{{ input:Claim }}"
     }
     
-    request {
-        message = "Something went wrong while"
-    }
+    message = "Something went wrong while"
 }
 ```
 
@@ -218,21 +214,21 @@ A proxy forward could ideally be used for file uploads or large messages which c
 
 ```hcl
 proxy "upload" {
-    call "auth" "authenticate.Authenticate" {
-        header {
-            Authorization = "{{ input.header:Authorization }}"
+    call "auth" {
+        request "authenticate" "Authenticate" {
+            header {
+                Authorization = "{{ input.header:Authorization }}"
+            }
         }
-
-        request {}
     }
 
-    call "logger" "logger.Log" {
-        request {
+    call "logger" {
+        request "logger" "Log" {
             message = "{{ auth:claim }}"
         }
     }
 
-    forward "uploader.File" {
+    forward "uploader" "File" {
         header {
             StorageKey = "{{ auth:key }}"
         }
@@ -251,9 +247,8 @@ Each service references a caller implementation to be used.
 Codec is the message format used for request and response messages.
 
 ```hcl
-service "logger" "http" {
+service "logger" "http" "proto" {
     host = "https://service.prod.svc.cluster.local"
-    codec = "proto"
     schema = "proto.Logger"
 }
 ```
@@ -267,28 +262,24 @@ options {
 }
 ```
 
-### Caller
-Represents a caller implementation. All values are parsed by the defined implementation. These attributes could be used for configuration purposes
-
-```hcl
-caller "http" {
-    header {
-        X-Forward = "ABC"
-    }
-
-    base = "/v1"
-}
-```
-
 ### Endpoint
 An endpoint exposes a flow. Endpoints are not parsed by Maestro and have custom implementations in each caller. The name of the endpoint represents the flow which should be executed.
 
 All servers should define their own request/response message formats.
 
 ```hcl
-endpoint "users" {
-    http "GET" "/users/:project" {
-        status = "202"
-    }
+endpoint "users" "http" "json" {
+    method = "GET"
+    endpoint = "/users/:project"
+    status = "202"
+}
+```
+
+#### Options
+Options could be consumed by implementations. The defined key/values are implementation specific.
+
+```hcl
+options {
+    port = 8080
 }
 ```

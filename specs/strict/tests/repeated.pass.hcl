@@ -4,15 +4,11 @@ service "caller" "http" "json" {
 }
 
 flow "echo" {
-    input {
-        ammount = "<int32>"
-    }
+    schema = "caller.Open"
 
 	call "opening" {
 		request "caller" "Open" {
-			header {
-                Ammount = "{{ input:ammount }}"
-            }
+			repeating = "{{ input:repeating }}"
 		}
 	}
 }

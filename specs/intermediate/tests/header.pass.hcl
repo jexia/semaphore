@@ -1,14 +1,14 @@
 flow "echo" {
-    call "set" "setter.Set" {
-        request {
+    call "set" {
+        request "setter" "Set" {
             header {
                 Cookie = "mnomnom"
             }
         }
     }
 
-    call "get" "getter.Get" {
-        request {
+    call "get" {
+        request "getter" "Get" {
             header {
                 Cookie = "mnomnom"
             }
@@ -16,10 +16,8 @@ flow "echo" {
     }
 
     output {
-        request {
-            header {
-                Cookie = "mnomnom"
-            }
+        header {
+            Cookie = "mnomnom"
         }
     }
 }

@@ -4,12 +4,14 @@ import (
 	"io"
 
 	"github.com/jexia/maestro/refs"
-	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/specs"
 )
 
-// New constructs a new message codec handler
-type New func(resource string, schema schema.Object, specs specs.Object) (Manager, error)
+// Constructor is capable of constructing new codec managers for the given resource and specs
+type Constructor interface {
+	Name() string
+	New(resource string, specs specs.Object) (Manager, error)
+}
 
 // Manager represents a marshal/unmarshal codec for a given caller
 type Manager interface {

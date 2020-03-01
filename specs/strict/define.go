@@ -29,14 +29,16 @@ func Define(schema schema.Collection, manifest *specs.Manifest) (err error) {
 
 // DefineProxy checks and defines the types for the given proxy
 func DefineProxy(schema schema.Collection, manifest *specs.Manifest, proxy *specs.Proxy) (err error) {
-	for _, call := range proxy.Calls {
-		err = DefineCall(schema, manifest, call, proxy)
-		if err != nil {
-			return err
+	for _, node := range proxy.Nodes {
+		if node.Call != nil {
+			err = DefineCall(schema, manifest, node, node.Call, proxy)
+			if err != nil {
+				return err
+			}
 		}
 
-		if call.Rollback != nil {
-			err = DefineCall(schema, manifest, call.Rollback, proxy)
+		if node.Rollback != nil {
+			err = DefineCall(schema, manifest, node, node.Rollback, proxy)
 			if err != nil {
 				return err
 			}
@@ -49,20 +51,25 @@ func DefineProxy(schema schema.Collection, manifest *specs.Manifest, proxy *spec
 // DefineFlow checks and defines the types for the given flow
 func DefineFlow(schema schema.Collection, manifest *specs.Manifest, flow *specs.Flow) (err error) {
 	if flow.Schema != "" {
-		err = DefineFlowSchema(schema, flow)
+		method, err := GetFlowSchema(schema, flow)
 		if err != nil {
 			return err
 		}
+
+		flow.Input = specs.ToParameterMap(flow.Input, "", method.GetInput())
+		flow.Input.SetDescriptor(method.GetInput())
 	}
 
-	for _, call := range flow.Calls {
-		err = DefineCall(schema, manifest, call, flow)
-		if err != nil {
-			return err
+	for _, node := range flow.Nodes {
+		if node.Call != nil {
+			err = DefineCall(schema, manifest, node, node.Call, flow)
+			if err != nil {
+				return err
+			}
 		}
 
-		if call.Rollback != nil {
-			err = DefineCall(schema, manifest, call.Rollback, flow)
+		if node.Rollback != nil {
+			err = DefineCall(schema, manifest, node, node.Rollback, flow)
 			if err != nil {
 				return err
 			}
@@ -70,60 +77,64 @@ func DefineFlow(schema schema.Collection, manifest *specs.Manifest, flow *specs.
 	}
 
 	if flow.Output != nil {
-		err = DefineParameterMap(nil, flow.Output, flow)
+		err = DefineParameterMap(nil, nil, flow.Output, flow)
 		if err != nil {
 			return err
 		}
 
-		if flow.Descriptor != nil {
-			err = CheckTypes(flow.Output, flow.Descriptor.GetOutput(), flow)
+		if flow.Schema != "" {
+			method, err := GetFlowSchema(schema, flow)
 			if err != nil {
 				return err
 			}
+
+			err = CheckTypes(flow.Output, method.GetOutput(), flow)
+			if err != nil {
+				return err
+			}
+
+			flow.Output.SetDescriptor(method.GetOutput())
 		}
 	}
 
 	return nil
 }
 
-// DefineFlowSchema attempts to define the flow input and output based on the given schema method
-func DefineFlowSchema(schema schema.Collection, flow *specs.Flow) error {
+// GetFlowSchema attempts to define the flow input and output based on the given schema method
+func GetFlowSchema(schema schema.Collection, flow *specs.Flow) (schema.Method, error) {
 	service := schema.GetService(GetService(flow.Schema))
 	if service == nil {
-		return trace.New(trace.WithMessage("undefined service alias '%s' in flow schema '%s'", GetService(flow.Schema), flow.Name))
+		return nil, trace.New(trace.WithMessage("undefined service alias '%s' in flow schema '%s'", GetService(flow.Schema), flow.Name))
 	}
 
 	method := service.GetMethod(GetMethod(flow.Schema))
 	if method == nil {
-		return trace.New(trace.WithMessage("undefined method '%s' in flow schema '%s'", GetMethod(flow.Schema), flow.Name))
+		return nil, trace.New(trace.WithMessage("undefined method '%s' in flow schema '%s'", GetMethod(flow.Schema), flow.Name))
 	}
 
-	flow.Descriptor = method
-	flow.Input = specs.ToParameterMap(flow.Input, "", method.GetInput())
-
-	return nil
+	return method, nil
 }
 
 // DefineCall defineds the types for the given parameter map
-func DefineCall(schema schema.Collection, manifest *specs.Manifest, call specs.FlowCaller, flow specs.FlowManager) (err error) {
-	if call.GetEndpoint() == "" {
+func DefineCall(schema schema.Collection, manifest *specs.Manifest, node *specs.Node, call *specs.Call, flow specs.FlowManager) (err error) {
+	if call.GetMethod() == "" {
 		return nil
 	}
 
-	service := schema.GetService(GetSchemaService(manifest, GetService(call.GetEndpoint())))
+	service := schema.GetService(GetSchemaService(manifest, call.GetService()))
 	if service == nil {
-		return trace.New(trace.WithMessage("undefined service alias '%s' in flow '%s'", GetService(call.GetEndpoint()), flow.GetName()))
+		return trace.New(trace.WithMessage("undefined service alias '%s' in flow '%s'", call.GetService(), flow.GetName()))
 	}
 
-	method := service.GetMethod(GetMethod(call.GetEndpoint()))
+	method := service.GetMethod(call.GetMethod())
 	if method == nil {
-		return trace.New(trace.WithMessage("undefined method '%s' in flow '%s'", GetMethod(call.GetEndpoint()), flow.GetName()))
+		return trace.New(trace.WithMessage("undefined method '%s' in flow '%s'", call.GetMethod(), flow.GetName()))
 	}
 
 	call.SetDescriptor(method)
 
 	if call.GetRequest() != nil {
-		err = DefineParameterMap(call, call.GetRequest(), flow)
+		err = DefineParameterMap(node, call, call.GetRequest(), flow)
 		if err != nil {
 			return err
 		}
@@ -138,30 +149,30 @@ func DefineCall(schema schema.Collection, manifest *specs.Manifest, call specs.F
 }
 
 // DefineParameterMap defines the types for the given parameter map
-func DefineParameterMap(call specs.FlowCaller, params specs.Object, flow specs.FlowManager) (err error) {
+func DefineParameterMap(node *specs.Node, call *specs.Call, params specs.Object, flow specs.FlowManager) (err error) {
 	for _, header := range params.GetHeader() {
-		err = DefineProperty(call, header, flow)
+		err = DefineProperty(node, call, header, flow)
 		if err != nil {
 			return err
 		}
 	}
 
 	for _, property := range params.GetProperties() {
-		err = DefineProperty(call, property, flow)
+		err = DefineProperty(node, call, property, flow)
 		if err != nil {
 			return err
 		}
 	}
 
 	for _, nested := range params.GetNestedProperties() {
-		err = DefineParameterMap(call, nested, flow)
+		err = DefineParameterMap(node, call, nested, flow)
 		if err != nil {
 			return err
 		}
 	}
 
 	for _, repeated := range params.GetRepeatedProperties() {
-		err = DefineParameterMap(call, repeated, flow)
+		err = DefineParameterMap(node, call, repeated, flow)
 		if err != nil {
 			return err
 		}
@@ -174,14 +185,14 @@ func DefineParameterMap(call specs.FlowCaller, params specs.Object, flow specs.F
 
 // DefineProperty defines the given property type.
 // If any object is references it has to be fixed afterwards and moved into the correct dataset
-func DefineProperty(call specs.FlowCaller, property *specs.Property, flow specs.FlowManager) error {
+func DefineProperty(node *specs.Node, call *specs.Call, property *specs.Property, flow specs.FlowManager) error {
 	if property.Reference == nil {
 		return nil
 	}
 
 	breakpoint := "output"
-	if call != nil {
-		breakpoint = call.GetName()
+	if node != nil {
+		breakpoint = node.GetName()
 	}
 
 	references := lookup.GetAvailableResources(flow, breakpoint)
@@ -205,6 +216,8 @@ func DefineProperty(call specs.FlowCaller, property *specs.Property, flow specs.
 
 // CheckTypes checks the given call against the given schema method types
 func CheckTypes(object specs.Object, message schema.Object, flow specs.FlowManager) (err error) {
+	object.SetDescriptor(message)
+
 	for _, header := range object.GetHeader() {
 		if header.GetType() != types.TypeString {
 			return trace.New(trace.WithMessage("cannot use type %s for header.%s in flow %s", header.GetType(), header.GetPath(), flow.GetName()))
@@ -272,7 +285,11 @@ func ResolvePropertyObjectReferences(params specs.Object) {
 
 		if property.Reference.Object.GetLabel() == types.LabelRepeated {
 			repeated := property.Reference.Object.(*specs.RepeatedParameterMap)
-			params.GetRepeatedProperties()[key] = repeated.Clone(key, property.Path)
+			clone := repeated.Clone(key, property.Path)
+			clone.Template = property.Reference
+
+			SetObjectReferences(property.Reference, clone)
+			params.GetRepeatedProperties()[key] = clone
 			continue
 		}
 
@@ -281,10 +298,31 @@ func ResolvePropertyObjectReferences(params specs.Object) {
 	}
 }
 
+// SetObjectReferences sets all the references within a given object to the given resource and path
+func SetObjectReferences(ref *specs.PropertyReference, object specs.Object) {
+	for key, prop := range object.GetProperties() {
+		ref := ref.Clone()
+		ref.Path = specs.JoinPath(ref.Path, key)
+		prop.Reference = ref
+	}
+
+	for key, nested := range object.GetNestedProperties() {
+		ref := ref.Clone()
+		ref.Path = specs.JoinPath(ref.Path, key)
+		SetObjectReferences(ref, nested)
+	}
+
+	for key, repeated := range object.GetRepeatedProperties() {
+		ref := ref.Clone()
+		ref.Path = specs.JoinPath(ref.Path, key)
+		SetObjectReferences(ref, repeated)
+	}
+}
+
 // GetSchemaService attempts to find a service matching the alias name and return the schema name
-func GetSchemaService(manifest *specs.Manifest, alias string) string {
+func GetSchemaService(manifest *specs.Manifest, name string) string {
 	for _, service := range manifest.Services {
-		if service.Alias == alias {
+		if service.Name == name {
 			return service.Schema
 		}
 	}

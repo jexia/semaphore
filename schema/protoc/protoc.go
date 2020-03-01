@@ -1,6 +1,9 @@
 package protoc
 
 import (
+	"github.com/golang/protobuf/proto"
+	"github.com/jexia/maestro/annotations"
+	"github.com/jexia/maestro/protocol/http"
 	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/specs/types"
 	"github.com/jhump/protoreflect/desc"
@@ -50,11 +53,13 @@ type Service interface {
 func NewService(descriptor *desc.ServiceDescriptor) Service {
 	return &service{
 		descriptor: descriptor,
+		options:    make(schema.Options),
 	}
 }
 
 type service struct {
 	descriptor *desc.ServiceDescriptor
+	options    schema.Options
 }
 
 func (service *service) GetName() string {
@@ -73,8 +78,21 @@ func (service *service) GetMethod(name string) schema.Method {
 	return nil
 }
 
+func (service *service) GetMethods() []schema.Method {
+	result := make([]schema.Method, len(service.descriptor.GetMethods()))
+	for index, method := range service.descriptor.GetMethods() {
+		result[index] = NewMethod(method)
+	}
+
+	return result
+}
+
 func (service *service) GetDescriptor() *desc.ServiceDescriptor {
 	return service.descriptor
+}
+
+func (service *service) GetOptions() schema.Options {
+	return service.options
 }
 
 // Method represents a proto service method
@@ -85,13 +103,24 @@ type Method interface {
 
 // NewMethod constructs a new method with the given descriptor
 func NewMethod(descriptor *desc.MethodDescriptor) Method {
+	options := make(schema.Options)
+
+	ext, err := proto.GetExtension(descriptor.GetOptions(), annotations.E_Http)
+	if err == nil {
+		ext := ext.(*annotations.HTTP)
+		options[http.EndpointOption] = ext.GetEndpoint()
+		options[http.MethodOption] = ext.GetMethod()
+	}
+
 	return &method{
 		descriptor: descriptor,
+		options:    options,
 	}
 }
 
 type method struct {
 	descriptor *desc.MethodDescriptor
+	options    schema.Options
 }
 
 func (method *method) GetName() string {
@@ -110,10 +139,15 @@ func (method *method) GetDescriptor() *desc.MethodDescriptor {
 	return method.descriptor
 }
 
+func (method *method) GetOptions() schema.Options {
+	return method.options
+}
+
 // NewObject constructs a schema Object with the given descriptor
 func NewObject(descriptor *desc.MessageDescriptor) Object {
 	return &object{
 		descriptor: descriptor,
+		options:    make(schema.Options),
 	}
 }
 
@@ -126,6 +160,7 @@ type Object interface {
 
 type object struct {
 	descriptor *desc.MessageDescriptor
+	options    schema.Options
 }
 
 // GetField attempts to return a field matching the given name
@@ -165,10 +200,15 @@ func (object *object) GetDescriptor() *desc.MessageDescriptor {
 	return object.descriptor
 }
 
+func (object *object) GetOptions() schema.Options {
+	return object.options
+}
+
 // NewField constructs a new object field with the given descriptor
 func NewField(descriptor *desc.FieldDescriptor) Field {
 	return &field{
 		descriptor: descriptor,
+		options:    make(schema.Options),
 	}
 }
 
@@ -180,6 +220,7 @@ type Field interface {
 
 type field struct {
 	descriptor *desc.FieldDescriptor
+	options    schema.Options
 }
 
 func (field *field) GetName() string {
@@ -200,4 +241,8 @@ func (field *field) GetObject() schema.Object {
 
 func (field *field) GetDescriptor() *desc.FieldDescriptor {
 	return field.descriptor
+}
+
+func (field *field) GetOptions() schema.Options {
+	return field.options
 }

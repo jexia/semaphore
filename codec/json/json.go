@@ -8,12 +8,28 @@ import (
 	"github.com/francoispqt/gojay"
 	"github.com/jexia/maestro/codec"
 	"github.com/jexia/maestro/refs"
-	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/specs"
+	"github.com/jexia/maestro/specs/trace"
 )
 
-// New constructs a new JSON encode/decode manager
-func New(resource string, schema schema.Object, specs specs.Object) (codec.Manager, error) {
+// NewConstructor constructs a new JSON constructor
+func NewConstructor() *Constructor {
+	return &Constructor{}
+}
+
+// Constructor is capable of constructing new codec managers for the given resource and specs
+type Constructor struct {
+}
+
+func (constructor *Constructor) Name() string {
+	return "json"
+}
+
+func (constructor *Constructor) New(resource string, specs specs.Object) (codec.Manager, error) {
+	if specs == nil {
+		return nil, trace.New(trace.WithMessage("no object specs defined"))
+	}
+
 	return &Manager{
 		resource: resource,
 		specs:    specs,
@@ -45,6 +61,10 @@ func (manager *Manager) Unmarshal(reader io.Reader, refs *refs.Store) error {
 	bb, err := ioutil.ReadAll(reader)
 	if err != nil {
 		return err
+	}
+
+	if len(bb) == 0 {
+		return nil
 	}
 
 	object := NewObject(manager.resource, manager.specs, refs)

@@ -1,20 +1,17 @@
 proxy "echo" {
-    forward "uploader.File" {
+    forward "uploader" "File" {
 
     }
 }
 
 proxy "ping" {
-    forward "uploader.File" {
+    forward "uploader" "File" {
         header {
             cookie = "mnomnom"
         }
 
-        rollback "uploader.Delete" {
-            request {
-                header {
-                    
-                }
+        rollback "uploader" "Delete" {
+            header {
             }
         }
     }

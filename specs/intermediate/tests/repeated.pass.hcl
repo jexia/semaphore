@@ -9,8 +9,8 @@ flow "echo" {
         }
     }
 
-    call "get" "getter.Get" {
-        request {
+    call "get" {
+        request "getter" "Get" {
             repeated "nested" "{{ input:nested }}" {
                 name = "{{ input:nested.name }}"
 

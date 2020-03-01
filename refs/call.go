@@ -1,9 +1,18 @@
 package refs
 
-import "github.com/jexia/maestro/specs"
+import (
+	"github.com/jexia/maestro/specs"
+)
 
 // References returns all the available references inside the given object
-func References(object specs.Object) (result map[string]*specs.PropertyReference) {
+func References(object specs.Object) map[string]*specs.PropertyReference {
+	result := make(map[string]*specs.PropertyReference)
+	for _, prop := range object.GetHeader() {
+		if prop.Reference != nil {
+			result[prop.Reference.String()] = prop.Reference
+		}
+	}
+
 	for _, prop := range object.GetProperties() {
 		if prop.Reference != nil {
 			result[prop.Reference.String()] = prop.Reference

@@ -8,17 +8,9 @@ import (
 
 // CheckManifestDuplicates checks for duplicate definitions
 func CheckManifestDuplicates(file string, manifest *Manifest) error {
-	callers := sync.Map{}
 	endpoints := sync.Map{}
 	flows := sync.Map{}
 	services := sync.Map{}
-
-	for _, caller := range manifest.Callers {
-		_, duplicate := callers.LoadOrStore(caller.Name, caller)
-		if duplicate {
-			return trace.New(trace.WithMessage("%s duplicate caller '%s'", file, caller.Name))
-		}
-	}
 
 	for _, endpoint := range manifest.Endpoints {
 		_, duplicate := endpoints.LoadOrStore(endpoint.Flow, endpoint)
@@ -28,9 +20,9 @@ func CheckManifestDuplicates(file string, manifest *Manifest) error {
 	}
 
 	for _, service := range manifest.Services {
-		_, duplicate := services.LoadOrStore(service.Alias, service)
+		_, duplicate := services.LoadOrStore(service.Name, service)
 		if duplicate {
-			return trace.New(trace.WithMessage("%s duplicate service alias '%s'", file, service.Alias))
+			return trace.New(trace.WithMessage("%s duplicate service '%s'", file, service.Name))
 		}
 	}
 
@@ -53,7 +45,7 @@ func CheckManifestDuplicates(file string, manifest *Manifest) error {
 func CheckFlowDuplicates(file string, flow *Flow) error {
 	calls := sync.Map{}
 
-	for _, call := range flow.Calls {
+	for _, call := range flow.Nodes {
 		_, duplicate := calls.LoadOrStore(call.Name, call)
 		if duplicate {
 			return trace.New(trace.WithMessage("%s duplicate call '%s' in flow '%s'", file, call.Name, flow.Name))

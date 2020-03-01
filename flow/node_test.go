@@ -5,16 +5,15 @@ import (
 	"testing"
 
 	"github.com/jexia/maestro/refs"
-	"github.com/jexia/maestro/services"
 	"github.com/jexia/maestro/specs"
 )
 
-func NewMockNode(name string, caller services.Call, rollback services.Call) *Node {
+func NewMockNode(name string, caller Call, rollback Call) *Node {
 	return &Node{
 		Name:       name,
 		Call:       caller,
 		Rollback:   rollback,
-		DependsOn:  map[string]*specs.Call{},
+		DependsOn:  map[string]*specs.Node{},
 		References: map[string]*specs.PropertyReference{},
 	}
 }

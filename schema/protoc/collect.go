@@ -50,7 +50,7 @@ func UnmarshalFiles(imports []string, files []utils.FileInfo) ([]*desc.FileDescr
 	results := []*desc.FileDescriptor{}
 
 	for _, file := range files {
-		descs, err := parser.ParseFiles(filepath.Join(file.Path, file.Name()))
+		descs, err := parser.ParseFiles(file.Name())
 		if err != nil {
 			return nil, err
 		}

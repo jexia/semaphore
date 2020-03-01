@@ -5,45 +5,37 @@ Maestro provides a powerfull toolset for manipulating, forwarding and returning 
 
 > 🚧 This project is still under construction and may be changed or updated without notice
 
-# Getting started
+## Getting started
 
-All exposed endpoints are defined as flows.
-A flow could manipulate, deconstruct and pass data in between calls and services.
-All message and services are defined inside a schema format (currently only protobuf is supported).
-Flows are exposed through endpoints. Each endpoint could contain server specific configurations.
+All data streams inside Maestro are called flows.
+A flow is able to manipulate, deconstruct and forwarded data in between calls and services.
+Flows are exposed through endpoints. Flows are generic and could handle different protocols and codecs within a single flow.
+All flows are strict typed through schema definitions. These schemas define the contracts provided and accepted by services.
 
 ```hcl
+endpoint "checkout" "http" "json" {
+    method = "POST"
+    endpoint = "/checkout"
+}
+
 flow "checkout" {
-	input {
+    input {
         id = "<string>"
-        customer = "<string>"
+    }
 
-        message "address" {
-            city = "<string>"
+    call "shipping" {
+        request "warehouse" "Send" {
+            user = "{{ input:id }}"
         }
-	}
-
-	call "prepare" "warehouse.Prepare" {
-		request {
-			cart = "{{ input:id }}"
-
-            rollback "warehouse.Cancel" {
-                cart = "{{ input:id }}"
-            }
-		}
-	}
-
-	call "send" "shipping.Send" {
-		request {
-			order = "{{ prepare:order }}"
-			customer = "{{ input:id }}"
-			city = "{{ input:address.city }}"
-		}
-	}
+    }
 
     output {
-        ref = "{{ prepare:order }}"
-        status = "{{ send:url }}"
+        status = "{{ shipping:status }}"
     }
+}
+
+service "warehouse" "grpc" "proto" {
+    host = "warehouse.local"
+    schema = "proto.Warehouse"
 }
 ```
