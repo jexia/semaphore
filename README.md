@@ -13,13 +13,9 @@ Flows are exposed through endpoints. Flows are generic and could handle differen
 All flows are strict typed through schema definitions. These schemas define the contracts provided and accepted by services.
 
 ```hcl
-endpoint "checkout" "http" {
-    codec = "json"
-
-    options {
-        method = "POST"
-        endpoint = "/checkout"
-    }
+endpoint "checkout" "http" "json" {
+    method = "POST"
+    endpoint = "/checkout"
 }
 
 flow "checkout" {
@@ -27,8 +23,8 @@ flow "checkout" {
         id = "<string>"
     }
 
-    call "shipping" "warehouse" "Send" {
-        request {
+    call "shipping" {
+        request "warehouse" "Send" {
             user = "{{ input:id }}"
         }
     }
@@ -38,9 +34,8 @@ flow "checkout" {
     }
 }
 
-service "warehouse" "proto" {
+service "warehouse" "grpc" "proto" {
     host = "warehouse.local"
     schema = "proto.Warehouse"
-    codec = "proto"
 }
 ```
