@@ -66,7 +66,7 @@ func (object *Object) UnmarshalJSONObject(dec *gojay.Decoder, key string) error 
 	prop, has := object.specs.GetProperties()[key]
 	if has {
 		ref := refs.New(prop.GetPath())
-		ref.Value = types.Decode(dec, prop, object.refs)
+		ref.Value = types.Decode(dec, prop)
 		object.refs.StoreReference(object.resource, ref)
 		return nil
 	}
