@@ -292,7 +292,6 @@ func ConstructCall(manifest *specs.Manifest, node *specs.Node, call *specs.Call,
 			return nil
 		}
 
-		header.Unmarshal(w.Header(), refs)
 		return nil
 	}, nil
 }
