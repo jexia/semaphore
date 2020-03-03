@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/jexia/maestro/refs"
+	log "github.com/sirupsen/logrus"
 )
 
 // Call represents a caller which could be called
@@ -50,6 +51,8 @@ func (manager *Manager) Call(ctx context.Context, refs *refs.Store) error {
 	manager.wg.Add(1)
 	defer manager.wg.Done()
 
+	log.WithField("flow", manager.Name).Debug("Executing flow")
+
 	processes := NewProcesses(len(manager.Starting))
 	tracker := NewTracker(manager.Nodes)
 
@@ -59,12 +62,20 @@ func (manager *Manager) Call(ctx context.Context, refs *refs.Store) error {
 
 	processes.Wait()
 
+	log.WithField("flow", manager.Name).Debug("Processes completed")
+
 	if processes.Err() != nil {
+		log.WithFields(log.Fields{
+			"flow": manager.Name,
+			"err":  processes.Err(),
+		}).Error("An error occurred, executing rollback")
+
 		manager.wg.Add(1)
 		go manager.Revert(tracker, refs)
 		return processes.Err()
 	}
 
+	log.WithField("flow", manager.Name).Debug("Flow completed")
 	return nil
 }
 

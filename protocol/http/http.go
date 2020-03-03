@@ -12,6 +12,7 @@ import (
 	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/specs"
 	"github.com/julienschmidt/httprouter"
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -37,6 +38,8 @@ func (caller *Caller) Name() string {
 
 // New constructs a new caller for the given host
 func (caller *Caller) New(host string, schema schema.Service, opts specs.Options) (protocol.Call, error) {
+	log.WithField("host", host).Info("Constructing new HTTP caller")
+
 	options, err := ParseCallerOptions(opts)
 	if err != nil {
 		return nil, err
@@ -77,6 +80,8 @@ func (call *Call) Call(rw protocol.ResponseWriter, incoming *protocol.Request, r
 
 	url.Path = options[EndpointOption]
 
+	log.WithField("url", url).Debug("Calling HTTP caller")
+
 	req, err := http.NewRequestWithContext(incoming.Context, options[MethodOption], url.String(), incoming.Body)
 	if err != nil {
 		return err
@@ -90,11 +95,14 @@ func (call *Call) Call(rw protocol.ResponseWriter, incoming *protocol.Request, r
 
 // Close closes the given caller
 func (call *Call) Close() error {
+	log.WithField("host", call.host).Info("Closing HTTP caller")
 	return nil
 }
 
 // NewListener constructs a new listener for the given addr
 func NewListener(addr string, opts specs.Options) (protocol.Listener, error) {
+	log.WithField("add", addr).Info("Constructing new HTTP listener")
+
 	options, err := ParseEndpointOptions(opts)
 	if err != nil {
 		return nil, err
@@ -123,6 +131,8 @@ func (listener *Listener) Name() string {
 
 // Serve opens the HTTP listener and calls the given handler function on reach request
 func (listener *Listener) Serve() error {
+	log.WithField("addr", listener.server.Addr).Info("Opening HTTP listener")
+
 	listener.server.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		listener.mutex.RLock()
 		listener.router.ServeHTTP(w, r)
@@ -134,6 +144,7 @@ func (listener *Listener) Serve() error {
 
 // Handle parses the given endpoints and constructs route handlers
 func (listener *Listener) Handle(endpoints []*protocol.Endpoint) error {
+	log.Info("HTTP listener received new endpoints")
 	router := httprouter.New()
 
 	for _, endpoint := range endpoints {
@@ -145,6 +156,7 @@ func (listener *Listener) Handle(endpoints []*protocol.Endpoint) error {
 		router.Handle(options.Method, options.Endpoint, Handle(endpoint))
 	}
 
+	log.Info("Swapping HTTP router")
 	listener.mutex.Lock()
 	listener.router = router
 	listener.mutex.Unlock()
@@ -154,12 +166,15 @@ func (listener *Listener) Handle(endpoints []*protocol.Endpoint) error {
 
 // Close closes the given listener
 func (listener *Listener) Close() error {
+	log.Info("Closing HTTP listener")
 	return listener.server.Close()
 }
 
 // Handle constructs a new handle function for the given endpoint to the given flow
 func Handle(endpoint *protocol.Endpoint) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+		log.Debug("New incoming HTTP request")
+
 		defer r.Body.Close()
 		var err error
 		refs := endpoint.Flow.NewStore()

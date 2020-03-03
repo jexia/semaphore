@@ -6,6 +6,7 @@ import (
 
 	"github.com/jexia/maestro/specs/trace"
 	"github.com/jexia/maestro/specs/types"
+	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -126,10 +127,19 @@ func ParseTemplateContent(path string, functions CustomDefinedFunctions, content
 // ParseTemplate parses the given value template and sets the resource and path
 func ParseTemplate(path string, functions CustomDefinedFunctions, value string) (*Property, error) {
 	content := GetTemplateContent(value)
+	log.WithField("path", path).WithField("template", content).Debug("Parsing property template")
+
 	result, err := ParseTemplateContent(path, functions, content)
 	if err != nil {
 		return nil, err
 	}
+
+	log.WithFields(log.Fields{
+		"path":      path,
+		"type":      result.Type,
+		"default":   result.Default,
+		"reference": result.Reference,
+	}).Debug("Template results in property with type")
 
 	return result, nil
 }

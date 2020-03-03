@@ -6,10 +6,13 @@ import (
 	"github.com/jexia/maestro/specs/lookup"
 	"github.com/jexia/maestro/specs/trace"
 	"github.com/jexia/maestro/specs/types"
+	log "github.com/sirupsen/logrus"
 )
 
 // Define checks and defines the types for the given manifest
 func Define(schema schema.Collection, manifest *specs.Manifest) (err error) {
+	log.Info("Defining manifest types")
+
 	for _, flow := range manifest.Flows {
 		err := DefineFlow(schema, manifest, flow)
 		if err != nil {
@@ -29,6 +32,8 @@ func Define(schema schema.Collection, manifest *specs.Manifest) (err error) {
 
 // DefineProxy checks and defines the types for the given proxy
 func DefineProxy(schema schema.Collection, manifest *specs.Manifest, proxy *specs.Proxy) (err error) {
+	log.WithField("proxy", proxy.GetName()).Info("Defining proxy flow types")
+
 	for _, node := range proxy.Nodes {
 		if node.Call != nil {
 			err = DefineCall(schema, manifest, node, node.Call, proxy)
@@ -50,6 +55,8 @@ func DefineProxy(schema schema.Collection, manifest *specs.Manifest, proxy *spec
 
 // DefineFlow checks and defines the types for the given flow
 func DefineFlow(schema schema.Collection, manifest *specs.Manifest, flow *specs.Flow) (err error) {
+	log.WithField("flow", flow.GetName()).Info("Defining flow types")
+
 	if flow.Schema != "" {
 		method, err := GetFlowSchema(schema, flow)
 		if err != nil {
@@ -120,6 +127,11 @@ func DefineCall(schema schema.Collection, manifest *specs.Manifest, node *specs.
 	if call.GetMethod() == "" {
 		return nil
 	}
+
+	log.WithFields(log.Fields{
+		"call":   node.GetName(),
+		"method": call.GetMethod(),
+	}).Info("Defining call types")
 
 	service := schema.GetService(GetSchemaService(manifest, call.GetService()))
 	if service == nil {
@@ -194,6 +206,11 @@ func DefineProperty(node *specs.Node, call *specs.Call, property *specs.Property
 	if node != nil {
 		breakpoint = node.GetName()
 	}
+
+	log.WithFields(log.Fields{
+		"breakpoint": breakpoint,
+		"reference":  property.Reference,
+	}).Debug("Lookup references untill breakpoint")
 
 	references := lookup.GetAvailableResources(flow, breakpoint)
 	reference := lookup.GetResourceReference(property.Reference, references)

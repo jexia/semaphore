@@ -5,6 +5,7 @@ import (
 
 	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/specs"
+	log "github.com/sirupsen/logrus"
 )
 
 // NewNode constructs a new node for the given call.
@@ -51,12 +52,15 @@ type Node struct {
 // If one of the nodes fails is the error marked and are the processes aborted.
 func (node *Node) Do(ctx context.Context, tracker *Tracker, processes *Processes, refs *refs.Store) {
 	defer processes.Done()
+	log.WithField("node", node.Name).Debug("Executing node call")
 
 	if !tracker.Met(node.Previous...) {
+		log.WithField("node", node.Name).Debug("Has not met dependencies yet")
 		return
 	}
 
 	if tracker.Met(node) {
+		log.WithField("node", node.Name).Debug("Node already executed")
 		return
 	}
 
@@ -68,9 +72,12 @@ func (node *Node) Do(ctx context.Context, tracker *Tracker, processes *Processes
 		}
 	}
 
+	log.WithField("node", node.Name).Debug("Marking node as completed")
+
 	tracker.Mark(node)
 
 	if processes.Err() != nil {
+		log.WithField("node", node.Name).Error("Stopping flow execution a error has been thrown")
 		return
 	}
 
@@ -84,8 +91,10 @@ func (node *Node) Do(ctx context.Context, tracker *Tracker, processes *Processes
 // If one of the nodes fails is the error marked but execution is not aborted.
 func (node *Node) Revert(ctx context.Context, tracker *Tracker, processes *Processes, refs *refs.Store) {
 	defer processes.Done()
+	log.WithField("node", node.Name).Debug("Executing node revert")
 
 	if !tracker.Met(node.Next...) {
+		log.WithField("node", node.Name).Debug("Has not met dependencies yet")
 		return
 	}
 
@@ -97,6 +106,7 @@ func (node *Node) Revert(ctx context.Context, tracker *Tracker, processes *Proce
 	}()
 
 	if tracker.Met(node) {
+		log.WithField("node", node.Name).Debug("Node already executed")
 		return
 	}
 
@@ -108,6 +118,7 @@ func (node *Node) Revert(ctx context.Context, tracker *Tracker, processes *Proce
 		}
 	}
 
+	log.WithField("node", node.Name).Debug("Marking node as completed")
 	tracker.Mark(node)
 }
 

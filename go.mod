@@ -10,6 +10,7 @@ require (
 	github.com/jhump/protoreflect v1.6.0
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/micro/go-micro v1.18.0 // indirect
+	github.com/sirupsen/logrus v1.4.2
 	github.com/zclconf/go-cty v1.2.0
 	golang.org/x/net v0.0.0-20191109021931-daa7c04131f5
 	golang.org/x/sys v0.0.0-20200122134326-e047566fdf82 // indirect
