@@ -17,10 +17,11 @@ import (
 
 // Available execution flags
 var (
-	HTTPAddr     string
-	ProtoPath    string
-	ProtoImports []string
-	LogLevel     string
+	RecursiveLookup bool
+	HTTPAddr        string
+	ProtoPath       string
+	ProtoImports    []string
+	LogLevel        string
 )
 
 // Cmd represents the maestro run command
@@ -32,6 +33,7 @@ var Cmd = &cobra.Command{
 }
 
 func init() {
+	Cmd.PersistentFlags().BoolVar(&RecursiveLookup, "recursive", false, "If set are all flow definitions within the given path looked up recursively")
 	Cmd.PersistentFlags().StringVar(&HTTPAddr, "http", "", "If set starts the HTTP listener on the given TCP address")
 	Cmd.PersistentFlags().StringVar(&ProtoPath, "proto", "", "If set are all proto definitions found inside the given path passed as schema definitions")
 	Cmd.PersistentFlags().StringSliceVar(&ProtoImports, "proto-import", []string{}, "Proto import definitions")
@@ -54,7 +56,7 @@ func run(cmd *cobra.Command, args []string) error {
 	flows := args[0]
 
 	options := []maestro.Option{
-		maestro.WithPath(flows, true),
+		maestro.WithPath(flows, RecursiveLookup),
 		maestro.WithCodec(json.NewConstructor()),
 		maestro.WithCodec(proto.NewConstructor()),
 		maestro.WithCaller(http.NewCaller()),
