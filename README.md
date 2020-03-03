@@ -1,6 +1,6 @@
 # Maestro [![GoDoc](https://godoc.org/github.com/jexia/maestro?status.svg)](https://godoc.org/github.com/jexia/maestro) ![Go CI](https://github.com/jexia/maestro/workflows/Go%20CI/badge.svg)
 
-Maestro is a tool to orchistrate requests inside your microservice architecture.
+Maestro is a tool to orchestrate requests inside your microservice architecture.
 A request could be manipulated passed branched to different services to be returned as a single output.
 
 The key features of Maestro are:
@@ -17,9 +17,9 @@ The key features of Maestro are:
 ---
 
 All data streams inside Maestro are called flows.
-A flow is able to manipulate, deconstruct and forwarded data in between calls and services.
+A flow can manipulate, deconstruct and forwarded data in between calls and services.
 Flows are exposed through endpoints. Flows are generic and could handle different protocols and codecs within a single flow.
-All flows are strict typed through schema definitions. These schemas define the contracts provided and accepted by services.
+All flows are strictly typed through schema definitions. These schemas define the contracts provided and accepted by services.
 
 ```hcl
 endpoint "checkout" "http" "json" {
