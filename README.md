@@ -11,7 +11,7 @@ The key features of Maestro are:
 
 ## Getting started
 
-1. [⚡ CLI](https://github.com/jexia/maestro/tree/master/cli)
+1. [⚡ CLI](https://github.com/jexia/maestro/tree/master/cmd/maestro)
 2. [🚀 Examples](https://github.com/jexia/maestro/tree/master/examples)
 3. [📚 Documentation](https://godoc.org/github.com/jexia/maestro)
 
