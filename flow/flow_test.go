@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"io"
+	"sync"
 	"testing"
 
 	"github.com/jexia/maestro/refs"
@@ -21,10 +22,13 @@ func (codec *MockCodec) Unmarshal(io.Reader, *refs.Store) error {
 
 type caller struct {
 	Counter int
+	mutex   sync.Mutex
 }
 
 func (caller *caller) Call(context.Context, *refs.Store) error {
+	caller.mutex.Lock()
 	caller.Counter++
+	caller.mutex.Unlock()
 	return nil
 }
 

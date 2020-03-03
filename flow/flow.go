@@ -113,5 +113,6 @@ func (manager *Manager) Revert(executed *Tracker, refs *refs.Store) {
 
 // Wait awaits till all calls and rollbacks are completed
 func (manager *Manager) Wait() {
+	log.WithField("flow", manager.Name).Info("Awaiting till all processes are completed")
 	manager.wg.Wait()
 }

@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"sync"
 
 	"github.com/jexia/maestro/flow"
 	"github.com/jexia/maestro/refs"
@@ -21,9 +22,43 @@ import (
 
 // Client represents a maestro instance
 type Client struct {
+	Endpoints []*protocol.Endpoint
 	Manifest  *specs.Manifest
 	Listeners []protocol.Listener
 	Options   Options
+}
+
+// Serve opens all listeners inside the given maestro client
+func (client *Client) Serve() <-chan error {
+	wg := sync.WaitGroup{}
+	wg.Add(len(client.Listeners))
+
+	errs := make(chan error, len(client.Listeners))
+
+	for index, listener := range client.Listeners {
+		go func(index int, listener protocol.Listener) {
+			defer wg.Done()
+			errs <- listener.Serve()
+		}(index, listener)
+	}
+
+	go func() {
+		wg.Wait()
+		close(errs)
+	}()
+
+	return errs
+}
+
+// Close gracefully closes the given client
+func (client *Client) Close() {
+	for _, listener := range client.Listeners {
+		listener.Close()
+	}
+
+	for _, endpoint := range client.Endpoints {
+		endpoint.Flow.Wait()
+	}
 }
 
 // Option represents a constructor func which sets a given option
@@ -113,12 +148,13 @@ func New(opts ...Option) (*Client, error) {
 		return nil, err
 	}
 
-	err = ConstructFlowManager(manifest, options)
+	endpoints, err := ConstructFlowManager(manifest, options)
 	if err != nil {
 		return nil, err
 	}
 
 	client := &Client{
+		Endpoints: endpoints,
 		Manifest:  manifest,
 		Listeners: options.Listeners,
 		Options:   options,
@@ -174,7 +210,7 @@ func ConstructSpecs(options Options) (*specs.Manifest, error) {
 }
 
 // ConstructFlowManager constructs the flow managers from the given specs manifest
-func ConstructFlowManager(manifest *specs.Manifest, options Options) error {
+func ConstructFlowManager(manifest *specs.Manifest, options Options) ([]*protocol.Endpoint, error) {
 	endpoints := make([]*protocol.Endpoint, len(manifest.Endpoints))
 
 	for index, endpoint := range manifest.Endpoints {
@@ -189,12 +225,12 @@ func ConstructFlowManager(manifest *specs.Manifest, options Options) error {
 		for index, node := range f.Nodes {
 			caller, err := ConstructCall(manifest, node, node.Call, options)
 			if err != nil {
-				return err
+				return nil, err
 			}
 
 			rollback, err := ConstructCall(manifest, node, node.Rollback, options)
 			if err != nil {
-				return err
+				return nil, err
 			}
 
 			nodes[index] = flow.NewNode(node, caller, rollback)
@@ -202,13 +238,13 @@ func ConstructFlowManager(manifest *specs.Manifest, options Options) error {
 
 		collection, has := options.Codec[endpoint.Codec]
 		if !has {
-			return trace.New(trace.WithMessage("unkown endpoint codec %s", endpoint.Codec))
+			return nil, trace.New(trace.WithMessage("unkown endpoint codec %s", endpoint.Codec))
 		}
 
 		if f.GetInput() != nil {
 			req, err := collection.New(specs.InputResource, f.GetInput())
 			if err != nil {
-				return err
+				return nil, err
 			}
 
 			result.Request = req
@@ -217,7 +253,7 @@ func ConstructFlowManager(manifest *specs.Manifest, options Options) error {
 		if f.GetOutput() != nil {
 			res, err := collection.New(specs.InputResource, f.GetOutput())
 			if err != nil {
-				return err
+				return nil, err
 			}
 
 			result.Response = res
@@ -230,10 +266,10 @@ func ConstructFlowManager(manifest *specs.Manifest, options Options) error {
 
 	err := ConstructListeners(endpoints, options)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return endpoints, nil
 }
 
 // ConstructCall constructs a flow caller for the given node call.
