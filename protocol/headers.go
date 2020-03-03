@@ -14,15 +14,19 @@ func (h Header) Clone() Header {
 }
 
 // Del deletes the values associated with key.
-func (h Header) Del(key string) {}
+func (h Header) Del(key string) {
+	delete(h, key)
+}
 
 // Get gets the first value associated with the given key. If there are no values associated with the key, Get returns "".
 func (h Header) Get(key string) string {
-	return ""
+	return h[key]
 }
 
 // Set sets the header entries associated with key to the single element value. It replaces any existing values associated with key.
-func (h Header) Set(key, value string) {}
+func (h Header) Set(key, value string) {
+	h[key] = value
+}
 
 // NewHeaderManager constructs a new header manager for the given resource
 func NewHeaderManager(resource string, object specs.Object) *HeaderManager {

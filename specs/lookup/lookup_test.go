@@ -246,11 +246,11 @@ func TestSkipMissingParameters(t *testing.T) {
 	tests := []test{
 		test{
 			name:  "first",
-			empty: []string{specs.ResourceRequest, specs.ResourceRequestHeader},
+			empty: []string{specs.ResourceRequest, specs.ResourceHeader},
 		},
 		test{
 			name:  "second",
-			empty: []string{specs.ResourceRequest, specs.ResourceRequestHeader},
+			empty: []string{specs.ResourceRequest, specs.ResourceHeader},
 		},
 		test{
 			name: "third",
@@ -301,7 +301,7 @@ func TestGetResourceReference(t *testing.T) {
 		NewPropertyReference("first.response", "result"):                   flow.Nodes[0].Call.Response.Properties["result"],
 		NewPropertyReference("first.request", "message"):                   flow.Nodes[0].Call.Request.Properties["message"],
 		NewPropertyReference("first.request", "message"):                   flow.Nodes[0].Call.Request.Properties["message"],
-		NewPropertyReference("first.request.header", "cookie"):             flow.Nodes[0].Call.Request.Header["cookie"],
+		NewPropertyReference("first.header", "cookie"):                     flow.Nodes[0].Call.Response.Header["cookie"],
 		NewPropertyReference("first.request", "nested"):                    flow.Nodes[0].Call.Request.Nested["nested"],
 		NewPropertyReference("first.request", "nested.message"):            flow.Nodes[0].Call.Request.Nested["nested"].Properties["message"],
 		NewPropertyReference("first", "nested.result"):                     flow.Nodes[0].Call.Response.Nested["nested"].Properties["result"],
