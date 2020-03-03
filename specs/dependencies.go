@@ -2,10 +2,14 @@ package specs
 
 import (
 	"fmt"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // ResolveManifestDependencies resolves all dependencies inside the given manifest
 func ResolveManifestDependencies(manifest *Manifest) error {
+	log.Info("Resolving manifest dependencies")
+
 	for _, flow := range manifest.Flows {
 		err := ResolveFlowManagerDependencies(manifest, flow, make(map[string]FlowManager))
 		if err != nil {

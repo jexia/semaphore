@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/jexia/maestro/specs/types"
+	log "github.com/sirupsen/logrus"
 	"github.com/zclconf/go-cty/cty"
 	"github.com/zclconf/go-cty/cty/gocty"
 )
@@ -27,11 +28,14 @@ func SetType(property *Property, value cty.Value) {
 		return
 	}
 
+	log.WithField("path", property.GetPath()).WithField("type", value.Type).Debug("Set property type definition")
 	property.Type = types.Type(GetTypeContent(value.AsString()))
 }
 
 // SetDefaultValue sets the given value as default value inside the given property
 func SetDefaultValue(property *Property, value cty.Value) {
+	log.WithField("path", property.GetPath()).WithField("value", value).Debug("Set default value for property")
+
 	switch value.Type() {
 	case cty.String:
 		property.Default = value.AsString()

@@ -3,11 +3,14 @@ package intermediate
 import (
 	"github.com/hashicorp/hcl/v2"
 	"github.com/jexia/maestro/specs"
+	log "github.com/sirupsen/logrus"
 	"github.com/zclconf/go-cty/cty"
 )
 
 // ParseManifest parses the given intermediate manifest to a specs manifest
 func ParseManifest(manifest Manifest, functions specs.CustomDefinedFunctions) (*specs.Manifest, error) {
+	log.Info("Parsing intermediate manifest to specs")
+
 	result := &specs.Manifest{
 		Endpoints: make([]*specs.Endpoint, len(manifest.Endpoints)),
 		Services:  make([]*specs.Service, len(manifest.Services)),
@@ -46,6 +49,8 @@ func ParseManifest(manifest Manifest, functions specs.CustomDefinedFunctions) (*
 
 // ParseIntermediateEndpoint parses the given intermediate endpoint to a specs endpoint
 func ParseIntermediateEndpoint(endpoint Endpoint) *specs.Endpoint {
+	log.WithField("flow", endpoint.Flow).Debug("Parsing intermediate endpoint to specs")
+
 	result := specs.Endpoint{
 		Options:  ParseIntermediateOptions(endpoint.Options),
 		Flow:     endpoint.Flow,
@@ -58,6 +63,8 @@ func ParseIntermediateEndpoint(endpoint Endpoint) *specs.Endpoint {
 
 // ParseIntermediateService parses the given intermediate service to a specs service
 func ParseIntermediateService(service Service) *specs.Service {
+	log.WithField("service", service.Name).Debug("Parsing intermediate service to specs")
+
 	result := specs.Service{
 		Options: ParseIntermediateOptions(service.Options),
 		Name:    service.Name,
@@ -72,6 +79,8 @@ func ParseIntermediateService(service Service) *specs.Service {
 
 // ParseIntermediateFlow parses the given intermediate flow to a specs flow
 func ParseIntermediateFlow(flow Flow, functions specs.CustomDefinedFunctions) (*specs.Flow, error) {
+	log.WithField("flow", flow.Name).Debug("Parsing intermediate flow to specs")
+
 	input, err := ParseIntermediateParameterMap(ParseIntermediateInputParameterMap(flow.Input), functions)
 	if err != nil {
 		return nil, err
@@ -209,7 +218,6 @@ func ParseIntermediateParameterMap(params *ParameterMap, functions specs.CustomD
 	}
 
 	properties, _ := params.Properties.JustAttributes()
-
 	header, err := ParseIntermediateHeader(params.Header, functions)
 	if err != nil {
 		return nil, err
@@ -489,6 +497,8 @@ func ParseIntermediateProperty(path string, functions specs.CustomDefinedFunctio
 	if property == nil {
 		return nil, nil
 	}
+
+	log.WithField("path", path).Debug("Parsing intermediate property to specs")
 
 	value, _ := property.Expr.Value(nil)
 	result := &specs.Property{

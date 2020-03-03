@@ -4,10 +4,13 @@ import (
 	"sync"
 
 	"github.com/jexia/maestro/specs/trace"
+	log "github.com/sirupsen/logrus"
 )
 
 // CheckManifestDuplicates checks for duplicate definitions
 func CheckManifestDuplicates(file string, manifest *Manifest) error {
+	log.Info("Checking manifest duplicates")
+
 	endpoints := sync.Map{}
 	flows := sync.Map{}
 	services := sync.Map{}
@@ -43,6 +46,8 @@ func CheckManifestDuplicates(file string, manifest *Manifest) error {
 
 // CheckFlowDuplicates checks for duplicate definitions
 func CheckFlowDuplicates(file string, flow *Flow) error {
+	log.Info("Checking flow duplicates")
+
 	calls := sync.Map{}
 
 	for _, call := range flow.Nodes {
