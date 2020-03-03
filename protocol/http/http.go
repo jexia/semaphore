@@ -139,7 +139,12 @@ func (listener *Listener) Serve() error {
 		listener.mutex.RUnlock()
 	})
 
-	return listener.server.ListenAndServe()
+	err := listener.server.ListenAndServe()
+	if err == http.ErrServerClosed {
+		return nil
+	}
+
+	return err
 }
 
 // Handle parses the given endpoints and constructs route handlers
