@@ -67,7 +67,7 @@ message "address" {
 }
 ```
 ### Repeated message
-Repeated messages are messages which are repeated. Nested messages could be defined inside repeated messages. Repeated messages accept two labels the first one is its alias and the second one is the resource reference. If a repeated message is kept empty the whole message is attempted to be copies. Repeated messages could not be defined inside a repeated message.
+Repeated messages are messages which are repeated. Nested messages could be defined inside repeated messages. Repeated messages accept two labels the first one is its alias and the second one is the resource reference. If a repeated message is kept empty the whole message is attempted to be copied. Repeated messages could not be defined inside a repeated message.
 
 ```hcl
 repeated "address" "{{ input:address }}" {
@@ -157,7 +157,7 @@ call "log" {
 ```
 
 #### Options
-Options could be consumed by implementations. The defined key/values are implementation specific.
+Options could be consumed by implementations. The defined key/values are implementation-specific.
 
 ```hcl
 options {
@@ -238,7 +238,7 @@ proxy "upload" {
 
 ### Service
 Services represent external service which could be called inside the flows.
-The service name is an alias which could be referenced inside calls.
+The service name is an alias that could be referenced inside calls.
 The host of the service and schema service method should be defined for each service.
 The request and response message defined inside the schema are used for type definitions.
 The FQN (fully qualified name) of the schema method should be used.
@@ -254,7 +254,7 @@ service "logger" "http" "proto" {
 ```
 
 #### Options
-Options could be consumed by implementations. The defined key/values are implementation specific.
+Options could be consumed by implementations. The defined key/values are implementation-specific.
 
 ```hcl
 options {
@@ -276,7 +276,7 @@ endpoint "users" "http" "json" {
 ```
 
 #### Options
-Options could be consumed by implementations. The defined key/values are implementation specific.
+Options could be consumed by implementations. The defined key/values are implementation-specific.
 
 ```hcl
 options {
