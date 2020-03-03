@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/jexia/maestro/cli/run"
+	"github.com/jexia/maestro/cmd/maestro/run"
 	"github.com/spf13/cobra"
 )
 
