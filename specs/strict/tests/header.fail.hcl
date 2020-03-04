@@ -5,13 +5,13 @@ service "caller" "http" "json" {
 
 flow "echo" {
     input {
-        ammount = "<int32>"
+        amount = "<int32>"
     }
 
 	call "opening" {
 		request "caller" "Open" {
 			header {
-                Ammount = "{{ input:ammount }}"
+                Amount = "{{ input:amount }}"
             }
 		}
 	}

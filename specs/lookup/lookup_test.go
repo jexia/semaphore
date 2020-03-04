@@ -20,9 +20,9 @@ func TestGetFlow(t *testing.T) {
 	}
 
 	tests := map[string]*specs.Flow{
-		"second": manifest.Flows[1],
-		"first":  manifest.Flows[0],
-		"unkown": nil,
+		"second":  manifest.Flows[1],
+		"first":   manifest.Flows[0],
+		"unknown": nil,
 	}
 
 	for input, expected := range tests {
@@ -36,7 +36,7 @@ func TestGetFlow(t *testing.T) {
 func TestGetDefaultProp(t *testing.T) {
 	tests := map[string]string{
 		specs.InputResource: specs.ResourceRequest,
-		"unkown":            specs.ResourceResponse,
+		"unknown":           specs.ResourceResponse,
 	}
 
 	for input, expected := range tests {
@@ -278,7 +278,7 @@ func TestSkipMissingParameters(t *testing.T) {
 					}
 				}
 
-				t.Fatalf("unkown empty resource %s", key)
+				t.Fatalf("unknown empty resource %s", key)
 			}
 		}
 	}

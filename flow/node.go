@@ -23,7 +23,7 @@ func NewNode(node *specs.Node, call, rollback Call) *Node {
 	}
 }
 
-// Nodes represents a node colleciton
+// Nodes represents a node collection
 type Nodes []*Node
 
 // Has checks whether the given node collection has a node with the given name inside

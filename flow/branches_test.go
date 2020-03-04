@@ -70,7 +70,7 @@ func TestStartNodes(t *testing.T) {
 	expected := []*Node{nodes[0], last}
 
 	if len(start) != 2 {
-		t.Errorf("unexpected ammount of start nodes returned %+v", start)
+		t.Errorf("unexpected amount of start nodes returned %+v", start)
 	}
 
 lookup:

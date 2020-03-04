@@ -98,7 +98,7 @@ func (object *Object) UnmarshalJSONObject(dec *gojay.Decoder, key string) error 
 	return nil
 }
 
-// NKeys returns the ammount of available keys inside the given object
+// NKeys returns the amount of available keys inside the given object
 func (object *Object) NKeys() int {
 	return object.keys
 }

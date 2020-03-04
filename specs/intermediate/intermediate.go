@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	// Ext represents the intermediate file extention
+	// Ext represents the intermediate file extension
 	Ext = ".hcl"
 )
 

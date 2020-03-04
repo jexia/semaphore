@@ -54,7 +54,7 @@ func GetDefaultProp(resource string) string {
 }
 
 // GetAvailableResources fetches the available resources able to be referenced
-// untill the given breakpoint (call.Name) has been reached.
+// until the given breakpoint (call.Name) has been reached.
 func GetAvailableResources(flow specs.FlowManager, breakpoint string) map[string]ReferenceMap {
 	references := make(map[string]ReferenceMap, len(flow.GetNodes())+1)
 

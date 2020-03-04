@@ -140,7 +140,7 @@ func TestParseFunction(t *testing.T) {
 		},
 	}
 
-	// NOTE: testing of sub functions is a function specific implementation and is not part of the template libary
+	// NOTE: testing of sub functions is a function specific implementation and is not part of the template library
 	tests := map[string]Property{
 		"add(input:message)": static,
 	}
