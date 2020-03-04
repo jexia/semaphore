@@ -1,7 +1,11 @@
 # Maestro
 Maestro is a tool to orchestrate your microservices by providing a powerful toolset for manipulating, forwarding and returning properties from and to multiple services.
 
+<<<<<<< HEAD
 Maestro is built on top of schema definitions and flows.
+=======
+Maestro is built on top of proto buffers and flows.
+>>>>>>> master
 Messages are strictly typed and are type-checked. Payloads such as protobuf and JSON could be generated from the same definitions.
 
 ## Table of contents
@@ -16,7 +20,11 @@ Messages are strictly typed and are type-checked. Payloads such as protobuf and 
   * [Flow](#flow)
     + [Input](#input-1)
     + [Output](#output)
+<<<<<<< HEAD
     + [Depends on](#depends-on)
+=======
+    + [Dependency](#dependency)
+>>>>>>> master
   * [Call](#call-1)
     + [Options](#options)
     + [Header](#header)
@@ -25,6 +33,10 @@ Messages are strictly typed and are type-checked. Payloads such as protobuf and 
   * [Proxy](#proxy)
   * [Service](#service)
     + [Options](#options)
+<<<<<<< HEAD
+=======
+  * [Caller](#caller)
+>>>>>>> master
   * [Endpoint](#endpoint)
 
 ## Specification
@@ -53,9 +65,15 @@ Paths reference a property within the resource. Paths could target nested messag
 
 
 ### Message
+<<<<<<< HEAD
 A message holds properties, nested messages and/or repeated messages. All of these properties could be referenced. Messages reference a schema message.
 Properties
 Properties hold constant values and/or references. Properties are strictly typed and use the referenced schema message for type checks. Properties could also hold references which should match the given property type.
+=======
+A message holds properties, nested messages and/or repeated messages. All of these properties could be referenced. Messages reference a protobuf message.
+Properties
+Properties hold constant values and/or references. Properties are strictly typed and use the referenced protobuf message for type checks. Properties could also hold references which should match the given property type.
+>>>>>>> master
 Nested messages
 You can define and use message types inside other message types, as in the following example.
 
@@ -67,7 +85,11 @@ message "address" {
 }
 ```
 ### Repeated message
+<<<<<<< HEAD
 Repeated messages are messages which are repeated. Nested messages could be defined inside repeated messages. Repeated messages accept two labels the first one is its alias and the second one is the resource reference. If a repeated message is kept empty the whole message is attempted to be copied. Repeated messages could not be defined inside a repeated message.
+=======
+Repeated messages are messages which are repeated. Nested messages could be defined inside repeated messages. Repeated messages accept two labels the first one is its alias and the second one is the resource reference. If a repeated message is kept empty the whole message is attempted to be copies. Repeated messages could not be defined inside a repeated message.
+>>>>>>> master
 
 ```hcl
 repeated "address" "{{ input:address }}" {
@@ -78,11 +100,16 @@ repeated "address" "{{ input:address }}" {
 ```
 
 ### Flow
+<<<<<<< HEAD
 A flow defines a set of calls that should be called chronologically and produces an output message. Calls could reference other resources when constructing messages. All references are strictly typed. Properties are fetched from the given schema or inputs.
+=======
+A flow defines a set of calls that should be called chronologically and produces an output message. Calls could reference other resources when constructing messages. All references are strictly typed. Properties are fetched from the given proto buffers or inputs.
+>>>>>>> master
 
 All flows should contain a unique name. Calls are nested inside of flows and contain two labels, a unique name within the flow and the service and method to be called.
 A dependency reference structure is generated within the flow which allows Maestro to figure out which calls could be called parallel to improve performance.
 
+<<<<<<< HEAD
 An optional schema could be defined which defines the request/response messages.
 
 ```hcl
@@ -91,6 +118,16 @@ flow "Logger" {
 
     call "log" {
         request "logger" "Log" {
+=======
+```hcl
+flow "Logger" {
+    input {
+        message = "string"
+    }
+
+    call "log" "logger.Log" {
+        request {
+>>>>>>> master
             message = "{{ input:message }}"
         }
     }
@@ -102,6 +139,7 @@ flow "Logger" {
 }
 ```
 
+<<<<<<< HEAD
 #### Schema
 A schema definition defines the input and output message types. When a flow schema is defined are the input properties (except header) ignored.
 
@@ -111,11 +149,17 @@ flow "Logger" {
 }
 ```
 
+=======
+>>>>>>> master
 #### Input
 The input acts as a message. The input could contain nested messages and repeated messages. Input properties could reference types and or constant values. Input types are defined by wrapping the type inside angle brackets.
 
 ```hcl
 input {
+<<<<<<< HEAD
+=======
+    type = "sync"
+>>>>>>> master
     message = "<string>"
 }
 ```
@@ -132,32 +176,55 @@ output {
 }
 ```
 
+<<<<<<< HEAD
 #### Depends on
+=======
+#### Dependency
+>>>>>>> master
 Dependencies are flows that need to be called before the given flow is executed. Dependencies could have other dependencies which have to be called.
 
 ```hcl
 flow "GetUsers" {
+<<<<<<< HEAD
     depends_on = ["Auth", "HasGetPolicy"]
+=======
+    dependency = ["Auth", "HasGetPolicy"]
+>>>>>>> master
 }
 ```
 
 ### Call
+<<<<<<< HEAD
 A call calls the given service and method. Calls could be executed synchronously or asynchronously. All calls are referencing a service method, the service should match the alias defined inside the service. The request and response schema messages are used for type definitions.
+=======
+A call calls the given service and method. Calls could be executed synchronously or asynchronously. All calls are referencing a service method, the service should match the alias defined inside the service. The request and response proto messages are used for type definitions.
+>>>>>>> master
 A call could contain the request headers, request body, rollback, and the execution type.
 
 ```hcl
 # Calling service alias logger.Log
+<<<<<<< HEAD
 call "log" {
   type = "sync" # default value
 
   request "logger" "Log" {
+=======
+call "log" "logger.Log" {
+  type = "sync" # default value
+
+  request {
+>>>>>>> master
     message = "{{ input:message }}"
   }
 }
 ```
 
 #### Options
+<<<<<<< HEAD
 Options could be consumed by implementations. The defined key/values are implementation-specific.
+=======
+Options could be consumed by implementations. The defined key/values are implementation specific.
+>>>>>>> master
 
 ```hcl
 options {
@@ -166,6 +233,7 @@ options {
 }
 ```
 
+<<<<<<< HEAD
 #### Depends on
 Dependencies define call dependencies without having a direct reference dependency.
 Defining a dependency prevents both calls to be executed in parallel.
@@ -178,6 +246,8 @@ call "log" {
 }
 ```
 
+=======
+>>>>>>> master
 #### Header
 Headers are represented as keys and values. Both keys and values are strings. Values could reference properties from other resources.
 
