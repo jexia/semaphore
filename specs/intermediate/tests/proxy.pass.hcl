@@ -9,10 +9,5 @@ proxy "ping" {
         header {
             cookie = "mnomnom"
         }
-
-        rollback "uploader" "Delete" {
-            header {
-            }
-        }
     }
 }
