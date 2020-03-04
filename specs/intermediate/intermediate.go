@@ -100,7 +100,7 @@ type Node struct {
 // Call intermediate specification
 type Call struct {
 	Service    string                 `hcl:"service,label"`
-	Endpoint   string                 `hcl:"endpoint,label"`
+	Method     string                 `hcl:"method,label"`
 	Options    *Options               `hcl:"options,block"`
 	Header     *Header                `hcl:"header,block"`
 	Nested     []NestedParameterMap   `hcl:"message,block"`
@@ -128,8 +128,7 @@ type Proxy struct {
 
 // ProxyForward specification
 type ProxyForward struct {
-	Service  string  `hcl:"service,label"`
-	Endpoint string  `hcl:"endpoint,label"`
-	Header   *Header `hcl:"header,block"`
-	Rollback *Call   `hcl:"rollback,block"`
+	Service string  `hcl:"service,label"`
+	Method  string  `hcl:"method,label"`
+	Header  *Header `hcl:"header,block"`
 }

@@ -24,6 +24,7 @@ type FlowManager interface {
 	GetNodes() []*Node
 	GetInput() *ParameterMap
 	GetOutput() *ParameterMap
+	GetForward() *Call
 }
 
 // Manifest holds a collection of definitions and resources
@@ -81,6 +82,11 @@ func (flow *Flow) GetInput() *ParameterMap {
 // GetOutput returns the output of the given flow
 func (flow *Flow) GetOutput() *ParameterMap {
 	return flow.Output
+}
+
+// GetForward returns the proxy forward of the given flow
+func (flow *Flow) GetForward() *Call {
+	return nil
 }
 
 // Endpoint exposes a flow. Endpoints are not parsed by Maestro and have custom implementations in each caller.
@@ -428,7 +434,7 @@ func (call *Node) GetDescriptor() schema.Method {
 // Call represents a call which is executed during runtime
 type Call struct {
 	Service    string
-	Endpoint   string
+	Method     string
 	Request    *ParameterMap
 	Response   *ParameterMap
 	Descriptor schema.Method
@@ -451,7 +457,7 @@ func (call *Call) GetService() string {
 
 // GetMethod returns the call endpoint
 func (call *Call) GetMethod() string {
-	return call.Endpoint
+	return call.Method
 }
 
 // GetDescriptor returns the call descriptor
@@ -491,7 +497,7 @@ type Proxy struct {
 	Name      string
 	DependsOn map[string]*Flow
 	Nodes     []*Node
-	Forward   *ProxyForward
+	Forward   *Call
 }
 
 // GetName returns the flow name
@@ -519,10 +525,7 @@ func (proxy *Proxy) GetOutput() *ParameterMap {
 	return nil
 }
 
-// ProxyForward represents the service endpoint where the proxy should forward the stream to when all calls succeed.
-type ProxyForward struct {
-	Service  string
-	Endpoint string
-	Header   Header
-	Rollback *Call
+// GetForward returns the proxy forward of the given flow
+func (proxy *Proxy) GetForward() *Call {
+	return proxy.Forward
 }

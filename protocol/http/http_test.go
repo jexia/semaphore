@@ -136,7 +136,7 @@ func TestCaller(t *testing.T) {
 		},
 	}
 	constructor := &Caller{}
-	caller, err := constructor.New(server.URL, service, nil)
+	caller, err := constructor.New(server.URL, "", service, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

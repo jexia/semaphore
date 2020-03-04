@@ -215,14 +215,14 @@ func ConstructFlowManager(manifest *specs.Manifest, options Options) ([]*protoco
 
 	for index, endpoint := range manifest.Endpoints {
 		f := GetFlow(manifest, endpoint.Flow)
-		nodes := make([]*flow.Node, len(f.Nodes))
+		nodes := make([]*flow.Node, len(f.GetNodes()))
 
 		result := &protocol.Endpoint{
 			Listener: endpoint.Listener,
 			Options:  endpoint.Options,
 		}
 
-		for index, node := range f.Nodes {
+		for index, node := range f.GetNodes() {
 			caller, err := ConstructCall(manifest, node, node.Call, options)
 			if err != nil {
 				return nil, err
@@ -257,10 +257,17 @@ func ConstructFlowManager(manifest *specs.Manifest, options Options) ([]*protoco
 			}
 
 			result.Response = res
+			result.Header = protocol.NewHeaderManager(specs.InputResource, f.GetOutput())
 		}
 
-		result.Header = protocol.NewHeaderManager(specs.InputResource, f.GetOutput())
+		forward, err := ConstructForward(manifest, f.GetForward(), options)
+		if err != nil {
+			return nil, err
+		}
+
+		result.Forward = forward
 		result.Flow = flow.NewManager(f.GetName(), nodes)
+
 		endpoints[index] = result
 	}
 
@@ -297,7 +304,7 @@ func ConstructCall(manifest *specs.Manifest, node *specs.Node, call *specs.Call,
 	}
 
 	header := protocol.NewHeaderManager(node.GetName(), call.GetRequest())
-	caller, err := constructor.New(service.Host, options.Schema.GetService(service.Schema), service.Options)
+	caller, err := constructor.New(service.Host, call.GetMethod(), options.Schema.GetService(service.Schema), service.Options)
 	if err != nil {
 		return nil, err
 	}
@@ -312,7 +319,6 @@ func ConstructCall(manifest *specs.Manifest, node *specs.Node, call *specs.Call,
 
 		w := protocol.NewResponseWriter(writer)
 		r := &protocol.Request{
-			Method:  call.GetMethod(),
 			Context: ctx,
 			Body:    body,
 			Header:  header.Marshal(refs),
@@ -330,6 +336,26 @@ func ConstructCall(manifest *specs.Manifest, node *specs.Node, call *specs.Call,
 
 		return nil
 	}, nil
+}
+
+// ConstructForward constructs a flow caller for the given call.
+func ConstructForward(manifest *specs.Manifest, call *specs.Call, options Options) (protocol.Call, error) {
+	if call == nil {
+		return nil, nil
+	}
+
+	service := GetService(manifest, call.GetService())
+	if service == nil {
+		return nil, trace.New(trace.WithMessage("the service for %s was not found", call.GetMethod()))
+	}
+
+	constructor := GetCaller(options.Callers, service.Caller)
+	caller, err := constructor.New(service.Host, call.GetMethod(), options.Schema.GetService(service.Schema), service.Options)
+	if err != nil {
+		return nil, err
+	}
+
+	return caller, nil
 }
 
 // ConstructListeners constructs the listeners from the given collection of endpoints
@@ -390,10 +416,16 @@ func GetService(manifest *specs.Manifest, name string) *specs.Service {
 }
 
 // GetFlow attempts to retrieve a flow from the given manifest matching the given name
-func GetFlow(manifest *specs.Manifest, name string) *specs.Flow {
+func GetFlow(manifest *specs.Manifest, name string) specs.FlowManager {
 	for _, flow := range manifest.Flows {
 		if flow.GetName() == name {
 			return flow
+		}
+	}
+
+	for _, proxy := range manifest.Proxy {
+		if proxy.GetName() == name {
+			return proxy
 		}
 	}
 
