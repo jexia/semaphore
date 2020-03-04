@@ -4,31 +4,27 @@ import (
 	"github.com/hashicorp/hcl/v2"
 )
 
+const (
+	// Ext represents the intermediate file extention
+	Ext = ".hcl"
+)
+
 // Manifest intermediate specs
 type Manifest struct {
 	Flows     []Flow     `hcl:"flow,block"`
+	Proxy     []Proxy    `hcl:"proxy,block"`
 	Endpoints []Endpoint `hcl:"endpoint,block"`
 	Services  []Service  `hcl:"service,block"`
-	Callers   []Caller   `hcl:"caller,block"`
 }
 
 // Flow intermediate specification
 type Flow struct {
-	Name   string        `hcl:"name,label"`
-	Input  *ParameterMap `hcl:"input,block"`
-	Calls  []Call        `hcl:"call,block"`
-	Output *ParameterMap `hcl:"output,block"`
-}
-
-// Endpoint intermediate specification
-type Endpoint struct {
-	Flow string   `hcl:"flow,label"`
-	Body hcl.Body `hcl:",remain"`
-}
-
-// Header represents a collection of key values
-type Header struct {
-	Body hcl.Body `hcl:",remain"`
+	Name      string             `hcl:"name,label"`
+	DependsOn []string           `hcl:"depends_on,optional"`
+	Schema    string             `hcl:"schema,optional"`
+	Input     *InputParameterMap `hcl:"input,block"`
+	Calls     []Node             `hcl:"call,block"`
+	Output    *ParameterMap      `hcl:"output,block"`
 }
 
 // ParameterMap is the initial map of parameter names (keys) and their (templated) values (values)
@@ -38,6 +34,28 @@ type ParameterMap struct {
 	Nested     []NestedParameterMap   `hcl:"message,block"`
 	Repeated   []RepeatedParameterMap `hcl:"repeated,block"`
 	Properties hcl.Body               `hcl:",remain"`
+}
+
+// Endpoint intermediate specification
+type Endpoint struct {
+	Flow     string   `hcl:"flow,label"`
+	Listener string   `hcl:"listener,label"`
+	Codec    string   `hcl:"codec,label"`
+	Options  hcl.Body `hcl:",remain"`
+}
+
+// Header represents a collection of key values
+type Header struct {
+	Body hcl.Body `hcl:",remain"`
+}
+
+// InputParameterMap is the initial map of parameter names (keys) and their (templated) values (values)
+type InputParameterMap struct {
+	Options    *Options                    `hcl:"options,block"`
+	Header     *Header                     `hcl:"header,block"`
+	Nested     []NestedParameterMap        `hcl:"message,block"`
+	Repeated   []InputRepeatedParameterMap `hcl:"repeated,block"`
+	Properties hcl.Body                    `hcl:",remain"`
 }
 
 // Options holds the raw options
@@ -53,6 +71,14 @@ type NestedParameterMap struct {
 	Properties hcl.Body               `hcl:",remain"`
 }
 
+// InputRepeatedParameterMap is a map of repeated message blocks/values
+type InputRepeatedParameterMap struct {
+	Name       string                      `hcl:"name,label"`
+	Nested     []NestedParameterMap        `hcl:"message,block"`
+	Repeated   []InputRepeatedParameterMap `hcl:"repeated,block"`
+	Properties hcl.Body                    `hcl:",remain"`
+}
+
 // RepeatedParameterMap is a map of repeated message blocks/values
 type RepeatedParameterMap struct {
 	Name       string                 `hcl:"name,label"`
@@ -62,47 +88,48 @@ type RepeatedParameterMap struct {
 	Properties hcl.Body               `hcl:",remain"`
 }
 
-// Call intermediate specification
-type Call struct {
-	Name     string        `hcl:"name,label"`
-	Endpoint string        `hcl:"endpoint,label"`
-	Type     string        `hcl:"type,optional"`
-	Request  *ParameterMap `hcl:"request,block"`
-	Rollback *RollbackCall `hcl:"rollback,block"`
+// Node intermediate specification
+type Node struct {
+	Name      string   `hcl:"name,label"`
+	DependsOn []string `hcl:"depends_on,optional"`
+	Type      string   `hcl:"type,optional"`
+	Request   *Call    `hcl:"request,block"`
+	Rollback  *Call    `hcl:"rollback,block"`
 }
 
-// RollbackCall intermediate specification
-type RollbackCall struct {
-	Endpoint string        `hcl:"endpoint,label"`
-	Request  *ParameterMap `hcl:"request,block"`
+// Call intermediate specification
+type Call struct {
+	Service    string                 `hcl:"service,label"`
+	Endpoint   string                 `hcl:"endpoint,label"`
+	Options    *Options               `hcl:"options,block"`
+	Header     *Header                `hcl:"header,block"`
+	Nested     []NestedParameterMap   `hcl:"message,block"`
+	Repeated   []RepeatedParameterMap `hcl:"repeated,block"`
+	Properties hcl.Body               `hcl:",remain"`
 }
 
 // Service specification
 type Service struct {
-	Options *Options `hcl:"options,block"`
-	Alias   string   `hcl:"alias,label"`
+	Name    string   `hcl:"name,label"`
 	Caller  string   `hcl:"caller,label"`
+	Codec   string   `hcl:"codec,label"`
+	Schema  string   `hcl:"schema"`
 	Host    string   `hcl:"host"`
-	Proto   string   `hcl:"proto"`
-}
-
-// Caller specification
-type Caller struct {
-	Name string   `hcl:"name,label"`
-	Body hcl.Body `hcl:",remain"`
+	Options hcl.Body `hcl:",remain"`
 }
 
 // Proxy specification
 type Proxy struct {
-	Name    string        `hcl:"name,label"`
-	Calls   []Call        `hcl:"call,block"`
-	Forward ProxyForward  `hcl:"forward,block"`
-	Output  *ParameterMap `hcl:"output,block"`
+	Name      string       `hcl:"name,label"`
+	DependsOn []string     `hcl:"depends_on,optional"`
+	Calls     []Node       `hcl:"call,block"`
+	Forward   ProxyForward `hcl:"forward,block"`
 }
 
 // ProxyForward specification
 type ProxyForward struct {
-	Name     string        `hcl:"name,label"`
-	Endpoint string        `hcl:"endpoint,label"`
-	Rollback *RollbackCall `hcl:"rollback,block"`
+	Service  string  `hcl:"service,label"`
+	Endpoint string  `hcl:"endpoint,label"`
+	Header   *Header `hcl:"header,block"`
+	Rollback *Call   `hcl:"rollback,block"`
 }

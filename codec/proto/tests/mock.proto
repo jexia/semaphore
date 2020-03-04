@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package proto;
+
+service mock {
+    rpc simple(Simple) returns (Empty);
+    rpc nested(Nested) returns (Empty);
+    rpc repeated(Repeated) returns (Empty);
+}
+
+message Simple {
+    string message = 1;
+}
+
+message Nested {
+    Value nested = 3;
+}
+
+message Repeated {
+    repeated Value repeating = 2;
+}
+
+message Value {
+    string value = 1;
+}
+
+message Empty {
+}

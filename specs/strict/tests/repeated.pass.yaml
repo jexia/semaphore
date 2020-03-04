@@ -1,0 +1,19 @@
+services:
+    caller:
+        methods:
+            Open:
+                input:
+                    fields:
+                        repeating:
+                            type: "message"
+                            label: "repeated"
+                            message:
+                                fields:
+                                    value:
+                                        type: "string"
+                                        label: "optional"
+                output:
+                    fields:
+                        message:
+                            type: "string"
+                            label: "optional"
