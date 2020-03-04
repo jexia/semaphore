@@ -210,7 +210,7 @@ func DefineProperty(node *specs.Node, call *specs.Call, property *specs.Property
 	log.WithFields(log.Fields{
 		"breakpoint": breakpoint,
 		"reference":  property.Reference,
-	}).Debug("Lookup references untill breakpoint")
+	}).Debug("Lookup references until breakpoint")
 
 	references := lookup.GetAvailableResources(flow, breakpoint)
 	reference := lookup.GetResourceReference(property.Reference, references)

@@ -238,7 +238,7 @@ func ConstructFlowManager(manifest *specs.Manifest, options Options) ([]*protoco
 
 		collection, has := options.Codec[endpoint.Codec]
 		if !has {
-			return nil, trace.New(trace.WithMessage("unkown endpoint codec %s", endpoint.Codec))
+			return nil, trace.New(trace.WithMessage("unknown endpoint codec %s", endpoint.Codec))
 		}
 
 		if f.GetInput() != nil {
@@ -339,7 +339,7 @@ func ConstructListeners(endpoints []*protocol.Endpoint, options Options) error {
 	for _, endpoint := range endpoints {
 		listener := GetListener(options.Listeners, endpoint.Listener)
 		if listener == nil {
-			return trace.New(trace.WithMessage("unkown listener %s", endpoint.Listener))
+			return trace.New(trace.WithMessage("unknown listener %s", endpoint.Listener))
 		}
 
 		collections[endpoint.Listener] = append(collections[endpoint.Listener], endpoint)

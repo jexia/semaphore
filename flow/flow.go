@@ -13,7 +13,7 @@ type Call func(context.Context, *refs.Store) error
 
 // NewManager constructs a new manager for the given flow.
 // Branches are constructed for the constructed nodes to optimalise performance.
-// Various variables such as the ammount of nodes, references and loose ends are collected to optimalise allocations during runtime.
+// Various variables such as the amount of nodes, references and loose ends are collected to optimalise allocations during runtime.
 func NewManager(name string, nodes []*Node) *Manager {
 	ConstructBranches(nodes)
 

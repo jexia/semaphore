@@ -15,8 +15,8 @@ import (
 	"github.com/jhump/protoreflect/dynamic"
 )
 
-// ErrUnkownSchema is thrown when the schema is not defined or then it is not a protoc object
-var ErrUnkownSchema = trace.New(trace.WithMessage("unexpected schema type, a proto schema collection required for protobuf encoding/decoding"))
+// ErrUnknownSchema is thrown when the schema is not defined or then it is not a protoc object
+var ErrUnknownSchema = trace.New(trace.WithMessage("unexpected schema type, a proto schema collection required for protobuf encoding/decoding"))
 
 // NewConstructor constructs a new JSON constructor
 func NewConstructor() *Constructor {
@@ -39,7 +39,7 @@ func (constructor *Constructor) New(resource string, specs specs.Object) (codec.
 	schema := specs.GetDescriptor()
 	object, is := schema.(protoc.Object)
 	if !is {
-		return nil, ErrUnkownSchema
+		return nil, ErrUnknownSchema
 	}
 
 	return &Message{

@@ -15,7 +15,7 @@ const (
 )
 
 // TestParseSpecs reads all available test cases inside the tests directory.
-// The test is expected to pass/fail based on the file extention.
+// The test is expected to pass/fail based on the file extension.
 func TestParseSpecs(t *testing.T) {
 	path, err := filepath.Abs("./tests")
 	if err != nil {

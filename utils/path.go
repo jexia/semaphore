@@ -12,7 +12,7 @@ type FileInfo struct {
 	Path string
 }
 
-// ReadDir reads the given path and returns all available files matching the given extention
+// ReadDir reads the given path and returns all available files matching the given extension
 func ReadDir(path string, recursive bool, ext string) (files []FileInfo, _ error) {
 	list, err := ioutil.ReadDir(path)
 	if err != nil {
