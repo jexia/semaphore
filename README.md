@@ -1,4 +1,4 @@
-# Maestro [![GoDoc](https://godoc.org/github.com/jexia/maestro?status.svg)](https://godoc.org/github.com/jexia/maestro) ![Go CI](https://github.com/jexia/maestro/workflows/Go%20CI/badge.svg)
+# Maestro [![GoDev](https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white)](https://pkg.go.dev/github.com/jexia/maestro) ![Go CI](https://github.com/jexia/maestro/workflows/Go%20CI/badge.svg)
 
 Maestro is a tool to orchestrate requests inside your microservice architecture.
 A request could be manipulated passed branched to different services to be returned as a single output.
