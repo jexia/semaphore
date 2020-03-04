@@ -31,7 +31,6 @@ type ResponseWriter interface {
 
 // Request represents the request object given to a caller implementation used to make calls
 type Request struct {
-	Method  string
 	Header  Header
 	Body    io.Reader
 	Context context.Context
@@ -40,7 +39,7 @@ type Request struct {
 // Caller constructs new calls which could be used to call services
 type Caller interface {
 	Name() string
-	New(host string, schema schema.Service, options specs.Options) (Call, error)
+	New(host string, method string, schema schema.Service, options specs.Options) (Call, error)
 }
 
 // Call is a preconfigured interface for a single service

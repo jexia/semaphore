@@ -168,10 +168,11 @@ func ParseIntermediateProxy(proxy Proxy, functions specs.CustomDefinedFunctions)
 }
 
 // ParseIntermediateProxyForward parses the given intermediate proxy forward to a specs proxy forward
-func ParseIntermediateProxyForward(proxy ProxyForward, functions specs.CustomDefinedFunctions) (*specs.ProxyForward, error) {
-	result := specs.ProxyForward{
-		Service:  proxy.Service,
-		Endpoint: proxy.Endpoint,
+func ParseIntermediateProxyForward(proxy ProxyForward, functions specs.CustomDefinedFunctions) (*specs.Call, error) {
+	result := specs.Call{
+		Service: proxy.Service,
+		Method:  proxy.Method,
+		Request: &specs.ParameterMap{},
 	}
 
 	if proxy.Header != nil {
@@ -180,16 +181,7 @@ func ParseIntermediateProxyForward(proxy ProxyForward, functions specs.CustomDef
 			return nil, err
 		}
 
-		result.Header = header
-	}
-
-	if proxy.Rollback != nil {
-		rollback, err := ParseIntermediateCall(proxy.Rollback, functions)
-		if err != nil {
-			return nil, err
-		}
-
-		result.Rollback = rollback
+		result.Request.Header = header
 	}
 
 	return &result, nil
@@ -429,9 +421,9 @@ func ParseIntermediateCall(call *Call, functions specs.CustomDefinedFunctions) (
 	}
 
 	result := specs.Call{
-		Service:  call.Service,
-		Endpoint: call.Endpoint,
-		Request:  results,
+		Service: call.Service,
+		Method:  call.Method,
+		Request: results,
 	}
 
 	return &result, nil

@@ -11,6 +11,7 @@ import (
 	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/specs"
+	"github.com/jexia/maestro/specs/trace"
 	"github.com/julienschmidt/httprouter"
 	log "github.com/sirupsen/logrus"
 )
@@ -37,10 +38,10 @@ func (caller *Caller) Name() string {
 }
 
 // New constructs a new caller for the given host
-func (caller *Caller) New(host string, schema schema.Service, opts specs.Options) (protocol.Call, error) {
+func (caller *Caller) New(host string, serviceMethod string, schema schema.Service, opts specs.Options) (protocol.Call, error) {
 	log.WithField("host", host).Info("Constructing new HTTP caller")
 
-	options, err := ParseCallerOptions(opts)
+	callerOptions, err := ParseCallerOptions(opts)
 	if err != nil {
 		return nil, err
 	}
@@ -50,22 +51,30 @@ func (caller *Caller) New(host string, schema schema.Service, opts specs.Options
 		return nil, err
 	}
 
+	method := schema.GetMethod(serviceMethod)
+	if method == nil {
+		return nil, trace.New(trace.WithMessage("service method not found '%s'.'%s'", schema.GetName(), serviceMethod))
+	}
+
+	methodOptions := method.GetOptions()
+
 	return &Call{
-		host:   host,
-		schema: schema,
+		host:     host,
+		method:   methodOptions[MethodOption],
+		endpoint: methodOptions[EndpointOption],
 		proxy: &httputil.ReverseProxy{
 			Director:      func(*http.Request) {},
-			FlushInterval: options.FlushInterval,
+			FlushInterval: callerOptions.FlushInterval,
 		},
 	}, nil
 }
 
 // Call represents the HTTP caller implementation
 type Call struct {
-	method string
-	host   string
-	schema schema.Service
-	proxy  *httputil.ReverseProxy
+	host     string
+	method   string
+	endpoint string
+	proxy    *httputil.ReverseProxy
 }
 
 // Call opens a new connection to the configured host and attempts to send the given headers and stream
@@ -75,14 +84,10 @@ func (call *Call) Call(rw protocol.ResponseWriter, incoming *protocol.Request, r
 		return err
 	}
 
-	method := call.schema.GetMethod(incoming.Method)
-	options := method.GetOptions()
-
-	url.Path = options[EndpointOption]
-
+	url.Path = call.endpoint
 	log.WithField("url", url).Debug("Calling HTTP caller")
 
-	req, err := http.NewRequestWithContext(incoming.Context, options[MethodOption], url.String(), incoming.Body)
+	req, err := http.NewRequestWithContext(incoming.Context, call.method, url.String(), incoming.Body)
 	if err != nil {
 		return err
 	}
@@ -192,6 +197,7 @@ func Handle(endpoint *protocol.Endpoint) httprouter.Handle {
 		if endpoint.Request != nil {
 			err = endpoint.Request.Unmarshal(r.Body, refs)
 			if err != nil {
+				log.Error(err)
 				w.WriteHeader(http.StatusBadRequest)
 				return
 			}
@@ -199,21 +205,26 @@ func Handle(endpoint *protocol.Endpoint) httprouter.Handle {
 
 		err = endpoint.Flow.Call(r.Context(), refs)
 		if err != nil {
+			log.Error(err)
 			w.WriteHeader(http.StatusServiceUnavailable)
 			return
 		}
 
-		SetHTTPHeader(w.Header(), endpoint.Header.Marshal(refs))
+		if endpoint.Header != nil {
+			SetHTTPHeader(w.Header(), endpoint.Header.Marshal(refs))
+		}
 
 		if endpoint.Response != nil {
 			reader, err := endpoint.Response.Marshal(refs)
 			if err != nil {
+				log.Error(err)
 				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
 
 			_, err = io.Copy(w, reader)
 			if err != nil {
+				log.Error(err)
 				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
@@ -224,6 +235,7 @@ func Handle(endpoint *protocol.Endpoint) httprouter.Handle {
 		if endpoint.Forward != nil {
 			err := endpoint.Forward.Call(NewResponseWriter(w), NewRequest(r), refs)
 			if err != nil {
+				log.Error(err)
 				w.WriteHeader(http.StatusBadGateway)
 				return
 			}

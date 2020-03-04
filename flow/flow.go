@@ -2,6 +2,7 @@ package flow
 
 import (
 	"context"
+	"io"
 	"sync"
 
 	"github.com/jexia/maestro/refs"
@@ -10,6 +11,9 @@ import (
 
 // Call represents a caller which could be called
 type Call func(context.Context, *refs.Store) error
+
+// Forward represents a proxy forward
+type Forward func(context.Context, *refs.Store, io.Reader) (io.Reader, error)
 
 // NewManager constructs a new manager for the given flow.
 // Branches are constructed for the constructed nodes to optimalise performance.
@@ -43,6 +47,7 @@ type Manager struct {
 	Nodes      int
 	Ends       int
 	wg         sync.WaitGroup
+	Forward    *Node
 }
 
 // Call calls all the nodes inside the manager if a error is returned is a rollback of all the already executed steps triggered.
