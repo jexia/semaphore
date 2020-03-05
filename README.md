@@ -18,7 +18,7 @@ The key features of Maestro are:
 You could download the CLI from source or most commonly used package managers. Or pull one of the available docker images.
 
 ```bash
-docker pull jexia/maestro
+docker pull docker.pkg.github.com/jexia/maestro/cli:latest
 ```
 
 ---
