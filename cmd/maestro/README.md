@@ -9,7 +9,7 @@ Use the standard CLI or develop your own implementation.
 Official docker images are available on Github. These images contain the Maestro CLI and could be used to set up a server.
 
 ```
-docker pull docker.pkg.github.com/jexia/maestro/server:latest
+docker pull docker.pkg.github.com/jexia/maestro/cli:latest
 ```
 
 ### Using a Package Manager (Preferred)
