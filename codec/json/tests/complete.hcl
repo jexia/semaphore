@@ -4,7 +4,7 @@ service "service" "http" "json" {
 }
 
 flow "complete" {
-	schema = "test.complete"
+	input "complete" {}
 
 	call "first" {
 		request "service" "complete" {

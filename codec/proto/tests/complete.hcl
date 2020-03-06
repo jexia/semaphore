@@ -4,7 +4,7 @@ service "test" "http" "proto" {
 }
 
 flow "complete" {
-	schema = "proto.test.complete"
+	input "proto.Message" {}
 
 	call "first" {
 		request "test" "complete" {

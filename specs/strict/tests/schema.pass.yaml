@@ -1,3 +1,12 @@
+objects:
+    input:
+        fields:
+            message:
+                type: "string"
+    output:
+        fields:
+            message:
+                type: "string"
 services:
     caller:
         methods:

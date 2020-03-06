@@ -4,9 +4,8 @@ service "caller" "http" "json" {
 }
 
 flow "echo" {
-    input {
-        message = "<string>"
-    }
+	input "input" {
+	}
 
 	call "opening" {
 		request "caller" "Open" {
@@ -14,7 +13,7 @@ flow "echo" {
 		}
 	}
 
-	output {
+	output "output" {
 		message = "{{ opening:message }}"
 	}
 }

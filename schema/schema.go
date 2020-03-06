@@ -8,6 +8,7 @@ type Options map[string]string
 // Collection represents a collection of schemas.
 type Collection interface {
 	GetService(name string) Service
+	GetObject(name string) Object
 }
 
 // Service represents a service which could be called in one of the flows

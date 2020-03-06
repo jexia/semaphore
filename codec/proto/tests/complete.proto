@@ -7,17 +7,17 @@ service test {
 }
 
 message Message {
+    message Repeated {
+        string value = 1;
+    }
+
+    message Nested {
+        string value = 1;
+    }
+    
     string message = 1;
     repeated Repeated repeating = 2;
     Nested nested = 3;
-}
-
-message Repeated {
-    string value = 1;
-}
-
-message Nested {
-    string value = 1;
 }
 
 message Empty {

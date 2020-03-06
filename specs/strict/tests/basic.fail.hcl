@@ -4,9 +4,8 @@ service "caller" "http" "json" {
 }
 
 flow "echo" {
-    input {
-        message = "<string>"
-    }
+	input "input" {
+	}
 
 	call "opening" {
 		request "caller" "Open" {

@@ -70,7 +70,7 @@ message "address" {
 Repeated messages are messages which are repeated. Nested messages could be defined inside repeated messages. Repeated messages accept two labels the first one is its alias and the second one is the resource reference. If a repeated message is kept empty the whole message is attempted to be copied. Repeated messages could not be defined inside a repeated message.
 
 ```hcl
-repeated "address" "{{ input:address }}" {
+repeated "address" "input:address" {
     message "country" {
 
     }
@@ -87,7 +87,8 @@ An optional schema could be defined which defines the request/response messages.
 
 ```hcl
 flow "Logger" {
-    schema = "exposed.Logger.Log"
+    input "schema.Object" {
+    }
 
     call "log" {
         request "logger" "Log" {
@@ -95,7 +96,7 @@ flow "Logger" {
         }
     }
 
-    output {
+    output "schema.Object" {
         status = "{{ log:status }}"
         code = "{{ log:code }}"
     }   
@@ -112,18 +113,17 @@ flow "Logger" {
 ```
 
 #### Input
-The input acts as a message. The input could contain nested messages and repeated messages. Input properties could reference types and or constant values. Input types are defined by wrapping the type inside angle brackets.
+The input represents a schema definition. The schema definition defines the message format. Additional options or headers could be defined here as well.
 
 ```hcl
-input {
-    message = "<string>"
+input "schema.Object" {
 }
 ```
 #### Output
 The output acts as a message. The output could contain nested messages and repeated messages. The output could also define the response header.
 
 ```hcl
-output {
+output "schema.Object" {
   header {
     Cookie = "mnomnom"
   }
@@ -143,13 +143,11 @@ flow "GetUsers" {
 
 ### Call
 A call calls the given service and method. Calls could be executed synchronously or asynchronously. All calls are referencing a service method, the service should match the alias defined inside the service. The request and response schema messages are used for type definitions.
-A call could contain the request headers, request body, rollback, and the execution type.
+A call could contain the request headers, request body and rollback.
 
 ```hcl
 # Calling service alias logger.Log
 call "log" {
-  type = "sync" # default value
-
   request "logger" "Log" {
     message = "{{ input:message }}"
   }

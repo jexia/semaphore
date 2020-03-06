@@ -21,7 +21,6 @@ type Manifest struct {
 type Flow struct {
 	Name      string             `hcl:"name,label"`
 	DependsOn []string           `hcl:"depends_on,optional"`
-	Schema    string             `hcl:"schema,optional"`
 	Input     *InputParameterMap `hcl:"input,block"`
 	Calls     []Node             `hcl:"call,block"`
 	Output    *ParameterMap      `hcl:"output,block"`
@@ -29,6 +28,7 @@ type Flow struct {
 
 // ParameterMap is the initial map of parameter names (keys) and their (templated) values (values)
 type ParameterMap struct {
+	Schema     string                 `hcl:"schema,label"`
 	Options    *Options               `hcl:"options,block"`
 	Header     *Header                `hcl:"header,block"`
 	Nested     []NestedParameterMap   `hcl:"message,block"`
@@ -51,6 +51,7 @@ type Header struct {
 
 // InputParameterMap is the initial map of parameter names (keys) and their (templated) values (values)
 type InputParameterMap struct {
+	Schema     string                      `hcl:"schema,label"`
 	Options    *Options                    `hcl:"options,block"`
 	Header     *Header                     `hcl:"header,block"`
 	Nested     []NestedParameterMap        `hcl:"message,block"`

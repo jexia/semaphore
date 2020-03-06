@@ -9,7 +9,7 @@ service "todo" "http" "json" {
 }
 
 flow "todo" {
-	schema = "proto.TODO.Get"
+	input "proto.Query" {}
 
 	call "query" {
 		request "todo" "Get" {
@@ -21,7 +21,7 @@ flow "todo" {
 		}
 	}
 
-	output {
+	output "proto.Item" {
 		header {
 			username = "{{ user:username }}"
 		}

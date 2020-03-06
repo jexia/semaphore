@@ -4,7 +4,8 @@ service "caller" "http" "json" {
 }
 
 flow "echo" {
-    schema = "caller.Open"
+  input "input" {
+	}
 
 	call "opening" {
 		request "caller" "Open" {

@@ -1,3 +1,50 @@
+objects:
+    complete:
+        fields:
+            message:
+                type: "string"
+                label: "optional"
+            nested:
+                type: "message"
+                label: "optional"
+                message:
+                    fields:
+                        value:
+                            type: "string"
+                            label: "optional"
+            repeating:
+                type: "message"
+                label: "repeating"
+                message:
+                    fields:
+                        value:
+                            type: "string"
+                            label: "optional"
+    simple:
+        fields:
+            message:
+                type: "string"
+                label: "optional"
+    nested:
+        fields:
+            nested:
+                type: "message"
+                label: "optional"
+                message:
+                    fields:
+                        value:
+                            type: "string"
+                            label: "optional"
+    repeated:
+        fields:
+            repeating:
+                type: "message"
+                label: "repeating"
+                message:
+                    fields:
+                        value:
+                            type: "string"
+                            label: "optional"
 services:
     test:
         methods:
