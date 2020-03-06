@@ -4,9 +4,8 @@ service "caller" "http" "json" {
 }
 
 flow "echo" {
-    input {
-        amount = "<int32>"
-    }
+	input "input" {
+	}
 
 	call "opening" {
 		request "caller" "Open" {

@@ -94,7 +94,6 @@ func ParseIntermediateFlow(flow Flow, functions specs.CustomDefinedFunctions) (*
 	result := specs.Flow{
 		Name:      flow.Name,
 		DependsOn: make(map[string]*specs.Flow, len(flow.DependsOn)),
-		Schema:    flow.Schema,
 		Input:     input,
 		Nodes:     make([]*specs.Node, len(flow.Calls)),
 		Output:    output,
@@ -123,6 +122,7 @@ func ParseIntermediateInputParameterMap(params *InputParameterMap) *ParameterMap
 	}
 
 	result := &ParameterMap{
+		Schema:     params.Schema,
 		Options:    params.Options,
 		Header:     params.Header,
 		Nested:     params.Nested,
@@ -216,6 +216,7 @@ func ParseIntermediateParameterMap(params *ParameterMap, functions specs.CustomD
 	}
 
 	result := specs.ParameterMap{
+		Schema:     params.Schema,
 		Options:    make(specs.Options),
 		Header:     header,
 		Nested:     make(map[string]*specs.NestedParameterMap, len(params.Nested)),

@@ -16,6 +16,7 @@ func ToParameterMap(origin *ParameterMap, path string, object schema.Object) *Pa
 	if origin != nil {
 		result.Options = origin.Options
 		result.Header = origin.Header
+		result.Schema = origin.Schema
 	}
 
 	if object == nil {

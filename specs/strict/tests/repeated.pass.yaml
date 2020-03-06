@@ -1,3 +1,14 @@
+objects:
+    input:
+        fields:
+            repeating:
+                type: "message"
+                label: "repeated"
+                message:
+                    fields:
+                        value:
+                            type: "string"
+                            label: "optional"
 services:
     caller:
         methods:

@@ -1,5 +1,10 @@
 exception:
     message: cannot use (string) type (int32) in 'message'
+objects:
+    input:
+        fields:
+            message:
+                type: "string"
 services:
     caller:
         methods:

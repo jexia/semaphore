@@ -57,14 +57,14 @@ func DefineProxy(schema schema.Collection, manifest *specs.Manifest, proxy *spec
 func DefineFlow(schema schema.Collection, manifest *specs.Manifest, flow *specs.Flow) (err error) {
 	log.WithField("flow", flow.GetName()).Info("Defining flow types")
 
-	if flow.Schema != "" {
-		method, err := GetFlowSchema(schema, flow)
+	if flow.Input != nil {
+		message, err := GetObjectSchema(schema, flow.Input)
 		if err != nil {
 			return err
 		}
 
-		flow.Input = specs.ToParameterMap(flow.Input, "", method.GetInput())
-		flow.Input.SetDescriptor(method.GetInput())
+		flow.Input = specs.ToParameterMap(flow.Input, "", message)
+		flow.Input.SetDescriptor(message)
 	}
 
 	for _, node := range flow.Nodes {
@@ -89,37 +89,30 @@ func DefineFlow(schema schema.Collection, manifest *specs.Manifest, flow *specs.
 			return err
 		}
 
-		if flow.Schema != "" {
-			method, err := GetFlowSchema(schema, flow)
-			if err != nil {
-				return err
-			}
-
-			err = CheckTypes(flow.Output, method.GetOutput(), flow)
-			if err != nil {
-				return err
-			}
-
-			flow.Output.SetDescriptor(method.GetOutput())
+		message, err := GetObjectSchema(schema, flow.Output)
+		if err != nil {
+			return err
 		}
+
+		err = CheckTypes(flow.Output, message, flow)
+		if err != nil {
+			return err
+		}
+
+		flow.Output.SetDescriptor(message)
 	}
 
 	return nil
 }
 
-// GetFlowSchema attempts to define the flow input and output based on the given schema method
-func GetFlowSchema(schema schema.Collection, flow *specs.Flow) (schema.Method, error) {
-	service := schema.GetService(GetService(flow.Schema))
-	if service == nil {
-		return nil, trace.New(trace.WithMessage("undefined service alias '%s' in flow schema '%s'", GetService(flow.Schema), flow.Name))
+// GetObjectSchema attempts to fetch the defined schema object for the given parameter map
+func GetObjectSchema(schema schema.Collection, params *specs.ParameterMap) (schema.Object, error) {
+	object := schema.GetObject(params.Schema)
+	if object == nil {
+		return nil, trace.New(trace.WithMessage("undefined object '%s' in schema collection", params.Schema))
 	}
 
-	method := service.GetMethod(GetMethod(flow.Schema))
-	if method == nil {
-		return nil, trace.New(trace.WithMessage("undefined method '%s' in flow schema '%s'", GetMethod(flow.Schema), flow.Name))
-	}
-
-	return method, nil
+	return object, nil
 }
 
 // DefineCall defineds the types for the given parameter map

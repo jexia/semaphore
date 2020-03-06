@@ -39,6 +39,19 @@ func (collection *collection) GetService(service string) schema.Service {
 	return nil
 }
 
+func (collection *collection) GetObject(message string) schema.Object {
+	for _, descriptor := range collection.descriptors {
+		message := descriptor.FindMessage(message)
+		if message == nil {
+			continue
+		}
+
+		return NewObject(message)
+	}
+
+	return nil
+}
+
 func (collection *collection) GetDescriptors() []*desc.FileDescriptor {
 	return collection.descriptors
 }
