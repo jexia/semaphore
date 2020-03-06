@@ -45,7 +45,7 @@ func (manifest *Manifest) MergeLeft(incoming *Manifest) {
 
 // Flow defines a set of calls that should be called chronologically and produces an output message.
 // Calls could reference other resources when constructing messages.
-// All references are strictly typed. Properties are fetched from the given proto buffers or inputs.
+// All references are strictly typed and fetched from the configured schemas.
 //
 // All flows should contain a unique name.
 // Calls are nested inside of flows and contain two labels, a unique name within the flow and the service and method to be called.
@@ -53,7 +53,6 @@ func (manifest *Manifest) MergeLeft(incoming *Manifest) {
 type Flow struct {
 	Name      string
 	DependsOn map[string]*Flow
-	Schema    string
 	Input     *ParameterMap
 	Nodes     []*Node
 	Output    *ParameterMap
@@ -182,6 +181,7 @@ func (property *Property) Clone() *Property {
 
 // ParameterMap is the initial map of parameter names (keys) and their (templated) values (values)
 type ParameterMap struct {
+	Schema     string
 	Options    Options
 	Header     Header
 	Nested     map[string]*NestedParameterMap

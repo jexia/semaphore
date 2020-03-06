@@ -35,8 +35,7 @@ endpoint "checkout" "http" "json" {
 }
 
 flow "checkout" {
-    input {
-        id = "<string>"
+    input "schema.Object" {
     }
 
     call "shipping" {
@@ -45,7 +44,7 @@ flow "checkout" {
         }
     }
 
-    output {
+    output "schema.Object" {
         status = "{{ shipping:status }}"
     }
 }

@@ -4,7 +4,7 @@ service "mock" "http" "json" {
 }
 
 flow "simple" {
-	schema = "proto.mock.simple"
+	input "proto.Simple" {}
 
 	call "first" {
 		request "mock" "simple" {
@@ -14,7 +14,7 @@ flow "simple" {
 }
 
 flow "nested" {
-	schema = "proto.mock.nested"
+	input "proto.Message" {}
 
 	call "first" {
 		request "mock" "nested" {
@@ -26,7 +26,7 @@ flow "nested" {
 }
 
 flow "repeated" {
-	schema = "proto.mock.repeated"
+	input "proto.Message" {}
 
 	call "first" {
 		request "mock" "repeated" {

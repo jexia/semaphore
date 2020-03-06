@@ -21,6 +21,7 @@ type Exception struct {
 type Collection struct {
 	Exception Exception           `yaml:"exception"`
 	Services  map[string]*Service `yaml:"services"`
+	Objects   map[string]*Object  `yaml:"objects"`
 }
 
 // GetService attempts to find the given service
@@ -31,6 +32,19 @@ func (collection *Collection) GetService(name string) schema.Service {
 		}
 
 		return NewService(name, service)
+	}
+
+	return nil
+}
+
+// GetObject attempts to find and return the given schema object
+func (collection *Collection) GetObject(name string) schema.Object {
+	for key, object := range collection.Objects {
+		if key != name {
+			continue
+		}
+
+		return object
 	}
 
 	return nil

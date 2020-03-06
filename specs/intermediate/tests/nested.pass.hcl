@@ -1,8 +1,5 @@
 flow "echo" {
-    input {
-        message "nested" {
-            name = "<string>"
-        }
+    input "object" {
     }
 
     call "get" {
@@ -14,6 +11,12 @@ flow "echo" {
                     message = "hello world"
                 }
             }
+        }
+    }
+
+    output "object" {
+        message "nested" {
+            name = "<string>"
         }
     }
 }

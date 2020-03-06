@@ -1,3 +1,6 @@
+objects:
+    input:
+        fields:
 services:
     caller:
         methods:
