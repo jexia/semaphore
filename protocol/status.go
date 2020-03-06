@@ -48,8 +48,8 @@ var statusText = map[int]string{
 	StatusGatewayTimeout:      "Gateway Timeout",
 }
 
-// StatusAck ...
-func StatusAck(code int) bool {
+// StatusSuccess checks whether the given status code is a success
+func StatusSuccess(code int) bool {
 	if code > 200 && code < 300 {
 		return true
 	}

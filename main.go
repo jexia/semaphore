@@ -4,22 +4,21 @@ import (
 	"context"
 	"errors"
 	"io"
-	"log"
 	"os"
 	"path/filepath"
 	"sync"
 
-	"github.com/jexia/maestro/flow"
-	"github.com/jexia/maestro/refs"
-
 	"github.com/jexia/maestro/codec"
+	"github.com/jexia/maestro/flow"
 	"github.com/jexia/maestro/protocol"
+	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/specs"
 	"github.com/jexia/maestro/specs/intermediate"
 	"github.com/jexia/maestro/specs/strict"
 	"github.com/jexia/maestro/specs/trace"
 	"github.com/jexia/maestro/utils"
+	log "github.com/sirupsen/logrus"
 )
 
 // Client represents a maestro instance
@@ -325,7 +324,6 @@ func ConstructCall(manifest *specs.Manifest, node *specs.Node, call *specs.Call,
 			Header:  header.Marshal(refs),
 		}
 
-		// TODO: header status logging + rollback trigger
 		go func() {
 			defer writer.Close()
 			err := caller.Call(w, r, refs)
@@ -339,9 +337,13 @@ func ConstructCall(manifest *specs.Manifest, node *specs.Node, call *specs.Call,
 			return err
 		}
 
-		if !protocol.StatusAck(w.Status()) {
-			log.Println(w.Status())
-			return errors.New("shit hit the fan")
+		if !protocol.StatusSuccess(w.Status()) {
+			log.WithFields(log.Fields{
+				"node":   node.GetName(),
+				"status": w.Status(),
+			}).Error("Faulty status code")
+
+			return errors.New("rollback required")
 		}
 
 		return nil
