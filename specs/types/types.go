@@ -21,7 +21,6 @@ const (
 	TypeFixed32  Type = "fixed32"
 	TypeBool     Type = "bool"
 	TypeString   Type = "string"
-	TypeGroup    Type = "group"
 	TypeMessage  Type = "message"
 	TypeBytes    Type = "bytes"
 	TypeUint32   Type = "uint32"

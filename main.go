@@ -2,7 +2,9 @@ package maestro
 
 import (
 	"context"
+	"errors"
 	"io"
+	"log"
 	"os"
 	"path/filepath"
 	"sync"
@@ -316,7 +318,6 @@ func ConstructCall(manifest *specs.Manifest, node *specs.Node, call *specs.Call,
 		}
 
 		reader, writer := io.Pipe()
-
 		w := protocol.NewResponseWriter(writer)
 		r := &protocol.Request{
 			Context: ctx,
@@ -324,14 +325,23 @@ func ConstructCall(manifest *specs.Manifest, node *specs.Node, call *specs.Call,
 			Header:  header.Marshal(refs),
 		}
 
+		// TODO: header status logging + rollback trigger
 		go func() {
 			defer writer.Close()
-			caller.Call(w, r, refs)
+			err := caller.Call(w, r, refs)
+			if err != nil {
+				log.Println(err)
+			}
 		}()
 
 		err = res.Unmarshal(reader, refs)
 		if err != nil {
-			return nil
+			return err
+		}
+
+		if !protocol.StatusAck(w.Status()) {
+			log.Println(w.Status())
+			return errors.New("shit hit the fan")
 		}
 
 		return nil
