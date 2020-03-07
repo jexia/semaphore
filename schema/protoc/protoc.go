@@ -47,7 +47,7 @@ func (collection *collection) GetProperty(message string) schema.Property {
 			continue
 		}
 
-		return NewMessageProperty(message)
+		return NewMessage(message)
 	}
 
 	return nil
@@ -142,11 +142,12 @@ func (method *method) GetName() string {
 }
 
 func (method *method) GetInput() schema.Property {
-	return NewMessageProperty(method.descriptor.GetInputType())
+	return NewMessage(method.descriptor.GetInputType())
 }
 
 func (method *method) GetOutput() schema.Property {
-	return NewMessageProperty(method.descriptor.GetOutputType())
+	method.descriptor.GetOutputType().AsDescriptorProto()
+	return NewMessage(method.descriptor.GetOutputType())
 }
 
 func (method *method) GetDescriptor() *desc.MethodDescriptor {
@@ -157,117 +158,90 @@ func (method *method) GetOptions() schema.Options {
 	return method.options
 }
 
-// NewMessageProperty constructs a schema Property with the given message descriptor
-func NewMessageProperty(descriptor *desc.MessageDescriptor) Property {
-	return &property{
-		message: descriptor,
+// NewMessage constructs a schema Property with the given message descriptor
+func NewMessage(descriptor *desc.MessageDescriptor) schema.Property {
+	return &message{
+		desc:    descriptor,
 		options: make(schema.Options),
 	}
 }
 
-// NewFieldProperty constructs a schema Property with the given field descriptor
-func NewFieldProperty(desc *desc.FieldDescriptor) Property {
-	result := &property{
-		field:   desc,
-		options: make(schema.Options),
-	}
+type message struct {
+	desc    *desc.MessageDescriptor
+	options schema.Options
+}
 
-	if desc.GetType() == descriptor.FieldDescriptorProto_TYPE_MESSAGE {
-		result.field = nil
-		result.message = desc.GetMessageType()
+// GetName returns the message name
+func (message *message) GetName() string {
+	return message.desc.GetName()
+}
+
+// GetType returns the message type
+func (message *message) GetType() types.Type {
+	return types.TypeMessage
+}
+
+// GetLabel returns the message label
+func (message *message) GetLabel() types.Label {
+	return types.LabelOptional
+}
+
+// GetNested attempts to return a all the nested properties
+func (message *message) GetNested() map[string]schema.Property {
+	fields := message.desc.GetFields()
+	result := make(map[string]schema.Property, len(fields))
+	for _, field := range fields {
+		result[field.GetName()] = NewProperty(field)
 	}
 
 	return result
 }
 
-// Property represents a proto property
-type Property interface {
-	schema.Property
-	GetProtoField(string) Property
-	GetFieldDescriptor() *desc.FieldDescriptor
-	GetMessageDescriptor() *desc.MessageDescriptor
+func (message *message) GetOptions() schema.Options {
+	return message.options
+}
+
+// NewProperty constructs a schema Property with the given field descriptor
+func NewProperty(descriptor *desc.FieldDescriptor) schema.Property {
+	return &property{
+		desc:    descriptor,
+		options: make(schema.Options),
+	}
 }
 
 type property struct {
-	message *desc.MessageDescriptor
-	field   *desc.FieldDescriptor
+	desc    *desc.FieldDescriptor
 	options schema.Options
 }
 
 // GetName returns the property name
 func (property *property) GetName() string {
-	if property.message != nil {
-		return property.message.GetName()
-	}
-
-	if property.field != nil {
-		return property.field.GetName()
-	}
-
-	return ""
+	return property.desc.GetName()
 }
 
 // GetType returns the property type
 func (property *property) GetType() types.Type {
-	if property.message != nil {
-		return types.TypeMessage
-	}
-
-	if property.field != nil {
-		return Types[property.field.GetType()]
-	}
-
-	return ""
-}
-
-// GetProtoField attempts to return a proto field matching the given name
-func (property *property) GetProtoField(name string) Property {
-	if property.message == nil {
-		return nil
-	}
-
-	for _, field := range property.message.GetFields() {
-		if field.GetName() == name {
-			return NewFieldProperty(field)
-		}
-	}
-
-	return nil
+	return Types[property.desc.GetType()]
 }
 
 // GetLabel returns the property label
 func (property *property) GetLabel() types.Label {
-	if property.message != nil {
-		return types.LabelOptional
-	}
-
-	if property.field != nil {
-		return Labels[property.field.GetLabel()]
-	}
-
-	return ""
+	return Labels[property.desc.GetLabel()]
 }
 
 // GetNested attempts to return a all the nested properties
 func (property *property) GetNested() map[string]schema.Property {
-	if property.message == nil {
+	if property.desc.GetType() != descriptor.FieldDescriptorProto_TYPE_MESSAGE {
 		return make(map[string]schema.Property)
 	}
 
-	result := make(map[string]schema.Property, len(property.message.GetFields()))
-	for _, field := range property.message.GetFields() {
-		result[field.GetName()] = NewFieldProperty(field)
+	fields := property.desc.GetMessageType().GetFields()
+	result := make(map[string]schema.Property, len(fields))
+	for _, field := range fields {
+		result[field.GetName()] = NewProperty(field)
 	}
 
-	return nil
-}
-
-func (property *property) GetMessageDescriptor() *desc.MessageDescriptor {
-	return property.message
-}
-
-func (property *property) GetFieldDescriptor() *desc.FieldDescriptor {
-	return property.field
+	return result
 }
 
 func (property *property) GetOptions() schema.Options {
