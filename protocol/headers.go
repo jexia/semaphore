@@ -29,28 +29,28 @@ func (h Header) Set(key, value string) {
 }
 
 // NewHeaderManager constructs a new header manager for the given resource
-func NewHeaderManager(resource string, object specs.Object) *HeaderManager {
+func NewHeaderManager(resource string, params *specs.ParameterMap) *HeaderManager {
 	return &HeaderManager{
 		Resource: specs.JoinPath(resource, specs.ResourceHeader),
-		Object:   object,
+		Params:   params,
 	}
 }
 
 // HeaderManager represents a header manager for a given resource
 type HeaderManager struct {
 	Resource string
-	Object   specs.Object
+	Params   *specs.ParameterMap
 }
 
 // Marshal attempts to marshal the given header specs from the given refs store
 func (manager *HeaderManager) Marshal(store *refs.Store) Header {
-	if manager.Object == nil {
+	if manager.Params == nil {
 		return make(Header, 0)
 	}
 
-	result := make(Header, len(manager.Object.GetHeader()))
-	for key, property := range manager.Object.GetHeader() {
-		value := property.GetDefault()
+	result := make(Header, len(manager.Params.Header))
+	for key, property := range manager.Params.Header {
+		value := property.Default
 
 		if property.Reference != nil {
 			ref := store.Load(property.Reference.Resource, property.Reference.Path)

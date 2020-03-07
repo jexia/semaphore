@@ -28,13 +28,13 @@ func SetType(property *Property, value cty.Value) {
 		return
 	}
 
-	log.WithField("path", property.GetPath()).WithField("type", value.Type).Debug("Set property type definition")
+	log.WithField("path", property.Path).WithField("type", value.Type).Debug("Set property type definition")
 	property.Type = types.Type(GetTypeContent(value.AsString()))
 }
 
 // SetDefaultValue sets the given value as default value inside the given property
 func SetDefaultValue(property *Property, value cty.Value) {
-	log.WithField("path", property.GetPath()).WithField("value", value).Debug("Set default value for property")
+	log.WithField("path", property.Path).WithField("value", value).Debug("Set default value for property")
 
 	switch value.Type() {
 	case cty.String:

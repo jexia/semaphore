@@ -1,4 +1,4 @@
-package types
+package json
 
 import (
 	"encoding/base64"
@@ -8,8 +8,8 @@ import (
 	"github.com/jexia/maestro/specs/types"
 )
 
-// Add encodes the given value into the given encoder
-func Add(encoder *gojay.Encoder, key string, typed types.Type, value interface{}) {
+// AddType encodes the given value into the given encoder
+func AddType(encoder *gojay.Encoder, key string, typed types.Type, value interface{}) {
 	switch typed {
 	case types.TypeDouble:
 		encoder.AddFloat64Key(key, Float64Empty(value))
@@ -44,9 +44,9 @@ func Add(encoder *gojay.Encoder, key string, typed types.Type, value interface{}
 	}
 }
 
-// Decode decodes the given property from the given decoder
-func Decode(decoder *gojay.Decoder, prop *specs.Property) interface{} {
-	switch prop.GetType() {
+// DecodeType decodes the given property from the given decoder
+func DecodeType(decoder *gojay.Decoder, prop *specs.Property) interface{} {
+	switch prop.Type {
 	case types.TypeDouble:
 		var value float64
 		decoder.AddFloat64(&value)

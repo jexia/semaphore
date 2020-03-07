@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/jexia/maestro/specs/trace"
-	"github.com/jexia/maestro/specs/types"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -77,18 +76,17 @@ func ParseReference(path string, value string) *Property {
 		Reference: ParsePropertyReference(value),
 	}
 
-	prop.Reference.Label = types.LabelOptional
 	return prop
 }
 
 // ParseFunction attempts to parses the given function
 func ParseFunction(path string, functions CustomDefinedFunctions, content string) (*Property, error) {
 	pattern := FunctionPattern.FindStringSubmatch(content)
-	name := pattern[1]
+	fn := pattern[1]
 	args := strings.Split(pattern[2], FunctionArgumentDelimiter)
 
-	if functions[name] == nil {
-		return nil, trace.New(trace.WithMessage("undefined custom function '%s' in '%s'", name, content))
+	if functions[fn] == nil {
+		return nil, trace.New(trace.WithMessage("undefined custom function '%s' in '%s'", fn, content))
 	}
 
 	arguments := make([]*Property, len(args))
@@ -102,7 +100,7 @@ func ParseFunction(path string, functions CustomDefinedFunctions, content string
 		arguments[index] = result
 	}
 
-	property, err := functions[name](path, arguments...)
+	property, err := functions[fn](path, arguments...)
 	if err != nil {
 		return nil, err
 	}

@@ -101,21 +101,18 @@ func TestParseReference(t *testing.T) {
 			Reference: &PropertyReference{
 				Resource: "input",
 				Path:     "message",
-				Label:    types.LabelOptional,
 			},
 		},
 		"input:": Property{
 			Path: path,
 			Reference: &PropertyReference{
 				Resource: "input",
-				Label:    types.LabelOptional,
 			},
 		},
 		"input": Property{
 			Path: path,
 			Reference: &PropertyReference{
 				Resource: "input",
-				Label:    types.LabelOptional,
 			},
 		},
 	}

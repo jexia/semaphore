@@ -1,6 +1,6 @@
 service "service" "http" "json" {
 	host = "service.local"
-	schema = "test"
+	schema = "mock"
 }
 
 flow "complete" {

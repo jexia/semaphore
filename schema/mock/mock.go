@@ -19,9 +19,9 @@ type Exception struct {
 
 // Collection represents a mock YAML file
 type Collection struct {
-	Exception Exception           `yaml:"exception"`
-	Services  map[string]*Service `yaml:"services"`
-	Objects   map[string]*Object  `yaml:"objects"`
+	Exception Exception            `yaml:"exception"`
+	Services  map[string]*Service  `yaml:"services"`
+	Objects   map[string]*Property `yaml:"objects"`
 }
 
 // GetService attempts to find the given service
@@ -37,8 +37,8 @@ func (collection *Collection) GetService(name string) schema.Service {
 	return nil
 }
 
-// GetObject attempts to find and return the given schema object
-func (collection *Collection) GetObject(name string) schema.Object {
+// GetProperty attempts to find and return the given schema property
+func (collection *Collection) GetProperty(name string) schema.Property {
 	for key, object := range collection.Objects {
 		if key != name {
 			continue
@@ -102,8 +102,8 @@ func (service *Service) GetMethods() []schema.Method {
 // Method represents a mock YAML service method
 type Method struct {
 	Name    string
-	Input   *Object        `yaml:"input"`
-	Output  *Object        `yaml:"output"`
+	Input   *Property      `yaml:"input"`
+	Output  *Property      `yaml:"output"`
 	Options schema.Options `yaml:"options"`
 }
 
@@ -119,12 +119,12 @@ func (method *Method) GetName() string {
 }
 
 // GetInput returns the method input
-func (method *Method) GetInput() schema.Object {
+func (method *Method) GetInput() schema.Property {
 	return method.Input
 }
 
 // GetOutput returns the method output
-func (method *Method) GetOutput() schema.Object {
+func (method *Method) GetOutput() schema.Property {
 	return method.Output
 }
 
@@ -133,74 +133,41 @@ func (method *Method) GetOptions() schema.Options {
 	return method.Options
 }
 
-// Object represents a proto message
-type Object struct {
-	Fields  map[string]*Field `yaml:"fields"`
-	Options schema.Options    `yaml:"options"`
+// Property represents a proto message property
+type Property struct {
+	Name    string               `yaml:"name"`
+	Type    types.Type           `yaml:"type"`
+	Label   types.Label          `yaml:"label"`
+	Nested  map[string]*Property `yaml:"nested"`
+	Options schema.Options       `yaml:"options"`
 }
 
-// GetField attempts to return a field matching the given name
-func (object *Object) GetField(name string) schema.Field {
-	field, has := object.Fields[name]
-	if !has {
-		return nil
-	}
-
-	return NewField(name, field)
+// GetName returns the field name
+func (property *Property) GetName() string {
+	return property.Name
 }
 
-// GetFields returns the available field inside the given object
-func (object *Object) GetFields() []schema.Field {
-	result := []schema.Field{}
+// GetType returns tye field type
+func (property *Property) GetType() types.Type {
+	return property.Type
+}
 
-	for key, field := range object.Fields {
-		result = append(result, NewField(key, field))
+// GetLabel returns the field label
+func (property *Property) GetLabel() types.Label {
+	return property.Label
+}
+
+// GetNested returns the field nested object
+func (property *Property) GetNested() map[string]schema.Property {
+	result := make(map[string]schema.Property, len(property.Nested))
+	for key, nested := range property.Nested {
+		result[key] = nested
 	}
 
 	return result
 }
 
-// GetOptions returns the object options
-func (object *Object) GetOptions() schema.Options {
-	return object.Options
-}
-
-// NewField constructs a new object field with the given descriptor
-func NewField(name string, field *Field) *Field {
-	field.Name = name
-	return field
-}
-
-// Field represents a proto message field
-type Field struct {
-	Name    string         `yaml:"name"`
-	Type    types.Type     `yaml:"type"`
-	Label   types.Label    `yaml:"label"`
-	Object  *Object        `yaml:"message"`
-	Options schema.Options `yaml:"options"`
-}
-
-// GetName returns the field name
-func (field *Field) GetName() string {
-	return field.Name
-}
-
-// GetType returns tye field type
-func (field *Field) GetType() types.Type {
-	return field.Type
-}
-
-// GetLabel returns the field label
-func (field *Field) GetLabel() types.Label {
-	return field.Label
-}
-
-// GetObject returns the field object
-func (field *Field) GetObject() schema.Object {
-	return field.Object
-}
-
 // GetOptions returns the field options
-func (field *Field) GetOptions() schema.Options {
-	return field.Options
+func (property *Property) GetOptions() schema.Options {
+	return property.Options
 }

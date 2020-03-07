@@ -8,7 +8,7 @@ type Options map[string]string
 // Collection represents a collection of schemas.
 type Collection interface {
 	GetService(name string) Service
-	GetObject(name string) Object
+	GetProperty(name string) Property
 }
 
 // Service represents a service which could be called in one of the flows
@@ -22,23 +22,16 @@ type Service interface {
 // Method represents a service method
 type Method interface {
 	GetName() string
-	GetInput() Object
-	GetOutput() Object
+	GetInput() Property
+	GetOutput() Property
 	GetOptions() Options
 }
 
-// Object represents a data object
-type Object interface {
-	GetFields() []Field
-	GetField(name string) Field
-	GetOptions() Options
-}
-
-// Field represents a object field
-type Field interface {
+// Property represents a object field
+type Property interface {
 	GetName() string
 	GetType() types.Type
 	GetLabel() types.Label
-	GetObject() Object
+	GetNested() map[string]Property
 	GetOptions() Options
 }
