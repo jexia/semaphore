@@ -443,20 +443,20 @@ func TestUnmarshal(t *testing.T) {
 				},
 			},
 		},
-		// "complex": map[string]interface{}{
-		// 	"message": "hello world",
-		// 	"nested": map[string]interface{}{
-		// 		"value": "nested value",
-		// 	},
-		// 	"repeating": []map[string]interface{}{
-		// 		{
-		// 			"value": "repeating value",
-		// 		},
-		// 		{
-		// 			"value": "repeating value",
-		// 		},
-		// 	},
-		// },
+		"complex": map[string]interface{}{
+			"message": "hello world",
+			"nested": map[string]interface{}{
+				"value": "nested value",
+			},
+			"repeating": []map[string]interface{}{
+				{
+					"value": "repeating value",
+				},
+				{
+					"value": "repeating value",
+				},
+			},
+		},
 	}
 
 	for key, input := range tests {

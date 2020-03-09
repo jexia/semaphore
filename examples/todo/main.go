@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/jexia/maestro"
 	"github.com/jexia/maestro/codec/json"
+	"github.com/jexia/maestro/codec/proto"
 	"github.com/jexia/maestro/protocol/http"
 	"github.com/jexia/maestro/schema/protoc"
 	"github.com/jexia/maestro/specs"
@@ -26,7 +27,7 @@ func main() {
 		maestro.WithPath(".", false),
 		maestro.WithSchemaCollection(collection),
 		maestro.WithCodec(json.NewConstructor()),
-		// maestro.WithCodec(proto.NewConstructor()),
+		maestro.WithCodec(proto.NewConstructor()),
 		maestro.WithCaller(http.NewCaller()),
 		maestro.WithListener(listener),
 	)

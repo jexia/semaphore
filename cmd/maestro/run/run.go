@@ -7,6 +7,7 @@ import (
 
 	"github.com/jexia/maestro"
 	"github.com/jexia/maestro/codec/json"
+	"github.com/jexia/maestro/codec/proto"
 	"github.com/jexia/maestro/protocol/http"
 	"github.com/jexia/maestro/schema/protoc"
 	"github.com/jexia/maestro/specs"
@@ -57,7 +58,7 @@ func run(cmd *cobra.Command, args []string) error {
 	options := []maestro.Option{
 		maestro.WithPath(flows, RecursiveLookup),
 		maestro.WithCodec(json.NewConstructor()),
-		// maestro.WithCodec(proto.NewConstructor()),
+		maestro.WithCodec(proto.NewConstructor()),
 		maestro.WithCaller(http.NewCaller()),
 		maestro.WithSchemaCollection(collection),
 	}
