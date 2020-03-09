@@ -17,16 +17,6 @@ func TestDuplicateManifests(t *testing.T) {
 			},
 		},
 		{
-			Endpoints: []*Endpoint{
-				{
-					Flow: "dup",
-				},
-				{
-					Flow: "dup",
-				},
-			},
-		},
-		{
 			Flows: []*Flow{
 				{
 					Name: "dup",
