@@ -2,22 +2,23 @@ package maestro
 
 import (
 	"context"
+	"errors"
 	"io"
 	"os"
 	"path/filepath"
 	"sync"
 
+	"github.com/jexia/maestro/codec"
 	"github.com/jexia/maestro/definitions/hcl"
 	"github.com/jexia/maestro/flow"
-	"github.com/jexia/maestro/refs"
-
-	"github.com/jexia/maestro/codec"
 	"github.com/jexia/maestro/protocol"
+	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/specs"
 	"github.com/jexia/maestro/specs/strict"
 	"github.com/jexia/maestro/specs/trace"
 	"github.com/jexia/maestro/utils"
+	log "github.com/sirupsen/logrus"
 )
 
 // Client represents a maestro instance
@@ -316,7 +317,6 @@ func ConstructCall(manifest *specs.Manifest, node *specs.Node, call *specs.Call,
 		}
 
 		reader, writer := io.Pipe()
-
 		w := protocol.NewResponseWriter(writer)
 		r := &protocol.Request{
 			Context: ctx,
@@ -326,12 +326,24 @@ func ConstructCall(manifest *specs.Manifest, node *specs.Node, call *specs.Call,
 
 		go func() {
 			defer writer.Close()
-			caller.Call(w, r, refs)
+			err := caller.Call(w, r, refs)
+			if err != nil {
+				log.Println(err)
+			}
 		}()
 
 		err = res.Unmarshal(reader, refs)
 		if err != nil {
-			return nil
+			return err
+		}
+
+		if !protocol.StatusSuccess(w.Status()) {
+			log.WithFields(log.Fields{
+				"node":   node.GetName(),
+				"status": w.Status(),
+			}).Error("Faulty status code")
+
+			return errors.New("rollback required")
 		}
 
 		return nil

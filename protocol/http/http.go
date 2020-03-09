@@ -205,7 +205,6 @@ func Handle(endpoint *protocol.Endpoint) httprouter.Handle {
 
 		err = endpoint.Flow.Call(r.Context(), refs)
 		if err != nil {
-			log.Error(err)
 			w.WriteHeader(http.StatusServiceUnavailable)
 			return
 		}
@@ -217,7 +216,6 @@ func Handle(endpoint *protocol.Endpoint) httprouter.Handle {
 		if endpoint.Response != nil {
 			reader, err := endpoint.Response.Marshal(refs)
 			if err != nil {
-				log.Error(err)
 				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
