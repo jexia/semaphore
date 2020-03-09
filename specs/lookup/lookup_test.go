@@ -47,27 +47,236 @@ func TestGetDefaultProp(t *testing.T) {
 	}
 }
 
-func NewInputMockProperties(path string) map[string]*specs.Property {
-	return map[string]*specs.Property{
-		"message": &specs.Property{
-			Path:    specs.JoinPath(path, "message"),
-			Default: "hello world",
-			Type:    types.TypeString,
-		},
-		"active": &specs.Property{
-			Path:    specs.JoinPath(path, "active"),
-			Default: false,
-			Type:    types.TypeBool,
+func NewInputMockProperty() *specs.Property {
+	return &specs.Property{
+		Path:  "",
+		Type:  types.TypeMessage,
+		Label: types.LabelOptional,
+		Nested: map[string]*specs.Property{
+			"message": &specs.Property{
+				Path:    "message",
+				Default: "hello world",
+				Type:    types.TypeString,
+				Label:   types.LabelOptional,
+			},
+			"active": &specs.Property{
+				Path:    "active",
+				Default: false,
+				Type:    types.TypeBool,
+				Label:   types.LabelOptional,
+			},
+			"nested": &specs.Property{
+				Path:  "nested",
+				Type:  types.TypeMessage,
+				Label: types.LabelOptional,
+				Nested: map[string]*specs.Property{
+					"message": &specs.Property{
+						Path:    "nested.message",
+						Default: "hello world",
+						Type:    types.TypeString,
+						Label:   types.LabelOptional,
+					},
+					"active": &specs.Property{
+						Path:    "nested.active",
+						Default: false,
+						Type:    types.TypeBool,
+						Label:   types.LabelOptional,
+					},
+					"nested": &specs.Property{
+						Path:  "nested.nested",
+						Type:  types.TypeMessage,
+						Label: types.LabelOptional,
+						Nested: map[string]*specs.Property{
+							"message": &specs.Property{
+								Path:    "nested.nested.message",
+								Default: "hello world",
+								Type:    types.TypeString,
+								Label:   types.LabelOptional,
+							},
+							"active": &specs.Property{
+								Path:    "nested.nested.active",
+								Default: false,
+								Type:    types.TypeBool,
+								Label:   types.LabelOptional,
+							},
+						},
+					},
+					"repeated": &specs.Property{
+						Path:  "nested.repeated",
+						Type:  types.TypeMessage,
+						Label: types.LabelRepeated,
+						Nested: map[string]*specs.Property{
+							"message": &specs.Property{
+								Path:    "nested.repeated.message",
+								Default: "hello world",
+								Type:    types.TypeString,
+								Label:   types.LabelOptional,
+							},
+							"active": &specs.Property{
+								Path:    "nested.repeated.active",
+								Default: false,
+								Type:    types.TypeBool,
+								Label:   types.LabelOptional,
+							},
+						},
+					},
+				},
+			},
+			"repeated": &specs.Property{
+				Path:  "repeated",
+				Type:  types.TypeMessage,
+				Label: types.LabelRepeated,
+				Nested: map[string]*specs.Property{
+					"message": &specs.Property{
+						Path:    "message",
+						Default: "hello world",
+						Type:    types.TypeString,
+						Label:   types.LabelOptional,
+					},
+					"active": &specs.Property{
+						Path:    "active",
+						Default: false,
+						Type:    types.TypeBool,
+						Label:   types.LabelOptional,
+					},
+					"repeated": &specs.Property{
+						Path:  "repeated.repeated",
+						Type:  types.TypeMessage,
+						Label: types.LabelRepeated,
+						Nested: map[string]*specs.Property{
+							"repeated.message": &specs.Property{
+								Path:    "message",
+								Default: "hello world",
+								Type:    types.TypeString,
+								Label:   types.LabelOptional,
+							},
+							"repeated.active": &specs.Property{
+								Path:    "active",
+								Default: false,
+								Type:    types.TypeBool,
+								Label:   types.LabelOptional,
+							},
+						},
+					},
+				},
+			},
 		},
 	}
 }
 
-func NewOutputMockProperties(path string) map[string]*specs.Property {
-	return map[string]*specs.Property{
-		"result": &specs.Property{
-			Path:    specs.JoinPath(path, "result"),
-			Default: "hello world",
-			Type:    types.TypeString,
+func NewResultMockProperty() *specs.Property {
+	return &specs.Property{
+		Path:  "",
+		Type:  types.TypeMessage,
+		Label: types.LabelOptional,
+		Nested: map[string]*specs.Property{
+			"result": &specs.Property{
+				Path:    "result",
+				Default: "hello world",
+				Type:    types.TypeString,
+				Label:   types.LabelOptional,
+			},
+			"active": &specs.Property{
+				Path:    "active",
+				Default: false,
+				Type:    types.TypeBool,
+				Label:   types.LabelOptional,
+			},
+			"nested": &specs.Property{
+				Path:  "nested",
+				Type:  types.TypeMessage,
+				Label: types.LabelOptional,
+				Nested: map[string]*specs.Property{
+					"result": &specs.Property{
+						Path:    "nested.result",
+						Default: "hello world",
+						Type:    types.TypeString,
+						Label:   types.LabelOptional,
+					},
+					"active": &specs.Property{
+						Path:    "nested.active",
+						Default: false,
+						Type:    types.TypeBool,
+						Label:   types.LabelOptional,
+					},
+					"nested": &specs.Property{
+						Path:  "nested.nested",
+						Type:  types.TypeMessage,
+						Label: types.LabelOptional,
+						Nested: map[string]*specs.Property{
+							"result": &specs.Property{
+								Path:    "nested.nested.result",
+								Default: "hello world",
+								Type:    types.TypeString,
+								Label:   types.LabelOptional,
+							},
+							"active": &specs.Property{
+								Path:    "nested.nested.active",
+								Default: false,
+								Type:    types.TypeBool,
+								Label:   types.LabelOptional,
+							},
+						},
+					},
+					"repeated": &specs.Property{
+						Path:  "nested.repeated",
+						Type:  types.TypeMessage,
+						Label: types.LabelRepeated,
+						Nested: map[string]*specs.Property{
+							"result": &specs.Property{
+								Path:    "nested.repeated.result",
+								Default: "hello world",
+								Type:    types.TypeString,
+								Label:   types.LabelOptional,
+							},
+							"active": &specs.Property{
+								Path:    "nested.repeated.active",
+								Default: false,
+								Type:    types.TypeBool,
+								Label:   types.LabelOptional,
+							},
+						},
+					},
+				},
+			},
+			"repeated": &specs.Property{
+				Path:  "repeated",
+				Type:  types.TypeMessage,
+				Label: types.LabelRepeated,
+				Nested: map[string]*specs.Property{
+					"result": &specs.Property{
+						Path:    "message",
+						Default: "hello world",
+						Type:    types.TypeString,
+						Label:   types.LabelOptional,
+					},
+					"active": &specs.Property{
+						Path:    "active",
+						Default: false,
+						Type:    types.TypeBool,
+						Label:   types.LabelOptional,
+					},
+					"repeated": &specs.Property{
+						Path:  "repeated.repeated",
+						Type:  types.TypeMessage,
+						Label: types.LabelRepeated,
+						Nested: map[string]*specs.Property{
+							"result": &specs.Property{
+								Path:    "repeated.repeated.result",
+								Default: "hello world",
+								Type:    types.TypeString,
+								Label:   types.LabelOptional,
+							},
+							"active": &specs.Property{
+								Path:    "repeated.repeated.active",
+								Default: false,
+								Type:    types.TypeBool,
+								Label:   types.LabelOptional,
+							},
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -82,45 +291,10 @@ func NewMockCall(name string) *specs.Node {
 						Path:    "cookie",
 						Default: "mnomnom",
 						Type:    types.TypeString,
+						Label:   types.LabelOptional,
 					},
 				},
-				Properties: NewInputMockProperties(""),
-				Nested: map[string]*specs.NestedParameterMap{
-					"nested": &specs.NestedParameterMap{
-						Path:       "nested",
-						Properties: NewInputMockProperties("nested"),
-						Nested: map[string]*specs.NestedParameterMap{
-							"nested": &specs.NestedParameterMap{
-								Path:       "nested.nested",
-								Properties: NewInputMockProperties("nested.nested"),
-							},
-						},
-						Repeated: map[string]*specs.RepeatedParameterMap{
-							"repeated": &specs.RepeatedParameterMap{
-								Path:       "nested.repeated",
-								Properties: NewInputMockProperties("nested.repeated"),
-							},
-						},
-					},
-				},
-				Repeated: map[string]*specs.RepeatedParameterMap{
-					"repeated": &specs.RepeatedParameterMap{
-						Path:       "repeated",
-						Properties: NewInputMockProperties("repeated"),
-						Nested: map[string]*specs.NestedParameterMap{
-							"nested": &specs.NestedParameterMap{
-								Path:       "repeated.nested",
-								Properties: NewInputMockProperties("repeated.nested"),
-							},
-						},
-						Repeated: map[string]*specs.RepeatedParameterMap{
-							"repeated": &specs.RepeatedParameterMap{
-								Path:       "repeated.repeated",
-								Properties: NewInputMockProperties("repeated.nested"),
-							},
-						},
-					},
-				},
+				Property: NewInputMockProperty(),
 			},
 			Response: &specs.ParameterMap{
 				Header: specs.Header{
@@ -128,45 +302,10 @@ func NewMockCall(name string) *specs.Node {
 						Path:    "cookie",
 						Default: "mnomnom",
 						Type:    types.TypeString,
+						Label:   types.LabelOptional,
 					},
 				},
-				Properties: NewOutputMockProperties(""),
-				Nested: map[string]*specs.NestedParameterMap{
-					"nested": &specs.NestedParameterMap{
-						Path:       "nested",
-						Properties: NewOutputMockProperties("nested"),
-						Nested: map[string]*specs.NestedParameterMap{
-							"nested": &specs.NestedParameterMap{
-								Path:       "nested.nested",
-								Properties: NewOutputMockProperties("nested.nested"),
-							},
-						},
-						Repeated: map[string]*specs.RepeatedParameterMap{
-							"repeated": &specs.RepeatedParameterMap{
-								Path:       "nested.repeated",
-								Properties: NewOutputMockProperties("nested.repeated"),
-							},
-						},
-					},
-				},
-				Repeated: map[string]*specs.RepeatedParameterMap{
-					"repeated": &specs.RepeatedParameterMap{
-						Path:       "repeated",
-						Properties: NewOutputMockProperties("repeated"),
-						Nested: map[string]*specs.NestedParameterMap{
-							"nested": &specs.NestedParameterMap{
-								Path:       "repeated.nested",
-								Properties: NewOutputMockProperties("repeated.nested"),
-							},
-						},
-						Repeated: map[string]*specs.RepeatedParameterMap{
-							"repeated": &specs.RepeatedParameterMap{
-								Path:       "repeated.repeated",
-								Properties: NewOutputMockProperties("repeated.repeated"),
-							},
-						},
-					},
-				},
+				Property: NewResultMockProperty(),
 			},
 		},
 	}
@@ -176,7 +315,7 @@ func NewMockFlow(name string) *specs.Flow {
 	return &specs.Flow{
 		Name: name,
 		Input: &specs.ParameterMap{
-			Properties: NewInputMockProperties(""),
+			Property: NewInputMockProperty(),
 		},
 		Nodes: []*specs.Node{
 			NewMockCall("first"),
@@ -184,7 +323,7 @@ func NewMockFlow(name string) *specs.Flow {
 			NewMockCall("third"),
 		},
 		Output: &specs.ParameterMap{
-			Properties: NewOutputMockProperties(""),
+			Property: NewResultMockProperty(),
 		},
 	}
 }
@@ -295,37 +434,37 @@ func TestGetResourceReference(t *testing.T) {
 	flow := NewMockFlow("first")
 	references := GetAvailableResources(flow, "output")
 
-	tests := map[*specs.PropertyReference]Reference{
-		NewPropertyReference("input", "message"):                           flow.Input.Properties["message"],
-		NewPropertyReference("first", "result"):                            flow.Nodes[0].Call.Response.Properties["result"],
-		NewPropertyReference("first.response", "result"):                   flow.Nodes[0].Call.Response.Properties["result"],
-		NewPropertyReference("first.request", "message"):                   flow.Nodes[0].Call.Request.Properties["message"],
-		NewPropertyReference("first.request", "message"):                   flow.Nodes[0].Call.Request.Properties["message"],
+	tests := map[*specs.PropertyReference]*specs.Property{
+		NewPropertyReference("input", "message"):                           flow.Input.Property.Nested["message"],
+		NewPropertyReference("first", "result"):                            flow.Nodes[0].Call.Response.Property.Nested["result"],
+		NewPropertyReference("first.response", "result"):                   flow.Nodes[0].Call.Response.Property.Nested["result"],
+		NewPropertyReference("first.request", "message"):                   flow.Nodes[0].Call.Request.Property.Nested["message"],
+		NewPropertyReference("first.request", "message"):                   flow.Nodes[0].Call.Request.Property.Nested["message"],
 		NewPropertyReference("first.header", "cookie"):                     flow.Nodes[0].Call.Response.Header["cookie"],
-		NewPropertyReference("first.request", "nested"):                    flow.Nodes[0].Call.Request.Nested["nested"],
-		NewPropertyReference("first.request", "nested.message"):            flow.Nodes[0].Call.Request.Nested["nested"].Properties["message"],
-		NewPropertyReference("first", "nested.result"):                     flow.Nodes[0].Call.Response.Nested["nested"].Properties["result"],
-		NewPropertyReference("first", "nested.nested.result"):              flow.Nodes[0].Call.Response.Nested["nested"].Nested["nested"].Properties["result"],
-		NewPropertyReference("first.response", "nested.nested.result"):     flow.Nodes[0].Call.Response.Nested["nested"].Nested["nested"].Properties["result"],
-		NewPropertyReference("first.request", "nested.repeated.message"):   flow.Nodes[0].Call.Request.Nested["nested"].Repeated["repeated"].Properties["message"],
-		NewPropertyReference("first.response", "nested.repeated.result"):   flow.Nodes[0].Call.Response.Nested["nested"].Repeated["repeated"].Properties["result"],
-		NewPropertyReference("first.response", "repeated.repeated.result"): flow.Nodes[0].Call.Response.Repeated["repeated"].Repeated["repeated"].Properties["result"],
-		NewPropertyReference("first.response", "nested.repeated.result"):   flow.Nodes[0].Call.Response.Nested["nested"].Repeated["repeated"].Properties["result"],
-		NewPropertyReference("first.response", "nested.nested.result"):     flow.Nodes[0].Call.Response.Nested["nested"].Nested["nested"].Properties["result"],
-		NewPropertyReference("first.response", "nested.repeated.result"):   flow.Nodes[0].Call.Response.Nested["nested"].Repeated["repeated"].Properties["result"],
-		NewPropertyReference("first.request", "nested.repeated.message"):   flow.Nodes[0].Call.Request.Nested["nested"].Repeated["repeated"].Properties["message"],
-		NewPropertyReference("first.request", "nested.nested.message"):     flow.Nodes[0].Call.Request.Nested["nested"].Nested["nested"].Properties["message"],
-		NewPropertyReference("first.request", "nested.repeated.message"):   flow.Nodes[0].Call.Request.Nested["nested"].Repeated["repeated"].Properties["message"],
+		NewPropertyReference("first.request", "nested"):                    flow.Nodes[0].Call.Request.Property.Nested["nested"],
+		NewPropertyReference("first.request", "nested.message"):            flow.Nodes[0].Call.Request.Property.Nested["nested"].Nested["message"],
+		NewPropertyReference("first", "nested.result"):                     flow.Nodes[0].Call.Response.Property.Nested["nested"].Nested["result"],
+		NewPropertyReference("first", "nested.nested.result"):              flow.Nodes[0].Call.Response.Property.Nested["nested"].Nested["nested"].Nested["result"],
+		NewPropertyReference("first.response", "nested.nested.result"):     flow.Nodes[0].Call.Response.Property.Nested["nested"].Nested["nested"].Nested["result"],
+		NewPropertyReference("first.request", "nested.repeated.message"):   flow.Nodes[0].Call.Request.Property.Nested["nested"].Nested["repeated"].Nested["message"],
+		NewPropertyReference("first.response", "nested.repeated.result"):   flow.Nodes[0].Call.Response.Property.Nested["nested"].Nested["repeated"].Nested["result"],
+		NewPropertyReference("first.response", "repeated.repeated.result"): flow.Nodes[0].Call.Response.Property.Nested["repeated"].Nested["repeated"].Nested["result"],
+		NewPropertyReference("first.response", "nested.repeated.result"):   flow.Nodes[0].Call.Response.Property.Nested["nested"].Nested["repeated"].Nested["result"],
+		NewPropertyReference("first.response", "nested.nested.result"):     flow.Nodes[0].Call.Response.Property.Nested["nested"].Nested["nested"].Nested["result"],
+		NewPropertyReference("first.response", "nested.repeated.result"):   flow.Nodes[0].Call.Response.Property.Nested["nested"].Nested["repeated"].Nested["result"],
+		NewPropertyReference("first.request", "nested.repeated.message"):   flow.Nodes[0].Call.Request.Property.Nested["nested"].Nested["repeated"].Nested["message"],
+		NewPropertyReference("first.request", "nested.nested.message"):     flow.Nodes[0].Call.Request.Property.Nested["nested"].Nested["nested"].Nested["message"],
+		NewPropertyReference("first.request", "nested.repeated.message"):   flow.Nodes[0].Call.Request.Property.Nested["nested"].Nested["repeated"].Nested["message"],
 	}
 
 	for input, expected := range tests {
 		t.Run(input.String(), func(t *testing.T) {
 			result := GetResourceReference(input, references)
 			if result == nil {
-				t.Fatalf("unexpected result expected %+v", expected)
+				t.Fatalf("unexpected result on lookup %s, expected %+v", input, expected)
 			}
 
-			if result.GetPath() != expected.GetPath() {
+			if result.Path != expected.Path {
 				t.Fatalf("unexpected result %+v, expected %+v", result, expected)
 			}
 		})

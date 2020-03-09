@@ -8,39 +8,36 @@ import (
 	"github.com/jexia/maestro/specs/types"
 )
 
-func NewMockObject() schema.Object {
-	return &mock.Object{
-		Fields: map[string]*mock.Field{
-			"message": &mock.Field{
+func NewMockObject() schema.Property {
+	return &mock.Property{
+		Type: types.TypeMessage,
+		Nested: map[string]*mock.Property{
+			"message": &mock.Property{
 				Name:  "message",
 				Type:  types.TypeString,
 				Label: types.LabelOptional,
 			},
-			"nested": &mock.Field{
+			"nested": &mock.Property{
 				Name:  "nested",
 				Type:  types.TypeMessage,
 				Label: types.LabelOptional,
-				Object: &mock.Object{
-					Fields: map[string]*mock.Field{
-						"key": &mock.Field{
-							Name:  "key",
-							Type:  types.TypeString,
-							Label: types.LabelOptional,
-						},
+				Nested: map[string]*mock.Property{
+					"key": &mock.Property{
+						Name:  "key",
+						Type:  types.TypeString,
+						Label: types.LabelOptional,
 					},
 				},
 			},
-			"repeated": &mock.Field{
+			"repeated": &mock.Property{
 				Name:  "repeated",
 				Type:  types.TypeMessage,
 				Label: types.LabelRepeated,
-				Object: &mock.Object{
-					Fields: map[string]*mock.Field{
-						"key": &mock.Field{
-							Name:  "key",
-							Type:  types.TypeString,
-							Label: types.LabelOptional,
-						},
+				Nested: map[string]*mock.Property{
+					"key": &mock.Property{
+						Name:  "key",
+						Type:  types.TypeString,
+						Label: types.LabelOptional,
 					},
 				},
 			},
@@ -70,27 +67,23 @@ func TestToParameterMap(t *testing.T) {
 		t.Fatal("result empty")
 	}
 
-	if len(result.Nested) != 1 {
-		t.Fatal("no nested parameter maps defined")
-	}
-
-	if result.Nested["nested"] == nil {
+	if result.Property.Nested["nested"] == nil {
 		t.Fatal("nested value not defined")
 	}
 
-	if result.Nested["nested"].Properties["key"] == nil {
+	if len(result.Property.Nested) != 3 {
+		t.Fatalf("expected 3 parameters to be defined received %d", len(result.Property.Nested))
+	}
+
+	if result.Property.Nested["nested"].Nested["key"] == nil {
 		t.Fatal("nested value property not defined")
 	}
 
-	if len(result.Repeated) != 1 {
-		t.Fatal("no repeated parameter maps defined")
-	}
-
-	if result.Repeated["repeated"] == nil {
+	if result.Property.Nested["repeated"] == nil {
 		t.Fatal("repeated value not defined")
 	}
 
-	if result.Repeated["repeated"].Properties["key"] == nil {
+	if result.Property.Nested["repeated"].Nested["key"] == nil {
 		t.Fatal("repeated value property not defined")
 	}
 }

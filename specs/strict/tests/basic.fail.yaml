@@ -2,20 +2,27 @@ exception:
     message: cannot use (string) type (int32) in 'message'
 objects:
     input:
-        fields:
+        type: "message"
+        label: "optional"
+        nested:
             message:
                 type: "string"
+                label: "optional"
 services:
     caller:
         methods:
             Open:
                 input:
-                    fields:
+                    type: "message"
+                    label: "optional"
+                    nested:
                         message:
                             type: "int32"
                             label: "optional"
                 output:
-                    fields:
+                    type: "message"
+                    label: "optional"
+                    nested:
                         message:
                             type: "int32"
                             label: "optional"

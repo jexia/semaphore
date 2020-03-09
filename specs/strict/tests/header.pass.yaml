@@ -1,17 +1,23 @@
 objects:
     input:
-        fields:
+        type: "message"
+        label: "optional"
+        nested:
 services:
     caller:
         methods:
             Open:
                 input:
-                    fields:
+                    type: "message"
+                    label: "optional"
+                    nested:
                         message:
                             type: "string"
                             label: "optional"
                 output:
-                    fields:
+                    type: "message"
+                    label: "optional"
+                    nested:
                         message:
                             type: "string"
                             label: "optional"

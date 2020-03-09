@@ -9,24 +9,23 @@ import (
 
 	"github.com/jexia/maestro"
 	"github.com/jexia/maestro/refs"
-	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/schema/protoc"
 	"github.com/jexia/maestro/specs"
 	"github.com/jhump/protoreflect/dynamic"
 )
 
-func NewMock() (schema.Collection, *specs.Manifest, error) {
+func NewMock() (*specs.Manifest, error) {
 	collection, err := protoc.Collect([]string{"./tests"}, "./tests")
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	client, err := maestro.New(maestro.WithPath("./tests", false), maestro.WithSchemaCollection(collection))
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	return collection, client.Manifest, nil
+	return client.Manifest, nil
 }
 
 func FindFlow(manifest *specs.Manifest, name string) *specs.Flow {
@@ -61,6 +60,10 @@ func ValidateStore(t *testing.T, resource string, origin string, input map[strin
 		repeated, is := value.([]map[string]interface{})
 		if is {
 			repeating := store.Load(resource, path)
+			if repeating == nil {
+				t.Fatalf("repeating message does not exist in store '%s.%s'", resource, path)
+			}
+
 			for index, store := range repeating.Repeated {
 				ValidateStore(t, resource, path, repeated[index], store)
 			}
@@ -86,13 +89,13 @@ func BenchmarkSimpleMarshal(b *testing.B) {
 	refs := refs.NewStore(len(input))
 	refs.StoreValues("input", "", input)
 
-	_, manifest, err := NewMock()
+	manifest, err := NewMock()
 	if err != nil {
 		b.Fatal(err)
 	}
 
 	flow := FindFlow(manifest, "simple")
-	specs := FindNode(flow, "first").Call.GetRequest()
+	specs := FindNode(flow, "first").Call.GetRequest().Property
 
 	constructor := NewConstructor()
 	manager, err := constructor.New("input", specs)
@@ -123,13 +126,13 @@ func BenchmarkNestedMarshal(b *testing.B) {
 	refs := refs.NewStore(len(input))
 	refs.StoreValues("input", "", input)
 
-	_, manifest, err := NewMock()
+	manifest, err := NewMock()
 	if err != nil {
 		b.Fatal(err)
 	}
 
 	flow := FindFlow(manifest, "simple")
-	specs := FindNode(flow, "first").Call.GetRequest()
+	specs := FindNode(flow, "first").Call.GetRequest().Property
 
 	constructor := NewConstructor()
 	manager, err := constructor.New("input", specs)
@@ -162,13 +165,13 @@ func BenchmarkRepeatedMarshal(b *testing.B) {
 	refs := refs.NewStore(len(input))
 	refs.StoreValues("input", "", input)
 
-	_, manifest, err := NewMock()
+	manifest, err := NewMock()
 	if err != nil {
 		b.Fatal(err)
 	}
 
 	flow := FindFlow(manifest, "simple")
-	specs := FindNode(flow, "first").Call.GetRequest()
+	specs := FindNode(flow, "first").Call.GetRequest().Property
 
 	constructor := NewConstructor()
 	manager, err := constructor.New("input", specs)
@@ -200,17 +203,20 @@ func BenchmarkSimpleUnmarshal(b *testing.B) {
 	}
 
 	refs := refs.NewStore(len(input))
-	collection, manifest, err := NewMock()
+	manifest, err := NewMock()
 	if err != nil {
 		b.Fatal(err)
 	}
 
-	method := collection.GetService("proto.mock").GetMethod("simple")
-	schema := method.GetInput().(protoc.Object)
 	flow := FindFlow(manifest, "simple")
-	specs := FindNode(flow, "first").Call.GetRequest()
+	specs := FindNode(flow, "first").Call.GetRequest().Property
 
-	msg := dynamic.NewMessage(schema.GetDescriptor())
+	desc, err := NewMessage(specs.Name, specs.Nested)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	msg := dynamic.NewMessage(desc)
 	err = msg.UnmarshalJSON(jsonBB)
 	if err != nil {
 		b.Fatal(err)
@@ -251,17 +257,20 @@ func BenchmarkNestedUnmarshal(b *testing.B) {
 	}
 
 	refs := refs.NewStore(len(input))
-	collection, manifest, err := NewMock()
+	manifest, err := NewMock()
 	if err != nil {
 		b.Fatal(err)
 	}
 
-	method := collection.GetService("proto.mock").GetMethod("nested")
-	schema := method.GetInput().(protoc.Object)
 	flow := FindFlow(manifest, "nested")
-	specs := FindNode(flow, "first").Call.GetRequest()
+	specs := FindNode(flow, "first").Call.GetRequest().Property
 
-	msg := dynamic.NewMessage(schema.GetDescriptor())
+	desc, err := NewMessage(specs.Name, specs.Nested)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	msg := dynamic.NewMessage(desc)
 	err = msg.UnmarshalJSON(jsonBB)
 	if err != nil {
 		b.Fatal(err)
@@ -304,17 +313,20 @@ func BenchmarkRepeatedUnmarshal(b *testing.B) {
 	}
 
 	refs := refs.NewStore(len(input))
-	collection, manifest, err := NewMock()
+	manifest, err := NewMock()
 	if err != nil {
 		b.Fatal(err)
 	}
 
-	method := collection.GetService("proto.mock").GetMethod("repeated")
-	schema := method.GetInput().(protoc.Object)
 	flow := FindFlow(manifest, "repeated")
-	specs := FindNode(flow, "first").Call.GetRequest()
+	specs := FindNode(flow, "first").Call.GetRequest().Property
 
-	msg := dynamic.NewMessage(schema.GetDescriptor())
+	desc, err := NewMessage(specs.Name, specs.Nested)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	msg := dynamic.NewMessage(desc)
 	err = msg.UnmarshalJSON(jsonBB)
 	if err != nil {
 		b.Fatal(err)
@@ -343,22 +355,20 @@ func BenchmarkRepeatedUnmarshal(b *testing.B) {
 }
 
 func TestMarshal(t *testing.T) {
-	collection, manifest, err := NewMock()
+	manifest, err := NewMock()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	method := collection.GetService("proto.test").GetMethod("complete")
-	schema := method.GetInput().(protoc.Object)
 	flow := FindFlow(manifest, "complete")
-	specs := FindNode(flow, "first").Call.GetRequest()
+	specs := FindNode(flow, "first").Call.GetRequest().Property
 
 	tests := map[string]map[string]interface{}{
 		"simple": map[string]interface{}{
 			"message": "hello world",
 			"nested":  map[string]interface{}{},
 		},
-		"nested": map[string]interface{}{
+		"nesting": map[string]interface{}{
 			"nested": map[string]interface{}{
 				"value": "nested value",
 			},
@@ -402,7 +412,12 @@ func TestMarshal(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			response := dynamic.NewMessage(schema.GetDescriptor())
+			desc, err := NewMessage(key, specs.Nested)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			response := dynamic.NewMessage(desc)
 			err = response.Unmarshal(bb)
 			if err != nil {
 				t.Fatal(err)
@@ -433,15 +448,13 @@ func TestMarshal(t *testing.T) {
 }
 
 func TestUnmarshal(t *testing.T) {
-	collection, manifest, err := NewMock()
+	manifest, err := NewMock()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	method := collection.GetService("proto.test").GetMethod("complete")
-	schema := method.GetInput().(protoc.Object)
 	flow := FindFlow(manifest, "complete")
-	specs := FindNode(flow, "first").Call.GetRequest()
+	specs := FindNode(flow, "first").Call.GetRequest().Property
 
 	tests := map[string]map[string]interface{}{
 		"simple": map[string]interface{}{
@@ -473,13 +486,22 @@ func TestUnmarshal(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			inputAsProto := dynamic.NewMessage(schema.GetDescriptor())
+			desc, err := NewMessage("input", specs.Nested)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			inputAsProto := dynamic.NewMessage(desc)
 			err = inputAsProto.UnmarshalJSON(inputAsJSON)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			bb, _ := inputAsProto.Marshal()
+			bb, err := inputAsProto.Marshal()
+			if err != nil {
+				t.Fatal(err)
+			}
+
 			store := refs.NewStore(len(input))
 
 			constructor := NewConstructor()
@@ -488,7 +510,7 @@ func TestUnmarshal(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			err = manager.Unmarshal(bytes.NewBuffer(bb), store)
+			err = manager.Unmarshal(bytes.NewReader(bb), store)
 			if err != nil {
 				t.Fatal(err)
 			}

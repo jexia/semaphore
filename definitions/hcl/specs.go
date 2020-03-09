@@ -3,6 +3,7 @@ package hcl
 import (
 	"github.com/hashicorp/hcl/v2"
 	"github.com/jexia/maestro/specs"
+	"github.com/jexia/maestro/specs/types"
 	log "github.com/sirupsen/logrus"
 	"github.com/zclconf/go-cty/cty"
 )
@@ -216,12 +217,14 @@ func ParseIntermediateParameterMap(params *ParameterMap, functions specs.CustomD
 	}
 
 	result := specs.ParameterMap{
-		Schema:     params.Schema,
-		Options:    make(specs.Options),
-		Header:     header,
-		Nested:     make(map[string]*specs.NestedParameterMap, len(params.Nested)),
-		Repeated:   make(map[string]*specs.RepeatedParameterMap, len(params.Repeated)),
-		Properties: make(map[string]*specs.Property, len(properties)),
+		Schema:  params.Schema,
+		Options: make(specs.Options),
+		Header:  header,
+		Property: &specs.Property{
+			Type:   types.TypeMessage,
+			Label:  types.LabelOptional,
+			Nested: map[string]*specs.Property{},
+		},
 	}
 
 	if params.Options != nil {
@@ -234,7 +237,7 @@ func ParseIntermediateParameterMap(params *ParameterMap, functions specs.CustomD
 			return nil, err
 		}
 
-		result.Properties[attr.Name] = results
+		result.Property.Nested[attr.Name] = results
 	}
 
 	for _, nested := range params.Nested {
@@ -243,7 +246,7 @@ func ParseIntermediateParameterMap(params *ParameterMap, functions specs.CustomD
 			return nil, err
 		}
 
-		result.Nested[nested.Name] = results
+		result.Property.Nested[nested.Name] = results
 	}
 
 	for _, repeated := range params.Repeated {
@@ -252,21 +255,21 @@ func ParseIntermediateParameterMap(params *ParameterMap, functions specs.CustomD
 			return nil, err
 		}
 
-		result.Repeated[repeated.Name] = results
+		result.Property.Nested[repeated.Name] = results
 	}
 
 	return &result, nil
 }
 
 // ParseIntermediateNestedParameterMap parses the given intermediate parameter map to a spec parameter map
-func ParseIntermediateNestedParameterMap(params NestedParameterMap, functions specs.CustomDefinedFunctions, path string) (*specs.NestedParameterMap, error) {
+func ParseIntermediateNestedParameterMap(params NestedParameterMap, functions specs.CustomDefinedFunctions, path string) (*specs.Property, error) {
 	properties, _ := params.Properties.JustAttributes()
-	result := specs.NestedParameterMap{
-		Name:       params.Name,
-		Path:       path,
-		Nested:     make(map[string]*specs.NestedParameterMap, len(params.Nested)),
-		Repeated:   make(map[string]*specs.RepeatedParameterMap, len(params.Repeated)),
-		Properties: make(map[string]*specs.Property, len(properties)),
+	result := specs.Property{
+		Name:   params.Name,
+		Path:   path,
+		Type:   types.TypeMessage,
+		Label:  types.LabelOptional,
+		Nested: map[string]*specs.Property{},
 	}
 
 	for _, nested := range params.Nested {
@@ -284,7 +287,7 @@ func ParseIntermediateNestedParameterMap(params NestedParameterMap, functions sp
 			return nil, err
 		}
 
-		result.Repeated[repeated.Name] = returns
+		result.Nested[repeated.Name] = returns
 	}
 
 	for _, attr := range properties {
@@ -293,22 +296,22 @@ func ParseIntermediateNestedParameterMap(params NestedParameterMap, functions sp
 			return nil, err
 		}
 
-		result.Properties[attr.Name] = returns
+		result.Nested[attr.Name] = returns
 	}
 
 	return &result, nil
 }
 
 // ParseIntermediateRepeatedParameterMap parses the given intermediate repeated parameter map to a spec repeated parameter map
-func ParseIntermediateRepeatedParameterMap(params RepeatedParameterMap, functions specs.CustomDefinedFunctions, path string) (*specs.RepeatedParameterMap, error) {
+func ParseIntermediateRepeatedParameterMap(params RepeatedParameterMap, functions specs.CustomDefinedFunctions, path string) (*specs.Property, error) {
 	properties, _ := params.Properties.JustAttributes()
-	result := specs.RepeatedParameterMap{
-		Name:       params.Name,
-		Path:       path,
-		Template:   specs.ParsePropertyReference(params.Template),
-		Nested:     make(map[string]*specs.NestedParameterMap, len(params.Nested)),
-		Repeated:   make(map[string]*specs.RepeatedParameterMap, len(params.Repeated)),
-		Properties: make(map[string]*specs.Property, len(properties)),
+	result := specs.Property{
+		Name:      params.Name,
+		Path:      path,
+		Reference: specs.ParsePropertyReference(params.Template),
+		Type:      types.TypeMessage,
+		Label:     types.LabelOptional,
+		Nested:    map[string]*specs.Property{},
 	}
 
 	for _, nested := range params.Nested {
@@ -326,7 +329,7 @@ func ParseIntermediateRepeatedParameterMap(params RepeatedParameterMap, function
 			return nil, err
 		}
 
-		result.Repeated[repeated.Name] = returns
+		result.Nested[repeated.Name] = returns
 	}
 
 	for _, attr := range properties {
@@ -335,7 +338,7 @@ func ParseIntermediateRepeatedParameterMap(params RepeatedParameterMap, function
 			return nil, err
 		}
 
-		result.Properties[attr.Name] = returns
+		result.Nested[attr.Name] = returns
 	}
 
 	return &result, nil
@@ -444,11 +447,13 @@ func ParseIntermediateCallParameterMap(params *Call, functions specs.CustomDefin
 	}
 
 	result := specs.ParameterMap{
-		Options:    make(specs.Options),
-		Header:     header,
-		Nested:     make(map[string]*specs.NestedParameterMap, len(params.Nested)),
-		Repeated:   make(map[string]*specs.RepeatedParameterMap, len(params.Repeated)),
-		Properties: make(map[string]*specs.Property, len(properties)),
+		Options: make(specs.Options),
+		Header:  header,
+		Property: &specs.Property{
+			Type:   types.TypeMessage,
+			Label:  types.LabelOptional,
+			Nested: map[string]*specs.Property{},
+		},
 	}
 
 	if params.Options != nil {
@@ -461,7 +466,7 @@ func ParseIntermediateCallParameterMap(params *Call, functions specs.CustomDefin
 			return nil, err
 		}
 
-		result.Properties[attr.Name] = results
+		result.Property.Nested[attr.Name] = results
 	}
 
 	for _, nested := range params.Nested {
@@ -470,7 +475,7 @@ func ParseIntermediateCallParameterMap(params *Call, functions specs.CustomDefin
 			return nil, err
 		}
 
-		result.Nested[nested.Name] = results
+		result.Property.Nested[nested.Name] = results
 	}
 
 	for _, repeated := range params.Repeated {
@@ -479,7 +484,7 @@ func ParseIntermediateCallParameterMap(params *Call, functions specs.CustomDefin
 			return nil, err
 		}
 
-		result.Repeated[repeated.Name] = results
+		result.Property.Nested[repeated.Name] = results
 	}
 
 	return &result, nil
@@ -510,5 +515,6 @@ func ParseIntermediateProperty(path string, functions specs.CustomDefinedFunctio
 		return nil, err
 	}
 
+	result.Name = property.Name
 	return result, nil
 }
