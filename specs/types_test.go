@@ -8,58 +8,6 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
-func TestIsType(t *testing.T) {
-	tests := map[string]bool{
-		"<string":  false,
-		"string>":  false,
-		"string":   false,
-		"<string>": true,
-		"<int32>":  true,
-		"<int64>":  true,
-	}
-
-	for input, expected := range tests {
-		result := IsType(input)
-		if result != expected {
-			t.Errorf("unexpected result %t, expected %t %s", result, expected, input)
-		}
-	}
-}
-
-func TestGetTypeContent(t *testing.T) {
-	tests := map[string]string{
-		"<string>": "string",
-		"<int32>":  "int32",
-		"int32>":   "int32",
-		"<string":  "string",
-	}
-
-	for input, expected := range tests {
-		result := GetTypeContent(input)
-		if expected != result {
-			t.Errorf("unexpected result %s, expected %s", result, expected)
-		}
-	}
-}
-
-func TestSetType(t *testing.T) {
-	tests := map[string]types.Type{
-		"<string>": types.TypeString,
-		"<bool>":   types.TypeBool,
-		"<int32>":  types.TypeInt32,
-		"<int64>":  types.TypeInt64,
-	}
-
-	for input, expected := range tests {
-		property := Property{}
-		SetType(&property, cty.StringVal(input))
-
-		if property.Type != expected {
-			t.Errorf("unexpected result %s, expected %s", property.Type, expected)
-		}
-	}
-}
-
 func TestSetDefaultValue(t *testing.T) {
 	type expected struct {
 		Default interface{}

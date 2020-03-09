@@ -1,12 +1,5 @@
 package types
 
-const (
-	// TypeOpen tag
-	TypeOpen = "<"
-	// TypeClose tag
-	TypeClose = ">"
-)
-
 // Type represents a value type definition
 type Type string
 

@@ -1,4 +1,4 @@
-package intermediate
+package hcl
 
 import (
 	"github.com/hashicorp/hcl/v2"
@@ -498,12 +498,6 @@ func ParseIntermediateProperty(path string, functions specs.CustomDefinedFunctio
 		Name: property.Name,
 		Path: path,
 		Expr: property.Expr,
-	}
-
-	// Template definitions could be improved to be more consistent
-	if value.Type() == cty.String && specs.IsType(value.AsString()) {
-		specs.SetType(result, value)
-		return result, nil
 	}
 
 	if value.Type() != cty.String || !specs.IsTemplate(value.AsString()) {
