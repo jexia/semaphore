@@ -362,6 +362,18 @@ func TestMarshal(t *testing.T) {
 
 	flow := FindFlow(manifest, "complete")
 	specs := FindNode(flow, "first").Call.GetRequest().Property
+	desc, err := NewMessage("marshal", specs.Nested)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	response := dynamic.NewMessage(desc)
+
+	constructor := NewConstructor()
+	manager, err := constructor.New("input", specs)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	tests := map[string]map[string]interface{}{
 		"simple": map[string]interface{}{
@@ -396,12 +408,6 @@ func TestMarshal(t *testing.T) {
 			store := refs.NewStore(3)
 			store.StoreValues("input", "", input)
 
-			constructor := NewConstructor()
-			manager, err := constructor.New("input", specs)
-			if err != nil {
-				t.Fatal(err)
-			}
-
 			reader, err := manager.Marshal(store)
 			if err != nil {
 				t.Fatal(err)
@@ -412,12 +418,6 @@ func TestMarshal(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			desc, err := NewMessage(key, specs.Nested)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			response := dynamic.NewMessage(desc)
 			err = response.Unmarshal(bb)
 			if err != nil {
 				t.Fatal(err)
