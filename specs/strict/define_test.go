@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/jexia/maestro/definitions/hcl"
 	"github.com/jexia/maestro/schema/mock"
-	"github.com/jexia/maestro/specs/intermediate"
 	"github.com/jexia/maestro/utils"
 )
 
@@ -34,12 +34,12 @@ func TestUnmarshalFile(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			definition, err := intermediate.UnmarshalHCL(file.Name(), reader)
+			definition, err := hcl.UnmarshalHCL(file.Name(), reader)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			manifest, err := intermediate.ParseManifest(definition, nil)
+			manifest, err := hcl.ParseManifest(definition, nil)
 			if err != nil {
 				t.Fatal(err)
 			}

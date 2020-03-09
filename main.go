@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"sync"
 
+	"github.com/jexia/maestro/definitions/hcl"
 	"github.com/jexia/maestro/flow"
 	"github.com/jexia/maestro/refs"
 
@@ -14,7 +15,6 @@ import (
 	"github.com/jexia/maestro/protocol"
 	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/specs"
-	"github.com/jexia/maestro/specs/intermediate"
 	"github.com/jexia/maestro/specs/strict"
 	"github.com/jexia/maestro/specs/trace"
 	"github.com/jexia/maestro/utils"
@@ -165,7 +165,7 @@ func New(opts ...Option) (*Client, error) {
 
 // ConstructSpecs construct a specs manifest from the given options
 func ConstructSpecs(options Options) (*specs.Manifest, error) {
-	files, err := utils.ReadDir(options.Path, options.Recursive, intermediate.Ext)
+	files, err := utils.ReadDir(options.Path, options.Recursive, hcl.Ext)
 	if err != nil {
 		return nil, err
 	}
@@ -178,12 +178,12 @@ func ConstructSpecs(options Options) (*specs.Manifest, error) {
 			return nil, err
 		}
 
-		definition, err := intermediate.UnmarshalHCL(file.Name(), reader)
+		definition, err := hcl.UnmarshalHCL(file.Name(), reader)
 		if err != nil {
 			return nil, err
 		}
 
-		result, err := intermediate.ParseManifest(definition, options.Functions)
+		result, err := hcl.ParseManifest(definition, options.Functions)
 		if err != nil {
 			return nil, err
 		}

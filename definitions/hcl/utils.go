@@ -1,4 +1,4 @@
-package intermediate
+package hcl
 
 // JoinPath joins the given flow paths
 func JoinPath(values ...string) (result string) {
