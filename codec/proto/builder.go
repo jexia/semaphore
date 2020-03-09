@@ -41,8 +41,11 @@ func ConstructMessage(msg *builder.MessageBuilder, specs map[string]*specs.Prope
 				return err
 			}
 
-			field := builder.FieldTypeMessage(nested)
-			err = msg.TryAddField(builder.NewField(key, field))
+			message := builder.FieldTypeMessage(nested)
+			field := builder.NewField(key, message)
+			field.SetLabel(protoc.ProtoLabels[prop.Label])
+
+			err = msg.TryAddField(field)
 			if err != nil {
 				return err
 			}

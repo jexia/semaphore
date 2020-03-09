@@ -60,6 +60,10 @@ func ValidateStore(t *testing.T, resource string, origin string, input map[strin
 		repeated, is := value.([]map[string]interface{})
 		if is {
 			repeating := store.Load(resource, path)
+			if repeating == nil {
+				t.Fatalf("repeating message does not exist in store '%s.%s'", resource, path)
+			}
+
 			for index, store := range repeating.Repeated {
 				ValidateStore(t, resource, path, repeated[index], store)
 			}
@@ -364,7 +368,7 @@ func TestMarshal(t *testing.T) {
 			"message": "hello world",
 			"nested":  map[string]interface{}{},
 		},
-		"nested": map[string]interface{}{
+		"nesting": map[string]interface{}{
 			"nested": map[string]interface{}{
 				"value": "nested value",
 			},
@@ -462,17 +466,17 @@ func TestUnmarshal(t *testing.T) {
 				"value": "nested value",
 			},
 		},
-		// "complex": map[string]interface{}{
-		// 	"message": "hello world",
-		// 	"nested": map[string]interface{}{
-		// 		"value": "nested value",
-		// 	},
-		// 	"repeating": []map[string]interface{}{
-		// 		{
-		// 			"value": "repeating value",
-		// 		},
-		// 	},
-		// },
+		"complex": map[string]interface{}{
+			"message": "hello world",
+			"nested": map[string]interface{}{
+				"value": "nested value",
+			},
+			"repeating": []map[string]interface{}{
+				{
+					"value": "repeating value",
+				},
+			},
+		},
 	}
 
 	for key, input := range tests {
@@ -513,7 +517,7 @@ func TestUnmarshal(t *testing.T) {
 
 			t.Log(store)
 
-			// ValidateStore(t, "input", "", input, store)
+			ValidateStore(t, "input", "", input, store)
 		})
 	}
 }

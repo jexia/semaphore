@@ -5,7 +5,6 @@ import (
 	"io"
 	"io/ioutil"
 
-	"github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/jexia/maestro/codec"
 	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/specs"
@@ -44,15 +43,15 @@ func (constructor *Constructor) New(resource string, specs *specs.Property) (cod
 		return nil, err
 	}
 
-	return &Message{
+	return &Manager{
 		resource: resource,
 		specs:    specs,
 		desc:     desc,
 	}, nil
 }
 
-// Message represents a proto message encoder/decoder
-type Message struct {
+// Manager represents a proto message encoder/decoder
+type Manager struct {
 	resource string
 	specs    *specs.Property
 	desc     *desc.MessageDescriptor
@@ -60,9 +59,9 @@ type Message struct {
 
 // Marshal marshals the given reference store into a proto message.
 // This method is called during runtime to encode a new message with the values stored inside the given reference store.
-func (message *Message) Marshal(refs *refs.Store) (io.Reader, error) {
-	result := dynamic.NewMessage(message.desc)
-	message.Encode(result, message.desc, message.specs.Nested, refs)
+func (manager *Manager) Marshal(refs *refs.Store) (io.Reader, error) {
+	result := dynamic.NewMessage(manager.desc)
+	manager.Encode(result, manager.desc, manager.specs.Nested, refs)
 	bb, err := result.Marshal()
 	if err != nil {
 		return nil, err
@@ -73,11 +72,41 @@ func (message *Message) Marshal(refs *refs.Store) (io.Reader, error) {
 
 // Encode encodes the given specs object into the given dynamic proto message.
 // References inside the specs are attempted to be fetched from the reference store.
-func (message *Message) Encode(proto *dynamic.Message, desc *desc.MessageDescriptor, specs map[string]*specs.Property, store *refs.Store) (err error) {
+func (manager *Manager) Encode(proto *dynamic.Message, desc *desc.MessageDescriptor, specs map[string]*specs.Property, store *refs.Store) (err error) {
 	for _, field := range desc.GetFields() {
 		prop, has := specs[field.GetName()]
 		if !has {
 			continue
+		}
+
+		if prop.Label == types.LabelRepeated {
+			if prop.Reference == nil {
+				continue
+			}
+
+			// TODO: currently we only support repeated messaged repeated types should be added in the future
+			if prop.Type != types.TypeMessage {
+				continue
+			}
+
+			ref := store.Load(prop.Reference.Resource, prop.Reference.Path)
+			if ref == nil {
+				continue
+			}
+
+			for _, store := range ref.Repeated {
+				dynamic := dynamic.NewMessage(field.GetMessageType())
+
+				err = manager.Encode(dynamic, field.GetMessageType(), prop.Nested, store)
+				if err != nil {
+					return err
+				}
+
+				err = proto.TryAddRepeatedField(field, dynamic)
+				if err != nil {
+					return err
+				}
+			}
 		}
 
 		val := prop.Default
@@ -89,31 +118,9 @@ func (message *Message) Encode(proto *dynamic.Message, desc *desc.MessageDescrip
 			}
 		}
 
-		if prop.Label == types.LabelRepeated {
-			if prop.Reference == nil {
-				continue
-			}
-
-			if prop.Type == types.TypeMessage {
-				dynamic := dynamic.NewMessage(field.GetMessageType())
-
-				err = message.Encode(dynamic, field.GetMessageType(), prop.Nested, store)
-				if err != nil {
-					return err
-				}
-
-				val = dynamic
-			}
-
-			err = proto.TryAddRepeatedField(field, val)
-			if err != nil {
-				return err
-			}
-		}
-
 		if prop.Type == types.TypeMessage {
 			dynamic := dynamic.NewMessage(field.GetMessageType())
-			err = message.Encode(dynamic, field.GetMessageType(), prop.Nested, store)
+			err = manager.Encode(dynamic, field.GetMessageType(), prop.Nested, store)
 			if err != nil {
 				return err
 			}
@@ -122,6 +129,10 @@ func (message *Message) Encode(proto *dynamic.Message, desc *desc.MessageDescrip
 			if err != nil {
 				return err
 			}
+		}
+
+		if val == nil {
+			continue
 		}
 
 		err = proto.TrySetField(field, val)
@@ -135,48 +146,47 @@ func (message *Message) Encode(proto *dynamic.Message, desc *desc.MessageDescrip
 
 // Unmarshal unmarshals the given io reader into the given reference store.
 // This method is called during runtime to decode a new message and store it inside the given reference store
-func (message *Message) Unmarshal(reader io.Reader, refs *refs.Store) error {
+func (manager *Manager) Unmarshal(reader io.Reader, refs *refs.Store) error {
 	bb, err := ioutil.ReadAll(reader)
 	if err != nil {
 		return err
 	}
 
-	result := dynamic.NewMessage(message.desc)
+	result := dynamic.NewMessage(manager.desc)
 	err = result.Unmarshal(bb)
 	if err != nil {
 		return err
 	}
 
-	message.Decode(result, "", refs)
+	manager.Decode(result, manager.specs.Nested, refs)
 	return nil
 }
 
 // Decode decodes the given proto message into the given reference store.
-func (message *Message) Decode(proto *dynamic.Message, origin string, store *refs.Store) {
+func (manager *Manager) Decode(proto *dynamic.Message, properties map[string]*specs.Property, store *refs.Store) {
 	for _, field := range proto.GetKnownFields() {
-		key := field.GetName()
-		path := specs.JoinPath(origin, key)
+		prop := properties[field.GetName()]
 
-		if field.GetType() == descriptor.FieldDescriptorProto_TYPE_MESSAGE {
+		if prop.Type == types.TypeMessage {
 			if field.IsRepeated() {
 				length := proto.FieldLength(field)
 
-				ref := refs.New(path)
+				ref := refs.New(prop.Path)
 				ref.Repeating(length)
 
 				for index := 0; index < length; index++ {
 					repeated := proto.GetRepeatedField(field, index).(*dynamic.Message)
 					store := refs.NewStore(len(repeated.GetKnownFields()))
-					message.Decode(repeated, path, store)
+					manager.Decode(repeated, prop.Nested, store)
 					ref.Set(index, store)
 				}
 
-				store.StoreReference(message.resource, ref)
+				store.StoreReference(manager.resource, ref)
 				continue
 			}
 
 			nested := proto.GetField(field).(*dynamic.Message)
-			message.Decode(nested, path, store)
+			manager.Decode(nested, prop.Nested, store)
 			continue
 		}
 
@@ -186,9 +196,9 @@ func (message *Message) Decode(proto *dynamic.Message, origin string, store *ref
 
 		value := proto.GetField(field)
 
-		ref := refs.New(path)
+		ref := refs.New(prop.Path)
 		ref.Value = value
 
-		store.StoreReference(message.resource, ref)
+		store.StoreReference(manager.resource, ref)
 	}
 }
