@@ -2,22 +2,13 @@ package lookup
 
 import (
 	"github.com/jexia/maestro/specs"
-	"github.com/jexia/maestro/specs/types"
 )
-
-// Reference represents a property reference
-type Reference interface {
-	GetPath() string
-	GetDefault() interface{}
-	GetType() types.Type
-	GetObject() specs.Object
-}
 
 // ReferenceMap holds the resource references and their representing parameter map
 type ReferenceMap map[string]PathLookup
 
 // PathLookup represents a lookup method that returns the property available on the given path
-type PathLookup func(path string) Reference
+type PathLookup func(path string) *specs.Property
 
 // GetFlow attempts to find the given flow inside the given manifest
 func GetFlow(manifest specs.Manifest, name string) *specs.Flow {
@@ -60,7 +51,7 @@ func GetAvailableResources(flow specs.FlowManager, breakpoint string) map[string
 
 	if flow.GetInput() != nil {
 		references[specs.InputResource] = ReferenceMap{
-			specs.ResourceRequest: ParameterMapLookup(flow.GetInput()),
+			specs.ResourceRequest: ParameterMapLookup(flow.GetInput().Property),
 			specs.ResourceHeader:  HeaderLookup(flow.GetInput().Header),
 		}
 	}
@@ -74,11 +65,11 @@ func GetAvailableResources(flow specs.FlowManager, breakpoint string) map[string
 
 		if node.Call != nil {
 			if node.Call.Request != nil {
-				resources[specs.ResourceRequest] = ParameterMapLookup(node.Call.Request)
+				resources[specs.ResourceRequest] = ParameterMapLookup(node.Call.Request.Property)
 			}
 
 			if node.Call.Response != nil {
-				resources[specs.ResourceResponse] = ParameterMapLookup(node.Call.Response)
+				resources[specs.ResourceResponse] = ParameterMapLookup(node.Call.Response.Property)
 				resources[specs.ResourceHeader] = HeaderLookup(node.Call.Response.Header)
 			}
 		}
@@ -90,7 +81,7 @@ func GetAvailableResources(flow specs.FlowManager, breakpoint string) map[string
 }
 
 // GetResourceReference attempts to return the resource reference property
-func GetResourceReference(reference *specs.PropertyReference, references map[string]ReferenceMap) Reference {
+func GetResourceReference(reference *specs.PropertyReference, references map[string]ReferenceMap) *specs.Property {
 	target, prop := ParseResource(reference.Resource)
 
 	for resource, refs := range references {
@@ -105,7 +96,7 @@ func GetResourceReference(reference *specs.PropertyReference, references map[str
 }
 
 // GetReference attempts to lookup and return the available property on the given path
-func GetReference(path string, prop string, references ReferenceMap) Reference {
+func GetReference(path string, prop string, references ReferenceMap) *specs.Property {
 	lookup, has := references[prop]
 	if !has {
 		return nil
@@ -116,7 +107,7 @@ func GetReference(path string, prop string, references ReferenceMap) Reference {
 
 // HeaderLookup attempts to lookup the given path inside the header
 func HeaderLookup(header specs.Header) PathLookup {
-	return func(path string) Reference {
+	return func(path string) *specs.Property {
 		for key, header := range header {
 			if key == path {
 				return header
@@ -128,33 +119,20 @@ func HeaderLookup(header specs.Header) PathLookup {
 }
 
 // ParameterMapLookup attempts to lookup the given path inside the params collection
-func ParameterMapLookup(params specs.Object) PathLookup {
-	return func(path string) Reference {
-		for _, param := range params.GetProperties() {
-			if param.GetPath() == path {
-				return param
-			}
+func ParameterMapLookup(param *specs.Property) PathLookup {
+	return func(path string) *specs.Property {
+		if param.Path == path {
+			return param
 		}
 
-		for _, nested := range params.GetNestedProperties() {
-			if nested.GetPath() == path {
-				return nested
-			}
-
-			prop := ParameterMapLookup(nested)(path)
-			if prop != nil {
-				return prop
-			}
+		if param.Nested == nil {
+			return nil
 		}
 
-		for _, repeated := range params.GetRepeatedProperties() {
-			if repeated.GetPath() == path {
-				return repeated
-			}
-
-			prop := ParameterMapLookup(repeated)(path)
-			if prop != nil {
-				return prop
+		for _, param := range param.Nested {
+			lookup := ParameterMapLookup(param)(path)
+			if lookup != nil {
+				return lookup
 			}
 		}
 

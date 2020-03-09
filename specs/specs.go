@@ -6,17 +6,6 @@ import (
 	"github.com/jexia/maestro/specs/types"
 )
 
-// Object represents a parameter collection
-type Object interface {
-	GetProperties() map[string]*Property
-	GetNestedProperties() map[string]*NestedParameterMap
-	GetRepeatedProperties() map[string]*RepeatedParameterMap
-	GetLabel() types.Label
-	GetHeader() Header
-	GetDescriptor() schema.Object
-	SetDescriptor(schema.Object)
-}
-
 // FlowManager represents a flow manager
 type FlowManager interface {
 	GetName() string
@@ -118,8 +107,7 @@ type HandleCustomFunction func(args ...interface{}) interface{}
 type PropertyReference struct {
 	Resource string
 	Path     string
-	Label    types.Label
-	Object   Object
+	Property *Property
 }
 
 func (reference *PropertyReference) String() string {
@@ -131,41 +119,23 @@ func (reference *PropertyReference) Clone() *PropertyReference {
 	return &PropertyReference{
 		Resource: reference.Resource,
 		Path:     reference.Path,
-		Label:    reference.Label,
-		Object:   reference.Object,
+		Property: reference.Property,
 	}
 }
 
 // Property represents a value property.
 // A value property could contain a constant value or a value reference.
 type Property struct {
-	Path      string
 	Name      string
+	Path      string
 	Default   interface{}
 	Type      types.Type
+	Label     types.Label
 	Reference *PropertyReference
-	Expr      hcl.Expression
+	Nested    map[string]*Property
+	Expr      hcl.Expression // TODO: marked for removal
 	Function  HandleCustomFunction
-}
-
-// GetPath returns the property path
-func (property *Property) GetPath() string {
-	return property.Path
-}
-
-// GetDefault returns the property default type
-func (property *Property) GetDefault() interface{} {
-	return property.Default
-}
-
-// GetType returns the property type
-func (property *Property) GetType() types.Type {
-	return property.Type
-}
-
-// GetObject returns the property object
-func (property *Property) GetObject() Object {
-	return nil
+	Desciptor schema.Property
 }
 
 // Clone returns a clone of the property
@@ -176,235 +146,16 @@ func (property *Property) Clone() *Property {
 		Type:      property.Type,
 		Reference: property.Reference,
 		Expr:      property.Expr,
+		Desciptor: property.Desciptor,
 	}
 }
 
 // ParameterMap is the initial map of parameter names (keys) and their (templated) values (values)
 type ParameterMap struct {
-	Schema     string
-	Options    Options
-	Header     Header
-	Nested     map[string]*NestedParameterMap
-	Repeated   map[string]*RepeatedParameterMap
-	Properties map[string]*Property
-	Desciptor  schema.Object
-}
-
-// GetProperties returns the properties inside the given parameter map
-func (parameters *ParameterMap) GetProperties() map[string]*Property {
-	return parameters.Properties
-}
-
-// GetNestedProperties returns the nested parameter map inside the given parameter map
-func (parameters *ParameterMap) GetNestedProperties() map[string]*NestedParameterMap {
-	return parameters.Nested
-}
-
-// GetRepeatedProperties returns the repeated parameter map inside the given parameter map
-func (parameters *ParameterMap) GetRepeatedProperties() map[string]*RepeatedParameterMap {
-	return parameters.Repeated
-}
-
-// GetHeader returns the parameter map header
-func (parameters *ParameterMap) GetHeader() Header {
-	return parameters.Header
-}
-
-// GetLabel returns the parameter map label
-func (parameters *ParameterMap) GetLabel() types.Label {
-	return types.LabelOptional
-}
-
-// SetDescriptor sets the given schema descriptor for the given object
-func (parameters *ParameterMap) SetDescriptor(descriptor schema.Object) {
-	parameters.Desciptor = descriptor
-}
-
-// GetDescriptor gets the schema descriptor for the given object
-func (parameters *ParameterMap) GetDescriptor() schema.Object {
-	return parameters.Desciptor
-}
-
-// NestedParameterMap is a map of parameter names (keys) and their (templated) values (values)
-type NestedParameterMap struct {
-	Path       string
-	Name       string
-	Nested     map[string]*NestedParameterMap
-	Repeated   map[string]*RepeatedParameterMap
-	Properties map[string]*Property
-	Descriptor schema.Object
-}
-
-// GetPath returns the parameter map path
-func (nested *NestedParameterMap) GetPath() string {
-	return nested.Path
-}
-
-// GetProperties returns the properties inside the given parameter map
-func (nested *NestedParameterMap) GetProperties() map[string]*Property {
-	return nested.Properties
-}
-
-// GetNestedProperties returns the nested parameter map inside the given parameter map
-func (nested *NestedParameterMap) GetNestedProperties() map[string]*NestedParameterMap {
-	return nested.Nested
-}
-
-// GetRepeatedProperties returns the repeated parameter map inside the given parameter map
-func (nested *NestedParameterMap) GetRepeatedProperties() map[string]*RepeatedParameterMap {
-	return nested.Repeated
-}
-
-// GetDefault returns nil
-func (nested *NestedParameterMap) GetDefault() interface{} {
-	return nil
-}
-
-// GetType returns the nested parameter map type
-func (nested *NestedParameterMap) GetType() types.Type {
-	return types.TypeMessage
-}
-
-// GetObject returns the nested parameter map type
-func (nested *NestedParameterMap) GetObject() Object {
-	return nested
-}
-
-// GetHeader returns the nested parameter map header
-func (nested *NestedParameterMap) GetHeader() Header {
-	return nil
-}
-
-// GetLabel returns the nested parameter map label
-func (nested *NestedParameterMap) GetLabel() types.Label {
-	return types.LabelOptional
-}
-
-// SetDescriptor sets the given schema descriptor for the given object
-func (nested *NestedParameterMap) SetDescriptor(descriptor schema.Object) {
-	nested.Descriptor = descriptor
-}
-
-// GetDescriptor gets the schema descriptor for the given object
-func (nested *NestedParameterMap) GetDescriptor() schema.Object {
-	return nested.Descriptor
-}
-
-// Clone returns a clone of the nested parameter map
-func (nested *NestedParameterMap) Clone(name string, path string) *NestedParameterMap {
-	returns := &NestedParameterMap{
-		Name:       name,
-		Path:       path,
-		Properties: make(map[string]*Property, len(nested.Properties)),
-		Nested:     make(map[string]*NestedParameterMap, len(nested.Nested)),
-		Repeated:   make(map[string]*RepeatedParameterMap, len(nested.Repeated)),
-	}
-
-	for name, property := range nested.Properties {
-		returns.Properties[name] = property.Clone()
-	}
-
-	for name, nested := range nested.Nested {
-		returns.Nested[name] = nested.Clone(name, JoinPath(returns.Path, name))
-	}
-
-	for name, repeated := range nested.Repeated {
-		returns.Repeated[name] = repeated.Clone(name, JoinPath(returns.Path, name))
-	}
-
-	return returns
-}
-
-// RepeatedParameterMap is a map of repeated message blocks/values
-type RepeatedParameterMap struct {
-	Path       string
-	Name       string
-	Template   *PropertyReference
-	Nested     map[string]*NestedParameterMap
-	Repeated   map[string]*RepeatedParameterMap
-	Properties map[string]*Property
-	Descriptor schema.Object
-}
-
-// GetPath returns the repeated path
-func (repeated *RepeatedParameterMap) GetPath() string {
-	return repeated.Path
-}
-
-// GetProperties returns the properties inside the given parameter map
-func (repeated *RepeatedParameterMap) GetProperties() map[string]*Property {
-	return repeated.Properties
-}
-
-// GetNestedProperties returns the nested parameter map inside the given parameter map
-func (repeated *RepeatedParameterMap) GetNestedProperties() map[string]*NestedParameterMap {
-	return repeated.Nested
-}
-
-// GetRepeatedProperties returns the repeated parameter map inside the given parameter map
-func (repeated *RepeatedParameterMap) GetRepeatedProperties() map[string]*RepeatedParameterMap {
-	return repeated.Repeated
-}
-
-// GetDefault returns nil
-func (repeated *RepeatedParameterMap) GetDefault() interface{} {
-	return nil
-}
-
-// GetType returns the parameter map type
-func (repeated *RepeatedParameterMap) GetType() types.Type {
-	return types.TypeMessage
-}
-
-// GetObject returns the repeated parameter map type
-func (repeated *RepeatedParameterMap) GetObject() Object {
-	return repeated
-}
-
-// GetHeader returns the repeated parameter map header
-func (repeated *RepeatedParameterMap) GetHeader() Header {
-	return nil
-}
-
-// GetLabel returns the repeated parameter map label
-func (repeated *RepeatedParameterMap) GetLabel() types.Label {
-	return types.LabelRepeated
-}
-
-// SetDescriptor sets the given schema descriptor for the given object
-func (repeated *RepeatedParameterMap) SetDescriptor(descriptor schema.Object) {
-	repeated.Descriptor = descriptor
-}
-
-// GetDescriptor gets the schema descriptor for the given object
-func (repeated *RepeatedParameterMap) GetDescriptor() schema.Object {
-	return repeated.Descriptor
-}
-
-// Clone returns a clone of the nested parameter map
-func (repeated *RepeatedParameterMap) Clone(name string, path string) *RepeatedParameterMap {
-	returns := &RepeatedParameterMap{
-		Name:       name,
-		Template:   repeated.Template,
-		Path:       path,
-		Properties: make(map[string]*Property, len(repeated.Properties)),
-		Nested:     make(map[string]*NestedParameterMap, len(repeated.Nested)),
-		Repeated:   make(map[string]*RepeatedParameterMap, len(repeated.Repeated)),
-	}
-
-	for name, property := range repeated.Properties {
-		returns.Properties[name] = property.Clone()
-	}
-
-	for name, nested := range repeated.Nested {
-		returns.Nested[name] = nested.Clone(name, JoinPath(returns.Path, name))
-	}
-
-	for name, repeated := range repeated.Repeated {
-		returns.Repeated[name] = repeated.Clone(name, JoinPath(returns.Path, name))
-	}
-
-	return returns
+	Schema   string
+	Options  Options
+	Header   Header
+	Property *Property
 }
 
 // Node represents a point inside a given flow where a request or rollback could be preformed.
@@ -441,12 +192,12 @@ type Call struct {
 }
 
 // GetRequest returns the call request parameter map
-func (call *Call) GetRequest() Object {
+func (call *Call) GetRequest() *ParameterMap {
 	return call.Request
 }
 
 // GetResponse returns the call response parameter map
-func (call *Call) GetResponse() Object {
+func (call *Call) GetResponse() *ParameterMap {
 	return call.Response
 }
 

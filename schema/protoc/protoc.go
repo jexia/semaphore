@@ -2,6 +2,7 @@ package protoc
 
 import (
 	"github.com/golang/protobuf/proto"
+	"github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/jexia/maestro/annotations"
 	"github.com/jexia/maestro/protocol/http"
 	"github.com/jexia/maestro/schema"
@@ -39,14 +40,14 @@ func (collection *collection) GetService(service string) schema.Service {
 	return nil
 }
 
-func (collection *collection) GetObject(message string) schema.Object {
+func (collection *collection) GetProperty(message string) schema.Property {
 	for _, descriptor := range collection.descriptors {
 		message := descriptor.FindMessage(message)
 		if message == nil {
 			continue
 		}
 
-		return NewObject(message)
+		return NewMessage(message)
 	}
 
 	return nil
@@ -140,12 +141,13 @@ func (method *method) GetName() string {
 	return method.descriptor.GetName()
 }
 
-func (method *method) GetInput() schema.Object {
-	return NewObject(method.descriptor.GetInputType())
+func (method *method) GetInput() schema.Property {
+	return NewMessage(method.descriptor.GetInputType())
 }
 
-func (method *method) GetOutput() schema.Object {
-	return NewObject(method.descriptor.GetOutputType())
+func (method *method) GetOutput() schema.Property {
+	method.descriptor.GetOutputType().AsDescriptorProto()
+	return NewMessage(method.descriptor.GetOutputType())
 }
 
 func (method *method) GetDescriptor() *desc.MethodDescriptor {
@@ -156,106 +158,102 @@ func (method *method) GetOptions() schema.Options {
 	return method.options
 }
 
-// NewObject constructs a schema Object with the given descriptor
-func NewObject(descriptor *desc.MessageDescriptor) Object {
-	return &object{
-		descriptor: descriptor,
-		options:    make(schema.Options),
+// NewMessage constructs a schema Property with the given message descriptor
+func NewMessage(descriptor *desc.MessageDescriptor) schema.Property {
+	return &message{
+		desc:    descriptor,
+		options: make(schema.Options),
 	}
 }
 
-// Object represents a proto message
-type Object interface {
-	schema.Object
-	GetProtoField(name string) Field
-	GetDescriptor() *desc.MessageDescriptor
+type message struct {
+	desc    *desc.MessageDescriptor
+	options schema.Options
 }
 
-type object struct {
-	descriptor *desc.MessageDescriptor
-	options    schema.Options
+// GetName returns the message name
+func (message *message) GetName() string {
+	return message.desc.GetName()
 }
 
-// GetField attempts to return a field matching the given name
-func (object *object) GetField(name string) schema.Field {
-	for _, field := range object.descriptor.GetFields() {
-		if field.GetName() == name {
-			return NewField(field)
-		}
-	}
-
-	return nil
+// GetPosition returns the property position inside a message
+func (message *message) GetPosition() int32 {
+	return 1
 }
 
-// GetProtoField attempts to return a proto field matching the given name
-func (object *object) GetProtoField(name string) Field {
-	for _, field := range object.descriptor.GetFields() {
-		if field.GetName() == name {
-			return NewField(field)
-		}
-	}
-
-	return nil
+// GetType returns the message type
+func (message *message) GetType() types.Type {
+	return types.TypeMessage
 }
 
-// GetFields returns all available fields inside the given object
-func (object *object) GetFields() []schema.Field {
-	result := make([]schema.Field, len(object.descriptor.GetFields()))
+// GetLabel returns the message label
+func (message *message) GetLabel() types.Label {
+	return types.LabelOptional
+}
 
-	for index, field := range object.descriptor.GetFields() {
-		result[index] = NewField(field)
+// GetNested attempts to return a all the nested properties
+func (message *message) GetNested() map[string]schema.Property {
+	fields := message.desc.GetFields()
+	result := make(map[string]schema.Property, len(fields))
+	for _, field := range fields {
+		result[field.GetName()] = NewProperty(field)
 	}
 
 	return result
 }
 
-func (object *object) GetDescriptor() *desc.MessageDescriptor {
-	return object.descriptor
+func (message *message) GetOptions() schema.Options {
+	return message.options
 }
 
-func (object *object) GetOptions() schema.Options {
-	return object.options
-}
-
-// NewField constructs a new object field with the given descriptor
-func NewField(descriptor *desc.FieldDescriptor) Field {
-	return &field{
-		descriptor: descriptor,
-		options:    make(schema.Options),
+// NewProperty constructs a schema Property with the given field descriptor
+func NewProperty(descriptor *desc.FieldDescriptor) schema.Property {
+	return &property{
+		desc:    descriptor,
+		options: make(schema.Options),
 	}
 }
 
-// Field represents a proto message field
-type Field interface {
-	schema.Field
-	GetDescriptor() *desc.FieldDescriptor
+type property struct {
+	desc    *desc.FieldDescriptor
+	options schema.Options
 }
 
-type field struct {
-	descriptor *desc.FieldDescriptor
-	options    schema.Options
+// GetName returns the property name
+func (property *property) GetName() string {
+	return property.desc.GetName()
 }
 
-func (field *field) GetName() string {
-	return field.descriptor.GetName()
+// GetPosition returns the property position inside a message
+func (property *property) GetPosition() int32 {
+	return property.desc.GetNumber()
 }
 
-func (field *field) GetType() types.Type {
-	return Types[field.descriptor.GetType()]
+// GetType returns the property type
+func (property *property) GetType() types.Type {
+	return Types[property.desc.GetType()]
 }
 
-func (field *field) GetLabel() types.Label {
-	return Labels[field.descriptor.GetLabel()]
+// GetLabel returns the property label
+func (property *property) GetLabel() types.Label {
+	return Labels[property.desc.GetLabel()]
 }
 
-func (field *field) GetObject() schema.Object {
-	return NewObject(field.descriptor.GetMessageType())
+// GetNested attempts to return a all the nested properties
+func (property *property) GetNested() map[string]schema.Property {
+	if property.desc.GetType() != descriptor.FieldDescriptorProto_TYPE_MESSAGE {
+		return make(map[string]schema.Property)
+	}
+
+	fields := property.desc.GetMessageType().GetFields()
+	result := make(map[string]schema.Property, len(fields))
+	for _, field := range fields {
+		result[field.GetName()] = NewProperty(field)
+	}
+
+	return result
 }
 
-func (field *field) GetDescriptor() *desc.FieldDescriptor {
-	return field.descriptor
-}
-
-func (field *field) GetOptions() schema.Options {
-	return field.options
+func (property *property) GetOptions() schema.Options {
+	return property.options
 }

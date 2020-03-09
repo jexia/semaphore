@@ -1,113 +1,98 @@
 objects:
     complete:
-        fields:
+        type: "message"
+        label: "optional"
+        nested:
             message:
                 type: "string"
                 label: "optional"
             nested:
                 type: "message"
                 label: "optional"
-                message:
-                    fields:
-                        value:
-                            type: "string"
-                            label: "optional"
+                nested:
+                    value:
+                        type: "string"
+                        label: "optional"
             repeating:
                 type: "message"
-                label: "repeating"
-                message:
-                    fields:
-                        value:
-                            type: "string"
-                            label: "optional"
-    simple:
-        fields:
-            message:
-                type: "string"
-                label: "optional"
-    nested:
-        fields:
-            nested:
-                type: "message"
-                label: "optional"
-                message:
-                    fields:
-                        value:
-                            type: "string"
-                            label: "optional"
-    repeated:
-        fields:
-            repeating:
-                type: "message"
-                label: "repeating"
-                message:
-                    fields:
-                        value:
-                            type: "string"
-                            label: "optional"
+                label: "repeated"
+                nested:
+                    value:
+                        type: "string"
+                        label: "optional"
 services:
-    test:
+    mock:
         methods:
             complete:
                 input:
-                    fields:
+                    type: "message"
+                    label: "optional"
+                    nested:
                         message:
                             type: "string"
                             label: "optional"
                         nested:
                             type: "message"
                             label: "optional"
-                            message:
-                                fields:
-                                    value:
-                                        type: "string"
-                                        label: "optional"
+                            nested:
+                                value:
+                                    type: "string"
+                                    label: "optional"
                         repeating:
                             type: "message"
-                            label: "repeating"
-                            message:
-                                fields:
-                                    value:
-                                        type: "string"
-                                        label: "optional"
+                            label: "repeated"
+                            nested:
+                                value:
+                                    type: "string"
+                                    label: "optional"
                 output:
-                    fields:
+                    type: "message"
+                    label: "optional"
+                    nested:
                         id:
                             type: "int64"
                             label: "optional"
-    mock:
-        methods:
             simple:
                 input:
-                    fields:
+                    type: "message"
+                    label: "optional"
+                    nested:
                         message:
                             type: "string"
                             label: "optional"
                 output:
-                    fields:
+                    type: "message"
+                    label: "optional"
+                    nested:
+            repeated:
+                input:
+                    type: "message"
+                    label: "optional"
+                    nested:
+                        repeating:
+                            type: "message"
+                            label: "repeated"
+                            nested:
+                                value:
+                                    type: "string"
+                                    label: "optional"
+                output:
+                    type: "message"
+                    label: "optional"
+                    nested:
             nested:
                 input:
-                    fields:
+                    type: "message"
+                    label: "optional"
+                    nested:
                         nested:
                             type: "message"
                             label: "optional"
-                            message:
-                                fields:
-                                    value:
-                                        type: "string"
-                                        label: "optional"
+                            nested:
+                                value:
+                                    type: "string"
+                                    label: "optional"
                 output:
-                    fields:
-            repeated:
-                input:
-                    fields:
-                        repeating:
-                            type: "message"
-                            label: "repeating"
-                            message:
-                                fields:
-                                    value:
-                                        type: "string"
-                                        label: "optional"
-                output:
-                    fields:
+                    type: "message"
+                    label: "optional"
+                    nested:

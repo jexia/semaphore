@@ -2,22 +2,23 @@ package maestro
 
 import (
 	"context"
+	"errors"
 	"io"
 	"os"
 	"path/filepath"
 	"sync"
 
+	"github.com/jexia/maestro/codec"
 	"github.com/jexia/maestro/definitions/hcl"
 	"github.com/jexia/maestro/flow"
-	"github.com/jexia/maestro/refs"
-
-	"github.com/jexia/maestro/codec"
 	"github.com/jexia/maestro/protocol"
+	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/specs"
 	"github.com/jexia/maestro/specs/strict"
 	"github.com/jexia/maestro/specs/trace"
 	"github.com/jexia/maestro/utils"
+	log "github.com/sirupsen/logrus"
 )
 
 // Client represents a maestro instance
@@ -242,7 +243,7 @@ func ConstructFlowManager(manifest *specs.Manifest, options Options) ([]*protoco
 		}
 
 		if f.GetInput() != nil {
-			req, err := collection.New(specs.InputResource, f.GetInput())
+			req, err := collection.New(specs.InputResource, f.GetInput().Property)
 			if err != nil {
 				return nil, err
 			}
@@ -251,7 +252,7 @@ func ConstructFlowManager(manifest *specs.Manifest, options Options) ([]*protoco
 		}
 
 		if f.GetOutput() != nil {
-			res, err := collection.New(specs.InputResource, f.GetOutput())
+			res, err := collection.New(specs.InputResource, f.GetOutput().Property)
 			if err != nil {
 				return nil, err
 			}
@@ -293,12 +294,12 @@ func ConstructCall(manifest *specs.Manifest, node *specs.Node, call *specs.Call,
 	constructor := GetCaller(options.Callers, service.Caller)
 	codec := options.Codec[service.Codec]
 
-	req, err := codec.New(node.GetName(), call.GetRequest())
+	req, err := codec.New(node.GetName(), call.GetRequest().Property)
 	if err != nil {
 		return nil, err
 	}
 
-	res, err := codec.New(node.GetName(), call.GetResponse())
+	res, err := codec.New(node.GetName(), call.GetResponse().Property)
 	if err != nil {
 		return nil, err
 	}
@@ -316,7 +317,6 @@ func ConstructCall(manifest *specs.Manifest, node *specs.Node, call *specs.Call,
 		}
 
 		reader, writer := io.Pipe()
-
 		w := protocol.NewResponseWriter(writer)
 		r := &protocol.Request{
 			Context: ctx,
@@ -326,12 +326,24 @@ func ConstructCall(manifest *specs.Manifest, node *specs.Node, call *specs.Call,
 
 		go func() {
 			defer writer.Close()
-			caller.Call(w, r, refs)
+			err := caller.Call(w, r, refs)
+			if err != nil {
+				log.Println(err)
+			}
 		}()
 
 		err = res.Unmarshal(reader, refs)
 		if err != nil {
-			return nil
+			return err
+		}
+
+		if !protocol.StatusSuccess(w.Status()) {
+			log.WithFields(log.Fields{
+				"node":   node.GetName(),
+				"status": w.Status(),
+			}).Error("Faulty status code")
+
+			return errors.New("rollback required")
 		}
 
 		return nil

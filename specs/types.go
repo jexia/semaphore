@@ -9,7 +9,7 @@ import (
 
 // SetDefaultValue sets the given value as default value inside the given property
 func SetDefaultValue(property *Property, value cty.Value) {
-	log.WithField("path", property.GetPath()).WithField("value", value).Debug("Set default value for property")
+	log.WithField("path", property.Path).WithField("value", value).Debug("Set default value for property")
 
 	switch value.Type() {
 	case cty.String:

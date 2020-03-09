@@ -50,19 +50,19 @@ func (service *MockService) GetOptions() schema.Options {
 type MockMethod struct {
 	name    string
 	options schema.Options
-	input   schema.Object
-	output  schema.Object
+	input   schema.Property
+	output  schema.Property
 }
 
 func (method *MockMethod) GetName() string {
 	return method.name
 }
 
-func (method *MockMethod) GetInput() schema.Object {
+func (method *MockMethod) GetInput() schema.Property {
 	return method.input
 }
 
-func (method *MockMethod) GetOutput() schema.Object {
+func (method *MockMethod) GetOutput() schema.Property {
 	return method.output
 }
 
@@ -97,8 +97,10 @@ func AvailablePort(t *testing.T) int {
 
 func TestCaller(t *testing.T) {
 	message := "hello world"
-	specs := &specs.ParameterMap{
-		Properties: map[string]*specs.Property{
+	specs := &specs.Property{
+		Type:  types.TypeMessage,
+		Label: types.LabelOptional,
+		Nested: map[string]*specs.Property{
 			"message": &specs.Property{
 				Name: "message",
 				Path: "message",

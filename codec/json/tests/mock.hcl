@@ -4,7 +4,7 @@ service "mock" "http" "json" {
 }
 
 flow "simple" {
-	input "simple" {}
+	input "complete" {}
 
 	call "first" {
 		request "mock" "simple" {
@@ -14,7 +14,7 @@ flow "simple" {
 }
 
 flow "nested" {
-	input "nested" {}
+	input "complete" {}
 
 	call "first" {
 		request "mock" "nested" {
@@ -26,7 +26,7 @@ flow "nested" {
 }
 
 flow "repeated" {
-	input "repeated" {}
+	input "complete" {}
 
 	call "first" {
 		request "mock" "repeated" {

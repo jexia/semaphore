@@ -23,6 +23,11 @@ func (rw *Writer) Header() Header {
 	return rw.header
 }
 
+// Status returns the header status
+func (rw *Writer) Status() int {
+	return rw.status
+}
+
 // Write writes the given byte buffer to the underlaying io Writer
 func (rw *Writer) Write(bb []byte) (int, error) {
 	return rw.writer.Write(bb)

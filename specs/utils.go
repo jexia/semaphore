@@ -2,16 +2,11 @@ package specs
 
 import (
 	"github.com/jexia/maestro/schema"
-	"github.com/jexia/maestro/specs/types"
 )
 
 // ToParameterMap maps the given schema object to a parameter map
-func ToParameterMap(origin *ParameterMap, path string, object schema.Object) *ParameterMap {
-	result := &ParameterMap{
-		Properties: make(map[string]*Property),
-		Nested:     make(map[string]*NestedParameterMap),
-		Repeated:   make(map[string]*RepeatedParameterMap),
-	}
+func ToParameterMap(origin *ParameterMap, path string, prop schema.Property) *ParameterMap {
+	result := &ParameterMap{}
 
 	if origin != nil {
 		result.Options = origin.Options
@@ -19,40 +14,26 @@ func ToParameterMap(origin *ParameterMap, path string, object schema.Object) *Pa
 		result.Schema = origin.Schema
 	}
 
-	if object == nil {
-		return result
+	if prop != nil {
+		result.Property = ToProperty("", "", prop)
 	}
 
-	for _, field := range object.GetFields() {
-		path := JoinPath(path, field.GetName())
+	return result
+}
 
-		if field.GetLabel() == types.LabelRepeated {
-			param := ToParameterMap(origin, path, field.GetObject())
-			result.Repeated[field.GetName()] = &RepeatedParameterMap{
-				Path:       path,
-				Name:       field.GetName(),
-				Properties: param.Properties,
-				Nested:     param.Nested,
-				Repeated:   param.Repeated,
-			}
-			continue
-		}
+// ToProperty transforms the given schema property to a specs property
+func ToProperty(path string, name string, prop schema.Property) *Property {
+	result := &Property{
+		Path:  path,
+		Name:  name,
+		Type:  prop.GetType(),
+		Label: prop.GetLabel(),
+	}
 
-		if field.GetType() == types.TypeMessage {
-			param := ToParameterMap(origin, path, field.GetObject())
-			result.Nested[field.GetName()] = &NestedParameterMap{
-				Path:       path,
-				Name:       field.GetName(),
-				Properties: param.Properties,
-				Nested:     param.Nested,
-				Repeated:   param.Repeated,
-			}
-			continue
-		}
-
-		result.Properties[field.GetName()] = &Property{
-			Path: path,
-			Type: field.GetType(),
+	if prop.GetNested() != nil {
+		result.Nested = make(map[string]*Property, len(prop.GetNested()))
+		for key, object := range prop.GetNested() {
+			result.Nested[key] = ToProperty(JoinPath(path, key), key, object)
 		}
 	}
 
