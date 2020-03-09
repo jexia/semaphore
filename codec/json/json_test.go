@@ -423,15 +423,15 @@ func TestUnmarshal(t *testing.T) {
 	}
 
 	tests := map[string]map[string]interface{}{
-		// "simple": map[string]interface{}{
-		// 	"message": "some message",
-		// 	"nested":  map[string]interface{}{},
-		// },
-		// "nested": map[string]interface{}{
-		// 	"nested": map[string]interface{}{
-		// 		"value": "some message",
-		// 	},
-		// },
+		"simple": map[string]interface{}{
+			"message": "some message",
+			"nested":  map[string]interface{}{},
+		},
+		"nested": map[string]interface{}{
+			"nested": map[string]interface{}{
+				"value": "some message",
+			},
+		},
 		"repeating": map[string]interface{}{
 			"nested": map[string]interface{}{},
 			"repeating": []map[string]interface{}{
