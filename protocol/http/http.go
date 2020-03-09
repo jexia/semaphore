@@ -187,15 +187,19 @@ func Handle(endpoint *protocol.Endpoint) httprouter.Handle {
 
 		defer r.Body.Close()
 		var err error
-		refs := endpoint.Flow.NewStore()
+		store := endpoint.Flow.NewStore()
+
+		for _, param := range ps {
+			store.StoreValue(specs.InputResource, param.Key, param.Value)
+		}
 
 		if endpoint.Header != nil {
 			header := CopyHTTPHeader(r.Header)
-			endpoint.Header.Unmarshal(header, refs)
+			endpoint.Header.Unmarshal(header, store)
 		}
 
 		if endpoint.Request != nil {
-			err = endpoint.Request.Unmarshal(r.Body, refs)
+			err = endpoint.Request.Unmarshal(r.Body, store)
 			if err != nil {
 				log.Error(err)
 				w.WriteHeader(http.StatusBadRequest)
@@ -203,7 +207,7 @@ func Handle(endpoint *protocol.Endpoint) httprouter.Handle {
 			}
 		}
 
-		err = endpoint.Flow.Call(r.Context(), refs)
+		err = endpoint.Flow.Call(r.Context(), store)
 		if err != nil {
 			log.Error(err)
 			w.WriteHeader(http.StatusServiceUnavailable)
@@ -211,11 +215,11 @@ func Handle(endpoint *protocol.Endpoint) httprouter.Handle {
 		}
 
 		if endpoint.Header != nil {
-			SetHTTPHeader(w.Header(), endpoint.Header.Marshal(refs))
+			SetHTTPHeader(w.Header(), endpoint.Header.Marshal(store))
 		}
 
 		if endpoint.Response != nil {
-			reader, err := endpoint.Response.Marshal(refs)
+			reader, err := endpoint.Response.Marshal(store)
 			if err != nil {
 				log.Error(err)
 				w.WriteHeader(http.StatusInternalServerError)
@@ -233,7 +237,7 @@ func Handle(endpoint *protocol.Endpoint) httprouter.Handle {
 		}
 
 		if endpoint.Forward != nil {
-			err := endpoint.Forward.Call(NewResponseWriter(w), NewRequest(r), refs)
+			err := endpoint.Forward.Call(NewResponseWriter(w), NewRequest(r), store)
 			if err != nil {
 				log.Error(err)
 				w.WriteHeader(http.StatusBadGateway)
