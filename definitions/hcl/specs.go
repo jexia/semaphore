@@ -505,12 +505,6 @@ func ParseIntermediateProperty(path string, functions specs.CustomDefinedFunctio
 		Expr: property.Expr,
 	}
 
-	// Template definitions could be improved to be more consistent
-	if value.Type() == cty.String && specs.IsType(value.AsString()) {
-		specs.SetType(result, value)
-		return result, nil
-	}
-
 	if value.Type() != cty.String || !specs.IsTemplate(value.AsString()) {
 		specs.SetDefaultValue(result, value)
 		return result, nil
