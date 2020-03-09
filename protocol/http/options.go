@@ -56,7 +56,7 @@ type CallerOptions struct {
 func ParseCallerOptions(options specs.Options) (*CallerOptions, error) {
 	result := &CallerOptions{}
 
-	flush, has := options["flush_interval"]
+	flush, has := options[FlushIntervalOption]
 	if has {
 		duration, err := time.ParseDuration(flush)
 		if err != nil {
