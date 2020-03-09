@@ -176,6 +176,11 @@ func (message *message) GetName() string {
 	return message.desc.GetName()
 }
 
+// GetPosition returns the property position inside a message
+func (message *message) GetPosition() int32 {
+	return 1
+}
+
 // GetType returns the message type
 func (message *message) GetType() types.Type {
 	return types.TypeMessage
@@ -217,6 +222,11 @@ type property struct {
 // GetName returns the property name
 func (property *property) GetName() string {
 	return property.desc.GetName()
+}
+
+// GetPosition returns the property position inside a message
+func (property *property) GetPosition() int32 {
+	return property.desc.GetNumber()
 }
 
 // GetType returns the property type

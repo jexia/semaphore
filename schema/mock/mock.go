@@ -135,16 +135,22 @@ func (method *Method) GetOptions() schema.Options {
 
 // Property represents a proto message property
 type Property struct {
-	Name    string               `yaml:"name"`
-	Type    types.Type           `yaml:"type"`
-	Label   types.Label          `yaml:"label"`
-	Nested  map[string]*Property `yaml:"nested"`
-	Options schema.Options       `yaml:"options"`
+	Name     string               `yaml:"name"`
+	Type     types.Type           `yaml:"type"`
+	Label    types.Label          `yaml:"label"`
+	Position int32                `yaml:"position"`
+	Nested   map[string]*Property `yaml:"nested"`
+	Options  schema.Options       `yaml:"options"`
 }
 
 // GetName returns the field name
 func (property *Property) GetName() string {
 	return property.Name
+}
+
+// GetPosition returns the field position
+func (property *Property) GetPosition() int32 {
+	return property.Position
 }
 
 // GetType returns tye field type

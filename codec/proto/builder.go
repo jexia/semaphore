@@ -1,8 +1,6 @@
 package proto
 
 import (
-	"sort"
-
 	"github.com/jexia/maestro/schema/protoc"
 	"github.com/jexia/maestro/specs"
 	"github.com/jexia/maestro/specs/types"
@@ -23,17 +21,7 @@ func NewMessage(resource string, specs map[string]*specs.Property) (*desc.Messag
 
 // ConstructMessage constructs a proto message of the given specs into the given message builders
 func ConstructMessage(msg *builder.MessageBuilder, specs map[string]*specs.Property) (err error) {
-	// FIXME: spec properties should have a constant index
-	keys := make([]string, 0, len(specs))
-
-	for key := range specs {
-		keys = append(keys, key)
-	}
-
-	sort.Strings(keys)
-
-	for _, key := range keys {
-		prop := specs[key]
+	for key, prop := range specs {
 		if prop.Type == types.TypeMessage {
 			nested := builder.NewMessage(key)
 			err = ConstructMessage(nested, prop.Nested)
@@ -44,6 +32,7 @@ func ConstructMessage(msg *builder.MessageBuilder, specs map[string]*specs.Prope
 			message := builder.FieldTypeMessage(nested)
 			field := builder.NewField(key, message)
 			field.SetLabel(protoc.ProtoLabels[prop.Label])
+			field.SetNumber(prop.Desciptor.GetPosition())
 
 			err = msg.TryAddField(field)
 			if err != nil {
@@ -56,6 +45,7 @@ func ConstructMessage(msg *builder.MessageBuilder, specs map[string]*specs.Prope
 		typ := builder.FieldTypeScalar(protoc.ProtoTypes[prop.Type])
 		field := builder.NewField(key, typ)
 		field.SetLabel(protoc.ProtoLabels[prop.Label])
+		field.SetNumber(prop.Desciptor.GetPosition())
 
 		err = msg.TryAddField(field)
 		if err != nil {

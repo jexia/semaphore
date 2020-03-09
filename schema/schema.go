@@ -30,6 +30,7 @@ type Method interface {
 // Property represents a object field
 type Property interface {
 	GetName() string
+	GetPosition() int32
 	GetType() types.Type
 	GetLabel() types.Label
 	GetNested() map[string]Property
