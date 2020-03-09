@@ -305,7 +305,11 @@ func ConstructCall(manifest *specs.Manifest, node *specs.Node, call *specs.Call,
 	}
 
 	header := protocol.NewHeaderManager(node.GetName(), call.GetRequest())
-	caller, err := constructor.New(service.Host, call.GetMethod(), options.Schema.GetService(service.Schema), service.Options)
+	host := service.Host
+	method := call.GetMethod()
+	schema := options.Schema.GetService(service.Schema)
+
+	caller, err := constructor.New(host, method, schema, service.Options)
 	if err != nil {
 		return nil, err
 	}

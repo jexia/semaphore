@@ -61,7 +61,11 @@ type Manager struct {
 // This method is called during runtime to encode a new message with the values stored inside the given reference store.
 func (manager *Manager) Marshal(refs *refs.Store) (io.Reader, error) {
 	result := dynamic.NewMessage(manager.desc)
-	manager.Encode(result, manager.desc, manager.specs.Nested, refs)
+	err := manager.Encode(result, manager.desc, manager.specs.Nested, refs)
+	if err != nil {
+		return nil, err
+	}
+
 	bb, err := result.Marshal()
 	if err != nil {
 		return nil, err
@@ -79,7 +83,7 @@ func (manager *Manager) Encode(proto *dynamic.Message, desc *desc.MessageDescrip
 			continue
 		}
 
-		if prop.Label == types.LabelRepeated {
+		if field.IsRepeated() {
 			if prop.Reference == nil {
 				continue
 			}
@@ -95,18 +99,19 @@ func (manager *Manager) Encode(proto *dynamic.Message, desc *desc.MessageDescrip
 			}
 
 			for _, store := range ref.Repeated {
-				dynamic := dynamic.NewMessage(field.GetMessageType())
-
-				err = manager.Encode(dynamic, field.GetMessageType(), prop.Nested, store)
+				item := dynamic.NewMessage(field.GetMessageType())
+				err = manager.Encode(item, field.GetMessageType(), prop.Nested, store)
 				if err != nil {
 					return err
 				}
 
-				err = proto.TryAddRepeatedField(field, dynamic)
+				err = proto.TryAddRepeatedField(field, item)
 				if err != nil {
 					return err
 				}
 			}
+
+			continue
 		}
 
 		val := prop.Default

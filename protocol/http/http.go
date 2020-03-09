@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"regexp"
 	"sync"
 
 	"github.com/jexia/maestro/protocol"
@@ -18,10 +19,15 @@ import (
 
 const (
 	// EndpointOption represents the HTTP endpoints option key
-	EndpointOption = "http.endpoint"
+	EndpointOption = "http_endpoint"
 	// MethodOption represents the HTTP method option key
-	MethodOption = "http.method"
+	MethodOption = "http_method"
+	// FlushIntervalOption represents the flush interval option key
+	FlushIntervalOption = "flush_interval"
 )
+
+// ReferenceLookup is executed to lookup references within a given endpoint
+var ReferenceLookup = regexp.MustCompile(`:\w+`)
 
 // NewCaller constructs a new HTTP caller
 func NewCaller() *Caller {
@@ -40,7 +46,6 @@ func (caller *Caller) Name() string {
 // New constructs a new caller for the given host
 func (caller *Caller) New(host string, serviceMethod string, schema schema.Service, opts specs.Options) (protocol.Call, error) {
 	log.WithField("host", host).Info("Constructing new HTTP caller")
-
 	callerOptions, err := ParseCallerOptions(opts)
 	if err != nil {
 		return nil, err
@@ -51,17 +56,19 @@ func (caller *Caller) New(host string, serviceMethod string, schema schema.Servi
 		return nil, err
 	}
 
-	method := schema.GetMethod(serviceMethod)
-	if method == nil {
+	schemaMethod := schema.GetMethod(serviceMethod)
+	if schemaMethod == nil {
 		return nil, trace.New(trace.WithMessage("service method not found '%s'.'%s'", schema.GetName(), serviceMethod))
 	}
 
-	methodOptions := method.GetOptions()
+	methodOptions := schemaMethod.GetOptions()
+	method := methodOptions[MethodOption]
+	endpoint := methodOptions[EndpointOption]
 
 	return &Call{
 		host:     host,
-		method:   methodOptions[MethodOption],
-		endpoint: methodOptions[EndpointOption],
+		method:   method,
+		endpoint: endpoint,
 		proxy: &httputil.ReverseProxy{
 			Director:      func(*http.Request) {},
 			FlushInterval: callerOptions.FlushInterval,
@@ -84,6 +91,7 @@ func (call *Call) Call(rw protocol.ResponseWriter, incoming *protocol.Request, r
 		return err
 	}
 
+	// TODO: allow references and functions to be used within a given call endpoint
 	url.Path = call.endpoint
 	log.WithField("url", url).Debug("Calling HTTP caller")
 
@@ -187,15 +195,19 @@ func Handle(endpoint *protocol.Endpoint) httprouter.Handle {
 
 		defer r.Body.Close()
 		var err error
-		refs := endpoint.Flow.NewStore()
+		store := endpoint.Flow.NewStore()
+
+		for _, param := range ps {
+			store.StoreValue(specs.InputResource, param.Key, param.Value)
+		}
 
 		if endpoint.Header != nil {
 			header := CopyHTTPHeader(r.Header)
-			endpoint.Header.Unmarshal(header, refs)
+			endpoint.Header.Unmarshal(header, store)
 		}
 
 		if endpoint.Request != nil {
-			err = endpoint.Request.Unmarshal(r.Body, refs)
+			err = endpoint.Request.Unmarshal(r.Body, store)
 			if err != nil {
 				log.Error(err)
 				w.WriteHeader(http.StatusBadRequest)
@@ -203,18 +215,18 @@ func Handle(endpoint *protocol.Endpoint) httprouter.Handle {
 			}
 		}
 
-		err = endpoint.Flow.Call(r.Context(), refs)
+		err = endpoint.Flow.Call(r.Context(), store)
 		if err != nil {
 			w.WriteHeader(http.StatusServiceUnavailable)
 			return
 		}
 
 		if endpoint.Header != nil {
-			SetHTTPHeader(w.Header(), endpoint.Header.Marshal(refs))
+			SetHTTPHeader(w.Header(), endpoint.Header.Marshal(store))
 		}
 
 		if endpoint.Response != nil {
-			reader, err := endpoint.Response.Marshal(refs)
+			reader, err := endpoint.Response.Marshal(store)
 			if err != nil {
 				w.WriteHeader(http.StatusInternalServerError)
 				return
@@ -231,7 +243,7 @@ func Handle(endpoint *protocol.Endpoint) httprouter.Handle {
 		}
 
 		if endpoint.Forward != nil {
-			err := endpoint.Forward.Call(NewResponseWriter(w), NewRequest(r), refs)
+			err := endpoint.Forward.Call(NewResponseWriter(w), NewRequest(r), store)
 			if err != nil {
 				log.Error(err)
 				w.WriteHeader(http.StatusBadGateway)

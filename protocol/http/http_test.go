@@ -220,3 +220,54 @@ func TestListener(t *testing.T) {
 		t.Errorf("unexpected called %d, expected %d", called, len(nodes))
 	}
 }
+
+func TestPathReferences(t *testing.T) {
+	port := AvailablePort(t)
+	addr := fmt.Sprintf(":%d", port)
+	listener, err := NewListener(addr, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer listener.Close()
+
+	message := "active"
+	nodes := flow.Nodes{
+		{
+			Name:     "first",
+			Previous: flow.Nodes{},
+			Call: func(ctx context.Context, refs *refs.Store) error {
+				ref := refs.Load("input", "message")
+				if ref == nil {
+					t.Fatal("input:message ref has not been set")
+				}
+
+				if ref.Value != message {
+					t.Fatalf("unexpected ref value %+v, expected %+v", ref.Value, message)
+				}
+
+				return nil
+			},
+			Next: flow.Nodes{},
+		},
+	}
+
+	endpoints := []*protocol.Endpoint{
+		{
+			Flow: flow.NewManager("test", nodes),
+			Options: specs.Options{
+				"endpoint": "/:message",
+				"method":   "GET",
+			},
+		},
+	}
+
+	listener.Handle(endpoints)
+	go listener.Serve()
+
+	// Some CI pipelines take a little while before the listener is active
+	time.Sleep(100 * time.Millisecond)
+
+	endpoint := fmt.Sprintf("http://127.0.0.1:%d/"+message, port)
+	http.Get(endpoint)
+}
