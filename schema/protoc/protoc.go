@@ -10,14 +10,17 @@ import (
 	"github.com/jhump/protoreflect/desc"
 )
 
-// Collection represents a collection of proto schemas
-type Collection interface {
-	schema.Collection
-	GetDescriptors() []*desc.FileDescriptor
-}
+const (
+	// HostOption represents the Service host option key
+	HostOption = "service_host"
+	// ProtocolOption represents the Service protocol option key
+	ProtocolOption = "service_protocol"
+	// CodecOption represents the Service codec option key
+	CodecOption = "service_codec"
+)
 
 // NewCollection constructs a new schema collection from the given descriptors
-func NewCollection(descriptors []*desc.FileDescriptor) Collection {
+func NewCollection(descriptors []*desc.FileDescriptor) schema.Collection {
 	return &collection{
 		descriptors: descriptors,
 	}
@@ -40,7 +43,18 @@ func (collection *collection) GetService(service string) schema.Service {
 	return nil
 }
 
-func (collection *collection) GetProperty(message string) schema.Property {
+func (collection *collection) GetServices() []schema.Service {
+	result := make([]schema.Service, 0)
+	for _, descriptor := range collection.descriptors {
+		for _, service := range descriptor.GetServices() {
+			result = append(result, NewService(service))
+		}
+	}
+
+	return result
+}
+
+func (collection *collection) GetMessage(message string) schema.Property {
 	for _, descriptor := range collection.descriptors {
 		message := descriptor.FindMessage(message)
 		if message == nil {
@@ -53,21 +67,32 @@ func (collection *collection) GetProperty(message string) schema.Property {
 	return nil
 }
 
-func (collection *collection) GetDescriptors() []*desc.FileDescriptor {
-	return collection.descriptors
-}
+func (collection *collection) GetMessages() []schema.Property {
+	result := make([]schema.Property, 0)
+	for _, descriptor := range collection.descriptors {
+		for _, message := range descriptor.GetMessageTypes() {
+			result = append(result, NewMessage(message))
+		}
+	}
 
-// Service represents a proto service
-type Service interface {
-	schema.Service
-	GetDescriptor() *desc.ServiceDescriptor
+	return result
 }
 
 // NewService constructs a new service with the given descriptor
-func NewService(descriptor *desc.ServiceDescriptor) Service {
+func NewService(descriptor *desc.ServiceDescriptor) schema.Service {
+	options := schema.Options{}
+
+	ext, err := proto.GetExtension(descriptor.GetOptions(), annotations.E_Service)
+	if err == nil {
+		ext := ext.(*annotations.Service)
+		options[HostOption] = ext.GetHost()
+		options[ProtocolOption] = ext.GetProtocol()
+		options[CodecOption] = ext.GetCodec()
+	}
+
 	return &service{
 		descriptor: descriptor,
-		options:    make(schema.Options),
+		options:    options,
 	}
 }
 
@@ -77,7 +102,19 @@ type service struct {
 }
 
 func (service *service) GetName() string {
-	return service.descriptor.GetName()
+	return service.descriptor.GetFullyQualifiedName()
+}
+
+func (service *service) GetHost() string {
+	return service.options[HostOption]
+}
+
+func (service *service) GetProtocol() string {
+	return service.options[ProtocolOption]
+}
+
+func (service *service) GetCodec() string {
+	return service.options[CodecOption]
 }
 
 func (service *service) GetMethod(name string) schema.Method {
@@ -92,7 +129,7 @@ func (service *service) GetMethod(name string) schema.Method {
 	return nil
 }
 
-func (service *service) GetMethods() []schema.Method {
+func (service *service) GetMethods() schema.Methods {
 	result := make([]schema.Method, len(service.descriptor.GetMethods()))
 	for index, method := range service.descriptor.GetMethods() {
 		result[index] = NewMethod(method)
@@ -101,22 +138,12 @@ func (service *service) GetMethods() []schema.Method {
 	return result
 }
 
-func (service *service) GetDescriptor() *desc.ServiceDescriptor {
-	return service.descriptor
-}
-
 func (service *service) GetOptions() schema.Options {
 	return service.options
 }
 
-// Method represents a proto service method
-type Method interface {
-	schema.Method
-	GetDescriptor() *desc.MethodDescriptor
-}
-
 // NewMethod constructs a new method with the given descriptor
-func NewMethod(descriptor *desc.MethodDescriptor) Method {
+func NewMethod(descriptor *desc.MethodDescriptor) schema.Method {
 	options := make(schema.Options)
 
 	ext, err := proto.GetExtension(descriptor.GetOptions(), annotations.E_Http)
@@ -150,10 +177,6 @@ func (method *method) GetOutput() schema.Property {
 	return NewMessage(method.descriptor.GetOutputType())
 }
 
-func (method *method) GetDescriptor() *desc.MethodDescriptor {
-	return method.descriptor
-}
-
 func (method *method) GetOptions() schema.Options {
 	return method.options
 }
@@ -173,7 +196,7 @@ type message struct {
 
 // GetName returns the message name
 func (message *message) GetName() string {
-	return message.desc.GetName()
+	return message.desc.GetFullyQualifiedName()
 }
 
 // GetPosition returns the property position inside a message

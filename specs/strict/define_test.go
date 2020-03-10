@@ -39,7 +39,7 @@ func TestUnmarshalFile(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			manifest, err := hcl.ParseManifest(definition, nil)
+			manifest, err := hcl.ParseSpecs(definition, nil)
 			if err != nil {
 				t.Fatal(err)
 			}

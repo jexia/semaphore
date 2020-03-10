@@ -3,6 +3,7 @@ package http
 import (
 	"time"
 
+	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/specs"
 )
 
@@ -53,7 +54,7 @@ type CallerOptions struct {
 }
 
 // ParseCallerOptions parses the given specs options into HTTP options
-func ParseCallerOptions(options specs.Options) (*CallerOptions, error) {
+func ParseCallerOptions(options schema.Options) (*CallerOptions, error) {
 	result := &CallerOptions{}
 
 	flush, has := options[FlushIntervalOption]

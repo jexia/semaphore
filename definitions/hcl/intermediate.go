@@ -111,12 +111,20 @@ type Call struct {
 
 // Service specification
 type Service struct {
-	Name    string   `hcl:"name,label"`
-	Caller  string   `hcl:"caller,label"`
-	Codec   string   `hcl:"codec,label"`
-	Schema  string   `hcl:"schema"`
-	Host    string   `hcl:"host"`
-	Options hcl.Body `hcl:",remain"`
+	Name     string   `hcl:"name,label"`
+	Protocol string   `hcl:"protocol,label"`
+	Codec    string   `hcl:"codec,label"`
+	Host     string   `hcl:"host"`
+	Methods  []Method `hcl:"method,block"`
+	Options  *Options `hcl:"options,block"`
+}
+
+// Method represents a service method
+type Method struct {
+	Name     string   `hcl:"name,label"`
+	Request  string   `hcl:"request,optional"`
+	Response string   `hcl:"response,optional"`
+	Options  *Options `hcl:"options,block"`
 }
 
 // Proxy specification

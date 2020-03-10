@@ -3,21 +3,19 @@ endpoint "todo" "http" "json" {
 	method = "GET"
 }
 
-service "todo" "http" "json" {
-	host = "https://jsonplaceholder.typicode.com"
-	schema = "proto.TODO"
+endpoint "todo" "grpc" "proto" {
 }
 
 flow "todo" {
 	input "proto.Query" {}
 
 	call "query" {
-		request "todo" "Get" {
+		request "proto.TODO" "Get" {
 		}
 	}
 
 	call "user" {
-		request "todo" "User" {
+		request "proto.TODO" "User" {
 		}
 	}
 

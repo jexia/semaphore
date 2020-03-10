@@ -8,23 +8,18 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
-// ParseManifest parses the given intermediate manifest to a specs manifest
-func ParseManifest(manifest Manifest, functions specs.CustomDefinedFunctions) (*specs.Manifest, error) {
+// ParseSpecs parses the given intermediate manifest to a specs manifest
+func ParseSpecs(manifest Manifest, functions specs.CustomDefinedFunctions) (*specs.Manifest, error) {
 	log.Info("Parsing intermediate manifest to specs")
 
 	result := &specs.Manifest{
 		Endpoints: make([]*specs.Endpoint, len(manifest.Endpoints)),
-		Services:  make([]*specs.Service, len(manifest.Services)),
 		Flows:     make([]*specs.Flow, len(manifest.Flows)),
 		Proxy:     make([]*specs.Proxy, len(manifest.Proxy)),
 	}
 
 	for index, endpoint := range manifest.Endpoints {
 		result.Endpoints[index] = ParseIntermediateEndpoint(endpoint)
-	}
-
-	for index, service := range manifest.Services {
-		result.Services[index] = ParseIntermediateService(service)
 	}
 
 	for index, flow := range manifest.Flows {
@@ -53,26 +48,10 @@ func ParseIntermediateEndpoint(endpoint Endpoint) *specs.Endpoint {
 	log.WithField("flow", endpoint.Flow).Debug("Parsing intermediate endpoint to specs")
 
 	result := specs.Endpoint{
-		Options:  ParseIntermediateOptions(endpoint.Options),
+		Options:  ParseIntermediateSpecOptions(endpoint.Options),
 		Flow:     endpoint.Flow,
 		Listener: endpoint.Listener,
 		Codec:    endpoint.Codec,
-	}
-
-	return &result
-}
-
-// ParseIntermediateService parses the given intermediate service to a specs service
-func ParseIntermediateService(service Service) *specs.Service {
-	log.WithField("service", service.Name).Debug("Parsing intermediate service to specs")
-
-	result := specs.Service{
-		Options: ParseIntermediateOptions(service.Options),
-		Name:    service.Name,
-		Caller:  service.Caller,
-		Host:    service.Host,
-		Codec:   service.Codec,
-		Schema:  service.Schema,
 	}
 
 	return &result
@@ -228,7 +207,7 @@ func ParseIntermediateParameterMap(params *ParameterMap, functions specs.CustomD
 	}
 
 	if params.Options != nil {
-		result.Options = ParseIntermediateOptions(params.Options.Body)
+		result.Options = ParseIntermediateSpecOptions(params.Options.Body)
 	}
 
 	for _, attr := range properties {
@@ -365,8 +344,8 @@ func ParseIntermediateHeader(header *Header, functions specs.CustomDefinedFuncti
 	return result, nil
 }
 
-// ParseIntermediateOptions parses the given intermediate options to a spec options
-func ParseIntermediateOptions(options hcl.Body) specs.Options {
+// ParseIntermediateSpecOptions parses the given intermediate options to a spec options
+func ParseIntermediateSpecOptions(options hcl.Body) specs.Options {
 	if options == nil {
 		return specs.Options{}
 	}
@@ -457,7 +436,7 @@ func ParseIntermediateCallParameterMap(params *Call, functions specs.CustomDefin
 	}
 
 	if params.Options != nil {
-		result.Options = ParseIntermediateOptions(params.Options.Body)
+		result.Options = ParseIntermediateSpecOptions(params.Options.Body)
 	}
 
 	for _, attr := range properties {

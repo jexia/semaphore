@@ -6,6 +6,17 @@ import "google/protobuf/descriptor.proto";
 
 option go_package = "github.com/jexia/maestro/annotations";
 
+extend google.protobuf.ServiceOptions {
+  Service service = 50011;
+}
+
+message Service {
+  string host = 1;
+  string protocol = 2;
+  string codec = 3;
+  string caller = 4;
+}
+
 extend google.protobuf.MethodOptions {
   HTTP http = 50011;
 }

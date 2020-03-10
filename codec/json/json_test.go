@@ -47,7 +47,7 @@ func NewMock() (*specs.Manifest, error) {
 		return nil, err
 	}
 
-	client, err := maestro.New(maestro.WithPath("./tests", false), maestro.WithSchemaCollection(collection))
+	client, err := maestro.New(maestro.WithPath("./tests", false), maestro.WithSchema(collection))
 	if err != nil {
 		return nil, err
 	}

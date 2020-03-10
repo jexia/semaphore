@@ -16,12 +16,69 @@ type FlowManager interface {
 	GetForward() *Call
 }
 
+// Flows represents a collection of flows
+type Flows []*Flow
+
+// Get attempts to find a flow matching the given name
+func (collection Flows) Get(name string) *Flow {
+	for _, flow := range collection {
+		if flow.Name == name {
+			return flow
+		}
+	}
+
+	return nil
+}
+
+// Proxies represents a collection of proxies
+type Proxies []*Proxy
+
+// Get attempts to find a proxy matching the given name
+func (collection Proxies) Get(name string) *Proxy {
+	for _, proxy := range collection {
+		if proxy.Name == name {
+			return proxy
+		}
+	}
+
+	return nil
+}
+
+// Endpoints represents a collection of endpoints
+type Endpoints []*Endpoint
+
+// Get attempts to find a endpoint for the given flow
+func (collection Endpoints) Get(flow string) []*Endpoint {
+	result := make([]*Endpoint, 0)
+	for _, endpoint := range collection {
+		if endpoint.Flow == flow {
+			result = append(result, endpoint)
+		}
+	}
+
+	return result
+}
+
 // Manifest holds a collection of definitions and resources
 type Manifest struct {
-	Flows     []*Flow
-	Proxy     []*Proxy
-	Endpoints []*Endpoint
-	Services  []*Service
+	Flows     Flows
+	Proxy     Proxies
+	Endpoints Endpoints
+}
+
+// GetFlow attempts to find a flow or proxy matching the given name
+func (manifest *Manifest) GetFlow(name string) FlowManager {
+	flow := manifest.Flows.Get(name)
+	if flow != nil {
+		return flow
+	}
+
+	proxy := manifest.Proxy.Get(name)
+	if proxy != nil {
+		return proxy
+	}
+
+	return nil
 }
 
 // MergeLeft merges the incoming manifest to the existing (left) manifest
@@ -29,7 +86,6 @@ func (manifest *Manifest) MergeLeft(incoming *Manifest) {
 	manifest.Flows = append(manifest.Flows, incoming.Flows...)
 	manifest.Proxy = append(manifest.Proxy, incoming.Proxy...)
 	manifest.Endpoints = append(manifest.Endpoints, incoming.Endpoints...)
-	manifest.Services = append(manifest.Services, incoming.Services...)
 }
 
 // Flow defines a set of calls that should be called chronologically and produces an output message.
@@ -223,22 +279,6 @@ func (call *Call) SetDescriptor(descriptor schema.Method) {
 	}
 
 	call.Descriptor = descriptor
-}
-
-// Service represent external service which could be called inside the flows.
-// The service name could be referenced inside calls.
-// The host of the service and proto service method should be defined for each service.
-//
-// The request and response message defined inside the proto buffers are used for type definitions.
-// The FQN (fully qualified name) of the proto method should be used.
-// Each service references a caller implementation to be used.
-type Service struct {
-	Options Options
-	Name    string
-	Caller  string
-	Host    string
-	Codec   string
-	Schema  string
 }
 
 // Proxy streams the incoming request to the given service.

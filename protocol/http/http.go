@@ -44,14 +44,14 @@ func (caller *Caller) Name() string {
 }
 
 // New constructs a new caller for the given host
-func (caller *Caller) New(host string, serviceMethod string, schema schema.Service, opts specs.Options) (protocol.Call, error) {
-	log.WithField("host", host).Info("Constructing new HTTP caller")
+func (caller *Caller) New(schema schema.Service, serviceMethod string, opts schema.Options) (protocol.Call, error) {
+	log.WithField("host", schema.GetHost()).Info("Constructing new HTTP caller")
 	callerOptions, err := ParseCallerOptions(opts)
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = url.Parse(host)
+	_, err = url.Parse(schema.GetHost())
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +66,7 @@ func (caller *Caller) New(host string, serviceMethod string, schema schema.Servi
 	endpoint := methodOptions[EndpointOption]
 
 	return &Call{
-		host:     host,
+		host:     schema.GetHost(),
 		method:   method,
 		endpoint: endpoint,
 		proxy: &httputil.ReverseProxy{

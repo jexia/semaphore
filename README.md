@@ -39,7 +39,7 @@ flow "checkout" {
     }
 
     call "shipping" {
-        request "warehouse" "Send" {
+        request "package.warehouse" "Send" {
             user = "{{ input:id }}"
         }
     }
@@ -47,11 +47,6 @@ flow "checkout" {
     output "schema.Object" {
         status = "{{ shipping:status }}"
     }
-}
-
-service "warehouse" "grpc" "proto" {
-    host = "warehouse.local"
-    schema = "proto.Warehouse"
 }
 ```
 
