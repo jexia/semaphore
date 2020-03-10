@@ -8,7 +8,7 @@ service TODO {
     option (maestro.service) = {
         host: "https://jsonplaceholder.typicode.com/users/"
         protocol: "http"
-        code: "json"
+        codec: "json"
     };
 
     rpc Get(Query) returns (Item) {

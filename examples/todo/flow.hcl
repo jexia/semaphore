@@ -3,9 +3,6 @@ endpoint "todo" "http" "json" {
 	method = "GET"
 }
 
-endpoint "todo" "grpc" "proto" {
-}
-
 flow "todo" {
 	input "proto.Query" {}
 
