@@ -13,14 +13,22 @@ import (
 var ErrInvalidObject = errors.New("graphql only supports object types as root elements")
 
 // NewObject constructs a new graphql object of the given specs
-func NewObject(name string, specs *specs.Property) (*graphql.Object, error) {
-	if specs.Type != types.TypeMessage {
+func NewObject(name string, prop *specs.Property) (*graphql.Object, error) {
+	if prop.Type != types.TypeMessage {
 		return nil, ErrInvalidObject
 	}
 
 	fields := graphql.Fields{}
-	for _, nested := range specs.Nested {
+	for _, nested := range prop.Nested {
 		if nested.Type == types.TypeMessage {
+			object, err := NewObject(name+"_"+nested.Name, nested)
+			if err != nil {
+				return nil, err
+			}
+
+			fields[nested.Name] = &graphql.Field{
+				Type: object,
+			}
 			continue
 		}
 
@@ -69,7 +77,21 @@ func ResponseValue(specs *specs.Property, refs *refs.Store) (interface{}, error)
 
 	result := make(map[string]interface{}, len(specs.Nested))
 	for _, nested := range specs.Nested {
+		if nested.Type == types.TypeMessage {
+			value, err := ResponseValue(nested, refs)
+			if err != nil {
+				return nil, err
+			}
+
+			result[nested.Name] = value
+			continue
+		}
+
 		ref := refs.Load(nested.Reference.Resource, nested.Reference.Path)
+		if ref == nil {
+			continue
+		}
+
 		result[nested.Name] = ref.Value
 	}
 
