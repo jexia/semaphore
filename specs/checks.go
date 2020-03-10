@@ -11,8 +11,8 @@ import (
 func CheckManifestDuplicates(file string, manifest *Manifest) error {
 	log.Info("Checking manifest duplicates")
 
-	endpoints := sync.Map{}
 	flows := sync.Map{}
+	endpoints := sync.Map{}
 
 	for _, endpoint := range manifest.Endpoints {
 		_, duplicate := endpoints.LoadOrStore(endpoint.Flow, endpoint)
