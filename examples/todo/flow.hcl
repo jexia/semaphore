@@ -3,6 +3,9 @@ endpoint "todo" "http" "json" {
 	method = "GET"
 }
 
+endpoint "todo" "graphql" "json" {
+}
+
 flow "todo" {
 	input "proto.Query" {}
 

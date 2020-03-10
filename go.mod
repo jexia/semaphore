@@ -6,6 +6,7 @@ require (
 	github.com/francoispqt/gojay v1.2.13
 	github.com/golang/protobuf v1.3.2
 	github.com/google/go-cmp v0.4.0 // indirect
+	github.com/graphql-go/graphql v0.7.9
 	github.com/hashicorp/hcl/v2 v2.3.0
 	github.com/jhump/protoreflect v1.6.0
 	github.com/julienschmidt/httprouter v1.3.0

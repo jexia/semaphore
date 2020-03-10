@@ -116,7 +116,7 @@ func (call *Call) Close() error {
 func NewListener(addr string, opts specs.Options) (protocol.Listener, error) {
 	log.WithField("add", addr).Info("Constructing new HTTP listener")
 
-	options, err := ParseEndpointOptions(opts)
+	options, err := ParseListenerOptions(opts)
 	if err != nil {
 		return nil, err
 	}

@@ -34,6 +34,10 @@ endpoint "checkout" "http" "json" {
     endpoint = "/checkout"
 }
 
+endpoint "checkout" "graphql" "json" {
+    name = "data"
+}
+
 flow "checkout" {
     input "schema.Object" {
     }
