@@ -5,6 +5,12 @@ import "annotations/annotations.proto";
 package proto;
 
 service TODO {
+    option (maestro.service) = {
+        host: "https://jsonplaceholder.typicode.com/users/"
+        protocol: "http"
+        codec: "json"
+    };
+
     rpc Get(Query) returns (Item) {
         option (maestro.http) = {
             endpoint: "/todos/1"

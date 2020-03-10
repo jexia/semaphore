@@ -7,12 +7,12 @@ import (
 func TestDuplicateManifests(t *testing.T) {
 	tests := []*Manifest{
 		{
-			Services: []*Service{
+			Endpoints: []*Endpoint{
 				{
-					Name: "dup",
+					Flow: "dup",
 				},
 				{
-					Name: "dup",
+					Flow: "dup",
 				},
 			},
 		},

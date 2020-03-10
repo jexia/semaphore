@@ -44,7 +44,7 @@ func TestParseSpecs(t *testing.T) {
 				t.Errorf("expected test to fail but passed instead %s", file.Name())
 			}
 
-			_, err = ParseManifest(manifests, nil)
+			_, err = ParseSpecs(manifests, nil)
 			if err != nil {
 				t.Error(err)
 			}

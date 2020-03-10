@@ -15,7 +15,7 @@ func TestOptions(t *testing.T) {
 		"cdf": nil,
 	}
 
-	options := NewOptions(WithPath(path, recursive), WithFunctions(functions), WithSchemaCollection(schema))
+	options := NewOptions(WithPath(path, recursive), WithFunctions(functions), WithSchema(schema))
 
 	if path != options.Path {
 		t.Errorf("unexpected path %+v, expected %+v", options.Path, path)
@@ -23,10 +23,6 @@ func TestOptions(t *testing.T) {
 
 	if recursive != options.Recursive {
 		t.Errorf("unexpected recursive definition %+v, expected %+v", options.Recursive, recursive)
-	}
-
-	if schema != options.Schema {
-		t.Errorf("unexpected schema %+v, expected %+v", options.Schema, schema)
 	}
 
 	if len(options.Functions) != len(functions) {
@@ -41,22 +37,21 @@ func TestNew(t *testing.T) {
 	}
 
 	tests := map[*[]Option]bool{
-		{WithPath(".", false), WithSchemaCollection(schema)}: true,
-		{WithSchemaCollection(schema)}:                       false,
-		{WithSchemaCollection(schema)}:                       false,
-		{WithPath(".", false)}:                               false,
-		{WithFunctions(functions)}:                           false,
-		{WithPath(".", false), WithSchemaCollection(schema), WithFunctions(functions)}: true,
+		{WithPath(".", false), WithSchema(schema)}: true,
+		{WithPath(".", false)}:                     true,
+		{WithSchema(schema)}:                       false,
+		{WithFunctions(functions)}:                 false,
+		{WithPath(".", false), WithSchema(schema), WithFunctions(functions)}: true,
 	}
 
 	for input, pass := range tests {
 		_, err := New(*input...)
 		if err == nil && !pass {
-			t.Fatalf("unexpected pass %s", err)
+			t.Fatalf("unexpected pass %+v, input: %+v", err, input)
 		}
 
 		if err != nil && pass {
-			t.Fatalf("unexpected fail %s", err)
+			t.Fatalf("unexpected fail %+v", err)
 		}
 	}
 }

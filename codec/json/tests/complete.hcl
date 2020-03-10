@@ -1,13 +1,8 @@
-service "service" "http" "json" {
-	host = "service.local"
-	schema = "mock"
-}
-
 flow "complete" {
 	input "complete" {}
 
 	call "first" {
-		request "service" "complete" {
+		request "mock" "complete" {
 			message = "{{ input:message }}"
 
 			message "nested" {

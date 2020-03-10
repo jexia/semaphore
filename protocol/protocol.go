@@ -36,16 +36,44 @@ type Request struct {
 	Context context.Context
 }
 
+// Callers represents a collection of callers
+type Callers []Caller
+
+// Get attempts to return a caller with the given name
+func (collection Callers) Get(name string) Caller {
+	for _, caller := range collection {
+		if caller.Name() == name {
+			return caller
+		}
+	}
+
+	return nil
+}
+
 // Caller constructs new calls which could be used to call services
 type Caller interface {
 	Name() string
-	New(host string, method string, schema schema.Service, options specs.Options) (Call, error)
+	New(schema schema.Service, method string, options schema.Options) (Call, error)
 }
 
 // Call is a preconfigured interface for a single service
 type Call interface {
 	Call(writer ResponseWriter, request *Request, refs *refs.Store) error
 	Close() error
+}
+
+// Listeners represents a collection of listeners
+type Listeners []Listener
+
+// Get attempts to return a listener with the given name
+func (collection Listeners) Get(name string) Listener {
+	for _, listener := range collection {
+		if listener.Name() == name {
+			return listener
+		}
+	}
+
+	return nil
 }
 
 // Listener specifies the listener implementation

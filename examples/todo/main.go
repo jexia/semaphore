@@ -25,7 +25,7 @@ func main() {
 
 	_, err = maestro.New(
 		maestro.WithPath(".", false),
-		maestro.WithSchemaCollection(collection),
+		maestro.WithSchema(collection),
 		maestro.WithCodec(json.NewConstructor()),
 		maestro.WithCodec(proto.NewConstructor()),
 		maestro.WithCaller(http.NewCaller()),

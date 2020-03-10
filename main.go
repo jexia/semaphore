@@ -70,16 +70,17 @@ type Options struct {
 	Path      string
 	Recursive bool
 	Codec     map[string]codec.Constructor
-	Callers   []protocol.Caller
-	Listeners []protocol.Listener
-	Schema    schema.Collection
+	Callers   protocol.Callers
+	Listeners protocol.Listeners
+	Schema    *schema.Store
 	Functions specs.CustomDefinedFunctions
 }
 
 // NewOptions constructs a options object from the given option constructors
 func NewOptions(options ...Option) Options {
 	result := Options{
-		Codec: make(map[string]codec.Constructor),
+		Codec:  make(map[string]codec.Constructor),
+		Schema: schema.NewStore(),
 	}
 
 	for _, option := range options {
@@ -118,10 +119,10 @@ func WithListener(listener protocol.Listener) Option {
 	}
 }
 
-// WithSchemaCollection defines the schema collection to be used
-func WithSchemaCollection(collection schema.Collection) Option {
+// WithSchema appends the schema collection to the schema store
+func WithSchema(collection schema.Collection) Option {
 	return func(options *Options) {
-		options.Schema = collection
+		options.Schema.Add(collection)
 	}
 }
 
@@ -138,10 +139,6 @@ func New(opts ...Option) (*Client, error) {
 
 	if options.Path == "" {
 		return nil, trace.New(trace.WithMessage("undefined path in options"))
-	}
-
-	if options.Schema == nil {
-		return nil, trace.New(trace.WithMessage("undefined schema in options"))
 	}
 
 	manifest, err := ConstructSpecs(options)
@@ -184,11 +181,17 @@ func ConstructSpecs(options Options) (*specs.Manifest, error) {
 			return nil, err
 		}
 
-		result, err := hcl.ParseManifest(definition, options.Functions)
+		result, err := hcl.ParseSpecs(definition, options.Functions)
 		if err != nil {
 			return nil, err
 		}
 
+		collection, err := hcl.ParseSchema(definition, options.Schema)
+		if err != nil {
+			return nil, err
+		}
+
+		options.Schema.Add(collection)
 		manifest.MergeLeft(result)
 
 		err = specs.CheckManifestDuplicates(file.Name(), manifest)
@@ -215,15 +218,15 @@ func ConstructFlowManager(manifest *specs.Manifest, options Options) ([]*protoco
 	endpoints := make([]*protocol.Endpoint, len(manifest.Endpoints))
 
 	for index, endpoint := range manifest.Endpoints {
-		f := GetFlow(manifest, endpoint.Flow)
-		nodes := make([]*flow.Node, len(f.GetNodes()))
+		current := manifest.GetFlow(endpoint.Flow)
+		nodes := make([]*flow.Node, len(current.GetNodes()))
 
 		result := &protocol.Endpoint{
 			Listener: endpoint.Listener,
 			Options:  endpoint.Options,
 		}
 
-		for index, node := range f.GetNodes() {
+		for index, node := range current.GetNodes() {
 			caller, err := ConstructCall(manifest, node, node.Call, options)
 			if err != nil {
 				return nil, err
@@ -242,8 +245,8 @@ func ConstructFlowManager(manifest *specs.Manifest, options Options) ([]*protoco
 			return nil, trace.New(trace.WithMessage("unknown endpoint codec %s", endpoint.Codec))
 		}
 
-		if f.GetInput() != nil {
-			req, err := collection.New(specs.InputResource, f.GetInput().Property)
+		if current.GetInput() != nil {
+			req, err := collection.New(specs.InputResource, current.GetInput())
 			if err != nil {
 				return nil, err
 			}
@@ -251,23 +254,23 @@ func ConstructFlowManager(manifest *specs.Manifest, options Options) ([]*protoco
 			result.Request = req
 		}
 
-		if f.GetOutput() != nil {
-			res, err := collection.New(specs.InputResource, f.GetOutput().Property)
+		if current.GetOutput() != nil {
+			res, err := collection.New(specs.InputResource, current.GetOutput())
 			if err != nil {
 				return nil, err
 			}
 
 			result.Response = res
-			result.Header = protocol.NewHeaderManager(specs.InputResource, f.GetOutput())
+			result.Header = protocol.NewHeaderManager(specs.InputResource, current.GetOutput())
 		}
 
-		forward, err := ConstructForward(manifest, f.GetForward(), options)
+		forward, err := ConstructForward(manifest, current.GetForward(), options)
 		if err != nil {
 			return nil, err
 		}
 
 		result.Forward = forward
-		result.Flow = flow.NewManager(f.GetName(), nodes)
+		result.Flow = flow.NewManager(current.GetName(), nodes)
 
 		endpoints[index] = result
 	}
@@ -286,30 +289,28 @@ func ConstructCall(manifest *specs.Manifest, node *specs.Node, call *specs.Call,
 		return nil, nil
 	}
 
-	service := GetService(manifest, call.GetService())
+	service := options.Schema.GetService(call.Service)
 	if service == nil {
 		return nil, trace.New(trace.WithMessage("the service for %s was not found", call.GetMethod()))
 	}
 
-	constructor := GetCaller(options.Callers, service.Caller)
-	codec := options.Codec[service.Codec]
+	constructor := options.Callers.Get(service.GetProtocol())
+	codec := options.Codec[service.GetCodec()]
 
-	req, err := codec.New(node.GetName(), call.GetRequest().Property)
+	req, err := codec.New(node.GetName(), call.GetRequest())
 	if err != nil {
 		return nil, err
 	}
 
-	res, err := codec.New(node.GetName(), call.GetResponse().Property)
+	res, err := codec.New(node.GetName(), call.GetResponse())
 	if err != nil {
 		return nil, err
 	}
 
 	header := protocol.NewHeaderManager(node.GetName(), call.GetRequest())
-	host := service.Host
-	method := call.GetMethod()
-	schema := options.Schema.GetService(service.Schema)
+	schema := options.Schema.GetService(service.GetName())
 
-	caller, err := constructor.New(host, method, schema, service.Options)
+	caller, err := constructor.New(schema, call.GetMethod(), service.GetOptions())
 	if err != nil {
 		return nil, err
 	}
@@ -360,13 +361,14 @@ func ConstructForward(manifest *specs.Manifest, call *specs.Call, options Option
 		return nil, nil
 	}
 
-	service := GetService(manifest, call.GetService())
+	service := options.Schema.GetService(call.GetService())
 	if service == nil {
 		return nil, trace.New(trace.WithMessage("the service for %s was not found", call.GetMethod()))
 	}
 
-	constructor := GetCaller(options.Callers, service.Caller)
-	caller, err := constructor.New(service.Host, call.GetMethod(), options.Schema.GetService(service.Schema), service.Options)
+	schema := options.Schema.GetService(service.GetName())
+	constructor := options.Callers.Get(service.GetProtocol())
+	caller, err := constructor.New(schema, call.GetMethod(), service.GetOptions()) // MARK
 	if err != nil {
 		return nil, err
 	}
@@ -379,7 +381,7 @@ func ConstructListeners(endpoints []*protocol.Endpoint, options Options) error {
 	collections := make(map[string][]*protocol.Endpoint, len(options.Listeners))
 
 	for _, endpoint := range endpoints {
-		listener := GetListener(options.Listeners, endpoint.Listener)
+		listener := options.Listeners.Get(endpoint.Listener)
 		if listener == nil {
 			return trace.New(trace.WithMessage("unknown listener %s", endpoint.Listener))
 		}
@@ -388,60 +390,10 @@ func ConstructListeners(endpoints []*protocol.Endpoint, options Options) error {
 	}
 
 	for key, collection := range collections {
-		listener := GetListener(options.Listeners, key)
+		listener := options.Listeners.Get(key)
 		err := listener.Handle(collection)
 		if err != nil {
 			return err
-		}
-	}
-
-	return nil
-}
-
-// GetListener attempts to retrieve the requested listener
-func GetListener(listeners []protocol.Listener, name string) protocol.Listener {
-	for _, listener := range listeners {
-		if listener.Name() == name {
-			return listener
-		}
-	}
-
-	return nil
-}
-
-// GetCaller attempts to retrieve a caller from the given options matching the given name
-func GetCaller(callers []protocol.Caller, name string) protocol.Caller {
-	for _, caller := range callers {
-		if caller.Name() == name {
-			return caller
-		}
-	}
-
-	return nil
-}
-
-// GetService attempts to retrieve a service from the given manifest matching the given name
-func GetService(manifest *specs.Manifest, name string) *specs.Service {
-	for _, service := range manifest.Services {
-		if service.Name == name {
-			return service
-		}
-	}
-
-	return nil
-}
-
-// GetFlow attempts to retrieve a flow from the given manifest matching the given name
-func GetFlow(manifest *specs.Manifest, name string) specs.FlowManager {
-	for _, flow := range manifest.Flows {
-		if flow.GetName() == name {
-			return flow
-		}
-	}
-
-	for _, proxy := range manifest.Proxy {
-		if proxy.GetName() == name {
-			return proxy
 		}
 	}
 

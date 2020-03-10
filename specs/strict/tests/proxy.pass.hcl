@@ -1,6 +1,5 @@
 service "caller" "http" "json" {
 	host = ""
-	schema = "caller"
 }
 
 proxy "echo" {

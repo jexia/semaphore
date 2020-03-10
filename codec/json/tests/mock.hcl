@@ -1,8 +1,3 @@
-service "mock" "http" "json" {
-	host = "mock.local"
-	schema = "mock"
-}
-
 flow "simple" {
 	input "complete" {}
 

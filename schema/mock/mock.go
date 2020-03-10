@@ -37,17 +37,39 @@ func (collection *Collection) GetService(name string) schema.Service {
 	return nil
 }
 
-// GetProperty attempts to find and return the given schema property
-func (collection *Collection) GetProperty(name string) schema.Property {
+// GetServices returns all available services inside the given collection
+func (collection *Collection) GetServices() []schema.Service {
+	result := make([]schema.Service, len(collection.Services))
+
+	for name, service := range collection.Services {
+		result = append(result, NewService(name, service))
+	}
+
+	return result
+}
+
+// GetMessage attempts to find and return the given schema property
+func (collection *Collection) GetMessage(name string) schema.Property {
 	for key, object := range collection.Objects {
 		if key != name {
 			continue
 		}
 
-		return object
+		return NewProperty(key, object)
 	}
 
 	return nil
+}
+
+// GetMessages returns all available messages inside the given collection
+func (collection *Collection) GetMessages() []schema.Property {
+	result := make([]schema.Property, len(collection.Objects))
+
+	for key, object := range collection.Objects {
+		result = append(result, NewProperty(key, object))
+	}
+
+	return result
 }
 
 // NewService constructs a new service with the given descriptor
@@ -58,14 +80,32 @@ func NewService(name string, service *Service) *Service {
 
 // Service represents a mocking service
 type Service struct {
-	Name    string
-	Methods map[string]*Method `yaml:"methods"`
-	Options schema.Options     `yaml:"options"`
+	Name     string
+	Host     string             `yaml:"host"`
+	Protocol string             `yaml:"protocol"`
+	Codec    string             `yaml:"codec"`
+	Methods  map[string]*Method `yaml:"methods"`
+	Options  schema.Options     `yaml:"options"`
 }
 
 // GetName returns the service name
 func (service *Service) GetName() string {
 	return service.Name
+}
+
+// GetHost returns the service host
+func (service *Service) GetHost() string {
+	return service.Host
+}
+
+// GetProtocol returns the service protocol
+func (service *Service) GetProtocol() string {
+	return service.Protocol
+}
+
+// GetCodec returns the service codec
+func (service *Service) GetCodec() string {
+	return service.Codec
 }
 
 // GetMethod attempts to return the given service method
@@ -87,7 +127,7 @@ func (service *Service) GetOptions() schema.Options {
 }
 
 // GetMethods attempts to return the given service methods
-func (service *Service) GetMethods() []schema.Method {
+func (service *Service) GetMethods() schema.Methods {
 	result := make([]schema.Method, len(service.Methods))
 
 	index := 0
@@ -131,6 +171,12 @@ func (method *Method) GetOutput() schema.Property {
 // GetOptions returns the method options
 func (method *Method) GetOptions() schema.Options {
 	return method.Options
+}
+
+// NewProperty appends the name to the given property
+func NewProperty(name string, property *Property) *Property {
+	property.Name = name
+	return property
 }
 
 // Property represents a proto message property

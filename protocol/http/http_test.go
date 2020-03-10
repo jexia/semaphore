@@ -20,13 +20,28 @@ import (
 )
 
 type MockService struct {
-	name    string
-	methods []schema.Method
-	options schema.Options
+	name     string
+	host     string
+	codec    string
+	protocol string
+	methods  []schema.Method
+	options  schema.Options
 }
 
 func (service *MockService) GetName() string {
 	return service.name
+}
+
+func (service *MockService) GetHost() string {
+	return service.host
+}
+
+func (service *MockService) GetCodec() string {
+	return service.codec
+}
+
+func (service *MockService) GetProtocol() string {
+	return service.protocol
 }
 
 func (service *MockService) GetMethod(name string) schema.Method {
@@ -39,7 +54,7 @@ func (service *MockService) GetMethod(name string) schema.Method {
 	return nil
 }
 
-func (service *MockService) GetMethods() []schema.Method {
+func (service *MockService) GetMethods() schema.Methods {
 	return service.methods
 }
 
@@ -97,14 +112,16 @@ func AvailablePort(t *testing.T) int {
 
 func TestCaller(t *testing.T) {
 	message := "hello world"
-	specs := &specs.Property{
-		Type:  types.TypeMessage,
-		Label: types.LabelOptional,
-		Nested: map[string]*specs.Property{
-			"message": &specs.Property{
-				Name: "message",
-				Path: "message",
-				Type: types.TypeString,
+	specs := &specs.ParameterMap{
+		Property: &specs.Property{
+			Type:  types.TypeMessage,
+			Label: types.LabelOptional,
+			Nested: map[string]*specs.Property{
+				"message": &specs.Property{
+					Name: "message",
+					Path: "message",
+					Type: types.TypeString,
+				},
 			},
 		},
 	}
@@ -128,6 +145,7 @@ func TestCaller(t *testing.T) {
 	}
 
 	service := &MockService{
+		host: server.URL,
 		methods: []schema.Method{
 			&MockMethod{
 				options: schema.Options{
@@ -138,7 +156,7 @@ func TestCaller(t *testing.T) {
 		},
 	}
 	constructor := &Caller{}
-	caller, err := constructor.New(server.URL, "", service, nil)
+	caller, err := constructor.New(service, "", nil)
 	if err != nil {
 		t.Fatal(err)
 	}

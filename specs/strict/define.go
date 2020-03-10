@@ -111,7 +111,7 @@ func DefineFlow(schema schema.Collection, manifest *specs.Manifest, flow *specs.
 
 // GetObjectSchema attempts to fetch the defined schema object for the given parameter map
 func GetObjectSchema(schema schema.Collection, params *specs.ParameterMap) (schema.Property, error) {
-	prop := schema.GetProperty(params.Schema)
+	prop := schema.GetMessage(params.Schema)
 	if prop == nil {
 		return nil, trace.New(trace.WithMessage("undefined object '%s' in schema collection", params.Schema))
 	}
@@ -130,9 +130,9 @@ func DefineCall(schema schema.Collection, manifest *specs.Manifest, node *specs.
 		"method": call.GetMethod(),
 	}).Info("Defining call types")
 
-	service := schema.GetService(GetSchemaService(manifest, call.GetService()))
+	service := schema.GetService(call.GetService())
 	if service == nil {
-		return trace.New(trace.WithMessage("undefined service alias '%s' in flow '%s'", call.GetService(), flow.GetName()))
+		return trace.New(trace.WithMessage("undefined service '%s' in flow '%s'", call.GetService(), flow.GetName()))
 	}
 
 	method := service.GetMethod(call.GetMethod())
@@ -319,14 +319,3 @@ func ResolvePropertyReferences(property *specs.Property) {
 // 		SetReferences(ref, repeated)
 // 	}
 // }
-
-// GetSchemaService attempts to find a service matching the alias name and return the schema name
-func GetSchemaService(manifest *specs.Manifest, name string) string {
-	for _, service := range manifest.Services {
-		if service.Name == name {
-			return service.Schema
-		}
-	}
-
-	return ""
-}

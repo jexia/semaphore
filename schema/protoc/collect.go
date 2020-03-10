@@ -3,6 +3,7 @@ package protoc
 import (
 	"path/filepath"
 
+	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/utils"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/desc/protoparse"
@@ -12,7 +13,7 @@ import (
 var ProtoExt = ".proto"
 
 // Collect attempts to collect all the available proto files inside the given path and parses them to resources
-func Collect(imports []string, path string) (Collection, error) {
+func Collect(imports []string, path string) (schema.Collection, error) {
 	path, err := filepath.Abs(path)
 	if err != nil {
 		return nil, err

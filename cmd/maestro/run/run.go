@@ -60,7 +60,7 @@ func run(cmd *cobra.Command, args []string) error {
 		maestro.WithCodec(json.NewConstructor()),
 		maestro.WithCodec(proto.NewConstructor()),
 		maestro.WithCaller(http.NewCaller()),
-		maestro.WithSchemaCollection(collection),
+		maestro.WithSchema(collection),
 	}
 
 	if HTTPAddr != "" {
