@@ -98,7 +98,7 @@ func BenchmarkSimpleMarshal(b *testing.B) {
 	}
 
 	flow := FindFlow(manifest, "simple")
-	specs := FindNode(flow, "first").Call.GetRequest().Property
+	specs := FindNode(flow, "first").Call.GetRequest()
 
 	constructor := &Constructor{}
 	manager, err := constructor.New("input", specs)
@@ -135,7 +135,7 @@ func BenchmarkNestedMarshal(b *testing.B) {
 	}
 
 	flow := FindFlow(manifest, "nested")
-	specs := FindNode(flow, "first").Call.GetRequest().Property
+	specs := FindNode(flow, "first").Call.GetRequest()
 
 	constructor := &Constructor{}
 	manager, err := constructor.New("input", specs)
@@ -174,7 +174,7 @@ func BenchmarkRepeatedMarshal(b *testing.B) {
 	}
 
 	flow := FindFlow(manifest, "repeated")
-	specs := FindNode(flow, "first").Call.GetRequest().Property
+	specs := FindNode(flow, "first").Call.GetRequest()
 
 	constructor := &Constructor{}
 	manager, err := constructor.New("input", specs)
@@ -212,7 +212,7 @@ func BenchmarkSimpleUnmarshal(b *testing.B) {
 	}
 
 	flow := FindFlow(manifest, "simple")
-	specs := FindNode(flow, "first").Call.GetRequest().Property
+	specs := FindNode(flow, "first").Call.GetRequest()
 
 	constructor := &Constructor{}
 	manager, err := constructor.New("input", specs)
@@ -250,7 +250,7 @@ func BenchmarkNestedUnmarshal(b *testing.B) {
 	}
 
 	flow := FindFlow(manifest, "nested")
-	specs := FindNode(flow, "first").Call.GetRequest().Property
+	specs := FindNode(flow, "first").Call.GetRequest()
 
 	constructor := &Constructor{}
 	manager, err := constructor.New("input", specs)
@@ -290,7 +290,7 @@ func BenchmarkRepeatedUnmarshal(b *testing.B) {
 	}
 
 	flow := FindFlow(manifest, "repeated")
-	specs := FindNode(flow, "first").Call.GetRequest().Property
+	specs := FindNode(flow, "first").Call.GetRequest()
 
 	constructor := &Constructor{}
 	manager, err := constructor.New("input", specs)
@@ -316,7 +316,7 @@ func TestMarshal(t *testing.T) {
 	}
 
 	flow := FindFlow(manifest, "complete")
-	specs := FindNode(flow, "first").Call.GetRequest().Property
+	specs := FindNode(flow, "first").Call.GetRequest()
 
 	constructor := &Constructor{}
 	manager, err := constructor.New("input", specs)
@@ -414,7 +414,7 @@ func TestUnmarshal(t *testing.T) {
 	}
 
 	flow := FindFlow(manifest, "complete")
-	specs := FindNode(flow, "first").Call.GetRequest().Property
+	specs := FindNode(flow, "first").Call.GetRequest()
 
 	constructor := &Constructor{}
 	manager, err := constructor.New("input", specs)

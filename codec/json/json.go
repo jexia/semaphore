@@ -27,14 +27,14 @@ func (constructor *Constructor) Name() string {
 }
 
 // New constructs a new JSON codec manager
-func (constructor *Constructor) New(resource string, specs *specs.Property) (codec.Manager, error) {
+func (constructor *Constructor) New(resource string, specs *specs.ParameterMap) (codec.Manager, error) {
 	if specs == nil {
 		return nil, trace.New(trace.WithMessage("no object specs defined"))
 	}
 
 	return &Manager{
 		resource: resource,
-		specs:    specs,
+		specs:    specs.Property,
 	}, nil
 }
 

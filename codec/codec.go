@@ -10,7 +10,7 @@ import (
 // Constructor is capable of constructing new codec managers for the given resource and specs
 type Constructor interface {
 	Name() string
-	New(resource string, specs *specs.Property) (Manager, error)
+	New(resource string, specs *specs.ParameterMap) (Manager, error)
 }
 
 // Manager represents a marshal/unmarshal codec for a given caller

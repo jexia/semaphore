@@ -95,7 +95,7 @@ func BenchmarkSimpleMarshal(b *testing.B) {
 	}
 
 	flow := FindFlow(manifest, "simple")
-	specs := FindNode(flow, "first").Call.GetRequest().Property
+	specs := FindNode(flow, "first").Call.GetRequest()
 
 	constructor := NewConstructor()
 	manager, err := constructor.New("input", specs)
@@ -132,7 +132,7 @@ func BenchmarkNestedMarshal(b *testing.B) {
 	}
 
 	flow := FindFlow(manifest, "simple")
-	specs := FindNode(flow, "first").Call.GetRequest().Property
+	specs := FindNode(flow, "first").Call.GetRequest()
 
 	constructor := NewConstructor()
 	manager, err := constructor.New("input", specs)
@@ -171,7 +171,7 @@ func BenchmarkRepeatedMarshal(b *testing.B) {
 	}
 
 	flow := FindFlow(manifest, "simple")
-	specs := FindNode(flow, "first").Call.GetRequest().Property
+	specs := FindNode(flow, "first").Call.GetRequest()
 
 	constructor := NewConstructor()
 	manager, err := constructor.New("input", specs)
@@ -209,9 +209,9 @@ func BenchmarkSimpleUnmarshal(b *testing.B) {
 	}
 
 	flow := FindFlow(manifest, "simple")
-	specs := FindNode(flow, "first").Call.GetRequest().Property
+	specs := FindNode(flow, "first").Call.GetRequest()
 
-	desc, err := NewMessage(specs.Name, specs.Nested)
+	desc, err := NewMessage(specs.Property.Name, specs.Property.Nested)
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -263,9 +263,9 @@ func BenchmarkNestedUnmarshal(b *testing.B) {
 	}
 
 	flow := FindFlow(manifest, "nested")
-	specs := FindNode(flow, "first").Call.GetRequest().Property
+	specs := FindNode(flow, "first").Call.GetRequest()
 
-	desc, err := NewMessage(specs.Name, specs.Nested)
+	desc, err := NewMessage(specs.Property.Name, specs.Property.Nested)
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -319,9 +319,9 @@ func BenchmarkRepeatedUnmarshal(b *testing.B) {
 	}
 
 	flow := FindFlow(manifest, "repeated")
-	specs := FindNode(flow, "first").Call.GetRequest().Property
+	specs := FindNode(flow, "first").Call.GetRequest()
 
-	desc, err := NewMessage(specs.Name, specs.Nested)
+	desc, err := NewMessage(specs.Property.Name, specs.Property.Nested)
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -361,8 +361,8 @@ func TestMarshal(t *testing.T) {
 	}
 
 	flow := FindFlow(manifest, "complete")
-	specs := FindNode(flow, "first").Call.GetRequest().Property
-	desc, err := NewMessage("marshal", specs.Nested)
+	specs := FindNode(flow, "first").Call.GetRequest()
+	desc, err := NewMessage("marshal", specs.Property.Nested)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -454,7 +454,7 @@ func TestUnmarshal(t *testing.T) {
 	}
 
 	flow := FindFlow(manifest, "complete")
-	specs := FindNode(flow, "first").Call.GetRequest().Property
+	specs := FindNode(flow, "first").Call.GetRequest()
 
 	tests := map[string]map[string]interface{}{
 		"simple": map[string]interface{}{
@@ -486,7 +486,7 @@ func TestUnmarshal(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			desc, err := NewMessage("input", specs.Nested)
+			desc, err := NewMessage("input", specs.Property.Nested)
 			if err != nil {
 				t.Fatal(err)
 			}

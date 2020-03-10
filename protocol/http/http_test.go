@@ -112,14 +112,16 @@ func AvailablePort(t *testing.T) int {
 
 func TestCaller(t *testing.T) {
 	message := "hello world"
-	specs := &specs.Property{
-		Type:  types.TypeMessage,
-		Label: types.LabelOptional,
-		Nested: map[string]*specs.Property{
-			"message": &specs.Property{
-				Name: "message",
-				Path: "message",
-				Type: types.TypeString,
+	specs := &specs.ParameterMap{
+		Property: &specs.Property{
+			Type:  types.TypeMessage,
+			Label: types.LabelOptional,
+			Nested: map[string]*specs.Property{
+				"message": &specs.Property{
+					Name: "message",
+					Path: "message",
+					Type: types.TypeString,
+				},
 			},
 		},
 	}

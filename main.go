@@ -246,7 +246,7 @@ func ConstructFlowManager(manifest *specs.Manifest, options Options) ([]*protoco
 		}
 
 		if current.GetInput() != nil {
-			req, err := collection.New(specs.InputResource, current.GetInput().Property)
+			req, err := collection.New(specs.InputResource, current.GetInput())
 			if err != nil {
 				return nil, err
 			}
@@ -255,7 +255,7 @@ func ConstructFlowManager(manifest *specs.Manifest, options Options) ([]*protoco
 		}
 
 		if current.GetOutput() != nil {
-			res, err := collection.New(specs.InputResource, current.GetOutput().Property)
+			res, err := collection.New(specs.InputResource, current.GetOutput())
 			if err != nil {
 				return nil, err
 			}
@@ -297,12 +297,12 @@ func ConstructCall(manifest *specs.Manifest, node *specs.Node, call *specs.Call,
 	constructor := options.Callers.Get(service.GetProtocol())
 	codec := options.Codec[service.GetCodec()]
 
-	req, err := codec.New(node.GetName(), call.GetRequest().Property)
+	req, err := codec.New(node.GetName(), call.GetRequest())
 	if err != nil {
 		return nil, err
 	}
 
-	res, err := codec.New(node.GetName(), call.GetResponse().Property)
+	res, err := codec.New(node.GetName(), call.GetResponse())
 	if err != nil {
 		return nil, err
 	}
