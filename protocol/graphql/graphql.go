@@ -3,7 +3,6 @@ package graphql
 import (
 	"context"
 	"encoding/json"
-	"io/ioutil"
 	"net/http"
 	"sync"
 
@@ -12,6 +11,10 @@ import (
 	"github.com/jexia/maestro/specs"
 	log "github.com/sirupsen/logrus"
 )
+
+type req struct {
+	Query string `json:"query"`
+}
 
 // NewListener constructs a new listener for the given addr
 func NewListener(addr string, opts specs.Options) (protocol.Listener, error) {
@@ -40,17 +43,13 @@ func (listener *Listener) Serve() error {
 		listener.mutex.RLock()
 		defer listener.mutex.RUnlock()
 
-		query, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-
+		req := req{}
+		json.NewDecoder(r.Body).Decode(&req)
 		defer r.Body.Close()
 
 		result := graphql.Do(graphql.Params{
 			Schema:        listener.schema,
-			RequestString: string(query),
+			RequestString: req.Query,
 		})
 
 		json.NewEncoder(w).Encode(result)
@@ -106,7 +105,7 @@ func (listener *Listener) Handle(endpoints []*protocol.Endpoint) error {
 		graphql.SchemaConfig{
 			Query: graphql.NewObject(
 				graphql.ObjectConfig{
-					Name:   "Query",
+					Name:   "query",
 					Fields: fields,
 				},
 			),
