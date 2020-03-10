@@ -18,6 +18,13 @@ service TODO {
         };
     };
 
+    rpc Second(Query) returns (Item) {
+        option (maestro.http) = {
+            endpoint: "/todos/2"
+            method: "GET"
+        };
+    };
+
     rpc User(Query) returns (User) {
         option (maestro.http) = {
             endpoint: "/users/1"

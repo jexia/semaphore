@@ -58,6 +58,11 @@ type Manager struct {
 	desc     *desc.MessageDescriptor
 }
 
+// Property returns the property used to marshal and unmarshal data
+func (manager *Manager) Property() *specs.Property {
+	return manager.specs
+}
+
 // Marshal marshals the given reference store into a proto message.
 // This method is called during runtime to encode a new message with the values stored inside the given reference store.
 func (manager *Manager) Marshal(refs *refs.Store) (io.Reader, error) {

@@ -15,6 +15,7 @@ type Constructor interface {
 
 // Manager represents a marshal/unmarshal codec for a given caller
 type Manager interface {
+	Property() *specs.Property
 	Marshal(*refs.Store) (io.Reader, error)
 	Unmarshal(io.Reader, *refs.Store) error
 }

@@ -1,14 +1,16 @@
 package graphql
 
 import (
+	"context"
 	"encoding/json"
-	"log"
+	"io/ioutil"
 	"net/http"
 	"sync"
 
 	"github.com/graphql-go/graphql"
 	"github.com/jexia/maestro/protocol"
 	"github.com/jexia/maestro/specs"
+	log "github.com/sirupsen/logrus"
 )
 
 // NewListener constructs a new listener for the given addr
@@ -38,10 +40,17 @@ func (listener *Listener) Serve() error {
 		listener.mutex.RLock()
 		defer listener.mutex.RUnlock()
 
-		query := r.URL.Query().Get("query")
+		query, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		defer r.Body.Close()
+
 		result := graphql.Do(graphql.Params{
 			Schema:        listener.schema,
-			RequestString: query,
+			RequestString: string(query),
 		})
 
 		json.NewEncoder(w).Encode(result)
@@ -57,13 +66,66 @@ func (listener *Listener) Serve() error {
 
 // Handle parses the given endpoints and constructs route handlers
 func (listener *Listener) Handle(endpoints []*protocol.Endpoint) error {
+	fields := graphql.Fields{}
 
-	log.Println(endpoints)
+	for _, endpoint := range endpoints {
+		req, err := NewArgs(endpoint.Request.Property())
+		if err != nil {
+			return err
+		}
+
+		res, err := NewObject(endpoint.Flow.Name, endpoint.Response.Property())
+		if err != nil {
+			return err
+		}
+
+		// TODO: set a option to set a custom name
+		fields[endpoint.Flow.Name] = &graphql.Field{
+			Args: req,
+			Type: res,
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				store := endpoint.Flow.NewStore()
+				ctx := context.Background()
+
+				err = endpoint.Flow.Call(ctx, store)
+				if err != nil {
+					return nil, err
+				}
+
+				result, err := ResponseValue(endpoint.Response.Property(), store)
+				if err != nil {
+					return nil, err
+				}
+
+				return result, nil
+			},
+		}
+	}
+
+	schema, err := graphql.NewSchema(
+		graphql.SchemaConfig{
+			Query: graphql.NewObject(
+				graphql.ObjectConfig{
+					Name:   "Query",
+					Fields: fields,
+				},
+			),
+		},
+	)
+
+	if err != nil {
+		return err
+	}
+
+	listener.mutex.Lock()
+	listener.schema = schema
+	listener.mutex.Unlock()
 
 	return nil
 }
 
 // Close closes the given listener
 func (listener *Listener) Close() error {
-	return nil
+	log.Info("Closing HTTP listener")
+	return listener.server.Close()
 }
