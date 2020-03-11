@@ -20,22 +20,37 @@ func NewObject(name string, prop *specs.Property) (*graphql.Object, error) {
 	fields := graphql.Fields{}
 	for _, nested := range prop.Nested {
 		if nested.Type == types.TypeMessage {
+			field := &graphql.Field{
+				Description: nested.Desciptor.GetComment(),
+			}
+
 			object, err := NewObject(name+"_"+nested.Name, nested)
 			if err != nil {
 				return nil, err
 			}
 
-			fields[nested.Name] = &graphql.Field{
-				Type:        object,
-				Description: nested.Desciptor.GetComment(),
+			if nested.Label == types.LabelRepeated {
+				field.Type = graphql.NewList(object)
+			} else {
+				field.Type = object
 			}
+
+			fields[nested.Name] = field
 			continue
 		}
 
-		fields[nested.Name] = &graphql.Field{
-			Type:        gtypes[nested.Type],
+		field := &graphql.Field{
 			Description: nested.Desciptor.GetComment(),
 		}
+
+		typ := gtypes[nested.Type]
+		if nested.Label == types.LabelRepeated {
+			field.Type = graphql.NewList(typ)
+		} else {
+			field.Type = typ
+		}
+
+		fields[nested.Name] = field
 	}
 
 	config := graphql.ObjectConfig{

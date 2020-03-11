@@ -14,6 +14,28 @@ func ResponseValue(specs *specs.Property, refs *refs.Store) (interface{}, error)
 
 	result := make(map[string]interface{}, len(specs.Nested))
 	for _, nested := range specs.Nested {
+		if nested.Label == types.LabelRepeated {
+			store := refs.Load(nested.Reference.Resource, nested.Reference.Path)
+			repeating := make([]interface{}, len(store.Repeated))
+
+			for index, store := range store.Repeated {
+				if nested.Type == types.TypeMessage {
+					value, err := ResponseValue(nested, store)
+					if err != nil {
+						return nil, err
+					}
+
+					repeating[index] = value
+					continue
+				}
+
+				// TODO: support repeated types
+			}
+
+			result[nested.Name] = repeating
+			continue
+		}
+
 		if nested.Type == types.TypeMessage {
 			value, err := ResponseValue(nested, refs)
 			if err != nil {
