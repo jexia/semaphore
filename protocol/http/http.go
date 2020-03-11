@@ -104,8 +104,8 @@ func (call *Call) Call(rw protocol.ResponseWriter, incoming *protocol.Request, r
 	}
 
 	endpoint := call.endpoint
-	log.Println(call.service, call.method, endpoint)
 
+	// FIXME: this is a prototype which has to be replaces with a permanent system
 	for _, key := range ReferenceLookup.FindAllString(endpoint, -1) {
 		path := key[1:]
 		ref := refs.Load(specs.InputResource, path)
