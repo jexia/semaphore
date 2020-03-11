@@ -1,6 +1,4 @@
-endpoint "todo" "http" "json" {
-	endpoint = "/"
-	method = "GET"
+endpoint "todo" "graphql" "json" {
 }
 
 flow "todo" {
@@ -11,16 +9,7 @@ flow "todo" {
 		}
 	}
 
-	call "user" {
-		request "proto.TODO" "User" {
-		}
-	}
-
 	output "proto.Item" {
-		header {
-			Username = "{{ user:username }}"
-		}
-
 		id = "{{ query:id }}"
 		title = "{{ query:title }}"
 		completed = "{{ query:completed }}"

@@ -17,13 +17,6 @@ service TODO {
             method: "GET"
         };
     };
-
-    rpc User(Query) returns (User) {
-        option (maestro.http) = {
-            endpoint: "/users/1"
-            method: "GET"
-        };
-    };
 }
 
 message Query {
@@ -34,11 +27,4 @@ message Item {
     int32 id = 2;
     string title = 3;
     bool completed = 4;
-}
-
-message User {
-    int32 id = 1;
-    string name = 2;
-    string username = 3;
-    string email = 4;
 }
