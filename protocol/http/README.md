@@ -14,7 +14,7 @@ endpoint "mock" "http" "json" {
 }
 ```
 
-Services coule be defined inside the HCL definitions.
+Services could be defined inside the HCL definitions.
 
 ```hcl
 service "mock" "http" "json" {
