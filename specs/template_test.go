@@ -40,6 +40,7 @@ func CompareProperties(t *testing.T, left Property, right Property) {
 
 func TestJoinPath(t *testing.T) {
 	tests := map[string][]string{
+		"echo":         {".", "echo"},
 		"service.echo": {"service", "echo"},
 		"ping.pong":    {"ping.", "pong"},
 		"call.me":      {"call.", "me."},
