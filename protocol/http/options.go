@@ -9,10 +9,14 @@ import (
 )
 
 const (
+	// ReadTimeoutOption represents the HTTP read timeout option key
+	ReadTimeoutOption = "read_timeout"
+	// WriteTimeoutOption represents the HTTP write timeout option key
+	WriteTimeoutOption = "write_timeout"
 	// EndpointOption represents the HTTP endpoints option key
-	EndpointOption = "http_endpoint"
+	EndpointOption = "endpoint"
 	// MethodOption represents the HTTP method option key
-	MethodOption = "http_method"
+	MethodOption = "method"
 	// FlushIntervalOption represents the flush interval option key
 	FlushIntervalOption = "flush_interval"
 	// TimeoutOption represents the timeout option key
@@ -30,33 +34,33 @@ type ListenerOptions struct {
 }
 
 // ParseListenerOptions parses the given specs options into HTTP options
-func ParseListenerOptions(options specs.Options) *ListenerOptions {
+func ParseListenerOptions(options specs.Options) (*ListenerOptions, error) {
 	result := &ListenerOptions{
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 5 * time.Second,
 	}
 
-	read, has := options["read_timeout"]
+	read, has := options[ReadTimeoutOption]
 	if has {
 		duration, err := time.ParseDuration(read)
 		if err != nil {
-			// TODO: log err
+			return nil, err
 		}
 
 		result.ReadTimeout = duration
 	}
 
-	write, has := options["write_timeout"]
+	write, has := options[WriteTimeoutOption]
 	if has {
 		duration, err := time.ParseDuration(write)
 		if err != nil {
-			// TODO: log err
+			return nil, err
 		}
 
 		result.WriteTimeout = duration
 	}
 
-	return result
+	return result, nil
 }
 
 // EndpointOptions represents the available HTTP options
@@ -74,10 +78,10 @@ func ParseEndpointOptions(options specs.Options) (*EndpointOptions, error) {
 		WriteTimeout: 5 * time.Second,
 	}
 
-	result.Method = options["method"]
-	result.Endpoint = options["endpoint"]
+	result.Method = options[MethodOption]
+	result.Endpoint = options[EndpointOption]
 
-	read, has := options["read_timeout"]
+	read, has := options[ReadTimeoutOption]
 	if has {
 		duration, err := time.ParseDuration(read)
 		if err != nil {
@@ -87,7 +91,7 @@ func ParseEndpointOptions(options specs.Options) (*EndpointOptions, error) {
 		result.ReadTimeout = duration
 	}
 
-	write, has := options["write_timeout"]
+	write, has := options[WriteTimeoutOption]
 	if has {
 		duration, err := time.ParseDuration(write)
 		if err != nil {

@@ -10,29 +10,13 @@ import (
 	"github.com/jexia/maestro/codec/json"
 	"github.com/jexia/maestro/protocol"
 	"github.com/jexia/maestro/refs"
-	"github.com/jexia/maestro/schema"
-	"github.com/jexia/maestro/specs"
-	"github.com/jexia/maestro/specs/types"
 )
 
 func TestCaller(t *testing.T) {
 	message := "hello world"
-	specs := &specs.ParameterMap{
-		Property: &specs.Property{
-			Type:  types.TypeMessage,
-			Label: types.LabelOptional,
-			Nested: map[string]*specs.Property{
-				"message": &specs.Property{
-					Name: "message",
-					Path: "message",
-					Type: types.TypeString,
-				},
-			},
-		},
-	}
+	specs := NewSimpleMockSpecs()
 
-	cons := &json.Constructor{}
-	codec, err := cons.New("input", specs)
+	codec, err := (&json.Constructor{}).New("input", specs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -49,22 +33,13 @@ func TestCaller(t *testing.T) {
 		Context: ctx,
 	}
 
-	service := &MockService{
-		host: server.URL,
-		methods: []schema.Method{
-			&MockMethod{
-				options: schema.Options{
-					EndpointOption: "/",
-					MethodOption:   "GET",
-				},
-			},
-		},
-	}
-	constructor := &Caller{}
-	caller, err := constructor.New(service, "", nil)
+	service := NewMockService(server.URL, "GET", "/")
+	caller, err := (&Caller{}).New(service, "", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	defer caller.Close()
 
 	r, w := io.Pipe()
 	rw := &MockResponseWriter{
@@ -94,5 +69,13 @@ func TestCaller(t *testing.T) {
 
 	if result != message {
 		t.Fatalf("unexpected input:message %s, expected %s", result, message)
+	}
+}
+
+func TestCallerUnkownMethod(t *testing.T) {
+	service := NewMockService("http://localhost", "GET", "/")
+	_, err := (&Caller{}).New(service, "unkown", nil)
+	if err == nil {
+		t.Fatal("unexpected pass expected a error to be thrown")
 	}
 }

@@ -7,7 +7,39 @@ import (
 
 	"github.com/jexia/maestro/protocol"
 	"github.com/jexia/maestro/schema"
+	"github.com/jexia/maestro/specs"
+	"github.com/jexia/maestro/specs/types"
 )
+
+func NewSimpleMockSpecs() *specs.ParameterMap {
+	return &specs.ParameterMap{
+		Property: &specs.Property{
+			Type:  types.TypeMessage,
+			Label: types.LabelOptional,
+			Nested: map[string]*specs.Property{
+				"message": &specs.Property{
+					Name: "message",
+					Path: "message",
+					Type: types.TypeString,
+				},
+			},
+		},
+	}
+}
+
+func NewMockService(host string, method string, endpoint string) *MockService {
+	return &MockService{
+		host: host,
+		methods: []schema.Method{
+			&MockMethod{
+				options: schema.Options{
+					MethodOption:   method,
+					EndpointOption: endpoint,
+				},
+			},
+		},
+	}
+}
 
 type MockService struct {
 	name          string

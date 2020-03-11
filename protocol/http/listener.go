@@ -15,7 +15,10 @@ import (
 func NewListener(addr string, opts specs.Options) protocol.Listener {
 	log.WithField("add", addr).Info("Constructing new HTTP listener")
 
-	options := ParseListenerOptions(opts)
+	options, err := ParseListenerOptions(opts)
+	if err != nil {
+		// TODO: log err
+	}
 
 	return &Listener{
 		server: &http.Server{
