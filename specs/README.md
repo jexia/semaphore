@@ -247,7 +247,6 @@ Codec is the message format used for request and response messages.
 ```hcl
 service "logger" "http" "proto" {
     host = "https://service.prod.svc.cluster.local"
-    schema = "proto.Logger"
 }
 ```
 

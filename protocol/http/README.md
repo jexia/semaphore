@@ -1,0 +1,41 @@
+# HTTP
+
+Provides HTTP client and server implementations.
+
+```hcl
+endpoint "mock" "http" "json" {
+	endpoint = "/"
+	method = "GET"
+
+	options {
+		read_timeout = "5s"
+		write_timeout = "5s"
+	}
+}
+```
+
+Services coule be defined inside the HCL definitions.
+
+```hcl
+service "mock" "http" "json" {
+	host = "https://service.prod.svc.cluster.local"
+
+	options {
+		flush_interval = "1s"
+		timeout = "60s"
+		keep_alive = "60s"
+		max_idle_conns = "100"
+	}
+}
+```
+
+Or in schema definitions such as proto.
+
+```proto
+rpc Mock(Empty) returns (Empty) {
+	option (maestro.http) = {
+		endpoint: "/endpoint"
+		method: "GET"
+	};
+};
+```
