@@ -14,7 +14,7 @@ type ListenerOptions struct {
 }
 
 // ParseListenerOptions parses the given specs options into HTTP options
-func ParseListenerOptions(options specs.Options) (*ListenerOptions, error) {
+func ParseListenerOptions(options specs.Options) *ListenerOptions {
 	result := &ListenerOptions{
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 5 * time.Second,
@@ -24,7 +24,7 @@ func ParseListenerOptions(options specs.Options) (*ListenerOptions, error) {
 	if has {
 		duration, err := time.ParseDuration(read)
 		if err != nil {
-			return nil, err
+			// TODO: log err
 		}
 
 		result.ReadTimeout = duration
@@ -34,13 +34,13 @@ func ParseListenerOptions(options specs.Options) (*ListenerOptions, error) {
 	if has {
 		duration, err := time.ParseDuration(write)
 		if err != nil {
-			return nil, err
+			// TODO: log err
 		}
 
 		result.WriteTimeout = duration
 	}
 
-	return result, nil
+	return result
 }
 
 // EndpointOptions represents the available HTTP options

@@ -206,10 +206,7 @@ func TestListener(t *testing.T) {
 	called := 0
 	port := AvailablePort(t)
 	addr := fmt.Sprintf(":%d", port)
-	listener, err := NewListener(addr, nil)
-	if err != nil {
-		t.Fatal(err)
-	}
+	listener := NewListener(addr, nil)
 
 	defer listener.Close()
 
@@ -252,10 +249,7 @@ func TestListener(t *testing.T) {
 func TestPathReferences(t *testing.T) {
 	port := AvailablePort(t)
 	addr := fmt.Sprintf(":%d", port)
-	listener, err := NewListener(addr, nil)
-	if err != nil {
-		t.Fatal(err)
-	}
+	listener := NewListener(addr, nil)
 
 	defer listener.Close()
 

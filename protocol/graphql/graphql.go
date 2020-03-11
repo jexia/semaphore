@@ -17,12 +17,12 @@ type req struct {
 }
 
 // NewListener constructs a new listener for the given addr
-func NewListener(addr string, opts specs.Options) (protocol.Listener, error) {
+func NewListener(addr string, opts specs.Options) protocol.Listener {
 	return &Listener{
 		server: &http.Server{
 			Addr: addr,
 		},
-	}, nil
+	}
 }
 
 // Listener represents a GraphQL listener

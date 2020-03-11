@@ -113,13 +113,10 @@ func (call *Call) Close() error {
 }
 
 // NewListener constructs a new listener for the given addr
-func NewListener(addr string, opts specs.Options) (protocol.Listener, error) {
+func NewListener(addr string, opts specs.Options) protocol.Listener {
 	log.WithField("add", addr).Info("Constructing new HTTP listener")
 
-	options, err := ParseListenerOptions(opts)
-	if err != nil {
-		return nil, err
-	}
+	options := ParseListenerOptions(opts)
 
 	return &Listener{
 		server: &http.Server{
@@ -127,7 +124,7 @@ func NewListener(addr string, opts specs.Options) (protocol.Listener, error) {
 			ReadTimeout:  options.ReadTimeout,
 			WriteTimeout: options.WriteTimeout,
 		},
-	}, nil
+	}
 }
 
 // Listener represents a HTTP listener

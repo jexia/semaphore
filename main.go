@@ -30,25 +30,22 @@ type Client struct {
 }
 
 // Serve opens all listeners inside the given maestro client
-func (client *Client) Serve() <-chan error {
+func (client *Client) Serve() (result error) {
 	wg := sync.WaitGroup{}
 	wg.Add(len(client.Listeners))
 
-	errs := make(chan error, len(client.Listeners))
-
-	for index, listener := range client.Listeners {
-		go func(index int, listener protocol.Listener) {
+	for _, listener := range client.Listeners {
+		go func(listener protocol.Listener) {
 			defer wg.Done()
-			errs <- listener.Serve()
-		}(index, listener)
+			err := listener.Serve()
+			if err != nil {
+				result = err
+			}
+		}(listener)
 	}
 
-	go func() {
-		wg.Wait()
-		close(errs)
-	}()
-
-	return errs
+	wg.Wait()
+	return result
 }
 
 // Close gracefully closes the given client

@@ -18,25 +18,20 @@ func main() {
 
 	logrus.SetLevel(logrus.DebugLevel)
 
-	listener, err := http.NewListener(":8080", specs.Options{})
-	if err != nil {
-		panic(err)
-	}
-
-	_, err = maestro.New(
+	client, err := maestro.New(
+		maestro.WithListener(http.NewListener(":8080", specs.Options{})),
 		maestro.WithPath(".", false),
 		maestro.WithSchema(collection),
 		maestro.WithCodec(json.NewConstructor()),
 		maestro.WithCodec(proto.NewConstructor()),
 		maestro.WithCaller(http.NewCaller()),
-		maestro.WithListener(listener),
 	)
 
 	if err != nil {
 		panic(err)
 	}
 
-	err = listener.Serve()
+	err = client.Serve()
 	if err != nil {
 		panic(err)
 	}
