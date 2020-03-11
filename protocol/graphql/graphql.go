@@ -68,11 +68,7 @@ func (listener *Listener) Handle(endpoints []*protocol.Endpoint) error {
 	fields := graphql.Fields{}
 
 	for _, endpoint := range endpoints {
-		req, err := NewArgs(endpoint.Request.Property())
-		if err != nil {
-			return err
-		}
-
+		req := NewArgs(endpoint.Request.Property())
 		res, err := NewObject(endpoint.Flow.Name, endpoint.Response.Property())
 		if err != nil {
 			return err

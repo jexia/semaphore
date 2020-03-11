@@ -11,6 +11,13 @@ service TODO {
         codec: "json"
     };
 
+    rpc First(Empty) returns (Item) {
+        option (maestro.http) = {
+            endpoint: "/todos/1"
+            method: "GET"
+        };
+    };
+
     rpc Get(Query) returns (Item) {
         option (maestro.http) = {
             endpoint: "/todos/1"
@@ -20,6 +27,10 @@ service TODO {
 }
 
 message Query {
+    string id = 1;
+}
+
+message Empty {
 }
 
 message Item {

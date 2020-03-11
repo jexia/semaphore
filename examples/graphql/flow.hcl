@@ -1,3 +1,21 @@
+endpoint "latest" "graphql" "json" {
+}
+
+flow "latest" {
+	input "proto.Empty" {}
+
+	call "query" {
+		request "proto.TODO" "First" {
+		}
+	}
+
+	output "proto.Item" {
+		id = "{{ query:id }}"
+		title = "{{ query:title }}"
+		completed = "{{ query:completed }}"
+	}
+}
+
 endpoint "todo" "graphql" "json" {
 }
 
