@@ -345,7 +345,7 @@ func ConstructCall(manifest *specs.Manifest, node *specs.Node, call *specs.Call,
 				"status": w.Status(),
 			}).Error("Faulty status code")
 
-			return errors.New("rollback required")
+			return errors.New("unexpected status code, rollback required")
 		}
 
 		return nil
