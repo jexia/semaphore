@@ -20,7 +20,7 @@ service TODO {
 
     rpc Get(Query) returns (Item) {
         option (maestro.http) = {
-            endpoint: "/todos/1"
+            endpoint: "/todos/:id"
             method: "GET"
         };
     };

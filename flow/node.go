@@ -68,6 +68,7 @@ func (node *Node) Do(ctx context.Context, tracker *Tracker, processes *Processes
 	if node.Call != nil {
 		err := node.Call(ctx, refs)
 		if err != nil {
+			log.WithField("node", node.Name).Error("Call failed")
 			processes.Fatal(err)
 			return
 		}

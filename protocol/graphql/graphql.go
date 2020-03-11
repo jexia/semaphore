@@ -74,13 +74,12 @@ func (listener *Listener) Handle(endpoints []*protocol.Endpoint) error {
 			return err
 		}
 
-		// TODO: set a option to set a custom name
-		fields[endpoint.Flow.Name] = &graphql.Field{
-			Args: req,
-			Type: res,
-			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+		resolve := func(endpoint *protocol.Endpoint) graphql.FieldResolveFn {
+			return func(p graphql.ResolveParams) (interface{}, error) {
 				store := endpoint.Flow.NewStore()
 				ctx := context.Background()
+
+				store.StoreValues(specs.InputResource, "", p.Args)
 
 				err = endpoint.Flow.Call(ctx, store)
 				if err != nil {
@@ -93,7 +92,14 @@ func (listener *Listener) Handle(endpoints []*protocol.Endpoint) error {
 				}
 
 				return result, nil
-			},
+			}
+		}(endpoint)
+
+		// TODO: set a option to set a custom name
+		fields[endpoint.Flow.Name] = &graphql.Field{
+			Args:    req,
+			Type:    res,
+			Resolve: resolve,
 		}
 	}
 

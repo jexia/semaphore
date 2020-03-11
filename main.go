@@ -365,7 +365,7 @@ func ConstructForward(manifest *specs.Manifest, call *specs.Call, options Option
 
 	schema := options.Schema.GetService(service.GetName())
 	constructor := options.Callers.Get(service.GetProtocol())
-	caller, err := constructor.New(schema, call.GetMethod(), service.GetOptions()) // MARK
+	caller, err := constructor.New(schema, call.GetMethod(), service.GetOptions())
 	if err != nil {
 		return nil, err
 	}
