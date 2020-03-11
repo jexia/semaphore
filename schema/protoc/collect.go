@@ -45,7 +45,8 @@ func Collect(imports []string, path string) (schema.Collection, error) {
 // Files are parsed based from the given import paths
 func UnmarshalFiles(imports []string, files []utils.FileInfo) ([]*desc.FileDescriptor, error) {
 	parser := &protoparse.Parser{
-		ImportPaths: imports,
+		ImportPaths:           imports,
+		IncludeSourceCodeInfo: true,
 	}
 
 	results := []*desc.FileDescriptor{}

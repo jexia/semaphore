@@ -20,16 +20,21 @@ import (
 )
 
 type MockService struct {
-	name     string
-	host     string
-	codec    string
-	protocol string
-	methods  []schema.Method
-	options  schema.Options
+	name          string
+	documentation string
+	host          string
+	codec         string
+	protocol      string
+	methods       []schema.Method
+	options       schema.Options
 }
 
 func (service *MockService) GetName() string {
 	return service.name
+}
+
+func (service *MockService) GetComment() string {
+	return service.documentation
 }
 
 func (service *MockService) GetHost() string {
@@ -63,14 +68,19 @@ func (service *MockService) GetOptions() schema.Options {
 }
 
 type MockMethod struct {
-	name    string
-	options schema.Options
-	input   schema.Property
-	output  schema.Property
+	name          string
+	documentation string
+	options       schema.Options
+	input         schema.Property
+	output        schema.Property
 }
 
 func (method *MockMethod) GetName() string {
 	return method.name
+}
+
+func (method *MockMethod) GetComment() string {
+	return method.documentation
 }
 
 func (method *MockMethod) GetInput() schema.Property {

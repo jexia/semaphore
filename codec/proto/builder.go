@@ -32,6 +32,9 @@ func ConstructMessage(msg *builder.MessageBuilder, specs map[string]*specs.Prope
 			message := builder.FieldTypeMessage(nested)
 			field := builder.NewField(key, message)
 			field.SetLabel(protoc.ProtoLabels[prop.Label])
+			field.SetComments(builder.Comments{
+				LeadingComment: prop.Desciptor.GetComment(),
+			})
 
 			err = msg.TryAddField(field.SetNumber(prop.Desciptor.GetPosition()))
 			if err != nil {
@@ -44,6 +47,9 @@ func ConstructMessage(msg *builder.MessageBuilder, specs map[string]*specs.Prope
 		typ := builder.FieldTypeScalar(protoc.ProtoTypes[prop.Type])
 		field := builder.NewField(key, typ)
 		field.SetLabel(protoc.ProtoLabels[prop.Label])
+		field.SetComments(builder.Comments{
+			LeadingComment: prop.Desciptor.GetComment(),
+		})
 
 		err = msg.TryAddField(field.SetNumber(prop.Desciptor.GetPosition()))
 		if err != nil {

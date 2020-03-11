@@ -27,19 +27,22 @@ func NewObject(name string, prop *specs.Property) (*graphql.Object, error) {
 			}
 
 			fields[nested.Name] = &graphql.Field{
-				Type: object,
+				Type:        object,
+				Description: nested.Desciptor.GetComment(),
 			}
 			continue
 		}
 
 		fields[nested.Name] = &graphql.Field{
-			Type: gtypes[nested.Type],
+			Type:        gtypes[nested.Type],
+			Description: nested.Desciptor.GetComment(),
 		}
 	}
 
 	config := graphql.ObjectConfig{
-		Name:   name,
-		Fields: fields,
+		Name:        name,
+		Fields:      fields,
+		Description: prop.Desciptor.GetComment(),
 	}
 
 	return graphql.NewObject(config), nil
@@ -62,7 +65,8 @@ func NewArgs(specs *specs.Property) (graphql.FieldConfigArgument, error) {
 		}
 
 		args[nested.Name] = &graphql.ArgumentConfig{
-			Type: gtypes[nested.Type],
+			Type:        gtypes[nested.Type],
+			Description: nested.Desciptor.GetComment(),
 		}
 	}
 
