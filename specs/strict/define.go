@@ -172,6 +172,8 @@ func DefineCaller(node *specs.Node, manifest *specs.Manifest, call protocol.Call
 		if err != nil {
 			return err
 		}
+
+		ResolvePropertyReferences(prop)
 	}
 
 	return nil
@@ -191,7 +193,7 @@ func DefineParameterMap(node *specs.Node, params *specs.ParameterMap, flow specs
 		return err
 	}
 
-	params.Property = ResolvePropertyReferences(params.Property)
+	ResolvePropertyReferences(params.Property)
 	return nil
 }
 
@@ -222,7 +224,7 @@ func DefineProperty(node *specs.Node, property *specs.Property, flow specs.FlowM
 	}).Debug("Lookup references until breakpoint")
 
 	references := lookup.GetAvailableResources(flow, breakpoint)
-	reference := lookup.GetResourceReference(property.Reference, references)
+	reference := lookup.GetResourceReference(property.Reference, references, breakpoint)
 	if reference == nil {
 		return trace.New(trace.WithExpression(property.Expr), trace.WithMessage("undefined resource '%s' in '%s.%s.%s'", property.Reference, flow.GetName(), breakpoint, property.Path))
 	}
@@ -282,22 +284,24 @@ func CheckTypes(property *specs.Property, schema schema.Property, flow specs.Flo
 }
 
 // ResolvePropertyReferences moves any property reference into the correct data structure
-func ResolvePropertyReferences(property *specs.Property) *specs.Property {
+func ResolvePropertyReferences(property *specs.Property) {
 	if property.Nested != nil {
-		for key, nested := range property.Nested {
-			property.Nested[key] = ResolvePropertyReferences(nested)
+		for _, nested := range property.Nested {
+			ResolvePropertyReferences(nested)
 		}
 
-		return property
+		return
 	}
 
 	if property.Reference == nil {
-		return property
+		return
 	}
 
 	if property.Reference.Property == nil {
-		return property
+		return
 	}
 
-	return property.Reference.Property.Clone(property.Reference, property.Name, property.Path)
+	clone := property.Reference.Property.Clone(property.Reference, property.Name, property.Path)
+	property.Reference = clone.Reference
+	property.Nested = clone.Nested
 }

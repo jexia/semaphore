@@ -60,32 +60,35 @@ func GetAvailableResources(flow specs.FlowManager, breakpoint string) map[string
 	}
 
 	for _, node := range flow.GetNodes() {
+		references[node.Name] = ReferenceMap{}
+
+		if node.Call != nil {
+			if node.Call.Request != nil {
+				references[node.Name][specs.ResourceRequest] = ParameterMapLookup(node.Call.Request.Property)
+			}
+		}
+
 		if node.Name == breakpoint {
 			break
 		}
 
-		resources := ReferenceMap{}
-
 		if node.Call != nil {
-			if node.Call.Request != nil {
-				resources[specs.ResourceRequest] = ParameterMapLookup(node.Call.Request.Property)
-			}
-
 			if node.Call.Response != nil {
-				resources[specs.ResourceResponse] = ParameterMapLookup(node.Call.Response.Property)
-				resources[specs.ResourceHeader] = HeaderLookup(node.Call.Response.Header)
+				references[node.Name][specs.ResourceResponse] = ParameterMapLookup(node.Call.Response.Property)
+				references[node.Name][specs.ResourceHeader] = HeaderLookup(node.Call.Response.Header)
 			}
 		}
-
-		references[node.Name] = resources
 	}
 
 	return references
 }
 
 // GetResourceReference attempts to return the resource reference property
-func GetResourceReference(reference *specs.PropertyReference, references map[string]ReferenceMap) *specs.Property {
+func GetResourceReference(reference *specs.PropertyReference, references map[string]ReferenceMap, breakpoint string) *specs.Property {
 	target, prop := ParseResource(reference.Resource)
+	if target == "" {
+		target = breakpoint
+	}
 
 	for resource, refs := range references {
 		if resource != target {

@@ -459,7 +459,7 @@ func TestGetResourceReference(t *testing.T) {
 
 	for input, expected := range tests {
 		t.Run(input.String(), func(t *testing.T) {
-			result := GetResourceReference(input, references)
+			result := GetResourceReference(input, references, "output")
 			if result == nil {
 				t.Fatalf("unexpected result on lookup %s, expected %+v", input, expected)
 			}

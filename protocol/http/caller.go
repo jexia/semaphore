@@ -120,11 +120,12 @@ func (call *Call) Close() error {
 }
 
 // LookupEndpointReferences looks up the references within the given endpoint and returns the newly constructed endpoint
-func LookupEndpointReferences(call *Call, refs *refs.Store) string {
+func LookupEndpointReferences(call *Call, store *refs.Store) string {
 	result := call.endpoint
 
 	for _, prop := range call.References() {
-		ref := refs.Load(prop.Reference.Resource, prop.Reference.Path)
+		log.Println(prop)
+		ref := store.Load(prop.Reference.Resource, prop.Reference.Path)
 		if ref == nil || prop.Type != types.TypeString {
 			result = strings.Replace(result, prop.Path, "", 1)
 			continue
@@ -147,9 +148,13 @@ func TemplateReferences(value string, functions specs.CustomDefinedFunctions) ([
 	references := ReferenceLookup.FindAllString(value, -1)
 	result := make([]*specs.Property, 0, len(references))
 	for _, key := range references {
-		property, err := specs.ParseTemplate(key, functions, key)
-		if err != nil {
-			return nil, err
+		path := key[1:]
+		property := &specs.Property{
+			Path: key,
+			Reference: &specs.PropertyReference{
+				Resource: ".request",
+				Path:     path,
+			},
 		}
 
 		result = append(result, property)
