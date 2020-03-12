@@ -39,3 +39,14 @@ rpc Mock(Empty) returns (Empty) {
 	};
 };
 ```
+
+Object properties available inside the request object could be referenced inside a endpoint.
+
+```proto
+rpc Mock(Empty) returns (Empty) {
+	option (maestro.http) = {
+		endpoint: "/endpoint/:id"
+		method: "GET"
+	};
+};
+```

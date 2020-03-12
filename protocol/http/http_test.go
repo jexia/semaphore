@@ -139,6 +139,7 @@ func (method *MockMethod) GetOptions() schema.Options {
 type MockResponseWriter struct {
 	header protocol.Header
 	writer io.Writer
+	status int
 }
 
 func (rw *MockResponseWriter) Header() protocol.Header {
@@ -149,7 +150,9 @@ func (rw *MockResponseWriter) Write(bb []byte) (int, error) {
 	return rw.writer.Write(bb)
 }
 
-func (rw *MockResponseWriter) WriteHeader(int) {}
+func (rw *MockResponseWriter) WriteHeader(status int) {
+	rw.status = status
+}
 
 func AvailablePort(t *testing.T) int {
 	listener, err := net.Listen("tcp", ":0")

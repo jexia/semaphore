@@ -3,6 +3,7 @@ package http
 import (
 	"context"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -10,6 +11,7 @@ import (
 	"github.com/jexia/maestro/codec/json"
 	"github.com/jexia/maestro/protocol"
 	"github.com/jexia/maestro/refs"
+	"github.com/jexia/maestro/specs/types"
 )
 
 func TestCaller(t *testing.T) {
@@ -77,5 +79,88 @@ func TestCallerUnkownMethod(t *testing.T) {
 	_, err := (&Caller{}).New(service, "unkown", nil, nil)
 	if err == nil {
 		t.Fatal("unexpected pass expected a error to be thrown")
+	}
+}
+
+func TestCallerReferences(t *testing.T) {
+	expected := ":message"
+	path := "message"
+	resource := ".request"
+
+	service := NewMockService("http://localhost", "GET", "/"+expected)
+	call, err := (&Caller{}).New(service, "", nil, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	references := call.References()
+	if len(references) != 1 {
+		t.Fatalf("unexpected references %+v", references)
+	}
+
+	reference := references[0]
+	if reference.Path != expected {
+		t.Fatalf("unexpected path %s, expected %s", reference.Path, expected)
+	}
+
+	if reference.Reference.Resource != resource {
+		t.Fatalf("unexpected reference resource %s, expected %s", reference.Reference.Resource, resource)
+	}
+
+	if reference.Reference.Path != path {
+		t.Fatalf("unexpected reference path %s, expected %s", reference.Reference.Path, path)
+	}
+}
+
+func TestCallerReferencesLookup(t *testing.T) {
+	value := "1"
+	expected := "/" + value
+
+	path := "message"
+	resource := ".request"
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != expected {
+			t.Log("unexpected url", r.URL, " expected", expected)
+			w.WriteHeader(http.StatusBadRequest)
+		}
+	}))
+
+	defer server.Close()
+
+	service := NewMockService(server.URL, "GET", "/:message")
+	caller, err := (&Caller{}).New(service, "", nil, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	references := caller.References()
+	if len(references) != 1 {
+		t.Fatalf("unexpected references %+v", references)
+	}
+
+	references[0].Type = types.TypeString
+	references[0].Label = types.LabelOptional
+
+	store := refs.NewStore(1)
+	ctx := context.Background()
+	req := protocol.Request{
+		Context: ctx,
+	}
+
+	store.StoreValue(resource, path, value)
+
+	rw := &MockResponseWriter{
+		header: protocol.Header{},
+		writer: ioutil.Discard,
+	}
+
+	err = caller.Call(rw, &req, store)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if rw.status != http.StatusOK {
+		t.Fatalf("unexpected status %d", rw.status)
 	}
 }
