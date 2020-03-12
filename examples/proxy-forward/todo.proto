@@ -1,15 +1,14 @@
 syntax = "proto3";
 
-import "annotations/annotations.proto";
-
 package proto;
 
-service TODO {
-    rpc Get(Query) returns (Item) {
-        option (maestro.http) = {
-            endpoint: "/todos/1"
-            method: "GET"
-        };
+import "annotations/annotations.proto";
+
+service Todo {
+    option (maestro.service) = {
+        host: "https://jsonplaceholder.typicode.com/"
+        protocol: "http"
+        codec: "json"
     };
 
     rpc User(Query) returns (User) {
@@ -20,19 +19,19 @@ service TODO {
     };
 }
 
-message Query {
+service Forward {
+    option (maestro.service) = {
+        host: "https://jsonplaceholder.typicode.com/todos/2"
+        protocol: "http"
+        codec: "json"
+    };
 }
 
-message Item {
-    int32 userId = 1;
-    int32 id = 2;
-    string title = 3;
-    bool completed = 4;
+message Query {
 }
 
 message User {
     int32 id = 1;
     string name = 2;
     string username = 3;
-    string email = 4;
 }

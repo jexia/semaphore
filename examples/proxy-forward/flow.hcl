@@ -3,17 +3,12 @@ endpoint "todo" "http" "json" {
 	method = "GET"
 }
 
-service "todo" "http" "json" {
-	host = "https://jsonplaceholder.typicode.com"
-	schema = "proto.TODO"
-}
-
 proxy "todo" {
 	call "query" {
-		request "todo" "User" {
+		request "proto.Todo" "User" {
 		}
 	}
 
-	forward "todo" "Get" {
+	forward "proto.Forward" {
 	}
 }
