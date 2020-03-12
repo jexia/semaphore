@@ -59,6 +59,7 @@ func (node *Node) Do(ctx context.Context, tracker *Tracker, processes *Processes
 		return
 	}
 
+	tracker.Lock(node)
 	if tracker.Met(node) {
 		log.WithField("node", node.Name).Debug("Node already executed")
 		return
@@ -67,6 +68,7 @@ func (node *Node) Do(ctx context.Context, tracker *Tracker, processes *Processes
 	if node.Call != nil {
 		err := node.Call(ctx, refs)
 		if err != nil {
+			log.WithField("node", node.Name).Error("Call failed")
 			processes.Fatal(err)
 			return
 		}
@@ -75,6 +77,7 @@ func (node *Node) Do(ctx context.Context, tracker *Tracker, processes *Processes
 	log.WithField("node", node.Name).Debug("Marking node as completed")
 
 	tracker.Mark(node)
+	tracker.Unlock(node)
 
 	if processes.Err() != nil {
 		log.WithField("node", node.Name).Error("Stopping flow execution a error has been thrown")
@@ -105,6 +108,7 @@ func (node *Node) Revert(ctx context.Context, tracker *Tracker, processes *Proce
 		}
 	}()
 
+	tracker.Lock(node)
 	if tracker.Met(node) {
 		log.WithField("node", node.Name).Debug("Node already executed")
 		return
@@ -120,6 +124,7 @@ func (node *Node) Revert(ctx context.Context, tracker *Tracker, processes *Proce
 
 	log.WithField("node", node.Name).Debug("Marking node as completed")
 	tracker.Mark(node)
+	tracker.Unlock(node)
 }
 
 // Walk iterates over all nodes and returns the lose ends nodes

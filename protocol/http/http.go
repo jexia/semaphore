@@ -6,6 +6,7 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"regexp"
+	"strings"
 	"sync"
 
 	"github.com/jexia/maestro/protocol"
@@ -27,7 +28,7 @@ const (
 )
 
 // ReferenceLookup is executed to lookup references within a given endpoint
-var ReferenceLookup = regexp.MustCompile(`:\w+`)
+var ReferenceLookup = regexp.MustCompile(`(?m):\w+`)
 
 // NewCaller constructs a new HTTP caller
 func NewCaller() *Caller {
@@ -45,7 +46,10 @@ func (caller *Caller) Name() string {
 
 // New constructs a new caller for the given host
 func (caller *Caller) New(schema schema.Service, serviceMethod string, opts schema.Options) (protocol.Call, error) {
-	log.WithField("host", schema.GetHost()).Info("Constructing new HTTP caller")
+	log.WithFields(log.Fields{
+		"service": schema.GetName(),
+		"method":  serviceMethod,
+	}).Info("Constructing new HTTP caller")
 	callerOptions, err := ParseCallerOptions(opts)
 	if err != nil {
 		return nil, err
@@ -65,7 +69,14 @@ func (caller *Caller) New(schema schema.Service, serviceMethod string, opts sche
 	method := methodOptions[MethodOption]
 	endpoint := methodOptions[EndpointOption]
 
+	log.WithFields(log.Fields{
+		"method":   method,
+		"host":     schema.GetHost(),
+		"endpoint": endpoint,
+	}).Info("Constructing new HTTP caller")
+
 	return &Call{
+		service:  schema.GetName(),
 		host:     schema.GetHost(),
 		method:   method,
 		endpoint: endpoint,
@@ -78,6 +89,7 @@ func (caller *Caller) New(schema schema.Service, serviceMethod string, opts sche
 
 // Call represents the HTTP caller implementation
 type Call struct {
+	service  string
 	host     string
 	method   string
 	endpoint string
@@ -91,9 +103,31 @@ func (call *Call) Call(rw protocol.ResponseWriter, incoming *protocol.Request, r
 		return err
 	}
 
-	// TODO: allow references and functions to be used within a given call endpoint
-	url.Path = call.endpoint
-	log.WithField("url", url).Debug("Calling HTTP caller")
+	endpoint := call.endpoint
+
+	// FIXME: this is a prototype which has to be replaces with a permanent system
+	for _, key := range ReferenceLookup.FindAllString(endpoint, -1) {
+		path := key[1:]
+		ref := refs.Load(specs.InputResource, path)
+		val := ""
+
+		if ref != nil {
+			str, is := ref.Value.(string)
+			if is {
+				val = str
+			}
+		}
+
+		endpoint = strings.Replace(endpoint, string(key), val, 1)
+	}
+
+	url.Path = endpoint
+
+	log.WithFields(log.Fields{
+		"url":     url,
+		"service": call.service,
+		"method":  call.method,
+	}).Debug("Calling HTTP caller")
 
 	req, err := http.NewRequestWithContext(incoming.Context, call.method, url.String(), incoming.Body)
 	if err != nil {
@@ -113,13 +147,10 @@ func (call *Call) Close() error {
 }
 
 // NewListener constructs a new listener for the given addr
-func NewListener(addr string, opts specs.Options) (protocol.Listener, error) {
+func NewListener(addr string, opts specs.Options) protocol.Listener {
 	log.WithField("add", addr).Info("Constructing new HTTP listener")
 
-	options, err := ParseEndpointOptions(opts)
-	if err != nil {
-		return nil, err
-	}
+	options := ParseListenerOptions(opts)
 
 	return &Listener{
 		server: &http.Server{
@@ -127,7 +158,7 @@ func NewListener(addr string, opts specs.Options) (protocol.Listener, error) {
 			ReadTimeout:  options.ReadTimeout,
 			WriteTimeout: options.WriteTimeout,
 		},
-	}, nil
+	}
 }
 
 // Listener represents a HTTP listener

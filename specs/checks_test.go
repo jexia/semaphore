@@ -7,16 +7,6 @@ import (
 func TestDuplicateManifests(t *testing.T) {
 	tests := []*Manifest{
 		{
-			Endpoints: []*Endpoint{
-				{
-					Flow: "dup",
-				},
-				{
-					Flow: "dup",
-				},
-			},
-		},
-		{
 			Flows: []*Flow{
 				{
 					Name: "dup",

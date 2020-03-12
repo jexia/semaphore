@@ -11,22 +11,26 @@ service TODO {
         codec: "json"
     };
 
-    rpc Get(Query) returns (Item) {
+    rpc First(Empty) returns (Item) {
         option (maestro.http) = {
             endpoint: "/todos/1"
             method: "GET"
         };
     };
 
-    rpc User(Query) returns (User) {
+    rpc Get(Query) returns (Item) {
         option (maestro.http) = {
-            endpoint: "/users/1"
+            endpoint: "/todos/:id"
             method: "GET"
         };
     };
 }
 
 message Query {
+    string id = 1;
+}
+
+message Empty {
 }
 
 message Item {
@@ -34,11 +38,4 @@ message Item {
     int32 id = 2;
     string title = 3;
     bool completed = 4;
-}
-
-message User {
-    int32 id = 1;
-    string name = 2;
-    string username = 3;
-    string email = 4;
 }

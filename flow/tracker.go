@@ -8,6 +8,7 @@ import (
 func NewTracker(nodes int) *Tracker {
 	return &Tracker{
 		Nodes: make(map[string]struct{}, nodes),
+		Locks: make(map[*Node]*sync.Mutex, nodes),
 	}
 }
 
@@ -15,6 +16,7 @@ func NewTracker(nodes int) *Tracker {
 type Tracker struct {
 	mutex sync.Mutex
 	Nodes map[string]struct{}
+	Locks map[*Node]*sync.Mutex
 }
 
 // Mark marks the given node as called
@@ -36,4 +38,28 @@ func (tracker *Tracker) Met(nodes ...*Node) bool {
 	}
 
 	return true
+}
+
+// Lock locks the given node
+func (tracker *Tracker) Lock(node *Node) {
+	tracker.mutex.Lock()
+	mutex := tracker.Locks[node]
+	if mutex == nil {
+		mutex = &sync.Mutex{}
+		tracker.Locks[node] = mutex
+	}
+	tracker.mutex.Unlock()
+	mutex.Lock()
+}
+
+// Unlock unlocks the given node
+func (tracker *Tracker) Unlock(node *Node) {
+	tracker.mutex.Lock()
+	mutex := tracker.Locks[node]
+	if mutex == nil {
+		mutex = &sync.Mutex{}
+		tracker.Locks[node] = mutex
+	}
+	tracker.mutex.Unlock()
+	mutex.Unlock()
 }

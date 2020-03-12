@@ -30,25 +30,22 @@ type Client struct {
 }
 
 // Serve opens all listeners inside the given maestro client
-func (client *Client) Serve() <-chan error {
+func (client *Client) Serve() (result error) {
 	wg := sync.WaitGroup{}
 	wg.Add(len(client.Listeners))
 
-	errs := make(chan error, len(client.Listeners))
-
-	for index, listener := range client.Listeners {
-		go func(index int, listener protocol.Listener) {
+	for _, listener := range client.Listeners {
+		go func(listener protocol.Listener) {
 			defer wg.Done()
-			errs <- listener.Serve()
-		}(index, listener)
+			err := listener.Serve()
+			if err != nil {
+				result = err
+			}
+		}(listener)
 	}
 
-	go func() {
-		wg.Wait()
-		close(errs)
-	}()
-
-	return errs
+	wg.Wait()
+	return result
 }
 
 // Close gracefully closes the given client
@@ -219,6 +216,10 @@ func ConstructFlowManager(manifest *specs.Manifest, options Options) ([]*protoco
 
 	for index, endpoint := range manifest.Endpoints {
 		current := manifest.GetFlow(endpoint.Flow)
+		if current == nil {
+			continue
+		}
+
 		nodes := make([]*flow.Node, len(current.GetNodes()))
 
 		result := &protocol.Endpoint{
@@ -348,7 +349,7 @@ func ConstructCall(manifest *specs.Manifest, node *specs.Node, call *specs.Call,
 				"status": w.Status(),
 			}).Error("Faulty status code")
 
-			return errors.New("rollback required")
+			return errors.New("unexpected status code, rollback required")
 		}
 
 		return nil
@@ -368,7 +369,7 @@ func ConstructForward(manifest *specs.Manifest, call *specs.Call, options Option
 
 	schema := options.Schema.GetService(service.GetName())
 	constructor := options.Callers.Get(service.GetProtocol())
-	caller, err := constructor.New(schema, call.GetMethod(), service.GetOptions()) // MARK
+	caller, err := constructor.New(schema, call.GetMethod(), service.GetOptions())
 	if err != nil {
 		return nil, err
 	}
@@ -381,6 +382,10 @@ func ConstructListeners(endpoints []*protocol.Endpoint, options Options) error {
 	collections := make(map[string][]*protocol.Endpoint, len(options.Listeners))
 
 	for _, endpoint := range endpoints {
+		if endpoint == nil {
+			continue
+		}
+
 		listener := options.Listeners.Get(endpoint.Listener)
 		if listener == nil {
 			return trace.New(trace.WithMessage("unknown listener %s", endpoint.Listener))

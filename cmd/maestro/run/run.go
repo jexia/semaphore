@@ -8,6 +8,7 @@ import (
 	"github.com/jexia/maestro"
 	"github.com/jexia/maestro/codec/json"
 	"github.com/jexia/maestro/codec/proto"
+	"github.com/jexia/maestro/protocol/graphql"
 	"github.com/jexia/maestro/protocol/http"
 	"github.com/jexia/maestro/schema/protoc"
 	"github.com/jexia/maestro/specs"
@@ -19,6 +20,7 @@ import (
 var (
 	RecursiveLookup bool
 	HTTPAddr        string
+	GraphQLAddr     string
 	ProtoPath       string
 	ProtoImports    []string
 	LogLevel        string
@@ -35,6 +37,7 @@ var Cmd = &cobra.Command{
 func init() {
 	Cmd.PersistentFlags().BoolVar(&RecursiveLookup, "recursive", false, "If set are all flow definitions within the given path looked up recursively")
 	Cmd.PersistentFlags().StringVar(&HTTPAddr, "http", "", "If set starts the HTTP listener on the given TCP address")
+	Cmd.PersistentFlags().StringVar(&GraphQLAddr, "graphql", "", "If set starts the GraphQL listener on the given TCP address")
 	Cmd.PersistentFlags().StringVar(&ProtoPath, "proto", "", "If set are all proto definitions found inside the given path passed as schema definitions")
 	Cmd.PersistentFlags().StringSliceVar(&ProtoImports, "proto-import", []string{}, "Proto import definitions")
 	Cmd.PersistentFlags().StringVar(&LogLevel, "level", "info", "Logging level")
@@ -64,12 +67,11 @@ func run(cmd *cobra.Command, args []string) error {
 	}
 
 	if HTTPAddr != "" {
-		listener, err := http.NewListener(HTTPAddr, specs.Options{})
-		if err != nil {
-			return err
-		}
+		options = append(options, maestro.WithListener(http.NewListener(HTTPAddr, specs.Options{})))
+	}
 
-		options = append(options, maestro.WithListener(listener))
+	if GraphQLAddr != "" {
+		options = append(options, maestro.WithListener(graphql.NewListener(HTTPAddr, specs.Options{})))
 	}
 
 	client, err := maestro.New(options...)
@@ -79,11 +81,9 @@ func run(cmd *cobra.Command, args []string) error {
 
 	go sigterm(client)
 
-	errs := client.Serve()
-	for err := range errs {
-		if err != nil {
-			return err
-		}
+	err = client.Serve()
+	if err != nil {
+		return err
 	}
 
 	return nil

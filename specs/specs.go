@@ -194,14 +194,17 @@ type Property struct {
 	Desciptor schema.Property
 }
 
-// Clone returns a clone of the property
+// Clone returns a hollow clone of the property
 func (property *Property) Clone() *Property {
 	return &Property{
+		Name:      property.Name,
 		Path:      property.Path,
 		Default:   property.Default,
 		Type:      property.Type,
+		Label:     property.Label,
 		Reference: property.Reference,
 		Expr:      property.Expr,
+		Function:  property.Function,
 		Desciptor: property.Desciptor,
 	}
 }

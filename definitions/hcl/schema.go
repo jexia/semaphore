@@ -49,17 +49,23 @@ func ParseSchema(manifest Manifest, schemas schema.Collection) (schema.Collectio
 
 // service represents a schema service
 type service struct {
-	name     string
-	host     string
-	protocol string
-	codec    string
-	methods  []schema.Method
-	options  schema.Options
+	name          string
+	documentation string
+	host          string
+	protocol      string
+	codec         string
+	methods       []schema.Method
+	options       schema.Options
 }
 
 // GetName returns the service name
 func (service *service) GetName() string {
 	return service.name
+}
+
+// GetComment returns the service documentation
+func (service *service) GetComment() string {
+	return service.documentation
 }
 
 // GetHost returns the service host
@@ -113,14 +119,19 @@ func ParseIntermediateService(manifest Service, collection schema.Collection) sc
 }
 
 type method struct {
-	name     string
-	request  schema.Property
-	response schema.Property
-	options  schema.Options
+	name          string
+	documentation string
+	request       schema.Property
+	response      schema.Property
+	options       schema.Options
 }
 
 func (method *method) GetName() string {
 	return method.name
+}
+
+func (method *method) GetComment() string {
+	return method.documentation
 }
 
 func (method *method) GetInput() schema.Property {

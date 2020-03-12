@@ -105,6 +105,10 @@ func (service *service) GetName() string {
 	return service.descriptor.GetFullyQualifiedName()
 }
 
+func (service *service) GetComment() string {
+	return service.descriptor.GetSourceInfo().GetLeadingComments()
+}
+
 func (service *service) GetHost() string {
 	return service.options[HostOption]
 }
@@ -168,6 +172,10 @@ func (method *method) GetName() string {
 	return method.descriptor.GetName()
 }
 
+func (method *method) GetComment() string {
+	return method.descriptor.GetSourceInfo().GetLeadingComments()
+}
+
 func (method *method) GetInput() schema.Property {
 	return NewMessage(method.descriptor.GetInputType())
 }
@@ -197,6 +205,11 @@ type message struct {
 // GetName returns the message name
 func (message *message) GetName() string {
 	return message.desc.GetFullyQualifiedName()
+}
+
+// GetName returns the message documentation
+func (message *message) GetComment() string {
+	return message.desc.GetSourceInfo().GetLeadingComments()
 }
 
 // GetPosition returns the property position inside a message
@@ -245,6 +258,11 @@ type property struct {
 // GetName returns the property name
 func (property *property) GetName() string {
 	return property.desc.GetName()
+}
+
+// GetComment returns the property documentation
+func (property *property) GetComment() string {
+	return property.desc.GetSourceInfo().GetLeadingComments()
 }
 
 // GetPosition returns the property position inside a message

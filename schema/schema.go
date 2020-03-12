@@ -17,6 +17,7 @@ type Collection interface {
 
 // Service represents a service which could be called in one of the flows
 type Service interface {
+	GetComment() string
 	GetName() string
 	GetHost() string
 	GetProtocol() string
@@ -42,6 +43,7 @@ func (collection Methods) Get(name string) Method {
 
 // Method represents a service method
 type Method interface {
+	GetComment() string
 	GetName() string
 	GetInput() Property
 	GetOutput() Property
@@ -51,6 +53,7 @@ type Method interface {
 // Property represents a object field
 type Property interface {
 	GetName() string
+	GetComment() string
 	GetPosition() int32
 	GetType() types.Type
 	GetLabel() types.Label

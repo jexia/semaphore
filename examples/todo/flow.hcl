@@ -18,7 +18,7 @@ flow "todo" {
 
 	output "proto.Item" {
 		header {
-			username = "{{ user:username }}"
+			Username = "{{ user:username }}"
 		}
 
 		id = "{{ query:id }}"

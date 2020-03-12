@@ -7,6 +7,42 @@ import (
 	"github.com/jexia/maestro/specs"
 )
 
+// ListenerOptions represents the available HTTP options
+type ListenerOptions struct {
+	ReadTimeout  time.Duration
+	WriteTimeout time.Duration
+}
+
+// ParseListenerOptions parses the given specs options into HTTP options
+func ParseListenerOptions(options specs.Options) *ListenerOptions {
+	result := &ListenerOptions{
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 5 * time.Second,
+	}
+
+	read, has := options["read_timeout"]
+	if has {
+		duration, err := time.ParseDuration(read)
+		if err != nil {
+			// TODO: log err
+		}
+
+		result.ReadTimeout = duration
+	}
+
+	write, has := options["write_timeout"]
+	if has {
+		duration, err := time.ParseDuration(write)
+		if err != nil {
+			// TODO: log err
+		}
+
+		result.WriteTimeout = duration
+	}
+
+	return result
+}
+
 // EndpointOptions represents the available HTTP options
 type EndpointOptions struct {
 	Method       string

@@ -81,6 +81,7 @@ func NewService(name string, service *Service) *Service {
 // Service represents a mocking service
 type Service struct {
 	Name     string
+	Comment  string             `yaml:"comment"`
 	Host     string             `yaml:"host"`
 	Protocol string             `yaml:"protocol"`
 	Codec    string             `yaml:"codec"`
@@ -91,6 +92,11 @@ type Service struct {
 // GetName returns the service name
 func (service *Service) GetName() string {
 	return service.Name
+}
+
+// GetComment returns the service comment
+func (service *Service) GetComment() string {
+	return service.Comment
 }
 
 // GetHost returns the service host
@@ -142,6 +148,7 @@ func (service *Service) GetMethods() schema.Methods {
 // Method represents a mock YAML service method
 type Method struct {
 	Name    string
+	Comment string         `yaml:"comment"`
 	Input   *Property      `yaml:"input"`
 	Output  *Property      `yaml:"output"`
 	Options schema.Options `yaml:"options"`
@@ -156,6 +163,11 @@ func NewMethod(name string, method *Method) *Method {
 // GetName returns the method name
 func (method *Method) GetName() string {
 	return method.Name
+}
+
+// GetComment returns the method comment
+func (method *Method) GetComment() string {
+	return method.Comment
 }
 
 // GetInput returns the method input
@@ -181,7 +193,8 @@ func NewProperty(name string, property *Property) *Property {
 
 // Property represents a proto message property
 type Property struct {
-	Name     string               `yaml:"name"`
+	Name     string
+	Comment  string               `yaml:"comment"`
 	Type     types.Type           `yaml:"type"`
 	Label    types.Label          `yaml:"label"`
 	Position int32                `yaml:"position"`
@@ -192,6 +205,11 @@ type Property struct {
 // GetName returns the field name
 func (property *Property) GetName() string {
 	return property.Name
+}
+
+// GetComment returns the field comment
+func (property *Property) GetComment() string {
+	return property.Comment
 }
 
 // GetPosition returns the field position
