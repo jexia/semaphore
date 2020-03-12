@@ -67,7 +67,7 @@ message "address" {
 }
 ```
 ### Repeated message
-Repeated messages are messages which are repeated. Nested messages could be defined inside repeated messages. Repeated messages accept two labels the first one is its alias and the second one is the resource reference. If a repeated message is kept empty the whole message is attempted to be copied. Repeated messages could not be defined inside a repeated message.
+Repeated messages accept two labels the first one is its alias and the second one is the resource reference. If a repeated message is kept empty the whole message is attempted to be copied.
 
 ```hcl
 repeated "address" "input:address" {
@@ -247,7 +247,6 @@ Codec is the message format used for request and response messages.
 ```hcl
 service "logger" "http" "proto" {
     host = "https://service.prod.svc.cluster.local"
-    schema = "proto.Logger"
 }
 ```
 
