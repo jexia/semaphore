@@ -1,5 +1,5 @@
 proxy "echo" {
-    forward "uploader" "File" {
+    forward "uploader" {
 
     }
 }

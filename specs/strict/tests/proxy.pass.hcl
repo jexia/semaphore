@@ -13,5 +13,5 @@ proxy "echo" {
 		}
 	}
 
-	forward "caller" "Upload" {}
+	forward "caller" {}
 }
