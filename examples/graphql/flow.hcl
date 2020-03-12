@@ -1,4 +1,4 @@
-endpoint "latest" "graphql" "json" {
+endpoint "latest" "graphql" {
 }
 
 flow "latest" {
@@ -16,7 +16,7 @@ flow "latest" {
 	}
 }
 
-endpoint "todo" "graphql" "json" {
+endpoint "todo" "graphql" {
 }
 
 flow "todo" {

@@ -138,7 +138,6 @@ func (flow *Flow) GetForward() *Call {
 type Endpoint struct {
 	Flow     string
 	Listener string
-	Codec    string
 	Options  Options
 }
 

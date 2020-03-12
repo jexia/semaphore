@@ -15,9 +15,8 @@ import (
 type Endpoint struct {
 	Listener string
 	Flow     *flow.Manager
-	Request  codec.Manager
-	Response codec.Manager
-	Header   *HeaderManager
+	Request  *specs.ParameterMap
+	Response *specs.ParameterMap
 	Forward  Call
 	Options  specs.Options
 }
@@ -82,5 +81,5 @@ type Listener interface {
 	Name() string
 	Serve() error
 	Close() error
-	Handle([]*Endpoint) error
+	Handle([]*Endpoint, map[string]codec.Constructor) error
 }

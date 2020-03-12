@@ -51,7 +51,6 @@ func ParseIntermediateEndpoint(endpoint Endpoint) *specs.Endpoint {
 		Options:  ParseIntermediateSpecOptions(endpoint.Options),
 		Flow:     endpoint.Flow,
 		Listener: endpoint.Listener,
-		Codec:    endpoint.Codec,
 	}
 
 	return &result

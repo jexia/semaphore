@@ -1,8 +1,8 @@
-endpoint "echo" "http" "json" {
+endpoint "echo" "http" {
     random = "value"
 }
 
-endpoint "ping" "http" "proto" {
+endpoint "ping" "http" {
     message "random" {
         value = "message"
     }

@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"sync"
 
+	"github.com/jexia/maestro/codec"
 	"github.com/jexia/maestro/protocol"
 	"github.com/jexia/maestro/specs"
 	"github.com/julienschmidt/httprouter"
@@ -60,7 +61,7 @@ func (listener *Listener) Serve() error {
 }
 
 // Handle parses the given endpoints and constructs route handlers
-func (listener *Listener) Handle(endpoints []*protocol.Endpoint) error {
+func (listener *Listener) Handle(endpoints []*protocol.Endpoint, codecs map[string]codec.Constructor) error {
 	log.Info("HTTP listener received new endpoints")
 	router := httprouter.New()
 
@@ -70,10 +71,10 @@ func (listener *Listener) Handle(endpoints []*protocol.Endpoint) error {
 			return err
 		}
 
-		router.Handle(options.Method, options.Endpoint, Handle(endpoint))
+		log.Println(options.Method)
+		router.Handle(options.Method, options.Endpoint, Handle(endpoint, options, codecs))
 	}
 
-	log.Info("Swapping HTTP router")
 	listener.mutex.Lock()
 	listener.router = router
 	listener.mutex.Unlock()
@@ -88,7 +89,40 @@ func (listener *Listener) Close() error {
 }
 
 // Handle constructs a new handle function for the given endpoint to the given flow
-func Handle(endpoint *protocol.Endpoint) httprouter.Handle {
+func Handle(endpoint *protocol.Endpoint, options *EndpointOptions, constructors map[string]codec.Constructor) httprouter.Handle {
+	if constructors == nil {
+		constructors = make(map[string]codec.Constructor)
+	}
+
+	manager := constructors[options.Codec]
+	if manager == nil {
+		// TODO log
+		return nil
+	}
+
+	var err error
+	var request codec.Manager
+	var response codec.Manager
+	var header *protocol.HeaderManager
+
+	if endpoint.Request != nil {
+		request, err = manager.New(specs.InputResource, endpoint.Request)
+		if err != nil {
+			// TODO log
+			return nil
+		}
+	}
+
+	if endpoint.Response != nil {
+		response, err = manager.New(specs.OutputResource, endpoint.Response)
+		if err != nil {
+			// TODO log
+			return nil
+		}
+
+		header = protocol.NewHeaderManager(specs.OutputResource, endpoint.Response)
+	}
+
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		log.Debug("New incoming HTTP request")
 
@@ -100,13 +134,12 @@ func Handle(endpoint *protocol.Endpoint) httprouter.Handle {
 			store.StoreValue(specs.InputResource, param.Key, param.Value)
 		}
 
-		if endpoint.Header != nil {
-			header := CopyHTTPHeader(r.Header)
-			endpoint.Header.Unmarshal(header, store)
+		if header != nil {
+			header.Unmarshal(CopyHTTPHeader(r.Header), store)
 		}
 
 		if endpoint.Request != nil {
-			err = endpoint.Request.Unmarshal(r.Body, store)
+			err = request.Unmarshal(r.Body, store)
 			if err != nil {
 				log.Error(err)
 				w.WriteHeader(http.StatusBadRequest)
@@ -120,12 +153,12 @@ func Handle(endpoint *protocol.Endpoint) httprouter.Handle {
 			return
 		}
 
-		if endpoint.Header != nil {
-			SetHTTPHeader(w.Header(), endpoint.Header.Marshal(store))
+		if header != nil {
+			SetHTTPHeader(w.Header(), header.Marshal(store))
 		}
 
-		if endpoint.Response != nil {
-			reader, err := endpoint.Response.Marshal(store)
+		if response != nil {
+			reader, err := response.Marshal(store)
 			if err != nil {
 				w.WriteHeader(http.StatusInternalServerError)
 				return

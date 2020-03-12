@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jexia/maestro/codec"
 	"github.com/jexia/maestro/codec/json"
 	"github.com/jexia/maestro/flow"
 	"github.com/jexia/maestro/protocol"
@@ -20,29 +21,25 @@ func NewMockListener(t *testing.T, nodes flow.Nodes) (protocol.Listener, int) {
 	addr := fmt.Sprintf(":%d", port)
 	listener := NewListener(addr, nil)
 
-	req, err := json.NewConstructor().New("input", NewSimpleMockSpecs())
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	res, err := json.NewConstructor().New("output", NewSimpleMockSpecs())
-	if err != nil {
-		t.Fatal(err)
+	json := json.NewConstructor()
+	constructors := map[string]codec.Constructor{
+		json.Name(): json,
 	}
 
 	endpoints := []*protocol.Endpoint{
 		{
-			Request: req,
+			Request: NewSimpleMockSpecs(),
 			Flow:    flow.NewManager("test", nodes),
 			Options: specs.Options{
 				EndpointOption: "/",
-				MethodOption:   "POST",
+				MethodOption:   http.MethodPost,
+				CodecOption:    json.Name(),
 			},
-			Response: res,
+			Response: NewSimpleMockSpecs(),
 		},
 	}
 
-	listener.Handle(endpoints)
+	listener.Handle(endpoints, constructors)
 	return listener, port
 }
 
@@ -156,7 +153,7 @@ func TestPathReferences(t *testing.T) {
 		},
 	}
 
-	listener.Handle(endpoints)
+	listener.Handle(endpoints, nil)
 	go listener.Serve()
 
 	// Some CI pipelines take a little while before the listener is active
