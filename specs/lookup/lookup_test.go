@@ -332,7 +332,7 @@ func TestGetAvailableResources(t *testing.T) {
 	tests := map[string]func() ([]string, map[string]ReferenceMap){
 		"input and first": func() ([]string, map[string]ReferenceMap) {
 			flow := NewMockFlow("first")
-			expected := []string{"input", "first"}
+			expected := []string{"input", "first", "second"}
 
 			result := GetAvailableResources(flow, "second")
 			return expected, result
@@ -341,7 +341,7 @@ func TestGetAvailableResources(t *testing.T) {
 			flow := NewMockFlow("first")
 			expected := []string{"input", "first"}
 
-			result := GetAvailableResources(flow, "second")
+			result := GetAvailableResources(flow, "first")
 			return expected, result
 		},
 		"output": func() ([]string, map[string]ReferenceMap) {
