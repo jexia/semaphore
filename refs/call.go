@@ -4,8 +4,20 @@ import (
 	"github.com/jexia/maestro/specs"
 )
 
-// References returns all the available references inside the given object
-func References(params *specs.ParameterMap) map[string]*specs.PropertyReference {
+// References represents a map of property references
+type References map[string]*specs.PropertyReference
+
+// MergeLeft merges the references into the given reference
+func (references References) MergeLeft(incoming ...References) {
+	for _, refs := range incoming {
+		for key, val := range refs {
+			references[key] = val
+		}
+	}
+}
+
+// ParameterReferences returns all the available references inside the given parameter map
+func ParameterReferences(params *specs.ParameterMap) References {
 	result := make(map[string]*specs.PropertyReference)
 	for _, prop := range params.Header {
 		if prop.Reference != nil {
@@ -21,7 +33,7 @@ func References(params *specs.ParameterMap) map[string]*specs.PropertyReference 
 }
 
 // PropertyReferences returns the available references within the given property
-func PropertyReferences(property *specs.Property) map[string]*specs.PropertyReference {
+func PropertyReferences(property *specs.Property) References {
 	result := make(map[string]*specs.PropertyReference)
 
 	if property.Reference != nil {

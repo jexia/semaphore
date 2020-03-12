@@ -20,7 +20,7 @@ func NewMockNode(name string, caller Call, rollback Call) *Node {
 
 func BenchmarkSingleNodeCalling(b *testing.B) {
 	caller := &caller{}
-	node := NewMockNode("first", caller.Call, nil)
+	node := NewMockNode("first", caller, nil)
 
 	b.ReportAllocs()
 	b.ResetTimer()
@@ -38,9 +38,9 @@ func BenchmarkSingleNodeCalling(b *testing.B) {
 func BenchmarkBranchedNodeCalling(b *testing.B) {
 	caller := &caller{}
 	nodes := []*Node{
-		NewMockNode("first", caller.Call, nil),
-		NewMockNode("second", caller.Call, nil),
-		NewMockNode("third", caller.Call, nil),
+		NewMockNode("first", caller, nil),
+		NewMockNode("second", caller, nil),
+		NewMockNode("third", caller, nil),
 	}
 
 	nodes[0].Next = []*Node{nodes[1]}
@@ -65,9 +65,9 @@ func TestNodeCalling(t *testing.T) {
 	caller := &caller{}
 
 	nodes := []*Node{
-		NewMockNode("first", caller.Call, nil),
-		NewMockNode("second", caller.Call, nil),
-		NewMockNode("third", caller.Call, nil),
+		NewMockNode("first", caller, nil),
+		NewMockNode("second", caller, nil),
+		NewMockNode("third", caller, nil),
 	}
 
 	nodes[0].Next = []*Node{nodes[1]}
@@ -95,9 +95,9 @@ func TestNodeRevert(t *testing.T) {
 	rollback := &caller{}
 
 	nodes := []*Node{
-		NewMockNode("first", nil, rollback.Call),
-		NewMockNode("second", nil, rollback.Call),
-		NewMockNode("third", nil, rollback.Call),
+		NewMockNode("first", nil, rollback),
+		NewMockNode("second", nil, rollback),
+		NewMockNode("third", nil, rollback),
 	}
 
 	nodes[0].Next = []*Node{nodes[1]}
@@ -125,10 +125,10 @@ func TestNodeBranchesCalling(t *testing.T) {
 	caller := &caller{}
 
 	nodes := []*Node{
-		NewMockNode("first", caller.Call, nil),
-		NewMockNode("second", caller.Call, nil),
-		NewMockNode("third", caller.Call, nil),
-		NewMockNode("fourth", caller.Call, nil),
+		NewMockNode("first", caller, nil),
+		NewMockNode("second", caller, nil),
+		NewMockNode("third", caller, nil),
+		NewMockNode("fourth", caller, nil),
 	}
 
 	nodes[0].Next = []*Node{nodes[1], nodes[2]}

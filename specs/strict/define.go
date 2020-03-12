@@ -1,6 +1,7 @@
 package strict
 
 import (
+	"github.com/jexia/maestro/protocol"
 	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/specs"
 	"github.com/jexia/maestro/specs/lookup"
@@ -9,8 +10,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// Define checks and defines the types for the given manifest
-func Define(schema schema.Collection, manifest *specs.Manifest) (err error) {
+// DefineManifest checks and defines the types for the given manifest
+func DefineManifest(schema schema.Collection, manifest *specs.Manifest) (err error) {
 	log.Info("Defining manifest types")
 
 	for _, flow := range manifest.Flows {
@@ -119,7 +120,7 @@ func GetObjectSchema(schema schema.Collection, params *specs.ParameterMap) (sche
 	return prop, nil
 }
 
-// DefineCall defineds the types for the given parameter map
+// DefineCall defineds the types for the specs call
 func DefineCall(schema schema.Collection, manifest *specs.Manifest, node *specs.Node, call *specs.Call, flow specs.FlowManager) (err error) {
 	if call.GetMethod() == "" {
 		return nil
@@ -154,6 +155,20 @@ func DefineCall(schema schema.Collection, manifest *specs.Manifest, node *specs.
 		}
 
 		err = CheckTypes(call.GetRequest().Property, method.GetInput(), flow)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// DefineCaller defineds the types for the given protocol caller
+func DefineCaller(node *specs.Node, manifest *specs.Manifest, call protocol.Call, flow specs.FlowManager) (err error) {
+	log.Info("Defining caller references")
+
+	for _, prop := range call.References() {
+		err = DefineProperty(node, prop, flow)
 		if err != nil {
 			return err
 		}

@@ -5,11 +5,15 @@ import (
 	"sync"
 
 	"github.com/jexia/maestro/refs"
+	"github.com/jexia/maestro/specs"
 	log "github.com/sirupsen/logrus"
 )
 
-// Call represents a caller which could be called
-type Call func(context.Context, *refs.Store) error
+// Call represents a protocol caller implementation
+type Call interface {
+	References() []*specs.Property
+	Do(context.Context, *refs.Store) error
+}
 
 // NewManager constructs a new manager for the given flow.
 // Branches are constructed for the constructed nodes to optimalise performance.

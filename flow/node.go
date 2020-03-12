@@ -12,13 +12,27 @@ import (
 // The service called inside the call endpoint is retrieved from the services collection.
 // The call, codec and rollback are defined inside the node and used while processing requests.
 func NewNode(node *specs.Node, call, rollback Call) *Node {
+	references := refs.ParameterReferences(node.Call.GetRequest())
+
+	if call != nil {
+		for _, prop := range call.References() {
+			references.MergeLeft(refs.PropertyReferences(prop))
+		}
+	}
+
+	if rollback != nil {
+		for _, prop := range rollback.References() {
+			references.MergeLeft(refs.PropertyReferences(prop))
+		}
+	}
+
 	return &Node{
 		Name:       node.GetName(),
 		Previous:   []*Node{},
 		Call:       call,
 		Rollback:   rollback,
 		DependsOn:  node.DependsOn,
-		References: refs.References(node.Call.GetRequest()),
+		References: references,
 		Next:       []*Node{},
 	}
 }
@@ -66,7 +80,7 @@ func (node *Node) Do(ctx context.Context, tracker *Tracker, processes *Processes
 	}
 
 	if node.Call != nil {
-		err := node.Call(ctx, refs)
+		err := node.Call.Do(ctx, refs)
 		if err != nil {
 			log.WithField("node", node.Name).Error("Call failed")
 			processes.Fatal(err)
@@ -115,7 +129,7 @@ func (node *Node) Revert(ctx context.Context, tracker *Tracker, processes *Proce
 	}
 
 	if node.Rollback != nil {
-		err := node.Rollback(ctx, refs)
+		err := node.Rollback.Do(ctx, refs)
 		if err != nil {
 			processes.Fatal(err)
 			return
