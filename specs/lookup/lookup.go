@@ -47,6 +47,23 @@ func GetDefaultProp(resource string) string {
 	return specs.ResourceResponse
 }
 
+// GetNextResource returns the resource after the given breakpoint
+func GetNextResource(flow specs.FlowManager, breakpoint string) string {
+	for index, node := range flow.GetNodes() {
+		if node.Name == breakpoint {
+			nodes := flow.GetNodes()
+			next := index + 1
+			if next >= len(nodes) {
+				return specs.OutputResource
+			}
+
+			return nodes[next].Name
+		}
+	}
+
+	return breakpoint
+}
+
 // GetAvailableResources fetches the available resources able to be referenced
 // until the given breakpoint (call.Name) has been reached.
 func GetAvailableResources(flow specs.FlowManager, breakpoint string) map[string]ReferenceMap {

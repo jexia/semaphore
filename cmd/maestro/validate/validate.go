@@ -19,7 +19,7 @@ var (
 
 // Cmd represents the maestro validate command
 var Cmd = &cobra.Command{
-	Use:          "validate [path]",
+	Use:          "validate [paths]",
 	Short:        "Validate the flow definitions with the configured schema format(s)",
 	Args:         cobra.MinimumNArgs(1),
 	RunE:         run,
@@ -28,7 +28,7 @@ var Cmd = &cobra.Command{
 
 func init() {
 	Cmd.PersistentFlags().StringSliceVar(&ProtoPaths, "proto", []string{}, "If set are all proto definitions found inside the given path passed as schema definitions, all proto definitions are also passed as imports")
-	Cmd.PersistentFlags().StringVar(&LogLevel, "level", "info", "Logging level")
+	Cmd.PersistentFlags().StringVar(&LogLevel, "level", "error", "Logging level")
 }
 
 func run(cmd *cobra.Command, args []string) error {
@@ -38,7 +38,12 @@ func run(cmd *cobra.Command, args []string) error {
 		maestro.WithCaller(http.NewCaller()),
 	}
 
-	logrus.SetLevel(logrus.ErrorLevel)
+	level, err := logrus.ParseLevel(LogLevel)
+	if err != nil {
+		return err
+	}
+
+	logrus.SetLevel(level)
 
 	for _, arg := range args {
 		options = append(options, maestro.WithDefinitions(hcl.DefinitionResolver(arg)))
@@ -53,7 +58,7 @@ func run(cmd *cobra.Command, args []string) error {
 		options = append(options, maestro.WithSchema(resolver))
 	}
 
-	_, err := maestro.ConstructSpecs(maestro.NewOptions(options...))
+	_, err = maestro.ConstructSpecs(maestro.NewOptions(options...))
 	if err != nil {
 		return err
 	}

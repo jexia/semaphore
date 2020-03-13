@@ -213,9 +213,16 @@ func DefineProperty(node *specs.Node, property *specs.Property, flow specs.FlowM
 		return nil
 	}
 
-	breakpoint := "output"
+	breakpoint := specs.OutputResource
 	if node != nil {
 		breakpoint = node.GetName()
+
+		if node.Rollback != nil {
+			rollback := node.Rollback.GetRequest().Property
+			if InsideProperty(rollback, property) {
+				breakpoint = lookup.GetNextResource(flow, breakpoint)
+			}
+		}
 	}
 
 	log.WithFields(log.Fields{
@@ -237,6 +244,24 @@ func DefineProperty(node *specs.Node, property *specs.Property, flow specs.FlowM
 	// TODO: support enum type
 
 	return nil
+}
+
+// InsideProperty checks whether the given property is insde the source property
+func InsideProperty(source *specs.Property, target *specs.Property) bool {
+	if source == target {
+		return true
+	}
+
+	if source.Nested != nil {
+		for _, nested := range source.Nested {
+			is := InsideProperty(nested, target)
+			if is {
+				return is
+			}
+		}
+	}
+
+	return false
 }
 
 // CheckHeader checks the given header types
