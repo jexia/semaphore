@@ -24,6 +24,7 @@ flow "todo" {
 
 	call "query" {
 		request "proto.TODO" "Get" {
+			id = "{{ input:id }}"
 		}
 	}
 

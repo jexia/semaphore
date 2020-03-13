@@ -208,14 +208,21 @@ func (property *Property) Clone(reference *PropertyReference, name string, path 
 		Desciptor: property.Desciptor,
 	}
 
+	if property.Reference != nil {
+		result.Reference = &PropertyReference{
+			Resource: property.Reference.Resource,
+			Path:     property.Reference.Path,
+		}
+	}
+
 	if property.Nested != nil {
 		if len(property.Nested) != 0 {
 			result.Nested = make(map[string]*Property, len(property.Nested))
 
 			for key, nested := range property.Nested {
 				ref := &PropertyReference{
-					Resource: reference.Resource,
-					Path:     JoinPath(reference.Path, key),
+					Resource: result.Reference.Resource,
+					Path:     JoinPath(result.Path, key),
 				}
 
 				result.Nested[key] = nested.Clone(ref, key, JoinPath(path, key))

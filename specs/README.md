@@ -39,6 +39,7 @@ The following resource properties are available:
 - **request - *default***
 - header
 #### Call
+- request
 - **response - *default***
 - header
 

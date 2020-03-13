@@ -44,7 +44,7 @@ type HeaderManager struct {
 
 // Marshal attempts to marshal the given header specs from the given refs store
 func (manager *HeaderManager) Marshal(store *refs.Store) Header {
-	if manager.Params == nil {
+	if manager == nil || manager.Params == nil {
 		return make(Header, 0)
 	}
 

@@ -1,6 +1,7 @@
 package strict
 
 import (
+	"github.com/jexia/maestro/protocol"
 	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/specs"
 	"github.com/jexia/maestro/specs/lookup"
@@ -9,8 +10,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// Define checks and defines the types for the given manifest
-func Define(schema schema.Collection, manifest *specs.Manifest) (err error) {
+// DefineManifest checks and defines the types for the given manifest
+func DefineManifest(schema schema.Collection, manifest *specs.Manifest) (err error) {
 	log.Info("Defining manifest types")
 
 	for _, flow := range manifest.Flows {
@@ -119,7 +120,7 @@ func GetObjectSchema(schema schema.Collection, params *specs.ParameterMap) (sche
 	return prop, nil
 }
 
-// DefineCall defineds the types for the given parameter map
+// DefineCall defineds the types for the specs call
 func DefineCall(schema schema.Collection, manifest *specs.Manifest, node *specs.Node, call *specs.Call, flow specs.FlowManager) (err error) {
 	if call.GetMethod() == "" {
 		return nil
@@ -162,6 +163,22 @@ func DefineCall(schema schema.Collection, manifest *specs.Manifest, node *specs.
 	return nil
 }
 
+// DefineCaller defineds the types for the given protocol caller
+func DefineCaller(node *specs.Node, manifest *specs.Manifest, call protocol.Call, flow specs.FlowManager) (err error) {
+	log.Info("Defining caller references")
+
+	for _, prop := range call.References() {
+		err = DefineProperty(node, prop, flow)
+		if err != nil {
+			return err
+		}
+
+		ResolvePropertyReferences(prop)
+	}
+
+	return nil
+}
+
 // DefineParameterMap defines the types for the given parameter map
 func DefineParameterMap(node *specs.Node, params *specs.ParameterMap, flow specs.FlowManager) (err error) {
 	for _, header := range params.Header {
@@ -176,7 +193,7 @@ func DefineParameterMap(node *specs.Node, params *specs.ParameterMap, flow specs
 		return err
 	}
 
-	params.Property = ResolvePropertyReferences(params.Property)
+	ResolvePropertyReferences(params.Property)
 	return nil
 }
 
@@ -207,7 +224,7 @@ func DefineProperty(node *specs.Node, property *specs.Property, flow specs.FlowM
 	}).Debug("Lookup references until breakpoint")
 
 	references := lookup.GetAvailableResources(flow, breakpoint)
-	reference := lookup.GetResourceReference(property.Reference, references)
+	reference := lookup.GetResourceReference(property.Reference, references, breakpoint)
 	if reference == nil {
 		return trace.New(trace.WithExpression(property.Expr), trace.WithMessage("undefined resource '%s' in '%s.%s.%s'", property.Reference, flow.GetName(), breakpoint, property.Path))
 	}
@@ -267,22 +284,24 @@ func CheckTypes(property *specs.Property, schema schema.Property, flow specs.Flo
 }
 
 // ResolvePropertyReferences moves any property reference into the correct data structure
-func ResolvePropertyReferences(property *specs.Property) *specs.Property {
+func ResolvePropertyReferences(property *specs.Property) {
 	if property.Nested != nil {
-		for key, nested := range property.Nested {
-			property.Nested[key] = ResolvePropertyReferences(nested)
+		for _, nested := range property.Nested {
+			ResolvePropertyReferences(nested)
 		}
 
-		return property
+		return
 	}
 
 	if property.Reference == nil {
-		return property
+		return
 	}
 
 	if property.Reference.Property == nil {
-		return property
+		return
 	}
 
-	return property.Reference.Property.Clone(property.Reference, property.Name, property.Path)
+	clone := property.Reference.Property.Clone(property.Reference, property.Name, property.Path)
+	property.Reference = clone.Reference
+	property.Nested = clone.Nested
 }

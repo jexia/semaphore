@@ -55,7 +55,7 @@ func TestUnmarshalFile(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			err = Define(collection, manifest)
+			err = DefineManifest(collection, manifest)
 			if strings.HasSuffix(clean, pass) && err != nil {
 				t.Fatalf("expected test to pass but failed instead %s, %v", file.Name(), err)
 			}

@@ -53,12 +53,13 @@ func (collection Callers) Get(name string) Caller {
 // Caller constructs new calls which could be used to call services
 type Caller interface {
 	Name() string
-	New(schema schema.Service, method string, options schema.Options) (Call, error)
+	New(schema schema.Service, method string, functions specs.CustomDefinedFunctions, options schema.Options) (Call, error)
 }
 
 // Call is a preconfigured interface for a single service
 type Call interface {
 	Call(writer ResponseWriter, request *Request, refs *refs.Store) error
+	References() []*specs.Property
 	Close() error
 }
 
