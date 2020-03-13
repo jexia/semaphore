@@ -27,7 +27,7 @@ var (
 
 // Cmd represents the maestro run command
 var Cmd = &cobra.Command{
-	Use:   "run [path]",
+	Use:   "run [paths]",
 	Short: "Run the flow definitions with the configured schema format(s)",
 	Args:  cobra.MinimumNArgs(1),
 	RunE:  run,
@@ -36,7 +36,7 @@ var Cmd = &cobra.Command{
 func init() {
 	Cmd.PersistentFlags().StringVar(&HTTPAddr, "http", "", "If set starts the HTTP listener on the given TCP address")
 	Cmd.PersistentFlags().StringVar(&GraphQLAddr, "graphql", "", "If set starts the GraphQL listener on the given TCP address")
-	Cmd.PersistentFlags().StringSliceVar(&ProtoPaths, "proto", []string{}, "If set are all proto definitions found inside the given path passed as schema definitions")
+	Cmd.PersistentFlags().StringSliceVar(&ProtoPaths, "proto", []string{}, "If set are all proto definitions found inside the given path passed as schema definitions, all proto definitions are also passed as imports")
 	Cmd.PersistentFlags().StringVar(&LogLevel, "level", "info", "Logging level")
 }
 
@@ -48,12 +48,14 @@ func run(cmd *cobra.Command, args []string) error {
 
 	logrus.SetLevel(level)
 
-	flows := args[0]
 	options := []maestro.Option{
-		maestro.WithDefinitions(hcl.DefinitionResolver(flows)),
 		maestro.WithCodec(json.NewConstructor()),
 		maestro.WithCodec(proto.NewConstructor()),
 		maestro.WithCaller(http.NewCaller()),
+	}
+
+	for _, arg := range args {
+		options = append(options, maestro.WithDefinitions(hcl.DefinitionResolver(arg)))
 	}
 
 	for _, path := range ProtoPaths {
