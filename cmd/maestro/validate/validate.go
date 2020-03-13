@@ -1,15 +1,19 @@
 package validate
 
 import (
+	"github.com/jexia/maestro"
+	"github.com/jexia/maestro/codec/json"
+	"github.com/jexia/maestro/codec/proto"
+	"github.com/jexia/maestro/definitions/hcl"
+	"github.com/jexia/maestro/protocol/http"
+	"github.com/jexia/maestro/schema/protoc"
 	"github.com/spf13/cobra"
 )
 
 // Available execution flags
 var (
-	RecursiveLookup bool
-	ProtoPath       string
-	ProtoImports    []string
-	LogLevel        string
+	ProtoPaths []string
+	LogLevel   string
 )
 
 // Cmd represents the maestro validate command
@@ -21,19 +25,34 @@ var Cmd = &cobra.Command{
 }
 
 func init() {
-	Cmd.PersistentFlags().StringVar(&ProtoPath, "proto", "", "If set are all proto definitions found inside the given path passed as schema definitions")
+	Cmd.PersistentFlags().StringSliceVar(&ProtoPaths, "proto", []string{}, "If set are all proto definitions found inside the given path passed as schema definitions, all proto definitions are also passed as imports")
 	Cmd.PersistentFlags().StringVar(&LogLevel, "level", "info", "Logging level")
 }
 
 func run(cmd *cobra.Command, args []string) error {
-	// flows := args[0]
+	options := []maestro.Option{
+		maestro.WithCodec(json.NewConstructor()),
+		maestro.WithCodec(proto.NewConstructor()),
+		maestro.WithCaller(http.NewCaller()),
+	}
 
-	// options := []maestro.Option{
-	// 	maestro.WithPath(flows, RecursiveLookup),
-	// 	maestro.WithCodec(json.NewConstructor()),
-	// 	maestro.WithCodec(proto.NewConstructor()),
-	// 	maestro.WithCaller(http.NewCaller()),
-	// 	maestro.WithSchema(collection),
-	// }
+	for _, arg := range args {
+		options = append(options, maestro.WithDefinitions(hcl.DefinitionResolver(arg)))
+	}
+
+	for _, path := range ProtoPaths {
+		resolver, err := protoc.Collect(ProtoPaths, path)
+		if err != nil {
+			return err
+		}
+
+		options = append(options, maestro.WithSchema(resolver))
+	}
+
+	_, err := maestro.ConstructSpecs(maestro.NewOptions(options...))
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
