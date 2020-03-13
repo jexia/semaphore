@@ -57,12 +57,12 @@ func run(cmd *cobra.Command, args []string) error {
 	}
 
 	for _, path := range ProtoPaths {
-		collection, err := protoc.Collect(ProtoPaths, path)
+		resolver, err := protoc.Collect(ProtoPaths, path)
 		if err != nil {
 			return err
 		}
 
-		options = append(options, maestro.WithSchema(collection))
+		options = append(options, maestro.WithSchema(resolver))
 	}
 
 	if HTTPAddr != "" {
