@@ -88,7 +88,7 @@ func TestCallerReferences(t *testing.T) {
 	resource := ".request"
 
 	service := NewMockService("http://localhost", "GET", "/"+expected)
-	call, err := (&Caller{}).New(service, "", nil, nil)
+	call, err := (&Caller{}).New(service, "mock", nil, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -129,7 +129,7 @@ func TestCallerReferencesLookup(t *testing.T) {
 	defer server.Close()
 
 	service := NewMockService(server.URL, "GET", "/:message")
-	caller, err := (&Caller{}).New(service, "", nil, nil)
+	caller, err := (&Caller{}).New(service, "mock", nil, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

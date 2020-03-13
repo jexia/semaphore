@@ -138,6 +138,5 @@ type Proxy struct {
 // ProxyForward specification
 type ProxyForward struct {
 	Service string  `hcl:"service,label"`
-	Method  string  `hcl:"method,label"`
 	Header  *Header `hcl:"header,block"`
 }

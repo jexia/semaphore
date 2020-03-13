@@ -51,6 +51,7 @@ func NewMockService(host string, method string, endpoint string) *MockService {
 		host: host,
 		methods: []schema.Method{
 			&MockMethod{
+				name: "mock",
 				options: schema.Options{
 					MethodOption:   method,
 					EndpointOption: endpoint,

@@ -30,10 +30,10 @@ func (caller *Caller) Name() string {
 }
 
 // New constructs a new caller for the given host
-func (caller *Caller) New(schema schema.Service, serviceMethod string, functions specs.CustomDefinedFunctions, opts schema.Options) (protocol.Call, error) {
+func (caller *Caller) New(schema schema.Service, method string, functions specs.CustomDefinedFunctions, opts schema.Options) (protocol.Call, error) {
 	log.WithFields(log.Fields{
 		"service": schema.GetName(),
-		"method":  serviceMethod,
+		"method":  method,
 	}).Info("Constructing new HTTP caller")
 
 	options, err := ParseCallerOptions(opts)
@@ -41,17 +41,13 @@ func (caller *Caller) New(schema schema.Service, serviceMethod string, functions
 		return nil, err
 	}
 
-	schemaMethod := schema.GetMethod(serviceMethod)
-	if schemaMethod == nil {
-		return nil, trace.New(trace.WithMessage("service method not found '%s'.'%s'", schema.GetName(), serviceMethod))
+	request, endpoint, err := GetMethodEndpoint(schema, method)
+	if err != nil {
+		return nil, err
 	}
 
-	methodOptions := schemaMethod.GetOptions()
-	method := methodOptions[MethodOption]
-	endpoint := methodOptions[EndpointOption]
-
 	log.WithFields(log.Fields{
-		"method":   method,
+		"method":   request,
 		"host":     schema.GetHost(),
 		"endpoint": endpoint,
 	}).Info("Constructing new HTTP caller")
@@ -64,7 +60,7 @@ func (caller *Caller) New(schema schema.Service, serviceMethod string, functions
 	return &Call{
 		service:    schema.GetName(),
 		host:       schema.GetHost(),
-		method:     method,
+		method:     request,
 		endpoint:   endpoint,
 		proxy:      NewProxy(options),
 		references: references,
@@ -94,7 +90,9 @@ func (call *Call) Call(rw protocol.ResponseWriter, incoming *protocol.Request, r
 	}
 
 	endpoint := LookupEndpointReferences(call, refs)
-	url.Path = endpoint
+	if endpoint != "" {
+		url.Path = endpoint
+	}
 
 	log.WithFields(log.Fields{
 		"url":     url,
@@ -160,4 +158,24 @@ func TemplateReferences(value string, functions specs.CustomDefinedFunctions) ([
 	}
 
 	return result, nil
+}
+
+// GetMethodEndpoint attempts to find the endpoint for the given method.
+// Empty values are returned when a empty method name is given.
+func GetMethodEndpoint(schema schema.Service, name string) (string, string, error) {
+	if name == "" {
+		return "", "", nil
+	}
+
+	method := schema.GetMethod(name)
+	if method == nil {
+		return "", "", trace.New(trace.WithMessage("service method not found '%s'.'%s'", schema.GetName(), method))
+	}
+
+	options := method.GetOptions()
+
+	request := options[MethodOption]
+	endpoint := options[EndpointOption]
+
+	return request, endpoint, nil
 }

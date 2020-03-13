@@ -151,7 +151,6 @@ func ParseIntermediateProxy(proxy Proxy, functions specs.CustomDefinedFunctions)
 func ParseIntermediateProxyForward(proxy ProxyForward, functions specs.CustomDefinedFunctions) (*specs.Call, error) {
 	result := specs.Call{
 		Service: proxy.Service,
-		Method:  proxy.Method,
 		Request: &specs.ParameterMap{},
 	}
 
