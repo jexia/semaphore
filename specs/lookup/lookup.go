@@ -4,6 +4,9 @@ import (
 	"github.com/jexia/maestro/specs"
 )
 
+// SelfRef represents the syntax used to reference the entire object
+const SelfRef = "."
+
 // ReferenceMap holds the resource references and their representing parameter map
 type ReferenceMap map[string]PathLookup
 
@@ -121,6 +124,10 @@ func HeaderLookup(header specs.Header) PathLookup {
 // ParameterMapLookup attempts to lookup the given path inside the params collection
 func ParameterMapLookup(param *specs.Property) PathLookup {
 	return func(path string) *specs.Property {
+		if path == SelfRef {
+			return param
+		}
+
 		if param.Path == path {
 			return param
 		}

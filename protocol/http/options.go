@@ -1,10 +1,30 @@
 package http
 
 import (
+	"strconv"
 	"time"
 
 	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/specs"
+)
+
+const (
+	// ReadTimeoutOption represents the HTTP read timeout option key
+	ReadTimeoutOption = "read_timeout"
+	// WriteTimeoutOption represents the HTTP write timeout option key
+	WriteTimeoutOption = "write_timeout"
+	// EndpointOption represents the HTTP endpoints option key
+	EndpointOption = "endpoint"
+	// MethodOption represents the HTTP method option key
+	MethodOption = "method"
+	// FlushIntervalOption represents the flush interval option key
+	FlushIntervalOption = "flush_interval"
+	// TimeoutOption represents the timeout option key
+	TimeoutOption = "timeout"
+	// KeepAliveOption represents the keep alive option key
+	KeepAliveOption = "keep_alive"
+	// MaxIdleConnsOption represents the max idle connections option key
+	MaxIdleConnsOption = "max_idle_conns"
 )
 
 // ListenerOptions represents the available HTTP options
@@ -14,33 +34,33 @@ type ListenerOptions struct {
 }
 
 // ParseListenerOptions parses the given specs options into HTTP options
-func ParseListenerOptions(options specs.Options) *ListenerOptions {
+func ParseListenerOptions(options specs.Options) (*ListenerOptions, error) {
 	result := &ListenerOptions{
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 5 * time.Second,
 	}
 
-	read, has := options["read_timeout"]
+	read, has := options[ReadTimeoutOption]
 	if has {
 		duration, err := time.ParseDuration(read)
 		if err != nil {
-			// TODO: log err
+			return nil, err
 		}
 
 		result.ReadTimeout = duration
 	}
 
-	write, has := options["write_timeout"]
+	write, has := options[WriteTimeoutOption]
 	if has {
 		duration, err := time.ParseDuration(write)
 		if err != nil {
-			// TODO: log err
+			return nil, err
 		}
 
 		result.WriteTimeout = duration
 	}
 
-	return result
+	return result, nil
 }
 
 // EndpointOptions represents the available HTTP options
@@ -58,10 +78,10 @@ func ParseEndpointOptions(options specs.Options) (*EndpointOptions, error) {
 		WriteTimeout: 5 * time.Second,
 	}
 
-	result.Method = options["method"]
-	result.Endpoint = options["endpoint"]
+	result.Method = options[MethodOption]
+	result.Endpoint = options[EndpointOption]
 
-	read, has := options["read_timeout"]
+	read, has := options[ReadTimeoutOption]
 	if has {
 		duration, err := time.ParseDuration(read)
 		if err != nil {
@@ -71,7 +91,7 @@ func ParseEndpointOptions(options specs.Options) (*EndpointOptions, error) {
 		result.ReadTimeout = duration
 	}
 
-	write, has := options["write_timeout"]
+	write, has := options[WriteTimeoutOption]
 	if has {
 		duration, err := time.ParseDuration(write)
 		if err != nil {
@@ -86,12 +106,19 @@ func ParseEndpointOptions(options specs.Options) (*EndpointOptions, error) {
 
 // CallerOptions represents the available HTTP options
 type CallerOptions struct {
+	Timeout       time.Duration
+	KeepAlive     time.Duration
 	FlushInterval time.Duration
+	MaxIdleConns  int
 }
 
 // ParseCallerOptions parses the given specs options into HTTP options
 func ParseCallerOptions(options schema.Options) (*CallerOptions, error) {
-	result := &CallerOptions{}
+	result := &CallerOptions{
+		Timeout:      60 * time.Second,
+		KeepAlive:    60 * time.Second,
+		MaxIdleConns: 100,
+	}
 
 	flush, has := options[FlushIntervalOption]
 	if has {
@@ -101,6 +128,36 @@ func ParseCallerOptions(options schema.Options) (*CallerOptions, error) {
 		}
 
 		result.FlushInterval = duration
+	}
+
+	timeout, has := options[TimeoutOption]
+	if has {
+		duration, err := time.ParseDuration(timeout)
+		if err != nil {
+			return nil, err
+		}
+
+		result.Timeout = duration
+	}
+
+	keep, has := options[KeepAliveOption]
+	if has {
+		duration, err := time.ParseDuration(keep)
+		if err != nil {
+			return nil, err
+		}
+
+		result.KeepAlive = duration
+	}
+
+	idle, has := options[MaxIdleConnsOption]
+	if has {
+		value, err := strconv.Atoi(idle)
+		if err != nil {
+			return nil, err
+		}
+
+		result.MaxIdleConns = value
 	}
 
 	return result, nil

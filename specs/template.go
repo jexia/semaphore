@@ -141,6 +141,10 @@ func ParseTemplate(path string, functions CustomDefinedFunctions, value string) 
 // JoinPath joins the given flow paths
 func JoinPath(values ...string) (result string) {
 	for _, value := range values {
+		if value == "." {
+			continue
+		}
+
 		if value == "" {
 			continue
 		}

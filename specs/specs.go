@@ -194,19 +194,36 @@ type Property struct {
 	Desciptor schema.Property
 }
 
-// Clone returns a hollow clone of the property
-func (property *Property) Clone() *Property {
-	return &Property{
-		Name:      property.Name,
-		Path:      property.Path,
+// Clone returns a clone of the property
+func (property *Property) Clone(reference *PropertyReference, name string, path string) *Property {
+	result := &Property{
+		Name:      name,
+		Path:      path,
+		Reference: reference,
 		Default:   property.Default,
 		Type:      property.Type,
 		Label:     property.Label,
-		Reference: property.Reference,
 		Expr:      property.Expr,
 		Function:  property.Function,
 		Desciptor: property.Desciptor,
 	}
+
+	if property.Nested != nil {
+		if len(property.Nested) != 0 {
+			result.Nested = make(map[string]*Property, len(property.Nested))
+
+			for key, nested := range property.Nested {
+				ref := &PropertyReference{
+					Resource: reference.Resource,
+					Path:     JoinPath(reference.Path, key),
+				}
+
+				result.Nested[key] = nested.Clone(ref, key, JoinPath(path, key))
+			}
+		}
+	}
+
+	return result
 }
 
 // ParameterMap is the initial map of parameter names (keys) and their (templated) values (values)

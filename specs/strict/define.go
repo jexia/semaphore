@@ -85,7 +85,7 @@ func DefineFlow(schema schema.Collection, manifest *specs.Manifest, flow *specs.
 	}
 
 	if flow.Output != nil {
-		err = DefineParameterMap(nil, nil, flow.Output, flow)
+		err = DefineParameterMap(nil, flow.Output, flow)
 		if err != nil {
 			return err
 		}
@@ -143,7 +143,7 @@ func DefineCall(schema schema.Collection, manifest *specs.Manifest, node *specs.
 	call.SetDescriptor(method)
 
 	if call.GetRequest() != nil {
-		err = DefineParameterMap(node, call, call.GetRequest(), flow)
+		err = DefineParameterMap(node, call.GetRequest(), flow)
 		if err != nil {
 			return err
 		}
@@ -163,7 +163,7 @@ func DefineCall(schema schema.Collection, manifest *specs.Manifest, node *specs.
 }
 
 // DefineParameterMap defines the types for the given parameter map
-func DefineParameterMap(node *specs.Node, call *specs.Call, params *specs.ParameterMap, flow specs.FlowManager) (err error) {
+func DefineParameterMap(node *specs.Node, params *specs.ParameterMap, flow specs.FlowManager) (err error) {
 	for _, header := range params.Header {
 		err = DefineProperty(node, header, flow)
 		if err != nil {
@@ -176,8 +176,7 @@ func DefineParameterMap(node *specs.Node, call *specs.Call, params *specs.Parame
 		return err
 	}
 
-	ResolvePropertyReferences(params.Property)
-
+	params.Property = ResolvePropertyReferences(params.Property)
 	return nil
 }
 
@@ -268,54 +267,22 @@ func CheckTypes(property *specs.Property, schema schema.Property, flow specs.Flo
 }
 
 // ResolvePropertyReferences moves any property reference into the correct data structure
-func ResolvePropertyReferences(property *specs.Property) {
+func ResolvePropertyReferences(property *specs.Property) *specs.Property {
 	if property.Nested != nil {
-		for _, nested := range property.Nested {
-			ResolvePropertyReferences(nested)
+		for key, nested := range property.Nested {
+			property.Nested[key] = ResolvePropertyReferences(nested)
 		}
+
+		return property
 	}
 
 	if property.Reference == nil {
-		return
+		return property
 	}
 
 	if property.Reference.Property == nil {
-		return
+		return property
 	}
 
-	// reference := property.Reference.Property
-
-	// if reference.Label == types.LabelRepeated {
-	// 	clone := property.Clone(key, property.Path)
-	// 	clone.Reference = property.Reference
-
-	// 	SetReferences(property.Reference, clone)
-	// 	params.GetRepeatedProperties()[key] = clone
-	// 	return
-	// }
-
-	// ref := ref.Clone()
-	// ref.Path = specs.JoinPath(ref.Path, key)
-	// prop.Reference = ref
+	return property.Reference.Property.Clone(property.Reference, property.Name, property.Path)
 }
-
-// // SetReferences sets all the references within a given object to the given resource and path
-// func SetReferences(ref *specs.PropertyReference, object *specs.Property) {
-// 	for key, prop := range object.GetProperties() {
-// 		ref := ref.Clone()
-// 		ref.Path = specs.JoinPath(ref.Path, key)
-// 		prop.Reference = ref
-// 	}
-
-// 	for key, nested := range object.GetNestedProperties() {
-// 		ref := ref.Clone()
-// 		ref.Path = specs.JoinPath(ref.Path, key)
-// 		SetReferences(ref, nested)
-// 	}
-
-// 	for key, repeated := range object.GetRepeatedProperties() {
-// 		ref := ref.Clone()
-// 		ref.Path = specs.JoinPath(ref.Path, key)
-// 		SetReferences(ref, repeated)
-// 	}
-// }
