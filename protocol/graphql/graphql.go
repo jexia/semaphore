@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/graphql-go/graphql"
+	"github.com/jexia/maestro/codec"
 	"github.com/jexia/maestro/protocol"
 	"github.com/jexia/maestro/specs"
 	log "github.com/sirupsen/logrus"
@@ -64,12 +65,12 @@ func (listener *Listener) Serve() error {
 }
 
 // Handle parses the given endpoints and constructs route handlers
-func (listener *Listener) Handle(endpoints []*protocol.Endpoint) error {
+func (listener *Listener) Handle(endpoints []*protocol.Endpoint, constructors map[string]codec.Constructor) error {
 	fields := graphql.Fields{}
 
 	for _, endpoint := range endpoints {
-		req := NewArgs(endpoint.Request.Property())
-		res, err := NewObject(endpoint.Flow.Name, endpoint.Response.Property())
+		req := NewArgs(endpoint.Request.Property)
+		res, err := NewObject(endpoint.Flow.Name, endpoint.Response.Property)
 		if err != nil {
 			return err
 		}
@@ -86,7 +87,7 @@ func (listener *Listener) Handle(endpoints []*protocol.Endpoint) error {
 					return nil, err
 				}
 
-				result, err := ResponseValue(endpoint.Response.Property(), store)
+				result, err := ResponseValue(endpoint.Response.Property, store)
 				if err != nil {
 					return nil, err
 				}

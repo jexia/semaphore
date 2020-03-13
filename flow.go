@@ -30,6 +30,8 @@ func ConstructFlowManager(manifest *specs.Manifest, options Options) ([]*protoco
 		result := &protocol.Endpoint{
 			Listener: endpoint.Listener,
 			Options:  endpoint.Options,
+			Request:  current.GetInput(),
+			Response: current.GetOutput(),
 		}
 
 		for index, node := range current.GetNodes() {
@@ -44,30 +46,6 @@ func ConstructFlowManager(manifest *specs.Manifest, options Options) ([]*protoco
 			}
 
 			nodes[index] = flow.NewNode(node, caller, rollback)
-		}
-
-		collection, has := options.Codec[endpoint.Codec]
-		if !has {
-			return nil, trace.New(trace.WithMessage("unknown endpoint codec %s", endpoint.Codec))
-		}
-
-		if current.GetInput() != nil {
-			req, err := collection.New(specs.InputResource, current.GetInput())
-			if err != nil {
-				return nil, err
-			}
-
-			result.Request = req
-		}
-
-		if current.GetOutput() != nil {
-			res, err := collection.New(specs.InputResource, current.GetOutput())
-			if err != nil {
-				return nil, err
-			}
-
-			result.Response = res
-			result.Header = protocol.NewHeaderManager(specs.InputResource, current.GetOutput())
 		}
 
 		forward, err := ConstructForward(manifest, current.GetForward(), options)
@@ -231,7 +209,7 @@ func ConstructListeners(endpoints []*protocol.Endpoint, options Options) error {
 
 	for key, collection := range collections {
 		listener := options.Listeners.Get(key)
-		err := listener.Handle(collection)
+		err := listener.Handle(collection, options.Codec)
 		if err != nil {
 			return err
 		}

@@ -1,6 +1,7 @@
-endpoint "todo" "http" "json" {
+endpoint "todo" "http" {
 	endpoint = "/"
 	method = "GET"
+	codec = "json"
 }
 
 flow "todo" {

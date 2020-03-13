@@ -28,6 +28,8 @@ const (
 
 	// InputResource key
 	InputResource = "input"
+	// OutputResource key
+	OutputResource = "output"
 	// ResourceRequest property
 	ResourceRequest = "request"
 	// ResourceHeader property

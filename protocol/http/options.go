@@ -17,6 +17,8 @@ const (
 	EndpointOption = "endpoint"
 	// MethodOption represents the HTTP method option key
 	MethodOption = "method"
+	// CodecOption represents the HTTP listener codec option key
+	CodecOption = "codec"
 	// FlushIntervalOption represents the flush interval option key
 	FlushIntervalOption = "flush_interval"
 	// TimeoutOption represents the timeout option key
@@ -69,6 +71,7 @@ type EndpointOptions struct {
 	Endpoint     string
 	ReadTimeout  time.Duration
 	WriteTimeout time.Duration
+	Codec        string
 }
 
 // ParseEndpointOptions parses the given specs options into HTTP options
@@ -76,10 +79,16 @@ func ParseEndpointOptions(options specs.Options) (*EndpointOptions, error) {
 	result := &EndpointOptions{
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 5 * time.Second,
+		Codec:        "json",
 	}
 
 	result.Method = options[MethodOption]
 	result.Endpoint = options[EndpointOption]
+
+	codec, has := options[CodecOption]
+	if has {
+		result.Codec = codec
+	}
 
 	read, has := options[ReadTimeoutOption]
 	if has {

@@ -40,7 +40,6 @@ type ParameterMap struct {
 type Endpoint struct {
 	Flow     string   `hcl:"flow,label"`
 	Listener string   `hcl:"listener,label"`
-	Codec    string   `hcl:"codec,label"`
 	Options  hcl.Body `hcl:",remain"`
 }
 
