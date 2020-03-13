@@ -4,6 +4,7 @@ import (
 	"github.com/jexia/maestro"
 	"github.com/jexia/maestro/codec/json"
 	"github.com/jexia/maestro/codec/proto"
+	"github.com/jexia/maestro/definitions/hcl"
 	"github.com/jexia/maestro/protocol/graphql"
 	"github.com/jexia/maestro/protocol/http"
 	"github.com/jexia/maestro/schema/protoc"
@@ -20,7 +21,7 @@ func main() {
 	logrus.SetLevel(logrus.DebugLevel)
 
 	client, err := maestro.New(
-		maestro.WithPath(".", false),
+		maestro.WithDefinitions(hcl.DefinitionResolver(".")),
 		maestro.WithSchema(collection),
 		maestro.WithCodec(json.NewConstructor()),
 		maestro.WithCodec(proto.NewConstructor()),

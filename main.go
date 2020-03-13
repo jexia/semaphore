@@ -1,16 +1,11 @@
 package maestro
 
 import (
-	"os"
-	"path/filepath"
 	"sync"
 
-	"github.com/jexia/maestro/definitions/hcl"
 	"github.com/jexia/maestro/protocol"
 	"github.com/jexia/maestro/specs"
 	"github.com/jexia/maestro/specs/strict"
-	"github.com/jexia/maestro/specs/trace"
-	"github.com/jexia/maestro/utils"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -58,10 +53,6 @@ func (client *Client) Close() {
 func New(opts ...Option) (*Client, error) {
 	options := NewOptions(opts...)
 
-	if options.Path == "" {
-		return nil, trace.New(trace.WithMessage("undefined path in options"))
-	}
-
 	manifest, err := ConstructSpecs(options)
 	if err != nil {
 		return nil, err
@@ -84,52 +75,46 @@ func New(opts ...Option) (*Client, error) {
 
 // ConstructSpecs construct a specs manifest from the given options
 func ConstructSpecs(options Options) (*specs.Manifest, error) {
-	files, err := utils.ReadDir(options.Path, options.Recursive, hcl.Ext)
+	result := &specs.Manifest{}
+
+	for _, resolver := range options.Definitions {
+		if resolver == nil {
+			continue
+		}
+
+		manifest, err := resolver(options.Functions)
+		if err != nil {
+			return nil, err
+		}
+
+		result.Merge(manifest)
+	}
+
+	for _, resolver := range options.Schemas {
+		if resolver == nil {
+			continue
+		}
+
+		err := resolver(options.Schema)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	err := specs.CheckManifestDuplicates(result)
 	if err != nil {
 		return nil, err
 	}
 
-	manifest := &specs.Manifest{}
-
-	for _, file := range files {
-		reader, err := os.Open(filepath.Join(file.Path, file.Name()))
-		if err != nil {
-			return nil, err
-		}
-
-		definition, err := hcl.UnmarshalHCL(file.Name(), reader)
-		if err != nil {
-			return nil, err
-		}
-
-		result, err := hcl.ParseSpecs(definition, options.Functions)
-		if err != nil {
-			return nil, err
-		}
-
-		collection, err := hcl.ParseSchema(definition, options.Schema)
-		if err != nil {
-			return nil, err
-		}
-
-		options.Schema.Add(collection)
-		manifest.MergeLeft(result)
-
-		err = specs.CheckManifestDuplicates(file.Name(), manifest)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	err = specs.ResolveManifestDependencies(manifest)
+	err = specs.ResolveManifestDependencies(result)
 	if err != nil {
 		return nil, err
 	}
 
-	err = strict.DefineManifest(options.Schema, manifest)
+	err = strict.DefineManifest(options.Schema, result)
 	if err != nil {
 		return nil, err
 	}
 
-	return manifest, nil
+	return result, nil
 }

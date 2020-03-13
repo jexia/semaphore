@@ -2,6 +2,7 @@ package protoc
 
 import (
 	"path/filepath"
+	"strings"
 
 	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/utils"
@@ -13,7 +14,7 @@ import (
 var ProtoExt = ".proto"
 
 // Collect attempts to collect all the available proto files inside the given path and parses them to resources
-func Collect(imports []string, path string) (schema.Collection, error) {
+func Collect(imports []string, path string) (schema.Resolver, error) {
 	path, err := filepath.Abs(path)
 	if err != nil {
 		return nil, err
@@ -33,17 +34,30 @@ func Collect(imports []string, path string) (schema.Collection, error) {
 		return nil, err
 	}
 
+	for _, file := range files {
+		file.Path = strings.Replace(file.Path, path, "", 1)
+	}
+
 	descriptors, err := UnmarshalFiles(imports, files)
 	if err != nil {
 		return nil, err
 	}
 
-	return NewCollection(descriptors), nil
+	collection := NewCollection(descriptors)
+	return SchemaResolver(collection), nil
+}
+
+// SchemaResolver returns a new schema resolver for the given protoc collection
+func SchemaResolver(collection schema.Collection) schema.Resolver {
+	return func(schemas *schema.Store) error {
+		schemas.Add(collection)
+		return nil
+	}
 }
 
 // UnmarshalFiles attempts to parse the given HCL files to intermediate resources.
 // Files are parsed based from the given import paths
-func UnmarshalFiles(imports []string, files []utils.FileInfo) ([]*desc.FileDescriptor, error) {
+func UnmarshalFiles(imports []string, files []*utils.FileInfo) ([]*desc.FileDescriptor, error) {
 	parser := &protoparse.Parser{
 		ImportPaths:           imports,
 		IncludeSourceCodeInfo: true,
@@ -52,7 +66,7 @@ func UnmarshalFiles(imports []string, files []utils.FileInfo) ([]*desc.FileDescr
 	results := []*desc.FileDescriptor{}
 
 	for _, file := range files {
-		descs, err := parser.ParseFiles(file.Name())
+		descs, err := parser.ParseFiles(filepath.Join(file.Path, file.Name()))
 		if err != nil {
 			return nil, err
 		}

@@ -12,20 +12,21 @@ type Option func(*Options)
 
 // Options represents all the available options
 type Options struct {
-	Path      string
-	Recursive bool
-	Codec     map[string]codec.Constructor
-	Callers   protocol.Callers
-	Listeners protocol.Listeners
-	Schema    *schema.Store
-	Functions specs.CustomDefinedFunctions
+	Definitions []specs.Resolver
+	Codec       map[string]codec.Constructor
+	Callers     protocol.Callers
+	Listeners   protocol.Listeners
+	Schemas     []schema.Resolver
+	Schema      *schema.Store
+	Functions   specs.CustomDefinedFunctions
 }
 
 // NewOptions constructs a options object from the given option constructors
 func NewOptions(options ...Option) Options {
 	result := Options{
-		Codec:  make(map[string]codec.Constructor),
-		Schema: schema.NewStore(),
+		Definitions: make([]specs.Resolver, 0),
+		Codec:       make(map[string]codec.Constructor),
+		Schema:      schema.NewStore(),
 	}
 
 	for _, option := range options {
@@ -35,11 +36,10 @@ func NewOptions(options ...Option) Options {
 	return result
 }
 
-// WithPath defines the definitions path to be used
-func WithPath(path string, recursive bool) Option {
+// WithDefinitions defines the HCL definitions path to be used
+func WithDefinitions(definition specs.Resolver) Option {
 	return func(options *Options) {
-		options.Path = path
-		options.Recursive = recursive
+		options.Definitions = append(options.Definitions, definition)
 	}
 }
 
@@ -65,9 +65,9 @@ func WithListener(listener protocol.Listener) Option {
 }
 
 // WithSchema appends the schema collection to the schema store
-func WithSchema(collection schema.Collection) Option {
+func WithSchema(resolver schema.Resolver) Option {
 	return func(options *Options) {
-		options.Schema.Add(collection)
+		options.Schemas = append(options.Schemas, resolver)
 	}
 }
 

@@ -6,6 +6,9 @@ import (
 	"github.com/jexia/maestro/specs/types"
 )
 
+// Resolver when called collects the available manifest(s) with the configured configuration
+type Resolver func(CustomDefinedFunctions) (*Manifest, error)
+
 // FlowManager represents a flow manager
 type FlowManager interface {
 	GetName() string
@@ -81,8 +84,8 @@ func (manifest *Manifest) GetFlow(name string) FlowManager {
 	return nil
 }
 
-// MergeLeft merges the incoming manifest to the existing (left) manifest
-func (manifest *Manifest) MergeLeft(incoming *Manifest) {
+// Merge merges the incoming manifest to the existing (left) manifest
+func (manifest *Manifest) Merge(incoming *Manifest) {
 	manifest.Flows = append(manifest.Flows, incoming.Flows...)
 	manifest.Proxy = append(manifest.Proxy, incoming.Proxy...)
 	manifest.Endpoints = append(manifest.Endpoints, incoming.Endpoints...)

@@ -8,7 +8,7 @@ import (
 )
 
 // CheckManifestDuplicates checks for duplicate definitions
-func CheckManifestDuplicates(file string, manifest *Manifest) error {
+func CheckManifestDuplicates(manifest *Manifest) error {
 	log.Info("Checking manifest duplicates")
 
 	flows := sync.Map{}
@@ -16,10 +16,10 @@ func CheckManifestDuplicates(file string, manifest *Manifest) error {
 	for _, flow := range manifest.Flows {
 		_, duplicate := flows.LoadOrStore(flow.Name, flow)
 		if duplicate {
-			return trace.New(trace.WithMessage("%s duplicate flow '%s'", file, flow.Name))
+			return trace.New(trace.WithMessage("duplicate flow '%s'", flow.Name))
 		}
 
-		err := CheckFlowDuplicates(file, flow)
+		err := CheckFlowDuplicates(flow)
 		if err != nil {
 			return err
 		}
@@ -29,7 +29,7 @@ func CheckManifestDuplicates(file string, manifest *Manifest) error {
 }
 
 // CheckFlowDuplicates checks for duplicate definitions
-func CheckFlowDuplicates(file string, flow *Flow) error {
+func CheckFlowDuplicates(flow *Flow) error {
 	log.Info("Checking flow duplicates")
 
 	calls := sync.Map{}
@@ -37,7 +37,7 @@ func CheckFlowDuplicates(file string, flow *Flow) error {
 	for _, call := range flow.Nodes {
 		_, duplicate := calls.LoadOrStore(call.Name, call)
 		if duplicate {
-			return trace.New(trace.WithMessage("%s duplicate call '%s' in flow '%s'", file, call.Name, flow.Name))
+			return trace.New(trace.WithMessage("duplicate call '%s' in flow '%s'", call.Name, flow.Name))
 		}
 	}
 

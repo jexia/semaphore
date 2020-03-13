@@ -8,6 +8,7 @@ import (
 	"github.com/jexia/maestro"
 	"github.com/jexia/maestro/codec/json"
 	"github.com/jexia/maestro/codec/proto"
+	"github.com/jexia/maestro/definitions/hcl"
 	"github.com/jexia/maestro/protocol/graphql"
 	"github.com/jexia/maestro/protocol/http"
 	"github.com/jexia/maestro/schema/protoc"
@@ -18,28 +19,24 @@ import (
 
 // Available execution flags
 var (
-	RecursiveLookup bool
-	HTTPAddr        string
-	GraphQLAddr     string
-	ProtoPath       string
-	ProtoImports    []string
-	LogLevel        string
+	HTTPAddr    string
+	GraphQLAddr string
+	ProtoPaths  []string
+	LogLevel    string
 )
 
 // Cmd represents the maestro run command
 var Cmd = &cobra.Command{
 	Use:   "run [path]",
-	Short: "Run the given flow definitions with the configured schema format",
+	Short: "Run the flow definitions with the configured schema format(s)",
 	Args:  cobra.MinimumNArgs(1),
 	RunE:  run,
 }
 
 func init() {
-	Cmd.PersistentFlags().BoolVar(&RecursiveLookup, "recursive", false, "If set are all flow definitions within the given path looked up recursively")
 	Cmd.PersistentFlags().StringVar(&HTTPAddr, "http", "", "If set starts the HTTP listener on the given TCP address")
 	Cmd.PersistentFlags().StringVar(&GraphQLAddr, "graphql", "", "If set starts the GraphQL listener on the given TCP address")
-	Cmd.PersistentFlags().StringVar(&ProtoPath, "proto", "", "If set are all proto definitions found inside the given path passed as schema definitions")
-	Cmd.PersistentFlags().StringSliceVar(&ProtoImports, "proto-import", []string{}, "Proto import definitions")
+	Cmd.PersistentFlags().StringSliceVar(&ProtoPaths, "proto", []string{}, "If set are all proto definitions found inside the given path passed as schema definitions")
 	Cmd.PersistentFlags().StringVar(&LogLevel, "level", "info", "Logging level")
 }
 
@@ -51,19 +48,21 @@ func run(cmd *cobra.Command, args []string) error {
 
 	logrus.SetLevel(level)
 
-	collection, err := protoc.Collect(append(ProtoImports, ProtoPath), ProtoPath)
-	if err != nil {
-		return err
-	}
-
 	flows := args[0]
-
 	options := []maestro.Option{
-		maestro.WithPath(flows, RecursiveLookup),
+		maestro.WithDefinitions(hcl.DefinitionResolver(flows)),
 		maestro.WithCodec(json.NewConstructor()),
 		maestro.WithCodec(proto.NewConstructor()),
 		maestro.WithCaller(http.NewCaller()),
-		maestro.WithSchema(collection),
+	}
+
+	for _, path := range ProtoPaths {
+		collection, err := protoc.Collect(ProtoPaths, path)
+		if err != nil {
+			return err
+		}
+
+		options = append(options, maestro.WithSchema(collection))
 	}
 
 	if HTTPAddr != "" {

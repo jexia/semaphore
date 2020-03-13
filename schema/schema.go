@@ -60,3 +60,6 @@ type Property interface {
 	GetNested() map[string]Property
 	GetOptions() Options
 }
+
+// Resolver when called collects the available schema(s) with the configured configuration
+type Resolver func(*Store) error
