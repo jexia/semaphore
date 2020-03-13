@@ -11,6 +11,7 @@ import (
 	"github.com/jexia/maestro/specs/strict"
 	"github.com/jexia/maestro/specs/trace"
 	"github.com/jexia/maestro/utils"
+	log "github.com/sirupsen/logrus"
 )
 
 // Client represents a maestro instance
@@ -27,6 +28,8 @@ func (client *Client) Serve() (result error) {
 	wg.Add(len(client.Listeners))
 
 	for _, listener := range client.Listeners {
+		log.WithField("listener", listener.Name()).Info("serving listener")
+
 		go func(listener protocol.Listener) {
 			defer wg.Done()
 			err := listener.Serve()

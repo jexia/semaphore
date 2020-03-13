@@ -71,7 +71,7 @@ func run(cmd *cobra.Command, args []string) error {
 	}
 
 	if GraphQLAddr != "" {
-		options = append(options, maestro.WithListener(graphql.NewListener(HTTPAddr, specs.Options{})))
+		options = append(options, maestro.WithListener(graphql.NewListener(GraphQLAddr, specs.Options{})))
 	}
 
 	client, err := maestro.New(options...)
