@@ -60,7 +60,7 @@ func ParseIntermediateEndpoint(endpoint Endpoint) *specs.Endpoint {
 func ParseIntermediateFlow(flow Flow, functions specs.CustomDefinedFunctions) (*specs.Flow, error) {
 	log.WithField("flow", flow.Name).Debug("Parsing intermediate flow to specs")
 
-	input, err := ParseIntermediateParameterMap(ParseIntermediateInputParameterMap(flow.Input), functions)
+	input, err := ParseIntermediateInputParameterMap(flow.Input, functions)
 	if err != nil {
 		return nil, err
 	}
@@ -95,25 +95,65 @@ func ParseIntermediateFlow(flow Flow, functions specs.CustomDefinedFunctions) (*
 }
 
 // ParseIntermediateInputParameterMap parses the given input parameter map
-func ParseIntermediateInputParameterMap(params *InputParameterMap) *ParameterMap {
+func ParseIntermediateInputParameterMap(params *InputParameterMap, functions specs.CustomDefinedFunctions) (*specs.ParameterMap, error) {
 	if params == nil {
-		return nil
+		return nil, nil
 	}
 
-	result := &ParameterMap{
-		Schema:     params.Schema,
-		Options:    params.Options,
-		Header:     params.Header,
-		Nested:     params.Nested,
-		Repeated:   make([]RepeatedParameterMap, len(params.Repeated)),
-		Properties: params.Properties,
+	properties, _ := params.Properties.JustAttributes()
+	result := &specs.ParameterMap{
+		Schema:  params.Schema,
+		Options: make(specs.Options),
+		Header:  make(specs.Header, len(params.Header)),
+		Property: &specs.Property{
+			Type:   types.TypeMessage,
+			Label:  types.LabelOptional,
+			Nested: map[string]*specs.Property{},
+		},
 	}
 
-	for index, repeated := range params.Repeated {
-		result.Repeated[index] = ParseIntermediateInputRepeatedParameterMap(repeated)
+	for _, key := range params.Header {
+		result.Header[key] = &specs.Property{
+			Path:  key,
+			Name:  key,
+			Type:  types.TypeString,
+			Label: types.LabelOptional,
+		}
 	}
 
-	return result
+	if params.Options != nil {
+		result.Options = ParseIntermediateSpecOptions(params.Options.Body)
+	}
+
+	for _, attr := range properties {
+		results, err := ParseIntermediateProperty(attr.Name, functions, attr)
+		if err != nil {
+			return nil, err
+		}
+
+		result.Property.Nested[attr.Name] = results
+	}
+
+	for _, nested := range params.Nested {
+		results, err := ParseIntermediateNestedParameterMap(nested, functions, nested.Name)
+		if err != nil {
+			return nil, err
+		}
+
+		result.Property.Nested[nested.Name] = results
+	}
+
+	for _, intermediate := range params.Repeated {
+		repeated := ParseIntermediateInputRepeatedParameterMap(intermediate)
+		results, err := ParseIntermediateRepeatedParameterMap(repeated, functions, repeated.Name)
+		if err != nil {
+			return nil, err
+		}
+
+		result.Property.Nested[repeated.Name] = results
+	}
+
+	return result, nil
 }
 
 // ParseIntermediateProxy parses the given intermediate proxy to a specs proxy

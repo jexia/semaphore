@@ -17,6 +17,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const (
+	// Ext represents the intermediate file extension
+	Ext = ".hcl"
+)
+
 // SchemaResolver constructs a schema resolver for the given path
 func SchemaResolver(path string) schema.Resolver {
 	recursive := false
