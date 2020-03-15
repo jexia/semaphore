@@ -4,13 +4,14 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/jexia/maestro/header"
 	"github.com/jexia/maestro/protocol"
 )
 
 // CopyHTTPHeader copies the given HTTP header into a protocol header
-func CopyHTTPHeader(header http.Header) protocol.Header {
-	result := protocol.Header{}
-	for key, val := range header {
+func CopyHTTPHeader(source http.Header) header.Store {
+	result := header.Store{}
+	for key, val := range source {
 		result.Set(key, strings.Join(val, ";"))
 	}
 
@@ -18,14 +19,14 @@ func CopyHTTPHeader(header http.Header) protocol.Header {
 }
 
 // SetHTTPHeader copies the given protocol header into a HTTP header
-func SetHTTPHeader(writer http.Header, header protocol.Header) {
+func SetHTTPHeader(writer http.Header, header header.Store) {
 	for key, val := range header {
 		writer.Set(key, val)
 	}
 }
 
 // CopyProtocolHeader copies the given protocol header into a HTTP header
-func CopyProtocolHeader(header protocol.Header) http.Header {
+func CopyProtocolHeader(header header.Store) http.Header {
 	result := http.Header{}
 	for key, val := range header {
 		result.Set(key, val)
@@ -71,7 +72,7 @@ func (rw *ProtocolResponseWriter) WriteHeader(status int) {
 func NewRequest(req *http.Request) *protocol.Request {
 	return &protocol.Request{
 		Context: req.Context(),
-		Header:  protocol.Header{},
+		Header:  header.Store{},
 		Body:    req.Body,
 	}
 }
@@ -79,7 +80,7 @@ func NewRequest(req *http.Request) *protocol.Request {
 // NewResponseWriter constructs a new HTTP response writer of the given HTTP response writer
 func NewResponseWriter(rw http.ResponseWriter) *ResponseWriter {
 	return &ResponseWriter{
-		header: make(protocol.Header),
+		header: make(header.Store),
 		writer: rw,
 	}
 }
@@ -87,14 +88,14 @@ func NewResponseWriter(rw http.ResponseWriter) *ResponseWriter {
 // A ResponseWriter interface is used by an HTTP handler to
 // construct an HTTP response.
 type ResponseWriter struct {
-	header protocol.Header
+	header header.Store
 	writer http.ResponseWriter
 }
 
 // Header returns the header map that will be sent by
 // WriteHeader. The Header map also is the mechanism with which
 // Handlers can set HTTP trailers.
-func (rw *ResponseWriter) Header() protocol.Header {
+func (rw *ResponseWriter) Header() header.Store {
 	return rw.header
 }
 

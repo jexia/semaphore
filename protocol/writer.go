@@ -2,6 +2,8 @@ package protocol
 
 import (
 	"io"
+
+	"github.com/jexia/maestro/header"
 )
 
 // NewResponseWriter constructs a new response writer for the given io writer
@@ -14,12 +16,12 @@ func NewResponseWriter(writer io.Writer) *Writer {
 // Writer represents a response writer
 type Writer struct {
 	writer io.Writer
-	header Header
+	header header.Store
 	status int
 }
 
 // Header returns the response header
-func (rw *Writer) Header() Header {
+func (rw *Writer) Header() header.Store {
 	return rw.header
 }
 

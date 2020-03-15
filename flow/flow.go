@@ -49,6 +49,11 @@ type Manager struct {
 	wg         sync.WaitGroup
 }
 
+// GetName returns the name of the given flow manager
+func (manager *Manager) GetName() string {
+	return manager.Name
+}
+
 // Call calls all the nodes inside the manager if a error is returned is a rollback of all the already executed steps triggered.
 // Nodes are executed concurrently to one another.
 func (manager *Manager) Call(ctx context.Context, refs *refs.Store) error {

@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/jexia/maestro/codec"
+	"github.com/jexia/maestro/header"
 	"github.com/jexia/maestro/protocol"
 	"github.com/jexia/maestro/specs"
 	"github.com/julienschmidt/httprouter"
@@ -112,7 +113,7 @@ func NewHandle(endpoint *protocol.Endpoint, options *EndpointOptions, constructo
 			return nil
 		}
 
-		header := protocol.NewHeaderManager(specs.InputResource, endpoint.Request)
+		header := header.NewManager(specs.InputResource, endpoint.Request)
 		handle.Request = &Request{
 			Header: header,
 			Codec:  request,
@@ -126,7 +127,7 @@ func NewHandle(endpoint *protocol.Endpoint, options *EndpointOptions, constructo
 			return nil
 		}
 
-		header := protocol.NewHeaderManager(specs.OutputResource, endpoint.Response)
+		header := header.NewManager(specs.OutputResource, endpoint.Response)
 		handle.Response = &Request{
 			Header: header,
 			Codec:  response,
@@ -139,7 +140,7 @@ func NewHandle(endpoint *protocol.Endpoint, options *EndpointOptions, constructo
 // Request represents a codec manager and header manager
 type Request struct {
 	Codec  codec.Manager
-	Header *protocol.HeaderManager
+	Header *header.Manager
 }
 
 // Handle holds a endpoint its options and a optional request and response

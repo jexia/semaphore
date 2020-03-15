@@ -5,32 +5,22 @@ import (
 	"io"
 
 	"github.com/jexia/maestro/codec"
-	"github.com/jexia/maestro/flow"
+	"github.com/jexia/maestro/header"
 	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/specs"
 )
 
-// Endpoint represents a protocol listener endpoint
-type Endpoint struct {
-	Listener string
-	Flow     *flow.Manager
-	Request  *specs.ParameterMap
-	Response *specs.ParameterMap
-	Forward  Call
-	Options  specs.Options
-}
-
 // ResponseWriter specifies the response writer implementation which could be used to both proxy forward a request or used to call a service
 type ResponseWriter interface {
-	Header() Header
+	Header() header.Store
 	Write([]byte) (int, error)
 	WriteHeader(int)
 }
 
 // Request represents the request object given to a caller implementation used to make calls
 type Request struct {
-	Header  Header
+	Header  header.Store
 	Body    io.Reader
 	Context context.Context
 }
@@ -74,6 +64,24 @@ func (collection Listeners) Get(name string) Listener {
 	}
 
 	return nil
+}
+
+// Flow represents a flow which could be called by a protocol
+type Flow interface {
+	NewStore() *refs.Store
+	GetName() string
+	Call(ctx context.Context, refs *refs.Store) error
+	Wait()
+}
+
+// Endpoint represents a protocol listener endpoint
+type Endpoint struct {
+	Listener string
+	Flow     Flow
+	Request  *specs.ParameterMap
+	Response *specs.ParameterMap
+	Forward  Call
+	Options  specs.Options
 }
 
 // Listener specifies the listener implementation
