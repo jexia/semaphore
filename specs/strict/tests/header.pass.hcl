@@ -4,9 +4,7 @@ service "caller" "http" "json" {
 
 flow "echo" {
     input "input" {
-        header {
-            Authorization = "<string>"
-        }
+        header = ["Authorization"]
     }
 
 	call "opening" {
