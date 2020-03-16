@@ -1,0 +1,8 @@
+level: "debug"
+graphql:
+    address: ":8080"
+protobuffers:
+- "../../annotations"
+- "./*.proto"
+flows:
+- "./*.hcl"

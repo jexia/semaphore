@@ -49,7 +49,9 @@ func (listener *Listener) Serve() error {
 
 	listener.server.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		listener.mutex.RLock()
-		listener.router.ServeHTTP(w, r)
+		if listener.router != nil {
+			listener.router.ServeHTTP(w, r)
+		}
 		listener.mutex.RUnlock()
 	})
 

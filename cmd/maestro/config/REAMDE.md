@@ -11,7 +11,7 @@ graphql:
     address: ":9090"
 protobuffers:
 - "../annotations"
-- "./"
+- "./*.proto"
 flows:
-- "./"
+- "./*.hcl"
 ```

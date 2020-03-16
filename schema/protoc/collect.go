@@ -11,7 +11,12 @@ import (
 )
 
 // Collect attempts to collect all the available proto files inside the given path and parses them to resources
-func Collect(imports []string, path string) (schema.Resolver, error) {
+func Collect(paths []string, path string) (schema.Resolver, error) {
+	imports := make([]string, len(paths))
+	for index, path := range paths {
+		imports[index] = path
+	}
+
 	path, err := filepath.Abs(path)
 	if err != nil {
 		return nil, err
