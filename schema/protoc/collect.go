@@ -1,17 +1,14 @@
 package protoc
 
 import (
+	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/utils"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/desc/protoparse"
 )
-
-// ProtoExt file extension
-var ProtoExt = ".proto"
 
 // Collect attempts to collect all the available proto files inside the given path and parses them to resources
 func Collect(imports []string, path string) (schema.Resolver, error) {
@@ -29,13 +26,24 @@ func Collect(imports []string, path string) (schema.Resolver, error) {
 		imports[index] = path
 	}
 
-	files, err := utils.ReadDir(path, true, ProtoExt)
+	files, err := utils.ResolvePath(path)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, file := range files {
-		file.Path = strings.Replace(file.Path, path, "", 1)
+	for index, path := range imports {
+		stat, err := os.Stat(path)
+		if err != nil {
+			imports[index] = filepath.Dir(path)
+			continue
+		}
+
+		if stat.IsDir() {
+			imports[index] = path
+			continue
+		}
+
+		imports[index] = filepath.Dir(path)
 	}
 
 	descriptors, err := UnmarshalFiles(imports, files)
@@ -66,7 +74,7 @@ func UnmarshalFiles(imports []string, files []*utils.FileInfo) ([]*desc.FileDesc
 	results := []*desc.FileDescriptor{}
 
 	for _, file := range files {
-		descs, err := parser.ParseFiles(filepath.Join(file.Path, file.Name()))
+		descs, err := parser.ParseFiles(file.AbsolutePath)
 		if err != nil {
 			return nil, err
 		}

@@ -5,8 +5,6 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	"path/filepath"
-	"strings"
 
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/gohcl"
@@ -17,27 +15,16 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const (
-	// Ext represents the intermediate file extension
-	Ext = ".hcl"
-)
-
 // SchemaResolver constructs a schema resolver for the given path
 func SchemaResolver(path string) schema.Resolver {
-	recursive := false
-	if strings.HasSuffix(path, "...") {
-		recursive = true
-		path = path[:3]
-	}
-
 	return func(schemas *schema.Store) error {
-		files, err := utils.ReadDir(path, recursive, Ext)
+		files, err := utils.ResolvePath(path)
 		if err != nil {
 			return err
 		}
 
 		for _, file := range files {
-			reader, err := os.Open(filepath.Join(file.Path, file.Name()))
+			reader, err := os.Open(file.Path)
 			if err != nil {
 				return err
 			}
@@ -61,14 +48,8 @@ func SchemaResolver(path string) schema.Resolver {
 
 // DefinitionResolver constructs a definition resolver for the given path
 func DefinitionResolver(path string) specs.Resolver {
-	recursive := false
-	if strings.HasSuffix(path, "...") {
-		recursive = true
-		path = path[:3]
-	}
-
 	return func(functions specs.CustomDefinedFunctions) (*specs.Manifest, error) {
-		files, err := utils.ReadDir(path, recursive, Ext)
+		files, err := utils.ResolvePath(path)
 		if err != nil {
 			return nil, err
 		}
@@ -76,7 +57,7 @@ func DefinitionResolver(path string) specs.Resolver {
 		result := &specs.Manifest{}
 
 		for _, file := range files {
-			reader, err := os.Open(filepath.Join(file.Path, file.Name()))
+			reader, err := os.Open(file.Path)
 			if err != nil {
 				return nil, err
 			}

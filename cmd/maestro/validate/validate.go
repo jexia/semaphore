@@ -14,20 +14,21 @@ import (
 // Available execution flags
 var (
 	ProtoPaths []string
+	FlowPaths  []string
 	LogLevel   string
 )
 
 // Cmd represents the maestro validate command
 var Cmd = &cobra.Command{
-	Use:          "validate [paths]",
+	Use:          "validate",
 	Short:        "Validate the flow definitions with the configured schema format(s)",
-	Args:         cobra.MinimumNArgs(1),
 	RunE:         run,
 	SilenceUsage: true,
 }
 
 func init() {
 	Cmd.PersistentFlags().StringSliceVar(&ProtoPaths, "proto", []string{}, "If set are all proto definitions found inside the given path passed as schema definitions, all proto definitions are also passed as imports")
+	Cmd.PersistentFlags().StringSliceVar(&FlowPaths, "flow", []string{}, "If set are all flow definitions inside the given path passed as flow definitions")
 	Cmd.PersistentFlags().StringVar(&LogLevel, "level", "error", "Logging level")
 }
 
@@ -45,8 +46,8 @@ func run(cmd *cobra.Command, args []string) error {
 
 	logrus.SetLevel(level)
 
-	for _, arg := range args {
-		options = append(options, maestro.WithDefinitions(hcl.DefinitionResolver(arg)))
+	for _, flow := range FlowPaths {
+		options = append(options, maestro.WithDefinitions(hcl.DefinitionResolver(flow)))
 	}
 
 	for _, path := range ProtoPaths {

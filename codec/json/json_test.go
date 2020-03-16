@@ -48,7 +48,7 @@ func NewMock() (*specs.Manifest, error) {
 		return nil, err
 	}
 
-	client, err := maestro.New(maestro.WithDefinitions(hcl.DefinitionResolver("./tests")), maestro.WithSchema(collection))
+	client, err := maestro.New(maestro.WithDefinitions(hcl.DefinitionResolver("./tests/*.hcl")), maestro.WithSchema(collection))
 	if err != nil {
 		return nil, err
 	}

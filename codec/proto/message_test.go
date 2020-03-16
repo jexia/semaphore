@@ -16,12 +16,12 @@ import (
 )
 
 func NewMock() (*specs.Manifest, error) {
-	collection, err := protoc.Collect([]string{"./tests"}, "./tests")
+	collection, err := protoc.Collect([]string{"./tests"}, "./tests/*.proto")
 	if err != nil {
 		return nil, err
 	}
 
-	client, err := maestro.New(maestro.WithDefinitions(hcl.DefinitionResolver("./tests")), maestro.WithSchema(collection))
+	client, err := maestro.New(maestro.WithDefinitions(hcl.DefinitionResolver("./tests/*.hcl")), maestro.WithSchema(collection))
 	if err != nil {
 		return nil, err
 	}
