@@ -13,7 +13,7 @@ import (
 )
 
 func main() {
-	collection, err := protoc.Collect([]string{"../../", "."}, ".")
+	collection, err := protoc.Collect([]string{"../../annotations", "."}, "./*.proto")
 	if err != nil {
 		panic(err)
 	}
@@ -21,7 +21,7 @@ func main() {
 	logrus.SetLevel(logrus.DebugLevel)
 
 	client, err := maestro.New(
-		maestro.WithDefinitions(hcl.DefinitionResolver(".")),
+		maestro.WithDefinitions(hcl.DefinitionResolver("./*.hcl")),
 		maestro.WithSchema(collection),
 		maestro.WithCodec(json.NewConstructor()),
 		maestro.WithCodec(proto.NewConstructor()),

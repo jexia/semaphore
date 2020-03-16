@@ -4,9 +4,6 @@ endpoint "todo" "http" {
 	codec = "json"
 }
 
-endpoint "todo" "graphql" {
-}
-
 flow "todo" {
 	input "proto.Query" {}
 

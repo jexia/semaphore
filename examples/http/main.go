@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	collection, err := protoc.Collect([]string{"../../", "."}, ".")
+	collection, err := protoc.Collect([]string{"../../annotations", "."}, "./*.proto")
 	if err != nil {
 		panic(err)
 	}
@@ -21,7 +21,7 @@ func main() {
 
 	client, err := maestro.New(
 		maestro.WithListener(http.NewListener(":8080", specs.Options{})),
-		maestro.WithDefinitions(hcl.DefinitionResolver(".")),
+		maestro.WithDefinitions(hcl.DefinitionResolver("./*.hcl")),
 		maestro.WithSchema(collection),
 		maestro.WithCodec(json.NewConstructor()),
 		maestro.WithCodec(proto.NewConstructor()),
