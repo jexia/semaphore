@@ -377,16 +377,16 @@ func TestMarshal(t *testing.T) {
 	}
 
 	tests := map[string]map[string]interface{}{
-		"simple": map[string]interface{}{
+		"simple": {
 			"message": "hello world",
 			"nested":  map[string]interface{}{},
 		},
-		"nesting": map[string]interface{}{
+		"nesting": {
 			"nested": map[string]interface{}{
 				"value": "nested value",
 			},
 		},
-		"complex": map[string]interface{}{
+		"complex": {
 			"message": "hello world",
 			"nested": map[string]interface{}{
 				"value": "nested value",
@@ -458,16 +458,16 @@ func TestUnmarshal(t *testing.T) {
 	specs := FindNode(flow, "first").Call.GetRequest()
 
 	tests := map[string]map[string]interface{}{
-		"simple": map[string]interface{}{
+		"simple": {
 			"message": "hello world",
 			"nested":  map[string]interface{}{},
 		},
-		"nested": map[string]interface{}{
+		"nested": {
 			"nested": map[string]interface{}{
 				"value": "nested value",
 			},
 		},
-		"complex": map[string]interface{}{
+		"complex": {
 			"message": "hello world",
 			"nested": map[string]interface{}{
 				"value": "nested value",

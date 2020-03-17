@@ -12,29 +12,29 @@ func NewMockObject() schema.Property {
 	return &mock.Property{
 		Type: types.TypeMessage,
 		Nested: map[string]*mock.Property{
-			"message": &mock.Property{
+			"message": {
 				Name:  "message",
 				Type:  types.TypeString,
 				Label: types.LabelOptional,
 			},
-			"nested": &mock.Property{
+			"nested": {
 				Name:  "nested",
 				Type:  types.TypeMessage,
 				Label: types.LabelOptional,
 				Nested: map[string]*mock.Property{
-					"key": &mock.Property{
+					"key": {
 						Name:  "key",
 						Type:  types.TypeString,
 						Label: types.LabelOptional,
 					},
 				},
 			},
-			"repeated": &mock.Property{
+			"repeated": {
 				Name:  "repeated",
 				Type:  types.TypeMessage,
 				Label: types.LabelRepeated,
 				Nested: map[string]*mock.Property{
-					"key": &mock.Property{
+					"key": {
 						Name:  "key",
 						Type:  types.TypeString,
 						Label: types.LabelOptional,

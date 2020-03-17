@@ -323,16 +323,16 @@ func TestMarshal(t *testing.T) {
 	}
 
 	tests := map[string]map[string]interface{}{
-		"simple": map[string]interface{}{
+		"simple": {
 			"message": "some message",
 			"nested":  map[string]interface{}{},
 		},
-		"nested": map[string]interface{}{
+		"nested": {
 			"nested": map[string]interface{}{
 				"value": "some message",
 			},
 		},
-		"repeating": map[string]interface{}{
+		"repeating": {
 			"nested": map[string]interface{}{},
 			"repeating": []map[string]interface{}{
 				{
@@ -343,7 +343,7 @@ func TestMarshal(t *testing.T) {
 				},
 			},
 		},
-		"complex": map[string]interface{}{
+		"complex": {
 			"message": "hello world",
 			"nested": map[string]interface{}{
 				"value": "nested value",
@@ -421,16 +421,16 @@ func TestUnmarshal(t *testing.T) {
 	}
 
 	tests := map[string]map[string]interface{}{
-		"simple": map[string]interface{}{
+		"simple": {
 			"message": "some message",
 			"nested":  map[string]interface{}{},
 		},
-		"nested": map[string]interface{}{
+		"nested": {
 			"nested": map[string]interface{}{
 				"value": "some message",
 			},
 		},
-		"repeating": map[string]interface{}{
+		"repeating": {
 			"nested": map[string]interface{}{},
 			"repeating": []map[string]interface{}{
 				{
@@ -441,7 +441,7 @@ func TestUnmarshal(t *testing.T) {
 				},
 			},
 		},
-		"complex": map[string]interface{}{
+		"complex": {
 			"message": "hello world",
 			"nested": map[string]interface{}{
 				"value": "nested value",
