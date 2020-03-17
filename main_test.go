@@ -1,57 +1,78 @@
 package maestro
 
 import (
+	"path/filepath"
 	"testing"
 
+	"github.com/jexia/maestro/codec/json"
+	"github.com/jexia/maestro/definitions/hcl"
+	"github.com/jexia/maestro/protocol/http"
 	"github.com/jexia/maestro/schema/mock"
 	"github.com/jexia/maestro/specs"
+	"github.com/jexia/maestro/utils"
 )
 
 func TestOptions(t *testing.T) {
-	path := "/root"
-	recursive := true
-	schema := &mock.Collection{}
 	functions := map[string]specs.PrepareCustomFunction{
 		"cdf": nil,
 	}
 
-	options := NewOptions(WithPath(path, recursive), WithFunctions(functions), WithSchema(schema))
-
-	if path != options.Path {
-		t.Errorf("unexpected path %+v, expected %+v", options.Path, path)
-	}
-
-	if recursive != options.Recursive {
-		t.Errorf("unexpected recursive definition %+v, expected %+v", options.Recursive, recursive)
-	}
+	options := NewOptions(WithFunctions(functions))
 
 	if len(options.Functions) != len(functions) {
 		t.Errorf("unexpected functions %+v, expected %+v", options.Functions, functions)
 	}
 }
 
-func TestNew(t *testing.T) {
-	schema := &mock.Collection{}
+func TestNewOptions(t *testing.T) {
 	functions := map[string]specs.PrepareCustomFunction{
 		"cdf": nil,
 	}
 
-	tests := map[*[]Option]bool{
-		{WithPath(".", false), WithSchema(schema)}: true,
-		{WithPath(".", false)}:                     true,
-		{WithSchema(schema)}:                       false,
-		{WithFunctions(functions)}:                 false,
-		{WithPath(".", false), WithSchema(schema), WithFunctions(functions)}: true,
+	tests := [][]Option{
+		{WithDefinitions(nil), WithSchema(nil)},
+		{WithDefinitions(nil)},
+		{WithSchema(nil)},
+		{WithFunctions(functions)},
+		{WithDefinitions(nil), WithSchema(nil), WithFunctions(functions)},
 	}
 
-	for input, pass := range tests {
-		_, err := New(*input...)
-		if err == nil && !pass {
-			t.Fatalf("unexpected pass %+v, input: %+v", err, input)
-		}
-
-		if err != nil && pass {
+	for _, input := range tests {
+		_, err := New(input...)
+		if err != nil {
 			t.Fatalf("unexpected fail %+v", err)
 		}
+	}
+}
+
+func TestNewClient(t *testing.T) {
+	path, err := filepath.Abs("./tests/*.hcl")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	files, err := utils.ResolvePath(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, file := range files {
+		t.Run(file.Name(), func(t *testing.T) {
+			clean := file.Name()[:len(file.Name())-len(filepath.Ext(file.Name()))]
+			schema := filepath.Join(filepath.Dir(file.Path), clean+".yaml")
+
+			_, err = New(
+				WithDefinitions(hcl.DefinitionResolver(file.Path)),
+				WithSchema(mock.SchemaResolver(schema)),
+				WithSchema(hcl.SchemaResolver(file.Path)),
+				WithCodec(json.NewConstructor()),
+				WithListener(http.NewListener(":0", nil)),
+				WithCaller(http.NewCaller()),
+			)
+
+			if err != nil {
+				t.Fatal(err)
+			}
+		})
 	}
 }

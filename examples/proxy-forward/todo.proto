@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package proto;
 
-import "annotations/annotations.proto";
+import "annotations.proto";
 
 service Todo {
     option (maestro.service) = {

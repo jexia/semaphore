@@ -2,6 +2,7 @@ package hcl
 
 import (
 	"github.com/jexia/maestro/schema"
+	"github.com/jexia/maestro/specs/trace"
 	log "github.com/sirupsen/logrus"
 	"github.com/zclconf/go-cty/cty"
 )
@@ -40,8 +41,13 @@ func ParseSchema(manifest Manifest, schemas schema.Collection) (schema.Collectio
 		services: make([]schema.Service, len(manifest.Services)),
 	}
 
-	for index, service := range manifest.Services {
-		result.services[index] = ParseIntermediateService(service, schemas)
+	for index, intermediate := range manifest.Services {
+		service, err := ParseIntermediateService(intermediate, schemas)
+		if err != nil {
+			return nil, err
+		}
+
+		result.services[index] = service
 	}
 
 	return result, nil
@@ -105,17 +111,24 @@ func (service *service) GetMethods() schema.Methods {
 }
 
 // ParseIntermediateService parses the given intermediate service to a specs service
-func ParseIntermediateService(manifest Service, collection schema.Collection) schema.Service {
+func ParseIntermediateService(manifest Service, collection schema.Collection) (schema.Service, error) {
 	log.WithField("service", manifest.Name).Debug("Parsing intermediate service to schema")
 
-	return &service{
+	methods, err := ParseIntermediateMethods(manifest.Methods, collection)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &service{
 		name:     manifest.Name,
 		protocol: manifest.Protocol,
 		host:     manifest.Host,
 		codec:    manifest.Codec,
-		methods:  ParseIntermediateMethods(manifest.Methods, collection),
+		methods:  methods,
 		options:  ParseIntermediateSchemaOptions(manifest.Options),
 	}
+
+	return result, nil
 }
 
 type method struct {
@@ -147,7 +160,7 @@ func (method *method) GetOptions() schema.Options {
 }
 
 // ParseIntermediateMethods parses the given methods for the given service
-func ParseIntermediateMethods(methods []Method, collection schema.Collection) []schema.Method {
+func ParseIntermediateMethods(methods []Method, collection schema.Collection) ([]schema.Method, error) {
 	result := make([]schema.Method, len(methods))
 
 	for index, manifest := range methods {
@@ -155,15 +168,25 @@ func ParseIntermediateMethods(methods []Method, collection schema.Collection) []
 			"method": manifest.Name,
 		}).Debug("Parsing intermediate method to schema")
 
+		request := collection.GetMessage(manifest.Request)
+		if request == nil && manifest.Request != "" {
+			return nil, trace.New(trace.WithMessage("undefined request method '%s' inside schema collection", manifest.Request))
+		}
+
+		response := collection.GetMessage(manifest.Response)
+		if response == nil && manifest.Response != "" {
+			return nil, trace.New(trace.WithMessage("undefined response method '%s' inside schema collection", manifest.Response))
+		}
+
 		result[index] = &method{
 			name:     manifest.Name,
-			request:  collection.GetMessage(manifest.Request),
-			response: collection.GetMessage(manifest.Response),
+			request:  request,
+			response: response,
 			options:  ParseIntermediateSchemaOptions(manifest.Options),
 		}
 	}
 
-	return result
+	return result, nil
 }
 
 // ParseIntermediateSchemaOptions parses the given intermediate options to a schema options

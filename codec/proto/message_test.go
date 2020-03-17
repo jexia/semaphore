@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/jexia/maestro"
+	"github.com/jexia/maestro/definitions/hcl"
 	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/schema/protoc"
 	"github.com/jexia/maestro/specs"
@@ -15,12 +16,12 @@ import (
 )
 
 func NewMock() (*specs.Manifest, error) {
-	collection, err := protoc.Collect([]string{"./tests"}, "./tests")
+	collection, err := protoc.Collect([]string{"./tests"}, "./tests/*.proto")
 	if err != nil {
 		return nil, err
 	}
 
-	client, err := maestro.New(maestro.WithPath("./tests", false), maestro.WithSchema(collection))
+	client, err := maestro.New(maestro.WithDefinitions(hcl.DefinitionResolver("./tests/*.hcl")), maestro.WithSchema(collection))
 	if err != nil {
 		return nil, err
 	}

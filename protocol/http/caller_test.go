@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/jexia/maestro/codec/json"
+	"github.com/jexia/maestro/header"
 	"github.com/jexia/maestro/protocol"
 	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/specs/types"
@@ -45,7 +46,7 @@ func TestCaller(t *testing.T) {
 
 	r, w := io.Pipe()
 	rw := &MockResponseWriter{
-		header: protocol.Header{},
+		header: header.Store{},
 		writer: w,
 	}
 
@@ -151,7 +152,7 @@ func TestCallerReferencesLookup(t *testing.T) {
 	store.StoreValue(resource, path, value)
 
 	rw := &MockResponseWriter{
-		header: protocol.Header{},
+		header: header.Store{},
 		writer: ioutil.Discard,
 	}
 

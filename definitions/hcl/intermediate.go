@@ -4,11 +4,6 @@ import (
 	"github.com/hashicorp/hcl/v2"
 )
 
-const (
-	// Ext represents the intermediate file extension
-	Ext = ".hcl"
-)
-
 // Manifest intermediate specs
 type Manifest struct {
 	Flows     []Flow     `hcl:"flow,block"`
@@ -52,7 +47,7 @@ type Header struct {
 type InputParameterMap struct {
 	Schema     string                      `hcl:"schema,label"`
 	Options    *Options                    `hcl:"options,block"`
-	Header     *Header                     `hcl:"header,block"`
+	Header     []string                    `hcl:"header,optional"`
 	Nested     []NestedParameterMap        `hcl:"message,block"`
 	Repeated   []InputRepeatedParameterMap `hcl:"repeated,block"`
 	Properties hcl.Body                    `hcl:",remain"`

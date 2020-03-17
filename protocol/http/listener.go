@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/jexia/maestro/codec"
+	"github.com/jexia/maestro/header"
 	"github.com/jexia/maestro/protocol"
 	"github.com/jexia/maestro/specs"
 	"github.com/julienschmidt/httprouter"
@@ -48,7 +49,9 @@ func (listener *Listener) Serve() error {
 
 	listener.server.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		listener.mutex.RLock()
-		listener.router.ServeHTTP(w, r)
+		if listener.router != nil {
+			listener.router.ServeHTTP(w, r)
+		}
 		listener.mutex.RUnlock()
 	})
 
@@ -71,8 +74,8 @@ func (listener *Listener) Handle(endpoints []*protocol.Endpoint, codecs map[stri
 			return err
 		}
 
-		log.Println(options.Method)
-		router.Handle(options.Method, options.Endpoint, Handle(endpoint, options, codecs))
+		handle := NewHandle(endpoint, options, codecs)
+		router.Handle(options.Method, options.Endpoint, handle.HTTPFunc)
 	}
 
 	listener.mutex.Lock()
@@ -88,77 +91,108 @@ func (listener *Listener) Close() error {
 	return listener.server.Close()
 }
 
-// Handle constructs a new handle function for the given endpoint to the given flow
-func Handle(endpoint *protocol.Endpoint, options *EndpointOptions, constructors map[string]codec.Constructor) httprouter.Handle {
+// NewHandle constructs a new handle function for the given endpoint to the given flow
+func NewHandle(endpoint *protocol.Endpoint, options *EndpointOptions, constructors map[string]codec.Constructor) *Handle {
 	if constructors == nil {
 		constructors = make(map[string]codec.Constructor)
 	}
 
-	manager := constructors[options.Codec]
-	if manager == nil {
+	codec := constructors[options.Codec]
+	if codec == nil {
 		// TODO log
 		return nil
 	}
 
-	var err error
-	var request codec.Manager
-	var response codec.Manager
-	var header *protocol.HeaderManager
+	handle := &Handle{
+		Endpoint: endpoint,
+		Options:  options,
+	}
 
 	if endpoint.Request != nil {
-		request, err = manager.New(specs.InputResource, endpoint.Request)
+		request, err := codec.New(specs.InputResource, endpoint.Request)
 		if err != nil {
 			// TODO log
 			return nil
+		}
+
+		header := header.NewManager(specs.InputResource, endpoint.Request)
+		handle.Request = &Request{
+			Header: header,
+			Codec:  request,
 		}
 	}
 
 	if endpoint.Response != nil {
-		response, err = manager.New(specs.OutputResource, endpoint.Response)
+		response, err := codec.New(specs.OutputResource, endpoint.Response)
 		if err != nil {
 			// TODO log
 			return nil
 		}
 
-		header = protocol.NewHeaderManager(specs.OutputResource, endpoint.Response)
+		header := header.NewManager(specs.OutputResource, endpoint.Response)
+		handle.Response = &Request{
+			Header: header,
+			Codec:  response,
+		}
 	}
 
-	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-		log.Debug("New incoming HTTP request")
+	return handle
+}
 
-		defer r.Body.Close()
-		var err error
-		store := endpoint.Flow.NewStore()
+// Request represents a codec manager and header manager
+type Request struct {
+	Codec  codec.Manager
+	Header *header.Manager
+}
 
-		for _, param := range ps {
-			store.StoreValue(specs.InputResource, param.Key, param.Value)
+// Handle holds a endpoint its options and a optional request and response
+type Handle struct {
+	Endpoint *protocol.Endpoint
+	Options  *EndpointOptions
+	Request  *Request
+	Response *Request
+}
+
+// HTTPFunc represents a HTTP function which could be used inside a HTTP router
+func (handle *Handle) HTTPFunc(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	log.Debug("New incoming HTTP request")
+
+	defer r.Body.Close()
+	var err error
+	store := handle.Endpoint.Flow.NewStore()
+
+	for _, param := range ps {
+		store.StoreValue(specs.InputResource, param.Key, param.Value)
+	}
+
+	if handle.Request != nil {
+		if handle.Request.Header != nil {
+			handle.Request.Header.Unmarshal(CopyHTTPHeader(r.Header), store)
 		}
 
-		if header != nil {
-			header.Unmarshal(CopyHTTPHeader(r.Header), store)
-		}
-
-		if endpoint.Request != nil {
-			err = request.Unmarshal(r.Body, store)
+		if handle.Request.Codec != nil {
+			err = handle.Request.Codec.Unmarshal(r.Body, store)
 			if err != nil {
 				log.Error(err)
 				w.WriteHeader(http.StatusBadRequest)
 				return
 			}
 		}
+	}
 
-		err = endpoint.Flow.Call(r.Context(), store)
-		if err != nil {
-			w.WriteHeader(http.StatusServiceUnavailable)
-			return
+	err = handle.Endpoint.Flow.Call(r.Context(), store)
+	if err != nil {
+		w.WriteHeader(http.StatusServiceUnavailable)
+		return
+	}
+
+	if handle.Response != nil {
+		if handle.Response.Header != nil {
+			SetHTTPHeader(w.Header(), handle.Response.Header.Marshal(store))
 		}
 
-		if header != nil {
-			SetHTTPHeader(w.Header(), header.Marshal(store))
-		}
-
-		if response != nil {
-			reader, err := response.Marshal(store)
+		if handle.Response.Codec != nil {
+			reader, err := handle.Response.Codec.Marshal(store)
 			if err != nil {
 				w.WriteHeader(http.StatusInternalServerError)
 				return
@@ -173,14 +207,14 @@ func Handle(endpoint *protocol.Endpoint, options *EndpointOptions, constructors 
 
 			return
 		}
+	}
 
-		if endpoint.Forward != nil {
-			err := endpoint.Forward.Call(NewResponseWriter(w), NewRequest(r), store)
-			if err != nil {
-				log.Error(err)
-				w.WriteHeader(http.StatusBadGateway)
-				return
-			}
+	if handle.Endpoint.Forward != nil {
+		err := handle.Endpoint.Forward.Call(NewResponseWriter(w), NewRequest(r), store)
+		if err != nil {
+			log.Error(err)
+			w.WriteHeader(http.StatusBadGateway)
+			return
 		}
 	}
 }

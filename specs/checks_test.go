@@ -34,7 +34,7 @@ func TestDuplicateManifests(t *testing.T) {
 	}
 
 	for _, input := range tests {
-		err := CheckManifestDuplicates("test.hcl", input)
+		err := CheckManifestDuplicates(input)
 		if err == nil {
 			t.Fatal("unexpected pass", input)
 		}
@@ -57,7 +57,7 @@ func TestDuplicateFlow(t *testing.T) {
 	}
 
 	for _, input := range tests {
-		err := CheckFlowDuplicates("test.hcl", input)
+		err := CheckFlowDuplicates(input)
 		if err == nil {
 			t.Fatal("unexpected pass", input)
 		}

@@ -1,11 +1,11 @@
 package mock
 
 import (
-	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 
+	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/utils"
 )
 
@@ -15,31 +15,28 @@ const (
 )
 
 func TestUnmarshalFile(t *testing.T) {
-	path, err := filepath.Abs("./tests")
+	path, err := filepath.Abs("./tests/*.yaml")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	files, err := utils.ReadDir(path, true, ".yaml")
+	files, err := utils.ResolvePath(path)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	for _, file := range files {
 		t.Run(file.Name(), func(t *testing.T) {
-			clean := file.Name()[:len(file.Name())-len(filepath.Ext(file.Name()))]
+			path := file.Name()[:len(file.Name())-len(filepath.Ext(file.Name()))]
 
-			reader, err := os.Open(filepath.Join(file.Path, file.Name()))
-			if err != nil {
-				t.Error(err)
-			}
+			resolver := SchemaResolver(file.Path)
+			err := resolver(schema.NewStore())
 
-			_, err = UnmarshalFile(reader)
-			if strings.HasSuffix(clean, pass) && err != nil {
+			if strings.HasSuffix(path, pass) && err != nil {
 				t.Errorf("expected test to pass but failed instead %s, %v", file.Name(), err)
 			}
 
-			if strings.HasSuffix(clean, fail) && err == nil {
+			if strings.HasSuffix(path, fail) && err == nil {
 				t.Errorf("expected test to fail but passed instead %s", file.Name())
 			}
 		})

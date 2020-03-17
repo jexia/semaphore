@@ -70,7 +70,7 @@ func (listener *Listener) Handle(endpoints []*protocol.Endpoint, constructors ma
 
 	for _, endpoint := range endpoints {
 		req := NewArgs(endpoint.Request.Property)
-		res, err := NewObject(endpoint.Flow.Name, endpoint.Response.Property)
+		res, err := NewObject(endpoint.Flow.GetName(), endpoint.Response.Property)
 		if err != nil {
 			return err
 		}
@@ -97,7 +97,7 @@ func (listener *Listener) Handle(endpoints []*protocol.Endpoint, constructors ma
 		}(endpoint)
 
 		// TODO: set a option to set a custom name
-		fields[endpoint.Flow.Name] = &graphql.Field{
+		fields[endpoint.Flow.GetName()] = &graphql.Field{
 			Args:    req,
 			Type:    res,
 			Resolve: resolve,

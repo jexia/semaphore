@@ -118,8 +118,10 @@ The input represents a schema definition. The schema definition defines the mess
 
 ```hcl
 input "schema.Object" {
+    header = ["Authorization"]
 }
 ```
+
 #### Output
 The output acts as a message. The output could contain nested messages and repeated messages. The output could also define the response header.
 

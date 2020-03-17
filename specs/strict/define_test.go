@@ -17,19 +17,19 @@ const (
 )
 
 func TestUnmarshalFile(t *testing.T) {
-	path, err := filepath.Abs("./tests")
+	path, err := filepath.Abs("./tests/*.hcl")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	files, err := utils.ReadDir(path, true, ".hcl")
+	files, err := utils.ResolvePath(path)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	for _, file := range files {
 		t.Run(file.Name(), func(t *testing.T) {
-			reader, err := os.Open(filepath.Join(file.Path, file.Name()))
+			reader, err := os.Open(file.Path)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -45,7 +45,7 @@ func TestUnmarshalFile(t *testing.T) {
 			}
 
 			clean := file.Name()[:len(file.Name())-len(filepath.Ext(file.Name()))]
-			file, err := os.Open(filepath.Join(file.Path, clean+".yaml"))
+			file, err := os.Open(filepath.Join(filepath.Dir(file.Path), clean+".yaml"))
 			if err != nil {
 				t.Fatal(err)
 			}

@@ -4,12 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"io/ioutil"
-	"os"
 	"path/filepath"
 	"reflect"
 	"testing"
 
 	"github.com/jexia/maestro"
+	"github.com/jexia/maestro/definitions/hcl"
 	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/schema/mock"
 	"github.com/jexia/maestro/specs"
@@ -41,13 +41,11 @@ func NewMock() (*specs.Manifest, error) {
 		return nil, err
 	}
 
-	reader, err := os.Open(path)
-	collection, err := mock.UnmarshalFile(reader)
-	if err != nil {
-		return nil, err
-	}
+	client, err := maestro.New(
+		maestro.WithDefinitions(hcl.DefinitionResolver("./tests/*.hcl")),
+		maestro.WithSchema(mock.SchemaResolver(path)),
+	)
 
-	client, err := maestro.New(maestro.WithPath("./tests", false), maestro.WithSchema(collection))
 	if err != nil {
 		return nil, err
 	}

@@ -17,12 +17,12 @@ const (
 // TestParseSpecs reads all available test cases inside the tests directory.
 // The test is expected to pass/fail based on the file extension.
 func TestParseSpecs(t *testing.T) {
-	path, err := filepath.Abs("./tests")
+	path, err := filepath.Abs("./tests/*.hcl")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	files, err := utils.ReadDir(path, true, ".hcl")
+	files, err := utils.ResolvePath(path)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -30,7 +30,7 @@ func TestParseSpecs(t *testing.T) {
 	for _, file := range files {
 		t.Run(file.Name(), func(t *testing.T) {
 			clean := file.Name()[:len(file.Name())-len(filepath.Ext(file.Name()))]
-			reader, err := os.Open(filepath.Join(file.Path, file.Name()))
+			reader, err := os.Open(file.Path)
 			if err != nil {
 				t.Error(err)
 			}
