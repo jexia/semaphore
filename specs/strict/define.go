@@ -277,6 +277,10 @@ func CheckHeader(header specs.Header, flow specs.FlowManager) error {
 
 // CheckTypes checks the given schema against the given schema method types
 func CheckTypes(property *specs.Property, schema schema.Property, flow specs.FlowManager) (err error) {
+	if schema == nil {
+		return trace.New(trace.WithExpression(property.Expr), trace.WithMessage("unable to check types for '%s' no schema given", property.Path))
+	}
+
 	property.Desciptor = schema
 
 	if property.Type != schema.GetType() {

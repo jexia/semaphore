@@ -1,9 +1,15 @@
 package maestro
 
 import (
+	"path/filepath"
 	"testing"
 
+	"github.com/jexia/maestro/codec/json"
+	"github.com/jexia/maestro/definitions/hcl"
+	"github.com/jexia/maestro/protocol/http"
+	"github.com/jexia/maestro/schema/mock"
 	"github.com/jexia/maestro/specs"
+	"github.com/jexia/maestro/utils"
 )
 
 func TestOptions(t *testing.T) {
@@ -18,7 +24,7 @@ func TestOptions(t *testing.T) {
 	}
 }
 
-func TestNew(t *testing.T) {
+func TestNewOptions(t *testing.T) {
 	functions := map[string]specs.PrepareCustomFunction{
 		"cdf": nil,
 	}
@@ -36,5 +42,37 @@ func TestNew(t *testing.T) {
 		if err != nil {
 			t.Fatalf("unexpected fail %+v", err)
 		}
+	}
+}
+
+func TestNewClient(t *testing.T) {
+	path, err := filepath.Abs("./tests/*.hcl")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	files, err := utils.ResolvePath(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, file := range files {
+		t.Run(file.Name(), func(t *testing.T) {
+			clean := file.Name()[:len(file.Name())-len(filepath.Ext(file.Name()))]
+			schema := filepath.Join(filepath.Dir(file.Path), clean+".yaml")
+
+			_, err = New(
+				WithDefinitions(hcl.DefinitionResolver(file.Path)),
+				WithSchema(mock.SchemaResolver(schema)),
+				WithSchema(hcl.SchemaResolver(file.Path)),
+				WithCodec(json.NewConstructor()),
+				WithListener(http.NewListener(":0", nil)),
+				WithCaller(http.NewCaller()),
+			)
+
+			if err != nil {
+				t.Fatal(err)
+			}
+		})
 	}
 }

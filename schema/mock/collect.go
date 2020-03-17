@@ -3,23 +3,31 @@ package mock
 import (
 	"io"
 	"io/ioutil"
+	"os"
 
 	"github.com/jexia/maestro/schema"
 	"gopkg.in/yaml.v2"
 )
 
-// Read reads the given io reader and returns a schema resolver
-func Read(reader io.Reader) (schema.Resolver, error) {
-	collection, err := UnmarshalFile(reader)
-	if err != nil {
-		return nil, err
+// ErrResolver returns a new schema resolver which returns the given error when called
+func ErrResolver(err error) schema.Resolver {
+	return func(*schema.Store) error {
+		return err
 	}
-
-	return SchemaResolver(collection), nil
 }
 
 // SchemaResolver returns a new schema resolver for the given mock collection
-func SchemaResolver(collection schema.Collection) schema.Resolver {
+func SchemaResolver(path string) schema.Resolver {
+	reader, err := os.Open(path)
+	if err != nil {
+		return ErrResolver(err)
+	}
+
+	collection, err := UnmarshalFile(reader)
+	if err != nil {
+		return ErrResolver(err)
+	}
+
 	return func(schemas *schema.Store) error {
 		schemas.Add(collection)
 		return nil

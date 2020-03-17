@@ -190,6 +190,10 @@ func ConstructCall(manifest *specs.Manifest, node *specs.Node, call *specs.Call,
 	codec := options.Codec[service.GetCodec()]
 	schema := options.Schema.GetService(service.GetName())
 
+	if constructor == nil {
+		return nil, trace.New(trace.WithMessage("protocol constructor not found '%s' for service '%s'", service.GetProtocol(), service.GetName()))
+	}
+
 	protocol, err := constructor.New(schema, call.GetMethod(), options.Functions, service.GetOptions())
 	if err != nil {
 		return nil, err

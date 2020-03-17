@@ -15,7 +15,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// SchemaResolver constructs a schema resolver for the given path
+// SchemaResolver constructs a schema resolver for the given path.
+// The HCL schema resolver relies on other schema registries.
+// Those need to be resolved before the HCL schemas are resolved.
 func SchemaResolver(path string) schema.Resolver {
 	return func(schemas *schema.Store) error {
 		files, err := utils.ResolvePath(path)

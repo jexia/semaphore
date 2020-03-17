@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"io/ioutil"
-	"os"
 	"path/filepath"
 	"reflect"
 	"testing"
@@ -42,13 +41,11 @@ func NewMock() (*specs.Manifest, error) {
 		return nil, err
 	}
 
-	reader, err := os.Open(path)
-	collection, err := mock.Read(reader)
-	if err != nil {
-		return nil, err
-	}
+	client, err := maestro.New(
+		maestro.WithDefinitions(hcl.DefinitionResolver("./tests/*.hcl")),
+		maestro.WithSchema(mock.SchemaResolver(path)),
+	)
 
-	client, err := maestro.New(maestro.WithDefinitions(hcl.DefinitionResolver("./tests/*.hcl")), maestro.WithSchema(collection))
 	if err != nil {
 		return nil, err
 	}
