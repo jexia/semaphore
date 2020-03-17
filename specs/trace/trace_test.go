@@ -9,10 +9,10 @@ import (
 
 func TestNew(t *testing.T) {
 	tests := map[string][]Option{
-		"unexpected error":            []Option{WithMessage("unexpected error")},
-		"unexpected error: component": []Option{WithMessage("unexpected error: %s", "component")},
-		"file:10 unexpected error":    []Option{WithMessage("unexpected error"), WithExpression(hcl.StaticExpr(cty.StringVal("prop"), hcl.Range{Filename: "file", Start: hcl.Pos{Line: 10}}))},
-		"file:10 ":                    []Option{WithExpression(hcl.StaticExpr(cty.StringVal("prop"), hcl.Range{Filename: "file", Start: hcl.Pos{Line: 10}}))},
+		"unexpected error":            {WithMessage("unexpected error")},
+		"unexpected error: component": {WithMessage("unexpected error: %s", "component")},
+		"file:10 unexpected error":    {WithMessage("unexpected error"), WithExpression(hcl.StaticExpr(cty.StringVal("prop"), hcl.Range{Filename: "file", Start: hcl.Pos{Line: 10}}))},
+		"file:10 ":                    {WithExpression(hcl.StaticExpr(cty.StringVal("prop"), hcl.Range{Filename: "file", Start: hcl.Pos{Line: 10}}))},
 	}
 
 	for expected, options := range tests {

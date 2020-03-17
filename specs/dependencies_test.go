@@ -154,13 +154,13 @@ func TestResolveFlowDependencies(t *testing.T) {
 func TestFlowCircularDependenciesDetection(t *testing.T) {
 	manifest := &Manifest{
 		Flows: []*Flow{
-			&Flow{
+			{
 				Name: "first",
 				DependsOn: map[string]*Flow{
 					"second": nil,
 				},
 			},
-			&Flow{
+			{
 				Name: "second",
 				DependsOn: map[string]*Flow{
 					"first": nil,

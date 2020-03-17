@@ -179,7 +179,7 @@ func TestStoreRepeatedValues(t *testing.T) {
 	resource := "input"
 	values := map[string]interface{}{
 		nested: []map[string]interface{}{
-			map[string]interface{}{
+			{
 				key: value,
 			},
 		},

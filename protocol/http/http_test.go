@@ -36,7 +36,7 @@ func NewSimpleMockSpecs() *specs.ParameterMap {
 			Type:  types.TypeMessage,
 			Label: types.LabelOptional,
 			Nested: map[string]*specs.Property{
-				"message": &specs.Property{
+				"message": {
 					Name: "message",
 					Path: "message",
 					Type: types.TypeString,

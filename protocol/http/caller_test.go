@@ -75,9 +75,9 @@ func TestCaller(t *testing.T) {
 	}
 }
 
-func TestCallerUnkownMethod(t *testing.T) {
+func TestCallerUnknownMethod(t *testing.T) {
 	service := NewMockService("http://localhost", "GET", "/")
-	_, err := (&Caller{}).New(service, "unkown", nil, nil)
+	_, err := (&Caller{}).New(service, "unknown", nil, nil)
 	if err == nil {
 		t.Fatal("unexpected pass expected a error to be thrown")
 	}
