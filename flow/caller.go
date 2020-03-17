@@ -69,7 +69,7 @@ func (caller *Caller) Do(ctx context.Context, store *refs.Store) error {
 		defer writer.Close()
 		err := caller.protocol.Call(w, r, store)
 		if err != nil {
-			log.Println(err)
+			log.Error(err)
 		}
 	}()
 

@@ -1,7 +1,6 @@
 package run
 
 import (
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -61,7 +60,6 @@ func run(cmd *cobra.Command, args []string) error {
 	}
 
 	for _, path := range global.Protobuffers {
-		log.Println(path, global.Protobuffers)
 		resolver, err := protoc.Collect(global.Protobuffers, path)
 		if err != nil {
 			return err
