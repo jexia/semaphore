@@ -194,7 +194,7 @@ func ConstructCall(manifest *specs.Manifest, node *specs.Node, call *specs.Call,
 		return nil, trace.New(trace.WithMessage("protocol constructor not found '%s' for service '%s'", service.GetProtocol(), service.GetName()))
 	}
 
-	protocol, err := constructor.New(schema, call.GetMethod(), options.Functions, service.GetOptions())
+	protocol, err := constructor.Dial(schema, options.Functions, service.GetOptions())
 	if err != nil {
 		return nil, err
 	}
@@ -209,7 +209,7 @@ func ConstructCall(manifest *specs.Manifest, node *specs.Node, call *specs.Call,
 		return nil, err
 	}
 
-	caller := flow.NewCall(node, protocol, request, response)
+	caller := flow.NewCall(node, protocol, call.Method, request, response)
 	err = strict.DefineCaller(node, manifest, protocol, manager)
 	if err != nil {
 		return nil, err
@@ -242,7 +242,7 @@ func ConstructForward(manifest *specs.Manifest, call *specs.Call, options Option
 
 	schema := options.Schema.GetService(service.GetName())
 	constructor := options.Callers.Get(service.GetProtocol())
-	caller, err := constructor.New(schema, "", options.Functions, service.GetOptions())
+	caller, err := constructor.Dial(schema, options.Functions, service.GetOptions())
 	if err != nil {
 		return nil, err
 	}

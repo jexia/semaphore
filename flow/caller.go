@@ -22,10 +22,11 @@ func NewRequest(codec codec.Manager, header *header.Manager) *Request {
 }
 
 // NewCall constructs a new flow caller from the given protocol caller and
-func NewCall(node *specs.Node, protocol protocol.Call, request *Request, response *Request) Call {
+func NewCall(node *specs.Node, protocol protocol.Call, method string, request *Request, response *Request) Call {
 	return &Caller{
 		node:     node,
 		protocol: protocol,
+		method:   protocol.GetMethod(method),
 		request:  request,
 		response: response,
 	}
@@ -40,6 +41,7 @@ type Request struct {
 // Caller represents a flow protocol caller
 type Caller struct {
 	node     *specs.Node
+	method   protocol.Method
 	protocol protocol.Call
 	request  *Request
 	response *Request
@@ -47,7 +49,11 @@ type Caller struct {
 
 // References returns the references inside the configured protocol caller
 func (caller *Caller) References() []*specs.Property {
-	return caller.protocol.References()
+	if caller.method == nil {
+		return make([]*specs.Property, 0)
+	}
+
+	return caller.method.References()
 }
 
 // Do is called by the flow manager to call the configured service
@@ -60,6 +66,7 @@ func (caller *Caller) Do(ctx context.Context, store *refs.Store) error {
 	reader, writer := io.Pipe()
 	w := protocol.NewResponseWriter(writer)
 	r := &protocol.Request{
+		Method:  caller.method,
 		Context: ctx,
 		Body:    body,
 		Header:  caller.request.header.Marshal(store),
@@ -67,7 +74,7 @@ func (caller *Caller) Do(ctx context.Context, store *refs.Store) error {
 
 	go func() {
 		defer writer.Close()
-		err := caller.protocol.Call(w, r, store)
+		err := caller.protocol.SendMsg(w, r, store)
 		if err != nil {
 			log.Error(err)
 		}

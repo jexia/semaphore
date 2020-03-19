@@ -128,6 +128,6 @@ func (listener *Listener) Handle(endpoints []*protocol.Endpoint, constructors ma
 
 // Close closes the given listener
 func (listener *Listener) Close() error {
-	log.Info("Closing HTTP listener")
+	log.Info("Closing GraphQL listener")
 	return listener.server.Close()
 }

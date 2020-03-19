@@ -210,7 +210,7 @@ func (handle *Handle) HTTPFunc(w http.ResponseWriter, r *http.Request, ps httpro
 	}
 
 	if handle.Endpoint.Forward != nil {
-		err := handle.Endpoint.Forward.Call(NewResponseWriter(w), NewRequest(r), store)
+		err := handle.Endpoint.Forward.SendMsg(NewResponseWriter(w), NewRequest(r), store)
 		if err != nil {
 			log.Error(err)
 			w.WriteHeader(http.StatusBadGateway)

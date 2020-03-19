@@ -20,6 +20,7 @@ type ResponseWriter interface {
 
 // Request represents the request object given to a caller implementation used to make calls
 type Request struct {
+	Method  Method
 	Header  header.Store
 	Body    io.Reader
 	Context context.Context
@@ -42,14 +43,21 @@ func (collection Callers) Get(name string) Caller {
 // Caller constructs new calls which could be used to call services
 type Caller interface {
 	Name() string
-	New(schema schema.Service, method string, functions specs.CustomDefinedFunctions, options schema.Options) (Call, error)
+	Dial(schema schema.Service, functions specs.CustomDefinedFunctions, options schema.Options) (Call, error)
 }
 
 // Call is a preconfigured interface for a single service
 type Call interface {
-	Call(writer ResponseWriter, request *Request, refs *refs.Store) error
-	References() []*specs.Property
+	SendMsg(writer ResponseWriter, request *Request, refs *refs.Store) error
+	GetMethods() []Method
+	GetMethod(name string) Method
 	Close() error
+}
+
+// Method represents a call method which could be called
+type Method interface {
+	GetName() string
+	References() []*specs.Property
 }
 
 // Listeners represents a collection of listeners

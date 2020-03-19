@@ -31,13 +31,8 @@ func TestCaller(t *testing.T) {
 
 	defer server.Close()
 
-	ctx := context.Background()
-	req := protocol.Request{
-		Context: ctx,
-	}
-
 	service := NewMockService(server.URL, "GET", "/")
-	caller, err := (&Caller{}).New(service, "", nil, nil)
+	caller, err := (&Caller{}).Dial(service, nil, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -50,8 +45,14 @@ func TestCaller(t *testing.T) {
 		writer: w,
 	}
 
+	ctx := context.Background()
+	req := protocol.Request{
+		Method:  caller.GetMethod("mock"),
+		Context: ctx,
+	}
+
 	go func() {
-		caller.Call(rw, &req, refs)
+		caller.SendMsg(rw, &req, refs)
 		w.Close()
 	}()
 
@@ -77,9 +78,14 @@ func TestCaller(t *testing.T) {
 
 func TestCallerUnknownMethod(t *testing.T) {
 	service := NewMockService("http://localhost", "GET", "/")
-	_, err := (&Caller{}).New(service, "unknown", nil, nil)
-	if err == nil {
-		t.Fatal("unexpected pass expected a error to be thrown")
+	call, err := (&Caller{}).Dial(service, nil, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	method := call.GetMethod("unkown")
+	if method != nil {
+		t.Fatal("unexpected method returned")
 	}
 }
 
@@ -89,12 +95,13 @@ func TestCallerReferences(t *testing.T) {
 	resource := ".request"
 
 	service := NewMockService("http://localhost", "GET", "/"+expected)
-	call, err := (&Caller{}).New(service, "mock", nil, nil)
+	call, err := (&Caller{}).Dial(service, nil, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	references := call.References()
+	method := call.GetMethod("mock")
+	references := method.References()
 	if len(references) != 1 {
 		t.Fatalf("unexpected references %+v", references)
 	}
@@ -130,12 +137,13 @@ func TestCallerReferencesLookup(t *testing.T) {
 	defer server.Close()
 
 	service := NewMockService(server.URL, "GET", "/:message")
-	caller, err := (&Caller{}).New(service, "mock", nil, nil)
+	caller, err := (&Caller{}).Dial(service, nil, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	references := caller.References()
+	method := caller.GetMethod("mock")
+	references := method.References()
 	if len(references) != 1 {
 		t.Fatalf("unexpected references %+v", references)
 	}
@@ -146,6 +154,7 @@ func TestCallerReferencesLookup(t *testing.T) {
 	store := refs.NewStore(1)
 	ctx := context.Background()
 	req := protocol.Request{
+		Method:  method,
 		Context: ctx,
 	}
 
@@ -156,7 +165,7 @@ func TestCallerReferencesLookup(t *testing.T) {
 		writer: ioutil.Discard,
 	}
 
-	err = caller.Call(rw, &req, store)
+	err = caller.SendMsg(rw, &req, store)
 	if err != nil {
 		t.Fatal(err)
 	}
