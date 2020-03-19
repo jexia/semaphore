@@ -1,29 +1,30 @@
 package micro
 
 import (
-	"io"
 	"io/ioutil"
 
 	"github.com/jexia/maestro/protocol"
 	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/specs"
-	"github.com/micro/go-micro/v2/transport"
+	"github.com/micro/go-micro/v2/client"
+	"github.com/micro/go-micro/v2/codec/bytes"
+	"github.com/micro/go-micro/v2/service"
 	log "github.com/sirupsen/logrus"
 )
 
 // New constructs a new go micro transport wrapper
-func New(name string, transporter transport.Transport) *Caller {
+func New(name string, service service.Service) *Caller {
 	return &Caller{
-		name:        name,
-		transporter: transporter,
+		name:    name,
+		service: service,
 	}
 }
 
 // Caller represents the caller constructor
 type Caller struct {
-	name        string
-	transporter transport.Transport
+	name    string
+	service service.Service
 }
 
 // Name returns the name of the given caller
@@ -33,11 +34,6 @@ func (caller *Caller) Name() string {
 
 // Dial constructs a new caller for the given host
 func (caller *Caller) Dial(schema schema.Service, functions specs.CustomDefinedFunctions, opts schema.Options) (protocol.Call, error) {
-	client, err := caller.transporter.Dial(schema.GetHost())
-	if err != nil {
-		return nil, err
-	}
-
 	methods := make(map[string]*Method, len(schema.GetMethods()))
 
 	for _, method := range schema.GetMethods() {
@@ -48,7 +44,7 @@ func (caller *Caller) Dial(schema schema.Service, functions specs.CustomDefinedF
 	}
 
 	result := &Call{
-		transport: client,
+		client: caller.service.Client(),
 	}
 
 	return result, nil
@@ -76,8 +72,8 @@ func (method *Method) References() []*specs.Property {
 
 // Call represents the go micro transport wrapper implementation
 type Call struct {
-	transport transport.Client
-	methods   map[string]*Method
+	client  client.Client
+	methods map[string]*Method
 }
 
 // GetMethods returns the available methods within the service caller
@@ -109,26 +105,22 @@ func (call *Call) SendMsg(rw protocol.ResponseWriter, pr *protocol.Request, refs
 		return err
 	}
 
-	err = call.transport.Send(&transport.Message{
-		Header: pr.Header,
-		Body:   bb,
+	req := call.client.NewRequest("go.micro.srv.greeter", "Say.Hello", &bytes.Frame{
+		Data: bb,
 	})
 
-	if err != nil && err != io.EOF {
-		return err
+	res := &bytes.Frame{
+		Data: []byte{},
 	}
 
-	res := &transport.Message{}
-	err = call.transport.Recv(res)
+	err = call.client.Call(pr.Context, req, res)
 	if err != nil {
 		return err
 	}
 
-	for key, val := range res.Header {
-		rw.Header().Set(key, val)
-	}
+	rw.WriteHeader(200)
 
-	_, err = rw.Write(res.Body)
+	_, err = rw.Write(res.Data)
 	if err != nil {
 		return err
 	}
