@@ -11,15 +11,26 @@ import (
 	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/specs"
 	"github.com/jexia/maestro/specs/trace"
-	"github.com/micro/go-micro/v2/client"
-	"github.com/micro/go-micro/v2/codec/bytes"
-	micrometa "github.com/micro/go-micro/v2/metadata"
-	"github.com/micro/go-micro/v2/service"
+	"github.com/micro/go-micro/client"
+	"github.com/micro/go-micro/codec/bytes"
+	micrometa "github.com/micro/go-micro/metadata"
 	log "github.com/sirupsen/logrus"
 )
 
+// Service is an interface that wraps the lower level libraries
+// within go-micro. Its a convenience method for building
+// and initialising services.
+type Service interface {
+	// The service name
+	Name() string
+	// Client is used to call services
+	Client() client.Client
+	// The service implementation
+	String() string
+}
+
 // New constructs a new go micro transport wrapper
-func New(name string, service service.Service) *Caller {
+func New(name string, service Service) *Caller {
 	return &Caller{
 		name:    name,
 		service: service,
@@ -29,7 +40,7 @@ func New(name string, service service.Service) *Caller {
 // Caller represents the caller constructor
 type Caller struct {
 	name    string
-	service service.Service
+	service Service
 }
 
 // Name returns the name of the given caller
