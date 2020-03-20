@@ -16,7 +16,7 @@ import (
 	"github.com/jexia/maestro/protocol/micro"
 	"github.com/jexia/maestro/schema/protoc"
 	"github.com/jexia/maestro/specs"
-	"github.com/micro/go-micro/v2/service/grpc"
+	"github.com/micro/go-micro/service/grpc"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
