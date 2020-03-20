@@ -2,11 +2,10 @@ package flow
 
 import (
 	"context"
-	"errors"
 	"io"
 
 	"github.com/jexia/maestro/codec"
-	"github.com/jexia/maestro/header"
+	"github.com/jexia/maestro/metadata"
 	"github.com/jexia/maestro/protocol"
 	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/specs"
@@ -14,10 +13,10 @@ import (
 )
 
 // NewRequest constructs a new request for the given codec and header manager
-func NewRequest(codec codec.Manager, header *header.Manager) *Request {
+func NewRequest(codec codec.Manager, metadata *metadata.Manager) *Request {
 	return &Request{
-		codec:  codec,
-		header: header,
+		codec:    codec,
+		metadata: metadata,
 	}
 }
 
@@ -34,8 +33,8 @@ func NewCall(node *specs.Node, protocol protocol.Call, method string, request *R
 
 // Request represents a codec and header manager
 type Request struct {
-	codec  codec.Manager
-	header *header.Manager
+	codec    codec.Manager
+	metadata *metadata.Manager
 }
 
 // Caller represents a flow protocol caller
@@ -66,18 +65,17 @@ func (caller *Caller) Do(ctx context.Context, store *refs.Store) error {
 	reader, writer := io.Pipe()
 	w := protocol.NewResponseWriter(writer)
 	r := &protocol.Request{
-		Method:  caller.method,
-		Context: ctx,
-		Body:    body,
-		Header:  caller.request.header.Marshal(store),
+		Header: caller.request.metadata.Marshal(store),
+		Method: caller.method,
+		Body:   body,
 	}
+
+	result := make(chan error, 1)
+	defer close(result)
 
 	go func() {
 		defer writer.Close()
-		err := caller.protocol.SendMsg(w, r, store)
-		if err != nil {
-			log.Error(err)
-		}
+		result <- caller.protocol.SendMsg(ctx, w, r, store)
 	}()
 
 	err = caller.response.codec.Unmarshal(reader, store)
@@ -85,14 +83,17 @@ func (caller *Caller) Do(ctx context.Context, store *refs.Store) error {
 		return err
 	}
 
-	if !protocol.StatusSuccess(w.Status()) {
+	err = <-result
+	if err != nil {
 		log.WithFields(log.Fields{
-			"node":   caller.node.GetName(),
-			"status": w.Status(),
-		}).Error("Faulty status code")
+			"node": caller.node.GetName(),
+			"err":  err,
+		}).Error("Service error")
 
-		return errors.New("unexpected status code, rollback required")
+		return err
 	}
+
+	caller.response.metadata.Unmarshal(w.Header(), store)
 
 	return nil
 }

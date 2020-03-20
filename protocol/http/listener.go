@@ -6,7 +6,7 @@ import (
 	"sync"
 
 	"github.com/jexia/maestro/codec"
-	"github.com/jexia/maestro/header"
+	"github.com/jexia/maestro/metadata"
 	"github.com/jexia/maestro/protocol"
 	"github.com/jexia/maestro/specs"
 	"github.com/julienschmidt/httprouter"
@@ -115,7 +115,7 @@ func NewHandle(endpoint *protocol.Endpoint, options *EndpointOptions, constructo
 			return nil
 		}
 
-		header := header.NewManager(specs.InputResource, endpoint.Request)
+		header := metadata.NewManager(specs.InputResource, endpoint.Request)
 		handle.Request = &Request{
 			Header: header,
 			Codec:  request,
@@ -129,7 +129,7 @@ func NewHandle(endpoint *protocol.Endpoint, options *EndpointOptions, constructo
 			return nil
 		}
 
-		header := header.NewManager(specs.OutputResource, endpoint.Response)
+		header := metadata.NewManager(specs.OutputResource, endpoint.Response)
 		handle.Response = &Request{
 			Header: header,
 			Codec:  response,
@@ -142,7 +142,7 @@ func NewHandle(endpoint *protocol.Endpoint, options *EndpointOptions, constructo
 // Request represents a codec manager and header manager
 type Request struct {
 	Codec  codec.Manager
-	Header *header.Manager
+	Header *metadata.Manager
 }
 
 // Handle holds a endpoint its options and a optional request and response
@@ -155,6 +155,10 @@ type Handle struct {
 
 // HTTPFunc represents a HTTP function which could be used inside a HTTP router
 func (handle *Handle) HTTPFunc(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	if handle == nil {
+		return
+	}
+
 	log.Debug("New incoming HTTP request")
 
 	defer r.Body.Close()
@@ -210,7 +214,7 @@ func (handle *Handle) HTTPFunc(w http.ResponseWriter, r *http.Request, ps httpro
 	}
 
 	if handle.Endpoint.Forward != nil {
-		err := handle.Endpoint.Forward.SendMsg(NewResponseWriter(w), NewRequest(r), store)
+		err := handle.Endpoint.Forward.SendMsg(r.Context(), NewResponseWriter(w), NewRequest(r), store)
 		if err != nil {
 			log.Error(err)
 			w.WriteHeader(http.StatusBadGateway)

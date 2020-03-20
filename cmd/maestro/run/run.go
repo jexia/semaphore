@@ -9,6 +9,7 @@ import (
 	"github.com/jexia/maestro/cmd/maestro/config"
 	"github.com/jexia/maestro/codec/json"
 	"github.com/jexia/maestro/codec/proto"
+	"github.com/jexia/maestro/constructor"
 	"github.com/jexia/maestro/definitions/hcl"
 	"github.com/jexia/maestro/protocol/graphql"
 	"github.com/jexia/maestro/protocol/http"
@@ -49,7 +50,7 @@ func run(cmd *cobra.Command, args []string) error {
 
 	logrus.SetLevel(level)
 
-	options := []maestro.Option{
+	options := []constructor.Option{
 		maestro.WithCodec(json.NewConstructor()),
 		maestro.WithCodec(proto.NewConstructor()),
 		maestro.WithCaller(http.NewCaller()),

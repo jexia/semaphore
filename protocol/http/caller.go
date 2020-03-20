@@ -1,6 +1,7 @@
 package http
 
 import (
+	"context"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -125,7 +126,7 @@ func (call *Call) GetMethod(name string) protocol.Method {
 }
 
 // SendMsg calls the configured host and attempts to call the given endpoint with the given headers and stream
-func (call *Call) SendMsg(rw protocol.ResponseWriter, pr *protocol.Request, refs *refs.Store) error {
+func (call *Call) SendMsg(ctx context.Context, rw protocol.ResponseWriter, pr *protocol.Request, refs *refs.Store) error {
 	request := http.MethodGet
 	url, err := url.Parse(call.host)
 	if err != nil {
@@ -152,13 +153,16 @@ func (call *Call) SendMsg(rw protocol.ResponseWriter, pr *protocol.Request, refs
 		"method":  request,
 	}).Debug("Calling HTTP caller")
 
-	req, err := http.NewRequestWithContext(pr.Context, request, url.String(), pr.Body)
+	req, err := http.NewRequestWithContext(ctx, request, url.String(), pr.Body)
 	if err != nil {
 		return err
 	}
 
-	req.Header = CopyProtocolHeader(pr.Header)
-	call.proxy.ServeHTTP(NewProtocolResponseWriter(rw), req)
+	req.Header = CopyMetadataHeader(pr.Header)
+	res := NewProtocolResponseWriter(ctx, rw)
+
+	call.proxy.ServeHTTP(res, req)
+	rw.Header().Append(CopyHTTPHeader(res.Header()))
 
 	return nil
 }

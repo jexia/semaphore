@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/jexia/maestro/codec/json"
-	"github.com/jexia/maestro/header"
+	"github.com/jexia/maestro/metadata"
 	"github.com/jexia/maestro/protocol"
 	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/specs/types"
@@ -41,18 +41,17 @@ func TestCaller(t *testing.T) {
 
 	r, w := io.Pipe()
 	rw := &MockResponseWriter{
-		header: header.Store{},
+		header: metadata.MD{},
 		writer: w,
 	}
 
 	ctx := context.Background()
 	req := protocol.Request{
-		Method:  caller.GetMethod("mock"),
-		Context: ctx,
+		Method: caller.GetMethod("mock"),
 	}
 
 	go func() {
-		caller.SendMsg(rw, &req, refs)
+		caller.SendMsg(ctx, rw, &req, refs)
 		w.Close()
 	}()
 
@@ -154,23 +153,18 @@ func TestCallerReferencesLookup(t *testing.T) {
 	store := refs.NewStore(1)
 	ctx := context.Background()
 	req := protocol.Request{
-		Method:  method,
-		Context: ctx,
+		Method: method,
 	}
 
 	store.StoreValue(resource, path, value)
 
 	rw := &MockResponseWriter{
-		header: header.Store{},
+		header: metadata.MD{},
 		writer: ioutil.Discard,
 	}
 
-	err = caller.SendMsg(rw, &req, store)
+	err = caller.SendMsg(ctx, rw, &req, store)
 	if err != nil {
 		t.Fatal(err)
-	}
-
-	if rw.status != http.StatusOK {
-		t.Fatalf("unexpected status %d", rw.status)
 	}
 }

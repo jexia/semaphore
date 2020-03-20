@@ -173,7 +173,6 @@ func DefineCaller(node *specs.Node, manifest *specs.Manifest, call protocol.Call
 	log.Info("Defining caller references")
 
 	for _, method := range call.GetMethods() {
-		log.Println(call, method)
 		for _, prop := range method.References() {
 			err = DefineProperty(node, prop, flow)
 			if err != nil {
