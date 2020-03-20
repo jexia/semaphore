@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/jexia/maestro/codec/json"
+	"github.com/jexia/maestro/constructor"
 	"github.com/jexia/maestro/definitions/hcl"
 	"github.com/jexia/maestro/protocol/http"
 	"github.com/jexia/maestro/schema/mock"
@@ -17,7 +18,7 @@ func TestOptions(t *testing.T) {
 		"cdf": nil,
 	}
 
-	options := NewOptions(WithFunctions(functions))
+	options := constructor.NewOptions(WithFunctions(functions))
 
 	if len(options.Functions) != len(functions) {
 		t.Errorf("unexpected functions %+v, expected %+v", options.Functions, functions)
@@ -29,7 +30,7 @@ func TestNewOptions(t *testing.T) {
 		"cdf": nil,
 	}
 
-	tests := [][]Option{
+	tests := [][]constructor.Option{
 		{WithDefinitions(nil), WithSchema(nil)},
 		{WithDefinitions(nil)},
 		{WithSchema(nil)},

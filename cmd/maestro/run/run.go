@@ -1,7 +1,6 @@
 package run
 
 import (
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -10,11 +9,14 @@ import (
 	"github.com/jexia/maestro/cmd/maestro/config"
 	"github.com/jexia/maestro/codec/json"
 	"github.com/jexia/maestro/codec/proto"
+	"github.com/jexia/maestro/constructor"
 	"github.com/jexia/maestro/definitions/hcl"
 	"github.com/jexia/maestro/protocol/graphql"
 	"github.com/jexia/maestro/protocol/http"
+	"github.com/jexia/maestro/protocol/micro"
 	"github.com/jexia/maestro/schema/protoc"
 	"github.com/jexia/maestro/specs"
+	"github.com/micro/go-micro/v2/service/grpc"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -50,9 +52,10 @@ func run(cmd *cobra.Command, args []string) error {
 
 	logrus.SetLevel(level)
 
-	options := []maestro.Option{
+	options := []constructor.Option{
 		maestro.WithCodec(json.NewConstructor()),
 		maestro.WithCodec(proto.NewConstructor()),
+		maestro.WithCaller(micro.New("micro-grpc", grpc.NewService())),
 		maestro.WithCaller(http.NewCaller()),
 	}
 
@@ -61,7 +64,6 @@ func run(cmd *cobra.Command, args []string) error {
 	}
 
 	for _, path := range global.Protobuffers {
-		log.Println(path, global.Protobuffers)
 		resolver, err := protoc.Collect(global.Protobuffers, path)
 		if err != nil {
 			return err

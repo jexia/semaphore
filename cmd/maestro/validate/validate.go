@@ -5,6 +5,7 @@ import (
 	"github.com/jexia/maestro/cmd/maestro/config"
 	"github.com/jexia/maestro/codec/json"
 	"github.com/jexia/maestro/codec/proto"
+	"github.com/jexia/maestro/constructor"
 	"github.com/jexia/maestro/definitions/hcl"
 	"github.com/jexia/maestro/protocol/http"
 	"github.com/jexia/maestro/schema/protoc"
@@ -35,7 +36,7 @@ func run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	options := []maestro.Option{
+	options := []constructor.Option{
 		maestro.WithCodec(json.NewConstructor()),
 		maestro.WithCodec(proto.NewConstructor()),
 		maestro.WithCaller(http.NewCaller()),
@@ -61,7 +62,7 @@ func run(cmd *cobra.Command, args []string) error {
 		options = append(options, maestro.WithSchema(resolver))
 	}
 
-	_, err = maestro.ConstructSpecs(maestro.NewOptions(options...))
+	_, err = constructor.Specs(constructor.NewOptions(options...))
 	if err != nil {
 		return err
 	}

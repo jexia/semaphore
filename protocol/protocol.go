@@ -5,7 +5,7 @@ import (
 	"io"
 
 	"github.com/jexia/maestro/codec"
-	"github.com/jexia/maestro/header"
+	"github.com/jexia/maestro/metadata"
 	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/specs"
@@ -13,16 +13,15 @@ import (
 
 // ResponseWriter specifies the response writer implementation which could be used to both proxy forward a request or used to call a service
 type ResponseWriter interface {
-	Header() header.Store
+	Header() metadata.MD
 	Write([]byte) (int, error)
-	WriteHeader(int)
 }
 
 // Request represents the request object given to a caller implementation used to make calls
 type Request struct {
-	Header  header.Store
-	Body    io.Reader
-	Context context.Context
+	Header metadata.MD
+	Method Method
+	Body   io.Reader
 }
 
 // Callers represents a collection of callers
@@ -42,14 +41,21 @@ func (collection Callers) Get(name string) Caller {
 // Caller constructs new calls which could be used to call services
 type Caller interface {
 	Name() string
-	New(schema schema.Service, method string, functions specs.CustomDefinedFunctions, options schema.Options) (Call, error)
+	Dial(schema schema.Service, functions specs.CustomDefinedFunctions, options schema.Options) (Call, error)
 }
 
 // Call is a preconfigured interface for a single service
 type Call interface {
-	Call(writer ResponseWriter, request *Request, refs *refs.Store) error
-	References() []*specs.Property
+	SendMsg(ctx context.Context, writer ResponseWriter, request *Request, refs *refs.Store) error
+	GetMethods() []Method
+	GetMethod(name string) Method
 	Close() error
+}
+
+// Method represents a call method which could be called
+type Method interface {
+	GetName() string
+	References() []*specs.Property
 }
 
 // Listeners represents a collection of listeners

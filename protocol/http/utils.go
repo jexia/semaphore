@@ -1,32 +1,33 @@
 package http
 
 import (
+	"context"
 	"net/http"
 	"strings"
 
-	"github.com/jexia/maestro/header"
+	"github.com/jexia/maestro/metadata"
 	"github.com/jexia/maestro/protocol"
 )
 
 // CopyHTTPHeader copies the given HTTP header into a protocol header
-func CopyHTTPHeader(source http.Header) header.Store {
-	result := header.Store{}
-	for key, val := range source {
-		result.Set(key, strings.Join(val, ";"))
+func CopyHTTPHeader(source http.Header) metadata.MD {
+	result := metadata.MD{}
+	for key, vals := range source {
+		result[key] = strings.Join(vals, ";")
 	}
 
 	return result
 }
 
 // SetHTTPHeader copies the given protocol header into a HTTP header
-func SetHTTPHeader(writer http.Header, header header.Store) {
-	for key, val := range header {
+func SetHTTPHeader(writer http.Header, metadata metadata.MD) {
+	for key, val := range metadata {
 		writer.Set(key, val)
 	}
 }
 
-// CopyProtocolHeader copies the given protocol header into a HTTP header
-func CopyProtocolHeader(header header.Store) http.Header {
+// CopyMetadataHeader copies the given protocol header into a HTTP header
+func CopyMetadataHeader(header metadata.MD) http.Header {
 	result := http.Header{}
 	for key, val := range header {
 		result.Set(key, val)
@@ -36,9 +37,9 @@ func CopyProtocolHeader(header header.Store) http.Header {
 }
 
 // NewProtocolResponseWriter constructs a new HTTP response writer of the given protocol response writer
-func NewProtocolResponseWriter(rw protocol.ResponseWriter) *ProtocolResponseWriter {
+func NewProtocolResponseWriter(ctx context.Context, rw protocol.ResponseWriter) *ProtocolResponseWriter {
 	return &ProtocolResponseWriter{
-		header:   CopyProtocolHeader(rw.Header()),
+		header:   http.Header{},
 		protocol: rw,
 	}
 }
@@ -48,6 +49,7 @@ func NewProtocolResponseWriter(rw protocol.ResponseWriter) *ProtocolResponseWrit
 type ProtocolResponseWriter struct {
 	header   http.Header
 	protocol protocol.ResponseWriter
+	status   int
 }
 
 // Header returns the header map that will be sent by
@@ -65,22 +67,20 @@ func (rw *ProtocolResponseWriter) Write(bb []byte) (int, error) {
 // WriteHeader sends an HTTP response header with the provided
 // status code.
 func (rw *ProtocolResponseWriter) WriteHeader(status int) {
-	rw.protocol.WriteHeader(status)
+	rw.status = status
 }
 
 // NewRequest constructs a new protocol request of the given http request
 func NewRequest(req *http.Request) *protocol.Request {
 	return &protocol.Request{
-		Context: req.Context(),
-		Header:  header.Store{},
-		Body:    req.Body,
+		Body: req.Body,
 	}
 }
 
 // NewResponseWriter constructs a new HTTP response writer of the given HTTP response writer
 func NewResponseWriter(rw http.ResponseWriter) *ResponseWriter {
 	return &ResponseWriter{
-		header: make(header.Store),
+		header: make(metadata.MD),
 		writer: rw,
 	}
 }
@@ -88,14 +88,14 @@ func NewResponseWriter(rw http.ResponseWriter) *ResponseWriter {
 // A ResponseWriter interface is used by an HTTP handler to
 // construct an HTTP response.
 type ResponseWriter struct {
-	header header.Store
+	header metadata.MD
 	writer http.ResponseWriter
 }
 
 // Header returns the header map that will be sent by
 // WriteHeader. The Header map also is the mechanism with which
 // Handlers can set HTTP trailers.
-func (rw *ResponseWriter) Header() header.Store {
+func (rw *ResponseWriter) Header() metadata.MD {
 	return rw.header
 }
 

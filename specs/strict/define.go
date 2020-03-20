@@ -158,6 +158,11 @@ func DefineCall(schema schema.Collection, manifest *specs.Manifest, node *specs.
 		if err != nil {
 			return err
 		}
+
+		err = CheckTypes(call.GetResponse().Property, method.GetOutput(), flow)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -167,13 +172,15 @@ func DefineCall(schema schema.Collection, manifest *specs.Manifest, node *specs.
 func DefineCaller(node *specs.Node, manifest *specs.Manifest, call protocol.Call, flow specs.FlowManager) (err error) {
 	log.Info("Defining caller references")
 
-	for _, prop := range call.References() {
-		err = DefineProperty(node, prop, flow)
-		if err != nil {
-			return err
-		}
+	for _, method := range call.GetMethods() {
+		for _, prop := range method.References() {
+			err = DefineProperty(node, prop, flow)
+			if err != nil {
+				return err
+			}
 
-		ResolvePropertyReferences(prop)
+			ResolvePropertyReferences(prop)
+		}
 	}
 
 	return nil

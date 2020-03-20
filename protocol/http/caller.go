@@ -1,6 +1,7 @@
 package http
 
 import (
+	"context"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -29,11 +30,11 @@ func (caller *Caller) Name() string {
 	return "http"
 }
 
-// New constructs a new caller for the given host
-func (caller *Caller) New(schema schema.Service, method string, functions specs.CustomDefinedFunctions, opts schema.Options) (protocol.Call, error) {
+// Dial constructs a new caller for the given host
+func (caller *Caller) Dial(schema schema.Service, functions specs.CustomDefinedFunctions, opts schema.Options) (protocol.Call, error) {
 	log.WithFields(log.Fields{
 		"service": schema.GetName(),
-		"method":  method,
+		"host":    schema.GetHost(),
 	}).Info("Constructing new HTTP caller")
 
 	options, err := ParseCallerOptions(opts)
@@ -41,72 +42,127 @@ func (caller *Caller) New(schema schema.Service, method string, functions specs.
 		return nil, err
 	}
 
-	request, endpoint, err := GetMethodEndpoint(schema, method)
-	if err != nil {
-		return nil, err
+	methods := make(map[string]*Method, len(schema.GetMethods()))
+
+	for _, method := range schema.GetMethods() {
+		request, endpoint, err := GetMethodEndpoint(method)
+		if err != nil {
+			return nil, err
+		}
+
+		references, err := TemplateReferences(endpoint, functions)
+		if err != nil {
+			return nil, err
+		}
+
+		methods[method.GetName()] = &Method{
+			name:       method.GetName(),
+			request:    request,
+			endpoint:   endpoint,
+			references: references,
+		}
 	}
 
-	log.WithFields(log.Fields{
-		"method":   request,
-		"host":     schema.GetHost(),
-		"endpoint": endpoint,
-	}).Info("Constructing new HTTP caller")
-
-	references, err := TemplateReferences(endpoint, functions)
-	if err != nil {
-		return nil, err
+	result := &Call{
+		service: schema.GetName(),
+		host:    schema.GetHost(),
+		proxy:   NewProxy(options),
+		methods: methods,
 	}
 
-	return &Call{
-		service:    schema.GetName(),
-		host:       schema.GetHost(),
-		method:     request,
-		endpoint:   endpoint,
-		proxy:      NewProxy(options),
-		references: references,
-	}, nil
+	return result, nil
+}
+
+// Method represents a service method
+type Method struct {
+	name       string
+	request    string
+	endpoint   string
+	references []*specs.Property
+}
+
+// GetName returns the method name
+func (method *Method) GetName() string {
+	return method.name
+}
+
+// References returns the available method references
+func (method *Method) References() []*specs.Property {
+	if method.references == nil {
+		return make([]*specs.Property, 0)
+	}
+
+	return method.references
 }
 
 // Call represents the HTTP caller implementation
 type Call struct {
-	service    string
-	host       string
-	method     string
-	endpoint   string
-	proxy      *httputil.ReverseProxy
-	references []*specs.Property
+	service string
+	host    string
+	methods map[string]*Method
+	proxy   *httputil.ReverseProxy
 }
 
-// References returns the available property references within the HTTP caller
-func (call *Call) References() []*specs.Property {
-	return call.references
+// GetMethods returns the available methods within the HTTP caller
+func (call *Call) GetMethods() []protocol.Method {
+	result := make([]protocol.Method, 0, len(call.methods))
+
+	for _, method := range call.methods {
+		result = append(result, method)
+	}
+
+	return result
 }
 
-// Call opens a new connection to the configured host and attempts to send the given headers and stream
-func (call *Call) Call(rw protocol.ResponseWriter, incoming *protocol.Request, refs *refs.Store) error {
+// GetMethod attempts to return a method matching the given name
+func (call *Call) GetMethod(name string) protocol.Method {
+	for _, method := range call.methods {
+		if method.GetName() == name {
+			return method
+		}
+	}
+
+	return nil
+}
+
+// SendMsg calls the configured host and attempts to call the given endpoint with the given headers and stream
+func (call *Call) SendMsg(ctx context.Context, rw protocol.ResponseWriter, pr *protocol.Request, refs *refs.Store) error {
+	request := http.MethodGet
 	url, err := url.Parse(call.host)
 	if err != nil {
 		return err
 	}
 
-	endpoint := LookupEndpointReferences(call, refs)
-	if endpoint != "" {
-		url.Path = endpoint
+	if pr.Method != nil {
+		method := call.methods[pr.Method.GetName()]
+		if method == nil {
+			return trace.New(trace.WithMessage("unkown method '%s' for service '%s'", pr.Method, call.service))
+		}
+
+		endpoint := LookupEndpointReferences(method, refs)
+		if endpoint != "" {
+			url.Path = endpoint
+		}
+
+		request = method.request
 	}
 
 	log.WithFields(log.Fields{
 		"url":     url,
 		"service": call.service,
-		"method":  call.method,
+		"method":  request,
 	}).Debug("Calling HTTP caller")
 
-	req, err := http.NewRequestWithContext(incoming.Context, call.method, url.String(), incoming.Body)
+	req, err := http.NewRequestWithContext(ctx, request, url.String(), pr.Body)
 	if err != nil {
 		return err
 	}
 
-	req.Header = CopyProtocolHeader(incoming.Header)
-	call.proxy.ServeHTTP(NewProtocolResponseWriter(rw), req)
+	req.Header = CopyMetadataHeader(pr.Header)
+	res := NewProtocolResponseWriter(ctx, rw)
+
+	call.proxy.ServeHTTP(res, req)
+	rw.Header().Append(CopyHTTPHeader(res.Header()))
 
 	return nil
 }
@@ -118,10 +174,10 @@ func (call *Call) Close() error {
 }
 
 // LookupEndpointReferences looks up the references within the given endpoint and returns the newly constructed endpoint
-func LookupEndpointReferences(call *Call, store *refs.Store) string {
-	result := call.endpoint
+func LookupEndpointReferences(method *Method, store *refs.Store) string {
+	result := method.endpoint
 
-	for _, prop := range call.References() {
+	for _, prop := range method.references {
 		ref := store.Load(prop.Reference.Resource, prop.Reference.Path)
 		if ref == nil || prop.Type != types.TypeString {
 			result = strings.Replace(result, prop.Path, "", 1)
@@ -162,16 +218,7 @@ func TemplateReferences(value string, functions specs.CustomDefinedFunctions) ([
 
 // GetMethodEndpoint attempts to find the endpoint for the given method.
 // Empty values are returned when a empty method name is given.
-func GetMethodEndpoint(schema schema.Service, name string) (string, string, error) {
-	if name == "" {
-		return "", "", nil
-	}
-
-	method := schema.GetMethod(name)
-	if method == nil {
-		return "", "", trace.New(trace.WithMessage("service method not found '%s'.'%s'", schema.GetName(), method))
-	}
-
+func GetMethodEndpoint(method schema.Method) (string, string, error) {
 	options := method.GetOptions()
 
 	request := options[MethodOption]

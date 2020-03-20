@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/jexia/maestro/flow"
-	"github.com/jexia/maestro/header"
+	"github.com/jexia/maestro/metadata"
 	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/specs"
@@ -138,12 +138,12 @@ func (method *MockMethod) GetOptions() schema.Options {
 }
 
 type MockResponseWriter struct {
-	header header.Store
+	header metadata.MD
 	writer io.Writer
 	status int
 }
 
-func (rw *MockResponseWriter) Header() header.Store {
+func (rw *MockResponseWriter) Header() metadata.MD {
 	return rw.header
 }
 
