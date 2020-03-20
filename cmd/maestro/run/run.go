@@ -13,8 +13,10 @@ import (
 	"github.com/jexia/maestro/definitions/hcl"
 	"github.com/jexia/maestro/protocol/graphql"
 	"github.com/jexia/maestro/protocol/http"
+	"github.com/jexia/maestro/protocol/micro"
 	"github.com/jexia/maestro/schema/protoc"
 	"github.com/jexia/maestro/specs"
+	"github.com/micro/go-micro/v2/service/grpc"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -53,6 +55,7 @@ func run(cmd *cobra.Command, args []string) error {
 	options := []constructor.Option{
 		maestro.WithCodec(json.NewConstructor()),
 		maestro.WithCodec(proto.NewConstructor()),
+		maestro.WithCaller(micro.New("micro-grpc", grpc.NewService())),
 		maestro.WithCaller(http.NewCaller()),
 	}
 
