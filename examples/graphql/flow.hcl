@@ -1,7 +1,7 @@
-endpoint "latest" "graphql" {
+endpoint "latest_todo" "graphql" {
 }
 
-flow "latest" {
+flow "latest_todo" {
 	input "proto.Empty" {}
 
 	call "query" {
