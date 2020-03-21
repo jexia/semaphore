@@ -11,9 +11,11 @@ extend google.protobuf.ServiceOptions {
 }
 
 message Service {
-  string host = 1;
-  string protocol = 2;
-  string codec = 3;
+  string package = 1;
+  string name = 2;
+  string host = 3;
+  string protocol = 4;
+  string codec = 5;
 }
 
 extend google.protobuf.MethodOptions {

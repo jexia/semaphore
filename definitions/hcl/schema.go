@@ -55,6 +55,7 @@ func ParseSchema(manifest Manifest, schemas schema.Collection) (schema.Collectio
 
 // service represents a schema service
 type service struct {
+	pkg           string
 	name          string
 	documentation string
 	host          string
@@ -62,6 +63,16 @@ type service struct {
 	codec         string
 	methods       []schema.Method
 	options       schema.Options
+}
+
+// GetPackage returns the service package
+func (service *service) GetPackage() string {
+	return service.pkg
+}
+
+// GetFullyQualifiedName returns the fully qualified service name
+func (service *service) GetFullyQualifiedName() string {
+	return service.name
 }
 
 // GetName returns the service name
@@ -120,6 +131,7 @@ func ParseIntermediateService(manifest Service, collection schema.Collection) (s
 	}
 
 	result := &service{
+		pkg:      manifest.Package,
 		name:     manifest.Name,
 		protocol: manifest.Protocol,
 		host:     manifest.Host,

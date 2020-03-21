@@ -121,7 +121,11 @@ func Call(manifest *specs.Manifest, node *specs.Node, call *specs.Call, options 
 
 	constructor := options.Callers.Get(service.GetProtocol())
 	codec := options.Codec[service.GetCodec()]
-	schema := options.Schema.GetService(service.GetName())
+	schema := options.Schema.GetService(service.GetFullyQualifiedName())
+
+	if schema == nil {
+		return nil, trace.New(trace.WithMessage("service not found '%s'", service.GetFullyQualifiedName()))
+	}
 
 	if constructor == nil {
 		return nil, trace.New(trace.WithMessage("protocol constructor not found '%s' for service '%s'", service.GetProtocol(), service.GetName()))

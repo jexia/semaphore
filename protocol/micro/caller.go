@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
-	"strings"
 
 	"github.com/jexia/maestro/protocol"
 	"github.com/jexia/maestro/refs"
@@ -48,25 +47,21 @@ func (caller *Caller) Name() string {
 	return caller.name
 }
 
-// Dial constructs a new caller for the given host
+// Dial constructs a new caller for the given service
 func (caller *Caller) Dial(schema schema.Service, functions specs.CustomDefinedFunctions, opts schema.Options) (protocol.Call, error) {
 	methods := make(map[string]*Method, len(schema.GetMethods()))
-
-	parts := strings.Split(schema.GetName(), ".")
-	pkg := strings.Join(parts[0:len(parts)-1], ".")
-	service := parts[len(parts)-1]
 
 	for _, method := range schema.GetMethods() {
 		methods[method.GetName()] = &Method{
 			name:       method.GetName(),
-			endpoint:   fmt.Sprintf("%s.%s", service, method.GetName()),
+			endpoint:   fmt.Sprintf("%s.%s", schema.GetName(), method.GetName()),
 			references: make([]*specs.Property, 0),
 		}
 	}
 
 	result := &Call{
-		pkg:     pkg,
-		service: service,
+		pkg:     schema.GetPackage(),
+		service: schema.GetName(),
 		methods: methods,
 		client:  caller.service.Client(),
 	}
@@ -125,7 +120,7 @@ func (call *Call) GetMethod(name string) protocol.Method {
 	return nil
 }
 
-// SendMsg calls the configured host and attempts to call the given endpoint with the given headers and stream
+// SendMsg calls the configured service and attempts to call the given endpoint with the given headers and stream
 func (call *Call) SendMsg(ctx context.Context, rw protocol.ResponseWriter, pr *protocol.Request, refs *refs.Store) error {
 	if pr.Method == nil {
 		return trace.New(trace.WithMessage("method required, proxy forward not supported"))

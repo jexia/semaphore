@@ -62,6 +62,7 @@ func NewMockService(host string, method string, endpoint string) *MockService {
 }
 
 type MockService struct {
+	pkg           string
 	name          string
 	documentation string
 	host          string
@@ -69,6 +70,14 @@ type MockService struct {
 	protocol      string
 	methods       []schema.Method
 	options       schema.Options
+}
+
+func (service *MockService) GetPackage() string {
+	return service.pkg
+}
+
+func (service *MockService) GetFullyQualifiedName() string {
+	return service.name
 }
 
 func (service *MockService) GetName() string {

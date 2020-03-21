@@ -1,3 +1,3 @@
 // No caller defined
-service "auth" {
+service "com.maestro" "auth" {
 }

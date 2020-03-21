@@ -31,7 +31,7 @@ var Cmd = &cobra.Command{
 }
 
 func init() {
-	Cmd.PersistentFlags().StringP("config", "c", "", "Config file path")
+	Cmd.PersistentFlags().StringP("config", "c", "config.yaml", "Config file path")
 	Cmd.PersistentFlags().StringVar(&global.HTTP.Address, "http", "", "If set starts the HTTP listener on the given TCP address")
 	Cmd.PersistentFlags().StringVar(&global.GraphQL.Address, "graphql", "", "If set starts the GraphQL listener on the given TCP address")
 	Cmd.PersistentFlags().StringSliceVar(&global.Protobuffers, "proto", []string{}, "If set are all proto definitions found inside the given path passed as schema definitions, all proto definitions are also passed as imports")

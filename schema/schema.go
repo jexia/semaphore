@@ -18,6 +18,8 @@ type Collection interface {
 // Service represents a service which could be called in one of the flows
 type Service interface {
 	GetComment() string
+	GetPackage() string
+	GetFullyQualifiedName() string
 	GetName() string
 	GetHost() string
 	GetProtocol() string

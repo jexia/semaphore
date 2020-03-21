@@ -64,7 +64,7 @@ func (store *Store) Add(collection Collection) {
 		}
 
 		log.WithField("service", service.GetName()).Debug("Appending service to schema store")
-		store.services[service.GetName()] = service
+		store.services[service.GetFullyQualifiedName()] = service
 	}
 
 	for _, message := range collection.GetMessages() {

@@ -105,6 +105,7 @@ type Call struct {
 
 // Service specification
 type Service struct {
+	Package  string   `hcl:"package,label"`
 	Name     string   `hcl:"name,label"`
 	Protocol string   `hcl:"protocol,label"`
 	Codec    string   `hcl:"codec,label"`

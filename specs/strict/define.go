@@ -127,8 +127,9 @@ func DefineCall(schema schema.Collection, manifest *specs.Manifest, node *specs.
 	}
 
 	log.WithFields(log.Fields{
-		"call":   node.GetName(),
-		"method": call.GetMethod(),
+		"call":    node.GetName(),
+		"method":  call.GetMethod(),
+		"service": call.GetService(),
 	}).Info("Defining call types")
 
 	service := schema.GetService(call.GetService())

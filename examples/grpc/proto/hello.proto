@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package go.micro.srv.greeter;
+
+import "annotations.proto";
+
+option go_package = "proto";
+
+service Say {
+	option (maestro.service) = {
+		host: "127.0.0.1"
+        protocol: "grpc"
+        codec: "proto"
+	};
+
+	rpc Hello(Request) returns (Response) {}
+}
+
+message Request {
+	string name = 1;
+}
+
+message Response {
+	string msg = 1;
+}
