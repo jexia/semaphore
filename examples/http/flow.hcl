@@ -1,23 +1,23 @@
-endpoint "todo" "http" {
+endpoint "FetchLatestProject" "http" {
 	endpoint = "/"
 	method = "GET"
 	codec = "json"
 }
 
-flow "todo" {
-	input "proto.Query" {}
+flow "FetchLatestProject" {
+	input "placeholder.Query" {}
 
 	call "query" {
-		request "proto.TODO" "Get" {
+		request "placeholder.Service" "GetTodo" {
 		}
 	}
 
 	call "user" {
-		request "proto.TODO" "User" {
+		request "placeholder.Service" "GetUser" {
 		}
 	}
 
-	output "proto.Item" {
+	output "placeholder.Item" {
 		header {
 			Username = "{{ user:username }}"
 		}
