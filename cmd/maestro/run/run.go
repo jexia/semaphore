@@ -55,7 +55,7 @@ func run(cmd *cobra.Command, args []string) error {
 	options := []constructor.Option{
 		maestro.WithCodec(json.NewConstructor()),
 		maestro.WithCodec(proto.NewConstructor()),
-		maestro.WithCaller(micro.New("micro-grpc", grpc.NewService())),
+		maestro.WithCaller(micro.New("grpc", grpc.NewService())),
 		maestro.WithCaller(http.NewCaller()),
 	}
 
