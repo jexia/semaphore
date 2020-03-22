@@ -314,6 +314,15 @@ func CheckTypes(property *specs.Property, schema schema.Property, flow specs.Flo
 				return err
 			}
 		}
+
+		for _, prop := range schema.GetNested() {
+			_, has := property.Nested[prop.GetName()]
+			if has {
+				continue
+			}
+
+			property.Nested[prop.GetName()] = SchemaToProperty(property.Path, prop)
+		}
 	}
 
 	return nil
@@ -340,4 +349,25 @@ func ResolvePropertyReferences(property *specs.Property) {
 	clone := property.Reference.Property.Clone(property.Reference, property.Name, property.Path)
 	property.Reference = clone.Reference
 	property.Nested = clone.Nested
+}
+
+// SchemaToProperty parses the given schema property to a specs property
+func SchemaToProperty(path string, prop schema.Property) *specs.Property {
+	result := &specs.Property{
+		Name:      prop.GetName(),
+		Path:      specs.JoinPath(path, prop.GetName()),
+		Type:      prop.GetType(),
+		Label:     prop.GetLabel(),
+		Desciptor: prop,
+	}
+
+	if prop.GetNested() != nil {
+		result.Nested = make(map[string]*specs.Property, len(prop.GetNested()))
+
+		for key, prop := range prop.GetNested() {
+			result.Nested[key] = SchemaToProperty(specs.JoinPath(path, key), prop)
+		}
+	}
+
+	return result
 }
