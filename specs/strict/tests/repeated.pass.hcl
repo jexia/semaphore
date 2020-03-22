@@ -3,7 +3,7 @@ service "com.maestro" "caller" "http" "json" {
 }
 
 flow "echo" {
-  input "input" {
+  	input "input" {
 	}
 
 	call "opening" {

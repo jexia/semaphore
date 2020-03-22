@@ -199,6 +199,11 @@ func (method *Method) GetOptions() schema.Options {
 // NewProperty appends the name to the given property
 func NewProperty(name string, property *Property) *Property {
 	property.Name = name
+
+	for key, prop := range property.Nested {
+		property.Nested[key] = NewProperty(key, prop)
+	}
+
 	return property
 }
 

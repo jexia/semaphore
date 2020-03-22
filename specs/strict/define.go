@@ -211,7 +211,7 @@ func DefineParameterMap(node *specs.Node, params *specs.ParameterMap, flow specs
 // DefineProperty defines the given property type.
 // If any object is references it has to be fixed afterwards and moved into the correct dataset
 func DefineProperty(node *specs.Node, property *specs.Property, flow specs.FlowManager) error {
-	if property.Nested != nil {
+	if len(property.Nested) > 0 {
 		for _, nested := range property.Nested {
 			err := DefineProperty(node, nested, flow)
 			if err != nil {
@@ -263,7 +263,7 @@ func InsideProperty(source *specs.Property, target *specs.Property) bool {
 		return true
 	}
 
-	if source.Nested != nil {
+	if len(source.Nested) > 0 {
 		for _, nested := range source.Nested {
 			is := InsideProperty(nested, target)
 			if is {
@@ -302,8 +302,8 @@ func CheckTypes(property *specs.Property, schema schema.Property, flow specs.Flo
 		return trace.New(trace.WithExpression(property.Expr), trace.WithMessage("cannot use (%s) label (%s) in '%s'", property.Label, schema.GetLabel(), property.Path))
 	}
 
-	if property.Nested != nil {
-		if schema.GetNested() == nil {
+	if len(property.Nested) > 0 {
+		if len(schema.GetNested()) == 0 {
 			return trace.New(trace.WithExpression(property.Expr), trace.WithMessage("property '%s' has a nested object but schema does not '%s'", property.Path, schema.GetName()))
 		}
 
@@ -334,7 +334,7 @@ func CheckTypes(property *specs.Property, schema schema.Property, flow specs.Flo
 
 // ResolvePropertyReferences moves any property reference into the correct data structure
 func ResolvePropertyReferences(property *specs.Property) {
-	if property.Nested != nil {
+	if len(property.Nested) > 0 {
 		for _, nested := range property.Nested {
 			ResolvePropertyReferences(nested)
 		}
