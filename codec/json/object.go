@@ -45,7 +45,7 @@ func (object *Object) MarshalJSONObject(encoder *gojay.Encoder) {
 			continue
 		}
 
-		if prop.Nested != nil {
+		if prop.Type == types.TypeMessage {
 			result := NewObject(object.resource, prop.Nested, object.refs)
 			encoder.AddObjectKey(prop.Name, result)
 			continue
