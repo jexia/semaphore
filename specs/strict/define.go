@@ -361,7 +361,7 @@ func SchemaToProperty(path string, prop schema.Property) *specs.Property {
 		Desciptor: prop,
 	}
 
-	if prop.GetNested() != nil {
+	if len(prop.GetNested()) > 0 {
 		result.Nested = make(map[string]*specs.Property, len(prop.GetNested()))
 
 		for key, prop := range prop.GetNested() {
