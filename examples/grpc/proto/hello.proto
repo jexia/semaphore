@@ -9,7 +9,7 @@ option go_package = "proto";
 service Say {
 	option (maestro.service) = {
 		host: "127.0.0.1"
-        protocol: "grpc"
+        protocol: "micro-grpc"
         codec: "proto"
 	};
 
