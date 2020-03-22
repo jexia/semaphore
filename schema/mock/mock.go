@@ -247,7 +247,7 @@ func (property *Property) GetLabel() types.Label {
 func (property *Property) GetNested() map[string]schema.Property {
 	result := make(map[string]schema.Property, len(property.Nested))
 	for key, nested := range property.Nested {
-		result[key] = nested
+		result[key] = NewProperty(key, nested)
 	}
 
 	return result
