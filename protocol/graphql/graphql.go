@@ -113,9 +113,10 @@ func (listener *Listener) Handle(endpoints []*protocol.Endpoint, constructors ma
 
 		path := options.Path
 		field := &graphql.Field{
-			Args:    req,
-			Type:    res,
-			Resolve: resolve,
+			Args:        req,
+			Type:        res,
+			Resolve:     resolve,
+			Description: endpoint.Request.Property.Desciptor.GetComment(),
 		}
 
 		err = SetField(path, fields[options.Base], field)

@@ -67,6 +67,10 @@ func DefineFlow(schema schema.Collection, manifest *specs.Manifest, flow *specs.
 		}
 
 		flow.Input = specs.ToParameterMap(flow.Input, "", message)
+		err = CheckTypes(flow.Input.Property, message, flow)
+		if err != nil {
+			return err
+		}
 	}
 
 	for _, node := range flow.Nodes {
