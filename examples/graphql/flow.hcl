@@ -1,4 +1,7 @@
 endpoint "latest_todo" "graphql" {
+	path = "latest.todo"
+	name = "LatestTodo"
+	base = "query"
 }
 
 flow "latest_todo" {
@@ -17,6 +20,9 @@ flow "latest_todo" {
 }
 
 endpoint "todo" "graphql" {
+	path = "todo"
+	name = "Todo"
+	base = "query"
 }
 
 flow "todo" {

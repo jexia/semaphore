@@ -5,6 +5,7 @@ import (
 
 	"github.com/graphql-go/graphql"
 	"github.com/jexia/maestro/specs"
+	"github.com/jexia/maestro/specs/trace"
 	"github.com/jexia/maestro/specs/types"
 )
 
@@ -60,4 +61,41 @@ func NewObject(name string, prop *specs.Property) (*graphql.Object, error) {
 	}
 
 	return graphql.NewObject(config), nil
+}
+
+// NewObjects constructs a new objects collection
+func NewObjects() *Objects {
+	return &Objects{
+		properties: map[string]*specs.Property{},
+		collection: map[string]*graphql.Object{},
+	}
+}
+
+// Objects represents a schema objects collection
+type Objects struct {
+	properties map[string]*specs.Property
+	collection map[string]*graphql.Object
+}
+
+// NewSchemaObject constructs a new object for the given property with the given name.
+// If a object with the same name already exists is it used instead.
+func NewSchemaObject(objects *Objects, name string, property *specs.Property) (*graphql.Object, error) {
+	_, has := objects.collection[name]
+	if has {
+		if objects.properties[name] != property {
+			return nil, trace.New(trace.WithMessage("duplicate object '%s'", name))
+		}
+
+		return objects.collection[name], nil
+	}
+
+	object, err := NewObject(name, property)
+	if err != nil {
+		return nil, err
+	}
+
+	objects.collection[name] = object
+	objects.properties[name] = property
+
+	return object, nil
 }

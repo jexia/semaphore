@@ -36,7 +36,7 @@ endpoint "checkout" "http" {
 }
 
 endpoint "checkout" "graphql" {
-    name = "data"
+    path = "data"
 }
 
 flow "checkout" {

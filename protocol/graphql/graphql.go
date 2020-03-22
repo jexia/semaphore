@@ -13,6 +13,12 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// Schema base
+var (
+	QueryObject    = "query"
+	MutationObject = "mutation"
+)
+
 type req struct {
 	Query string `json:"query"`
 }
@@ -66,11 +72,15 @@ func (listener *Listener) Serve() error {
 
 // Handle parses the given endpoints and constructs route handlers
 func (listener *Listener) Handle(endpoints []*protocol.Endpoint, constructors map[string]codec.Constructor) error {
-	fields := graphql.Fields{}
+	objects := NewObjects()
+	fields := map[string]graphql.Fields{
+		QueryObject:    graphql.Fields{},
+		MutationObject: graphql.Fields{},
+	}
 
 	for _, endpoint := range endpoints {
 		req := NewArgs(endpoint.Request.Property)
-		res, err := NewObject(endpoint.Flow.GetName(), endpoint.Response.Property)
+		options, err := ParseEndpointOptions(endpoint)
 		if err != nil {
 			return err
 		}
@@ -96,25 +106,45 @@ func (listener *Listener) Handle(endpoints []*protocol.Endpoint, constructors ma
 			}
 		}(endpoint)
 
-		// TODO: set a option to set a custom name
-		fields[endpoint.Flow.GetName()] = &graphql.Field{
+		res, err := NewSchemaObject(objects, options.Name, endpoint.Response.Property)
+		if err != nil {
+			return err
+		}
+
+		path := options.Path
+		field := &graphql.Field{
 			Args:    req,
 			Type:    res,
 			Resolve: resolve,
 		}
+
+		err = SetField(path, fields[options.Base], field)
+		if err != nil {
+			return err
+		}
 	}
 
-	schema, err := graphql.NewSchema(
-		graphql.SchemaConfig{
-			Query: graphql.NewObject(
-				graphql.ObjectConfig{
-					Name:   "query",
-					Fields: fields,
-				},
-			),
-		},
-	)
+	config := graphql.SchemaConfig{}
 
+	if len(fields[MutationObject]) > 0 {
+		config.Mutation = graphql.NewObject(
+			graphql.ObjectConfig{
+				Name:   MutationObject,
+				Fields: fields[MutationObject],
+			},
+		)
+	}
+
+	if len(fields[QueryObject]) > 0 {
+		config.Query = graphql.NewObject(
+			graphql.ObjectConfig{
+				Name:   QueryObject,
+				Fields: fields[QueryObject],
+			},
+		)
+	}
+
+	schema, err := graphql.NewSchema(config)
 	if err != nil {
 		return err
 	}
