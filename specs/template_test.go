@@ -1,8 +1,10 @@
 package specs
 
 import (
+	"context"
 	"testing"
 
+	"github.com/jexia/maestro/logger"
 	"github.com/jexia/maestro/specs/types"
 )
 
@@ -195,7 +197,10 @@ func TestParseTemplate(t *testing.T) {
 	}
 
 	for input, expected := range tests {
-		property, err := ParseTemplate(path, functions, input)
+		ctx := context.Background()
+		ctx = logger.WithValue(ctx)
+
+		property, err := ParseTemplate(ctx, path, functions, input)
 		if err != nil {
 			t.Error(err)
 		}

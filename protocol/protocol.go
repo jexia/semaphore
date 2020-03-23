@@ -41,6 +41,7 @@ func (collection Callers) Get(name string) Caller {
 // Caller constructs new calls which could be used to call services
 type Caller interface {
 	Name() string
+	Context(context.Context)
 	Dial(schema schema.Service, functions specs.CustomDefinedFunctions, options schema.Options) (Call, error)
 }
 
@@ -93,6 +94,7 @@ type Endpoint struct {
 // Listener specifies the listener implementation
 type Listener interface {
 	Name() string
+	Context(context.Context)
 	Serve() error
 	Close() error
 	Handle([]*Endpoint, map[string]codec.Constructor) error

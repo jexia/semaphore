@@ -1,6 +1,8 @@
 package schema
 
 import (
+	"context"
+
 	"github.com/jexia/maestro/specs/types"
 )
 
@@ -64,4 +66,4 @@ type Property interface {
 }
 
 // Resolver when called collects the available schema(s) with the configured configuration
-type Resolver func(*Store) error
+type Resolver func(context.Context, *Store) error

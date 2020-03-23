@@ -1,15 +1,17 @@
 package validate
 
 import (
+	"context"
+
 	"github.com/jexia/maestro"
 	"github.com/jexia/maestro/cmd/maestro/config"
 	"github.com/jexia/maestro/codec/json"
 	"github.com/jexia/maestro/codec/proto"
 	"github.com/jexia/maestro/constructor"
 	"github.com/jexia/maestro/definitions/hcl"
+	"github.com/jexia/maestro/logger"
 	"github.com/jexia/maestro/protocol/http"
 	"github.com/jexia/maestro/schema/protoc"
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -37,17 +39,11 @@ func run(cmd *cobra.Command, args []string) error {
 	}
 
 	options := []constructor.Option{
+		maestro.WithLogLevel(logger.Global, global.LogLevel),
 		maestro.WithCodec(json.NewConstructor()),
 		maestro.WithCodec(proto.NewConstructor()),
 		maestro.WithCaller(http.NewCaller()),
 	}
-
-	level, err := logrus.ParseLevel(global.LogLevel)
-	if err != nil {
-		return err
-	}
-
-	logrus.SetLevel(level)
 
 	for _, flow := range global.Flows {
 		options = append(options, maestro.WithDefinitions(hcl.DefinitionResolver(flow)))
@@ -62,7 +58,8 @@ func run(cmd *cobra.Command, args []string) error {
 		options = append(options, maestro.WithSchema(resolver))
 	}
 
-	_, err = constructor.Specs(constructor.NewOptions(options...))
+	ctx := context.Background()
+	_, err = constructor.Specs(ctx, constructor.NewOptions(ctx, options...))
 	if err != nil {
 		return err
 	}

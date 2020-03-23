@@ -1,12 +1,14 @@
 package strict
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/jexia/maestro/definitions/hcl"
+	"github.com/jexia/maestro/logger"
 	"github.com/jexia/maestro/schema/mock"
 	"github.com/jexia/maestro/utils"
 )
@@ -29,17 +31,20 @@ func TestUnmarshalFile(t *testing.T) {
 
 	for _, file := range files {
 		t.Run(file.Name(), func(t *testing.T) {
+			ctx := context.Background()
+			ctx = logger.WithValue(ctx)
+
 			reader, err := os.Open(file.Path)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			definition, err := hcl.UnmarshalHCL(file.Name(), reader)
+			definition, err := hcl.UnmarshalHCL(ctx, file.Name(), reader)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			manifest, err := hcl.ParseSpecs(definition, nil)
+			manifest, err := hcl.ParseSpecs(ctx, definition, nil)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -55,7 +60,7 @@ func TestUnmarshalFile(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			err = DefineManifest(collection, manifest)
+			err = DefineManifest(ctx, collection, manifest)
 			if strings.HasSuffix(clean, pass) && err != nil {
 				t.Fatalf("expected test to pass but failed instead %s, %v", file.Name(), err)
 			}

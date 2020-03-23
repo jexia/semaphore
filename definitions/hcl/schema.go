@@ -1,9 +1,12 @@
 package hcl
 
 import (
+	"context"
+
+	"github.com/jexia/maestro/logger"
 	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/specs/trace"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/zclconf/go-cty/cty"
 )
 
@@ -34,15 +37,15 @@ func (collection *collection) GetMessages() []schema.Property {
 }
 
 // ParseSchema parses the given intermediate manifest to a schema
-func ParseSchema(manifest Manifest, schemas schema.Collection) (schema.Collection, error) {
-	log.Info("Parsing intermediate manifest to schema")
+func ParseSchema(ctx context.Context, manifest Manifest, schemas schema.Collection) (schema.Collection, error) {
+	logger.FromCtx(ctx, logger.Core).Info("Parsing intermediate manifest to schema")
 
 	result := &collection{
 		services: make([]schema.Service, len(manifest.Services)),
 	}
 
 	for index, intermediate := range manifest.Services {
-		service, err := ParseIntermediateService(intermediate, schemas)
+		service, err := ParseIntermediateService(ctx, intermediate, schemas)
 		if err != nil {
 			return nil, err
 		}
@@ -122,10 +125,10 @@ func (service *service) GetMethods() schema.Methods {
 }
 
 // ParseIntermediateService parses the given intermediate service to a specs service
-func ParseIntermediateService(manifest Service, collection schema.Collection) (schema.Service, error) {
-	log.WithField("service", manifest.Name).Debug("Parsing intermediate service to schema")
+func ParseIntermediateService(ctx context.Context, manifest Service, collection schema.Collection) (schema.Service, error) {
+	logger.FromCtx(ctx, logger.Core).WithField("service", manifest.Name).Debug("Parsing intermediate service to schema")
 
-	methods, err := ParseIntermediateMethods(manifest.Methods, collection)
+	methods, err := ParseIntermediateMethods(ctx, manifest.Methods, collection)
 	if err != nil {
 		return nil, err
 	}
@@ -172,11 +175,11 @@ func (method *method) GetOptions() schema.Options {
 }
 
 // ParseIntermediateMethods parses the given methods for the given service
-func ParseIntermediateMethods(methods []Method, collection schema.Collection) ([]schema.Method, error) {
+func ParseIntermediateMethods(ctx context.Context, methods []Method, collection schema.Collection) ([]schema.Method, error) {
 	result := make([]schema.Method, len(methods))
 
 	for index, manifest := range methods {
-		log.WithFields(log.Fields{
+		logger.FromCtx(ctx, logger.Core).WithFields(logrus.Fields{
 			"method": manifest.Name,
 		}).Debug("Parsing intermediate method to schema")
 

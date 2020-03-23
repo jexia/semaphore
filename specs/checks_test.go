@@ -1,7 +1,10 @@
 package specs
 
 import (
+	"context"
 	"testing"
+
+	"github.com/jexia/maestro/logger"
 )
 
 func TestDuplicateManifests(t *testing.T) {
@@ -34,7 +37,10 @@ func TestDuplicateManifests(t *testing.T) {
 	}
 
 	for _, input := range tests {
-		err := CheckManifestDuplicates(input)
+		ctx := context.Background()
+		ctx = logger.WithValue(ctx)
+
+		err := CheckManifestDuplicates(ctx, input)
 		if err == nil {
 			t.Fatal("unexpected pass", input)
 		}
@@ -57,7 +63,10 @@ func TestDuplicateFlow(t *testing.T) {
 	}
 
 	for _, input := range tests {
-		err := CheckFlowDuplicates(input)
+		ctx := context.Background()
+		ctx = logger.WithValue(ctx)
+
+		err := CheckFlowDuplicates(ctx, input)
 		if err == nil {
 			t.Fatal("unexpected pass", input)
 		}

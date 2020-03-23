@@ -1,16 +1,18 @@
 package maestro
 
 import (
+	"context"
 	"sync"
 
 	"github.com/jexia/maestro/constructor"
+	"github.com/jexia/maestro/logger"
 	"github.com/jexia/maestro/protocol"
 	"github.com/jexia/maestro/specs"
-	log "github.com/sirupsen/logrus"
 )
 
 // Client represents a maestro instance
 type Client struct {
+	ctx       context.Context
 	Endpoints []*protocol.Endpoint
 	Manifest  *specs.Manifest
 	Listeners []protocol.Listener
@@ -23,7 +25,7 @@ func (client *Client) Serve() (result error) {
 	wg.Add(len(client.Listeners))
 
 	for _, listener := range client.Listeners {
-		log.WithField("listener", listener.Name()).Info("serving listener")
+		logger.FromCtx(client.ctx, logger.Core).WithField("listener", listener.Name()).Info("serving listener")
 
 		go func(listener protocol.Listener) {
 			defer wg.Done()
@@ -51,19 +53,23 @@ func (client *Client) Close() {
 
 // New constructs a new Maestro instance
 func New(opts ...constructor.Option) (*Client, error) {
-	options := constructor.NewOptions(opts...)
+	ctx := context.Background()
+	ctx = logger.WithValue(ctx)
 
-	manifest, err := constructor.Specs(options)
+	options := constructor.NewOptions(ctx, opts...)
+
+	manifest, err := constructor.Specs(ctx, options)
 	if err != nil {
 		return nil, err
 	}
 
-	endpoints, err := constructor.FlowManager(manifest, options)
+	endpoints, err := constructor.FlowManager(ctx, manifest, options)
 	if err != nil {
 		return nil, err
 	}
 
 	client := &Client{
+		ctx:       ctx,
 		Endpoints: endpoints,
 		Manifest:  manifest,
 		Listeners: options.Listeners,

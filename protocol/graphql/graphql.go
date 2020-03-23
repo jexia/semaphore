@@ -8,9 +8,9 @@ import (
 
 	"github.com/graphql-go/graphql"
 	"github.com/jexia/maestro/codec"
+	"github.com/jexia/maestro/logger"
 	"github.com/jexia/maestro/protocol"
 	"github.com/jexia/maestro/specs"
-	log "github.com/sirupsen/logrus"
 )
 
 // Schema base
@@ -34,6 +34,7 @@ func NewListener(addr string, opts specs.Options) protocol.Listener {
 
 // Listener represents a GraphQL listener
 type Listener struct {
+	ctx    context.Context
 	schema graphql.Schema
 	mutex  sync.RWMutex
 	server *http.Server
@@ -42,6 +43,11 @@ type Listener struct {
 // Name returns the name of the given listener
 func (listener *Listener) Name() string {
 	return "graphql"
+}
+
+// Context sets the given contexts as the management context for the given GraphQL listener
+func (listener *Listener) Context(ctx context.Context) {
+	listener.ctx = ctx
 }
 
 // Serve opens the GraphQL listener and calls the given handler function on reach request
@@ -159,6 +165,6 @@ func (listener *Listener) Handle(endpoints []*protocol.Endpoint, constructors ma
 
 // Close closes the given listener
 func (listener *Listener) Close() error {
-	log.Info("Closing GraphQL listener")
+	logger.FromCtx(listener.ctx, logger.Protocol).Info("Closing GraphQL listener")
 	return listener.server.Close()
 }

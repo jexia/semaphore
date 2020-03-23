@@ -1,6 +1,8 @@
 package constructor
 
 import (
+	"context"
+
 	"github.com/jexia/maestro/codec"
 	"github.com/jexia/maestro/flow"
 	"github.com/jexia/maestro/metadata"
@@ -11,7 +13,7 @@ import (
 )
 
 // Specs construct a specs manifest from the given options
-func Specs(options Options) (*specs.Manifest, error) {
+func Specs(ctx context.Context, options Options) (*specs.Manifest, error) {
 	result := &specs.Manifest{}
 
 	for _, resolver := range options.Definitions {
@@ -19,7 +21,7 @@ func Specs(options Options) (*specs.Manifest, error) {
 			continue
 		}
 
-		manifest, err := resolver(options.Functions)
+		manifest, err := resolver(ctx, options.Functions)
 		if err != nil {
 			return nil, err
 		}
@@ -32,23 +34,23 @@ func Specs(options Options) (*specs.Manifest, error) {
 			continue
 		}
 
-		err := resolver(options.Schema)
+		err := resolver(ctx, options.Schema)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	err := specs.CheckManifestDuplicates(result)
+	err := specs.CheckManifestDuplicates(ctx, result)
 	if err != nil {
 		return nil, err
 	}
 
-	err = specs.ResolveManifestDependencies(result)
+	err = specs.ResolveManifestDependencies(ctx, result)
 	if err != nil {
 		return nil, err
 	}
 
-	err = strict.DefineManifest(options.Schema, result)
+	err = strict.DefineManifest(ctx, options.Schema, result)
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +59,7 @@ func Specs(options Options) (*specs.Manifest, error) {
 }
 
 // FlowManager constructs the flow managers from the given specs manifest
-func FlowManager(manifest *specs.Manifest, options Options) ([]*protocol.Endpoint, error) {
+func FlowManager(ctx context.Context, manifest *specs.Manifest, options Options) ([]*protocol.Endpoint, error) {
 	endpoints := make([]*protocol.Endpoint, len(manifest.Endpoints))
 
 	for index, endpoint := range manifest.Endpoints {
@@ -76,17 +78,17 @@ func FlowManager(manifest *specs.Manifest, options Options) ([]*protocol.Endpoin
 		}
 
 		for index, node := range current.GetNodes() {
-			caller, err := Call(manifest, node, node.Call, options, current)
+			caller, err := Call(ctx, manifest, node, node.Call, options, current)
 			if err != nil {
 				return nil, err
 			}
 
-			rollback, err := Call(manifest, node, node.Rollback, options, current)
+			rollback, err := Call(ctx, manifest, node, node.Rollback, options, current)
 			if err != nil {
 				return nil, err
 			}
 
-			nodes[index] = flow.NewNode(node, caller, rollback)
+			nodes[index] = flow.NewNode(ctx, node, caller, rollback)
 		}
 
 		forward, err := Forward(manifest, current.GetForward(), options)
@@ -95,7 +97,7 @@ func FlowManager(manifest *specs.Manifest, options Options) ([]*protocol.Endpoin
 		}
 
 		result.Forward = forward
-		result.Flow = flow.NewManager(current.GetName(), nodes)
+		result.Flow = flow.NewManager(ctx, current.GetName(), nodes)
 
 		endpoints[index] = result
 	}
@@ -109,7 +111,7 @@ func FlowManager(manifest *specs.Manifest, options Options) ([]*protocol.Endpoin
 }
 
 // Call constructs a flow caller for the given node call.
-func Call(manifest *specs.Manifest, node *specs.Node, call *specs.Call, options Options, manager specs.FlowManager) (flow.Call, error) {
+func Call(ctx context.Context, manifest *specs.Manifest, node *specs.Node, call *specs.Call, options Options, manager specs.FlowManager) (flow.Call, error) {
 	if call == nil {
 		return nil, nil
 	}
@@ -146,8 +148,8 @@ func Call(manifest *specs.Manifest, node *specs.Node, call *specs.Call, options 
 		return nil, err
 	}
 
-	caller := flow.NewCall(node, protocol, call.Method, request, response)
-	err = strict.DefineCaller(node, manifest, protocol, manager)
+	caller := flow.NewCall(ctx, node, protocol, call.Method, request, response)
+	err = strict.DefineCaller(ctx, node, manifest, protocol, manager)
 	if err != nil {
 		return nil, err
 	}

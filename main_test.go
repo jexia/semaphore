@@ -1,6 +1,7 @@
 package maestro
 
 import (
+	"context"
 	"path/filepath"
 	"testing"
 
@@ -18,7 +19,8 @@ func TestOptions(t *testing.T) {
 		"cdf": nil,
 	}
 
-	options := constructor.NewOptions(WithFunctions(functions))
+	ctx := context.Background()
+	options := constructor.NewOptions(ctx, WithFunctions(functions))
 
 	if len(options.Functions) != len(functions) {
 		t.Errorf("unexpected functions %+v, expected %+v", options.Functions, functions)

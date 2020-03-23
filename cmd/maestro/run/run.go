@@ -11,13 +11,13 @@ import (
 	"github.com/jexia/maestro/codec/proto"
 	"github.com/jexia/maestro/constructor"
 	"github.com/jexia/maestro/definitions/hcl"
+	"github.com/jexia/maestro/logger"
 	"github.com/jexia/maestro/protocol/graphql"
 	"github.com/jexia/maestro/protocol/http"
 	"github.com/jexia/maestro/protocol/micro"
 	"github.com/jexia/maestro/schema/protoc"
 	"github.com/jexia/maestro/specs"
 	"github.com/micro/go-micro/service/grpc"
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -45,14 +45,8 @@ func run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	level, err := logrus.ParseLevel(global.LogLevel)
-	if err != nil {
-		return err
-	}
-
-	logrus.SetLevel(level)
-
 	options := []constructor.Option{
+		maestro.WithLogLevel(logger.Global, global.LogLevel),
 		maestro.WithCodec(json.NewConstructor()),
 		maestro.WithCodec(proto.NewConstructor()),
 		maestro.WithCaller(micro.New("micro-grpc", grpc.NewService())),

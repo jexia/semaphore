@@ -3,16 +3,21 @@ package flow
 import (
 	"context"
 
+	"github.com/jexia/maestro/logger"
 	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/specs"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 // NewNode constructs a new node for the given call.
 // The service called inside the call endpoint is retrieved from the services collection.
 // The call, codec and rollback are defined inside the node and used while processing requests.
-func NewNode(node *specs.Node, call, rollback Call) *Node {
-	references := refs.ParameterReferences(node.Call.GetRequest())
+func NewNode(ctx context.Context, node *specs.Node, call, rollback Call) *Node {
+	references := refs.References{}
+
+	if node.Call != nil {
+		references.MergeLeft(refs.ParameterReferences(node.Call.GetRequest()))
+	}
 
 	if call != nil {
 		for _, prop := range call.References() {
@@ -26,7 +31,11 @@ func NewNode(node *specs.Node, call, rollback Call) *Node {
 		}
 	}
 
+	logger := logger.FromCtx(ctx, logger.Flow)
+
 	return &Node{
+		ctx:        ctx,
+		logger:     logger,
 		Name:       node.GetName(),
 		Previous:   []*Node{},
 		Call:       call,
@@ -53,6 +62,8 @@ func (nodes Nodes) Has(name string) bool {
 
 // Node represents a collection of callers and rollbacks which could be executed parallel.
 type Node struct {
+	ctx        context.Context
+	logger     *logrus.Logger
 	Name       string
 	Previous   Nodes
 	Call       Call
@@ -66,35 +77,35 @@ type Node struct {
 // If one of the nodes fails is the error marked and are the processes aborted.
 func (node *Node) Do(ctx context.Context, tracker *Tracker, processes *Processes, refs *refs.Store) {
 	defer processes.Done()
-	log.WithField("node", node.Name).Debug("Executing node call")
+	node.logger.WithField("node", node.Name).Debug("Executing node call")
 
 	if !tracker.Met(node.Previous...) {
-		log.WithField("node", node.Name).Debug("Has not met dependencies yet")
+		node.logger.WithField("node", node.Name).Debug("Has not met dependencies yet")
 		return
 	}
 
 	tracker.Lock(node)
 	if tracker.Met(node) {
-		log.WithField("node", node.Name).Debug("Node already executed")
+		node.logger.WithField("node", node.Name).Debug("Node already executed")
 		return
 	}
 
 	if node.Call != nil {
 		err := node.Call.Do(ctx, refs)
 		if err != nil {
-			log.WithField("node", node.Name).Error("Call failed")
+			node.logger.WithField("node", node.Name).Error("Call failed")
 			processes.Fatal(err)
 			return
 		}
 	}
 
-	log.WithField("node", node.Name).Debug("Marking node as completed")
+	node.logger.WithField("node", node.Name).Debug("Marking node as completed")
 
 	tracker.Mark(node)
 	tracker.Unlock(node)
 
 	if processes.Err() != nil {
-		log.WithField("node", node.Name).Error("Stopping flow execution a error has been thrown")
+		node.logger.WithField("node", node.Name).Error("Stopping flow execution a error has been thrown")
 		return
 	}
 
@@ -108,10 +119,10 @@ func (node *Node) Do(ctx context.Context, tracker *Tracker, processes *Processes
 // If one of the nodes fails is the error marked but execution is not aborted.
 func (node *Node) Revert(ctx context.Context, tracker *Tracker, processes *Processes, refs *refs.Store) {
 	defer processes.Done()
-	log.WithField("node", node.Name).Debug("Executing node revert")
+	node.logger.WithField("node", node.Name).Debug("Executing node revert")
 
 	if !tracker.Met(node.Next...) {
-		log.WithField("node", node.Name).Debug("Has not met dependencies yet")
+		logger.FromCtx(node.ctx, logger.Flow).WithField("node", node.Name).Debug("Has not met dependencies yet")
 		return
 	}
 
@@ -124,7 +135,7 @@ func (node *Node) Revert(ctx context.Context, tracker *Tracker, processes *Proce
 
 	tracker.Lock(node)
 	if tracker.Met(node) {
-		log.WithField("node", node.Name).Debug("Node already executed")
+		node.logger.WithField("node", node.Name).Debug("Node already executed")
 		return
 	}
 
@@ -136,7 +147,8 @@ func (node *Node) Revert(ctx context.Context, tracker *Tracker, processes *Proce
 		}
 	}
 
-	log.WithField("node", node.Name).Debug("Marking node as completed")
+	node.logger.WithField("node", node.Name).Debug("Marking node as completed")
+
 	tracker.Mark(node)
 	tracker.Unlock(node)
 }

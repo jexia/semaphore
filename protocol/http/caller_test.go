@@ -9,11 +9,21 @@ import (
 	"testing"
 
 	"github.com/jexia/maestro/codec/json"
+	"github.com/jexia/maestro/logger"
 	"github.com/jexia/maestro/metadata"
 	"github.com/jexia/maestro/protocol"
 	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/specs/types"
 )
+
+func NewMockCaller() *Caller {
+	ctx := context.Background()
+	ctx = logger.WithValue(ctx)
+
+	caller := &Caller{}
+	caller.Context(ctx)
+	return caller
+}
 
 func TestCaller(t *testing.T) {
 	message := "hello world"
@@ -32,7 +42,7 @@ func TestCaller(t *testing.T) {
 	defer server.Close()
 
 	service := NewMockService(server.URL, "GET", "/")
-	caller, err := (&Caller{}).Dial(service, nil, nil)
+	caller, err := NewMockCaller().Dial(service, nil, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -77,7 +87,7 @@ func TestCaller(t *testing.T) {
 
 func TestCallerUnknownMethod(t *testing.T) {
 	service := NewMockService("http://localhost", "GET", "/")
-	call, err := (&Caller{}).Dial(service, nil, nil)
+	call, err := NewMockCaller().Dial(service, nil, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -94,7 +104,7 @@ func TestCallerReferences(t *testing.T) {
 	resource := ".request"
 
 	service := NewMockService("http://localhost", "GET", "/"+expected)
-	call, err := (&Caller{}).Dial(service, nil, nil)
+	call, err := NewMockCaller().Dial(service, nil, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -136,7 +146,7 @@ func TestCallerReferencesLookup(t *testing.T) {
 	defer server.Close()
 
 	service := NewMockService(server.URL, "GET", "/:message")
-	caller, err := (&Caller{}).Dial(service, nil, nil)
+	caller, err := NewMockCaller().Dial(service, nil, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

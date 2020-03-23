@@ -1,11 +1,13 @@
 package specs
 
 import (
+	"context"
 	"regexp"
 	"strings"
 
+	"github.com/jexia/maestro/logger"
 	"github.com/jexia/maestro/specs/trace"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -121,16 +123,16 @@ func ParseTemplateContent(path string, functions CustomDefinedFunctions, content
 }
 
 // ParseTemplate parses the given value template and sets the resource and path
-func ParseTemplate(path string, functions CustomDefinedFunctions, value string) (*Property, error) {
+func ParseTemplate(ctx context.Context, path string, functions CustomDefinedFunctions, value string) (*Property, error) {
 	content := GetTemplateContent(value)
-	log.WithField("path", path).WithField("template", content).Debug("Parsing property template")
+	logger.FromCtx(ctx, logger.Core).WithField("path", path).WithField("template", content).Debug("Parsing property template")
 
 	result, err := ParseTemplateContent(path, functions, content)
 	if err != nil {
 		return nil, err
 	}
 
-	log.WithFields(log.Fields{
+	logger.FromCtx(ctx, logger.Core).WithFields(logrus.Fields{
 		"path":      path,
 		"type":      result.Type,
 		"default":   result.Default,

@@ -1,12 +1,15 @@
 package schema
 
 import (
-	log "github.com/sirupsen/logrus"
+	"context"
+
+	"github.com/jexia/maestro/logger"
 )
 
 // NewStore constructs a new schema store
-func NewStore() *Store {
+func NewStore(ctx context.Context) *Store {
 	return &Store{
+		ctx:      ctx,
 		services: make(map[string]Service),
 		messages: make(map[string]Property),
 	}
@@ -14,6 +17,7 @@ func NewStore() *Store {
 
 // Store represents a schema collection store
 type Store struct {
+	ctx      context.Context
 	services map[string]Service
 	messages map[string]Property
 }
@@ -56,14 +60,14 @@ func (store *Store) Add(collection Collection) {
 		return
 	}
 
-	log.WithField("collection", collection).Debug("Appending schema collection to schema store")
+	logger.FromCtx(store.ctx, logger.Core).WithField("collection", collection).Debug("Appending schema collection to schema store")
 
 	for _, service := range collection.GetServices() {
 		if service == nil {
 			continue
 		}
 
-		log.WithField("service", service.GetName()).Debug("Appending service to schema store")
+		logger.FromCtx(store.ctx, logger.Core).WithField("service", service.GetName()).Debug("Appending service to schema store")
 		store.services[service.GetFullyQualifiedName()] = service
 	}
 
@@ -72,7 +76,7 @@ func (store *Store) Add(collection Collection) {
 			continue
 		}
 
-		log.WithField("message", message.GetName()).Debug("Appending message to schema store")
+		logger.FromCtx(store.ctx, logger.Core).WithField("message", message.GetName()).Debug("Appending message to schema store")
 		store.messages[message.GetName()] = message
 	}
 }

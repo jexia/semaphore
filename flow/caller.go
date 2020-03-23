@@ -5,11 +5,12 @@ import (
 	"io"
 
 	"github.com/jexia/maestro/codec"
+	"github.com/jexia/maestro/logger"
 	"github.com/jexia/maestro/metadata"
 	"github.com/jexia/maestro/protocol"
 	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/specs"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 // NewRequest constructs a new request for the given codec and header manager
@@ -21,8 +22,9 @@ func NewRequest(codec codec.Manager, metadata *metadata.Manager) *Request {
 }
 
 // NewCall constructs a new flow caller from the given protocol caller and
-func NewCall(node *specs.Node, protocol protocol.Call, method string, request *Request, response *Request) Call {
+func NewCall(ctx context.Context, node *specs.Node, protocol protocol.Call, method string, request *Request, response *Request) Call {
 	return &Caller{
+		ctx:      ctx,
 		node:     node,
 		protocol: protocol,
 		method:   protocol.GetMethod(method),
@@ -39,6 +41,7 @@ type Request struct {
 
 // Caller represents a flow protocol caller
 type Caller struct {
+	ctx      context.Context
 	node     *specs.Node
 	method   protocol.Method
 	protocol protocol.Call
@@ -85,7 +88,7 @@ func (caller *Caller) Do(ctx context.Context, store *refs.Store) error {
 
 	err = <-result
 	if err != nil {
-		log.WithFields(log.Fields{
+		logger.FromCtx(caller.ctx, logger.Flow).WithFields(logrus.Fields{
 			"node": caller.node.GetName(),
 			"err":  err,
 		}).Error("Service error")

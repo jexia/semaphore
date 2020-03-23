@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 
+	"github.com/jexia/maestro/logger"
 	"github.com/jexia/maestro/protocol"
 	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/schema"
@@ -13,7 +14,6 @@ import (
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/codec/bytes"
 	micrometa "github.com/micro/go-micro/metadata"
-	log "github.com/sirupsen/logrus"
 )
 
 // Service is an interface that wraps the lower level libraries
@@ -31,6 +31,7 @@ type Service interface {
 // New constructs a new go micro transport wrapper
 func New(name string, service Service) *Caller {
 	return &Caller{
+		ctx:     context.Background(),
 		name:    name,
 		service: service,
 	}
@@ -38,6 +39,7 @@ func New(name string, service Service) *Caller {
 
 // Caller represents the caller constructor
 type Caller struct {
+	ctx     context.Context
 	name    string
 	service Service
 }
@@ -45,6 +47,11 @@ type Caller struct {
 // Name returns the name of the given caller
 func (caller *Caller) Name() string {
 	return caller.name
+}
+
+// Context returns the caller context
+func (caller *Caller) Context(ctx context.Context) {
+	caller.ctx = ctx
 }
 
 // Dial constructs a new caller for the given service
@@ -60,6 +67,7 @@ func (caller *Caller) Dial(schema schema.Service, functions specs.CustomDefinedF
 	}
 
 	result := &Call{
+		ctx:     caller.ctx,
 		pkg:     schema.GetPackage(),
 		service: schema.GetName(),
 		methods: methods,
@@ -92,6 +100,7 @@ func (method *Method) References() []*specs.Property {
 
 // Call represents the go micro transport wrapper implementation
 type Call struct {
+	ctx     context.Context
 	pkg     string
 	service string
 	client  client.Client
@@ -161,6 +170,6 @@ func (call *Call) SendMsg(ctx context.Context, rw protocol.ResponseWriter, pr *p
 
 // Close closes the given caller
 func (call *Call) Close() error {
-	log.Info("Closing go micro caller")
+	logger.FromCtx(call.ctx, logger.Protocol).Info("Closing go micro caller")
 	return nil
 }
