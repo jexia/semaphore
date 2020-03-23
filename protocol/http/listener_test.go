@@ -11,6 +11,7 @@ import (
 	"github.com/jexia/maestro/codec"
 	"github.com/jexia/maestro/codec/json"
 	"github.com/jexia/maestro/flow"
+	"github.com/jexia/maestro/logger"
 	"github.com/jexia/maestro/protocol"
 	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/specs"
@@ -21,6 +22,10 @@ func NewMockListener(t *testing.T, nodes flow.Nodes) (protocol.Listener, int) {
 	addr := fmt.Sprintf(":%d", port)
 	listener := NewListener(addr, nil)
 
+	ctx := context.Background()
+	ctx = logger.WithValue(ctx)
+	listener.Context(ctx)
+
 	json := json.NewConstructor()
 	constructors := map[string]codec.Constructor{
 		json.Name(): json,
@@ -29,7 +34,7 @@ func NewMockListener(t *testing.T, nodes flow.Nodes) (protocol.Listener, int) {
 	endpoints := []*protocol.Endpoint{
 		{
 			Request: NewSimpleMockSpecs(),
-			Flow:    flow.NewManager("test", nodes),
+			Flow:    flow.NewManager(ctx, "test", nodes),
 			Options: specs.Options{
 				EndpointOption: "/",
 				MethodOption:   http.MethodPost,
@@ -44,17 +49,21 @@ func NewMockListener(t *testing.T, nodes flow.Nodes) (protocol.Listener, int) {
 }
 
 func TestListener(t *testing.T) {
+	ctx := context.Background()
+	ctx = logger.WithValue(ctx)
+
+	specs := &specs.Node{
+		Name: "first",
+	}
+
 	called := 0
+	call := NewCallerFunc(func(ctx context.Context, refs *refs.Store) error {
+		called++
+		return nil
+	})
+
 	nodes := flow.Nodes{
-		{
-			Name:     "first",
-			Previous: flow.Nodes{},
-			Call: NewCallerFunc(func(ctx context.Context, refs *refs.Store) error {
-				called++
-				return nil
-			}),
-			Next: flow.Nodes{},
-		},
+		flow.NewNode(ctx, specs, call, nil),
 	}
 
 	listener, port := NewMockListener(t, nodes)
@@ -116,12 +125,6 @@ func TestListenerBadRequest(t *testing.T) {
 }
 
 func TestPathReferences(t *testing.T) {
-	port := AvailablePort(t)
-	addr := fmt.Sprintf(":%d", port)
-	listener := NewListener(addr, nil)
-
-	defer listener.Close()
-
 	message := "active"
 	nodes := flow.Nodes{
 		{
@@ -143,9 +146,15 @@ func TestPathReferences(t *testing.T) {
 		},
 	}
 
+	listener, port := NewMockListener(t, nodes)
+	defer listener.Close()
+
+	ctx := context.Background()
+	ctx = logger.WithValue(ctx)
+
 	endpoints := []*protocol.Endpoint{
 		{
-			Flow: flow.NewManager("test", nodes),
+			Flow: flow.NewManager(ctx, "test", nodes),
 			Options: specs.Options{
 				"endpoint": "/:message",
 				"method":   "GET",

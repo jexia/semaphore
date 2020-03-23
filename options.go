@@ -17,5 +17,8 @@ var WithListener = constructor.WithListener
 // WithSchema appends the schema collection to the schema store
 var WithSchema = constructor.WithSchema
 
+// WithLogLevel sets the log level for the given module
+var WithLogLevel = constructor.WithLogLevel
+
 // WithFunctions defines the custom defined functions to be used
 var WithFunctions = constructor.WithFunctions

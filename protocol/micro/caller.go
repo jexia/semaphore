@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
-	"strings"
 
+	"github.com/jexia/maestro/logger"
 	"github.com/jexia/maestro/protocol"
 	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/schema"
@@ -14,7 +14,6 @@ import (
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/codec/bytes"
 	micrometa "github.com/micro/go-micro/metadata"
-	log "github.com/sirupsen/logrus"
 )
 
 // Service is an interface that wraps the lower level libraries
@@ -32,6 +31,7 @@ type Service interface {
 // New constructs a new go micro transport wrapper
 func New(name string, service Service) *Caller {
 	return &Caller{
+		ctx:     context.Background(),
 		name:    name,
 		service: service,
 	}
@@ -39,6 +39,7 @@ func New(name string, service Service) *Caller {
 
 // Caller represents the caller constructor
 type Caller struct {
+	ctx     context.Context
 	name    string
 	service Service
 }
@@ -48,25 +49,27 @@ func (caller *Caller) Name() string {
 	return caller.name
 }
 
-// Dial constructs a new caller for the given host
+// Context returns the caller context
+func (caller *Caller) Context(ctx context.Context) {
+	caller.ctx = ctx
+}
+
+// Dial constructs a new caller for the given service
 func (caller *Caller) Dial(schema schema.Service, functions specs.CustomDefinedFunctions, opts schema.Options) (protocol.Call, error) {
 	methods := make(map[string]*Method, len(schema.GetMethods()))
-
-	parts := strings.Split(schema.GetName(), ".")
-	pkg := strings.Join(parts[0:len(parts)-1], ".")
-	service := parts[len(parts)-1]
 
 	for _, method := range schema.GetMethods() {
 		methods[method.GetName()] = &Method{
 			name:       method.GetName(),
-			endpoint:   fmt.Sprintf("%s.%s", service, method.GetName()),
+			endpoint:   fmt.Sprintf("%s.%s", schema.GetName(), method.GetName()),
 			references: make([]*specs.Property, 0),
 		}
 	}
 
 	result := &Call{
-		pkg:     pkg,
-		service: service,
+		ctx:     caller.ctx,
+		pkg:     schema.GetPackage(),
+		service: schema.GetName(),
 		methods: methods,
 		client:  caller.service.Client(),
 	}
@@ -97,6 +100,7 @@ func (method *Method) References() []*specs.Property {
 
 // Call represents the go micro transport wrapper implementation
 type Call struct {
+	ctx     context.Context
 	pkg     string
 	service string
 	client  client.Client
@@ -125,7 +129,7 @@ func (call *Call) GetMethod(name string) protocol.Method {
 	return nil
 }
 
-// SendMsg calls the configured host and attempts to call the given endpoint with the given headers and stream
+// SendMsg calls the configured service and attempts to call the given endpoint with the given headers and stream
 func (call *Call) SendMsg(ctx context.Context, rw protocol.ResponseWriter, pr *protocol.Request, refs *refs.Store) error {
 	if pr.Method == nil {
 		return trace.New(trace.WithMessage("method required, proxy forward not supported"))
@@ -166,6 +170,6 @@ func (call *Call) SendMsg(ctx context.Context, rw protocol.ResponseWriter, pr *p
 
 // Close closes the given caller
 func (call *Call) Close() error {
-	log.Info("Closing go micro caller")
+	logger.FromCtx(call.ctx, logger.Protocol).Info("Closing go micro caller")
 	return nil
 }

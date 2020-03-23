@@ -1,7 +1,10 @@
 package specs
 
 import (
+	"context"
 	"testing"
+
+	"github.com/jexia/maestro/logger"
 )
 
 func TestResolveManifestDependencies(t *testing.T) {
@@ -80,7 +83,10 @@ func TestResolveManifestDependencies(t *testing.T) {
 		},
 	}
 
-	err := ResolveManifestDependencies(manifest)
+	ctx := context.Background()
+	ctx = logger.WithValue(ctx)
+
+	err := ResolveManifestDependencies(ctx, manifest)
 	if err != nil {
 		t.Fatalf("unexpected error %s", err)
 	}

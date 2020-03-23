@@ -1,6 +1,8 @@
 package schema
 
 import (
+	"context"
+
 	"github.com/jexia/maestro/specs/types"
 )
 
@@ -18,6 +20,8 @@ type Collection interface {
 // Service represents a service which could be called in one of the flows
 type Service interface {
 	GetComment() string
+	GetPackage() string
+	GetFullyQualifiedName() string
 	GetName() string
 	GetHost() string
 	GetProtocol() string
@@ -62,4 +66,4 @@ type Property interface {
 }
 
 // Resolver when called collects the available schema(s) with the configured configuration
-type Resolver func(*Store) error
+type Resolver func(context.Context, *Store) error

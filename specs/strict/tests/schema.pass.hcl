@@ -1,4 +1,4 @@
-service "caller" "http" "json" {
+service "com.maestro" "caller" "http" "json" {
 	host = ""
 }
 

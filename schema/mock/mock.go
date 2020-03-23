@@ -81,12 +81,23 @@ func NewService(name string, service *Service) *Service {
 // Service represents a mocking service
 type Service struct {
 	Name     string
+	Package  string             `yaml:"package"`
 	Comment  string             `yaml:"comment"`
 	Host     string             `yaml:"host"`
 	Protocol string             `yaml:"protocol"`
 	Codec    string             `yaml:"codec"`
 	Methods  map[string]*Method `yaml:"methods"`
 	Options  schema.Options     `yaml:"options"`
+}
+
+// GetPackage returns the service package
+func (service *Service) GetPackage() string {
+	return service.Package
+}
+
+// GetFullyQualifiedName returns the fully qualified service name
+func (service *Service) GetFullyQualifiedName() string {
+	return service.Name
 }
 
 // GetName returns the service name
@@ -188,6 +199,11 @@ func (method *Method) GetOptions() schema.Options {
 // NewProperty appends the name to the given property
 func NewProperty(name string, property *Property) *Property {
 	property.Name = name
+
+	for key, prop := range property.Nested {
+		property.Nested[key] = NewProperty(key, prop)
+	}
+
 	return property
 }
 
@@ -231,7 +247,7 @@ func (property *Property) GetLabel() types.Label {
 func (property *Property) GetNested() map[string]schema.Property {
 	result := make(map[string]schema.Property, len(property.Nested))
 	for key, nested := range property.Nested {
-		result[key] = nested
+		result[key] = NewProperty(key, nested)
 	}
 
 	return result

@@ -1,6 +1,7 @@
 package protoc
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 
@@ -62,7 +63,7 @@ func Collect(paths []string, path string) (schema.Resolver, error) {
 
 // SchemaResolver returns a new schema resolver for the given protoc collection
 func SchemaResolver(collection schema.Collection) schema.Resolver {
-	return func(schemas *schema.Store) error {
+	return func(ctx context.Context, schemas *schema.Store) error {
 		schemas.Add(collection)
 		return nil
 	}

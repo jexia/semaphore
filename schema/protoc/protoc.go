@@ -11,6 +11,8 @@ import (
 )
 
 const (
+	// NameOption represents the Service name option key
+	NameOption = "service_name"
 	// HostOption represents the Service host option key
 	HostOption = "service_host"
 	// ProtocolOption represents the Service protocol option key
@@ -101,8 +103,16 @@ type service struct {
 	options    schema.Options
 }
 
-func (service *service) GetName() string {
+func (service *service) GetFullyQualifiedName() string {
 	return service.descriptor.GetFullyQualifiedName()
+}
+
+func (service *service) GetName() string {
+	return service.descriptor.GetName()
+}
+
+func (service *service) GetPackage() string {
+	return service.descriptor.GetFile().GetPackage()
 }
 
 func (service *service) GetComment() string {

@@ -1,13 +1,15 @@
 package specs
 
 import (
+	"context"
+
 	"github.com/hashicorp/hcl/v2"
 	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/specs/types"
 )
 
 // Resolver when called collects the available manifest(s) with the configured configuration
-type Resolver func(CustomDefinedFunctions) (*Manifest, error)
+type Resolver func(context.Context, CustomDefinedFunctions) (*Manifest, error)
 
 // FlowManager represents a flow manager
 type FlowManager interface {

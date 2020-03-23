@@ -46,6 +46,10 @@ func ResponseValue(specs *specs.Property, refs *refs.Store) (interface{}, error)
 			continue
 		}
 
+		if nested.Reference == nil {
+			continue
+		}
+
 		ref := refs.Load(nested.Reference.Resource, nested.Reference.Path)
 		if ref == nil {
 			continue

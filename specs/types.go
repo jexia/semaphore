@@ -1,15 +1,17 @@
 package specs
 
 import (
+	"context"
+
+	"github.com/jexia/maestro/logger"
 	"github.com/jexia/maestro/specs/types"
-	log "github.com/sirupsen/logrus"
 	"github.com/zclconf/go-cty/cty"
 	"github.com/zclconf/go-cty/cty/gocty"
 )
 
 // SetDefaultValue sets the given value as default value inside the given property
-func SetDefaultValue(property *Property, value cty.Value) {
-	log.WithField("path", property.Path).WithField("value", value).Debug("Set default value for property")
+func SetDefaultValue(ctx context.Context, property *Property, value cty.Value) {
+	logger.FromCtx(ctx, logger.Core).WithField("path", property.Path).WithField("value", value).Debug("Set default value for property")
 
 	switch value.Type() {
 	case cty.String:

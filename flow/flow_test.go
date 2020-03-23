@@ -7,6 +7,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/jexia/maestro/logger"
 	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/specs"
 )
@@ -39,6 +40,9 @@ func (caller *caller) Do(context.Context, *refs.Store) error {
 }
 
 func NewMockFlowManager(caller Call, revert Call) ([]*Node, *Manager) {
+	ctx := context.Background()
+	ctx = logger.WithValue(ctx)
+
 	nodes := []*Node{
 		NewMockNode("first", caller, revert),
 		NewMockNode("second", caller, revert),
@@ -56,6 +60,7 @@ func NewMockFlowManager(caller Call, revert Call) ([]*Node, *Manager) {
 	nodes[3].Previous = []*Node{nodes[1], nodes[2]}
 
 	return nodes, &Manager{
+		ctx:        ctx,
 		Starting:   []*Node{nodes[0]},
 		References: 0,
 		Nodes:      len(nodes),

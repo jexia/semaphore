@@ -8,9 +8,15 @@ import (
 
 	"github.com/graphql-go/graphql"
 	"github.com/jexia/maestro/codec"
+	"github.com/jexia/maestro/logger"
 	"github.com/jexia/maestro/protocol"
 	"github.com/jexia/maestro/specs"
-	log "github.com/sirupsen/logrus"
+)
+
+// Schema base
+var (
+	QueryObject    = "query"
+	MutationObject = "mutation"
 )
 
 type req struct {
@@ -28,6 +34,7 @@ func NewListener(addr string, opts specs.Options) protocol.Listener {
 
 // Listener represents a GraphQL listener
 type Listener struct {
+	ctx    context.Context
 	schema graphql.Schema
 	mutex  sync.RWMutex
 	server *http.Server
@@ -36,6 +43,11 @@ type Listener struct {
 // Name returns the name of the given listener
 func (listener *Listener) Name() string {
 	return "graphql"
+}
+
+// Context sets the given contexts as the management context for the given GraphQL listener
+func (listener *Listener) Context(ctx context.Context) {
+	listener.ctx = ctx
 }
 
 // Serve opens the GraphQL listener and calls the given handler function on reach request
@@ -66,11 +78,15 @@ func (listener *Listener) Serve() error {
 
 // Handle parses the given endpoints and constructs route handlers
 func (listener *Listener) Handle(endpoints []*protocol.Endpoint, constructors map[string]codec.Constructor) error {
-	fields := graphql.Fields{}
+	objects := NewObjects()
+	fields := map[string]graphql.Fields{
+		QueryObject:    graphql.Fields{},
+		MutationObject: graphql.Fields{},
+	}
 
 	for _, endpoint := range endpoints {
 		req := NewArgs(endpoint.Request.Property)
-		res, err := NewObject(endpoint.Flow.GetName(), endpoint.Response.Property)
+		options, err := ParseEndpointOptions(endpoint)
 		if err != nil {
 			return err
 		}
@@ -96,25 +112,46 @@ func (listener *Listener) Handle(endpoints []*protocol.Endpoint, constructors ma
 			}
 		}(endpoint)
 
-		// TODO: set a option to set a custom name
-		fields[endpoint.Flow.GetName()] = &graphql.Field{
-			Args:    req,
-			Type:    res,
-			Resolve: resolve,
+		res, err := NewSchemaObject(objects, options.Name, endpoint.Response.Property)
+		if err != nil {
+			return err
+		}
+
+		path := options.Path
+		field := &graphql.Field{
+			Args:        req,
+			Type:        res,
+			Resolve:     resolve,
+			Description: endpoint.Request.Property.Desciptor.GetComment(),
+		}
+
+		err = SetField(path, fields[options.Base], field)
+		if err != nil {
+			return err
 		}
 	}
 
-	schema, err := graphql.NewSchema(
-		graphql.SchemaConfig{
-			Query: graphql.NewObject(
-				graphql.ObjectConfig{
-					Name:   "query",
-					Fields: fields,
-				},
-			),
-		},
-	)
+	config := graphql.SchemaConfig{}
 
+	if len(fields[MutationObject]) > 0 {
+		config.Mutation = graphql.NewObject(
+			graphql.ObjectConfig{
+				Name:   MutationObject,
+				Fields: fields[MutationObject],
+			},
+		)
+	}
+
+	if len(fields[QueryObject]) > 0 {
+		config.Query = graphql.NewObject(
+			graphql.ObjectConfig{
+				Name:   QueryObject,
+				Fields: fields[QueryObject],
+			},
+		)
+	}
+
+	schema, err := graphql.NewSchema(config)
 	if err != nil {
 		return err
 	}
@@ -128,6 +165,6 @@ func (listener *Listener) Handle(endpoints []*protocol.Endpoint, constructors ma
 
 // Close closes the given listener
 func (listener *Listener) Close() error {
-	log.Info("Closing GraphQL listener")
+	logger.FromCtx(listener.ctx, logger.Protocol).Info("Closing GraphQL listener")
 	return listener.server.Close()
 }

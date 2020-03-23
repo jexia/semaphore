@@ -1,6 +1,7 @@
 package mock
 
 import (
+	"context"
 	"io"
 	"io/ioutil"
 	"os"
@@ -11,7 +12,7 @@ import (
 
 // ErrResolver returns a new schema resolver which returns the given error when called
 func ErrResolver(err error) schema.Resolver {
-	return func(*schema.Store) error {
+	return func(context.Context, *schema.Store) error {
 		return err
 	}
 }
@@ -28,7 +29,7 @@ func SchemaResolver(path string) schema.Resolver {
 		return ErrResolver(err)
 	}
 
-	return func(schemas *schema.Store) error {
+	return func(ctx context.Context, schemas *schema.Store) error {
 		schemas.Add(collection)
 		return nil
 	}

@@ -1,9 +1,9 @@
-service "caller" "http" "json" {
+service "com.maestro" "caller" "http" "json" {
 	host = ""
 }
 
 flow "echo" {
-  input "input" {
+  	input "input" {
 	}
 
 	call "opening" {

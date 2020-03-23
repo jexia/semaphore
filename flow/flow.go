@@ -4,9 +4,10 @@ import (
 	"context"
 	"sync"
 
+	"github.com/jexia/maestro/logger"
 	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/specs"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 // Call represents a protocol caller implementation
@@ -18,10 +19,11 @@ type Call interface {
 // NewManager constructs a new manager for the given flow.
 // Branches are constructed for the constructed nodes to optimalise performance.
 // Various variables such as the amount of nodes, references and loose ends are collected to optimalise allocations during runtime.
-func NewManager(name string, nodes []*Node) *Manager {
+func NewManager(ctx context.Context, name string, nodes []*Node) *Manager {
 	ConstructBranches(nodes)
 
 	manager := &Manager{
+		ctx:      ctx,
 		Name:     name,
 		Starting: FetchStarting(nodes),
 		Nodes:    len(nodes),
@@ -41,6 +43,7 @@ func NewManager(name string, nodes []*Node) *Manager {
 
 // Manager is responsible for the handling of a flow and its steps
 type Manager struct {
+	ctx        context.Context
 	Name       string
 	Starting   []*Node
 	References int
@@ -60,7 +63,7 @@ func (manager *Manager) Call(ctx context.Context, refs *refs.Store) error {
 	manager.wg.Add(1)
 	defer manager.wg.Done()
 
-	log.WithField("flow", manager.Name).Debug("Executing flow")
+	logger.FromCtx(manager.ctx, logger.Flow).WithField("flow", manager.Name).Debug("Executing flow")
 
 	processes := NewProcesses(len(manager.Starting))
 	tracker := NewTracker(manager.Nodes)
@@ -71,10 +74,10 @@ func (manager *Manager) Call(ctx context.Context, refs *refs.Store) error {
 
 	processes.Wait()
 
-	log.WithField("flow", manager.Name).Debug("Processes completed")
+	logger.FromCtx(manager.ctx, logger.Flow).WithField("flow", manager.Name).Debug("Processes completed")
 
 	if processes.Err() != nil {
-		log.WithFields(log.Fields{
+		logger.FromCtx(manager.ctx, logger.Flow).WithFields(logrus.Fields{
 			"flow": manager.Name,
 			"err":  processes.Err(),
 		}).Error("An error occurred, executing rollback")
@@ -84,7 +87,7 @@ func (manager *Manager) Call(ctx context.Context, refs *refs.Store) error {
 		return processes.Err()
 	}
 
-	log.WithField("flow", manager.Name).Debug("Flow completed")
+	logger.FromCtx(manager.ctx, logger.Flow).WithField("flow", manager.Name).Debug("Flow completed")
 	return nil
 }
 
@@ -122,6 +125,6 @@ func (manager *Manager) Revert(executed *Tracker, refs *refs.Store) {
 
 // Wait awaits till all calls and rollbacks are completed
 func (manager *Manager) Wait() {
-	log.WithField("flow", manager.Name).Info("Awaiting till all processes are completed")
+	logger.FromCtx(manager.ctx, logger.Flow).WithField("flow", manager.Name).Info("Awaiting till all processes are completed")
 	manager.wg.Wait()
 }

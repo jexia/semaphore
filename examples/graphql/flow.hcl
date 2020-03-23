@@ -1,7 +1,10 @@
-endpoint "latest" "graphql" {
+endpoint "latest_todo" "graphql" {
+	path = "latest.todo"
+	name = "LatestTodo"
+	base = "query"
 }
 
-flow "latest" {
+flow "latest_todo" {
 	input "proto.Empty" {}
 
 	call "query" {
@@ -17,6 +20,9 @@ flow "latest" {
 }
 
 endpoint "todo" "graphql" {
+	path = "todo"
+	name = "Todo"
+	base = "query"
 }
 
 flow "todo" {

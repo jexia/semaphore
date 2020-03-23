@@ -1,15 +1,16 @@
 package specs
 
 import (
+	"context"
 	"sync"
 
+	"github.com/jexia/maestro/logger"
 	"github.com/jexia/maestro/specs/trace"
-	log "github.com/sirupsen/logrus"
 )
 
 // CheckManifestDuplicates checks for duplicate definitions
-func CheckManifestDuplicates(manifest *Manifest) error {
-	log.Info("Checking manifest duplicates")
+func CheckManifestDuplicates(ctx context.Context, manifest *Manifest) error {
+	logger.FromCtx(ctx, logger.Core).Info("Checking manifest duplicates")
 
 	flows := sync.Map{}
 
@@ -19,7 +20,7 @@ func CheckManifestDuplicates(manifest *Manifest) error {
 			return trace.New(trace.WithMessage("duplicate flow '%s'", flow.Name))
 		}
 
-		err := CheckFlowDuplicates(flow)
+		err := CheckFlowDuplicates(ctx, flow)
 		if err != nil {
 			return err
 		}
@@ -29,8 +30,8 @@ func CheckManifestDuplicates(manifest *Manifest) error {
 }
 
 // CheckFlowDuplicates checks for duplicate definitions
-func CheckFlowDuplicates(flow *Flow) error {
-	log.Info("Checking flow duplicates")
+func CheckFlowDuplicates(ctx context.Context, flow *Flow) error {
+	logger.FromCtx(ctx, logger.Core).Info("Checking flow duplicates")
 
 	calls := sync.Map{}
 

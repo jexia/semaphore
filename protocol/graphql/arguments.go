@@ -17,13 +17,15 @@ func NewArgs(prop *specs.Property) graphql.FieldConfigArgument {
 		for _, nested := range prop.Nested {
 			if nested.Type == types.TypeMessage {
 				args[nested.Name] = &graphql.ArgumentConfig{
-					Type: NewInputArgObject(nested),
+					Type:        NewInputArgObject(nested),
+					Description: nested.Desciptor.GetComment(),
 				}
 				continue
 			}
 
 			args[nested.Name] = &graphql.ArgumentConfig{
-				Type: gtypes[nested.Type],
+				Type:        gtypes[nested.Type],
+				Description: nested.Desciptor.GetComment(),
 			}
 		}
 
@@ -31,7 +33,8 @@ func NewArgs(prop *specs.Property) graphql.FieldConfigArgument {
 	}
 
 	args[prop.Name] = &graphql.ArgumentConfig{
-		Type: gtypes[prop.Type],
+		Type:        gtypes[prop.Type],
+		Description: prop.Desciptor.GetComment(),
 	}
 
 	return args
@@ -48,18 +51,21 @@ func NewInputArgObject(prop *specs.Property) *graphql.InputObject {
 	for _, nested := range prop.Nested {
 		if nested.Type == types.TypeMessage {
 			fields[nested.Name] = &graphql.InputObjectFieldConfig{
-				Type: NewInputArgObject(nested),
+				Type:        NewInputArgObject(nested),
+				Description: nested.Desciptor.GetComment(),
 			}
 
 			continue
 		}
 
 		fields[nested.Name] = &graphql.InputObjectFieldConfig{
-			Type: gtypes[prop.Type],
+			Type:        gtypes[prop.Type],
+			Description: nested.Desciptor.GetComment(),
 		}
 	}
 
 	return graphql.NewInputObject(graphql.InputObjectConfig{
-		Fields: fields,
+		Fields:      fields,
+		Description: prop.Desciptor.GetComment(),
 	})
 }

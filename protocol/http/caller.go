@@ -7,22 +7,31 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/jexia/maestro/logger"
 	"github.com/jexia/maestro/protocol"
 	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/specs"
 	"github.com/jexia/maestro/specs/trace"
 	"github.com/jexia/maestro/specs/types"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 // NewCaller constructs a new HTTP caller
 func NewCaller() *Caller {
-	return &Caller{}
+	return &Caller{
+		ctx: context.Background(),
+	}
 }
 
 // Caller represents the caller constructor
 type Caller struct {
+	ctx context.Context
+}
+
+// Context sets the given context as the active management context
+func (caller *Caller) Context(ctx context.Context) {
+	caller.ctx = ctx
 }
 
 // Name returns the name of the given caller
@@ -32,7 +41,8 @@ func (caller *Caller) Name() string {
 
 // Dial constructs a new caller for the given host
 func (caller *Caller) Dial(schema schema.Service, functions specs.CustomDefinedFunctions, opts schema.Options) (protocol.Call, error) {
-	log.WithFields(log.Fields{
+	logger := logger.FromCtx(caller.ctx, logger.Protocol)
+	logger.WithFields(logrus.Fields{
 		"service": schema.GetName(),
 		"host":    schema.GetHost(),
 	}).Info("Constructing new HTTP caller")
@@ -64,6 +74,8 @@ func (caller *Caller) Dial(schema schema.Service, functions specs.CustomDefinedF
 	}
 
 	result := &Call{
+		ctx:     caller.ctx,
+		logger:  logger,
 		service: schema.GetName(),
 		host:    schema.GetHost(),
 		proxy:   NewProxy(options),
@@ -97,6 +109,8 @@ func (method *Method) References() []*specs.Property {
 
 // Call represents the HTTP caller implementation
 type Call struct {
+	ctx     context.Context
+	logger  *logrus.Logger
 	service string
 	host    string
 	methods map[string]*Method
@@ -147,7 +161,7 @@ func (call *Call) SendMsg(ctx context.Context, rw protocol.ResponseWriter, pr *p
 		request = method.request
 	}
 
-	log.WithFields(log.Fields{
+	call.logger.WithFields(logrus.Fields{
 		"url":     url,
 		"service": call.service,
 		"method":  request,
@@ -169,7 +183,7 @@ func (call *Call) SendMsg(ctx context.Context, rw protocol.ResponseWriter, pr *p
 
 // Close closes the given caller
 func (call *Call) Close() error {
-	log.WithField("host", call.host).Info("Closing HTTP caller")
+	call.logger.WithField("host", call.host).Info("Closing HTTP caller")
 	return nil
 }
 

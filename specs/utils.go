@@ -30,7 +30,7 @@ func ToProperty(path string, name string, prop schema.Property) *Property {
 		Label: prop.GetLabel(),
 	}
 
-	if prop.GetNested() != nil {
+	if prop.GetNested() != nil && len(prop.GetNested()) > 0 {
 		result.Nested = make(map[string]*Property, len(prop.GetNested()))
 		for key, object := range prop.GetNested() {
 			result.Nested[key] = ToProperty(JoinPath(path, key), key, object)
