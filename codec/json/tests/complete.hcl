@@ -1,7 +1,7 @@
 flow "complete" {
 	input "complete" {}
 
-	call "first" {
+	resource "first" {
 		request "mock" "complete" {
 			message = "{{ input:message }}"
 

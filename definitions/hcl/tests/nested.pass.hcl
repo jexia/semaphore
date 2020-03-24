@@ -2,7 +2,7 @@ flow "echo" {
     input "object" {
     }
 
-    call "get" {
+    resource "get" {
         request "getter" "Get" {
             message "nested" {
                 name = "{{ input:nested.name }}"

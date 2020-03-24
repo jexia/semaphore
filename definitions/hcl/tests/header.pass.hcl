@@ -1,5 +1,5 @@
 flow "echo" {
-    call "set" {
+    resource "set" {
         request "setter" "Set" {
             header {
                 Cookie = "mnomnom"
@@ -7,7 +7,7 @@ flow "echo" {
         }
     }
 
-    call "get" {
+    resource "get" {
         request "getter" "Get" {
             header {
                 Cookie = "mnomnom"

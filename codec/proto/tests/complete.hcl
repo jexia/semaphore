@@ -1,7 +1,7 @@
 flow "complete" {
 	input "proto.Message" {}
 
-	call "first" {
+	resource "first" {
 		request "proto.test" "complete" {
 			message = "{{ input:message }}"
 

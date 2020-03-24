@@ -3,11 +3,11 @@ service "com.maestro" "caller" "http" "json" {
 }
 
 proxy "echo" {
-	call "opening" {
+	resource "opening" {
 		request "caller" "Open" {}
 	}
 
-	call "reference" {
+	resource "reference" {
 		request "caller" "Open" {
 			message = "{{ opening:message }}"
 		}

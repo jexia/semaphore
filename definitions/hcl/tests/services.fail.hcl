@@ -1,3 +1,3 @@
-// No caller defined
+// No resourceer defined
 service "com.maestro" "auth" {
 }

@@ -1,7 +1,7 @@
 flow "simple" {
 	input "proto.Simple" {}
 
-	call "first" {
+	resource "first" {
 		request "proto.mock" "simple" {
 			message = "{{ input:message }}"
 		}
@@ -11,7 +11,7 @@ flow "simple" {
 flow "nested" {
 	input "proto.Message" {}
 
-	call "first" {
+	resource "first" {
 		request "proto.mock" "nested" {
 			message "nested" {
 				value = "{{ input:nested.value }}"
@@ -23,7 +23,7 @@ flow "nested" {
 flow "repeated" {
 	input "proto.Message" {}
 
-	call "first" {
+	resource "first" {
 		request "proto.mock" "repeated" {
 			repeated "repeating" "input:repeating" {
 				value = "{{ input:repeating.value }}"

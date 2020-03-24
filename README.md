@@ -43,7 +43,7 @@ flow "checkout" {
     input "schema.Object" {
     }
 
-    call "shipping" {
+    resource "shipping" {
         request "package.warehouse" "Send" {
             user = "{{ input:id }}"
         }

@@ -17,7 +17,7 @@ type Flow struct {
 	Name      string             `hcl:"name,label"`
 	DependsOn []string           `hcl:"depends_on,optional"`
 	Input     *InputParameterMap `hcl:"input,block"`
-	Calls     []Node             `hcl:"call,block"`
+	Resources []Node             `hcl:"resource,block"`
 	Output    *ParameterMap      `hcl:"output,block"`
 }
 
@@ -126,7 +126,7 @@ type Method struct {
 type Proxy struct {
 	Name      string       `hcl:"name,label"`
 	DependsOn []string     `hcl:"depends_on,optional"`
-	Calls     []Node       `hcl:"call,block"`
+	Resources []Node       `hcl:"resource,block"`
 	Forward   ProxyForward `hcl:"forward,block"`
 }
 

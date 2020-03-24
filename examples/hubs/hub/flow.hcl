@@ -5,7 +5,7 @@ endpoint "user" "http" {
 }
 
 flow "user" {
-	call "query" {
+	resource "query" {
 		request "proto.Users" "GetUser" {
 		}
 	}
