@@ -10,8 +10,8 @@ import (
 	"github.com/jexia/maestro/constructor"
 	"github.com/jexia/maestro/definitions/hcl"
 	"github.com/jexia/maestro/logger"
-	"github.com/jexia/maestro/protocol/http"
 	"github.com/jexia/maestro/schema/protoc"
+	"github.com/jexia/maestro/transport/http"
 	"github.com/spf13/cobra"
 )
 

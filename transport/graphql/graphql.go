@@ -9,8 +9,8 @@ import (
 	"github.com/graphql-go/graphql"
 	"github.com/jexia/maestro/codec"
 	"github.com/jexia/maestro/logger"
-	"github.com/jexia/maestro/protocol"
 	"github.com/jexia/maestro/specs"
+	"github.com/jexia/maestro/transport"
 )
 
 // Schema base
@@ -24,7 +24,7 @@ type req struct {
 }
 
 // NewListener constructs a new listener for the given addr
-func NewListener(addr string, opts specs.Options) protocol.Listener {
+func NewListener(addr string, opts specs.Options) transport.Listener {
 	return &Listener{
 		server: &http.Server{
 			Addr: addr,
@@ -77,7 +77,7 @@ func (listener *Listener) Serve() error {
 }
 
 // Handle parses the given endpoints and constructs route handlers
-func (listener *Listener) Handle(endpoints []*protocol.Endpoint, constructors map[string]codec.Constructor) error {
+func (listener *Listener) Handle(endpoints []*transport.Endpoint, constructors map[string]codec.Constructor) error {
 	objects := NewObjects()
 	fields := map[string]graphql.Fields{
 		QueryObject:    graphql.Fields{},
@@ -91,7 +91,7 @@ func (listener *Listener) Handle(endpoints []*protocol.Endpoint, constructors ma
 			return err
 		}
 
-		resolve := func(endpoint *protocol.Endpoint) graphql.FieldResolveFn {
+		resolve := func(endpoint *transport.Endpoint) graphql.FieldResolveFn {
 			return func(p graphql.ResolveParams) (interface{}, error) {
 				store := endpoint.Flow.NewStore()
 				ctx := context.Background()
@@ -165,6 +165,6 @@ func (listener *Listener) Handle(endpoints []*protocol.Endpoint, constructors ma
 
 // Close closes the given listener
 func (listener *Listener) Close() error {
-	logger.FromCtx(listener.ctx, logger.Protocol).Info("Closing GraphQL listener")
+	logger.FromCtx(listener.ctx, logger.Transport).Info("Closing GraphQL listener")
 	return listener.server.Close()
 }

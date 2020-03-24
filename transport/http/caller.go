@@ -8,12 +8,12 @@ import (
 	"strings"
 
 	"github.com/jexia/maestro/logger"
-	"github.com/jexia/maestro/protocol"
 	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/specs"
 	"github.com/jexia/maestro/specs/trace"
 	"github.com/jexia/maestro/specs/types"
+	"github.com/jexia/maestro/transport"
 	"github.com/sirupsen/logrus"
 )
 
@@ -40,8 +40,8 @@ func (caller *Caller) Name() string {
 }
 
 // Dial constructs a new caller for the given host
-func (caller *Caller) Dial(schema schema.Service, functions specs.CustomDefinedFunctions, opts schema.Options) (protocol.Call, error) {
-	logger := logger.FromCtx(caller.ctx, logger.Protocol)
+func (caller *Caller) Dial(schema schema.Service, functions specs.CustomDefinedFunctions, opts schema.Options) (transport.Call, error) {
+	logger := logger.FromCtx(caller.ctx, logger.Transport)
 	logger.WithFields(logrus.Fields{
 		"service": schema.GetName(),
 		"host":    schema.GetHost(),
@@ -118,8 +118,8 @@ type Call struct {
 }
 
 // GetMethods returns the available methods within the HTTP caller
-func (call *Call) GetMethods() []protocol.Method {
-	result := make([]protocol.Method, 0, len(call.methods))
+func (call *Call) GetMethods() []transport.Method {
+	result := make([]transport.Method, 0, len(call.methods))
 
 	for _, method := range call.methods {
 		result = append(result, method)
@@ -129,7 +129,7 @@ func (call *Call) GetMethods() []protocol.Method {
 }
 
 // GetMethod attempts to return a method matching the given name
-func (call *Call) GetMethod(name string) protocol.Method {
+func (call *Call) GetMethod(name string) transport.Method {
 	for _, method := range call.methods {
 		if method.GetName() == name {
 			return method
@@ -140,7 +140,7 @@ func (call *Call) GetMethod(name string) protocol.Method {
 }
 
 // SendMsg calls the configured host and attempts to call the given endpoint with the given headers and stream
-func (call *Call) SendMsg(ctx context.Context, rw protocol.ResponseWriter, pr *protocol.Request, refs *refs.Store) error {
+func (call *Call) SendMsg(ctx context.Context, rw transport.ResponseWriter, pr *transport.Request, refs *refs.Store) error {
 	request := http.MethodGet
 	url, err := url.Parse(call.host)
 	if err != nil {
@@ -173,7 +173,7 @@ func (call *Call) SendMsg(ctx context.Context, rw protocol.ResponseWriter, pr *p
 	}
 
 	req.Header = CopyMetadataHeader(pr.Header)
-	res := NewProtocolResponseWriter(ctx, rw)
+	res := NewTransportResponseWriter(ctx, rw)
 
 	call.proxy.ServeHTTP(res, req)
 	rw.Header().Append(CopyHTTPHeader(res.Header()))

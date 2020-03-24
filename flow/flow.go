@@ -10,7 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// Call represents a protocol caller implementation
+// Call represents a transport caller implementation
 type Call interface {
 	References() []*specs.Property
 	Do(context.Context, *refs.Store) error

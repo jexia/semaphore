@@ -62,7 +62,7 @@ type service struct {
 	name          string
 	documentation string
 	host          string
-	protocol      string
+	transport     string
 	codec         string
 	methods       []schema.Method
 	options       schema.Options
@@ -93,9 +93,9 @@ func (service *service) GetHost() string {
 	return service.host
 }
 
-// GetProtocol returns the service protocol
-func (service *service) GetProtocol() string {
-	return service.protocol
+// GetTransport returns the service transport
+func (service *service) GetTransport() string {
+	return service.transport
 }
 
 // GetCodec returns the service codec
@@ -134,13 +134,13 @@ func ParseIntermediateService(ctx context.Context, manifest Service, collection 
 	}
 
 	result := &service{
-		pkg:      manifest.Package,
-		name:     manifest.Name,
-		protocol: manifest.Protocol,
-		host:     manifest.Host,
-		codec:    manifest.Codec,
-		methods:  methods,
-		options:  ParseIntermediateSchemaOptions(manifest.Options),
+		pkg:       manifest.Package,
+		name:      manifest.Name,
+		transport: manifest.Transport,
+		host:      manifest.Host,
+		codec:     manifest.Codec,
+		methods:   methods,
+		options:   ParseIntermediateSchemaOptions(manifest.Options),
 	}
 
 	return result, nil

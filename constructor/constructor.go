@@ -6,10 +6,10 @@ import (
 	"github.com/jexia/maestro/codec"
 	"github.com/jexia/maestro/flow"
 	"github.com/jexia/maestro/metadata"
-	"github.com/jexia/maestro/protocol"
 	"github.com/jexia/maestro/specs"
 	"github.com/jexia/maestro/specs/strict"
 	"github.com/jexia/maestro/specs/trace"
+	"github.com/jexia/maestro/transport"
 )
 
 // Specs construct a specs manifest from the given options
@@ -59,8 +59,8 @@ func Specs(ctx context.Context, options Options) (*specs.Manifest, error) {
 }
 
 // FlowManager constructs the flow managers from the given specs manifest
-func FlowManager(ctx context.Context, manifest *specs.Manifest, options Options) ([]*protocol.Endpoint, error) {
-	endpoints := make([]*protocol.Endpoint, len(manifest.Endpoints))
+func FlowManager(ctx context.Context, manifest *specs.Manifest, options Options) ([]*transport.Endpoint, error) {
+	endpoints := make([]*transport.Endpoint, len(manifest.Endpoints))
 
 	for index, endpoint := range manifest.Endpoints {
 		current := manifest.GetFlow(endpoint.Flow)
@@ -70,7 +70,7 @@ func FlowManager(ctx context.Context, manifest *specs.Manifest, options Options)
 
 		nodes := make([]*flow.Node, len(current.GetNodes()))
 
-		result := &protocol.Endpoint{
+		result := &transport.Endpoint{
 			Listener: endpoint.Listener,
 			Options:  endpoint.Options,
 			Request:  current.GetInput(),
@@ -121,7 +121,7 @@ func Call(ctx context.Context, manifest *specs.Manifest, node *specs.Node, call 
 		return nil, trace.New(trace.WithMessage("the service for %s was not found", call.GetMethod()))
 	}
 
-	constructor := options.Callers.Get(service.GetProtocol())
+	constructor := options.Callers.Get(service.GetTransport())
 	codec := options.Codec[service.GetCodec()]
 	schema := options.Schema.GetService(service.GetFullyQualifiedName())
 
@@ -130,10 +130,10 @@ func Call(ctx context.Context, manifest *specs.Manifest, node *specs.Node, call 
 	}
 
 	if constructor == nil {
-		return nil, trace.New(trace.WithMessage("protocol constructor not found '%s' for service '%s'", service.GetProtocol(), service.GetName()))
+		return nil, trace.New(trace.WithMessage("transport constructor not found '%s' for service '%s'", service.GetTransport(), service.GetName()))
 	}
 
-	protocol, err := constructor.Dial(schema, options.Functions, service.GetOptions())
+	transport, err := constructor.Dial(schema, options.Functions, service.GetOptions())
 	if err != nil {
 		return nil, err
 	}
@@ -148,8 +148,8 @@ func Call(ctx context.Context, manifest *specs.Manifest, node *specs.Node, call 
 		return nil, err
 	}
 
-	caller := flow.NewCall(ctx, node, protocol, call.Method, request, response)
-	err = strict.DefineCaller(ctx, node, manifest, protocol, manager)
+	caller := flow.NewCall(ctx, node, transport, call.Method, request, response)
+	err = strict.DefineCaller(ctx, node, manifest, transport, manager)
 	if err != nil {
 		return nil, err
 	}
@@ -169,7 +169,7 @@ func Request(node *specs.Node, codec codec.Constructor, params *specs.ParameterM
 }
 
 // Forward constructs a flow caller for the given call.
-func Forward(manifest *specs.Manifest, call *specs.Call, options Options) (protocol.Call, error) {
+func Forward(manifest *specs.Manifest, call *specs.Call, options Options) (transport.Call, error) {
 	if call == nil {
 		return nil, nil
 	}
@@ -180,7 +180,7 @@ func Forward(manifest *specs.Manifest, call *specs.Call, options Options) (proto
 	}
 
 	schema := options.Schema.GetService(service.GetName())
-	constructor := options.Callers.Get(service.GetProtocol())
+	constructor := options.Callers.Get(service.GetTransport())
 	caller, err := constructor.Dial(schema, options.Functions, service.GetOptions())
 	if err != nil {
 		return nil, err
@@ -190,8 +190,8 @@ func Forward(manifest *specs.Manifest, call *specs.Call, options Options) (proto
 }
 
 // Listeners constructs the listeners from the given collection of endpoints
-func Listeners(endpoints []*protocol.Endpoint, options Options) error {
-	collections := make(map[string][]*protocol.Endpoint, len(options.Listeners))
+func Listeners(endpoints []*transport.Endpoint, options Options) error {
+	collections := make(map[string][]*transport.Endpoint, len(options.Listeners))
 
 	for _, endpoint := range endpoints {
 		if endpoint == nil {

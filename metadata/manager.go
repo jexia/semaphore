@@ -46,7 +46,7 @@ func (manager *Manager) Marshal(store *refs.Store) MD {
 	return result
 }
 
-// Unmarshal unmarshals the given protocol metadata into the given reference store
+// Unmarshal unmarshals the given transport metadata into the given reference store
 func (manager *Manager) Unmarshal(metadata MD, store *refs.Store) {
 	for key, value := range metadata {
 		ref := refs.New(key)

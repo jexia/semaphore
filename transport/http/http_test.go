@@ -67,7 +67,7 @@ type MockService struct {
 	documentation string
 	host          string
 	codec         string
-	protocol      string
+	transport     string
 	methods       []schema.Method
 	options       schema.Options
 }
@@ -96,8 +96,8 @@ func (service *MockService) GetCodec() string {
 	return service.codec
 }
 
-func (service *MockService) GetProtocol() string {
-	return service.protocol
+func (service *MockService) GetTransport() string {
+	return service.transport
 }
 
 func (service *MockService) GetMethod(name string) schema.Method {

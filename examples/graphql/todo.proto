@@ -7,7 +7,7 @@ package proto;
 service TODO {
     option (maestro.service) = {
         host: "https://jsonplaceholder.typicode.com/"
-        protocol: "http"
+        transport: "http"
         codec: "json"
     };
 

@@ -11,9 +11,9 @@ import (
 	"github.com/jexia/maestro/codec/json"
 	"github.com/jexia/maestro/logger"
 	"github.com/jexia/maestro/metadata"
-	"github.com/jexia/maestro/protocol"
 	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/specs/types"
+	"github.com/jexia/maestro/transport"
 )
 
 func NewMockCaller() *Caller {
@@ -56,7 +56,7 @@ func TestCaller(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	req := protocol.Request{
+	req := transport.Request{
 		Method: caller.GetMethod("mock"),
 	}
 
@@ -162,7 +162,7 @@ func TestCallerReferencesLookup(t *testing.T) {
 
 	store := refs.NewStore(1)
 	ctx := context.Background()
-	req := protocol.Request{
+	req := transport.Request{
 		Method: method,
 	}
 

@@ -80,14 +80,14 @@ func NewService(name string, service *Service) *Service {
 
 // Service represents a mocking service
 type Service struct {
-	Name     string
-	Package  string             `yaml:"package"`
-	Comment  string             `yaml:"comment"`
-	Host     string             `yaml:"host"`
-	Protocol string             `yaml:"protocol"`
-	Codec    string             `yaml:"codec"`
-	Methods  map[string]*Method `yaml:"methods"`
-	Options  schema.Options     `yaml:"options"`
+	Name      string
+	Package   string             `yaml:"package"`
+	Comment   string             `yaml:"comment"`
+	Host      string             `yaml:"host"`
+	Transport string             `yaml:"transport"`
+	Codec     string             `yaml:"codec"`
+	Methods   map[string]*Method `yaml:"methods"`
+	Options   schema.Options     `yaml:"options"`
 }
 
 // GetPackage returns the service package
@@ -115,9 +115,9 @@ func (service *Service) GetHost() string {
 	return service.Host
 }
 
-// GetProtocol returns the service protocol
-func (service *Service) GetProtocol() string {
-	return service.Protocol
+// GetTransport returns the service transport
+func (service *Service) GetTransport() string {
+	return service.Transport
 }
 
 // GetCodec returns the service codec

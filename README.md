@@ -25,7 +25,7 @@ docker pull docker.pkg.github.com/jexia/maestro/cli:latest
 
 All data streams inside Maestro are called flows.
 A flow can manipulate, deconstruct and forwarded data in between calls and services.
-Flows are exposed through endpoints. Flows are generic and could handle different protocols and codecs within a single flow.
+Flows are exposed through endpoints. Flows are generic and could handle different transports and codecs within a single flow.
 All flows are strictly typed through schema definitions. These schemas define the contracts provided and accepted by services.
 
 ```hcl

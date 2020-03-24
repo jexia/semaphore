@@ -17,15 +17,15 @@ var (
 	Core Module = "core"
 	// Flow represent Maestro flow manager
 	Flow Module = "flow"
-	// Protocol represents the protocol implementations
-	Protocol Module = "protocol"
+	// Transport represents the transport implementations
+	Transport Module = "transport"
 )
 
 // Modules holds all logging modules
 var Modules = []Module{
 	Core,
 	Flow,
-	Protocol,
+	Transport,
 }
 
 // WithValue initialises the logger context by injecting the logging modules

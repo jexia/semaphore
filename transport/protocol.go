@@ -1,4 +1,4 @@
-package protocol
+package transport
 
 import (
 	"context"
@@ -73,7 +73,7 @@ func (collection Listeners) Get(name string) Listener {
 	return nil
 }
 
-// Flow represents a flow which could be called by a protocol
+// Flow represents a flow which could be called by a transport
 type Flow interface {
 	NewStore() *refs.Store
 	GetName() string
@@ -81,7 +81,7 @@ type Flow interface {
 	Wait()
 }
 
-// Endpoint represents a protocol listener endpoint
+// Endpoint represents a transport listener endpoint
 type Endpoint struct {
 	Listener string
 	Flow     Flow

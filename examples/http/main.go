@@ -6,9 +6,9 @@ import (
 	"github.com/jexia/maestro/codec/proto"
 	"github.com/jexia/maestro/definitions/hcl"
 	"github.com/jexia/maestro/logger"
-	"github.com/jexia/maestro/protocol/http"
 	"github.com/jexia/maestro/schema/protoc"
 	"github.com/jexia/maestro/specs"
+	"github.com/jexia/maestro/transport/http"
 )
 
 func main() {

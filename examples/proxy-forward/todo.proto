@@ -7,7 +7,7 @@ import "annotations.proto";
 service Todo {
     option (maestro.service) = {
         host: "https://jsonplaceholder.typicode.com/"
-        protocol: "http"
+        transport: "http"
         codec: "json"
     };
 
@@ -22,7 +22,7 @@ service Todo {
 service Forward {
     option (maestro.service) = {
         host: "https://jsonplaceholder.typicode.com/todos/2"
-        protocol: "http"
+        transport: "http"
         codec: "json"
     };
 }

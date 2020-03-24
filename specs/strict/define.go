@@ -4,12 +4,12 @@ import (
 	"context"
 
 	"github.com/jexia/maestro/logger"
-	"github.com/jexia/maestro/protocol"
 	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/specs"
 	"github.com/jexia/maestro/specs/lookup"
 	"github.com/jexia/maestro/specs/trace"
 	"github.com/jexia/maestro/specs/types"
+	"github.com/jexia/maestro/transport"
 	"github.com/sirupsen/logrus"
 )
 
@@ -176,8 +176,8 @@ func DefineCall(ctx context.Context, schema schema.Collection, manifest *specs.M
 	return nil
 }
 
-// DefineCaller defineds the types for the given protocol caller
-func DefineCaller(ctx context.Context, node *specs.Node, manifest *specs.Manifest, call protocol.Call, flow specs.FlowManager) (err error) {
+// DefineCaller defineds the types for the given transport caller
+func DefineCaller(ctx context.Context, node *specs.Node, manifest *specs.Manifest, call transport.Call, flow specs.FlowManager) (err error) {
 	logger.FromCtx(ctx, logger.Core).Info("Defining caller references")
 
 	method := call.GetMethod(node.Call.GetMethod())

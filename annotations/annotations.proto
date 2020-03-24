@@ -14,7 +14,7 @@ message Service {
   string package = 1;
   string name = 2;
   string host = 3;
-  string protocol = 4;
+  string transport = 4;
   string codec = 5;
 }
 

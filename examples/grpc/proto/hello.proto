@@ -8,7 +8,7 @@ option go_package = "proto";
 
 service Say {
 	option (maestro.service) = {
-        protocol: "micro-grpc"
+        transport: "micro-grpc"
         codec: "proto"
 	};
 
