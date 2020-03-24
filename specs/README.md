@@ -91,7 +91,7 @@ flow "Logger" {
     input "schema.Object" {
     }
 
-    call "log" {
+    resource "log" {
         request "logger" "Log" {
             message = "{{ input:message }}"
         }
@@ -150,7 +150,7 @@ A call could contain the request headers, request body and rollback.
 
 ```hcl
 # Calling service alias logger.Log
-call "log" {
+resource "log" {
   request "logger" "Log" {
     message = "{{ input:message }}"
   }
@@ -172,7 +172,7 @@ Dependencies define call dependencies without having a direct reference dependen
 Defining a dependency prevents both calls to be executed in parallel.
 
 ```hcl
-call "log" {
+resource "log" {
     depends_on = [
         "billing",
     ]
@@ -215,7 +215,7 @@ A proxy forward could ideally be used for file uploads or large messages which c
 
 ```hcl
 proxy "upload" {
-    call "auth" {
+    resource "auth" {
         request "authenticate" "Authenticate" {
             header {
                 Authorization = "{{ input.header:Authorization }}"
@@ -223,7 +223,7 @@ proxy "upload" {
         }
     }
 
-    call "logger" {
+    resource "logger" {
         request "logger" "Log" {
             message = "{{ auth:claim }}"
         }

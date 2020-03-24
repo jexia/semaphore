@@ -7,7 +7,7 @@ endpoint "latest_todo" "graphql" {
 flow "latest_todo" {
 	input "proto.Empty" {}
 
-	call "query" {
+	resource "query" {
 		request "proto.Todo" "First" {
 		}
 	}
@@ -28,7 +28,7 @@ endpoint "todo" "graphql" {
 flow "todo" {
 	input "proto.Query" {}
 
-	call "query" {
+	resource "query" {
 		request "proto.Todo" "Get" {
 			id = "{{ input:id }}"
 		}

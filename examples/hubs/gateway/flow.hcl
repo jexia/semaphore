@@ -4,7 +4,7 @@ endpoint "gateway" "http" {
 }
 
 proxy "gateway" {
-	call "query" {
+	resource "query" {
 		request "proto.Users" "ValidateUser" {
 		}
 	}

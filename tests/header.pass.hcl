@@ -18,7 +18,7 @@ flow "echo" {
         header = ["Authorization"]
     }
 
-	call "opening" {
+	resource "opening" {
 		request "caller" "Open" {
 			header {
                 Authorization = "{{ input.header:Authorization }}"

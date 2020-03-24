@@ -1,5 +1,5 @@
 flow "echo" {
-    call "get" {
+    resource "get" {
         rollback "getter" "Remove" {
         }
     }

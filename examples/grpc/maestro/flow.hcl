@@ -11,7 +11,7 @@ endpoint "greeter" "graphql" {
 flow "greeter" {
 	input "go.micro.srv.greeter.Request" {}
 
-	call "user" {
+	resource "user" {
 		request "go.micro.srv.greeter.Say" "Hello" {
 			name = "{{ input:name }}"
 		}

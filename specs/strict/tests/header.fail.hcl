@@ -6,7 +6,7 @@ flow "echo" {
 	input "input" {
 	}
 
-	call "opening" {
+	resource "opening" {
 		request "caller" "Open" {
 			header {
                 Amount = "{{ input:amount }}"

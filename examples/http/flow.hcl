@@ -7,12 +7,12 @@ endpoint "FetchLatestProject" "http" {
 flow "FetchLatestProject" {
 	input "placeholder.Query" {}
 
-	call "query" {
+	resource "query" {
 		request "placeholder.Service" "GetTodo" {
 		}
 	}
 
-	call "user" {
+	resource "user" {
 		request "placeholder.Service" "GetUser" {
 		}
 	}

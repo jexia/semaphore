@@ -1,9 +1,9 @@
 flow "echo" {
-    call {
+    resource {
         
     }
 
-    call {
+    resource {
 
     }
 }
