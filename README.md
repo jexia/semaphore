@@ -1,4 +1,4 @@
-# Maestro [![GoDev](https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white)](https://pkg.go.dev/github.com/jexia/maestro) ![Go CI](https://github.com/jexia/maestro/workflows/Go%20CI/badge.svg) [![Go report](https://goreportcard.com/badge/github.com/jexia/maestro)](https://goreportcard.com/report/github.com/jexia/maestro)
+# Maestro [![GoDev](https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white)](https://pkg.go.dev/github.com/jexia/maestro) ![Go CI](https://github.com/jexia/maestro/workflows/Go%20CI/badge.svg) [![Go report](https://goreportcard.com/badge/github.com/jexia/maestro)](https://goreportcard.com/report/github.com/jexia/maestro) [![Discord](https://img.shields.io/badge/chat-on%20discord-7289da.svg?sanitize=true)](https://discord.gg/q54Q8GH)
 
 Maestro is a tool to orchestrate requests inside your microservice architecture.
 A request could be manipulated passed branched to different services to be returned as a single output.
@@ -55,7 +55,7 @@ flow "checkout" {
 }
 ```
 
-## Contributing
+## Contributing [![Discord](https://img.shields.io/badge/chat-on%20discord-7289da.svg?sanitize=true)](https://discord.gg/q54Q8GH)
 
 Thank you for your interest in contributing to Maestro! ❤
 Check out the open projects and/or issues and feel free to join any ongoing discussion.
