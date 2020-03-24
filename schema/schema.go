@@ -24,7 +24,7 @@ type Service interface {
 	GetFullyQualifiedName() string
 	GetName() string
 	GetHost() string
-	GetProtocol() string
+	GetTransport() string
 	GetCodec() string
 	GetMethod(name string) Method
 	GetMethods() Methods

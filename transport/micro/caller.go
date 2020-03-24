@@ -6,11 +6,11 @@ import (
 	"io/ioutil"
 
 	"github.com/jexia/maestro/logger"
-	"github.com/jexia/maestro/protocol"
 	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/specs"
 	"github.com/jexia/maestro/specs/trace"
+	"github.com/jexia/maestro/transport"
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/codec/bytes"
 	micrometa "github.com/micro/go-micro/metadata"
@@ -55,7 +55,7 @@ func (caller *Caller) Context(ctx context.Context) {
 }
 
 // Dial constructs a new caller for the given service
-func (caller *Caller) Dial(schema schema.Service, functions specs.CustomDefinedFunctions, opts schema.Options) (protocol.Call, error) {
+func (caller *Caller) Dial(schema schema.Service, functions specs.CustomDefinedFunctions, opts schema.Options) (transport.Call, error) {
 	methods := make(map[string]*Method, len(schema.GetMethods()))
 
 	for _, method := range schema.GetMethods() {
@@ -108,8 +108,8 @@ type Call struct {
 }
 
 // GetMethods returns the available methods within the service caller
-func (call *Call) GetMethods() []protocol.Method {
-	result := make([]protocol.Method, 0, len(call.methods))
+func (call *Call) GetMethods() []transport.Method {
+	result := make([]transport.Method, 0, len(call.methods))
 
 	for _, method := range call.methods {
 		result = append(result, method)
@@ -119,7 +119,7 @@ func (call *Call) GetMethods() []protocol.Method {
 }
 
 // GetMethod attempts to return a method matching the given name
-func (call *Call) GetMethod(name string) protocol.Method {
+func (call *Call) GetMethod(name string) transport.Method {
 	for _, method := range call.methods {
 		if method.GetName() == name {
 			return method
@@ -130,7 +130,7 @@ func (call *Call) GetMethod(name string) protocol.Method {
 }
 
 // SendMsg calls the configured service and attempts to call the given endpoint with the given headers and stream
-func (call *Call) SendMsg(ctx context.Context, rw protocol.ResponseWriter, pr *protocol.Request, refs *refs.Store) error {
+func (call *Call) SendMsg(ctx context.Context, rw transport.ResponseWriter, pr *transport.Request, refs *refs.Store) error {
 	if pr.Method == nil {
 		return trace.New(trace.WithMessage("method required, proxy forward not supported"))
 	}
@@ -170,6 +170,6 @@ func (call *Call) SendMsg(ctx context.Context, rw protocol.ResponseWriter, pr *p
 
 // Close closes the given caller
 func (call *Call) Close() error {
-	logger.FromCtx(call.ctx, logger.Protocol).Info("Closing go micro caller")
+	logger.FromCtx(call.ctx, logger.Transport).Info("Closing go micro caller")
 	return nil
 }

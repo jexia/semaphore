@@ -1,8 +1,8 @@
 package graphql
 
 import (
-	"github.com/jexia/maestro/protocol"
 	"github.com/jexia/maestro/specs/trace"
+	"github.com/jexia/maestro/transport"
 )
 
 const (
@@ -22,7 +22,7 @@ type EndpointOptions struct {
 }
 
 // ParseEndpointOptions parses the given specs options into HTTP options
-func ParseEndpointOptions(endpoint *protocol.Endpoint) (*EndpointOptions, error) {
+func ParseEndpointOptions(endpoint *transport.Endpoint) (*EndpointOptions, error) {
 	result := &EndpointOptions{
 		Name: endpoint.Flow.GetName(),
 		Path: endpoint.Flow.GetName(),

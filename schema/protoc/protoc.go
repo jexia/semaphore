@@ -4,9 +4,9 @@ import (
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/jexia/maestro/annotations"
-	"github.com/jexia/maestro/protocol/http"
 	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/specs/types"
+	"github.com/jexia/maestro/transport/http"
 	"github.com/jhump/protoreflect/desc"
 )
 
@@ -15,8 +15,8 @@ const (
 	NameOption = "service_name"
 	// HostOption represents the Service host option key
 	HostOption = "service_host"
-	// ProtocolOption represents the Service protocol option key
-	ProtocolOption = "service_protocol"
+	// TransportOption represents the Service transport option key
+	TransportOption = "service_transport"
 	// CodecOption represents the Service codec option key
 	CodecOption = "service_codec"
 )
@@ -88,7 +88,7 @@ func NewService(descriptor *desc.ServiceDescriptor) schema.Service {
 	if err == nil {
 		ext := ext.(*annotations.Service)
 		options[HostOption] = ext.GetHost()
-		options[ProtocolOption] = ext.GetProtocol()
+		options[TransportOption] = ext.GetTransport()
 		options[CodecOption] = ext.GetCodec()
 	}
 
@@ -123,8 +123,8 @@ func (service *service) GetHost() string {
 	return service.options[HostOption]
 }
 
-func (service *service) GetProtocol() string {
-	return service.options[ProtocolOption]
+func (service *service) GetTransport() string {
+	return service.options[TransportOption]
 }
 
 func (service *service) GetCodec() string {

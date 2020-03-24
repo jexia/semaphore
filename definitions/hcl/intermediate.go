@@ -105,13 +105,13 @@ type Call struct {
 
 // Service specification
 type Service struct {
-	Package  string   `hcl:"package,label"`
-	Name     string   `hcl:"name,label"`
-	Protocol string   `hcl:"protocol,label"`
-	Codec    string   `hcl:"codec,label"`
-	Host     string   `hcl:"host"`
-	Methods  []Method `hcl:"method,block"`
-	Options  *Options `hcl:"options,block"`
+	Package   string   `hcl:"package,label"`
+	Name      string   `hcl:"name,label"`
+	Transport string   `hcl:"transport,label"`
+	Codec     string   `hcl:"codec,label"`
+	Host      string   `hcl:"host"`
+	Methods   []Method `hcl:"method,block"`
+	Options   *Options `hcl:"options,block"`
 }
 
 // Method represents a service method

@@ -5,9 +5,9 @@ import (
 
 	"github.com/jexia/maestro/codec"
 	"github.com/jexia/maestro/logger"
-	"github.com/jexia/maestro/protocol"
 	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/specs"
+	"github.com/jexia/maestro/transport"
 )
 
 // Option represents a constructor func which sets a given option
@@ -18,8 +18,8 @@ type Options struct {
 	Ctx         context.Context
 	Definitions []specs.Resolver
 	Codec       map[string]codec.Constructor
-	Callers     protocol.Callers
-	Listeners   protocol.Listeners
+	Callers     transport.Callers
+	Listeners   transport.Listeners
 	Schemas     []schema.Resolver
 	Schema      *schema.Store
 	Functions   specs.CustomDefinedFunctions
@@ -56,7 +56,7 @@ func WithCodec(constructor codec.Constructor) Option {
 }
 
 // WithCaller appends the given caller to the collection of available callers
-func WithCaller(caller protocol.Caller) Option {
+func WithCaller(caller transport.Caller) Option {
 	return func(options *Options) {
 		caller.Context(options.Ctx)
 		options.Callers = append(options.Callers, caller)
@@ -64,7 +64,7 @@ func WithCaller(caller protocol.Caller) Option {
 }
 
 // WithListener appends the given listener to the collection of available listeners
-func WithListener(listener protocol.Listener) Option {
+func WithListener(listener transport.Listener) Option {
 	return func(options *Options) {
 		listener.Context(options.Ctx)
 		options.Listeners = append(options.Listeners, listener)

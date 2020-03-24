@@ -12,12 +12,12 @@ import (
 	"github.com/jexia/maestro/codec/json"
 	"github.com/jexia/maestro/flow"
 	"github.com/jexia/maestro/logger"
-	"github.com/jexia/maestro/protocol"
 	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/specs"
+	"github.com/jexia/maestro/transport"
 )
 
-func NewMockListener(t *testing.T, nodes flow.Nodes) (protocol.Listener, int) {
+func NewMockListener(t *testing.T, nodes flow.Nodes) (transport.Listener, int) {
 	port := AvailablePort(t)
 	addr := fmt.Sprintf(":%d", port)
 	listener := NewListener(addr, nil)
@@ -31,7 +31,7 @@ func NewMockListener(t *testing.T, nodes flow.Nodes) (protocol.Listener, int) {
 		json.Name(): json,
 	}
 
-	endpoints := []*protocol.Endpoint{
+	endpoints := []*transport.Endpoint{
 		{
 			Request: NewSimpleMockSpecs(),
 			Flow:    flow.NewManager(ctx, "test", nodes),
@@ -152,7 +152,7 @@ func TestPathReferences(t *testing.T) {
 	ctx := context.Background()
 	ctx = logger.WithValue(ctx)
 
-	endpoints := []*protocol.Endpoint{
+	endpoints := []*transport.Endpoint{
 		{
 			Flow: flow.NewManager(ctx, "test", nodes),
 			Options: specs.Options{

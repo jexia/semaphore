@@ -4,6 +4,10 @@ endpoint "greeter" "http" {
 	codec = "json"
 }
 
+endpoint "greeter" "graphql" {
+	path = "greeter"
+}
+
 flow "greeter" {
 	input "go.micro.srv.greeter.Request" {}
 

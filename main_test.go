@@ -8,9 +8,9 @@ import (
 	"github.com/jexia/maestro/codec/json"
 	"github.com/jexia/maestro/constructor"
 	"github.com/jexia/maestro/definitions/hcl"
-	"github.com/jexia/maestro/protocol/http"
 	"github.com/jexia/maestro/schema/mock"
 	"github.com/jexia/maestro/specs"
+	"github.com/jexia/maestro/transport/http"
 	"github.com/jexia/maestro/utils"
 )
 

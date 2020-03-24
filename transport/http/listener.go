@@ -9,14 +9,14 @@ import (
 	"github.com/jexia/maestro/codec"
 	"github.com/jexia/maestro/logger"
 	"github.com/jexia/maestro/metadata"
-	"github.com/jexia/maestro/protocol"
 	"github.com/jexia/maestro/specs"
+	"github.com/jexia/maestro/transport"
 	"github.com/julienschmidt/httprouter"
 	"github.com/sirupsen/logrus"
 )
 
 // NewListener constructs a new listener for the given addr
-func NewListener(addr string, opts specs.Options) protocol.Listener {
+func NewListener(addr string, opts specs.Options) transport.Listener {
 	options, err := ParseListenerOptions(opts)
 	if err != nil {
 		// TODO: log err
@@ -51,7 +51,7 @@ func (listener *Listener) Context(ctx context.Context) {
 
 // Serve opens the HTTP listener and calls the given handler function on reach request
 func (listener *Listener) Serve() error {
-	logger.FromCtx(listener.ctx, logger.Protocol).WithField("addr", listener.server.Addr).Info("Serving HTTP listener")
+	logger.FromCtx(listener.ctx, logger.Transport).WithField("addr", listener.server.Addr).Info("Serving HTTP listener")
 
 	listener.server.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		listener.mutex.RLock()
@@ -70,8 +70,8 @@ func (listener *Listener) Serve() error {
 }
 
 // Handle parses the given endpoints and constructs route handlers
-func (listener *Listener) Handle(endpoints []*protocol.Endpoint, codecs map[string]codec.Constructor) error {
-	logger := logger.FromCtx(listener.ctx, logger.Protocol)
+func (listener *Listener) Handle(endpoints []*transport.Endpoint, codecs map[string]codec.Constructor) error {
+	logger := logger.FromCtx(listener.ctx, logger.Transport)
 	logger.Info("HTTP listener received new endpoints")
 
 	router := httprouter.New()
@@ -95,12 +95,12 @@ func (listener *Listener) Handle(endpoints []*protocol.Endpoint, codecs map[stri
 
 // Close closes the given listener
 func (listener *Listener) Close() error {
-	logger.FromCtx(listener.ctx, logger.Protocol).Info("Closing HTTP listener")
+	logger.FromCtx(listener.ctx, logger.Transport).Info("Closing HTTP listener")
 	return listener.server.Close()
 }
 
 // NewHandle constructs a new handle function for the given endpoint to the given flow
-func NewHandle(logger *logrus.Logger, endpoint *protocol.Endpoint, options *EndpointOptions, constructors map[string]codec.Constructor) *Handle {
+func NewHandle(logger *logrus.Logger, endpoint *transport.Endpoint, options *EndpointOptions, constructors map[string]codec.Constructor) *Handle {
 	if constructors == nil {
 		constructors = make(map[string]codec.Constructor)
 	}
@@ -157,7 +157,7 @@ type Request struct {
 // Handle holds a endpoint its options and a optional request and response
 type Handle struct {
 	logger   *logrus.Logger
-	Endpoint *protocol.Endpoint
+	Endpoint *transport.Endpoint
 	Options  *EndpointOptions
 	Request  *Request
 	Response *Request

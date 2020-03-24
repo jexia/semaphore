@@ -7,7 +7,7 @@ package placeholder;
 service Service {
     option (maestro.service) = {
         host: "https://jsonplaceholder.typicode.com/"
-        protocol: "http"
+        transport: "http"
         codec: "json"
     };
 

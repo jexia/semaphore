@@ -7,9 +7,9 @@ import (
 	"github.com/jexia/maestro/codec"
 	"github.com/jexia/maestro/logger"
 	"github.com/jexia/maestro/metadata"
-	"github.com/jexia/maestro/protocol"
 	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/specs"
+	"github.com/jexia/maestro/transport"
 	"github.com/sirupsen/logrus"
 )
 
@@ -21,15 +21,15 @@ func NewRequest(codec codec.Manager, metadata *metadata.Manager) *Request {
 	}
 }
 
-// NewCall constructs a new flow caller from the given protocol caller and
-func NewCall(ctx context.Context, node *specs.Node, protocol protocol.Call, method string, request *Request, response *Request) Call {
+// NewCall constructs a new flow caller from the given transport caller and
+func NewCall(ctx context.Context, node *specs.Node, transport transport.Call, method string, request *Request, response *Request) Call {
 	return &Caller{
-		ctx:      ctx,
-		node:     node,
-		protocol: protocol,
-		method:   protocol.GetMethod(method),
-		request:  request,
-		response: response,
+		ctx:       ctx,
+		node:      node,
+		transport: transport,
+		method:    transport.GetMethod(method),
+		request:   request,
+		response:  response,
 	}
 }
 
@@ -39,17 +39,17 @@ type Request struct {
 	metadata *metadata.Manager
 }
 
-// Caller represents a flow protocol caller
+// Caller represents a flow transport caller
 type Caller struct {
-	ctx      context.Context
-	node     *specs.Node
-	method   protocol.Method
-	protocol protocol.Call
-	request  *Request
-	response *Request
+	ctx       context.Context
+	node      *specs.Node
+	method    transport.Method
+	transport transport.Call
+	request   *Request
+	response  *Request
 }
 
-// References returns the references inside the configured protocol caller
+// References returns the references inside the configured transport caller
 func (caller *Caller) References() []*specs.Property {
 	if caller.method == nil {
 		return make([]*specs.Property, 0)
@@ -66,8 +66,8 @@ func (caller *Caller) Do(ctx context.Context, store *refs.Store) error {
 	}
 
 	reader, writer := io.Pipe()
-	w := protocol.NewResponseWriter(writer)
-	r := &protocol.Request{
+	w := transport.NewResponseWriter(writer)
+	r := &transport.Request{
 		Header: caller.request.metadata.Marshal(store),
 		Method: caller.method,
 		Body:   body,
@@ -78,7 +78,7 @@ func (caller *Caller) Do(ctx context.Context, store *refs.Store) error {
 
 	go func() {
 		defer writer.Close()
-		result <- caller.protocol.SendMsg(ctx, w, r, store)
+		result <- caller.transport.SendMsg(ctx, w, r, store)
 	}()
 
 	err = caller.response.codec.Unmarshal(reader, store)

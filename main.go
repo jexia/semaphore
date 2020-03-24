@@ -6,16 +6,16 @@ import (
 
 	"github.com/jexia/maestro/constructor"
 	"github.com/jexia/maestro/logger"
-	"github.com/jexia/maestro/protocol"
 	"github.com/jexia/maestro/specs"
+	"github.com/jexia/maestro/transport"
 )
 
 // Client represents a maestro instance
 type Client struct {
 	ctx       context.Context
-	Endpoints []*protocol.Endpoint
+	Endpoints []*transport.Endpoint
 	Manifest  *specs.Manifest
-	Listeners []protocol.Listener
+	Listeners []transport.Listener
 	Options   constructor.Options
 }
 
@@ -27,7 +27,7 @@ func (client *Client) Serve() (result error) {
 	for _, listener := range client.Listeners {
 		logger.FromCtx(client.ctx, logger.Core).WithField("listener", listener.Name()).Info("serving listener")
 
-		go func(listener protocol.Listener) {
+		go func(listener transport.Listener) {
 			defer wg.Done()
 			err := listener.Serve()
 			if err != nil {
