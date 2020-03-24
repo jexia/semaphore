@@ -3,6 +3,6 @@ graphql:
     address: ":8080"
 protobuffers:
 - "../../annotations"
-- "./*.proto"
+- "./proto/*.proto"
 flows:
 - "./*.hcl"

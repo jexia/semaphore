@@ -4,7 +4,7 @@ This example uses the `go-micro` gRPC implementation to allow maestro to call a 
 
 ## Getting started
 
-To run this example you need to have Go 1.13> installed on your machine.
+To run this example you need to have Go 1.13> and the Maestro CLI installed on your machine.
 First start the service by simply executing the files inside the service directory.
 
 ```bash
@@ -16,7 +16,7 @@ Start Maestro to expose the greeting service on port `8080`.
 
 ```bash
 $ cd maestro
-$ maestro run
+$ maestro run -c config.yaml
 ```
 
 You could execute the `greeter` flow by executing a `POST` request on port `8080`.

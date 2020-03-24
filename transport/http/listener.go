@@ -4,6 +4,8 @@ import (
 	"context"
 	"io"
 	"net/http"
+	"net/http/httputil"
+	"net/url"
 	"sync"
 
 	"github.com/jexia/maestro/codec"
@@ -145,6 +147,15 @@ func NewHandle(logger *logrus.Logger, endpoint *transport.Endpoint, options *End
 		}
 	}
 
+	if endpoint.Forward != nil {
+		url, err := url.Parse(endpoint.Forward.GetHost())
+		if err != nil {
+			return nil
+		}
+
+		handle.Proxy = httputil.NewSingleHostReverseProxy(url)
+	}
+
 	return handle
 }
 
@@ -161,6 +172,7 @@ type Handle struct {
 	Options  *EndpointOptions
 	Request  *Request
 	Response *Request
+	Proxy    *httputil.ReverseProxy
 }
 
 // HTTPFunc represents a HTTP function which could be used inside a HTTP router
@@ -224,11 +236,6 @@ func (handle *Handle) HTTPFunc(w http.ResponseWriter, r *http.Request, ps httpro
 	}
 
 	if handle.Endpoint.Forward != nil {
-		err := handle.Endpoint.Forward.SendMsg(r.Context(), NewResponseWriter(w), NewRequest(r), store)
-		if err != nil {
-			handle.logger.Error(err)
-			w.WriteHeader(http.StatusBadGateway)
-			return
-		}
+		handle.Proxy.ServeHTTP(w, r)
 	}
 }

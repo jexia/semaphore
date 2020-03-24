@@ -4,7 +4,7 @@ import "annotations.proto";
 
 package proto;
 
-service TODO {
+service Todo {
     option (maestro.service) = {
         host: "https://jsonplaceholder.typicode.com/"
         transport: "http"

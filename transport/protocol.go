@@ -87,7 +87,7 @@ type Endpoint struct {
 	Flow     Flow
 	Request  *specs.ParameterMap
 	Response *specs.ParameterMap
-	Forward  Call
+	Forward  schema.Service
 	Options  specs.Options
 }
 
