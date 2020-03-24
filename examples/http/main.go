@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	collection, err := protoc.Collect([]string{"../../annotations", "."}, "./*.proto")
+	collection, err := protoc.Collect([]string{"../../annotations", "./proto"}, "./proto/*.proto")
 	if err != nil {
 		panic(err)
 	}

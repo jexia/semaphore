@@ -6,6 +6,7 @@ import (
 	"github.com/jexia/maestro/codec"
 	"github.com/jexia/maestro/flow"
 	"github.com/jexia/maestro/metadata"
+	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/specs"
 	"github.com/jexia/maestro/specs/strict"
 	"github.com/jexia/maestro/specs/trace"
@@ -96,8 +97,8 @@ func FlowManager(ctx context.Context, manifest *specs.Manifest, options Options)
 			return nil, err
 		}
 
-		result.Forward = forward
 		result.Flow = flow.NewManager(ctx, current.GetName(), nodes)
+		result.Forward = forward
 
 		endpoints[index] = result
 	}
@@ -169,7 +170,7 @@ func Request(node *specs.Node, codec codec.Constructor, params *specs.ParameterM
 }
 
 // Forward constructs a flow caller for the given call.
-func Forward(manifest *specs.Manifest, call *specs.Call, options Options) (transport.Call, error) {
+func Forward(manifest *specs.Manifest, call *specs.Call, options Options) (schema.Service, error) {
 	if call == nil {
 		return nil, nil
 	}
@@ -179,14 +180,7 @@ func Forward(manifest *specs.Manifest, call *specs.Call, options Options) (trans
 		return nil, trace.New(trace.WithMessage("the service for %s was not found", call.GetMethod()))
 	}
 
-	schema := options.Schema.GetService(service.GetName())
-	constructor := options.Callers.Get(service.GetTransport())
-	caller, err := constructor.Dial(schema, options.Functions, service.GetOptions())
-	if err != nil {
-		return nil, err
-	}
-
-	return caller, nil
+	return service, nil
 }
 
 // Listeners constructs the listeners from the given collection of endpoints

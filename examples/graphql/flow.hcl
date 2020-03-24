@@ -8,7 +8,7 @@ flow "latest_todo" {
 	input "proto.Empty" {}
 
 	call "query" {
-		request "proto.TODO" "First" {
+		request "proto.Todo" "First" {
 		}
 	}
 
@@ -29,7 +29,7 @@ flow "todo" {
 	input "proto.Query" {}
 
 	call "query" {
-		request "proto.TODO" "Get" {
+		request "proto.Todo" "Get" {
 			id = "{{ input:id }}"
 		}
 	}
