@@ -1,4 +1,4 @@
-<h1 align="center">Maestro <img src="https://user-images.githubusercontent.com/3440116/77702983-019eb580-6fba-11ea-8d2c-f6a6b8e60cbd.jpg" alt="Jexia"></h1>
+<h1 align="center">Maestro <a href="https://jexia.com"><img src="https://user-images.githubusercontent.com/3440116/77702983-019eb580-6fba-11ea-8d2c-f6a6b8e60cbd.jpg" alt="Jexia"></a></h1>
 
 <p align="center">
   <a href="https://pkg.go.dev/github.com/jexia/maestro"><img src="https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white" alt="GoDev"></a>
