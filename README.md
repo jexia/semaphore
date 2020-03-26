@@ -25,7 +25,7 @@ The key features of Maestro are:
 
 1. [⚡ CLI](https://github.com/jexia/maestro/tree/master/cmd/maestro)
 1. [🚀 Examples](https://github.com/jexia/maestro/tree/master/examples)
-1. [📚 Documentation](https://godoc.org/github.com/jexia/maestro)
+1. [📚 Documentation](https://jexia.gitbook.io/maestro/)
 
 You could download the CLI from source or most commonly used package managers. Or pull one of the available docker images.
 
