@@ -5,6 +5,7 @@
   <a href="https://github.com/jexia/maestro/actions?query=workflow%3A%22Go+CI%22"><img src="https://github.com/jexia/maestro/workflows/Go%20CI/badge.svg" alt="Go CI"></a>
   <a href="https://goreportcard.com/report/github.com/jexia/maestro"><img src="https://goreportcard.com/badge/github.com/jexia/maestro" alt="Go report"></a>
   <a href="https://discord.gg/q54Q8GH"><img src="https://img.shields.io/badge/chat-on%20discord-7289da.svg?sanitize=true" alt="Discord"></a>
+  <a href="https://jexia.gitbook.io/maestro/"><img src="https://img.shields.io/badge/docs-gitbook-green" alt="Gitbook"></a>
 </p>
 
 <img align="center" src="https://user-images.githubusercontent.com/3440116/77703025-154a1c00-6fba-11ea-9515-71156bcda177.png">
