@@ -18,15 +18,15 @@ func TestSetDefaultValue(t *testing.T) {
 	tests := map[cty.Value]expected{
 		cty.StringVal("default"): {
 			Default: "default",
-			Type:    types.TypeString,
+			Type:    types.String,
 		},
 		cty.NumberVal(big.NewFloat(10)): {
 			Default: int64(10),
-			Type:    types.TypeInt64,
+			Type:    types.Int64,
 		},
 		cty.BoolVal(true): {
 			Default: true,
-			Type:    types.TypeBool,
+			Type:    types.Bool,
 		},
 	}
 

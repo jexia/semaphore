@@ -130,7 +130,7 @@ func TestParseFunction(t *testing.T) {
 	static := Property{
 		Path:    path,
 		Default: "message",
-		Type:    types.TypeString,
+		Type:    types.String,
 	}
 
 	functions := CustomDefinedFunctions{
@@ -175,7 +175,7 @@ func TestParseTemplate(t *testing.T) {
 	static := Property{
 		Path:    path,
 		Default: "message",
-		Type:    types.TypeString,
+		Type:    types.String,
 	}
 
 	functions := CustomDefinedFunctions{

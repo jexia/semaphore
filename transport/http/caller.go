@@ -191,7 +191,7 @@ func LookupEndpointReferences(method *Method, store *refs.Store) string {
 
 	for _, prop := range method.references {
 		ref := store.Load(prop.Reference.Resource, prop.Reference.Path)
-		if ref == nil || prop.Type != types.TypeString {
+		if ref == nil || prop.Type != types.String {
 			result = strings.Replace(result, prop.Path, "", 1)
 			continue
 		}

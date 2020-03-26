@@ -4,6 +4,7 @@ import (
 	"github.com/hashicorp/hcl/v2"
 	"github.com/jexia/maestro/instance"
 	"github.com/jexia/maestro/schema"
+	"github.com/jexia/maestro/specs/labels"
 	"github.com/jexia/maestro/specs/types"
 )
 
@@ -189,7 +190,7 @@ type Property struct {
 	Path      string
 	Default   interface{}
 	Type      types.Type
-	Label     types.Label
+	Label     labels.Label
 	Reference *PropertyReference
 	Nested    map[string]*Property
 	Expr      hcl.Expression // TODO: marked for removal

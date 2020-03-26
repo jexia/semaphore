@@ -5,6 +5,7 @@ import (
 	"github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/jexia/maestro/annotations"
 	"github.com/jexia/maestro/schema"
+	"github.com/jexia/maestro/specs/labels"
 	"github.com/jexia/maestro/specs/types"
 	"github.com/jexia/maestro/transport/http"
 	"github.com/jhump/protoreflect/desc"
@@ -229,12 +230,12 @@ func (message *message) GetPosition() int32 {
 
 // GetType returns the message type
 func (message *message) GetType() types.Type {
-	return types.TypeMessage
+	return types.Message
 }
 
 // GetLabel returns the message label
-func (message *message) GetLabel() types.Label {
-	return types.LabelOptional
+func (message *message) GetLabel() labels.Label {
+	return labels.Optional
 }
 
 // GetNested attempts to return a all the nested properties
@@ -286,7 +287,7 @@ func (property *property) GetType() types.Type {
 }
 
 // GetLabel returns the property label
-func (property *property) GetLabel() types.Label {
+func (property *property) GetLabel() labels.Label {
 	return Labels[property.desc.GetLabel()]
 }
 

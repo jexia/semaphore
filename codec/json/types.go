@@ -11,35 +11,35 @@ import (
 // AddType encodes the given value into the given encoder
 func AddType(encoder *gojay.Encoder, key string, typed types.Type, value interface{}) {
 	switch typed {
-	case types.TypeDouble:
+	case types.Double:
 		encoder.AddFloat64Key(key, Float64Empty(value))
-	case types.TypeInt64:
+	case types.Int64:
 		encoder.AddInt64Key(key, Int64Empty(value))
-	case types.TypeUint64:
+	case types.Uint64:
 		encoder.AddUint64Key(key, Uint64Empty(value))
-	case types.TypeFixed64:
+	case types.Fixed64:
 		encoder.AddUint64Key(key, Uint64Empty(value))
-	case types.TypeInt32:
+	case types.Int32:
 		encoder.AddInt32Key(key, Int32Empty(value))
-	case types.TypeUint32:
+	case types.Uint32:
 		encoder.AddUint32Key(key, Uint32Empty(value))
-	case types.TypeFixed32:
+	case types.Fixed32:
 		encoder.AddUint64Key(key, Uint64Empty(value))
-	case types.TypeFloat:
+	case types.Float:
 		encoder.AddFloat32Key(key, Float32Empty(value))
-	case types.TypeString:
+	case types.String:
 		encoder.AddStringKey(key, StringEmpty(value))
-	case types.TypeBool:
+	case types.Bool:
 		encoder.AddBoolKey(key, BoolEmpty(value))
-	case types.TypeBytes:
+	case types.Bytes:
 		encoder.AddStringKey(key, BytesBase64Empty(value))
-	case types.TypeSfixed32:
+	case types.Sfixed32:
 		encoder.AddInt32Key(key, Int32Empty(value))
-	case types.TypeSfixed64:
+	case types.Sfixed64:
 		encoder.AddInt64Key(key, Int64Empty(value))
-	case types.TypeSint32:
+	case types.Sint32:
 		encoder.AddInt32Key(key, Int32Empty(value))
-	case types.TypeSint64:
+	case types.Sint64:
 		encoder.AddInt64Key(key, Int64Empty(value))
 	}
 }
@@ -47,66 +47,66 @@ func AddType(encoder *gojay.Encoder, key string, typed types.Type, value interfa
 // DecodeType decodes the given property from the given decoder
 func DecodeType(decoder *gojay.Decoder, prop *specs.Property) interface{} {
 	switch prop.Type {
-	case types.TypeDouble:
+	case types.Double:
 		var value float64
 		decoder.AddFloat64(&value)
 		return value
-	case types.TypeFloat:
+	case types.Float:
 		var value float32
 		decoder.AddFloat32(&value)
 		return value
-	case types.TypeInt64:
+	case types.Int64:
 		var value int64
 		decoder.AddInt64(&value)
 		return value
-	case types.TypeUint64:
+	case types.Uint64:
 		var value uint64
 		decoder.AddUint64(&value)
 		return value
-	case types.TypeFixed64:
+	case types.Fixed64:
 		var value uint64
 		decoder.AddUint64(&value)
 		return value
-	case types.TypeInt32:
+	case types.Int32:
 		var value int32
 		decoder.AddInt32(&value)
 		return value
-	case types.TypeUint32:
+	case types.Uint32:
 		var value uint32
 		decoder.AddUint32(&value)
 		return value
-	case types.TypeFixed32:
+	case types.Fixed32:
 		var value uint64
 		decoder.AddUint64(&value)
 		return value
-	case types.TypeString:
+	case types.String:
 		var value string
 		decoder.AddString(&value)
 		return value
-	case types.TypeBool:
+	case types.Bool:
 		var value bool
 		decoder.AddBool(&value)
 		return value
-	case types.TypeBytes:
+	case types.Bytes:
 		var raw string
 		decoder.AddString(&raw)
 
 		value := make([]byte, len(raw))
 		base64.StdEncoding.Decode(value, []byte(raw))
 		return value
-	case types.TypeSfixed32:
+	case types.Sfixed32:
 		var value int32
 		decoder.AddInt32(&value)
 		return value
-	case types.TypeSfixed64:
+	case types.Sfixed64:
 		var value int64
 		decoder.AddInt64(&value)
 		return value
-	case types.TypeSint32:
+	case types.Sint32:
 		var value int32
 		decoder.AddInt32(&value)
 		return value
-	case types.TypeSint64:
+	case types.Sint64:
 		var value int64
 		decoder.AddInt64(&value)
 		return value

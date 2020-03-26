@@ -5,39 +5,40 @@ import (
 
 	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/schema/mock"
+	"github.com/jexia/maestro/specs/labels"
 	"github.com/jexia/maestro/specs/types"
 )
 
 func NewMockObject() schema.Property {
 	return &mock.Property{
-		Type: types.TypeMessage,
+		Type: types.Message,
 		Nested: map[string]*mock.Property{
 			"message": {
 				Name:  "message",
-				Type:  types.TypeString,
-				Label: types.LabelOptional,
+				Type:  types.String,
+				Label: labels.Optional,
 			},
 			"nested": {
 				Name:  "nested",
-				Type:  types.TypeMessage,
-				Label: types.LabelOptional,
+				Type:  types.Message,
+				Label: labels.Optional,
 				Nested: map[string]*mock.Property{
 					"key": {
 						Name:  "key",
-						Type:  types.TypeString,
-						Label: types.LabelOptional,
+						Type:  types.String,
+						Label: labels.Optional,
 					},
 				},
 			},
 			"repeated": {
 				Name:  "repeated",
-				Type:  types.TypeMessage,
-				Label: types.LabelRepeated,
+				Type:  types.Message,
+				Label: labels.Repeated,
 				Nested: map[string]*mock.Property{
 					"key": {
 						Name:  "key",
-						Type:  types.TypeString,
-						Label: types.LabelOptional,
+						Type:  types.String,
+						Label: labels.Optional,
 					},
 				},
 			},
@@ -54,7 +55,7 @@ func TestToParameterMap(t *testing.T) {
 			"cookie": &Property{
 				Path:    "cookie",
 				Default: "mnomnom",
-				Type:    types.TypeString,
+				Type:    types.String,
 			},
 		},
 	}

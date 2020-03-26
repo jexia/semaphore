@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/jexia/maestro/specs"
+	"github.com/jexia/maestro/specs/labels"
 	"github.com/jexia/maestro/specs/types"
 )
 
@@ -50,73 +51,73 @@ func TestGetDefaultProp(t *testing.T) {
 func NewInputMockProperty() *specs.Property {
 	return &specs.Property{
 		Path:  "",
-		Type:  types.TypeMessage,
-		Label: types.LabelOptional,
+		Type:  types.Message,
+		Label: labels.Optional,
 		Nested: map[string]*specs.Property{
 			"message": {
 				Path:    "message",
 				Default: "hello world",
-				Type:    types.TypeString,
-				Label:   types.LabelOptional,
+				Type:    types.String,
+				Label:   labels.Optional,
 			},
 			"active": {
 				Path:    "active",
 				Default: false,
-				Type:    types.TypeBool,
-				Label:   types.LabelOptional,
+				Type:    types.Bool,
+				Label:   labels.Optional,
 			},
 			"nested": {
 				Path:  "nested",
-				Type:  types.TypeMessage,
-				Label: types.LabelOptional,
+				Type:  types.Message,
+				Label: labels.Optional,
 				Nested: map[string]*specs.Property{
 					"message": {
 						Path:    "nested.message",
 						Default: "hello world",
-						Type:    types.TypeString,
-						Label:   types.LabelOptional,
+						Type:    types.String,
+						Label:   labels.Optional,
 					},
 					"active": {
 						Path:    "nested.active",
 						Default: false,
-						Type:    types.TypeBool,
-						Label:   types.LabelOptional,
+						Type:    types.Bool,
+						Label:   labels.Optional,
 					},
 					"nested": {
 						Path:  "nested.nested",
-						Type:  types.TypeMessage,
-						Label: types.LabelOptional,
+						Type:  types.Message,
+						Label: labels.Optional,
 						Nested: map[string]*specs.Property{
 							"message": {
 								Path:    "nested.nested.message",
 								Default: "hello world",
-								Type:    types.TypeString,
-								Label:   types.LabelOptional,
+								Type:    types.String,
+								Label:   labels.Optional,
 							},
 							"active": {
 								Path:    "nested.nested.active",
 								Default: false,
-								Type:    types.TypeBool,
-								Label:   types.LabelOptional,
+								Type:    types.Bool,
+								Label:   labels.Optional,
 							},
 						},
 					},
 					"repeated": {
 						Path:  "nested.repeated",
-						Type:  types.TypeMessage,
-						Label: types.LabelRepeated,
+						Type:  types.Message,
+						Label: labels.Repeated,
 						Nested: map[string]*specs.Property{
 							"message": {
 								Path:    "nested.repeated.message",
 								Default: "hello world",
-								Type:    types.TypeString,
-								Label:   types.LabelOptional,
+								Type:    types.String,
+								Label:   labels.Optional,
 							},
 							"active": {
 								Path:    "nested.repeated.active",
 								Default: false,
-								Type:    types.TypeBool,
-								Label:   types.LabelOptional,
+								Type:    types.Bool,
+								Label:   labels.Optional,
 							},
 						},
 					},
@@ -124,37 +125,37 @@ func NewInputMockProperty() *specs.Property {
 			},
 			"repeated": {
 				Path:  "repeated",
-				Type:  types.TypeMessage,
-				Label: types.LabelRepeated,
+				Type:  types.Message,
+				Label: labels.Repeated,
 				Nested: map[string]*specs.Property{
 					"message": {
 						Path:    "message",
 						Default: "hello world",
-						Type:    types.TypeString,
-						Label:   types.LabelOptional,
+						Type:    types.String,
+						Label:   labels.Optional,
 					},
 					"active": {
 						Path:    "active",
 						Default: false,
-						Type:    types.TypeBool,
-						Label:   types.LabelOptional,
+						Type:    types.Bool,
+						Label:   labels.Optional,
 					},
 					"repeated": {
 						Path:  "repeated.repeated",
-						Type:  types.TypeMessage,
-						Label: types.LabelRepeated,
+						Type:  types.Message,
+						Label: labels.Repeated,
 						Nested: map[string]*specs.Property{
 							"repeated.message": {
 								Path:    "message",
 								Default: "hello world",
-								Type:    types.TypeString,
-								Label:   types.LabelOptional,
+								Type:    types.String,
+								Label:   labels.Optional,
 							},
 							"repeated.active": {
 								Path:    "active",
 								Default: false,
-								Type:    types.TypeBool,
-								Label:   types.LabelOptional,
+								Type:    types.Bool,
+								Label:   labels.Optional,
 							},
 						},
 					},
@@ -167,73 +168,73 @@ func NewInputMockProperty() *specs.Property {
 func NewResultMockProperty() *specs.Property {
 	return &specs.Property{
 		Path:  "",
-		Type:  types.TypeMessage,
-		Label: types.LabelOptional,
+		Type:  types.Message,
+		Label: labels.Optional,
 		Nested: map[string]*specs.Property{
 			"result": {
 				Path:    "result",
 				Default: "hello world",
-				Type:    types.TypeString,
-				Label:   types.LabelOptional,
+				Type:    types.String,
+				Label:   labels.Optional,
 			},
 			"active": {
 				Path:    "active",
 				Default: false,
-				Type:    types.TypeBool,
-				Label:   types.LabelOptional,
+				Type:    types.Bool,
+				Label:   labels.Optional,
 			},
 			"nested": {
 				Path:  "nested",
-				Type:  types.TypeMessage,
-				Label: types.LabelOptional,
+				Type:  types.Message,
+				Label: labels.Optional,
 				Nested: map[string]*specs.Property{
 					"result": {
 						Path:    "nested.result",
 						Default: "hello world",
-						Type:    types.TypeString,
-						Label:   types.LabelOptional,
+						Type:    types.String,
+						Label:   labels.Optional,
 					},
 					"active": {
 						Path:    "nested.active",
 						Default: false,
-						Type:    types.TypeBool,
-						Label:   types.LabelOptional,
+						Type:    types.Bool,
+						Label:   labels.Optional,
 					},
 					"nested": {
 						Path:  "nested.nested",
-						Type:  types.TypeMessage,
-						Label: types.LabelOptional,
+						Type:  types.Message,
+						Label: labels.Optional,
 						Nested: map[string]*specs.Property{
 							"result": {
 								Path:    "nested.nested.result",
 								Default: "hello world",
-								Type:    types.TypeString,
-								Label:   types.LabelOptional,
+								Type:    types.String,
+								Label:   labels.Optional,
 							},
 							"active": {
 								Path:    "nested.nested.active",
 								Default: false,
-								Type:    types.TypeBool,
-								Label:   types.LabelOptional,
+								Type:    types.Bool,
+								Label:   labels.Optional,
 							},
 						},
 					},
 					"repeated": {
 						Path:  "nested.repeated",
-						Type:  types.TypeMessage,
-						Label: types.LabelRepeated,
+						Type:  types.Message,
+						Label: labels.Repeated,
 						Nested: map[string]*specs.Property{
 							"result": {
 								Path:    "nested.repeated.result",
 								Default: "hello world",
-								Type:    types.TypeString,
-								Label:   types.LabelOptional,
+								Type:    types.String,
+								Label:   labels.Optional,
 							},
 							"active": {
 								Path:    "nested.repeated.active",
 								Default: false,
-								Type:    types.TypeBool,
-								Label:   types.LabelOptional,
+								Type:    types.Bool,
+								Label:   labels.Optional,
 							},
 						},
 					},
@@ -241,37 +242,37 @@ func NewResultMockProperty() *specs.Property {
 			},
 			"repeated": {
 				Path:  "repeated",
-				Type:  types.TypeMessage,
-				Label: types.LabelRepeated,
+				Type:  types.Message,
+				Label: labels.Repeated,
 				Nested: map[string]*specs.Property{
 					"result": {
 						Path:    "message",
 						Default: "hello world",
-						Type:    types.TypeString,
-						Label:   types.LabelOptional,
+						Type:    types.String,
+						Label:   labels.Optional,
 					},
 					"active": {
 						Path:    "active",
 						Default: false,
-						Type:    types.TypeBool,
-						Label:   types.LabelOptional,
+						Type:    types.Bool,
+						Label:   labels.Optional,
 					},
 					"repeated": {
 						Path:  "repeated.repeated",
-						Type:  types.TypeMessage,
-						Label: types.LabelRepeated,
+						Type:  types.Message,
+						Label: labels.Repeated,
 						Nested: map[string]*specs.Property{
 							"result": {
 								Path:    "repeated.repeated.result",
 								Default: "hello world",
-								Type:    types.TypeString,
-								Label:   types.LabelOptional,
+								Type:    types.String,
+								Label:   labels.Optional,
 							},
 							"active": {
 								Path:    "repeated.repeated.active",
 								Default: false,
-								Type:    types.TypeBool,
-								Label:   types.LabelOptional,
+								Type:    types.Bool,
+								Label:   labels.Optional,
 							},
 						},
 					},
@@ -290,8 +291,8 @@ func NewMockCall(name string) *specs.Node {
 					"cookie": &specs.Property{
 						Path:    "cookie",
 						Default: "mnomnom",
-						Type:    types.TypeString,
-						Label:   types.LabelOptional,
+						Type:    types.String,
+						Label:   labels.Optional,
 					},
 				},
 				Property: NewInputMockProperty(),
@@ -301,8 +302,8 @@ func NewMockCall(name string) *specs.Node {
 					"cookie": &specs.Property{
 						Path:    "cookie",
 						Default: "mnomnom",
-						Type:    types.TypeString,
-						Label:   types.LabelOptional,
+						Type:    types.String,
+						Label:   labels.Optional,
 					},
 				},
 				Property: NewResultMockProperty(),

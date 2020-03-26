@@ -26,6 +26,7 @@ func NewListener(addr string, opts specs.Options) transport.NewListener {
 
 	return func(ctx instance.Context) transport.Listener {
 		return &Listener{
+			ctx: ctx,
 			server: &http.Server{
 				Addr:         addr,
 				ReadTimeout:  options.ReadTimeout,

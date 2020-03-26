@@ -11,6 +11,7 @@ import (
 	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/specs"
+	"github.com/jexia/maestro/specs/labels"
 	"github.com/jexia/maestro/specs/types"
 )
 
@@ -33,13 +34,13 @@ func NewCallerFunc(fn func(context.Context, *refs.Store) error) flow.Call {
 func NewSimpleMockSpecs() *specs.ParameterMap {
 	return &specs.ParameterMap{
 		Property: &specs.Property{
-			Type:  types.TypeMessage,
-			Label: types.LabelOptional,
+			Type:  types.Message,
+			Label: labels.Optional,
 			Nested: map[string]*specs.Property{
 				"message": {
 					Name: "message",
 					Path: "message",
-					Type: types.TypeString,
+					Type: types.String,
 				},
 			},
 		},

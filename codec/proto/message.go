@@ -35,7 +35,7 @@ func (constructor *Constructor) New(resource string, specs *specs.ParameterMap) 
 	}
 
 	prop := specs.Property
-	if prop.Type != types.TypeMessage {
+	if prop.Type != types.Message {
 		return nil, trace.New(trace.WithMessage("a proto message always requires a root message"))
 	}
 
@@ -95,7 +95,7 @@ func (manager *Manager) Encode(proto *dynamic.Message, desc *desc.MessageDescrip
 			}
 
 			// TODO: currently we only support repeated messaged repeated types should be added in the future
-			if prop.Type != types.TypeMessage {
+			if prop.Type != types.Message {
 				continue
 			}
 
@@ -129,7 +129,7 @@ func (manager *Manager) Encode(proto *dynamic.Message, desc *desc.MessageDescrip
 			}
 		}
 
-		if prop.Type == types.TypeMessage {
+		if prop.Type == types.Message {
 			dynamic := dynamic.NewMessage(field.GetMessageType())
 			err = manager.Encode(dynamic, field.GetMessageType(), prop.Nested, store)
 			if err != nil {
@@ -178,7 +178,7 @@ func (manager *Manager) Decode(proto *dynamic.Message, properties map[string]*sp
 	for _, field := range proto.GetKnownFields() {
 		prop := properties[field.GetName()]
 
-		if prop.Type == types.TypeMessage {
+		if prop.Type == types.Message {
 			if field.IsRepeated() {
 				length := proto.FieldLength(field)
 

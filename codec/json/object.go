@@ -4,6 +4,7 @@ import (
 	"github.com/francoispqt/gojay"
 	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/specs"
+	"github.com/jexia/maestro/specs/labels"
 	"github.com/jexia/maestro/specs/types"
 )
 
@@ -30,7 +31,7 @@ type Object struct {
 // MarshalJSONObject encodes the given specs object into the given gojay encoder
 func (object *Object) MarshalJSONObject(encoder *gojay.Encoder) {
 	for _, prop := range object.specs {
-		if prop.Label == types.LabelRepeated {
+		if prop.Label == labels.Repeated {
 			if prop.Reference == nil {
 				continue
 			}
@@ -45,7 +46,7 @@ func (object *Object) MarshalJSONObject(encoder *gojay.Encoder) {
 			continue
 		}
 
-		if prop.Type == types.TypeMessage {
+		if prop.Type == types.Message {
 			result := NewObject(object.resource, prop.Nested, object.refs)
 			encoder.AddObjectKey(prop.Name, result)
 			continue
@@ -75,7 +76,7 @@ func (object *Object) UnmarshalJSONObject(dec *gojay.Decoder, key string) error 
 		return nil
 	}
 
-	if prop.Label == types.LabelRepeated {
+	if prop.Label == labels.Repeated {
 		ref := refs.New(prop.Path)
 		array := NewArray(object.resource, prop, ref, nil)
 		err := dec.AddArray(array)
@@ -87,7 +88,7 @@ func (object *Object) UnmarshalJSONObject(dec *gojay.Decoder, key string) error 
 		return nil
 	}
 
-	if prop.Type == types.TypeMessage {
+	if prop.Type == types.Message {
 		dynamic := NewObject(object.resource, prop.Nested, object.refs)
 		err := dec.AddObject(dynamic)
 		return err
@@ -138,7 +139,7 @@ type Array struct {
 // MarshalJSONArray encodes the array into the given gojay encoder
 func (array *Array) MarshalJSONArray(enc *gojay.Encoder) {
 	for _, store := range array.items {
-		if array.specs.Type == types.TypeMessage {
+		if array.specs.Type == types.Message {
 			object := NewObject(array.resource, array.specs.Nested, store)
 			enc.AddObject(object)
 			continue

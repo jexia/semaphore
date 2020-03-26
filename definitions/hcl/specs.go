@@ -5,6 +5,7 @@ import (
 	"github.com/jexia/maestro/instance"
 	"github.com/jexia/maestro/logger"
 	"github.com/jexia/maestro/specs"
+	"github.com/jexia/maestro/specs/labels"
 	"github.com/jexia/maestro/specs/types"
 	"github.com/zclconf/go-cty/cty"
 )
@@ -107,8 +108,8 @@ func ParseIntermediateInputParameterMap(ctx instance.Context, params *InputParam
 		Options: make(specs.Options),
 		Header:  make(specs.Header, len(params.Header)),
 		Property: &specs.Property{
-			Type:   types.TypeMessage,
-			Label:  types.LabelOptional,
+			Type:   types.Message,
+			Label:  labels.Optional,
 			Nested: map[string]*specs.Property{},
 		},
 	}
@@ -117,8 +118,8 @@ func ParseIntermediateInputParameterMap(ctx instance.Context, params *InputParam
 		result.Header[key] = &specs.Property{
 			Path:  key,
 			Name:  key,
-			Type:  types.TypeString,
-			Label: types.LabelOptional,
+			Type:  types.String,
+			Label: labels.Optional,
 		}
 	}
 
@@ -239,8 +240,8 @@ func ParseIntermediateParameterMap(ctx instance.Context, params *ParameterMap, f
 		Options: make(specs.Options),
 		Header:  header,
 		Property: &specs.Property{
-			Type:   types.TypeMessage,
-			Label:  types.LabelOptional,
+			Type:   types.Message,
+			Label:  labels.Optional,
 			Nested: map[string]*specs.Property{},
 		},
 	}
@@ -285,8 +286,8 @@ func ParseIntermediateNestedParameterMap(ctx instance.Context, params NestedPara
 	result := specs.Property{
 		Name:   params.Name,
 		Path:   path,
-		Type:   types.TypeMessage,
-		Label:  types.LabelOptional,
+		Type:   types.Message,
+		Label:  labels.Optional,
 		Nested: map[string]*specs.Property{},
 	}
 
@@ -327,8 +328,8 @@ func ParseIntermediateRepeatedParameterMap(ctx instance.Context, params Repeated
 		Name:      params.Name,
 		Path:      path,
 		Reference: specs.ParsePropertyReference(params.Template),
-		Type:      types.TypeMessage,
-		Label:     types.LabelOptional,
+		Type:      types.Message,
+		Label:     labels.Optional,
 		Nested:    map[string]*specs.Property{},
 	}
 
@@ -468,8 +469,8 @@ func ParseIntermediateCallParameterMap(ctx instance.Context, params *Call, funct
 		Options: make(specs.Options),
 		Header:  header,
 		Property: &specs.Property{
-			Type:   types.TypeMessage,
-			Label:  types.LabelOptional,
+			Type:   types.Message,
+			Label:  labels.Optional,
 			Nested: map[string]*specs.Property{},
 		},
 	}

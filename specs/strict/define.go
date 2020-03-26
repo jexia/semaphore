@@ -280,7 +280,7 @@ func InsideProperty(source *specs.Property, target *specs.Property) bool {
 // CheckHeader checks the given header types
 func CheckHeader(header specs.Header, flow specs.FlowManager) error {
 	for _, header := range header {
-		if header.Type != types.TypeString {
+		if header.Type != types.String {
 			return trace.New(trace.WithMessage("cannot use type %s for header.%s in flow %s", header.Type, header.Path, flow.GetName()))
 		}
 	}

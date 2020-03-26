@@ -9,13 +9,13 @@ import (
 // NewArgs construct new field config arguments for the graphql schema
 func NewArgs(prop *specs.Property) graphql.FieldConfigArgument {
 	args := graphql.FieldConfigArgument{}
-	if prop.Type == types.TypeMessage {
+	if prop.Type == types.Message {
 		if len(prop.Nested) == 0 {
 			return nil
 		}
 
 		for _, nested := range prop.Nested {
-			if nested.Type == types.TypeMessage {
+			if nested.Type == types.Message {
 				args[nested.Name] = &graphql.ArgumentConfig{
 					Type:        NewInputArgObject(nested),
 					Description: nested.Desciptor.GetComment(),
@@ -42,14 +42,14 @@ func NewArgs(prop *specs.Property) graphql.FieldConfigArgument {
 
 // NewInputArgObject constructs a new input argument object
 func NewInputArgObject(prop *specs.Property) *graphql.InputObject {
-	if prop.Type != types.TypeMessage {
+	if prop.Type != types.Message {
 		return nil
 	}
 
 	fields := map[string]*graphql.InputObjectFieldConfig{}
 
 	for _, nested := range prop.Nested {
-		if nested.Type == types.TypeMessage {
+		if nested.Type == types.Message {
 			fields[nested.Name] = &graphql.InputObjectFieldConfig{
 				Type:        NewInputArgObject(nested),
 				Description: nested.Desciptor.GetComment(),

@@ -2,6 +2,7 @@ package mock
 
 import (
 	"github.com/jexia/maestro/schema"
+	"github.com/jexia/maestro/specs/labels"
 	"github.com/jexia/maestro/specs/types"
 )
 
@@ -212,7 +213,7 @@ type Property struct {
 	Name     string
 	Comment  string               `yaml:"comment"`
 	Type     types.Type           `yaml:"type"`
-	Label    types.Label          `yaml:"label"`
+	Label    labels.Label         `yaml:"label"`
 	Position int32                `yaml:"position"`
 	Nested   map[string]*Property `yaml:"nested"`
 	Options  schema.Options       `yaml:"options"`
@@ -239,7 +240,7 @@ func (property *Property) GetType() types.Type {
 }
 
 // GetLabel returns the field label
-func (property *Property) GetLabel() types.Label {
+func (property *Property) GetLabel() labels.Label {
 	return property.Label
 }
 

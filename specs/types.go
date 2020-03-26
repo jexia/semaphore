@@ -15,18 +15,18 @@ func SetDefaultValue(ctx instance.Context, property *Property, value cty.Value) 
 	switch value.Type() {
 	case cty.String:
 		property.Default = value.AsString()
-		property.Type = types.TypeString
+		property.Type = types.String
 	case cty.Number:
 		var def int64
 		gocty.FromCtyValue(value, &def)
 
 		property.Default = def
-		property.Type = types.TypeInt64
+		property.Type = types.Int64
 	case cty.Bool:
 		var def bool
 		gocty.FromCtyValue(value, &def)
 
 		property.Default = def
-		property.Type = types.TypeBool
+		property.Type = types.Bool
 	}
 }
