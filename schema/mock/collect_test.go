@@ -1,12 +1,11 @@
 package mock
 
 import (
-	"context"
 	"path/filepath"
 	"strings"
 	"testing"
 
-	"github.com/jexia/maestro/logger"
+	"github.com/jexia/maestro/instance"
 	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/utils"
 )
@@ -29,9 +28,7 @@ func TestUnmarshalFile(t *testing.T) {
 
 	for _, file := range files {
 		t.Run(file.Name(), func(t *testing.T) {
-			ctx := context.Background()
-			ctx = logger.WithValue(ctx)
-
+			ctx := instance.NewContext()
 			path := file.Name()[:len(file.Name())-len(filepath.Ext(file.Name()))]
 
 			resolver := SchemaResolver(file.Path)

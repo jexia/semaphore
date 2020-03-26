@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/jexia/maestro/codec/json"
-	"github.com/jexia/maestro/logger"
+	"github.com/jexia/maestro/instance"
 	"github.com/jexia/maestro/metadata"
 	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/specs/types"
@@ -17,11 +17,10 @@ import (
 )
 
 func NewMockCaller() *Caller {
-	ctx := context.Background()
-	ctx = logger.WithValue(ctx)
-
-	caller := &Caller{}
-	caller.Context(ctx)
+	ctx := instance.NewContext()
+	caller := &Caller{
+		ctx: ctx,
+	}
 	return caller
 }
 

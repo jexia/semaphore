@@ -1,10 +1,10 @@
 package maestro
 
 import (
-	"context"
 	"sync"
 
 	"github.com/jexia/maestro/constructor"
+	"github.com/jexia/maestro/instance"
 	"github.com/jexia/maestro/logger"
 	"github.com/jexia/maestro/specs"
 	"github.com/jexia/maestro/transport"
@@ -12,7 +12,7 @@ import (
 
 // Client represents a maestro instance
 type Client struct {
-	ctx       context.Context
+	Ctx       instance.Context
 	Endpoints []*transport.Endpoint
 	Manifest  *specs.Manifest
 	Listeners []transport.Listener
@@ -25,7 +25,7 @@ func (client *Client) Serve() (result error) {
 	wg.Add(len(client.Listeners))
 
 	for _, listener := range client.Listeners {
-		logger.FromCtx(client.ctx, logger.Core).WithField("listener", listener.Name()).Info("serving listener")
+		client.Ctx.Logger(logger.Core).WithField("listener", listener.Name()).Info("serving listener")
 
 		go func(listener transport.Listener) {
 			defer wg.Done()
@@ -53,9 +53,7 @@ func (client *Client) Close() {
 
 // New constructs a new Maestro instance
 func New(opts ...constructor.Option) (*Client, error) {
-	ctx := context.Background()
-	ctx = logger.WithValue(ctx)
-
+	ctx := instance.NewContext()
 	options := constructor.NewOptions(ctx, opts...)
 
 	manifest, err := constructor.Specs(ctx, options)
@@ -69,7 +67,7 @@ func New(opts ...constructor.Option) (*Client, error) {
 	}
 
 	client := &Client{
-		ctx:       ctx,
+		Ctx:       ctx,
 		Endpoints: endpoints,
 		Manifest:  manifest,
 		Listeners: options.Listeners,

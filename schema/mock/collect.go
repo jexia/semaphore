@@ -1,18 +1,18 @@
 package mock
 
 import (
-	"context"
 	"io"
 	"io/ioutil"
 	"os"
 
+	"github.com/jexia/maestro/instance"
 	"github.com/jexia/maestro/schema"
 	"gopkg.in/yaml.v2"
 )
 
 // ErrResolver returns a new schema resolver which returns the given error when called
 func ErrResolver(err error) schema.Resolver {
-	return func(context.Context, *schema.Store) error {
+	return func(instance.Context, *schema.Store) error {
 		return err
 	}
 }
@@ -29,7 +29,7 @@ func SchemaResolver(path string) schema.Resolver {
 		return ErrResolver(err)
 	}
 
-	return func(ctx context.Context, schemas *schema.Store) error {
+	return func(ctx instance.Context, schemas *schema.Store) error {
 		schemas.Add(collection)
 		return nil
 	}

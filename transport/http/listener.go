@@ -1,7 +1,6 @@
 package http
 
 import (
-	"context"
 	"io"
 	"net/http"
 	"net/http/httputil"
@@ -9,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/jexia/maestro/codec"
+	"github.com/jexia/maestro/instance"
 	"github.com/jexia/maestro/logger"
 	"github.com/jexia/maestro/metadata"
 	"github.com/jexia/maestro/specs"
@@ -18,24 +18,26 @@ import (
 )
 
 // NewListener constructs a new listener for the given addr
-func NewListener(addr string, opts specs.Options) transport.Listener {
+func NewListener(addr string, opts specs.Options) transport.NewListener {
 	options, err := ParseListenerOptions(opts)
 	if err != nil {
 		// TODO: log err
 	}
 
-	return &Listener{
-		server: &http.Server{
-			Addr:         addr,
-			ReadTimeout:  options.ReadTimeout,
-			WriteTimeout: options.WriteTimeout,
-		},
+	return func(ctx instance.Context) transport.Listener {
+		return &Listener{
+			server: &http.Server{
+				Addr:         addr,
+				ReadTimeout:  options.ReadTimeout,
+				WriteTimeout: options.WriteTimeout,
+			},
+		}
 	}
 }
 
 // Listener represents a HTTP listener
 type Listener struct {
-	ctx    context.Context
+	ctx    instance.Context
 	server *http.Server
 	mutex  sync.RWMutex
 	router http.Handler
@@ -46,14 +48,9 @@ func (listener *Listener) Name() string {
 	return "http"
 }
 
-// Context sets the given context as management context
-func (listener *Listener) Context(ctx context.Context) {
-	listener.ctx = ctx
-}
-
 // Serve opens the HTTP listener and calls the given handler function on reach request
 func (listener *Listener) Serve() error {
-	logger.FromCtx(listener.ctx, logger.Transport).WithField("addr", listener.server.Addr).Info("Serving HTTP listener")
+	listener.ctx.Logger(logger.Transport).WithField("addr", listener.server.Addr).Info("Serving HTTP listener")
 
 	listener.server.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		listener.mutex.RLock()
@@ -73,7 +70,7 @@ func (listener *Listener) Serve() error {
 
 // Handle parses the given endpoints and constructs route handlers
 func (listener *Listener) Handle(endpoints []*transport.Endpoint, codecs map[string]codec.Constructor) error {
-	logger := logger.FromCtx(listener.ctx, logger.Transport)
+	logger := listener.ctx.Logger(logger.Transport)
 	logger.Info("HTTP listener received new endpoints")
 
 	router := httprouter.New()
@@ -97,7 +94,7 @@ func (listener *Listener) Handle(endpoints []*transport.Endpoint, codecs map[str
 
 // Close closes the given listener
 func (listener *Listener) Close() error {
-	logger.FromCtx(listener.ctx, logger.Transport).Info("Closing HTTP listener")
+	listener.ctx.Logger(logger.Transport).Info("Closing HTTP listener")
 	return listener.server.Close()
 }
 

@@ -1,13 +1,12 @@
 package hcl
 
 import (
-	"context"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 
-	"github.com/jexia/maestro/logger"
+	"github.com/jexia/maestro/instance"
 	"github.com/jexia/maestro/utils"
 )
 
@@ -31,9 +30,7 @@ func TestParseSpecs(t *testing.T) {
 
 	for _, file := range files {
 		t.Run(file.Name(), func(t *testing.T) {
-			ctx := context.Background()
-			ctx = logger.WithValue(ctx)
-
+			ctx := instance.NewContext()
 			clean := file.Name()[:len(file.Name())-len(filepath.Ext(file.Name()))]
 			reader, err := os.Open(file.Path)
 			if err != nil {

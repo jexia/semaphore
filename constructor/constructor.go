@@ -1,10 +1,9 @@
 package constructor
 
 import (
-	"context"
-
 	"github.com/jexia/maestro/codec"
 	"github.com/jexia/maestro/flow"
+	"github.com/jexia/maestro/instance"
 	"github.com/jexia/maestro/metadata"
 	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/specs"
@@ -14,7 +13,7 @@ import (
 )
 
 // Specs construct a specs manifest from the given options
-func Specs(ctx context.Context, options Options) (*specs.Manifest, error) {
+func Specs(ctx instance.Context, options Options) (*specs.Manifest, error) {
 	result := &specs.Manifest{}
 
 	for _, resolver := range options.Definitions {
@@ -60,7 +59,7 @@ func Specs(ctx context.Context, options Options) (*specs.Manifest, error) {
 }
 
 // FlowManager constructs the flow managers from the given specs manifest
-func FlowManager(ctx context.Context, manifest *specs.Manifest, options Options) ([]*transport.Endpoint, error) {
+func FlowManager(ctx instance.Context, manifest *specs.Manifest, options Options) ([]*transport.Endpoint, error) {
 	endpoints := make([]*transport.Endpoint, len(manifest.Endpoints))
 
 	for index, endpoint := range manifest.Endpoints {
@@ -112,7 +111,7 @@ func FlowManager(ctx context.Context, manifest *specs.Manifest, options Options)
 }
 
 // Call constructs a flow caller for the given node call.
-func Call(ctx context.Context, manifest *specs.Manifest, node *specs.Node, call *specs.Call, options Options, manager specs.FlowManager) (flow.Call, error) {
+func Call(ctx instance.Context, manifest *specs.Manifest, node *specs.Node, call *specs.Call, options Options, manager specs.FlowManager) (flow.Call, error) {
 	if call == nil {
 		return nil, nil
 	}

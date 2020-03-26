@@ -1,11 +1,10 @@
 package specs
 
 import (
-	"context"
 	"math/big"
 	"testing"
 
-	"github.com/jexia/maestro/logger"
+	"github.com/jexia/maestro/instance"
 	"github.com/jexia/maestro/specs/types"
 	"github.com/zclconf/go-cty/cty"
 )
@@ -32,9 +31,7 @@ func TestSetDefaultValue(t *testing.T) {
 	}
 
 	for input, expected := range tests {
-		ctx := context.Background()
-		ctx = logger.WithValue(ctx)
-
+		ctx := instance.NewContext()
 		property := Property{}
 		SetDefaultValue(ctx, &property, input)
 

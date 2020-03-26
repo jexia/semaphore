@@ -1,14 +1,13 @@
 package strict
 
 import (
-	"context"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/jexia/maestro/definitions/hcl"
-	"github.com/jexia/maestro/logger"
+	"github.com/jexia/maestro/instance"
 	"github.com/jexia/maestro/schema/mock"
 	"github.com/jexia/maestro/utils"
 )
@@ -31,8 +30,7 @@ func TestUnmarshalFile(t *testing.T) {
 
 	for _, file := range files {
 		t.Run(file.Name(), func(t *testing.T) {
-			ctx := context.Background()
-			ctx = logger.WithValue(ctx)
+			ctx := instance.NewContext()
 
 			reader, err := os.Open(file.Path)
 			if err != nil {

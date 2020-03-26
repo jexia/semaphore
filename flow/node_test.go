@@ -4,15 +4,15 @@ import (
 	"context"
 	"testing"
 
+	"github.com/jexia/maestro/instance"
 	"github.com/jexia/maestro/logger"
 	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/specs"
 )
 
 func NewMockNode(name string, caller Call, rollback Call) *Node {
-	ctx := context.Background()
-	ctx = logger.WithValue(ctx)
-	logger := logger.FromCtx(ctx, logger.Flow)
+	ctx := instance.NewContext()
+	logger := ctx.Logger(logger.Flow)
 
 	return &Node{
 		ctx:        ctx,

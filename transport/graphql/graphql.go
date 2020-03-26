@@ -8,6 +8,7 @@ import (
 
 	"github.com/graphql-go/graphql"
 	"github.com/jexia/maestro/codec"
+	"github.com/jexia/maestro/instance"
 	"github.com/jexia/maestro/logger"
 	"github.com/jexia/maestro/specs"
 	"github.com/jexia/maestro/transport"
@@ -24,17 +25,20 @@ type req struct {
 }
 
 // NewListener constructs a new listener for the given addr
-func NewListener(addr string, opts specs.Options) transport.Listener {
-	return &Listener{
-		server: &http.Server{
-			Addr: addr,
-		},
+func NewListener(addr string, opts specs.Options) transport.NewListener {
+	return func(ctx instance.Context) transport.Listener {
+		return &Listener{
+			ctx: ctx,
+			server: &http.Server{
+				Addr: addr,
+			},
+		}
 	}
 }
 
 // Listener represents a GraphQL listener
 type Listener struct {
-	ctx    context.Context
+	ctx    instance.Context
 	schema graphql.Schema
 	mutex  sync.RWMutex
 	server *http.Server
@@ -43,11 +47,6 @@ type Listener struct {
 // Name returns the name of the given listener
 func (listener *Listener) Name() string {
 	return "graphql"
-}
-
-// Context sets the given contexts as the management context for the given GraphQL listener
-func (listener *Listener) Context(ctx context.Context) {
-	listener.ctx = ctx
 }
 
 // Serve opens the GraphQL listener and calls the given handler function on reach request
@@ -165,6 +164,6 @@ func (listener *Listener) Handle(endpoints []*transport.Endpoint, constructors m
 
 // Close closes the given listener
 func (listener *Listener) Close() error {
-	logger.FromCtx(listener.ctx, logger.Transport).Info("Closing GraphQL listener")
+	listener.ctx.Logger(logger.Transport).Info("Closing GraphQL listener")
 	return listener.server.Close()
 }

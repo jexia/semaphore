@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/jexia/maestro/instance"
 	"github.com/jexia/maestro/logger"
 	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/schema"
@@ -18,20 +19,17 @@ import (
 )
 
 // NewCaller constructs a new HTTP caller
-func NewCaller() *Caller {
-	return &Caller{
-		ctx: context.Background(),
+func NewCaller() transport.NewCaller {
+	return func(ctx instance.Context) transport.Caller {
+		return &Caller{
+			ctx: ctx,
+		}
 	}
 }
 
 // Caller represents the caller constructor
 type Caller struct {
-	ctx context.Context
-}
-
-// Context sets the given context as the active management context
-func (caller *Caller) Context(ctx context.Context) {
-	caller.ctx = ctx
+	ctx instance.Context
 }
 
 // Name returns the name of the given caller
@@ -41,7 +39,7 @@ func (caller *Caller) Name() string {
 
 // Dial constructs a new caller for the given host
 func (caller *Caller) Dial(schema schema.Service, functions specs.CustomDefinedFunctions, opts schema.Options) (transport.Call, error) {
-	logger := logger.FromCtx(caller.ctx, logger.Transport)
+	logger := caller.ctx.Logger(logger.Transport)
 	logger.WithFields(logrus.Fields{
 		"service": schema.GetName(),
 		"host":    schema.GetHost(),
@@ -109,7 +107,7 @@ func (method *Method) References() []*specs.Property {
 
 // Call represents the HTTP caller implementation
 type Call struct {
-	ctx     context.Context
+	ctx     instance.Context
 	logger  *logrus.Logger
 	service string
 	host    string

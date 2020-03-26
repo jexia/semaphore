@@ -1,14 +1,13 @@
 package validate
 
 import (
-	"context"
-
 	"github.com/jexia/maestro"
 	"github.com/jexia/maestro/cmd/maestro/config"
 	"github.com/jexia/maestro/codec/json"
 	"github.com/jexia/maestro/codec/proto"
 	"github.com/jexia/maestro/constructor"
 	"github.com/jexia/maestro/definitions/hcl"
+	"github.com/jexia/maestro/instance"
 	"github.com/jexia/maestro/logger"
 	"github.com/jexia/maestro/schema/protoc"
 	"github.com/jexia/maestro/transport/http"
@@ -58,7 +57,7 @@ func run(cmd *cobra.Command, args []string) error {
 		options = append(options, maestro.WithSchema(resolver))
 	}
 
-	ctx := context.Background()
+	ctx := instance.NewContext()
 	_, err = constructor.Specs(ctx, constructor.NewOptions(ctx, options...))
 	if err != nil {
 		return err
