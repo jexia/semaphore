@@ -21,7 +21,6 @@ var (
 
 // Modules holds all logging modules
 var Modules = []Module{
-	Global,
 	Core,
 	Flow,
 	Transport,
