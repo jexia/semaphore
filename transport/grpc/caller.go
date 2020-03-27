@@ -78,22 +78,6 @@ func (caller *Caller) Dial(schema schema.Service, functions specs.CustomDefinedF
 	return result, nil
 }
 
-// Method represents a service method
-type Method struct {
-	name string
-	fqn  string
-}
-
-// GetName returns the method name
-func (method *Method) GetName() string {
-	return method.name
-}
-
-// References returns the available method references
-func (method *Method) References() []*specs.Property {
-	return make([]*specs.Property, 0)
-}
-
 // Call represents the HTTP caller implementation
 type Call struct {
 	ctx     instance.Context

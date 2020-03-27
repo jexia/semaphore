@@ -16,6 +16,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
+	rpb "google.golang.org/grpc/reflection/grpc_reflection_v1alpha"
 )
 
 // NewListener constructs a new listener for the given addr
@@ -35,11 +36,12 @@ func NewListener(addr string, opts specs.Options) transport.NewListener {
 
 // Listener represents a HTTP listener
 type Listener struct {
-	addr      string
-	ctx       instance.Context
-	server    *grpc.Server
-	endpoints map[string]*Endpoint
-	mutex     sync.RWMutex
+	addr     string
+	ctx      instance.Context
+	server   *grpc.Server
+	methods  map[string]*Method
+	services map[string]*Service
+	mutex    sync.RWMutex
 }
 
 // Name returns the name of the given listener
@@ -55,6 +57,8 @@ func (listener *Listener) Serve() error {
 		grpc.CustomCodec(Codec()),
 		grpc.UnknownServiceHandler(listener.handler),
 	)
+
+	rpb.RegisterServerReflectionServer(listener.server, listener)
 
 	lis, err := net.Listen("tcp", listener.addr)
 	if err != nil {
@@ -75,7 +79,8 @@ func (listener *Listener) Handle(endpoints []*transport.Endpoint, codecs map[str
 	logger.Info("gRPC listener received new endpoints")
 
 	constructor := proto.NewConstructor()
-	result := make(map[string]*Endpoint, len(endpoints))
+	methods := make(map[string]*Method, len(endpoints))
+	services := map[string]*Service{}
 
 	for _, endpoint := range endpoints {
 		options, err := ParseEndpointOptions(endpoint)
@@ -83,37 +88,78 @@ func (listener *Listener) Handle(endpoints []*transport.Endpoint, codecs map[str
 			return err
 		}
 
-		in, err := constructor.New(specs.InputResource, endpoint.Request)
+		req, err := constructor.New(specs.InputResource, endpoint.Request)
 		if err != nil {
 			return err
 		}
 
-		out, err := constructor.New(specs.OutputResource, endpoint.Response)
+		res, err := constructor.New(specs.OutputResource, endpoint.Response)
 		if err != nil {
 			return err
 		}
 
-		method := fmt.Sprintf("/%s.%s/%s", options.Package, options.Service, options.Method)
-		result[method] = &Endpoint{
-			name: method,
+		service := fmt.Sprintf("%s.%s", options.Package, options.Service)
+		name := fmt.Sprintf("%s/%s", service, options.Method)
+
+		methods[name] = &Method{
+			fqn:  name,
+			name: options.Method,
 			flow: endpoint.Flow,
-			in:   in,
-			out:  out,
+			in:   endpoint.Request,
+			req:  req,
+			out:  endpoint.Response,
+			res:  res,
+		}
+
+		if services[service] == nil {
+			services[service] = &Service{
+				pkg:     options.Package,
+				name:    options.Service,
+				methods: map[string]*Method{},
+			}
+		}
+
+		services[service].methods[name] = methods[name]
+	}
+
+	file := proto.NewFile("maestro")
+	file.Package = "maestro.greeter"
+
+	for _, service := range services {
+		methods := make(proto.Methods, len(service.methods))
+
+		for key, method := range service.methods {
+			methods[key] = method
+		}
+
+		err := proto.NewServiceDescriptor(file, service.name, methods)
+		if err != nil {
+			return err
 		}
 	}
 
+	result, err := file.Build()
+	if err != nil {
+		return err
+	}
+
+	for _, service := range services {
+		service.file = result.AsFileDescriptorProto()
+	}
+
 	listener.mutex.Lock()
-	listener.endpoints = result
+	listener.methods = methods
+	listener.services = services
 	listener.mutex.Unlock()
 
 	return nil
 }
 
-func (listener *Listener) handler(_ interface{}, stream grpc.ServerStream) error {
+func (listener *Listener) handler(srv interface{}, stream grpc.ServerStream) error {
 	listener.mutex.RLock()
 	defer listener.mutex.RUnlock()
 
-	method, ok := grpc.MethodFromServerStream(stream)
+	fqn, ok := grpc.MethodFromServerStream(stream)
 	if !ok {
 		return grpc.Errorf(codes.Internal, "low level server stream not exists in context")
 	}
@@ -123,9 +169,9 @@ func (listener *Listener) handler(_ interface{}, stream grpc.ServerStream) error
 		// TODO: support header values
 	}
 
-	endpoint := listener.endpoints[method]
-	if endpoint == nil {
-		return grpc.Errorf(codes.Unimplemented, "unknown method: %s", method)
+	method := listener.methods[fqn[1:]]
+	if method == nil {
+		return grpc.Errorf(codes.Unimplemented, "unknown method: %s", fqn)
 	}
 
 	req := &frame{}
@@ -134,18 +180,18 @@ func (listener *Listener) handler(_ interface{}, stream grpc.ServerStream) error
 		return err
 	}
 
-	store := endpoint.flow.NewStore()
-	err = endpoint.in.Unmarshal(bytes.NewBuffer(req.payload), store)
+	store := method.flow.NewStore()
+	err = method.req.Unmarshal(bytes.NewBuffer(req.payload), store)
 	if err != nil {
 		return grpc.Errorf(codes.ResourceExhausted, "invalid message body: %s", err)
 	}
 
-	err = endpoint.flow.Call(stream.Context(), store)
+	err = method.flow.Call(stream.Context(), store)
 	if err != nil {
 		return grpc.Errorf(codes.Internal, "unkown error: %s", err)
 	}
 
-	reader, err := endpoint.out.Marshal(store)
+	reader, err := method.res.Marshal(store)
 	if err != nil {
 		return grpc.Errorf(codes.ResourceExhausted, "invalid response body: %s", err)
 	}
@@ -174,12 +220,4 @@ func (listener *Listener) Close() error {
 	listener.ctx.Logger(logger.Transport).Info("Closing gRPC listener")
 	listener.server.GracefulStop()
 	return nil
-}
-
-// Endpoint represents a gRPC endpoint
-type Endpoint struct {
-	name string
-	flow transport.Flow
-	in   codec.Manager
-	out  codec.Manager
 }
