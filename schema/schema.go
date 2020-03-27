@@ -1,8 +1,8 @@
 package schema
 
 import (
-	"context"
-
+	"github.com/jexia/maestro/instance"
+	"github.com/jexia/maestro/specs/labels"
 	"github.com/jexia/maestro/specs/types"
 )
 
@@ -60,10 +60,10 @@ type Property interface {
 	GetComment() string
 	GetPosition() int32
 	GetType() types.Type
-	GetLabel() types.Label
+	GetLabel() labels.Label
 	GetNested() map[string]Property
 	GetOptions() Options
 }
 
 // Resolver when called collects the available schema(s) with the configured configuration
-type Resolver func(context.Context, *Store) error
+type Resolver func(instance.Context, *Store) error

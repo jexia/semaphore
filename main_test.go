@@ -1,13 +1,13 @@
 package maestro
 
 import (
-	"context"
 	"path/filepath"
 	"testing"
 
 	"github.com/jexia/maestro/codec/json"
 	"github.com/jexia/maestro/constructor"
 	"github.com/jexia/maestro/definitions/hcl"
+	"github.com/jexia/maestro/instance"
 	"github.com/jexia/maestro/schema/mock"
 	"github.com/jexia/maestro/specs"
 	"github.com/jexia/maestro/transport/http"
@@ -19,7 +19,7 @@ func TestOptions(t *testing.T) {
 		"cdf": nil,
 	}
 
-	ctx := context.Background()
+	ctx := instance.NewContext()
 	options := constructor.NewOptions(ctx, WithFunctions(functions))
 
 	if len(options.Functions) != len(functions) {

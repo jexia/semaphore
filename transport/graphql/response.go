@@ -3,23 +3,24 @@ package graphql
 import (
 	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/specs"
+	"github.com/jexia/maestro/specs/labels"
 	"github.com/jexia/maestro/specs/types"
 )
 
 // ResponseValue constructs the response value send back to the client
 func ResponseValue(specs *specs.Property, refs *refs.Store) (interface{}, error) {
-	if specs.Type != types.TypeMessage {
+	if specs.Type != types.Message {
 		return nil, ErrInvalidObject
 	}
 
 	result := make(map[string]interface{}, len(specs.Nested))
 	for _, nested := range specs.Nested {
-		if nested.Label == types.LabelRepeated {
+		if nested.Label == labels.Repeated {
 			store := refs.Load(nested.Reference.Resource, nested.Reference.Path)
 			repeating := make([]interface{}, len(store.Repeated))
 
 			for index, store := range store.Repeated {
-				if nested.Type == types.TypeMessage {
+				if nested.Type == types.Message {
 					value, err := ResponseValue(nested, store)
 					if err != nil {
 						return nil, err
@@ -36,7 +37,7 @@ func ResponseValue(specs *specs.Property, refs *refs.Store) (interface{}, error)
 			continue
 		}
 
-		if nested.Type == types.TypeMessage {
+		if nested.Type == types.Message {
 			value, err := ResponseValue(nested, refs)
 			if err != nil {
 				return nil, err

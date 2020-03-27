@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 
+	"github.com/jexia/maestro/instance"
 	"github.com/jexia/maestro/logger"
 	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/schema"
@@ -29,17 +30,18 @@ type Service interface {
 }
 
 // New constructs a new go micro transport wrapper
-func New(name string, service Service) *Caller {
-	return &Caller{
-		ctx:     context.Background(),
-		name:    name,
-		service: service,
+func New(name string, service Service) transport.NewCaller {
+	return func(ctx instance.Context) transport.Caller {
+		return &Caller{
+			name:    name,
+			service: service,
+		}
 	}
 }
 
 // Caller represents the caller constructor
 type Caller struct {
-	ctx     context.Context
+	ctx     instance.Context
 	name    string
 	service Service
 }
@@ -47,11 +49,6 @@ type Caller struct {
 // Name returns the name of the given caller
 func (caller *Caller) Name() string {
 	return caller.name
-}
-
-// Context returns the caller context
-func (caller *Caller) Context(ctx context.Context) {
-	caller.ctx = ctx
 }
 
 // Dial constructs a new caller for the given service
@@ -100,7 +97,7 @@ func (method *Method) References() []*specs.Property {
 
 // Call represents the go micro transport wrapper implementation
 type Call struct {
-	ctx     context.Context
+	ctx     instance.Context
 	pkg     string
 	service string
 	client  client.Client
@@ -170,6 +167,6 @@ func (call *Call) SendMsg(ctx context.Context, rw transport.ResponseWriter, pr *
 
 // Close closes the given caller
 func (call *Call) Close() error {
-	logger.FromCtx(call.ctx, logger.Transport).Info("Closing go micro caller")
+	call.ctx.Logger(logger.Transport).Info("Closing go micro caller")
 	return nil
 }

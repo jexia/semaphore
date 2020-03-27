@@ -1,18 +1,18 @@
 package hcl
 
 import (
-	"context"
-
 	"github.com/hashicorp/hcl/v2"
+	"github.com/jexia/maestro/instance"
 	"github.com/jexia/maestro/logger"
 	"github.com/jexia/maestro/specs"
+	"github.com/jexia/maestro/specs/labels"
 	"github.com/jexia/maestro/specs/types"
 	"github.com/zclconf/go-cty/cty"
 )
 
 // ParseSpecs parses the given intermediate manifest to a specs manifest
-func ParseSpecs(ctx context.Context, manifest Manifest, functions specs.CustomDefinedFunctions) (*specs.Manifest, error) {
-	logger.FromCtx(ctx, logger.Core).Info("Parsing intermediate manifest to specs")
+func ParseSpecs(ctx instance.Context, manifest Manifest, functions specs.CustomDefinedFunctions) (*specs.Manifest, error) {
+	ctx.Logger(logger.Core).Info("Parsing intermediate manifest to specs")
 
 	result := &specs.Manifest{
 		Endpoints: make([]*specs.Endpoint, len(manifest.Endpoints)),
@@ -46,8 +46,8 @@ func ParseSpecs(ctx context.Context, manifest Manifest, functions specs.CustomDe
 }
 
 // ParseIntermediateEndpoint parses the given intermediate endpoint to a specs endpoint
-func ParseIntermediateEndpoint(ctx context.Context, endpoint Endpoint) *specs.Endpoint {
-	logger.FromCtx(ctx, logger.Core).WithField("flow", endpoint.Flow).Debug("Parsing intermediate endpoint to specs")
+func ParseIntermediateEndpoint(ctx instance.Context, endpoint Endpoint) *specs.Endpoint {
+	ctx.Logger(logger.Core).WithField("flow", endpoint.Flow).Debug("Parsing intermediate endpoint to specs")
 
 	result := specs.Endpoint{
 		Options:  ParseIntermediateSpecOptions(endpoint.Options),
@@ -59,8 +59,8 @@ func ParseIntermediateEndpoint(ctx context.Context, endpoint Endpoint) *specs.En
 }
 
 // ParseIntermediateFlow parses the given intermediate flow to a specs flow
-func ParseIntermediateFlow(ctx context.Context, flow Flow, functions specs.CustomDefinedFunctions) (*specs.Flow, error) {
-	logger.FromCtx(ctx, logger.Core).WithField("flow", flow.Name).Debug("Parsing intermediate flow to specs")
+func ParseIntermediateFlow(ctx instance.Context, flow Flow, functions specs.CustomDefinedFunctions) (*specs.Flow, error) {
+	ctx.Logger(logger.Core).WithField("flow", flow.Name).Debug("Parsing intermediate flow to specs")
 
 	input, err := ParseIntermediateInputParameterMap(ctx, flow.Input, functions)
 	if err != nil {
@@ -97,7 +97,7 @@ func ParseIntermediateFlow(ctx context.Context, flow Flow, functions specs.Custo
 }
 
 // ParseIntermediateInputParameterMap parses the given input parameter map
-func ParseIntermediateInputParameterMap(ctx context.Context, params *InputParameterMap, functions specs.CustomDefinedFunctions) (*specs.ParameterMap, error) {
+func ParseIntermediateInputParameterMap(ctx instance.Context, params *InputParameterMap, functions specs.CustomDefinedFunctions) (*specs.ParameterMap, error) {
 	if params == nil {
 		return nil, nil
 	}
@@ -108,8 +108,8 @@ func ParseIntermediateInputParameterMap(ctx context.Context, params *InputParame
 		Options: make(specs.Options),
 		Header:  make(specs.Header, len(params.Header)),
 		Property: &specs.Property{
-			Type:   types.TypeMessage,
-			Label:  types.LabelOptional,
+			Type:   types.Message,
+			Label:  labels.Optional,
 			Nested: map[string]*specs.Property{},
 		},
 	}
@@ -118,8 +118,8 @@ func ParseIntermediateInputParameterMap(ctx context.Context, params *InputParame
 		result.Header[key] = &specs.Property{
 			Path:  key,
 			Name:  key,
-			Type:  types.TypeString,
-			Label: types.LabelOptional,
+			Type:  types.String,
+			Label: labels.Optional,
 		}
 	}
 
@@ -159,7 +159,7 @@ func ParseIntermediateInputParameterMap(ctx context.Context, params *InputParame
 }
 
 // ParseIntermediateProxy parses the given intermediate proxy to a specs proxy
-func ParseIntermediateProxy(ctx context.Context, proxy Proxy, functions specs.CustomDefinedFunctions) (*specs.Proxy, error) {
+func ParseIntermediateProxy(ctx instance.Context, proxy Proxy, functions specs.CustomDefinedFunctions) (*specs.Proxy, error) {
 	forward, err := ParseIntermediateProxyForward(ctx, proxy.Forward, functions)
 	if err != nil {
 		return nil, err
@@ -189,7 +189,7 @@ func ParseIntermediateProxy(ctx context.Context, proxy Proxy, functions specs.Cu
 }
 
 // ParseIntermediateProxyForward parses the given intermediate proxy forward to a specs proxy forward
-func ParseIntermediateProxyForward(ctx context.Context, proxy ProxyForward, functions specs.CustomDefinedFunctions) (*specs.Call, error) {
+func ParseIntermediateProxyForward(ctx instance.Context, proxy ProxyForward, functions specs.CustomDefinedFunctions) (*specs.Call, error) {
 	result := specs.Call{
 		Service: proxy.Service,
 		Request: &specs.ParameterMap{},
@@ -224,7 +224,7 @@ func ParseIntermediateInputRepeatedParameterMap(repeated InputRepeatedParameterM
 }
 
 // ParseIntermediateParameterMap parses the given intermediate parameter map to a spec parameter map
-func ParseIntermediateParameterMap(ctx context.Context, params *ParameterMap, functions specs.CustomDefinedFunctions) (*specs.ParameterMap, error) {
+func ParseIntermediateParameterMap(ctx instance.Context, params *ParameterMap, functions specs.CustomDefinedFunctions) (*specs.ParameterMap, error) {
 	if params == nil {
 		return nil, nil
 	}
@@ -240,8 +240,8 @@ func ParseIntermediateParameterMap(ctx context.Context, params *ParameterMap, fu
 		Options: make(specs.Options),
 		Header:  header,
 		Property: &specs.Property{
-			Type:   types.TypeMessage,
-			Label:  types.LabelOptional,
+			Type:   types.Message,
+			Label:  labels.Optional,
 			Nested: map[string]*specs.Property{},
 		},
 	}
@@ -281,13 +281,13 @@ func ParseIntermediateParameterMap(ctx context.Context, params *ParameterMap, fu
 }
 
 // ParseIntermediateNestedParameterMap parses the given intermediate parameter map to a spec parameter map
-func ParseIntermediateNestedParameterMap(ctx context.Context, params NestedParameterMap, functions specs.CustomDefinedFunctions, path string) (*specs.Property, error) {
+func ParseIntermediateNestedParameterMap(ctx instance.Context, params NestedParameterMap, functions specs.CustomDefinedFunctions, path string) (*specs.Property, error) {
 	properties, _ := params.Properties.JustAttributes()
 	result := specs.Property{
 		Name:   params.Name,
 		Path:   path,
-		Type:   types.TypeMessage,
-		Label:  types.LabelOptional,
+		Type:   types.Message,
+		Label:  labels.Optional,
 		Nested: map[string]*specs.Property{},
 	}
 
@@ -322,14 +322,14 @@ func ParseIntermediateNestedParameterMap(ctx context.Context, params NestedParam
 }
 
 // ParseIntermediateRepeatedParameterMap parses the given intermediate repeated parameter map to a spec repeated parameter map
-func ParseIntermediateRepeatedParameterMap(ctx context.Context, params RepeatedParameterMap, functions specs.CustomDefinedFunctions, path string) (*specs.Property, error) {
+func ParseIntermediateRepeatedParameterMap(ctx instance.Context, params RepeatedParameterMap, functions specs.CustomDefinedFunctions, path string) (*specs.Property, error) {
 	properties, _ := params.Properties.JustAttributes()
 	result := specs.Property{
 		Name:      params.Name,
 		Path:      path,
 		Reference: specs.ParsePropertyReference(params.Template),
-		Type:      types.TypeMessage,
-		Label:     types.LabelOptional,
+		Type:      types.Message,
+		Label:     labels.Optional,
 		Nested:    map[string]*specs.Property{},
 	}
 
@@ -364,7 +364,7 @@ func ParseIntermediateRepeatedParameterMap(ctx context.Context, params RepeatedP
 }
 
 // ParseIntermediateHeader parses the given intermediate header to a spec header
-func ParseIntermediateHeader(ctx context.Context, header *Header, functions specs.CustomDefinedFunctions) (specs.Header, error) {
+func ParseIntermediateHeader(ctx instance.Context, header *Header, functions specs.CustomDefinedFunctions) (specs.Header, error) {
 	if header == nil {
 		return nil, nil
 	}
@@ -406,7 +406,7 @@ func ParseIntermediateSpecOptions(options hcl.Body) specs.Options {
 }
 
 // ParseIntermediateNode parses the given intermediate call to a spec call
-func ParseIntermediateNode(ctx context.Context, node Node, functions specs.CustomDefinedFunctions) (*specs.Node, error) {
+func ParseIntermediateNode(ctx instance.Context, node Node, functions specs.CustomDefinedFunctions) (*specs.Node, error) {
 	call, err := ParseIntermediateCall(ctx, node.Request, functions)
 	if err != nil {
 		return nil, err
@@ -433,7 +433,7 @@ func ParseIntermediateNode(ctx context.Context, node Node, functions specs.Custo
 }
 
 // ParseIntermediateCall parses the given intermediate call to a spec call
-func ParseIntermediateCall(ctx context.Context, call *Call, functions specs.CustomDefinedFunctions) (*specs.Call, error) {
+func ParseIntermediateCall(ctx instance.Context, call *Call, functions specs.CustomDefinedFunctions) (*specs.Call, error) {
 	if call == nil {
 		return nil, nil
 	}
@@ -453,7 +453,7 @@ func ParseIntermediateCall(ctx context.Context, call *Call, functions specs.Cust
 }
 
 // ParseIntermediateCallParameterMap parses the given intermediate parameter map to a spec parameter map
-func ParseIntermediateCallParameterMap(ctx context.Context, params *Call, functions specs.CustomDefinedFunctions) (*specs.ParameterMap, error) {
+func ParseIntermediateCallParameterMap(ctx instance.Context, params *Call, functions specs.CustomDefinedFunctions) (*specs.ParameterMap, error) {
 	if params == nil {
 		return nil, nil
 	}
@@ -469,8 +469,8 @@ func ParseIntermediateCallParameterMap(ctx context.Context, params *Call, functi
 		Options: make(specs.Options),
 		Header:  header,
 		Property: &specs.Property{
-			Type:   types.TypeMessage,
-			Label:  types.LabelOptional,
+			Type:   types.Message,
+			Label:  labels.Optional,
 			Nested: map[string]*specs.Property{},
 		},
 	}
@@ -510,12 +510,12 @@ func ParseIntermediateCallParameterMap(ctx context.Context, params *Call, functi
 }
 
 // ParseIntermediateProperty parses the given intermediate property to a spec property
-func ParseIntermediateProperty(ctx context.Context, path string, functions specs.CustomDefinedFunctions, property *hcl.Attribute) (*specs.Property, error) {
+func ParseIntermediateProperty(ctx instance.Context, path string, functions specs.CustomDefinedFunctions, property *hcl.Attribute) (*specs.Property, error) {
 	if property == nil {
 		return nil, nil
 	}
 
-	logger.FromCtx(ctx, logger.Core).WithField("path", path).Debug("Parsing intermediate property to specs")
+	ctx.Logger(logger.Core).WithField("path", path).Debug("Parsing intermediate property to specs")
 
 	value, _ := property.Expr.Value(nil)
 	result := &specs.Property{

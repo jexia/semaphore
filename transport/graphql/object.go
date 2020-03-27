@@ -5,6 +5,7 @@ import (
 
 	"github.com/graphql-go/graphql"
 	"github.com/jexia/maestro/specs"
+	"github.com/jexia/maestro/specs/labels"
 	"github.com/jexia/maestro/specs/trace"
 	"github.com/jexia/maestro/specs/types"
 )
@@ -14,13 +15,13 @@ var ErrInvalidObject = errors.New("graphql only supports object types as root el
 
 // NewObject constructs a new graphql object of the given specs
 func NewObject(name string, prop *specs.Property) (*graphql.Object, error) {
-	if prop.Type != types.TypeMessage {
+	if prop.Type != types.Message {
 		return nil, ErrInvalidObject
 	}
 
 	fields := graphql.Fields{}
 	for _, nested := range prop.Nested {
-		if nested.Type == types.TypeMessage {
+		if nested.Type == types.Message {
 			field := &graphql.Field{
 				Description: nested.Desciptor.GetComment(),
 			}
@@ -30,7 +31,7 @@ func NewObject(name string, prop *specs.Property) (*graphql.Object, error) {
 				return nil, err
 			}
 
-			if nested.Label == types.LabelRepeated {
+			if nested.Label == labels.Repeated {
 				field.Type = graphql.NewList(object)
 			} else {
 				field.Type = object
@@ -45,7 +46,7 @@ func NewObject(name string, prop *specs.Property) (*graphql.Object, error) {
 		}
 
 		typ := gtypes[nested.Type]
-		if nested.Label == types.LabelRepeated {
+		if nested.Label == labels.Repeated {
 			field.Type = graphql.NewList(typ)
 		} else {
 			field.Type = typ

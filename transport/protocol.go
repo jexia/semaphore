@@ -5,6 +5,7 @@ import (
 	"io"
 
 	"github.com/jexia/maestro/codec"
+	"github.com/jexia/maestro/instance"
 	"github.com/jexia/maestro/metadata"
 	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/schema"
@@ -38,10 +39,12 @@ func (collection Callers) Get(name string) Caller {
 	return nil
 }
 
+// NewCaller constructs a new caller with the given context
+type NewCaller func(ctx instance.Context) Caller
+
 // Caller constructs new calls which could be used to call services
 type Caller interface {
 	Name() string
-	Context(context.Context)
 	Dial(schema schema.Service, functions specs.CustomDefinedFunctions, options schema.Options) (Call, error)
 }
 
@@ -91,10 +94,12 @@ type Endpoint struct {
 	Options  specs.Options
 }
 
+// NewListener constructs a new listener with the given context
+type NewListener func(ctx instance.Context) Listener
+
 // Listener specifies the listener implementation
 type Listener interface {
 	Name() string
-	Context(context.Context)
 	Serve() error
 	Close() error
 	Handle([]*Endpoint, map[string]codec.Constructor) error

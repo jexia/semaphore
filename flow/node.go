@@ -3,6 +3,7 @@ package flow
 import (
 	"context"
 
+	"github.com/jexia/maestro/instance"
 	"github.com/jexia/maestro/logger"
 	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/specs"
@@ -12,7 +13,7 @@ import (
 // NewNode constructs a new node for the given call.
 // The service called inside the call endpoint is retrieved from the services collection.
 // The call, codec and rollback are defined inside the node and used while processing requests.
-func NewNode(ctx context.Context, node *specs.Node, call, rollback Call) *Node {
+func NewNode(ctx instance.Context, node *specs.Node, call, rollback Call) *Node {
 	references := refs.References{}
 
 	if node.Call != nil {
@@ -31,7 +32,7 @@ func NewNode(ctx context.Context, node *specs.Node, call, rollback Call) *Node {
 		}
 	}
 
-	logger := logger.FromCtx(ctx, logger.Flow)
+	logger := ctx.Logger(logger.Flow)
 
 	return &Node{
 		ctx:        ctx,
@@ -62,7 +63,7 @@ func (nodes Nodes) Has(name string) bool {
 
 // Node represents a collection of callers and rollbacks which could be executed parallel.
 type Node struct {
-	ctx        context.Context
+	ctx        instance.Context
 	logger     *logrus.Logger
 	Name       string
 	Previous   Nodes
@@ -122,7 +123,7 @@ func (node *Node) Revert(ctx context.Context, tracker *Tracker, processes *Proce
 	node.logger.WithField("node", node.Name).Debug("Executing node revert")
 
 	if !tracker.Met(node.Next...) {
-		logger.FromCtx(node.ctx, logger.Flow).WithField("node", node.Name).Debug("Has not met dependencies yet")
+		node.ctx.Logger(logger.Flow).WithField("node", node.Name).Debug("Has not met dependencies yet")
 		return
 	}
 

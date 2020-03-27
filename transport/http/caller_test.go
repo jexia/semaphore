@@ -9,19 +9,19 @@ import (
 	"testing"
 
 	"github.com/jexia/maestro/codec/json"
-	"github.com/jexia/maestro/logger"
+	"github.com/jexia/maestro/instance"
 	"github.com/jexia/maestro/metadata"
 	"github.com/jexia/maestro/refs"
+	"github.com/jexia/maestro/specs/labels"
 	"github.com/jexia/maestro/specs/types"
 	"github.com/jexia/maestro/transport"
 )
 
 func NewMockCaller() *Caller {
-	ctx := context.Background()
-	ctx = logger.WithValue(ctx)
-
-	caller := &Caller{}
-	caller.Context(ctx)
+	ctx := instance.NewContext()
+	caller := &Caller{
+		ctx: ctx,
+	}
 	return caller
 }
 
@@ -157,8 +157,8 @@ func TestCallerReferencesLookup(t *testing.T) {
 		t.Fatalf("unexpected references %+v", references)
 	}
 
-	references[0].Type = types.TypeString
-	references[0].Label = types.LabelOptional
+	references[0].Type = types.String
+	references[0].Label = labels.Optional
 
 	store := refs.NewStore(1)
 	ctx := context.Background()

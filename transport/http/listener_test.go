@@ -11,7 +11,7 @@ import (
 	"github.com/jexia/maestro/codec"
 	"github.com/jexia/maestro/codec/json"
 	"github.com/jexia/maestro/flow"
-	"github.com/jexia/maestro/logger"
+	"github.com/jexia/maestro/instance"
 	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/specs"
 	"github.com/jexia/maestro/transport"
@@ -20,11 +20,9 @@ import (
 func NewMockListener(t *testing.T, nodes flow.Nodes) (transport.Listener, int) {
 	port := AvailablePort(t)
 	addr := fmt.Sprintf(":%d", port)
-	listener := NewListener(addr, nil)
 
-	ctx := context.Background()
-	ctx = logger.WithValue(ctx)
-	listener.Context(ctx)
+	ctx := instance.NewContext()
+	listener := NewListener(addr, nil)(ctx)
 
 	json := json.NewConstructor()
 	constructors := map[string]codec.Constructor{
@@ -49,9 +47,7 @@ func NewMockListener(t *testing.T, nodes flow.Nodes) (transport.Listener, int) {
 }
 
 func TestListener(t *testing.T) {
-	ctx := context.Background()
-	ctx = logger.WithValue(ctx)
-
+	ctx := instance.NewContext()
 	specs := &specs.Node{
 		Name: "first",
 	}
@@ -149,9 +145,7 @@ func TestPathReferences(t *testing.T) {
 	listener, port := NewMockListener(t, nodes)
 	defer listener.Close()
 
-	ctx := context.Background()
-	ctx = logger.WithValue(ctx)
-
+	ctx := instance.NewContext()
 	endpoints := []*transport.Endpoint{
 		{
 			Flow: flow.NewManager(ctx, "test", nodes),

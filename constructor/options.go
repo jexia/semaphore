@@ -1,9 +1,8 @@
 package constructor
 
 import (
-	"context"
-
 	"github.com/jexia/maestro/codec"
+	"github.com/jexia/maestro/instance"
 	"github.com/jexia/maestro/logger"
 	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/specs"
@@ -15,7 +14,7 @@ type Option func(*Options)
 
 // Options represents all the available options
 type Options struct {
-	Ctx         context.Context
+	Ctx         instance.Context
 	Definitions []specs.Resolver
 	Codec       map[string]codec.Constructor
 	Callers     transport.Callers
@@ -26,7 +25,7 @@ type Options struct {
 }
 
 // NewOptions constructs a options object from the given option constructors
-func NewOptions(ctx context.Context, options ...Option) Options {
+func NewOptions(ctx instance.Context, options ...Option) Options {
 	result := Options{
 		Ctx:         ctx,
 		Definitions: make([]specs.Resolver, 0),
@@ -56,18 +55,16 @@ func WithCodec(constructor codec.Constructor) Option {
 }
 
 // WithCaller appends the given caller to the collection of available callers
-func WithCaller(caller transport.Caller) Option {
+func WithCaller(caller transport.NewCaller) Option {
 	return func(options *Options) {
-		caller.Context(options.Ctx)
-		options.Callers = append(options.Callers, caller)
+		options.Callers = append(options.Callers, caller(options.Ctx))
 	}
 }
 
 // WithListener appends the given listener to the collection of available listeners
-func WithListener(listener transport.Listener) Option {
+func WithListener(listener transport.NewListener) Option {
 	return func(options *Options) {
-		listener.Context(options.Ctx)
-		options.Listeners = append(options.Listeners, listener)
+		options.Listeners = append(options.Listeners, listener(options.Ctx))
 	}
 }
 
@@ -88,7 +85,7 @@ func WithFunctions(functions specs.CustomDefinedFunctions) Option {
 // WithLogLevel sets the log level for the given module
 func WithLogLevel(module logger.Module, level string) Option {
 	return func(options *Options) {
-		err := logger.SetLevel(options.Ctx, module, level)
+		err := options.Ctx.SetLevel(module, level)
 		if err != nil {
 			// TODO: handle error
 		}

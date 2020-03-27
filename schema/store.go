@@ -1,13 +1,12 @@
 package schema
 
 import (
-	"context"
-
+	"github.com/jexia/maestro/instance"
 	"github.com/jexia/maestro/logger"
 )
 
 // NewStore constructs a new schema store
-func NewStore(ctx context.Context) *Store {
+func NewStore(ctx instance.Context) *Store {
 	return &Store{
 		ctx:      ctx,
 		services: make(map[string]Service),
@@ -17,7 +16,7 @@ func NewStore(ctx context.Context) *Store {
 
 // Store represents a schema collection store
 type Store struct {
-	ctx      context.Context
+	ctx      instance.Context
 	services map[string]Service
 	messages map[string]Property
 }
@@ -60,14 +59,14 @@ func (store *Store) Add(collection Collection) {
 		return
 	}
 
-	logger.FromCtx(store.ctx, logger.Core).WithField("collection", collection).Debug("Appending schema collection to schema store")
+	store.ctx.Logger(logger.Core).WithField("collection", collection).Debug("Appending schema collection to schema store")
 
 	for _, service := range collection.GetServices() {
 		if service == nil {
 			continue
 		}
 
-		logger.FromCtx(store.ctx, logger.Core).WithField("service", service.GetName()).Debug("Appending service to schema store")
+		store.ctx.Logger(logger.Core).WithField("service", service.GetName()).Debug("Appending service to schema store")
 		store.services[service.GetFullyQualifiedName()] = service
 	}
 
@@ -76,7 +75,7 @@ func (store *Store) Add(collection Collection) {
 			continue
 		}
 
-		logger.FromCtx(store.ctx, logger.Core).WithField("message", message.GetName()).Debug("Appending message to schema store")
+		store.ctx.Logger(logger.Core).WithField("message", message.GetName()).Debug("Appending message to schema store")
 		store.messages[message.GetName()] = message
 	}
 }

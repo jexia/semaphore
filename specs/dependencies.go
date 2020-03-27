@@ -1,15 +1,15 @@
 package specs
 
 import (
-	"context"
 	"fmt"
 
+	"github.com/jexia/maestro/instance"
 	"github.com/jexia/maestro/logger"
 )
 
 // ResolveManifestDependencies resolves all dependencies inside the given manifest
-func ResolveManifestDependencies(ctx context.Context, manifest *Manifest) error {
-	logger.FromCtx(ctx, logger.Core).Info("Resolving manifest dependencies")
+func ResolveManifestDependencies(ctx instance.Context, manifest *Manifest) error {
+	ctx.Logger(logger.Core).Info("Resolving manifest dependencies")
 
 	for _, flow := range manifest.Flows {
 		err := ResolveFlowManagerDependencies(manifest, flow, make(map[string]FlowManager))

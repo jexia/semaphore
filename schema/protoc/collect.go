@@ -1,10 +1,10 @@
 package protoc
 
 import (
-	"context"
 	"os"
 	"path/filepath"
 
+	"github.com/jexia/maestro/instance"
 	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/utils"
 	"github.com/jhump/protoreflect/desc"
@@ -63,7 +63,7 @@ func Collect(paths []string, path string) (schema.Resolver, error) {
 
 // SchemaResolver returns a new schema resolver for the given protoc collection
 func SchemaResolver(collection schema.Collection) schema.Resolver {
-	return func(ctx context.Context, schemas *schema.Store) error {
+	return func(ctx instance.Context, schemas *schema.Store) error {
 		schemas.Add(collection)
 		return nil
 	}

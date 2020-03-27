@@ -1,8 +1,6 @@
 package logger
 
 import (
-	"context"
-
 	"github.com/jexia/maestro/specs/trace"
 	"github.com/sirupsen/logrus"
 )
@@ -28,20 +26,34 @@ var Modules = []Module{
 	Transport,
 }
 
-// WithValue initialises the logger context by injecting the logging modules
-func WithValue(ctx context.Context) context.Context {
+// New constructs a new logger and initializes the configured modules
+func New() *Logger {
+	modules := make(map[Module]*logrus.Logger, len(Modules))
+
 	for _, module := range Modules {
-		ctx = context.WithValue(ctx, module, logrus.New())
+		modules[module] = logrus.New()
 	}
 
-	return ctx
+	return &Logger{
+		modules: modules,
+	}
+}
+
+// Logger represents a logrus Logger manager
+type Logger struct {
+	modules map[Module]*logrus.Logger
+}
+
+// Get attempts to fetch the logger for the given module
+func (logger *Logger) Get(module Module) *logrus.Logger {
+	return logger.modules[module]
 }
 
 // SetLevel attempts to set the log level for the given module
-func SetLevel(ctx context.Context, module Module, value string) error {
+func (logger *Logger) SetLevel(module Module, value string) error {
 	if module == Global {
 		for _, module := range Modules {
-			err := SetLevel(ctx, module, value)
+			err := logger.SetLevel(module, value)
 			if err != nil {
 				return err
 			}
@@ -50,7 +62,7 @@ func SetLevel(ctx context.Context, module Module, value string) error {
 		return nil
 	}
 
-	logger := FromCtx(ctx, module)
+	log := logger.modules[module]
 	if logger == nil {
 		return trace.New(trace.WithMessage("logger not found for module '%s'", module))
 	}
@@ -60,21 +72,6 @@ func SetLevel(ctx context.Context, module Module, value string) error {
 		return err
 	}
 
-	logger.SetLevel(level)
+	log.SetLevel(level)
 	return nil
-}
-
-// FromCtx attempts to fetch the logger from the given context
-func FromCtx(ctx context.Context, module Module) *logrus.Logger {
-	value := ctx.Value(module)
-	if value == nil {
-		return nil
-	}
-
-	logger, is := value.(*logrus.Logger)
-	if !is {
-		return nil
-	}
-
-	return logger
 }

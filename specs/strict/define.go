@@ -1,8 +1,7 @@
 package strict
 
 import (
-	"context"
-
+	"github.com/jexia/maestro/instance"
 	"github.com/jexia/maestro/logger"
 	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/specs"
@@ -14,8 +13,8 @@ import (
 )
 
 // DefineManifest checks and defines the types for the given manifest
-func DefineManifest(ctx context.Context, schema schema.Collection, manifest *specs.Manifest) (err error) {
-	logger.FromCtx(ctx, logger.Core).Info("Defining manifest types")
+func DefineManifest(ctx instance.Context, schema schema.Collection, manifest *specs.Manifest) (err error) {
+	ctx.Logger(logger.Core).Info("Defining manifest types")
 
 	for _, flow := range manifest.Flows {
 		err := DefineFlow(ctx, schema, manifest, flow)
@@ -35,8 +34,8 @@ func DefineManifest(ctx context.Context, schema schema.Collection, manifest *spe
 }
 
 // DefineProxy checks and defines the types for the given proxy
-func DefineProxy(ctx context.Context, schema schema.Collection, manifest *specs.Manifest, proxy *specs.Proxy) (err error) {
-	logger.FromCtx(ctx, logger.Core).WithField("proxy", proxy.GetName()).Info("Defining proxy flow types")
+func DefineProxy(ctx instance.Context, schema schema.Collection, manifest *specs.Manifest, proxy *specs.Proxy) (err error) {
+	ctx.Logger(logger.Core).WithField("proxy", proxy.GetName()).Info("Defining proxy flow types")
 
 	for _, node := range proxy.Nodes {
 		if node.Call != nil {
@@ -60,8 +59,8 @@ func DefineProxy(ctx context.Context, schema schema.Collection, manifest *specs.
 }
 
 // DefineFlow checks and defines the types for the given flow
-func DefineFlow(ctx context.Context, schema schema.Collection, manifest *specs.Manifest, flow *specs.Flow) (err error) {
-	logger.FromCtx(ctx, logger.Core).WithField("flow", flow.GetName()).Info("Defining flow types")
+func DefineFlow(ctx instance.Context, schema schema.Collection, manifest *specs.Manifest, flow *specs.Flow) (err error) {
+	ctx.Logger(logger.Core).WithField("flow", flow.GetName()).Info("Defining flow types")
 
 	if flow.Input != nil {
 		message, err := GetObjectSchema(schema, flow.Input)
@@ -128,12 +127,12 @@ func GetObjectSchema(schema schema.Collection, params *specs.ParameterMap) (sche
 }
 
 // DefineCall defineds the types for the specs call
-func DefineCall(ctx context.Context, schema schema.Collection, manifest *specs.Manifest, node *specs.Node, call *specs.Call, flow specs.FlowManager) (err error) {
+func DefineCall(ctx instance.Context, schema schema.Collection, manifest *specs.Manifest, node *specs.Node, call *specs.Call, flow specs.FlowManager) (err error) {
 	if call.GetMethod() == "" {
 		return nil
 	}
 
-	logger.FromCtx(ctx, logger.Core).WithFields(logrus.Fields{
+	ctx.Logger(logger.Core).WithFields(logrus.Fields{
 		"call":    node.GetName(),
 		"method":  call.GetMethod(),
 		"service": call.GetService(),
@@ -177,8 +176,8 @@ func DefineCall(ctx context.Context, schema schema.Collection, manifest *specs.M
 }
 
 // DefineCaller defineds the types for the given transport caller
-func DefineCaller(ctx context.Context, node *specs.Node, manifest *specs.Manifest, call transport.Call, flow specs.FlowManager) (err error) {
-	logger.FromCtx(ctx, logger.Core).Info("Defining caller references")
+func DefineCaller(ctx instance.Context, node *specs.Node, manifest *specs.Manifest, call transport.Call, flow specs.FlowManager) (err error) {
+	ctx.Logger(logger.Core).Info("Defining caller references")
 
 	method := call.GetMethod(node.Call.GetMethod())
 	for _, prop := range method.References() {
@@ -194,7 +193,7 @@ func DefineCaller(ctx context.Context, node *specs.Node, manifest *specs.Manifes
 }
 
 // DefineParameterMap defines the types for the given parameter map
-func DefineParameterMap(ctx context.Context, node *specs.Node, params *specs.ParameterMap, flow specs.FlowManager) (err error) {
+func DefineParameterMap(ctx instance.Context, node *specs.Node, params *specs.ParameterMap, flow specs.FlowManager) (err error) {
 	for _, header := range params.Header {
 		err = DefineProperty(ctx, node, header, flow)
 		if err != nil {
@@ -213,7 +212,7 @@ func DefineParameterMap(ctx context.Context, node *specs.Node, params *specs.Par
 
 // DefineProperty defines the given property type.
 // If any object is references it has to be fixed afterwards and moved into the correct dataset
-func DefineProperty(ctx context.Context, node *specs.Node, property *specs.Property, flow specs.FlowManager) error {
+func DefineProperty(ctx instance.Context, node *specs.Node, property *specs.Property, flow specs.FlowManager) error {
 	if len(property.Nested) > 0 {
 		for _, nested := range property.Nested {
 			err := DefineProperty(ctx, node, nested, flow)
@@ -239,7 +238,7 @@ func DefineProperty(ctx context.Context, node *specs.Node, property *specs.Prope
 		}
 	}
 
-	logger.FromCtx(ctx, logger.Core).WithFields(logrus.Fields{
+	ctx.Logger(logger.Core).WithFields(logrus.Fields{
 		"breakpoint": breakpoint,
 		"reference":  property.Reference,
 	}).Debug("Lookup references until breakpoint")
@@ -281,7 +280,7 @@ func InsideProperty(source *specs.Property, target *specs.Property) bool {
 // CheckHeader checks the given header types
 func CheckHeader(header specs.Header, flow specs.FlowManager) error {
 	for _, header := range header {
-		if header.Type != types.TypeString {
+		if header.Type != types.String {
 			return trace.New(trace.WithMessage("cannot use type %s for header.%s in flow %s", header.Type, header.Path, flow.GetName()))
 		}
 	}

@@ -5,6 +5,7 @@ import (
 	"io"
 
 	"github.com/jexia/maestro/codec"
+	"github.com/jexia/maestro/instance"
 	"github.com/jexia/maestro/logger"
 	"github.com/jexia/maestro/metadata"
 	"github.com/jexia/maestro/refs"
@@ -22,7 +23,7 @@ func NewRequest(codec codec.Manager, metadata *metadata.Manager) *Request {
 }
 
 // NewCall constructs a new flow caller from the given transport caller and
-func NewCall(ctx context.Context, node *specs.Node, transport transport.Call, method string, request *Request, response *Request) Call {
+func NewCall(ctx instance.Context, node *specs.Node, transport transport.Call, method string, request *Request, response *Request) Call {
 	return &Caller{
 		ctx:       ctx,
 		node:      node,
@@ -41,7 +42,7 @@ type Request struct {
 
 // Caller represents a flow transport caller
 type Caller struct {
-	ctx       context.Context
+	ctx       instance.Context
 	node      *specs.Node
 	method    transport.Method
 	transport transport.Call
@@ -88,7 +89,7 @@ func (caller *Caller) Do(ctx context.Context, store *refs.Store) error {
 
 	err = <-result
 	if err != nil {
-		logger.FromCtx(caller.ctx, logger.Flow).WithFields(logrus.Fields{
+		caller.ctx.Logger(logger.Flow).WithFields(logrus.Fields{
 			"node": caller.node.GetName(),
 			"err":  err,
 		}).Error("Service error")

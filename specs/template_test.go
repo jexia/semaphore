@@ -1,10 +1,9 @@
 package specs
 
 import (
-	"context"
 	"testing"
 
-	"github.com/jexia/maestro/logger"
+	"github.com/jexia/maestro/instance"
 	"github.com/jexia/maestro/specs/types"
 )
 
@@ -131,7 +130,7 @@ func TestParseFunction(t *testing.T) {
 	static := Property{
 		Path:    path,
 		Default: "message",
-		Type:    types.TypeString,
+		Type:    types.String,
 	}
 
 	functions := CustomDefinedFunctions{
@@ -176,7 +175,7 @@ func TestParseTemplate(t *testing.T) {
 	static := Property{
 		Path:    path,
 		Default: "message",
-		Type:    types.TypeString,
+		Type:    types.String,
 	}
 
 	functions := CustomDefinedFunctions{
@@ -197,9 +196,7 @@ func TestParseTemplate(t *testing.T) {
 	}
 
 	for input, expected := range tests {
-		ctx := context.Background()
-		ctx = logger.WithValue(ctx)
-
+		ctx := instance.NewContext()
 		property, err := ParseTemplate(ctx, path, functions, input)
 		if err != nil {
 			t.Error(err)

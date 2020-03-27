@@ -1,15 +1,15 @@
 package specs
 
 import (
-	"context"
-
 	"github.com/hashicorp/hcl/v2"
+	"github.com/jexia/maestro/instance"
 	"github.com/jexia/maestro/schema"
+	"github.com/jexia/maestro/specs/labels"
 	"github.com/jexia/maestro/specs/types"
 )
 
 // Resolver when called collects the available manifest(s) with the configured configuration
-type Resolver func(context.Context, CustomDefinedFunctions) (*Manifest, error)
+type Resolver func(instance.Context, CustomDefinedFunctions) (*Manifest, error)
 
 // FlowManager represents a flow manager
 type FlowManager interface {
@@ -66,9 +66,9 @@ func (collection Endpoints) Get(flow string) []*Endpoint {
 
 // Manifest holds a collection of definitions and resources
 type Manifest struct {
-	Flows     Flows
-	Proxy     Proxies
-	Endpoints Endpoints
+	Flows     Flows     `json:"flows"`
+	Proxy     Proxies   `json:"proxies"`
+	Endpoints Endpoints `json:"endpoints"`
 }
 
 // GetFlow attempts to find a flow or proxy matching the given name
@@ -101,11 +101,11 @@ func (manifest *Manifest) Merge(incoming *Manifest) {
 // Calls are nested inside of flows and contain two labels, a unique name within the flow and the service and method to be called.
 // A dependency reference structure is generated within the flow which allows Maestro to figure out which calls could be called parallel to improve performance.
 type Flow struct {
-	Name      string
-	DependsOn map[string]*Flow
-	Input     *ParameterMap
-	Nodes     []*Node
-	Output    *ParameterMap
+	Name      string           `json:"name"`
+	DependsOn map[string]*Flow `json:"depends_on"`
+	Input     *ParameterMap    `json:"input"`
+	Nodes     []*Node          `json:"nodes"`
+	Output    *ParameterMap    `json:"output"`
 }
 
 // GetName returns the flow name
@@ -141,9 +141,9 @@ func (flow *Flow) GetForward() *Call {
 // Endpoint exposes a flow. Endpoints are not parsed by Maestro and have custom implementations in each caller.
 // The name of the endpoint represents the flow which should be executed.
 type Endpoint struct {
-	Flow     string
-	Listener string
-	Options  Options
+	Flow     string  `json:"flow"`
+	Listener string  `json:"listener"`
+	Options  Options `json:"options"`
 }
 
 // Options represents a collection of options
@@ -190,7 +190,7 @@ type Property struct {
 	Path      string
 	Default   interface{}
 	Type      types.Type
-	Label     types.Label
+	Label     labels.Label
 	Reference *PropertyReference
 	Nested    map[string]*Property
 	Expr      hcl.Expression // TODO: marked for removal
@@ -239,10 +239,10 @@ func (property *Property) Clone(reference *PropertyReference, name string, path 
 
 // ParameterMap is the initial map of parameter names (keys) and their (templated) values (values)
 type ParameterMap struct {
-	Schema   string
-	Options  Options
-	Header   Header
-	Property *Property
+	Schema   string    `json:"schema"`
+	Options  Options   `json:"options"`
+	Header   Header    `json:"header"`
+	Property *Property `json:"property"`
 }
 
 // Node represents a point inside a given flow where a request or rollback could be preformed.
@@ -251,12 +251,12 @@ type ParameterMap struct {
 // The request and response proto messages are used for type definitions.
 // A call could contain the request headers, request body, rollback, and the execution type.
 type Node struct {
-	Name       string
-	DependsOn  map[string]*Node
-	Type       string
-	Call       *Call
-	Rollback   *Call
-	Descriptor schema.Method
+	Name       string           `json:"name"`
+	DependsOn  map[string]*Node `json:"depends_on"`
+	Type       string           `json:"type"`
+	Call       *Call            `json:"call"`
+	Rollback   *Call            `json:"rollback"`
+	Descriptor schema.Method    `json:"-"`
 }
 
 // GetName returns the call name
@@ -271,11 +271,11 @@ func (call *Node) GetDescriptor() schema.Method {
 
 // Call represents a call which is executed during runtime
 type Call struct {
-	Service    string
-	Method     string
-	Request    *ParameterMap
-	Response   *ParameterMap
-	Descriptor schema.Method
+	Service    string        `json:"service"`
+	Method     string        `json:"method"`
+	Request    *ParameterMap `json:"request"`
+	Response   *ParameterMap `json:"response"`
+	Descriptor schema.Method `json:"-"`
 }
 
 // GetRequest returns the call request parameter map
@@ -316,10 +316,10 @@ func (call *Call) SetDescriptor(descriptor schema.Method) {
 // Proxies could define calls that are executed before the request body is forwarded.
 // A proxy forward could ideally be used for file uploads or large messages which could not be stored in memory.
 type Proxy struct {
-	Name      string
-	DependsOn map[string]*Flow
-	Nodes     []*Node
-	Forward   *Call
+	Name      string           `json:"name"`
+	DependsOn map[string]*Flow `json:"depends_on"`
+	Nodes     []*Node          `json:"nodes"`
+	Forward   *Call            `json:"forward"`
 }
 
 // GetName returns the flow name

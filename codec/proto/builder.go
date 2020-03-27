@@ -22,7 +22,7 @@ func NewMessage(resource string, specs map[string]*specs.Property) (*desc.Messag
 // ConstructMessage constructs a proto message of the given specs into the given message builders
 func ConstructMessage(msg *builder.MessageBuilder, specs map[string]*specs.Property) (err error) {
 	for key, prop := range specs {
-		if prop.Type == types.TypeMessage {
+		if prop.Type == types.Message {
 			nested := builder.NewMessage(key)
 			err = ConstructMessage(nested, prop.Nested)
 			if err != nil {

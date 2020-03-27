@@ -1,8 +1,7 @@
 package hcl
 
 import (
-	"context"
-
+	"github.com/jexia/maestro/instance"
 	"github.com/jexia/maestro/logger"
 	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/specs/trace"
@@ -37,8 +36,8 @@ func (collection *collection) GetMessages() []schema.Property {
 }
 
 // ParseSchema parses the given intermediate manifest to a schema
-func ParseSchema(ctx context.Context, manifest Manifest, schemas schema.Collection) (schema.Collection, error) {
-	logger.FromCtx(ctx, logger.Core).Info("Parsing intermediate manifest to schema")
+func ParseSchema(ctx instance.Context, manifest Manifest, schemas schema.Collection) (schema.Collection, error) {
+	ctx.Logger(logger.Core).Info("Parsing intermediate manifest to schema")
 
 	result := &collection{
 		services: make([]schema.Service, len(manifest.Services)),
@@ -125,8 +124,8 @@ func (service *service) GetMethods() schema.Methods {
 }
 
 // ParseIntermediateService parses the given intermediate service to a specs service
-func ParseIntermediateService(ctx context.Context, manifest Service, collection schema.Collection) (schema.Service, error) {
-	logger.FromCtx(ctx, logger.Core).WithField("service", manifest.Name).Debug("Parsing intermediate service to schema")
+func ParseIntermediateService(ctx instance.Context, manifest Service, collection schema.Collection) (schema.Service, error) {
+	ctx.Logger(logger.Core).WithField("service", manifest.Name).Debug("Parsing intermediate service to schema")
 
 	methods, err := ParseIntermediateMethods(ctx, manifest.Methods, collection)
 	if err != nil {
@@ -175,11 +174,11 @@ func (method *method) GetOptions() schema.Options {
 }
 
 // ParseIntermediateMethods parses the given methods for the given service
-func ParseIntermediateMethods(ctx context.Context, methods []Method, collection schema.Collection) ([]schema.Method, error) {
+func ParseIntermediateMethods(ctx instance.Context, methods []Method, collection schema.Collection) ([]schema.Method, error) {
 	result := make([]schema.Method, len(methods))
 
 	for index, manifest := range methods {
-		logger.FromCtx(ctx, logger.Core).WithFields(logrus.Fields{
+		ctx.Logger(logger.Core).WithFields(logrus.Fields{
 			"method": manifest.Name,
 		}).Debug("Parsing intermediate method to schema")
 
