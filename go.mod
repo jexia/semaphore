@@ -1,6 +1,6 @@
 module github.com/jexia/maestro
 
-go 1.13
+go 1.14
 
 require (
 	github.com/agext/levenshtein v1.2.3 // indirect
@@ -23,9 +23,9 @@ require (
 	github.com/spf13/cobra v0.0.6
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/zclconf/go-cty v1.3.1
-	golang.org/x/net v0.0.0-20200319234117-63522dbf7eec // indirect
+	golang.org/x/net v0.0.0-20200319234117-63522dbf7eec
 	golang.org/x/sys v0.0.0-20200317113312-5766fd39f98d // indirect
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0 // indirect
-	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
+	google.golang.org/grpc v1.26.0
 	gopkg.in/yaml.v2 v2.2.8
 )

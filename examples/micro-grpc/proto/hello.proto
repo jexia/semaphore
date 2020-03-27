@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package maestro.greeter;
+package go.micro.srv.greeter;
 
 import "annotations.proto";
 
@@ -8,8 +8,7 @@ option go_package = "proto";
 
 service Say {
 	option (maestro.service) = {
-		host: "127.0.0.1:50051"
-        transport: "grpc"
+        transport: "micro-grpc"
         codec: "proto"
 	};
 

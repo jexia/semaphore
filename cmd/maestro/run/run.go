@@ -15,9 +15,10 @@ import (
 	"github.com/jexia/maestro/schema/protoc"
 	"github.com/jexia/maestro/specs"
 	"github.com/jexia/maestro/transport/graphql"
+	"github.com/jexia/maestro/transport/grpc"
 	"github.com/jexia/maestro/transport/http"
 	"github.com/jexia/maestro/transport/micro"
-	"github.com/micro/go-micro/service/grpc"
+	microGRPC "github.com/micro/go-micro/service/grpc"
 	"github.com/spf13/cobra"
 )
 
@@ -34,6 +35,7 @@ func init() {
 	Cmd.PersistentFlags().StringP("config", "c", "", "Config file path")
 	Cmd.PersistentFlags().StringVar(&global.HTTP.Address, "http", "", "If set starts the HTTP listener on the given TCP address")
 	Cmd.PersistentFlags().StringVar(&global.GraphQL.Address, "graphql", "", "If set starts the GraphQL listener on the given TCP address")
+	Cmd.PersistentFlags().StringVar(&global.GRPC.Address, "grpc", "", "If set starts the gRPC listener on the given TCP address")
 	Cmd.PersistentFlags().StringSliceVar(&global.Protobuffers, "proto", []string{}, "If set are all proto definitions found inside the given path passed as schema definitions, all proto definitions are also passed as imports")
 	Cmd.PersistentFlags().StringSliceVar(&global.Flows, "flow", []string{}, "If set are all flow definitions inside the given path passed as flow definitions")
 	Cmd.PersistentFlags().StringVar(&global.LogLevel, "level", "info", "Logging level")
@@ -49,7 +51,8 @@ func run(cmd *cobra.Command, args []string) error {
 		maestro.WithLogLevel(logger.Global, global.LogLevel),
 		maestro.WithCodec(json.NewConstructor()),
 		maestro.WithCodec(proto.NewConstructor()),
-		maestro.WithCaller(micro.New("micro-grpc", grpc.NewService())),
+		maestro.WithCaller(micro.New("micro-grpc", microGRPC.NewService())),
+		maestro.WithCaller(grpc.NewCaller()),
 		maestro.WithCaller(http.NewCaller()),
 	}
 
@@ -72,6 +75,10 @@ func run(cmd *cobra.Command, args []string) error {
 
 	if global.GraphQL.Address != "" {
 		options = append(options, maestro.WithListener(graphql.NewListener(global.GraphQL.Address, specs.Options{})))
+	}
+
+	if global.GRPC.Address != "" {
+		options = append(options, maestro.WithListener(grpc.NewListener(global.GRPC.Address, specs.Options{})))
 	}
 
 	client, err := maestro.New(options...)

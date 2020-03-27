@@ -12,6 +12,7 @@ func New() *Maestro {
 	return &Maestro{
 		HTTP:         HTTP{},
 		GraphQL:      GraphQL{},
+		GRPC:         GRPC{},
 		Protobuffers: []string{},
 		Flows:        []string{},
 	}
@@ -47,12 +48,18 @@ type Maestro struct {
 	LogLevel     string   `yaml:"level"`
 	HTTP         HTTP     `yaml:"http"`
 	GraphQL      GraphQL  `yaml:"graphql"`
+	GRPC         GRPC     `yaml:"grpc"`
 	Protobuffers []string `yaml:"protobuffers"`
 	Flows        []string `yaml:"flows"`
 }
 
 // HTTP configurations
 type HTTP struct {
+	Address string `yaml:"address"`
+}
+
+// GRPC configurations
+type GRPC struct {
 	Address string `yaml:"address"`
 }
 

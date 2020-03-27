@@ -4,20 +4,22 @@ endpoint "greeter" "http" {
 	codec = "json"
 }
 
-endpoint "greeter" "graphql" {
-	path = "greeter"
+endpoint "greeter" "grpc" {
+	package = "maestro.greeter"
+	service = "Say"
+	method = "Hello"
 }
 
 flow "greeter" {
-	input "go.micro.srv.greeter.Request" {}
+	input "maestro.greeter.Request" {}
 
 	resource "user" {
-		request "go.micro.srv.greeter.Say" "Hello" {
+		request "maestro.greeter.Say" "Hello" {
 			name = "{{ input:name }}"
 		}
 	}
 
-	output "go.micro.srv.greeter.Response" {
+	output "maestro.greeter.Response" {
 		msg = "{{ user:msg }}"
 	}
 }
