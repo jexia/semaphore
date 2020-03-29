@@ -48,7 +48,8 @@ endpoint "checkout" "http" {
 }
 
 endpoint "checkout" "graphql" {
-    path = "data"
+    path = "payment"
+    base = "mutation"
 }
 
 endpoint "checkout" "grpc" {
