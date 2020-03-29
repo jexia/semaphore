@@ -2,6 +2,7 @@ package lookup
 
 import (
 	"github.com/jexia/maestro/specs"
+	"github.com/jexia/maestro/specs/types"
 )
 
 // SelfRef represents the syntax used to reference the entire object
@@ -92,7 +93,7 @@ func GetAvailableResources(flow specs.FlowManager, breakpoint string) map[string
 		if node.Call != nil {
 			if node.Call.Response != nil {
 				references[node.Name][specs.ResourceResponse] = ParameterMapLookup(node.Call.Response.Property)
-				references[node.Name][specs.ResourceHeader] = HeaderLookup(node.Call.Response.Header)
+				references[node.Name][specs.ResourceHeader] = VariableHeaderLookup(node.Call.Response.Header)
 			}
 		}
 	}
@@ -126,6 +127,19 @@ func GetReference(path string, prop string, references ReferenceMap) *specs.Prop
 	}
 
 	return lookup(path)
+}
+
+// VariableHeaderLookup returns a string property for the given path and sets the header property
+func VariableHeaderLookup(header specs.Header) PathLookup {
+	return func(path string) *specs.Property {
+		header[path] = &specs.Property{
+			Path:    path,
+			Type:    types.String,
+			Default: "",
+		}
+
+		return header[path]
+	}
 }
 
 // HeaderLookup attempts to lookup the given path inside the header
