@@ -65,7 +65,7 @@ func (object *Object) MarshalJSONObject(encoder *gojay.Encoder) {
 			continue
 		}
 
-		AddType(encoder, prop.Name, prop.Type, val)
+		AddTypeKey(encoder, prop.Name, prop.Type, val)
 	}
 }
 
@@ -95,7 +95,7 @@ func (object *Object) UnmarshalJSONObject(dec *gojay.Decoder, key string) error 
 	}
 
 	ref := refs.New(prop.Path)
-	ref.Value = DecodeType(dec, prop)
+	ref.Value = DecodeType(dec, prop.Type)
 	object.refs.StoreReference(object.resource, ref)
 	return nil
 }
@@ -158,17 +158,25 @@ func (array *Array) MarshalJSONArray(enc *gojay.Encoder) {
 			continue
 		}
 
-		AddType(enc, array.specs.Name, array.specs.Type, val)
+		AddType(enc, array.specs.Type, val)
 	}
 }
 
 // UnmarshalJSONArray unmarshals the given specs into the configured reference store
 func (array *Array) UnmarshalJSONArray(dec *gojay.Decoder) error {
 	store := refs.NewStore(array.keys)
-	object := NewObject(array.resource, array.specs.Nested, store)
-	dec.AddObject(object)
 
+	if array.specs.Type == types.Message {
+		object := NewObject(array.resource, array.specs.Nested, store)
+		dec.AddObject(object)
+		array.ref.Append(store)
+		return nil
+	}
+
+	val := DecodeType(dec, array.specs.Type)
+	store.StoreValue(array.resource, array.specs.Path, val)
 	array.ref.Append(store)
+
 	return nil
 }
 

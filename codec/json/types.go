@@ -4,12 +4,11 @@ import (
 	"encoding/base64"
 
 	"github.com/francoispqt/gojay"
-	"github.com/jexia/maestro/specs"
 	"github.com/jexia/maestro/specs/types"
 )
 
-// AddType encodes the given value into the given encoder
-func AddType(encoder *gojay.Encoder, key string, typed types.Type, value interface{}) {
+// AddTypeKey encodes the given value into the given encoder
+func AddTypeKey(encoder *gojay.Encoder, key string, typed types.Type, value interface{}) {
 	switch typed {
 	case types.Double:
 		encoder.AddFloat64Key(key, Float64Empty(value))
@@ -44,9 +43,45 @@ func AddType(encoder *gojay.Encoder, key string, typed types.Type, value interfa
 	}
 }
 
+// AddType encodes the given value into the given encoder
+func AddType(encoder *gojay.Encoder, typed types.Type, value interface{}) {
+	switch typed {
+	case types.Double:
+		encoder.AddFloat64(Float64Empty(value))
+	case types.Int64:
+		encoder.AddInt64(Int64Empty(value))
+	case types.Uint64:
+		encoder.AddUint64(Uint64Empty(value))
+	case types.Fixed64:
+		encoder.AddUint64(Uint64Empty(value))
+	case types.Int32:
+		encoder.AddInt32(Int32Empty(value))
+	case types.Uint32:
+		encoder.AddUint32(Uint32Empty(value))
+	case types.Fixed32:
+		encoder.AddUint64(Uint64Empty(value))
+	case types.Float:
+		encoder.AddFloat32(Float32Empty(value))
+	case types.String:
+		encoder.AddString(StringEmpty(value))
+	case types.Bool:
+		encoder.AddBool(BoolEmpty(value))
+	case types.Bytes:
+		encoder.AddString(BytesBase64Empty(value))
+	case types.Sfixed32:
+		encoder.AddInt32(Int32Empty(value))
+	case types.Sfixed64:
+		encoder.AddInt64(Int64Empty(value))
+	case types.Sint32:
+		encoder.AddInt32(Int32Empty(value))
+	case types.Sint64:
+		encoder.AddInt64(Int64Empty(value))
+	}
+}
+
 // DecodeType decodes the given property from the given decoder
-func DecodeType(decoder *gojay.Decoder, prop *specs.Property) interface{} {
-	switch prop.Type {
+func DecodeType(decoder *gojay.Decoder, prop types.Type) interface{} {
+	switch prop {
 	case types.Double:
 		var value float64
 		decoder.AddFloat64(&value)
