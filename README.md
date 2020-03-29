@@ -51,6 +51,12 @@ endpoint "checkout" "graphql" {
     path = "data"
 }
 
+endpoint "checkout" "grpc" {
+    package = "webshop.cart"
+    service = "Payment"
+    method = "Checkout"
+}
+
 flow "checkout" {
     input "schema.Object" {
     }

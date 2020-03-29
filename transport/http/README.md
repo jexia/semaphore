@@ -3,21 +3,19 @@
 Provides HTTP client and server implementations.
 
 ```hcl
-endpoint "mock" "http" "json" {
+endpoint "mock" "http" {
 	endpoint = "/"
 	method = "GET"
-
-	options {
-		read_timeout = "5s"
-		write_timeout = "5s"
-	}
+	codec = "json"
+	read_timeout = "5s"
+	write_timeout = "5s"
 }
 ```
 
 Services could be defined inside the HCL definitions.
 
 ```hcl
-service "mock" "http" "json" {
+service "mock" "http" {
 	host = "https://service.prod.svc.cluster.local"
 
 	options {
