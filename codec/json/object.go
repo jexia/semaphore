@@ -148,7 +148,7 @@ func (array *Array) MarshalJSONArray(enc *gojay.Encoder) {
 		val := array.specs.Default
 
 		if array.specs.Reference != nil {
-			ref := store.Load(array.specs.Reference.Resource, array.specs.Reference.Path)
+			ref := store.Load("", "")
 			if ref != nil {
 				val = ref.Value
 			}
@@ -174,7 +174,7 @@ func (array *Array) UnmarshalJSONArray(dec *gojay.Decoder) error {
 	}
 
 	val := DecodeType(dec, array.specs.Type)
-	store.StoreValue(array.resource, array.specs.Path, val)
+	store.StoreValue("", "", val)
 	array.ref.Append(store)
 
 	return nil

@@ -31,3 +31,13 @@ flow "repeated" {
 		}
 	}
 }
+
+flow "repeated_values" {
+	input "proto.Message" {}
+
+	resource "first" {
+		request "proto.mock" "repeated_values" {
+			repeating = "{{ input:repeating_values }}"
+		}
+	}
+}

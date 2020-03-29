@@ -112,7 +112,7 @@ func (manager *Manager) Encode(proto *dynamic.Message, desc *desc.MessageDescrip
 
 					value = item
 				default:
-					ref := store.Load(prop.Reference.Resource, prop.Reference.Path)
+					ref := store.Load("", "")
 					value = ref.Value
 				}
 
@@ -125,12 +125,12 @@ func (manager *Manager) Encode(proto *dynamic.Message, desc *desc.MessageDescrip
 			continue
 		}
 
-		val := prop.Default
+		value := prop.Default
 
 		if prop.Reference != nil {
 			ref := store.Load(prop.Reference.Resource, prop.Reference.Path)
 			if ref != nil {
-				val = ref.Value
+				value = ref.Value
 			}
 		}
 
@@ -147,11 +147,11 @@ func (manager *Manager) Encode(proto *dynamic.Message, desc *desc.MessageDescrip
 			}
 		}
 
-		if val == nil {
+		if value == nil {
 			continue
 		}
 
-		err = proto.TrySetField(field, val)
+		err = proto.TrySetField(field, value)
 		if err != nil {
 			return err
 		}
@@ -201,7 +201,7 @@ func (manager *Manager) Decode(proto *dynamic.Message, properties map[string]*sp
 				}
 
 				store := refs.NewStore(1)
-				store.StoreValue(manager.resource, prop.Path, value)
+				store.StoreValue("", "", value)
 
 				ref.Set(index, store)
 			}

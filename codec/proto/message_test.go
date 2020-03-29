@@ -71,6 +71,20 @@ func ValidateStore(t *testing.T, resource string, origin string, input map[strin
 			continue
 		}
 
+		values, is := value.([]interface{})
+		if is {
+			repeating := store.Load(resource, path)
+			for index, store := range repeating.Repeated {
+				// small wrapper that allows to reuse functionalities
+				wrapper := map[string]interface{}{
+					"": values[index],
+				}
+
+				ValidateStore(t, "", "", wrapper, store)
+			}
+			continue
+		}
+
 		ref := store.Load(resource, path)
 		if ref == nil {
 			t.Fatalf("resource not found %s", path)
@@ -386,6 +400,21 @@ func TestMarshal(t *testing.T) {
 				"value": "nested value",
 			},
 		},
+		"repeating": {
+			"nested": map[string]interface{}{},
+			"repeating": []map[string]interface{}{
+				{
+					"value": "repeating value",
+				},
+			},
+		},
+		"repeating_values": {
+			"nested": map[string]interface{}{},
+			"repeating_values": []interface{}{
+				"repeating value",
+				"repeating value",
+			},
+		},
 		"complex": {
 			"message": "hello world",
 			"nested": map[string]interface{}{
@@ -465,6 +494,21 @@ func TestUnmarshal(t *testing.T) {
 		"nested": {
 			"nested": map[string]interface{}{
 				"value": "nested value",
+			},
+		},
+		"repeating": {
+			"nested": map[string]interface{}{},
+			"repeating": []map[string]interface{}{
+				{
+					"value": "repeating value",
+				},
+			},
+		},
+		"repeating_values": {
+			"nested": map[string]interface{}{},
+			"repeating_values": []interface{}{
+				"repeating value",
+				"repeating value",
 			},
 		},
 		"complex": {

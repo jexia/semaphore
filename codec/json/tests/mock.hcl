@@ -31,3 +31,13 @@ flow "repeated" {
 		}
 	}
 }
+
+flow "repeated_values" {
+	input "complete" {}
+
+	resource "first" {
+		request "mock" "repeated_values" {
+			repeated_values = "{{ input:repeating_values }}"
+		}
+	}
+}

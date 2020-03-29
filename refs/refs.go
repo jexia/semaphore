@@ -79,16 +79,24 @@ func (store *Store) Load(resource string, path string) *Reference {
 func (store *Store) StoreValues(resource string, path string, values map[string]interface{}) {
 	for key, val := range values {
 		path := specs.JoinPath(path, key)
-		values, is := val.(map[string]interface{})
+		keys, is := val.(map[string]interface{})
 		if is {
-			store.StoreValues(resource, path, values)
+			store.StoreValues(resource, path, keys)
 			continue
 		}
 
 		repeated, is := val.([]map[string]interface{})
 		if is {
 			reference := New(path)
-			store.NewRepeating(resource, path, reference, repeated)
+			store.NewRepeatingMessages(resource, path, reference, repeated)
+			store.StoreReference(resource, reference)
+			continue
+		}
+
+		values, is := val.([]interface{})
+		if is {
+			reference := New(path)
+			store.NewRepeating(resource, path, reference, values)
 			store.StoreReference(resource, reference)
 			continue
 		}
@@ -105,13 +113,24 @@ func (store *Store) StoreValue(resource string, path string, value interface{}) 
 	store.StoreReference(resource, reference)
 }
 
-// NewRepeating appends the given repeating values to the given reference
-func (store *Store) NewRepeating(resource string, path string, reference *Reference, values []map[string]interface{}) {
+// NewRepeatingMessages appends the given repeating messages to the given reference
+func (store *Store) NewRepeatingMessages(resource string, path string, reference *Reference, values []map[string]interface{}) {
 	reference.Repeating(len(values))
 
 	for index, values := range values {
 		store := NewStore(len(values))
 		store.StoreValues(resource, path, values)
+		reference.Set(index, store)
+	}
+}
+
+// NewRepeating appends the given repeating values to the given reference
+func (store *Store) NewRepeating(resource string, path string, reference *Reference, values []interface{}) {
+	reference.Repeating(len(values))
+
+	for index, value := range values {
+		store := NewStore(1)
+		store.StoreValue("", "", value)
 		reference.Set(index, store)
 	}
 }

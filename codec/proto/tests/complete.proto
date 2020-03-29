@@ -18,6 +18,7 @@ message Message {
     string message = 1;
     repeated Repeated repeating = 2;
     Nested nested = 3;
+    repeated string repeating_values = 4;
 }
 
 message Empty {
