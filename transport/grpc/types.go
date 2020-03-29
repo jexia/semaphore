@@ -41,9 +41,8 @@ func (method *Method) GetResponse() map[string]*specs.Property {
 
 // Service represents a gRPC service
 type Service struct {
-	pkg        string
-	name       string
-	methods    map[string]*Method
-	descriptor []byte
-	file       *descriptor.FileDescriptorProto
+	pkg     string
+	name    string
+	methods map[string]*Method
+	proto   *descriptor.FileDescriptorProto
 }

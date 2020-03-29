@@ -122,10 +122,10 @@ func (listener *Listener) Handle(endpoints []*transport.Endpoint, codecs map[str
 		services[service].methods[name] = methods[name]
 	}
 
-	file := proto.NewFile("maestro")
-	file.Package = "maestro.greeter"
+	for key, service := range services {
+		file := proto.NewFile(key)
+		file.Package = service.pkg
 
-	for _, service := range services {
 		methods := make(proto.Methods, len(service.methods))
 
 		for key, method := range service.methods {
@@ -136,15 +136,13 @@ func (listener *Listener) Handle(endpoints []*transport.Endpoint, codecs map[str
 		if err != nil {
 			return err
 		}
-	}
 
-	result, err := file.Build()
-	if err != nil {
-		return err
-	}
+		result, err := file.Build()
+		if err != nil {
+			return err
+		}
 
-	for _, service := range services {
-		service.file = result.AsFileDescriptorProto()
+		service.proto = result.AsFileDescriptorProto()
 	}
 
 	listener.mutex.Lock()

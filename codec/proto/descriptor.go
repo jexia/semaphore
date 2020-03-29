@@ -1,6 +1,8 @@
 package proto
 
 import (
+	"strings"
+
 	"github.com/jexia/maestro/specs"
 	"github.com/jexia/maestro/specs/trace"
 	"github.com/jexia/maestro/specs/types"
@@ -41,27 +43,41 @@ func NewMessageDescriptor(path string, specs *specs.ParameterMap) ([]byte, error
 // NewServiceDescriptor constructs a new protobuf service descriptor for the given parameter map
 func NewServiceDescriptor(file *builder.FileBuilder, name string, methods Methods) error {
 	service := builder.NewService(name)
-	file.AddService(service)
 
 	for _, method := range methods {
-		in := builder.NewMessage("something")
-		err := ConstructMessage(in, method.GetRequest())
+		name := strings.Title(name) + strings.Title(method.GetName())
+		req := builder.NewMessage(name + "Request")
+		err := ConstructMessage(req, method.GetRequest())
 		if err != nil {
 			return err
 		}
 
-		file.AddMessage(in)
-
-		out := builder.NewMessage("else")
-		err = ConstructMessage(out, method.GetResponse())
+		resp := builder.NewMessage(name + "Response")
+		err = ConstructMessage(resp, method.GetResponse())
 		if err != nil {
 			return err
 		}
 
-		file.AddMessage(out)
+		err = file.TryAddMessage(req)
+		if err != nil {
+			return err
+		}
 
-		method := builder.NewMethod(method.GetName(), builder.RpcTypeMessage(in, false), builder.RpcTypeMessage(out, false))
-		service.AddMethod(method)
+		err = file.TryAddMessage(resp)
+		if err != nil {
+			return err
+		}
+
+		method := builder.NewMethod(method.GetName(), builder.RpcTypeMessage(req, false), builder.RpcTypeMessage(resp, false))
+		err = service.TryAddMethod(method)
+		if err != nil {
+			return err
+		}
+	}
+
+	err := file.TryAddService(service)
+	if err != nil {
+		return err
 	}
 
 	return nil

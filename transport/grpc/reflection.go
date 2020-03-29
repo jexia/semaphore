@@ -2,7 +2,6 @@ package grpc
 
 import (
 	"io"
-	"log"
 
 	"github.com/golang/protobuf/proto"
 	"google.golang.org/grpc/codes"
@@ -29,7 +28,6 @@ func (listener *Listener) ServerReflectionInfo(stream rpb.ServerReflection_Serve
 
 		switch req := in.MessageRequest.(type) {
 		case *rpb.ServerReflectionRequest_FileByFilename:
-			log.Println(req.FileByFilename)
 		case *rpb.ServerReflectionRequest_FileContainingSymbol:
 			service := listener.services[req.FileContainingSymbol]
 			if service == nil {
@@ -42,16 +40,22 @@ func (listener *Listener) ServerReflectionInfo(stream rpb.ServerReflection_Serve
 				continue
 			}
 
-			bb, err := proto.Marshal(service.file)
+			bb, err := proto.Marshal(service.proto)
 			if err != nil {
-				log.Println(err)
+				out.MessageResponse = &rpb.ServerReflectionResponse_ErrorResponse{
+					ErrorResponse: &rpb.ErrorResponse{
+						ErrorCode:    int32(codes.Internal),
+						ErrorMessage: err.Error(),
+					},
+				}
+				continue
 			}
 
 			out.MessageResponse = &rpb.ServerReflectionResponse_FileDescriptorResponse{
 				FileDescriptorResponse: &rpb.FileDescriptorResponse{FileDescriptorProto: [][]byte{bb}},
 			}
 		case *rpb.ServerReflectionRequest_ListServices:
-			services := make([]*rpb.ServiceResponse, 0, len(listener.methods))
+			services := []*rpb.ServiceResponse{}
 
 			for key := range listener.services {
 				services = append(services, &rpb.ServiceResponse{
@@ -65,7 +69,7 @@ func (listener *Listener) ServerReflectionInfo(stream rpb.ServerReflection_Serve
 				},
 			}
 		default:
-			return status.Errorf(codes.InvalidArgument, "invalid MessageRequest: %v", in.MessageRequest)
+			return status.Errorf(codes.InvalidArgument, "invalid message request: %v", in.MessageRequest)
 		}
 
 		if err := stream.Send(out); err != nil {
