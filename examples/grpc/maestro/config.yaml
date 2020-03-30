@@ -2,7 +2,7 @@ level: "debug"
 http:
     address: ":8080"
 grpc:
-    address: ":50052"
+    address: ":50051"
 protobuffers:
 - "../../../annotations"
 - "../proto/*.proto"

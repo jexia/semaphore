@@ -20,7 +20,7 @@ func (s *Say) Hello(ctx context.Context, req *proto.Request) (*proto.Response, e
 }
 
 func main() {
-	lis, err := net.Listen("tcp", ":50051")
+	lis, err := net.Listen("tcp", ":5050")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -28,6 +28,6 @@ func main() {
 	server := grpc.NewServer()
 	proto.RegisterSayServer(server, &Say{})
 
-	log.Println("server up and running on port :50051")
+	log.Println("server up and running on port :5050")
 	server.Serve(lis)
 }
