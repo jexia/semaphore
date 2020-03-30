@@ -12,7 +12,6 @@ import (
 	"github.com/jexia/maestro/codec/json"
 	"github.com/jexia/maestro/flow"
 	"github.com/jexia/maestro/instance"
-	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/specs"
 	"github.com/jexia/maestro/transport"
 )
@@ -48,18 +47,18 @@ func NewMockListener(t *testing.T, nodes flow.Nodes) (transport.Listener, int) {
 
 func TestListener(t *testing.T) {
 	ctx := instance.NewContext()
-	specs := &specs.Node{
+	node := &specs.Node{
 		Name: "first",
 	}
 
 	called := 0
-	call := NewCallerFunc(func(ctx context.Context, refs *refs.Store) error {
+	call := NewCallerFunc(func(ctx context.Context, refs *specs.Store) error {
 		called++
 		return nil
 	})
 
 	nodes := flow.Nodes{
-		flow.NewNode(ctx, specs, call, nil),
+		flow.NewNode(ctx, node, call, nil),
 	}
 
 	listener, port := NewMockListener(t, nodes)
@@ -90,7 +89,7 @@ func TestListenerBadRequest(t *testing.T) {
 		{
 			Name:     "first",
 			Previous: flow.Nodes{},
-			Call: NewCallerFunc(func(ctx context.Context, refs *refs.Store) error {
+			Call: NewCallerFunc(func(ctx context.Context, refs *specs.Store) error {
 				called++
 				return nil
 			}),
@@ -126,7 +125,7 @@ func TestPathReferences(t *testing.T) {
 		{
 			Name:     "first",
 			Previous: flow.Nodes{},
-			Call: NewCallerFunc(func(ctx context.Context, refs *refs.Store) error {
+			Call: NewCallerFunc(func(ctx context.Context, refs *specs.Store) error {
 				ref := refs.Load("input", "message")
 				if ref == nil {
 					t.Fatal("input:message ref has not been set")

@@ -104,9 +104,17 @@ func ParseFunction(path string, functions CustomDefinedFunctions, content string
 		arguments[index] = result
 	}
 
-	property, err := functions[fn](path, arguments...)
+	property, handle, references, err := functions[fn](path, arguments...)
 	if err != nil {
 		return nil, err
+	}
+
+	if handle != nil {
+		property.Function = &Function{
+			Arguments:  arguments,
+			References: references,
+			Handle:     handle,
+		}
 	}
 
 	return property, nil

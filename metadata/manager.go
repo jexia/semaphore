@@ -1,7 +1,6 @@
 package metadata
 
 import (
-	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/specs"
 )
 
@@ -20,7 +19,7 @@ type Manager struct {
 }
 
 // Marshal attempts to marshal the given metadata specs from the given refs store
-func (manager *Manager) Marshal(store *refs.Store) MD {
+func (manager *Manager) Marshal(store *specs.Store) MD {
 	if manager == nil || manager.Params == nil {
 		return make(MD, 0)
 	}
@@ -47,9 +46,9 @@ func (manager *Manager) Marshal(store *refs.Store) MD {
 }
 
 // Unmarshal unmarshals the given transport metadata into the given reference store
-func (manager *Manager) Unmarshal(metadata MD, store *refs.Store) {
+func (manager *Manager) Unmarshal(metadata MD, store *specs.Store) {
 	for key, value := range metadata {
-		ref := refs.New(key)
+		ref := specs.NewReference(key)
 		ref.Value = value
 		store.StoreReference(manager.Resource, ref)
 	}

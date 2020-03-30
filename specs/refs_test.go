@@ -1,10 +1,8 @@
-package refs
+package specs
 
 import (
 	"encoding/json"
 	"testing"
-
-	"github.com/jexia/maestro/specs"
 )
 
 func BenchmarkSimpleFetching(b *testing.B) {
@@ -13,7 +11,7 @@ func BenchmarkSimpleFetching(b *testing.B) {
 	data := map[string]interface{}{}
 	json.Unmarshal(input, &data)
 
-	store := NewStore(len(data))
+	store := NewReferenceStore(len(data))
 	store.StoreValues("input", "", data)
 
 	b.ReportAllocs()
@@ -35,7 +33,7 @@ func BenchmarkSimpleUnmarshal(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		store := NewStore(len(data))
+		store := NewReferenceStore(len(data))
 		store.StoreValues("input", "", data)
 	}
 }
@@ -51,7 +49,7 @@ func BenchmarkRepeatedUnmarshal(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		store := NewStore(len(data))
+		store := NewReferenceStore(len(data))
 		store.StoreValues("input", "", data)
 	}
 }
@@ -67,7 +65,7 @@ func BenchmarkNestedUnmarshal(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		store := NewStore(len(data))
+		store := NewReferenceStore(len(data))
 		store.StoreValues("input", "", data)
 	}
 }
@@ -83,13 +81,13 @@ func BenchmarkComplexUnmarshal(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		store := NewStore(len(data))
+		store := NewReferenceStore(len(data))
 		store.StoreValues("input", "", data)
 	}
 }
 
 func TestStoreReference(t *testing.T) {
-	store := NewStore(10)
+	store := NewReferenceStore(10)
 
 	resource := "input"
 	ref := &Reference{
@@ -113,7 +111,7 @@ func TestStoreReference(t *testing.T) {
 }
 
 func TestStoreValues(t *testing.T) {
-	store := NewStore(1)
+	store := NewReferenceStore(1)
 
 	target := "message"
 	value := "hello world"
@@ -139,11 +137,11 @@ func TestStoreValues(t *testing.T) {
 }
 
 func TestStoreNestedValues(t *testing.T) {
-	store := NewStore(1)
+	store := NewReferenceStore(1)
 
 	nested := "nested"
 	key := "message"
-	target := specs.JoinPath(nested, key)
+	target := JoinPath(nested, key)
 	value := "hello world"
 
 	resource := "input"
@@ -169,11 +167,11 @@ func TestStoreNestedValues(t *testing.T) {
 }
 
 func TestStoreRepeatedValues(t *testing.T) {
-	store := NewStore(1)
+	store := NewReferenceStore(1)
 
 	nested := "nested"
 	key := "message"
-	target := specs.JoinPath(nested, key)
+	target := JoinPath(nested, key)
 	value := "hello world"
 
 	resource := "input"

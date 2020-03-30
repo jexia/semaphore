@@ -6,7 +6,6 @@ import (
 
 	"github.com/jexia/maestro/instance"
 	"github.com/jexia/maestro/logger"
-	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/specs"
 	"github.com/sirupsen/logrus"
 )
@@ -14,7 +13,7 @@ import (
 // Call represents a transport caller implementation
 type Call interface {
 	References() []*specs.Property
-	Do(context.Context, *refs.Store) error
+	Do(context.Context, *specs.Store) error
 }
 
 // NewManager constructs a new manager for the given flow.
@@ -60,7 +59,7 @@ func (manager *Manager) GetName() string {
 
 // Call calls all the nodes inside the manager if a error is returned is a rollback of all the already executed steps triggered.
 // Nodes are executed concurrently to one another.
-func (manager *Manager) Call(ctx context.Context, refs *refs.Store) error {
+func (manager *Manager) Call(ctx context.Context, refs *specs.Store) error {
 	manager.wg.Add(1)
 	defer manager.wg.Done()
 
@@ -93,13 +92,13 @@ func (manager *Manager) Call(ctx context.Context, refs *refs.Store) error {
 }
 
 // NewStore constructs a new reference store for the given manager
-func (manager *Manager) NewStore() *refs.Store {
-	return refs.NewStore(manager.References)
+func (manager *Manager) NewStore() *specs.Store {
+	return specs.NewReferenceStore(manager.References)
 }
 
 // Revert reverts the executed nodes found inside the given tracker.
 // All nodes that have not been executed will be ignored.
-func (manager *Manager) Revert(executed *Tracker, refs *refs.Store) {
+func (manager *Manager) Revert(executed *Tracker, refs *specs.Store) {
 	defer manager.wg.Done()
 
 	ctx := context.Background()

@@ -8,7 +8,6 @@ import (
 	"github.com/jexia/maestro/instance"
 	"github.com/jexia/maestro/logger"
 	"github.com/jexia/maestro/metadata"
-	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/specs"
 	"github.com/jexia/maestro/transport"
 	"github.com/sirupsen/logrus"
@@ -60,7 +59,7 @@ func (caller *Caller) References() []*specs.Property {
 }
 
 // Do is called by the flow manager to call the configured service
-func (caller *Caller) Do(ctx context.Context, store *refs.Store) error {
+func (caller *Caller) Do(ctx context.Context, store *specs.Store) error {
 	body, err := caller.request.codec.Marshal(store)
 	if err != nil {
 		return err

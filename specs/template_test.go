@@ -134,8 +134,8 @@ func TestParseFunction(t *testing.T) {
 	}
 
 	functions := CustomDefinedFunctions{
-		"add": func(path string, args ...*Property) (*Property, error) {
-			return &static, nil
+		"add": func(path string, args ...*Property) (*Property, HandleCustomFunction, []*Property, error) {
+			return &static, nil, nil, nil
 		},
 	}
 
@@ -179,8 +179,8 @@ func TestParseTemplate(t *testing.T) {
 	}
 
 	functions := CustomDefinedFunctions{
-		"add": func(path string, args ...*Property) (*Property, error) {
-			return &static, nil
+		"add": func(path string, args ...*Property) (*Property, HandleCustomFunction, []*Property, error) {
+			return &static, nil, nil, nil
 		},
 	}
 

@@ -150,11 +150,23 @@ type CustomDefinedFunctions map[string]PrepareCustomFunction
 
 // PrepareCustomFunction prepares the custom defined function.
 // The given arguments represent the exprected types that are passed when called.
-type PrepareCustomFunction func(path string, args ...*Property) (*Property, error)
+type PrepareCustomFunction func(path string, args ...*Property) (*Property, HandleCustomFunction, []*Property, error)
 
 // HandleCustomFunction executes the function and passes the expected types as interface{}.
 // The expected property type should always be returned.
-type HandleCustomFunction func(args ...interface{}) interface{}
+type HandleCustomFunction func(args ...interface{}) (interface{}, error)
+
+// Function represents a custom defined function
+type Function struct {
+	Arguments  []*Property
+	References []*Property
+	Handle     HandleCustomFunction
+}
+
+// Call executes the given function and all its arguments
+func (function *Function) Call() {
+
+}
 
 // PropertyReference represents a mustach template reference
 type PropertyReference struct {
@@ -187,7 +199,7 @@ type Property struct {
 	Reference *PropertyReference
 	Nested    map[string]*Property
 	Expr      hcl.Expression // TODO: marked for removal
-	Function  HandleCustomFunction
+	Function  *Function
 	Desciptor schema.Property
 }
 
@@ -246,7 +258,6 @@ type ParameterMap struct {
 type Node struct {
 	Name       string           `json:"name"`
 	DependsOn  map[string]*Node `json:"depends_on"`
-	Type       string           `json:"type"`
 	Call       *Call            `json:"call"`
 	Rollback   *Call            `json:"rollback"`
 	Descriptor schema.Method    `json:"-"`
@@ -269,6 +280,7 @@ type Call struct {
 	Request    *ParameterMap `json:"request"`
 	Response   *ParameterMap `json:"response"`
 	Descriptor schema.Method `json:"-"`
+	Function   Function
 }
 
 // GetRequest returns the call request parameter map

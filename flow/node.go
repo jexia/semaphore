@@ -5,7 +5,6 @@ import (
 
 	"github.com/jexia/maestro/instance"
 	"github.com/jexia/maestro/logger"
-	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/specs"
 	"github.com/sirupsen/logrus"
 )
@@ -14,21 +13,21 @@ import (
 // The service called inside the call endpoint is retrieved from the services collection.
 // The call, codec and rollback are defined inside the node and used while processing requests.
 func NewNode(ctx instance.Context, node *specs.Node, call, rollback Call) *Node {
-	references := refs.References{}
+	references := specs.References{}
 
 	if node.Call != nil {
-		references.MergeLeft(refs.ParameterReferences(node.Call.GetRequest()))
+		references.MergeLeft(specs.ParameterReferences(node.Call.GetRequest()))
 	}
 
 	if call != nil {
 		for _, prop := range call.References() {
-			references.MergeLeft(refs.PropertyReferences(prop))
+			references.MergeLeft(specs.PropertyReferences(prop))
 		}
 	}
 
 	if rollback != nil {
 		for _, prop := range rollback.References() {
-			references.MergeLeft(refs.PropertyReferences(prop))
+			references.MergeLeft(specs.PropertyReferences(prop))
 		}
 	}
 
@@ -76,7 +75,7 @@ type Node struct {
 
 // Do executes the given node an calls the next nodes.
 // If one of the nodes fails is the error marked and are the processes aborted.
-func (node *Node) Do(ctx context.Context, tracker *Tracker, processes *Processes, refs *refs.Store) {
+func (node *Node) Do(ctx context.Context, tracker *Tracker, processes *Processes, refs *specs.Store) {
 	defer processes.Done()
 	node.logger.WithField("node", node.Name).Debug("Executing node call")
 
@@ -118,7 +117,7 @@ func (node *Node) Do(ctx context.Context, tracker *Tracker, processes *Processes
 
 // Revert executes the given node rollback an calls the previous nodes.
 // If one of the nodes fails is the error marked but execution is not aborted.
-func (node *Node) Revert(ctx context.Context, tracker *Tracker, processes *Processes, refs *refs.Store) {
+func (node *Node) Revert(ctx context.Context, tracker *Tracker, processes *Processes, refs *specs.Store) {
 	defer processes.Done()
 	node.logger.WithField("node", node.Name).Debug("Executing node revert")
 

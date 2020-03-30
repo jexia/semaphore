@@ -1,14 +1,13 @@
 package graphql
 
 import (
-	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/specs"
 	"github.com/jexia/maestro/specs/labels"
 	"github.com/jexia/maestro/specs/types"
 )
 
 // ResponseValue constructs the response value send back to the client
-func ResponseValue(specs *specs.Property, refs *refs.Store) (interface{}, error) {
+func ResponseValue(specs *specs.Property, refs *specs.Store) (interface{}, error) {
 	if specs.Type != types.Message {
 		return nil, ErrInvalidObject
 	}

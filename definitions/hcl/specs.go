@@ -45,6 +45,11 @@ func ParseSpecs(ctx instance.Context, manifest Manifest, functions specs.CustomD
 	return result, nil
 }
 
+// ParseIntermediateFunctions parses the given intermediate function an includes it inside the custom defined functions
+func ParseIntermediateFunctions(ctx instance.Context, functions specs.CustomDefinedFunctions) error {
+	return nil
+}
+
 // ParseIntermediateEndpoint parses the given intermediate endpoint to a specs endpoint
 func ParseIntermediateEndpoint(ctx instance.Context, endpoint Endpoint) *specs.Endpoint {
 	ctx.Logger(logger.Core).WithField("flow", endpoint.Flow).Debug("Parsing intermediate endpoint to specs")
@@ -75,17 +80,32 @@ func ParseIntermediateFlow(ctx instance.Context, flow Flow, functions specs.Cust
 	result := specs.Flow{
 		Name:   flow.Name,
 		Input:  input,
-		Nodes:  make([]*specs.Node, len(flow.Resources)),
+		Nodes:  make([]*specs.Node, 0, len(flow.Resources)+len(flow.Nodes)),
 		Output: output,
 	}
 
-	for index, call := range flow.Resources {
+	// for _, resource := range flow.Resources {
+	// 	node := &specs.Node{
+	// 		Name: "",
+	// 		Call: &specs.Call{
+	// 			Function: func(args ...interface{}) interface{} {
+	// 				return nil
+	// 			},
+	// 			Request:  &specs.ParameterMap{},
+	// 			Response: &specs.ParameterMap{},
+	// 		},
+	// 	}
+
+	// 	result.Nodes = append(result.Nodes, node)
+	// }
+
+	for _, call := range flow.Nodes {
 		node, err := ParseIntermediateNode(ctx, call, functions)
 		if err != nil {
 			return nil, err
 		}
 
-		result.Nodes[index] = node
+		result.Nodes = append(result.Nodes, node)
 	}
 
 	return &result, nil
@@ -162,11 +182,15 @@ func ParseIntermediateProxy(ctx instance.Context, proxy Proxy, functions specs.C
 
 	result := specs.Proxy{
 		Name:    proxy.Name,
-		Nodes:   make([]*specs.Node, len(proxy.Resources)),
+		Nodes:   make([]*specs.Node, len(proxy.Resources)+len(proxy.Nodes)),
 		Forward: forward,
 	}
 
-	for index, node := range proxy.Resources {
+	// for index, resource := range proxy.Resources {
+
+	// }
+
+	for index, node := range proxy.Nodes {
 		node, err := ParseIntermediateNode(ctx, node, functions)
 		if err != nil {
 			return nil, err
@@ -410,7 +434,6 @@ func ParseIntermediateNode(ctx instance.Context, node Node, functions specs.Cust
 	result := specs.Node{
 		DependsOn: make(map[string]*specs.Node, len(node.DependsOn)),
 		Name:      node.Name,
-		Type:      node.Type,
 		Call:      call,
 		Rollback:  rollback,
 	}

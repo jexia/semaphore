@@ -1,13 +1,11 @@
-package refs
+package specs
 
 import (
 	"sync"
-
-	"github.com/jexia/maestro/specs"
 )
 
-// New constructs a new reference with the given path
-func New(path string) *Reference {
+// NewReference constructs a new reference with the given path
+func NewReference(path string) *Reference {
 	return &Reference{
 		Path: path,
 	}
@@ -41,8 +39,8 @@ func (reference *Reference) Set(index int, val *Store) {
 	reference.mutex.Unlock()
 }
 
-// NewStore constructs a new store and allocates the references for the given length
-func NewStore(size int) *Store {
+// NewReferenceStore constructs a new store and allocates the references for the given length
+func NewReferenceStore(size int) *Store {
 	return &Store{
 		values: make(map[string]*Reference, size),
 	}
@@ -78,7 +76,7 @@ func (store *Store) Load(resource string, path string) *Reference {
 // StoreValues stores the given values to the reference store
 func (store *Store) StoreValues(resource string, path string, values map[string]interface{}) {
 	for key, val := range values {
-		path := specs.JoinPath(path, key)
+		path := JoinPath(path, key)
 		keys, is := val.(map[string]interface{})
 		if is {
 			store.StoreValues(resource, path, keys)
@@ -87,7 +85,7 @@ func (store *Store) StoreValues(resource string, path string, values map[string]
 
 		repeated, is := val.([]map[string]interface{})
 		if is {
-			reference := New(path)
+			reference := NewReference(path)
 			store.NewRepeatingMessages(resource, path, reference, repeated)
 			store.StoreReference(resource, reference)
 			continue
@@ -95,7 +93,7 @@ func (store *Store) StoreValues(resource string, path string, values map[string]
 
 		values, is := val.([]interface{})
 		if is {
-			reference := New(path)
+			reference := NewReference(path)
 			store.NewRepeating(resource, path, reference, values)
 			store.StoreReference(resource, reference)
 			continue
@@ -107,7 +105,7 @@ func (store *Store) StoreValues(resource string, path string, values map[string]
 
 // StoreValue stores the given value for the given resource and path
 func (store *Store) StoreValue(resource string, path string, value interface{}) {
-	reference := New(path)
+	reference := NewReference(path)
 	reference.Value = value
 
 	store.StoreReference(resource, reference)
@@ -118,7 +116,7 @@ func (store *Store) NewRepeatingMessages(resource string, path string, reference
 	reference.Repeating(len(values))
 
 	for index, values := range values {
-		store := NewStore(len(values))
+		store := NewReferenceStore(len(values))
 		store.StoreValues(resource, path, values)
 		reference.Set(index, store)
 	}
@@ -129,7 +127,7 @@ func (store *Store) NewRepeating(resource string, path string, reference *Refere
 	reference.Repeating(len(values))
 
 	for index, value := range values {
-		store := NewStore(1)
+		store := NewReferenceStore(1)
 		store.StoreValue("", "", value)
 		reference.Set(index, store)
 	}

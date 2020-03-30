@@ -10,7 +10,6 @@ import (
 
 	"github.com/jexia/maestro"
 	"github.com/jexia/maestro/definitions/hcl"
-	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/schema/mock"
 	"github.com/jexia/maestro/specs"
 )
@@ -53,7 +52,7 @@ func NewMock() (*specs.Manifest, error) {
 	return client.Manifest, nil
 }
 
-func ValidateStore(t *testing.T, resource string, origin string, input map[string]interface{}, store *refs.Store) {
+func ValidateStore(t *testing.T, resource string, origin string, input map[string]interface{}, store *specs.Store) {
 	for key, value := range input {
 		path := specs.JoinPath(origin, key)
 		nested, is := value.(map[string]interface{})
@@ -101,7 +100,7 @@ func BenchmarkSimpleMarshal(b *testing.B) {
 		"message": "message",
 	}
 
-	refs := refs.NewStore(len(input))
+	refs := specs.NewReferenceStore(len(input))
 	refs.StoreValues("input", "", input)
 
 	manifest, err := NewMock()
@@ -138,7 +137,7 @@ func BenchmarkNestedMarshal(b *testing.B) {
 		},
 	}
 
-	refs := refs.NewStore(len(input))
+	refs := specs.NewReferenceStore(len(input))
 	refs.StoreValues("input", "", input)
 
 	manifest, err := NewMock()
@@ -177,7 +176,7 @@ func BenchmarkRepeatedMessagesMarshal(b *testing.B) {
 		},
 	}
 
-	refs := refs.NewStore(len(input))
+	refs := specs.NewReferenceStore(len(input))
 	refs.StoreValues("input", "", input)
 
 	manifest, err := NewMock()
@@ -214,7 +213,7 @@ func BenchmarkRepeatedValuesMarshal(b *testing.B) {
 		},
 	}
 
-	refs := refs.NewStore(len(input))
+	refs := specs.NewReferenceStore(len(input))
 	refs.StoreValues("input", "", input)
 
 	manifest, err := NewMock()
@@ -254,7 +253,7 @@ func BenchmarkSimpleUnmarshal(b *testing.B) {
 		b.Fatal(err)
 	}
 
-	refs := refs.NewStore(len(input))
+	refs := specs.NewReferenceStore(len(input))
 	manifest, err := NewMock()
 	if err != nil {
 		b.Fatal(err)
@@ -292,7 +291,7 @@ func BenchmarkNestedUnmarshal(b *testing.B) {
 		b.Fatal(err)
 	}
 
-	refs := refs.NewStore(len(input))
+	refs := specs.NewReferenceStore(len(input))
 	manifest, err := NewMock()
 	if err != nil {
 		b.Fatal(err)
@@ -332,7 +331,7 @@ func BenchmarkRepeatedMessagesUnmarshal(b *testing.B) {
 		b.Fatal(err)
 	}
 
-	refs := refs.NewStore(len(input))
+	refs := specs.NewReferenceStore(len(input))
 	manifest, err := NewMock()
 	if err != nil {
 		b.Fatal(err)
@@ -370,7 +369,7 @@ func BenchmarkRepeatedValuesUnmarshal(b *testing.B) {
 		b.Fatal(err)
 	}
 
-	refs := refs.NewStore(len(input))
+	refs := specs.NewReferenceStore(len(input))
 	manifest, err := NewMock()
 	if err != nil {
 		b.Fatal(err)
@@ -403,10 +402,10 @@ func TestMarshal(t *testing.T) {
 	}
 
 	flow := FindFlow(manifest, "complete")
-	specs := FindNode(flow, "first").Call.GetRequest()
+	req := FindNode(flow, "first").Call.GetRequest()
 
 	constructor := &Constructor{}
-	manager, err := constructor.New("input", specs)
+	manager, err := constructor.New("input", req)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -462,7 +461,7 @@ func TestMarshal(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			refs := refs.NewStore(len(input))
+			refs := specs.NewReferenceStore(len(input))
 			refs.StoreValues("input", "", input)
 
 			reader, err := manager.Marshal(refs)
@@ -508,10 +507,10 @@ func TestUnmarshal(t *testing.T) {
 	}
 
 	flow := FindFlow(manifest, "complete")
-	specs := FindNode(flow, "first").Call.GetRequest()
+	req := FindNode(flow, "first").Call.GetRequest()
 
 	constructor := &Constructor{}
-	manager, err := constructor.New("input", specs)
+	manager, err := constructor.New("input", req)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -567,7 +566,7 @@ func TestUnmarshal(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			store := refs.NewStore(len(input))
+			store := specs.NewReferenceStore(len(input))
 			err = manager.Unmarshal(bytes.NewBuffer(inputAsJSON), store)
 			if err != nil {
 				t.Fatal(err)

@@ -17,7 +17,8 @@ type Flow struct {
 	Name      string             `hcl:"name,label"`
 	DependsOn []string           `hcl:"depends_on,optional"`
 	Input     *InputParameterMap `hcl:"input,block"`
-	Resources []Node             `hcl:"resource,block"`
+	Resources []Resources        `hcl:"resources,block"`
+	Nodes     []Node             `hcl:"resource,block"`
 	Output    *ParameterMap      `hcl:"output,block"`
 }
 
@@ -92,9 +93,17 @@ type RepeatedParameterMap struct {
 type Node struct {
 	Name      string   `hcl:"name,label"`
 	DependsOn []string `hcl:"depends_on,optional"`
-	Type      string   `hcl:"type,optional"`
 	Request   *Call    `hcl:"request,block"`
 	Rollback  *Call    `hcl:"rollback,block"`
+}
+
+// Function intermediate specification
+type Function struct {
+	Name      string        `hcl:"name,label"`
+	Input     *ParameterMap `hcl:"input,block"`
+	Resources []Resources   `hcl:"resources,block"`
+	Nodes     []Node        `hcl:"resource,block"`
+	Output    *ParameterMap `hcl:"output,block"`
 }
 
 // Call intermediate specification
@@ -129,9 +138,9 @@ type Method struct {
 
 // Proxy specification
 type Proxy struct {
-	Name string `hcl:"name,label"`
-	// Resources []Resources  `hcl:"resources,block"`
-	Resources []Node       `hcl:"resource,block"`
+	Name      string       `hcl:"name,label"`
+	Resources []Resources  `hcl:"resources,block"`
+	Nodes     []Node       `hcl:"resource,block"`
 	Forward   ProxyForward `hcl:"forward,block"`
 }
 

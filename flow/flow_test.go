@@ -8,17 +8,16 @@ import (
 	"testing"
 
 	"github.com/jexia/maestro/instance"
-	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/specs"
 )
 
 type MockCodec struct{}
 
-func (codec *MockCodec) Marshal(*refs.Store) (io.Reader, error) {
+func (codec *MockCodec) Marshal(*specs.Store) (io.Reader, error) {
 	return nil, nil
 }
 
-func (codec *MockCodec) Unmarshal(io.Reader, *refs.Store) error {
+func (codec *MockCodec) Unmarshal(io.Reader, *specs.Store) error {
 	return nil
 }
 
@@ -32,7 +31,7 @@ func (caller *caller) References() []*specs.Property {
 	return nil
 }
 
-func (caller *caller) Do(context.Context, *refs.Store) error {
+func (caller *caller) Do(context.Context, *specs.Store) error {
 	caller.mutex.Lock()
 	caller.Counter++
 	caller.mutex.Unlock()
