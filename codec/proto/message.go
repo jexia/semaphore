@@ -94,24 +94,29 @@ func (manager *Manager) Encode(proto *dynamic.Message, desc *desc.MessageDescrip
 				continue
 			}
 
-			// TODO: currently we only support repeated messaged repeated types should be added in the future
-			if prop.Type != types.Message {
-				continue
-			}
-
 			ref := store.Load(prop.Reference.Resource, prop.Reference.Path)
 			if ref == nil {
 				continue
 			}
 
 			for _, store := range ref.Repeated {
-				item := dynamic.NewMessage(field.GetMessageType())
-				err = manager.Encode(item, field.GetMessageType(), prop.Nested, store)
-				if err != nil {
-					return err
+				var value interface{}
+
+				switch prop.Type {
+				case types.Message:
+					item := dynamic.NewMessage(field.GetMessageType())
+					err = manager.Encode(item, field.GetMessageType(), prop.Nested, store)
+					if err != nil {
+						return err
+					}
+
+					value = item
+				default:
+					ref := store.Load("", "")
+					value = ref.Value
 				}
 
-				err = proto.TryAddRepeatedField(field, item)
+				err = proto.TryAddRepeatedField(field, value)
 				if err != nil {
 					return err
 				}
@@ -120,12 +125,12 @@ func (manager *Manager) Encode(proto *dynamic.Message, desc *desc.MessageDescrip
 			continue
 		}
 
-		val := prop.Default
+		value := prop.Default
 
 		if prop.Reference != nil {
 			ref := store.Load(prop.Reference.Resource, prop.Reference.Path)
 			if ref != nil {
-				val = ref.Value
+				value = ref.Value
 			}
 		}
 
@@ -142,11 +147,11 @@ func (manager *Manager) Encode(proto *dynamic.Message, desc *desc.MessageDescrip
 			}
 		}
 
-		if val == nil {
+		if value == nil {
 			continue
 		}
 
-		err = proto.TrySetField(field, val)
+		err = proto.TrySetField(field, value)
 		if err != nil {
 			return err
 		}
@@ -178,30 +183,36 @@ func (manager *Manager) Decode(proto *dynamic.Message, properties map[string]*sp
 	for _, field := range proto.GetKnownFields() {
 		prop := properties[field.GetName()]
 
-		if prop.Type == types.Message {
-			if field.IsRepeated() {
-				length := proto.FieldLength(field)
+		if field.IsRepeated() {
+			length := proto.FieldLength(field)
 
-				ref := refs.New(prop.Path)
-				ref.Repeating(length)
+			ref := refs.New(prop.Path)
+			ref.Repeating(length)
 
-				for index := 0; index < length; index++ {
-					repeated := proto.GetRepeatedField(field, index).(*dynamic.Message)
-					store := refs.NewStore(len(repeated.GetKnownFields()))
-					manager.Decode(repeated, prop.Nested, store)
+			for index := 0; index < length; index++ {
+				value := proto.GetRepeatedField(field, index)
+
+				if prop.Type == types.Message {
+					message := value.(*dynamic.Message)
+					store := refs.NewStore(len(message.GetKnownFields()))
+					manager.Decode(message, prop.Nested, store)
 					ref.Set(index, store)
+					continue
 				}
 
-				store.StoreReference(manager.resource, ref)
-				continue
+				store := refs.NewStore(1)
+				store.StoreValue("", "", value)
+
+				ref.Set(index, store)
 			}
 
-			nested := proto.GetField(field).(*dynamic.Message)
-			manager.Decode(nested, prop.Nested, store)
+			store.StoreReference(manager.resource, ref)
 			continue
 		}
 
-		if field.IsRepeated() {
+		if prop.Type == types.Message {
+			nested := proto.GetField(field).(*dynamic.Message)
+			manager.Decode(nested, prop.Nested, store)
 			continue
 		}
 

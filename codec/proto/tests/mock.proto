@@ -6,6 +6,7 @@ service mock {
     rpc simple(Simple) returns (Empty);
     rpc nested(Nested) returns (Empty);
     rpc repeated(Repeated) returns (Empty);
+    rpc repeated_values(RepeatedValues) returns (Empty);
 }
 
 message Simple {
@@ -18,6 +19,10 @@ message Nested {
 
 message Repeated {
     repeated Value repeating = 2;
+}
+
+message RepeatedValues {
+    repeated string repeating = 2;
 }
 
 message Value {

@@ -20,6 +20,9 @@ objects:
                     value:
                         type: "string"
                         label: "optional"
+            repeating_values:
+                type: "string"
+                label: "repeated"
 services:
     mock:
         methods:
@@ -45,6 +48,9 @@ services:
                                 value:
                                     type: "string"
                                     label: "optional"
+                        repeating_values:
+                            type: "string"
+                            label: "repeated"
                 output:
                     type: "message"
                     label: "optional"
@@ -76,6 +82,18 @@ services:
                                 value:
                                     type: "string"
                                     label: "optional"
+                output:
+                    type: "message"
+                    label: "optional"
+                    nested:
+            repeated_values:
+                input:
+                    type: "message"
+                    label: "optional"
+                    nested:
+                        repeated_values:
+                            type: "string"
+                            label: "repeated"
                 output:
                     type: "message"
                     label: "optional"

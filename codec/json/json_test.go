@@ -71,6 +71,20 @@ func ValidateStore(t *testing.T, resource string, origin string, input map[strin
 			continue
 		}
 
+		values, is := value.([]interface{})
+		if is {
+			repeating := store.Load(resource, path)
+			for index, store := range repeating.Repeated {
+				// small wrapper that allows to reuse functionalities
+				wrapper := map[string]interface{}{
+					"": values[index],
+				}
+
+				ValidateStore(t, "", "", wrapper, store)
+			}
+			continue
+		}
+
 		ref := store.Load(resource, path)
 		if ref == nil {
 			t.Fatalf("resource not found %s", path)
@@ -154,7 +168,7 @@ func BenchmarkNestedMarshal(b *testing.B) {
 	}
 }
 
-func BenchmarkRepeatedMarshal(b *testing.B) {
+func BenchmarkRepeatedMessagesMarshal(b *testing.B) {
 	input := map[string]interface{}{
 		"repeating": []map[string]interface{}{
 			{
@@ -172,6 +186,43 @@ func BenchmarkRepeatedMarshal(b *testing.B) {
 	}
 
 	flow := FindFlow(manifest, "repeated")
+	specs := FindNode(flow, "first").Call.GetRequest()
+
+	constructor := &Constructor{}
+	manager, err := constructor.New("input", specs)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		reader, err := manager.Marshal(refs)
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		ioutil.ReadAll(reader)
+	}
+}
+
+func BenchmarkRepeatedValuesMarshal(b *testing.B) {
+	input := map[string]interface{}{
+		"repeating_values": []interface{}{
+			"message",
+		},
+	}
+
+	refs := refs.NewStore(len(input))
+	refs.StoreValues("input", "", input)
+
+	manifest, err := NewMock()
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	flow := FindFlow(manifest, "repeated_values")
 	specs := FindNode(flow, "first").Call.GetRequest()
 
 	constructor := &Constructor{}
@@ -267,7 +318,7 @@ func BenchmarkNestedUnmarshal(b *testing.B) {
 	}
 }
 
-func BenchmarkRepeatedUnmarshal(b *testing.B) {
+func BenchmarkRepeatedMessagesUnmarshal(b *testing.B) {
 	input := map[string]interface{}{
 		"repeating": []map[string]interface{}{
 			{
@@ -288,6 +339,44 @@ func BenchmarkRepeatedUnmarshal(b *testing.B) {
 	}
 
 	flow := FindFlow(manifest, "repeated")
+	specs := FindNode(flow, "first").Call.GetRequest()
+
+	constructor := &Constructor{}
+	manager, err := constructor.New("input", specs)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		err := manager.Unmarshal(bytes.NewBuffer(bb), refs)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+func BenchmarkRepeatedValuesUnmarshal(b *testing.B) {
+	input := map[string]interface{}{
+		"repeating_values": []interface{}{
+			"message",
+		},
+	}
+
+	bb, err := json.Marshal(input)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	refs := refs.NewStore(len(input))
+	manifest, err := NewMock()
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	flow := FindFlow(manifest, "repeated_values")
 	specs := FindNode(flow, "first").Call.GetRequest()
 
 	constructor := &Constructor{}
@@ -341,6 +430,13 @@ func TestMarshal(t *testing.T) {
 				{
 					"value": "repeating value",
 				},
+			},
+		},
+		"repeating_values": {
+			"nested": map[string]interface{}{},
+			"repeating_values": []interface{}{
+				"repeating value",
+				"repeating value",
 			},
 		},
 		"complex": {
@@ -439,6 +535,13 @@ func TestUnmarshal(t *testing.T) {
 				{
 					"value": "repeating value",
 				},
+			},
+		},
+		"repeating_values": {
+			"nested": map[string]interface{}{},
+			"repeating_values": []interface{}{
+				"repeating value",
+				"repeating value",
 			},
 		},
 		"complex": {

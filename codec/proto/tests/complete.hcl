@@ -12,6 +12,8 @@ flow "complete" {
 			repeated "repeating" "input:repeating" {
 				value = "{{input:repeating.value}}"
 			}
+
+			repeating_values = "{{ input:repeating_values }}"
 		}
 	}
 }
