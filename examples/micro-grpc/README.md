@@ -1,6 +1,6 @@
-# gRPC
+# go-micro gRPC
 
-This example uses the gRPC implementation to allow maestro to call a simple greeting service.
+This example uses the `go-micro` gRPC implementation to allow maestro to call a simple greeting service.
 
 ## Getting started
 
@@ -19,9 +19,8 @@ $ cd maestro
 $ maestro run -c config.yaml
 ```
 
-You could execute the `greeter` flow by using [evans](https://github.com/ktr0731/evans) or by calling the HTTP endpoint.
+You could execute the `greeter` flow by executing a `POST` request on port `8080`.
 
 ```bash
-$ evans -r -p 50051
 $ curl 127.0.0.1:8080 -d '{"name":"world"}'
 ```

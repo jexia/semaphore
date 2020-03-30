@@ -1,39 +1,33 @@
 package main
 
 import (
+	"context"
 	"log"
-	"time"
+	"net"
 
 	"github.com/jexia/maestro/examples/grpc/proto"
-	"github.com/micro/go-micro/v2/service"
-	"github.com/micro/go-micro/v2/service/grpc"
-
-	"context"
+	"google.golang.org/grpc"
 )
 
 type Say struct{}
 
-func (s *Say) Hello(ctx context.Context, req *proto.Request, rsp *proto.Response) error {
+func (s *Say) Hello(ctx context.Context, req *proto.Request) (*proto.Response, error) {
 	log.Print("Received Say.Hello request")
-	rsp.Msg = "Hello " + req.Name
-	return nil
+	res := new(proto.Response)
+	res.Msg = "Hello " + req.Name
+
+	return res, nil
 }
 
 func main() {
-	service := grpc.NewService(
-		service.Name("go.micro.srv.greeter"),
-		service.RegisterTTL(time.Second*30),
-		service.RegisterInterval(time.Second*10),
-	)
-
-	// optionally setup command line usage
-	service.Init()
-
-	// Register Handlers
-	proto.RegisterSayHandler(service.Server(), new(Say))
-
-	// Run server
-	if err := service.Run(); err != nil {
+	lis, err := net.Listen("tcp", ":5050")
+	if err != nil {
 		log.Fatal(err)
 	}
+
+	server := grpc.NewServer()
+	proto.RegisterSayServer(server, &Say{})
+
+	log.Println("server up and running on port :5050")
+	server.Serve(lis)
 }

@@ -63,27 +63,27 @@ func FlowManager(ctx instance.Context, manifest *specs.Manifest, options Options
 	endpoints := make([]*transport.Endpoint, len(manifest.Endpoints))
 
 	for index, endpoint := range manifest.Endpoints {
-		current := manifest.GetFlow(endpoint.Flow)
-		if current == nil {
+		manager := manifest.GetFlow(endpoint.Flow)
+		if manager == nil {
 			continue
 		}
 
-		nodes := make([]*flow.Node, len(current.GetNodes()))
+		nodes := make([]*flow.Node, len(manager.GetNodes()))
 
 		result := &transport.Endpoint{
 			Listener: endpoint.Listener,
 			Options:  endpoint.Options,
-			Request:  current.GetInput(),
-			Response: current.GetOutput(),
+			Request:  manager.GetInput(),
+			Response: manager.GetOutput(),
 		}
 
-		for index, node := range current.GetNodes() {
-			caller, err := Call(ctx, manifest, node, node.Call, options, current)
+		for index, node := range manager.GetNodes() {
+			caller, err := Call(ctx, manifest, node, node.Call, options, manager)
 			if err != nil {
 				return nil, err
 			}
 
-			rollback, err := Call(ctx, manifest, node, node.Rollback, options, current)
+			rollback, err := Call(ctx, manifest, node, node.Rollback, options, manager)
 			if err != nil {
 				return nil, err
 			}
@@ -91,12 +91,12 @@ func FlowManager(ctx instance.Context, manifest *specs.Manifest, options Options
 			nodes[index] = flow.NewNode(ctx, node, caller, rollback)
 		}
 
-		forward, err := Forward(manifest, current.GetForward(), options)
+		forward, err := Forward(manifest, manager.GetForward(), options)
 		if err != nil {
 			return nil, err
 		}
 
-		result.Flow = flow.NewManager(ctx, current.GetName(), nodes)
+		result.Flow = flow.NewManager(ctx, manager.GetName(), nodes)
 		result.Forward = forward
 
 		endpoints[index] = result

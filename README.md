@@ -48,7 +48,14 @@ endpoint "checkout" "http" {
 }
 
 endpoint "checkout" "graphql" {
-    path = "data"
+    path = "payment"
+    base = "mutation"
+}
+
+endpoint "checkout" "grpc" {
+    package = "webshop.cart"
+    service = "Payment"
+    method = "Checkout"
 }
 
 flow "checkout" {

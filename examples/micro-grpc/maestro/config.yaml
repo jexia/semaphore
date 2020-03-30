@@ -1,8 +1,8 @@
 level: "debug"
 http:
     address: ":8080"
-grpc:
-    address: ":50051"
+graphql:
+    address: ":9090"
 protobuffers:
 - "../../../annotations"
 - "../proto/*.proto"

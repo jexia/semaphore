@@ -10,7 +10,10 @@ import (
 	"github.com/jexia/maestro/instance"
 	"github.com/jexia/maestro/logger"
 	"github.com/jexia/maestro/schema/protoc"
+	"github.com/jexia/maestro/transport/grpc"
 	"github.com/jexia/maestro/transport/http"
+	"github.com/jexia/maestro/transport/micro"
+	microGRPC "github.com/micro/go-micro/service/grpc"
 	"github.com/spf13/cobra"
 )
 
@@ -41,7 +44,9 @@ func run(cmd *cobra.Command, args []string) error {
 		maestro.WithLogLevel(logger.Global, global.LogLevel),
 		maestro.WithCodec(json.NewConstructor()),
 		maestro.WithCodec(proto.NewConstructor()),
+		maestro.WithCaller(micro.New("micro-grpc", microGRPC.NewService())),
 		maestro.WithCaller(http.NewCaller()),
+		maestro.WithCaller(grpc.NewCaller()),
 	}
 
 	for _, flow := range global.Flows {
