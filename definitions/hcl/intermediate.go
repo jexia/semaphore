@@ -31,6 +31,11 @@ type ParameterMap struct {
 	Properties hcl.Body               `hcl:",remain"`
 }
 
+// Resources represent a collection of resources which are references or custom defined functions
+type Resources struct {
+	Properties hcl.Body `hcl:",remain"`
+}
+
 // Endpoint intermediate specification
 type Endpoint struct {
 	Flow     string   `hcl:"flow,label"`
@@ -124,8 +129,8 @@ type Method struct {
 
 // Proxy specification
 type Proxy struct {
-	Name      string       `hcl:"name,label"`
-	DependsOn []string     `hcl:"depends_on,optional"`
+	Name string `hcl:"name,label"`
+	// Resources []Resources  `hcl:"resources,block"`
 	Resources []Node       `hcl:"resource,block"`
 	Forward   ProxyForward `hcl:"forward,block"`
 }

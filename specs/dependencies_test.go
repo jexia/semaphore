@@ -32,9 +32,6 @@ func TestResolveManifestDependencies(t *testing.T) {
 			},
 			{
 				Name: "second",
-				DependsOn: map[string]*Flow{
-					"first": nil,
-				},
 				Nodes: []*Node{
 					{
 						Name: "first",
@@ -56,10 +53,6 @@ func TestResolveManifestDependencies(t *testing.T) {
 			},
 			{
 				Name: "third",
-				DependsOn: map[string]*Flow{
-					"first":  nil,
-					"second": nil,
-				},
 				Nodes: []*Node{
 					{
 						Name: "first",
@@ -89,16 +82,6 @@ func TestResolveManifestDependencies(t *testing.T) {
 	}
 
 	for _, flow := range manifest.Flows {
-		if len(flow.DependsOn) == 0 {
-			continue
-		}
-
-		for key, val := range flow.DependsOn {
-			if val == nil {
-				t.Fatalf("flow dependency not resolved %s.%s", flow.Name, key)
-			}
-		}
-
 		for _, call := range flow.Nodes {
 			if len(call.DependsOn) == 0 {
 				continue
@@ -109,78 +92,6 @@ func TestResolveManifestDependencies(t *testing.T) {
 					t.Fatalf("call dependency not resolved %s.%s", call.Name, key)
 				}
 			}
-		}
-	}
-}
-
-func TestResolveFlowDependencies(t *testing.T) {
-	manifest := &Manifest{
-		Flows: []*Flow{
-			{
-				Name: "first",
-			},
-			{
-				Name: "second",
-				DependsOn: map[string]*Flow{
-					"first": nil,
-				},
-			},
-			{
-				Name: "third",
-				DependsOn: map[string]*Flow{
-					"first":  nil,
-					"second": nil,
-				},
-			},
-		},
-	}
-
-	tests := []*Flow{
-		manifest.Flows[1],
-		manifest.Flows[2],
-	}
-
-	for _, input := range tests {
-		err := ResolveFlowManagerDependencies(manifest, input, make(map[string]FlowManager))
-		if err != nil {
-			t.Fatalf("unexpected error %s", err)
-		}
-
-		for key, val := range input.DependsOn {
-			if val == nil {
-				t.Fatalf("dependency not resolved %s.%s", input.Name, key)
-			}
-		}
-	}
-}
-
-func TestFlowCircularDependenciesDetection(t *testing.T) {
-	manifest := &Manifest{
-		Flows: []*Flow{
-			{
-				Name: "first",
-				DependsOn: map[string]*Flow{
-					"second": nil,
-				},
-			},
-			{
-				Name: "second",
-				DependsOn: map[string]*Flow{
-					"first": nil,
-				},
-			},
-		},
-	}
-
-	tests := []*Flow{
-		manifest.Flows[0],
-		manifest.Flows[1],
-	}
-
-	for _, input := range tests {
-		err := ResolveFlowManagerDependencies(manifest, input, make(map[string]FlowManager))
-		if err == nil {
-			t.Fatalf("unexpected pass %s", input.Name)
 		}
 	}
 }

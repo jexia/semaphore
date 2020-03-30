@@ -73,15 +73,10 @@ func ParseIntermediateFlow(ctx instance.Context, flow Flow, functions specs.Cust
 	}
 
 	result := specs.Flow{
-		Name:      flow.Name,
-		DependsOn: make(map[string]*specs.Flow, len(flow.DependsOn)),
-		Input:     input,
-		Nodes:     make([]*specs.Node, len(flow.Resources)),
-		Output:    output,
-	}
-
-	for _, dependency := range flow.DependsOn {
-		result.DependsOn[dependency] = nil
+		Name:   flow.Name,
+		Input:  input,
+		Nodes:  make([]*specs.Node, len(flow.Resources)),
+		Output: output,
 	}
 
 	for index, call := range flow.Resources {
@@ -166,14 +161,9 @@ func ParseIntermediateProxy(ctx instance.Context, proxy Proxy, functions specs.C
 	}
 
 	result := specs.Proxy{
-		Name:      proxy.Name,
-		DependsOn: make(map[string]*specs.Flow, len(proxy.DependsOn)),
-		Nodes:     make([]*specs.Node, len(proxy.Resources)),
-		Forward:   forward,
-	}
-
-	for _, dependency := range proxy.DependsOn {
-		result.DependsOn[dependency] = nil
+		Name:    proxy.Name,
+		Nodes:   make([]*specs.Node, len(proxy.Resources)),
+		Forward: forward,
 	}
 
 	for index, node := range proxy.Resources {

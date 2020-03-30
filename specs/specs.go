@@ -14,7 +14,6 @@ type Resolver func(instance.Context, CustomDefinedFunctions) (*Manifest, error)
 // FlowManager represents a flow manager
 type FlowManager interface {
 	GetName() string
-	GetDependencies() map[string]*Flow
 	GetNodes() []*Node
 	GetInput() *ParameterMap
 	GetOutput() *ParameterMap
@@ -101,21 +100,15 @@ func (manifest *Manifest) Merge(incoming *Manifest) {
 // Calls are nested inside of flows and contain two labels, a unique name within the flow and the service and method to be called.
 // A dependency reference structure is generated within the flow which allows Maestro to figure out which calls could be called parallel to improve performance.
 type Flow struct {
-	Name      string           `json:"name"`
-	DependsOn map[string]*Flow `json:"depends_on"`
-	Input     *ParameterMap    `json:"input"`
-	Nodes     []*Node          `json:"nodes"`
-	Output    *ParameterMap    `json:"output"`
+	Name   string        `json:"name"`
+	Input  *ParameterMap `json:"input"`
+	Nodes  []*Node       `json:"nodes"`
+	Output *ParameterMap `json:"output"`
 }
 
 // GetName returns the flow name
 func (flow *Flow) GetName() string {
 	return flow.Name
-}
-
-// GetDependencies returns the dependencies of the given flow
-func (flow *Flow) GetDependencies() map[string]*Flow {
-	return flow.DependsOn
 }
 
 // GetNodes returns the calls of the given flow
@@ -316,20 +309,14 @@ func (call *Call) SetDescriptor(descriptor schema.Method) {
 // Proxies could define calls that are executed before the request body is forwarded.
 // A proxy forward could ideally be used for file uploads or large messages which could not be stored in memory.
 type Proxy struct {
-	Name      string           `json:"name"`
-	DependsOn map[string]*Flow `json:"depends_on"`
-	Nodes     []*Node          `json:"nodes"`
-	Forward   *Call            `json:"forward"`
+	Name    string  `json:"name"`
+	Nodes   []*Node `json:"nodes"`
+	Forward *Call   `json:"forward"`
 }
 
 // GetName returns the flow name
 func (proxy *Proxy) GetName() string {
 	return proxy.Name
-}
-
-// GetDependencies returns the dependencies of the given flow
-func (proxy *Proxy) GetDependencies() map[string]*Flow {
-	return proxy.DependsOn
 }
 
 // GetNodes returns the calls of the given flow

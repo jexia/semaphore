@@ -12,11 +12,6 @@ func ResolveManifestDependencies(ctx instance.Context, manifest *Manifest) error
 	ctx.Logger(logger.Core).Info("Resolving manifest dependencies")
 
 	for _, flow := range manifest.Flows {
-		err := ResolveFlowManagerDependencies(manifest, flow, make(map[string]FlowManager))
-		if err != nil {
-			return err
-		}
-
 		for _, call := range flow.Nodes {
 			err := ResolveCallDependencies(flow, call, make(map[string]*Node))
 			if err != nil {
@@ -26,11 +21,6 @@ func ResolveManifestDependencies(ctx instance.Context, manifest *Manifest) error
 	}
 
 	for _, proxy := range manifest.Proxy {
-		err := ResolveFlowManagerDependencies(manifest, proxy, make(map[string]FlowManager))
-		if err != nil {
-			return err
-		}
-
 		for _, call := range proxy.Nodes {
 			err := ResolveCallDependencies(proxy, call, make(map[string]*Node))
 			if err != nil {
@@ -67,33 +57,5 @@ lookup:
 	}
 
 	delete(unresolved, node.Name)
-	return nil
-}
-
-// ResolveFlowManagerDependencies resolves the given flow dependencies and attempts to detect any circular dependencies
-func ResolveFlowManagerDependencies(manifest *Manifest, node FlowManager, unresolved map[string]FlowManager) error {
-	unresolved[node.GetName()] = node
-
-lookup:
-	for edge := range node.GetDependencies() {
-		_, unresolv := unresolved[edge]
-		if unresolv {
-			return fmt.Errorf("Circular dependency detected: %s <-> %s", node.GetName(), edge)
-		}
-
-		for _, flow := range manifest.Flows {
-			if flow.Name == edge {
-				err := ResolveFlowManagerDependencies(manifest, flow, unresolved)
-				if err != nil {
-					return err
-				}
-
-				node.GetDependencies()[edge] = flow
-				continue lookup
-			}
-		}
-	}
-
-	delete(unresolved, node.GetName())
 	return nil
 }
