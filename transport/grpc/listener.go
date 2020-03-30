@@ -11,11 +11,12 @@ import (
 	"github.com/jexia/maestro/codec/proto"
 	"github.com/jexia/maestro/instance"
 	"github.com/jexia/maestro/logger"
+	"github.com/jexia/maestro/metadata"
 	"github.com/jexia/maestro/specs"
 	"github.com/jexia/maestro/transport"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/metadata"
+	rpcMeta "google.golang.org/grpc/metadata"
 	rpb "google.golang.org/grpc/reflection/grpc_reflection_v1alpha"
 )
 
@@ -88,28 +89,46 @@ func (listener *Listener) Handle(endpoints []*transport.Endpoint, codecs map[str
 			return err
 		}
 
-		req, err := constructor.New(specs.InputResource, endpoint.Request)
-		if err != nil {
-			return err
-		}
-
-		res, err := constructor.New(specs.OutputResource, endpoint.Response)
-		if err != nil {
-			return err
-		}
-
 		service := fmt.Sprintf("%s.%s", options.Package, options.Service)
 		name := fmt.Sprintf("%s/%s", service, options.Method)
 
-		methods[name] = &Method{
+		method := &Method{
 			fqn:  name,
 			name: options.Method,
 			flow: endpoint.Flow,
-			in:   endpoint.Request,
-			req:  req,
-			out:  endpoint.Response,
-			res:  res,
 		}
+
+		if endpoint.Request != nil {
+			codec, err := constructor.New(specs.InputResource, endpoint.Request)
+			if err != nil {
+				return err
+			}
+
+			header := metadata.NewManager(specs.InputResource, endpoint.Request)
+
+			method.req = &Request{
+				param:  endpoint.Request,
+				codec:  codec,
+				header: header,
+			}
+		}
+
+		if endpoint.Response != nil {
+			codec, err := constructor.New(specs.OutputResource, endpoint.Response)
+			if err != nil {
+				return err
+			}
+
+			header := metadata.NewManager(specs.InputResource, endpoint.Response)
+
+			method.res = &Request{
+				param:  endpoint.Response,
+				codec:  codec,
+				header: header,
+			}
+		}
+
+		methods[name] = method
 
 		if services[service] == nil {
 			services[service] = &Service{
@@ -162,11 +181,6 @@ func (listener *Listener) handler(srv interface{}, stream grpc.ServerStream) err
 		return grpc.Errorf(codes.Internal, "low level server stream not exists in context")
 	}
 
-	_, ok = metadata.FromIncomingContext(stream.Context())
-	if ok {
-		// TODO: support header values
-	}
-
 	method := listener.methods[fqn[1:]]
 	if method == nil {
 		return grpc.Errorf(codes.Unimplemented, "unknown method: %s", fqn)
@@ -179,9 +193,17 @@ func (listener *Listener) handler(srv interface{}, stream grpc.ServerStream) err
 	}
 
 	store := method.flow.NewStore()
-	err = method.req.Unmarshal(bytes.NewBuffer(req.payload), store)
-	if err != nil {
-		return grpc.Errorf(codes.ResourceExhausted, "invalid message body: %s", err)
+
+	if method.req != nil {
+		header, ok := rpcMeta.FromIncomingContext(stream.Context())
+		if ok {
+			method.req.header.Unmarshal(CopyRPCMD(header), store)
+		}
+
+		err = method.req.codec.Unmarshal(bytes.NewBuffer(req.payload), store)
+		if err != nil {
+			return grpc.Errorf(codes.ResourceExhausted, "invalid message body: %s", err)
+		}
 	}
 
 	err = method.flow.Call(stream.Context(), store)
@@ -189,26 +211,29 @@ func (listener *Listener) handler(srv interface{}, stream grpc.ServerStream) err
 		return grpc.Errorf(codes.Internal, "unkown error: %s", err)
 	}
 
-	reader, err := method.res.Marshal(store)
-	if err != nil {
-		return grpc.Errorf(codes.ResourceExhausted, "invalid response body: %s", err)
-	}
+	if method.res != nil {
+		header := method.req.header.Marshal(store)
+		reader, err := method.res.codec.Marshal(store)
+		if err != nil {
+			return grpc.Errorf(codes.ResourceExhausted, "invalid response body: %s", err)
+		}
 
-	bb, err := ioutil.ReadAll(reader)
-	if err != nil {
-		return grpc.Errorf(codes.ResourceExhausted, "unable to read full response body: %s", err)
-	}
+		bb, err := ioutil.ReadAll(reader)
+		if err != nil {
+			return grpc.Errorf(codes.ResourceExhausted, "unable to read full response body: %s", err)
+		}
 
-	res := &frame{
-		payload: bb,
-	}
+		res := &frame{
+			payload: bb,
+		}
 
-	err = stream.SendMsg(res)
-	if err != nil {
-		return grpc.Errorf(codes.Internal, "unkown error: %s", err)
-	}
+		err = stream.SendMsg(res)
+		if err != nil {
+			return grpc.Errorf(codes.Internal, "unkown error: %s", err)
+		}
 
-	stream.SetTrailer(metadata.MD{})
+		stream.SetTrailer(CopyMD(header))
+	}
 
 	return nil
 }

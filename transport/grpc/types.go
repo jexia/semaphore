@@ -3,19 +3,25 @@ package grpc
 import (
 	"github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/jexia/maestro/codec"
+	"github.com/jexia/maestro/metadata"
 	"github.com/jexia/maestro/specs"
 	"github.com/jexia/maestro/transport"
 )
+
+// Request method request
+type Request struct {
+	param  *specs.ParameterMap
+	header *metadata.Manager
+	codec  codec.Manager
+}
 
 // Method represents a gRPC endpoint
 type Method struct {
 	fqn        string
 	name       string
 	flow       transport.Flow
-	in         *specs.ParameterMap
-	req        codec.Manager
-	out        *specs.ParameterMap
-	res        codec.Manager
+	req        *Request
+	res        *Request
 	descriptor []byte
 }
 
@@ -31,12 +37,20 @@ func (method *Method) References() []*specs.Property {
 
 // GetRequest returns the request input parameter map
 func (method *Method) GetRequest() map[string]*specs.Property {
-	return method.in.Property.Nested
+	if method.req == nil {
+		return make(map[string]*specs.Property, 0)
+	}
+
+	return method.req.param.Property.Nested
 }
 
 // GetResponse returns the request output parameter map
 func (method *Method) GetResponse() map[string]*specs.Property {
-	return method.out.Property.Nested
+	if method.res == nil {
+		return make(map[string]*specs.Property, 0)
+	}
+
+	return method.res.param.Property.Nested
 }
 
 // Service represents a gRPC service
