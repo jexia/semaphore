@@ -170,6 +170,10 @@ func DefineCall(ctx instance.Context, schema schema.Collection, manifest *specs.
 		if err != nil {
 			return err
 		}
+
+		if call.Response.Header == nil {
+			call.Response.Header = specs.Header{}
+		}
 	}
 
 	return nil
