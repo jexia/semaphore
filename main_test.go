@@ -20,7 +20,7 @@ func TestOptions(t *testing.T) {
 	}
 
 	ctx := instance.NewContext()
-	options := constructor.NewOptions(ctx, WithFunctions(functions))
+	options := NewOptions(ctx, WithFunctions(functions))
 
 	if len(options.Functions) != len(functions) {
 		t.Errorf("unexpected functions %+v, expected %+v", options.Functions, functions)
