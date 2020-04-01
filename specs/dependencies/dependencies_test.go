@@ -74,6 +74,71 @@ func TestResolveManifestDependencies(t *testing.T) {
 				},
 			},
 		},
+		Proxy: []*specs.Proxy{
+			{
+				Name: "first",
+				Nodes: []*specs.Node{
+					{
+						Name: "first",
+					},
+					{
+						Name: "second",
+						DependsOn: map[string]*specs.Node{
+							"first": nil,
+						},
+					},
+					{
+						Name: "third",
+						DependsOn: map[string]*specs.Node{
+							"first":  nil,
+							"second": nil,
+						},
+					},
+				},
+			},
+			{
+				Name: "second",
+				Nodes: []*specs.Node{
+					{
+						Name: "first",
+					},
+					{
+						Name: "second",
+						DependsOn: map[string]*specs.Node{
+							"first": nil,
+						},
+					},
+					{
+						Name: "third",
+						DependsOn: map[string]*specs.Node{
+							"first":  nil,
+							"second": nil,
+						},
+					},
+				},
+			},
+			{
+				Name: "third",
+				Nodes: []*specs.Node{
+					{
+						Name: "first",
+					},
+					{
+						Name: "second",
+						DependsOn: map[string]*specs.Node{
+							"first": nil,
+						},
+					},
+					{
+						Name: "third",
+						DependsOn: map[string]*specs.Node{
+							"first":  nil,
+							"second": nil,
+						},
+					},
+				},
+			},
+		},
 	}
 
 	ctx := instance.NewContext()

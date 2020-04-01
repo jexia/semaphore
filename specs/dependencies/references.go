@@ -32,11 +32,29 @@ func ResolveNodeReferences(node *specs.Node) {
 		node.DependsOn = map[string]*specs.Node{}
 	}
 
-	ResolvePropertyReferences(node.Call.Request.Property, node.DependsOn)
-	ResolveFunctionsReferences(node.Call.Request.Functions, node.DependsOn)
+	if node.Call != nil {
+		if node.Call.Request != nil {
+			ResolvePropertyReferences(node.Call.Request.Property, node.DependsOn)
+			ResolveFunctionsReferences(node.Call.Request.Functions, node.DependsOn)
+		}
 
-	ResolvePropertyReferences(node.Call.Response.Property, node.DependsOn)
-	ResolveFunctionsReferences(node.Call.Response.Functions, node.DependsOn)
+		if node.Call.Response != nil {
+			ResolvePropertyReferences(node.Call.Response.Property, node.DependsOn)
+			ResolveFunctionsReferences(node.Call.Response.Functions, node.DependsOn)
+		}
+	}
+
+	if node.Rollback != nil {
+		if node.Rollback.Request != nil {
+			ResolvePropertyReferences(node.Rollback.Request.Property, node.DependsOn)
+			ResolveFunctionsReferences(node.Rollback.Request.Functions, node.DependsOn)
+		}
+
+		if node.Rollback.Response != nil {
+			ResolvePropertyReferences(node.Rollback.Response.Property, node.DependsOn)
+			ResolveFunctionsReferences(node.Rollback.Response.Functions, node.DependsOn)
+		}
+	}
 }
 
 // ResolveFunctionsReferences resolves all references made inside the given function arguments and return value
