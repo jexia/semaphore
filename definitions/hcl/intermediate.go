@@ -12,10 +12,16 @@ type Manifest struct {
 	Services  []Service  `hcl:"service,block"`
 }
 
+// Before intermediate specification
+type Before struct {
+	Resources []Resources `hcl:"resources,block"`
+	Nodes     []Node      `hcl:"resource,block"`
+}
+
 // Flow intermediate specification
 type Flow struct {
 	Name      string             `hcl:"name,label"`
-	DependsOn []string           `hcl:"depends_on,optional"`
+	Before    *Before            `hcl:"before,block"`
 	Input     *InputParameterMap `hcl:"input,block"`
 	Resources []Resources        `hcl:"resources,block"`
 	Nodes     []Node             `hcl:"resource,block"`

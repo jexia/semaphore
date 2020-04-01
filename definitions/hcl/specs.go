@@ -90,6 +90,23 @@ func ParseIntermediateFlow(ctx instance.Context, flow Flow, functions specs.Cust
 		Output: output,
 	}
 
+	before := map[string]*specs.Node{}
+	if flow.Before != nil {
+		for _, resources := range flow.Before.Resources {
+			attrs, _ := resources.Properties.JustAttributes()
+			for _, attr := range attrs {
+				before[attr.Name] = nil
+			}
+
+			flow.Resources = append([]Resources{resources}, flow.Resources...)
+		}
+
+		for _, node := range flow.Before.Nodes {
+			before[node.Name] = nil
+			flow.Nodes = append([]Node{node}, flow.Nodes...)
+		}
+	}
+
 	for _, resources := range flow.Resources {
 		attrs, _ := resources.Properties.JustAttributes()
 
@@ -103,7 +120,8 @@ func ParseIntermediateFlow(ctx instance.Context, flow Flow, functions specs.Cust
 			}
 
 			node := &specs.Node{
-				Name: prop.Name,
+				DependsOn: DependenciesExcept(before, prop.Name),
+				Name:      prop.Name,
 				Call: &specs.Call{
 					Request: &specs.ParameterMap{
 						Functions: methods,
@@ -118,16 +136,34 @@ func ParseIntermediateFlow(ctx instance.Context, flow Flow, functions specs.Cust
 		}
 	}
 
-	for _, call := range flow.Nodes {
-		node, err := ParseIntermediateNode(ctx, call, functions)
+	for _, intermediate := range flow.Nodes {
+		node, err := ParseIntermediateNode(ctx, intermediate, functions)
 		if err != nil {
 			return nil, err
+		}
+
+		for key := range DependenciesExcept(before, node.Name) {
+			node.DependsOn[key] = nil
 		}
 
 		result.Nodes = append(result.Nodes, node)
 	}
 
 	return &result, nil
+}
+
+// DependenciesExcept copies the given dependencies except the given resource
+func DependenciesExcept(dependencies map[string]*specs.Node, resource string) map[string]*specs.Node {
+	result := map[string]*specs.Node{}
+	for key, val := range dependencies {
+		if key == resource {
+			continue
+		}
+
+		result[key] = val
+	}
+
+	return result
 }
 
 // ParseIntermediateInputParameterMap parses the given input parameter map
