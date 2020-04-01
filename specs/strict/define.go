@@ -128,7 +128,7 @@ func GetObjectSchema(schema schema.Collection, params *specs.ParameterMap) (sche
 
 // DefineCall defineds the types for the specs call
 func DefineCall(ctx instance.Context, schema schema.Collection, manifest *specs.Manifest, node *specs.Node, call *specs.Call, flow specs.FlowManager) (err error) {
-	if call.GetRequest() != nil {
+	if call.Request != nil {
 		err = DefineParameterMap(ctx, node, call.GetRequest(), flow)
 		if err != nil {
 			return err
@@ -138,9 +138,14 @@ func DefineCall(ctx instance.Context, schema schema.Collection, manifest *specs.
 		if err != nil {
 			return err
 		}
+
+		err = DefineFunctions(ctx, call.Request.Functions, node, flow)
+		if err != nil {
+			return err
+		}
 	}
 
-	if call.GetMethod() != "" {
+	if call.Method != "" {
 		ctx.Logger(logger.Core).WithFields(logrus.Fields{
 			"call":    node.GetName(),
 			"method":  call.GetMethod(),
@@ -161,27 +166,51 @@ func DefineCall(ctx instance.Context, schema schema.Collection, manifest *specs.
 		call.SetDescriptor(method)
 		call.SetResponse(specs.ToParameterMap(nil, "", method.GetOutput()))
 
-		err = CheckTypes(call.GetRequest().Property, method.GetInput(), flow)
+		err = CheckTypes(call.Request.Property, method.GetInput(), flow)
 		if err != nil {
 			return err
 		}
 
-		err = CheckTypes(call.GetResponse().Property, method.GetOutput(), flow)
+		err = CheckTypes(call.Response.Property, method.GetOutput(), flow)
 		if err != nil {
 			return err
 		}
 	}
 
-	if call.GetResponse() != nil {
-		err = DefineParameterMap(ctx, node, call.GetResponse(), flow)
+	if call.Response != nil {
+		err = DefineParameterMap(ctx, node, call.Response, flow)
 		if err != nil {
 			return err
 		}
 
-		err = CheckHeader(call.GetResponse().Header, flow)
+		err = CheckHeader(call.Response.Header, flow)
 		if err != nil {
 			return err
 		}
+
+		err = DefineFunctions(ctx, call.Response.Functions, node, flow)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// DefineFunctions defined all properties within the given functions
+func DefineFunctions(ctx instance.Context, functions specs.Functions, node *specs.Node, flow specs.FlowManager) error {
+	if functions == nil {
+		return nil
+	}
+
+	for _, function := range functions {
+		if function.Arguments != nil {
+			for _, arg := range function.Arguments {
+				DefineProperty(ctx, node, arg, flow)
+			}
+		}
+
+		DefineProperty(ctx, node, function.Returns, flow)
 	}
 
 	return nil

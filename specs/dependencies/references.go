@@ -33,7 +33,27 @@ func ResolveNodeReferences(node *specs.Node) {
 	}
 
 	ResolvePropertyReferences(node.Call.Request.Property, node.DependsOn)
+	ResolveFunctionsReferences(node.Call.Request.Functions, node.DependsOn)
+
 	ResolvePropertyReferences(node.Call.Response.Property, node.DependsOn)
+	ResolveFunctionsReferences(node.Call.Response.Functions, node.DependsOn)
+}
+
+// ResolveFunctionsReferences resolves all references made inside the given function arguments and return value
+func ResolveFunctionsReferences(functions specs.Functions, dependencies map[string]*specs.Node) {
+	if functions == nil {
+		return
+	}
+
+	for _, function := range functions {
+		if function.Arguments != nil {
+			for _, arg := range function.Arguments {
+				ResolvePropertyReferences(arg, dependencies)
+			}
+		}
+
+		ResolvePropertyReferences(function.Returns, dependencies)
+	}
 }
 
 // ResolvePropertyReferences moves any property reference into the correct data structure
