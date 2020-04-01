@@ -596,7 +596,7 @@ func ParseIntermediateProperty(ctx instance.Context, path string, methods specs.
 	}
 
 	if value.Type() != cty.String || !specs.IsTemplate(value.AsString()) {
-		specs.SetDefaultValue(ctx, result, value)
+		SetDefaultValue(ctx, result, value)
 		return result, nil
 	}
 
