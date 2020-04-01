@@ -137,7 +137,7 @@ func (call *Call) GetMethod(name string) transport.Method {
 }
 
 // SendMsg calls the configured host and attempts to call the given endpoint with the given headers and stream
-func (call *Call) SendMsg(ctx context.Context, rw transport.ResponseWriter, pr *transport.Request, refs *specs.Store) error {
+func (call *Call) SendMsg(ctx context.Context, rw transport.ResponseWriter, pr *transport.Request, refs specs.Store) error {
 	request := http.MethodGet
 	url, err := url.Parse(call.host)
 	if err != nil {
@@ -185,7 +185,7 @@ func (call *Call) Close() error {
 }
 
 // LookupEndpointReferences looks up the references within the given endpoint and returns the newly constructed endpoint
-func LookupEndpointReferences(method *Method, store *specs.Store) string {
+func LookupEndpointReferences(method *Method, store specs.Store) string {
 	result := method.endpoint
 
 	for _, prop := range method.references {

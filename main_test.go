@@ -15,7 +15,7 @@ import (
 )
 
 func TestOptions(t *testing.T) {
-	functions := map[string]specs.PrepareCustomFunction{
+	functions := map[string]specs.PrepareFunction{
 		"cdf": nil,
 	}
 
@@ -28,7 +28,7 @@ func TestOptions(t *testing.T) {
 }
 
 func TestNewOptions(t *testing.T) {
-	functions := map[string]specs.PrepareCustomFunction{
+	functions := map[string]specs.PrepareFunction{
 		"cdf": nil,
 	}
 

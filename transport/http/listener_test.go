@@ -52,7 +52,7 @@ func TestListener(t *testing.T) {
 	}
 
 	called := 0
-	call := NewCallerFunc(func(ctx context.Context, refs *specs.Store) error {
+	call := NewCallerFunc(func(ctx context.Context, refs specs.Store) error {
 		called++
 		return nil
 	})
@@ -89,7 +89,7 @@ func TestListenerBadRequest(t *testing.T) {
 		{
 			Name:     "first",
 			Previous: flow.Nodes{},
-			Call: NewCallerFunc(func(ctx context.Context, refs *specs.Store) error {
+			Call: NewCallerFunc(func(ctx context.Context, refs specs.Store) error {
 				called++
 				return nil
 			}),
@@ -125,7 +125,7 @@ func TestPathReferences(t *testing.T) {
 		{
 			Name:     "first",
 			Previous: flow.Nodes{},
-			Call: NewCallerFunc(func(ctx context.Context, refs *specs.Store) error {
+			Call: NewCallerFunc(func(ctx context.Context, refs specs.Store) error {
 				ref := refs.Load("input", "message")
 				if ref == nil {
 					t.Fatal("input:message ref has not been set")

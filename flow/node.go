@@ -75,7 +75,7 @@ type Node struct {
 
 // Do executes the given node an calls the next nodes.
 // If one of the nodes fails is the error marked and are the processes aborted.
-func (node *Node) Do(ctx context.Context, tracker *Tracker, processes *Processes, refs *specs.Store) {
+func (node *Node) Do(ctx context.Context, tracker *Tracker, processes *Processes, refs specs.Store) {
 	defer processes.Done()
 	node.logger.WithField("node", node.Name).Debug("Executing node call")
 
@@ -117,7 +117,7 @@ func (node *Node) Do(ctx context.Context, tracker *Tracker, processes *Processes
 
 // Revert executes the given node rollback an calls the previous nodes.
 // If one of the nodes fails is the error marked but execution is not aborted.
-func (node *Node) Revert(ctx context.Context, tracker *Tracker, processes *Processes, refs *specs.Store) {
+func (node *Node) Revert(ctx context.Context, tracker *Tracker, processes *Processes, refs specs.Store) {
 	defer processes.Done()
 	node.logger.WithField("node", node.Name).Debug("Executing node revert")
 

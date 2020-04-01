@@ -15,14 +15,19 @@ func (references References) MergeLeft(incoming ...References) {
 // ParameterReferences returns all the available references inside the given parameter map
 func ParameterReferences(params *ParameterMap) References {
 	result := make(map[string]*PropertyReference)
-	for _, prop := range params.Header {
-		if prop.Reference != nil {
-			result[prop.Reference.String()] = prop.Reference
+
+	if params.Header != nil {
+		for _, prop := range params.Header {
+			if prop.Reference != nil {
+				result[prop.Reference.String()] = prop.Reference
+			}
 		}
 	}
 
-	for key, prop := range PropertyReferences(params.Property) {
-		result[key] = prop
+	if params.Property != nil {
+		for key, prop := range PropertyReferences(params.Property) {
+			result[key] = prop
+		}
 	}
 
 	return result
@@ -41,12 +46,6 @@ func PropertyReferences(property *Property) References {
 			for key, ref := range PropertyReferences(nested) {
 				result[key] = ref
 			}
-		}
-	}
-
-	if property.Function != nil {
-		for _, arg := range property.Function.References {
-			result[arg.Reference.String()] = arg.Reference
 		}
 	}
 

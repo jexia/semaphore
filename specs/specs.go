@@ -146,26 +146,25 @@ type Options map[string]string
 type Header map[string]*Property
 
 // CustomDefinedFunctions represents a collection of custom defined functions that could be called inside a template
-type CustomDefinedFunctions map[string]PrepareCustomFunction
+type CustomDefinedFunctions map[string]PrepareFunction
 
-// PrepareCustomFunction prepares the custom defined function.
+// PrepareFunction prepares the custom defined function.
 // The given arguments represent the exprected types that are passed when called.
-type PrepareCustomFunction func(path string, args ...*Property) (*Property, HandleCustomFunction, []*Property, error)
+// Properties returned should be absolute.
+type PrepareFunction func(args ...*Property) (*Property, FunctionExec, error)
 
-// HandleCustomFunction executes the function and passes the expected types as interface{}.
-// The expected property type should always be returned.
-type HandleCustomFunction func(args ...interface{}) (interface{}, error)
+// FunctionExec executes the function and passes the expected types as stores
+// A store should be returned which could be used to encode the function property
+type FunctionExec func(store Store) error
+
+// Functions represents a collection of functions
+type Functions map[string]*Function
 
 // Function represents a custom defined function
 type Function struct {
-	Arguments  []*Property
-	References []*Property
-	Handle     HandleCustomFunction
-}
-
-// Call executes the given function and all its arguments
-func (function *Function) Call() {
-
+	Arguments []*Property
+	Fn        FunctionExec
+	Returns   *Property
 }
 
 // PropertyReference represents a mustach template reference
@@ -198,56 +197,17 @@ type Property struct {
 	Label     labels.Label
 	Reference *PropertyReference
 	Nested    map[string]*Property
-	Expr      hcl.Expression // TODO: marked for removal
-	Function  *Function
+	Expr      hcl.Expression // TODO: replace this with a custom solution
 	Desciptor schema.Property
-}
-
-// Clone returns a clone of the property
-func (property *Property) Clone(reference *PropertyReference, name string, path string) *Property {
-	result := &Property{
-		Name:      name,
-		Path:      path,
-		Reference: reference,
-		Default:   property.Default,
-		Type:      property.Type,
-		Label:     property.Label,
-		Expr:      property.Expr,
-		Function:  property.Function,
-		Desciptor: property.Desciptor,
-	}
-
-	if property.Reference != nil {
-		result.Reference = &PropertyReference{
-			Resource: property.Reference.Resource,
-			Path:     property.Reference.Path,
-		}
-	}
-
-	if property.Nested != nil {
-		if len(property.Nested) != 0 {
-			result.Nested = make(map[string]*Property, len(property.Nested))
-
-			for key, nested := range property.Nested {
-				ref := &PropertyReference{
-					Resource: result.Reference.Resource,
-					Path:     JoinPath(result.Path, key),
-				}
-
-				result.Nested[key] = nested.Clone(ref, key, JoinPath(path, key))
-			}
-		}
-	}
-
-	return result
 }
 
 // ParameterMap is the initial map of parameter names (keys) and their (templated) values (values)
 type ParameterMap struct {
-	Schema   string    `json:"schema"`
-	Options  Options   `json:"options"`
-	Header   Header    `json:"header"`
-	Property *Property `json:"property"`
+	Schema    string    `json:"schema"`
+	Options   Options   `json:"options"`
+	Header    Header    `json:"header"`
+	Property  *Property `json:"property"`
+	Functions Functions
 }
 
 // Node represents a point inside a given flow where a request or rollback could be preformed.
@@ -280,7 +240,6 @@ type Call struct {
 	Request    *ParameterMap `json:"request"`
 	Response   *ParameterMap `json:"response"`
 	Descriptor schema.Method `json:"-"`
-	Function   Function
 }
 
 // GetRequest returns the call request parameter map
@@ -308,12 +267,13 @@ func (call *Call) GetDescriptor() schema.Method {
 	return call.Descriptor
 }
 
+// SetResponse sets the given parameter map as response
+func (call *Call) SetResponse(params *ParameterMap) {
+	call.Response = params
+}
+
 // SetDescriptor sets the call descriptor
 func (call *Call) SetDescriptor(descriptor schema.Method) {
-	if descriptor != nil {
-		call.Response = ToParameterMap(nil, "", descriptor.GetOutput())
-	}
-
 	call.Descriptor = descriptor
 }
 

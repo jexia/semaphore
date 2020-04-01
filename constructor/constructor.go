@@ -7,6 +7,7 @@ import (
 	"github.com/jexia/maestro/metadata"
 	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/specs"
+	"github.com/jexia/maestro/specs/dependencies"
 	"github.com/jexia/maestro/specs/strict"
 	"github.com/jexia/maestro/specs/trace"
 	"github.com/jexia/maestro/transport"
@@ -40,17 +41,18 @@ func Specs(ctx instance.Context, options Options) (*specs.Manifest, error) {
 		}
 	}
 
-	err := specs.CheckManifestDuplicates(ctx, result)
-	if err != nil {
-		return nil, err
-	}
-
-	err = specs.ResolveManifestDependencies(ctx, result)
+	err := strict.CheckManifestDuplicates(ctx, result)
 	if err != nil {
 		return nil, err
 	}
 
 	err = strict.DefineManifest(ctx, options.Schema, result)
+	if err != nil {
+		return nil, err
+	}
+
+	dependencies.ResolveReferences(ctx, result)
+	err = dependencies.ResolveManifest(ctx, result)
 	if err != nil {
 		return nil, err
 	}
@@ -116,13 +118,44 @@ func Call(ctx instance.Context, manifest *specs.Manifest, node *specs.Node, call
 		return nil, nil
 	}
 
+	if call.Service != "" {
+		return NewServiceCall(ctx, manifest, node, call, options, manager)
+	}
+
+	request, err := Request(node, nil, call.GetRequest())
+	if err != nil {
+		return nil, err
+	}
+
+	response, err := Request(node, nil, call.GetResponse())
+	if err != nil {
+		return nil, err
+	}
+
+	caller := flow.NewCall(ctx, node, &flow.CallOptions{
+		Request:  request,
+		Response: response,
+	})
+
+	return caller, nil
+}
+
+// NewServiceCall constructs a new flow caller for the given service
+func NewServiceCall(ctx instance.Context, manifest *specs.Manifest, node *specs.Node, call *specs.Call, options Options, manager specs.FlowManager) (flow.Call, error) {
+	if call == nil {
+		return nil, nil
+	}
+
+	if call.Service == "" {
+		return nil, trace.New(trace.WithMessage("invalid service name, no service name configured in '%s'", node.GetName()))
+	}
+
 	service := options.Schema.GetService(call.Service)
 	if service == nil {
-		return nil, trace.New(trace.WithMessage("the service for %s was not found", call.GetMethod()))
+		return nil, trace.New(trace.WithMessage("the service for '%s' was not found in '%s'", call.GetService(), node.GetName()))
 	}
 
 	constructor := options.Callers.Get(service.GetTransport())
-	codec := options.Codec[service.GetCodec()]
 	schema := options.Schema.GetService(service.GetFullyQualifiedName())
 
 	if schema == nil {
@@ -138,6 +171,16 @@ func Call(ctx instance.Context, manifest *specs.Manifest, node *specs.Node, call
 		return nil, err
 	}
 
+	err = strict.DefineCaller(ctx, node, manifest, transport, manager)
+	if err != nil {
+		return nil, err
+	}
+
+	codec := options.Codec.Get(service.GetCodec())
+	if codec == nil {
+		return nil, trace.New(trace.WithMessage("codec not found '%s'", service.GetCodec()))
+	}
+
 	request, err := Request(node, codec, call.GetRequest())
 	if err != nil {
 		return nil, err
@@ -148,24 +191,30 @@ func Call(ctx instance.Context, manifest *specs.Manifest, node *specs.Node, call
 		return nil, err
 	}
 
-	caller := flow.NewCall(ctx, node, transport, call.Method, request, response)
-	err = strict.DefineCaller(ctx, node, manifest, transport, manager)
-	if err != nil {
-		return nil, err
-	}
+	caller := flow.NewCall(ctx, node, &flow.CallOptions{
+		Transport: transport,
+		Method:    transport.GetMethod(call.GetMethod()),
+		Request:   request,
+		Response:  response,
+	})
 
 	return caller, nil
 }
 
 // Request constructs a new request from the given parameter map and codec
-func Request(node *specs.Node, codec codec.Constructor, params *specs.ParameterMap) (*flow.Request, error) {
-	message, err := codec.New(node.GetName(), params)
-	if err != nil {
-		return nil, err
+func Request(node *specs.Node, constructor codec.Constructor, params *specs.ParameterMap) (*flow.Request, error) {
+	var codec codec.Manager
+	if constructor != nil {
+		manager, err := constructor.New(node.GetName(), params)
+		if err != nil {
+			return nil, err
+		}
+
+		codec = manager
 	}
 
 	metadata := metadata.NewManager(node.GetName(), params)
-	return flow.NewRequest(message, metadata), nil
+	return flow.NewRequest(params.Functions, codec, metadata), nil
 }
 
 // Forward constructs a flow caller for the given call.
@@ -176,7 +225,7 @@ func Forward(manifest *specs.Manifest, call *specs.Call, options Options) (schem
 
 	service := options.Schema.GetService(call.GetService())
 	if service == nil {
-		return nil, trace.New(trace.WithMessage("the service for %s was not found", call.GetMethod()))
+		return nil, trace.New(trace.WithMessage("the service for '%s' was not found", call.GetMethod()))
 	}
 
 	return service, nil

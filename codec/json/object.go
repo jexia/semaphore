@@ -8,7 +8,7 @@ import (
 )
 
 // NewObject constructs a new object encoder/decoder for the given specs
-func NewObject(resource string, specs map[string]*specs.Property, refs *specs.Store) *Object {
+func NewObject(resource string, specs map[string]*specs.Property, refs specs.Store) *Object {
 	keys := len(specs)
 
 	return &Object{
@@ -23,7 +23,7 @@ func NewObject(resource string, specs map[string]*specs.Property, refs *specs.St
 type Object struct {
 	resource string
 	specs    map[string]*specs.Property
-	refs     *specs.Store
+	refs     specs.Store
 	keys     int
 }
 
@@ -110,7 +110,7 @@ func (object *Object) IsNil() bool {
 }
 
 // NewArray constructs a new JSON array encoder/decoder
-func NewArray(resource string, object *specs.Property, ref *specs.Reference, refs []*specs.Store) *Array {
+func NewArray(resource string, object *specs.Property, ref *specs.Reference, refs []specs.Store) *Array {
 	keys := 0
 
 	if object.Nested != nil {
@@ -130,7 +130,7 @@ func NewArray(resource string, object *specs.Property, ref *specs.Reference, ref
 type Array struct {
 	resource string
 	specs    *specs.Property
-	items    []*specs.Store
+	items    []specs.Store
 	ref      *specs.Reference
 	keys     int
 }

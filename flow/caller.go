@@ -14,63 +14,86 @@ import (
 )
 
 // NewRequest constructs a new request for the given codec and header manager
-func NewRequest(codec codec.Manager, metadata *metadata.Manager) *Request {
+func NewRequest(functions specs.Functions, codec codec.Manager, metadata *metadata.Manager) *Request {
 	return &Request{
-		codec:    codec,
-		metadata: metadata,
+		functions: functions,
+		codec:     codec,
+		metadata:  metadata,
 	}
 }
 
+// CallOptions represents the available options that could be used to construct a new flow caller
+type CallOptions struct {
+	Transport transport.Call
+	Method    transport.Method
+	Request   *Request
+	Response  *Request
+}
+
 // NewCall constructs a new flow caller from the given transport caller and
-func NewCall(ctx instance.Context, node *specs.Node, transport transport.Call, method string, request *Request, response *Request) Call {
+func NewCall(ctx instance.Context, node *specs.Node, options *CallOptions) Call {
 	return &Caller{
 		ctx:       ctx,
 		node:      node,
-		transport: transport,
-		method:    transport.GetMethod(method),
-		request:   request,
-		response:  response,
+		transport: options.Transport,
+		method:    options.Method,
+		request:   options.Request,
+		response:  options.Response,
 	}
 }
 
 // Request represents a codec and header manager
 type Request struct {
-	codec    codec.Manager
-	metadata *metadata.Manager
+	functions specs.Functions
+	codec     codec.Manager
+	metadata  *metadata.Manager
 }
 
 // Caller represents a flow transport caller
 type Caller struct {
-	ctx       instance.Context
-	node      *specs.Node
-	method    transport.Method
-	transport transport.Call
-	request   *Request
-	response  *Request
+	ctx        instance.Context
+	node       *specs.Node
+	method     transport.Method
+	transport  transport.Call
+	references []*specs.Property
+	request    *Request
+	response   *Request
 }
 
 // References returns the references inside the configured transport caller
 func (caller *Caller) References() []*specs.Property {
-	if caller.method == nil {
-		return make([]*specs.Property, 0)
-	}
-
-	return caller.method.References()
+	return caller.references
 }
 
 // Do is called by the flow manager to call the configured service
-func (caller *Caller) Do(ctx context.Context, store *specs.Store) error {
-	body, err := caller.request.codec.Marshal(store)
-	if err != nil {
-		return err
-	}
-
+func (caller *Caller) Do(ctx context.Context, store specs.Store) error {
 	reader, writer := io.Pipe()
 	w := transport.NewResponseWriter(writer)
 	r := &transport.Request{
-		Header: caller.request.metadata.Marshal(store),
 		Method: caller.method,
-		Body:   body,
+	}
+
+	if caller.request != nil {
+		for key, function := range caller.request.functions {
+			resource := specs.JoinPath(specs.StackResource, key)
+			err := function.Fn(specs.NewPrefixStore(store, resource, ""))
+			if err != nil {
+				return err
+			}
+		}
+
+		if caller.request.metadata != nil {
+			r.Header = caller.request.metadata.Marshal(store)
+		}
+
+		if caller.request.codec != nil {
+			body, err := caller.request.codec.Marshal(store)
+			if err != nil {
+				return err
+			}
+
+			r.Body = body
+		}
 	}
 
 	result := make(chan error, 1)
@@ -78,15 +101,25 @@ func (caller *Caller) Do(ctx context.Context, store *specs.Store) error {
 
 	go func() {
 		defer writer.Close()
+
+		if caller.transport == nil {
+			result <- nil
+			return
+		}
+
 		result <- caller.transport.SendMsg(ctx, w, r, store)
 	}()
 
-	err = caller.response.codec.Unmarshal(reader, store)
-	if err != nil {
-		return err
+	if caller.response != nil {
+		if caller.response.codec != nil {
+			err := caller.response.codec.Unmarshal(reader, store)
+			if err != nil {
+				return err
+			}
+		}
 	}
 
-	err = <-result
+	err := <-result
 	if err != nil {
 		caller.ctx.Logger(logger.Flow).WithFields(logrus.Fields{
 			"node": caller.node.GetName(),
@@ -96,7 +129,11 @@ func (caller *Caller) Do(ctx context.Context, store *specs.Store) error {
 		return err
 	}
 
-	caller.response.metadata.Unmarshal(w.Header(), store)
+	if caller.response != nil {
+		if caller.response.metadata != nil {
+			caller.response.metadata.Unmarshal(w.Header(), store)
+		}
+	}
 
 	return nil
 }

@@ -128,28 +128,6 @@ func GetObjectSchema(schema schema.Collection, params *specs.ParameterMap) (sche
 
 // DefineCall defineds the types for the specs call
 func DefineCall(ctx instance.Context, schema schema.Collection, manifest *specs.Manifest, node *specs.Node, call *specs.Call, flow specs.FlowManager) (err error) {
-	if call.GetMethod() == "" {
-		return nil
-	}
-
-	ctx.Logger(logger.Core).WithFields(logrus.Fields{
-		"call":    node.GetName(),
-		"method":  call.GetMethod(),
-		"service": call.GetService(),
-	}).Info("Defining call types")
-
-	service := schema.GetService(call.GetService())
-	if service == nil {
-		return trace.New(trace.WithMessage("undefined service '%s' in flow '%s'", call.GetService(), flow.GetName()))
-	}
-
-	method := service.GetMethod(call.GetMethod())
-	if method == nil {
-		return trace.New(trace.WithMessage("undefined method '%s' in flow '%s'", call.GetMethod(), flow.GetName()))
-	}
-
-	call.SetDescriptor(method)
-
 	if call.GetRequest() != nil {
 		err = DefineParameterMap(ctx, node, call.GetRequest(), flow)
 		if err != nil {
@@ -160,6 +138,28 @@ func DefineCall(ctx instance.Context, schema schema.Collection, manifest *specs.
 		if err != nil {
 			return err
 		}
+	}
+
+	if call.GetMethod() != "" {
+		ctx.Logger(logger.Core).WithFields(logrus.Fields{
+			"call":    node.GetName(),
+			"method":  call.GetMethod(),
+			"service": call.GetService(),
+		}).Info("Defining call types")
+
+		service := schema.GetService(call.GetService())
+		if service == nil {
+			return trace.New(trace.WithMessage("undefined service '%s' in flow '%s'", call.GetService(), flow.GetName()))
+		}
+
+		method := service.GetMethod(call.GetMethod())
+		if method == nil {
+			return trace.New(trace.WithMessage("undefined method '%s' in flow '%s'", call.GetMethod(), flow.GetName()))
+		}
+
+		method.GetInput()
+		call.SetDescriptor(method)
+		call.SetResponse(specs.ToParameterMap(nil, "", method.GetOutput()))
 
 		err = CheckTypes(call.GetRequest().Property, method.GetInput(), flow)
 		if err != nil {
@@ -170,9 +170,17 @@ func DefineCall(ctx instance.Context, schema schema.Collection, manifest *specs.
 		if err != nil {
 			return err
 		}
+	}
 
-		if call.Response.Header == nil {
-			call.Response.Header = specs.Header{}
+	if call.GetResponse() != nil {
+		err = DefineParameterMap(ctx, node, call.GetResponse(), flow)
+		if err != nil {
+			return err
+		}
+
+		err = CheckHeader(call.GetResponse().Header, flow)
+		if err != nil {
+			return err
 		}
 	}
 
@@ -189,8 +197,6 @@ func DefineCaller(ctx instance.Context, node *specs.Node, manifest *specs.Manife
 		if err != nil {
 			return err
 		}
-
-		ResolvePropertyReferences(prop)
 	}
 
 	return nil
@@ -198,6 +204,10 @@ func DefineCaller(ctx instance.Context, node *specs.Node, manifest *specs.Manife
 
 // DefineParameterMap defines the types for the given parameter map
 func DefineParameterMap(ctx instance.Context, node *specs.Node, params *specs.ParameterMap, flow specs.FlowManager) (err error) {
+	if params.Property == nil {
+		return nil
+	}
+
 	for _, header := range params.Header {
 		err = DefineProperty(ctx, node, header, flow)
 		if err != nil {
@@ -210,7 +220,6 @@ func DefineParameterMap(ctx instance.Context, node *specs.Node, params *specs.Pa
 		return err
 	}
 
-	ResolvePropertyReferences(params.Property)
 	return nil
 }
 
@@ -336,29 +345,6 @@ func CheckTypes(property *specs.Property, schema schema.Property, flow specs.Flo
 	}
 
 	return nil
-}
-
-// ResolvePropertyReferences moves any property reference into the correct data structure
-func ResolvePropertyReferences(property *specs.Property) {
-	if len(property.Nested) > 0 {
-		for _, nested := range property.Nested {
-			ResolvePropertyReferences(nested)
-		}
-
-		return
-	}
-
-	if property.Reference == nil {
-		return
-	}
-
-	if property.Reference.Property == nil {
-		return
-	}
-
-	clone := property.Reference.Property.Clone(property.Reference, property.Name, property.Path)
-	property.Reference = clone.Reference
-	property.Nested = clone.Nested
 }
 
 // SchemaToProperty parses the given schema property to a specs property

@@ -126,7 +126,7 @@ func (call *Call) GetMethod(name string) transport.Method {
 }
 
 // SendMsg calls the configured service and attempts to call the given endpoint with the given headers and stream
-func (call *Call) SendMsg(ctx context.Context, rw transport.ResponseWriter, pr *transport.Request, refs *specs.Store) error {
+func (call *Call) SendMsg(ctx context.Context, rw transport.ResponseWriter, pr *transport.Request, refs specs.Store) error {
 	if pr.Method == nil {
 		return trace.New(trace.WithMessage("method required, proxy forward not supported"))
 	}

@@ -50,7 +50,7 @@ func TestListener(t *testing.T) {
 	}
 
 	called := 0
-	call := NewCallerFunc(func(ctx context.Context, refs *specs.Store) error {
+	call := NewCallerFunc(func(ctx context.Context, refs specs.Store) error {
 		called++
 		return nil
 	})

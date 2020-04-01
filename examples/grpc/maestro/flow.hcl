@@ -13,9 +13,17 @@ endpoint "greeter" "grpc" {
 flow "greeter" {
 	input "maestro.greeter.Request" {}
 
+	resources {
+		value = "{{ input:name }}"
+	}
+
+	resources {
+		else = "{{ add(value:.) }}"
+	}
+
 	resource "user" {
 		request "maestro.greeter.Say" "Hello" {
-			name = "{{ input:name }}"
+			name = "{{ else: }}"
 		}
 	}
 

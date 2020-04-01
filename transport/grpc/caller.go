@@ -131,7 +131,7 @@ func (call *Call) Director(ctx context.Context) (*grpc.ClientConn, error) {
 }
 
 // SendMsg calls the configured host and attempts to call the given endpoint with the given headers and stream
-func (call *Call) SendMsg(ctx context.Context, rw transport.ResponseWriter, pr *transport.Request, refs *specs.Store) error {
+func (call *Call) SendMsg(ctx context.Context, rw transport.ResponseWriter, pr *transport.Request, refs specs.Store) error {
 	method := call.methods[pr.Method.GetName()]
 	if method == nil {
 		return trace.New(trace.WithMessage("unkown service method %s", pr.Method.GetName()))

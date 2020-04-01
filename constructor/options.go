@@ -16,7 +16,7 @@ type Option func(*Options)
 type Options struct {
 	Ctx         instance.Context
 	Definitions []specs.Resolver
-	Codec       map[string]codec.Constructor
+	Codec       codec.Constructors
 	Callers     transport.Callers
 	Listeners   transport.Listeners
 	Schemas     []schema.Resolver

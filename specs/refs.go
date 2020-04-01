@@ -4,6 +4,18 @@ import (
 	"sync"
 )
 
+// Store represents the reference store interface
+type Store interface {
+	// StoreReference stores the given resource, path and value inside the references store
+	StoreReference(resource string, reference *Reference)
+	// Load attempts to load the defined value for the given resource and path
+	Load(resource string, path string) *Reference
+	// StoreValues stores the given values to the reference store
+	StoreValues(resource string, path string, values map[string]interface{})
+	// StoreValue stores the given value for the given resource and path
+	StoreValue(resource string, path string, value interface{})
+}
+
 // NewReference constructs a new reference with the given path
 func NewReference(path string) *Reference {
 	return &Reference{
@@ -15,45 +27,44 @@ func NewReference(path string) *Reference {
 type Reference struct {
 	Path     string
 	Value    interface{}
-	Repeated []*Store
+	Repeated []Store
 	mutex    sync.Mutex
 }
 
 // Repeating prepares the given reference to store repeating values
 func (reference *Reference) Repeating(size int) {
-	reference.Repeated = make([]*Store, size)
+	reference.Repeated = make([]Store, size)
 }
 
 // Append appends the given store to the repeating value reference.
 // This method uses append, it is advised to use Set & Repeating when the length of the repeated message is known.
-func (reference *Reference) Append(val *Store) {
+func (reference *Reference) Append(val Store) {
 	reference.mutex.Lock()
 	reference.Repeated = append(reference.Repeated, val)
 	reference.mutex.Unlock()
 }
 
 // Set sets the given repeating value reference on the given index
-func (reference *Reference) Set(index int, val *Store) {
+func (reference *Reference) Set(index int, val Store) {
 	reference.mutex.Lock()
 	reference.Repeated[index] = val
 	reference.mutex.Unlock()
 }
 
 // NewReferenceStore constructs a new store and allocates the references for the given length
-func NewReferenceStore(size int) *Store {
-	return &Store{
+func NewReferenceStore(size int) Store {
+	return &store{
 		values: make(map[string]*Reference, size),
 	}
 }
 
-// Store references
-type Store struct {
+type store struct {
 	values map[string]*Reference
 	mutex  sync.Mutex
 }
 
 // StoreReference stores the given resource, path and value inside the references store
-func (store *Store) StoreReference(resource string, reference *Reference) {
+func (store *store) StoreReference(resource string, reference *Reference) {
 	hash := resource + reference.Path
 	store.mutex.Lock()
 	store.values[hash] = reference
@@ -61,7 +72,7 @@ func (store *Store) StoreReference(resource string, reference *Reference) {
 }
 
 // Load attempts to load the defined value for the given resource and path
-func (store *Store) Load(resource string, path string) *Reference {
+func (store *store) Load(resource string, path string) *Reference {
 	hash := resource + path
 	store.mutex.Lock()
 	ref, has := store.values[hash]
@@ -74,7 +85,7 @@ func (store *Store) Load(resource string, path string) *Reference {
 }
 
 // StoreValues stores the given values to the reference store
-func (store *Store) StoreValues(resource string, path string, values map[string]interface{}) {
+func (store *store) StoreValues(resource string, path string, values map[string]interface{}) {
 	for key, val := range values {
 		path := JoinPath(path, key)
 		keys, is := val.(map[string]interface{})
@@ -104,7 +115,7 @@ func (store *Store) StoreValues(resource string, path string, values map[string]
 }
 
 // StoreValue stores the given value for the given resource and path
-func (store *Store) StoreValue(resource string, path string, value interface{}) {
+func (store *store) StoreValue(resource string, path string, value interface{}) {
 	reference := NewReference(path)
 	reference.Value = value
 
@@ -112,7 +123,7 @@ func (store *Store) StoreValue(resource string, path string, value interface{}) 
 }
 
 // NewRepeatingMessages appends the given repeating messages to the given reference
-func (store *Store) NewRepeatingMessages(resource string, path string, reference *Reference, values []map[string]interface{}) {
+func (store *store) NewRepeatingMessages(resource string, path string, reference *Reference, values []map[string]interface{}) {
 	reference.Repeating(len(values))
 
 	for index, values := range values {
@@ -123,7 +134,7 @@ func (store *Store) NewRepeatingMessages(resource string, path string, reference
 }
 
 // NewRepeating appends the given repeating values to the given reference
-func (store *Store) NewRepeating(resource string, path string, reference *Reference, values []interface{}) {
+func (store *store) NewRepeating(resource string, path string, reference *Reference, values []interface{}) {
 	reference.Repeating(len(values))
 
 	for index, value := range values {
@@ -131,4 +142,40 @@ func (store *Store) NewRepeating(resource string, path string, reference *Refere
 		store.StoreValue("", "", value)
 		reference.Set(index, store)
 	}
+}
+
+// NewPrefixStore fixes all writes and reads from the given store on the set resource and prefix path
+func NewPrefixStore(store Store, resource string, prefix string) Store {
+	return &PrefixStore{
+		resource: resource,
+		path:     prefix,
+		store:    store,
+	}
+}
+
+// PrefixStore creates a sandbox where all resources stored are forced into the set resource and prefix
+type PrefixStore struct {
+	resource string
+	path     string
+	store    Store
+}
+
+// Load attempts to load the defined value for the given resource and path
+func (prefix *PrefixStore) Load(resource string, path string) *Reference {
+	return prefix.store.Load(resource, path)
+}
+
+// StoreReference stores the given resource, path and value inside the references store
+func (prefix *PrefixStore) StoreReference(resource string, reference *Reference) {
+	prefix.store.StoreReference(prefix.resource, reference)
+}
+
+// StoreValues stores the given values to the reference store
+func (prefix *PrefixStore) StoreValues(resource string, path string, values map[string]interface{}) {
+	prefix.store.StoreValues(prefix.resource, JoinPath(prefix.path, path), values)
+}
+
+// StoreValue stores the given value for the given resource and path
+func (prefix *PrefixStore) StoreValue(resource string, path string, value interface{}) {
+	prefix.store.StoreValue(prefix.resource, JoinPath(prefix.path, path), value)
 }

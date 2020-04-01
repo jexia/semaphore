@@ -1,29 +1,30 @@
-package specs
+package dependencies
 
 import (
 	"testing"
 
 	"github.com/jexia/maestro/instance"
+	"github.com/jexia/maestro/specs"
 )
 
 func TestResolveManifestDependencies(t *testing.T) {
-	manifest := &Manifest{
-		Flows: []*Flow{
+	manifest := &specs.Manifest{
+		Flows: []*specs.Flow{
 			{
 				Name: "first",
-				Nodes: []*Node{
+				Nodes: []*specs.Node{
 					{
 						Name: "first",
 					},
 					{
 						Name: "second",
-						DependsOn: map[string]*Node{
+						DependsOn: map[string]*specs.Node{
 							"first": nil,
 						},
 					},
 					{
 						Name: "third",
-						DependsOn: map[string]*Node{
+						DependsOn: map[string]*specs.Node{
 							"first":  nil,
 							"second": nil,
 						},
@@ -32,19 +33,19 @@ func TestResolveManifestDependencies(t *testing.T) {
 			},
 			{
 				Name: "second",
-				Nodes: []*Node{
+				Nodes: []*specs.Node{
 					{
 						Name: "first",
 					},
 					{
 						Name: "second",
-						DependsOn: map[string]*Node{
+						DependsOn: map[string]*specs.Node{
 							"first": nil,
 						},
 					},
 					{
 						Name: "third",
-						DependsOn: map[string]*Node{
+						DependsOn: map[string]*specs.Node{
 							"first":  nil,
 							"second": nil,
 						},
@@ -53,19 +54,19 @@ func TestResolveManifestDependencies(t *testing.T) {
 			},
 			{
 				Name: "third",
-				Nodes: []*Node{
+				Nodes: []*specs.Node{
 					{
 						Name: "first",
 					},
 					{
 						Name: "second",
-						DependsOn: map[string]*Node{
+						DependsOn: map[string]*specs.Node{
 							"first": nil,
 						},
 					},
 					{
 						Name: "third",
-						DependsOn: map[string]*Node{
+						DependsOn: map[string]*specs.Node{
 							"first":  nil,
 							"second": nil,
 						},
@@ -76,7 +77,7 @@ func TestResolveManifestDependencies(t *testing.T) {
 	}
 
 	ctx := instance.NewContext()
-	err := ResolveManifestDependencies(ctx, manifest)
+	err := ResolveManifest(ctx, manifest)
 	if err != nil {
 		t.Fatalf("unexpected error %s", err)
 	}
@@ -97,20 +98,20 @@ func TestResolveManifestDependencies(t *testing.T) {
 }
 
 func TestResolveCallDependencies(t *testing.T) {
-	flow := &Flow{
-		Nodes: []*Node{
+	flow := &specs.Flow{
+		Nodes: []*specs.Node{
 			{
 				Name: "first",
 			},
 			{
 				Name: "second",
-				DependsOn: map[string]*Node{
+				DependsOn: map[string]*specs.Node{
 					"first": nil,
 				},
 			},
 			{
 				Name: "third",
-				DependsOn: map[string]*Node{
+				DependsOn: map[string]*specs.Node{
 					"first":  nil,
 					"second": nil,
 				},
@@ -118,13 +119,13 @@ func TestResolveCallDependencies(t *testing.T) {
 		},
 	}
 
-	tests := []*Node{
+	tests := []*specs.Node{
 		flow.Nodes[1],
 		flow.Nodes[2],
 	}
 
 	for _, input := range tests {
-		err := ResolveCallDependencies(flow, input, make(map[string]*Node))
+		err := ResolveNode(flow, input, make(map[string]*specs.Node))
 		if err != nil {
 			t.Fatalf("unexpected error %s", err)
 		}
@@ -138,30 +139,30 @@ func TestResolveCallDependencies(t *testing.T) {
 }
 
 func TestCallCircularDependenciesDetection(t *testing.T) {
-	flow := &Flow{
-		Nodes: []*Node{
+	flow := &specs.Flow{
+		Nodes: []*specs.Node{
 			{
 				Name: "first",
-				DependsOn: map[string]*Node{
+				DependsOn: map[string]*specs.Node{
 					"second": nil,
 				},
 			},
 			{
 				Name: "second",
-				DependsOn: map[string]*Node{
+				DependsOn: map[string]*specs.Node{
 					"first": nil,
 				},
 			},
 		},
 	}
 
-	tests := []*Node{
+	tests := []*specs.Node{
 		flow.Nodes[0],
 		flow.Nodes[1],
 	}
 
 	for _, input := range tests {
-		err := ResolveCallDependencies(flow, input, make(map[string]*Node))
+		err := ResolveNode(flow, input, make(map[string]*specs.Node))
 		if err == nil {
 			t.Fatalf("unexpected pass %s", input.Name)
 		}

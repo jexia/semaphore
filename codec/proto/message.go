@@ -64,7 +64,7 @@ func (manager *Manager) Property() *specs.Property {
 
 // Marshal marshals the given reference store into a proto message.
 // This method is called during runtime to encode a new message with the values stored inside the given reference store.
-func (manager *Manager) Marshal(refs *specs.Store) (io.Reader, error) {
+func (manager *Manager) Marshal(refs specs.Store) (io.Reader, error) {
 	result := dynamic.NewMessage(manager.desc)
 	err := manager.Encode(result, manager.desc, manager.specs.Nested, refs)
 	if err != nil {
@@ -81,7 +81,7 @@ func (manager *Manager) Marshal(refs *specs.Store) (io.Reader, error) {
 
 // Encode encodes the given specs object into the given dynamic proto message.
 // References inside the specs are attempted to be fetched from the reference store.
-func (manager *Manager) Encode(proto *dynamic.Message, desc *desc.MessageDescriptor, specs map[string]*specs.Property, store *specs.Store) (err error) {
+func (manager *Manager) Encode(proto *dynamic.Message, desc *desc.MessageDescriptor, specs map[string]*specs.Property, store specs.Store) (err error) {
 	for _, field := range desc.GetFields() {
 		prop, has := specs[field.GetName()]
 		if !has {
@@ -161,7 +161,7 @@ func (manager *Manager) Encode(proto *dynamic.Message, desc *desc.MessageDescrip
 
 // Unmarshal unmarshals the given io reader into the given reference store.
 // This method is called during runtime to decode a new message and store it inside the given reference store
-func (manager *Manager) Unmarshal(reader io.Reader, refs *specs.Store) error {
+func (manager *Manager) Unmarshal(reader io.Reader, refs specs.Store) error {
 	bb, err := ioutil.ReadAll(reader)
 	if err != nil {
 		return err
@@ -178,7 +178,7 @@ func (manager *Manager) Unmarshal(reader io.Reader, refs *specs.Store) error {
 }
 
 // Decode decodes the given proto message into the given reference store.
-func (manager *Manager) Decode(proto *dynamic.Message, properties map[string]*specs.Property, store *specs.Store) {
+func (manager *Manager) Decode(proto *dynamic.Message, properties map[string]*specs.Property, store specs.Store) {
 	for _, field := range proto.GetKnownFields() {
 		prop := properties[field.GetName()]
 

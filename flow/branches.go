@@ -1,6 +1,8 @@
 package flow
 
-import "github.com/jexia/maestro/specs/lookup"
+import (
+	"github.com/jexia/maestro/specs/lookup"
+)
 
 // ConstructBranches constructs the node branches based on the made references
 func ConstructBranches(nodes []*Node) {

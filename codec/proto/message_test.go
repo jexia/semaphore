@@ -48,7 +48,7 @@ func FindNode(flow *specs.Flow, name string) *specs.Node {
 	return nil
 }
 
-func ValidateStore(t *testing.T, resource string, origin string, input map[string]interface{}, store *specs.Store) {
+func ValidateStore(t *testing.T, resource string, origin string, input map[string]interface{}, store specs.Store) {
 	for key, value := range input {
 		path := specs.JoinPath(origin, key)
 		nested, is := value.(map[string]interface{})

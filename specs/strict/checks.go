@@ -1,15 +1,16 @@
-package specs
+package strict
 
 import (
 	"sync"
 
 	"github.com/jexia/maestro/instance"
 	"github.com/jexia/maestro/logger"
+	"github.com/jexia/maestro/specs"
 	"github.com/jexia/maestro/specs/trace"
 )
 
 // CheckManifestDuplicates checks for duplicate definitions
-func CheckManifestDuplicates(ctx instance.Context, manifest *Manifest) error {
+func CheckManifestDuplicates(ctx instance.Context, manifest *specs.Manifest) error {
 	ctx.Logger(logger.Core).Info("Checking manifest duplicates")
 
 	flows := sync.Map{}
@@ -30,15 +31,15 @@ func CheckManifestDuplicates(ctx instance.Context, manifest *Manifest) error {
 }
 
 // CheckFlowDuplicates checks for duplicate definitions
-func CheckFlowDuplicates(ctx instance.Context, flow *Flow) error {
+func CheckFlowDuplicates(ctx instance.Context, flow *specs.Flow) error {
 	ctx.Logger(logger.Core).Info("Checking flow duplicates")
 
 	calls := sync.Map{}
 
-	for _, call := range flow.Nodes {
-		_, duplicate := calls.LoadOrStore(call.Name, call)
+	for _, node := range flow.Nodes {
+		_, duplicate := calls.LoadOrStore(node.Name, node)
 		if duplicate {
-			return trace.New(trace.WithMessage("duplicate call '%s' in flow '%s'", call.Name, flow.Name))
+			return trace.New(trace.WithMessage("duplicate resource '%s' in flow '%s'", node.Name, flow.Name))
 		}
 	}
 

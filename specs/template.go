@@ -1,6 +1,8 @@
 package specs
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"regexp"
 	"strings"
 
@@ -32,6 +34,8 @@ const (
 	InputResource = "input"
 	// OutputResource key
 	OutputResource = "output"
+	// StackResource property
+	StackResource = "stack"
 	// ResourceRequest property
 	ResourceRequest = "request"
 	// ResourceHeader property
@@ -74,9 +78,10 @@ func ParsePropertyReference(value string) *PropertyReference {
 }
 
 // ParseReference parses the given value as a template reference
-func ParseReference(path string, value string) *Property {
+func ParseReference(path string, name string, value string) *Property {
 	prop := &Property{
-		Path:      path,
+		Name:      name,
+		Path:      JoinPath(path, name),
 		Reference: ParsePropertyReference(value),
 	}
 
@@ -84,19 +89,19 @@ func ParseReference(path string, value string) *Property {
 }
 
 // ParseFunction attempts to parses the given function
-func ParseFunction(path string, functions CustomDefinedFunctions, content string) (*Property, error) {
+func ParseFunction(path string, name string, collection Functions, methods CustomDefinedFunctions, content string) (*Property, error) {
 	pattern := FunctionPattern.FindStringSubmatch(content)
 	fn := pattern[1]
 	args := strings.Split(pattern[2], FunctionArgumentDelimiter)
 
-	if functions[fn] == nil {
+	if methods[fn] == nil {
 		return nil, trace.New(trace.WithMessage("undefined custom function '%s' in '%s'", fn, content))
 	}
 
 	arguments := make([]*Property, len(args))
 
 	for index, arg := range args {
-		result, err := ParseTemplateContent(path, functions, strings.TrimSpace(arg))
+		result, err := ParseTemplateContent(path, name, collection, methods, strings.TrimSpace(arg))
 		if err != nil {
 			return nil, err
 		}
@@ -104,38 +109,52 @@ func ParseFunction(path string, functions CustomDefinedFunctions, content string
 		arguments[index] = result
 	}
 
-	property, handle, references, err := functions[fn](path, arguments...)
+	property, handle, err := methods[fn](arguments...)
 	if err != nil {
 		return nil, err
 	}
 
-	if handle != nil {
-		property.Function = &Function{
-			Arguments:  arguments,
-			References: references,
-			Handle:     handle,
-		}
+	stack := GeneratePathPrefix()
+	function := &Function{
+		Arguments: arguments,
+		Fn:        handle,
+		Returns:   property,
 	}
 
-	return property, nil
+	collection[stack] = function
+
+	result := &Property{
+		Name:    name,
+		Path:    path,
+		Type:    property.Type,
+		Label:   property.Label,
+		Default: property.Default,
+		Reference: &PropertyReference{
+			Resource: JoinPath(StackResource, stack),
+			Path:     ".",
+			Property: property,
+		},
+	}
+
+	return result, nil
 }
 
 // ParseTemplateContent parses the given template function
-func ParseTemplateContent(path string, functions CustomDefinedFunctions, content string) (*Property, error) {
+func ParseTemplateContent(path string, name string, methods Functions, functions CustomDefinedFunctions, content string) (*Property, error) {
 	if FunctionPattern.MatchString(content) {
-		return ParseFunction(path, functions, content)
+		return ParseFunction(path, name, methods, functions, content)
 	}
 
 	// TODO: handle constant
-	return ParseReference(path, content), nil
+	return ParseReference(path, name, content), nil
 }
 
 // ParseTemplate parses the given value template and sets the resource and path
-func ParseTemplate(ctx instance.Context, path string, functions CustomDefinedFunctions, value string) (*Property, error) {
+func ParseTemplate(ctx instance.Context, path string, name string, methods Functions, functions CustomDefinedFunctions, value string) (*Property, error) {
 	content := GetTemplateContent(value)
 	ctx.Logger(logger.Core).WithField("path", path).WithField("template", content).Debug("Parsing property template")
 
-	result, err := ParseTemplateContent(path, functions, content)
+	result, err := ParseTemplateContent(path, name, methods, functions, content)
 	if err != nil {
 		return nil, err
 	}
@@ -145,6 +164,7 @@ func ParseTemplate(ctx instance.Context, path string, functions CustomDefinedFun
 		"type":      result.Type,
 		"default":   result.Default,
 		"reference": result.Reference,
+		"methods":   methods,
 	}).Debug("Template results in property with type")
 
 	return result, nil
@@ -153,10 +173,6 @@ func ParseTemplate(ctx instance.Context, path string, functions CustomDefinedFun
 // JoinPath joins the given flow paths
 func JoinPath(values ...string) (result string) {
 	for _, value := range values {
-		if value == "." {
-			continue
-		}
-
 		if value == "" {
 			continue
 		}
@@ -168,12 +184,16 @@ func JoinPath(values ...string) (result string) {
 		result += value
 	}
 
-	if result == "" {
+	if result == "" || result == "." {
 		return result
 	}
 
 	if string(result[len(result)-1]) == "." {
 		result = result[:len(result)-1]
+	}
+
+	if string(result[0]) == "." {
+		result = result[1:]
 	}
 
 	return result
@@ -182,4 +202,11 @@ func JoinPath(values ...string) (result string) {
 // SplitPath splits the given path into parts
 func SplitPath(path string) []string {
 	return strings.Split(path, PathDelimiter)
+}
+
+// GeneratePathPrefix generates a unique path prefix which could be used to isolate functions
+func GeneratePathPrefix() string {
+	bb := make([]byte, 5)
+	rand.Read(bb)
+	return hex.EncodeToString(bb)
 }

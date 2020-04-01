@@ -7,7 +7,7 @@ import (
 )
 
 // ResponseValue constructs the response value send back to the client
-func ResponseValue(specs *specs.Property, refs *specs.Store) (interface{}, error) {
+func ResponseValue(specs *specs.Property, refs specs.Store) (interface{}, error) {
 	if specs.Type != types.Message {
 		return nil, ErrInvalidObject
 	}

@@ -15,10 +15,10 @@ import (
 )
 
 type caller struct {
-	fn func(context.Context, *specs.Store) error
+	fn func(context.Context, specs.Store) error
 }
 
-func (caller *caller) Do(ctx context.Context, store *specs.Store) error {
+func (caller *caller) Do(ctx context.Context, store specs.Store) error {
 	return caller.fn(ctx, store)
 }
 
@@ -26,7 +26,7 @@ func (caller *caller) References() []*specs.Property {
 	return nil
 }
 
-func NewCallerFunc(fn func(context.Context, *specs.Store) error) flow.Call {
+func NewCallerFunc(fn func(context.Context, specs.Store) error) flow.Call {
 	return &caller{fn: fn}
 }
 
