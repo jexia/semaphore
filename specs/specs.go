@@ -178,15 +178,6 @@ func (reference *PropertyReference) String() string {
 	return reference.Resource + ReferenceDelimiter + reference.Path
 }
 
-// Clone returns a clone of the given property reference
-func (reference *PropertyReference) Clone() *PropertyReference {
-	return &PropertyReference{
-		Resource: reference.Resource,
-		Path:     reference.Path,
-		Property: reference.Property,
-	}
-}
-
 // Property represents a value property.
 // A value property could contain a constant value or a value reference.
 type Property struct {
@@ -223,16 +214,6 @@ type Node struct {
 	Descriptor schema.Method    `json:"-"`
 }
 
-// GetName returns the call name
-func (call *Node) GetName() string {
-	return call.Name
-}
-
-// GetDescriptor returns the call descriptor
-func (call *Node) GetDescriptor() schema.Method {
-	return call.Descriptor
-}
-
 // Call represents a call which is executed during runtime
 type Call struct {
 	Service    string        `json:"service"`
@@ -240,31 +221,6 @@ type Call struct {
 	Request    *ParameterMap `json:"request"`
 	Response   *ParameterMap `json:"response"`
 	Descriptor schema.Method `json:"-"`
-}
-
-// GetRequest returns the call request parameter map
-func (call *Call) GetRequest() *ParameterMap {
-	return call.Request
-}
-
-// GetResponse returns the call response parameter map
-func (call *Call) GetResponse() *ParameterMap {
-	return call.Response
-}
-
-// GetService returns the call service
-func (call *Call) GetService() string {
-	return call.Service
-}
-
-// GetMethod returns the call endpoint
-func (call *Call) GetMethod() string {
-	return call.Method
-}
-
-// GetDescriptor returns the call descriptor
-func (call *Call) GetDescriptor() schema.Method {
-	return call.Descriptor
 }
 
 // SetResponse sets the given parameter map as response

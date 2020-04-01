@@ -16,7 +16,7 @@ func NewNode(ctx instance.Context, node *specs.Node, call, rollback Call) *Node 
 	references := specs.References{}
 
 	if node.Call != nil {
-		references.MergeLeft(specs.ParameterReferences(node.Call.GetRequest()))
+		references.MergeLeft(specs.ParameterReferences(node.Call.Request))
 	}
 
 	if call != nil {
@@ -36,7 +36,7 @@ func NewNode(ctx instance.Context, node *specs.Node, call, rollback Call) *Node 
 	return &Node{
 		ctx:        ctx,
 		logger:     logger,
-		Name:       node.GetName(),
+		Name:       node.Name,
 		Previous:   []*Node{},
 		Call:       call,
 		Rollback:   rollback,

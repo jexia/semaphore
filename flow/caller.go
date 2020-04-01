@@ -122,7 +122,7 @@ func (caller *Caller) Do(ctx context.Context, store specs.Store) error {
 	err := <-result
 	if err != nil {
 		caller.ctx.Logger(logger.Flow).WithFields(logrus.Fields{
-			"node": caller.node.GetName(),
+			"node": caller.node.Name,
 			"err":  err,
 		}).Error("Service error")
 

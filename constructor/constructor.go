@@ -122,12 +122,12 @@ func Call(ctx instance.Context, manifest *specs.Manifest, node *specs.Node, call
 		return NewServiceCall(ctx, manifest, node, call, options, manager)
 	}
 
-	request, err := Request(node, nil, call.GetRequest())
+	request, err := Request(node, nil, call.Request)
 	if err != nil {
 		return nil, err
 	}
 
-	response, err := Request(node, nil, call.GetResponse())
+	response, err := Request(node, nil, call.Response)
 	if err != nil {
 		return nil, err
 	}
@@ -147,12 +147,12 @@ func NewServiceCall(ctx instance.Context, manifest *specs.Manifest, node *specs.
 	}
 
 	if call.Service == "" {
-		return nil, trace.New(trace.WithMessage("invalid service name, no service name configured in '%s'", node.GetName()))
+		return nil, trace.New(trace.WithMessage("invalid service name, no service name configured in '%s'", node.Name))
 	}
 
 	service := options.Schema.GetService(call.Service)
 	if service == nil {
-		return nil, trace.New(trace.WithMessage("the service for '%s' was not found in '%s'", call.GetService(), node.GetName()))
+		return nil, trace.New(trace.WithMessage("the service for '%s' was not found in '%s'", call.Service, node.Name))
 	}
 
 	constructor := options.Callers.Get(service.GetTransport())
@@ -181,19 +181,19 @@ func NewServiceCall(ctx instance.Context, manifest *specs.Manifest, node *specs.
 		return nil, trace.New(trace.WithMessage("codec not found '%s'", service.GetCodec()))
 	}
 
-	request, err := Request(node, codec, call.GetRequest())
+	request, err := Request(node, codec, call.Request)
 	if err != nil {
 		return nil, err
 	}
 
-	response, err := Request(node, codec, call.GetResponse())
+	response, err := Request(node, codec, call.Response)
 	if err != nil {
 		return nil, err
 	}
 
 	caller := flow.NewCall(ctx, node, &flow.CallOptions{
 		Transport: transport,
-		Method:    transport.GetMethod(call.GetMethod()),
+		Method:    transport.GetMethod(call.Method),
 		Request:   request,
 		Response:  response,
 	})
@@ -205,7 +205,7 @@ func NewServiceCall(ctx instance.Context, manifest *specs.Manifest, node *specs.
 func Request(node *specs.Node, constructor codec.Constructor, params *specs.ParameterMap) (*flow.Request, error) {
 	var codec codec.Manager
 	if constructor != nil {
-		manager, err := constructor.New(node.GetName(), params)
+		manager, err := constructor.New(node.Name, params)
 		if err != nil {
 			return nil, err
 		}
@@ -213,7 +213,7 @@ func Request(node *specs.Node, constructor codec.Constructor, params *specs.Para
 		codec = manager
 	}
 
-	metadata := metadata.NewManager(node.GetName(), params)
+	metadata := metadata.NewManager(node.Name, params)
 	return flow.NewRequest(params.Functions, codec, metadata), nil
 }
 
@@ -223,9 +223,9 @@ func Forward(manifest *specs.Manifest, call *specs.Call, options Options) (schem
 		return nil, nil
 	}
 
-	service := options.Schema.GetService(call.GetService())
+	service := options.Schema.GetService(call.Service)
 	if service == nil {
-		return nil, trace.New(trace.WithMessage("the service for '%s' was not found", call.GetMethod()))
+		return nil, trace.New(trace.WithMessage("the service for '%s' was not found", call.Method))
 	}
 
 	return service, nil

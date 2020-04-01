@@ -26,7 +26,7 @@ func FindFlow(manifest *specs.Manifest, name string) *specs.Flow {
 
 func FindNode(flow *specs.Flow, name string) *specs.Node {
 	for _, node := range flow.GetNodes() {
-		if node.GetName() == name {
+		if node.Name == name {
 			return node
 		}
 	}
@@ -109,7 +109,7 @@ func BenchmarkSimpleMarshal(b *testing.B) {
 	}
 
 	flow := FindFlow(manifest, "simple")
-	specs := FindNode(flow, "first").Call.GetRequest()
+	specs := FindNode(flow, "first").Call.Request
 
 	constructor := &Constructor{}
 	manager, err := constructor.New("input", specs)
@@ -146,7 +146,7 @@ func BenchmarkNestedMarshal(b *testing.B) {
 	}
 
 	flow := FindFlow(manifest, "nested")
-	specs := FindNode(flow, "first").Call.GetRequest()
+	specs := FindNode(flow, "first").Call.Request
 
 	constructor := &Constructor{}
 	manager, err := constructor.New("input", specs)
@@ -185,7 +185,7 @@ func BenchmarkRepeatedMessagesMarshal(b *testing.B) {
 	}
 
 	flow := FindFlow(manifest, "repeated")
-	specs := FindNode(flow, "first").Call.GetRequest()
+	specs := FindNode(flow, "first").Call.Request
 
 	constructor := &Constructor{}
 	manager, err := constructor.New("input", specs)
@@ -222,7 +222,7 @@ func BenchmarkRepeatedValuesMarshal(b *testing.B) {
 	}
 
 	flow := FindFlow(manifest, "repeated_values")
-	specs := FindNode(flow, "first").Call.GetRequest()
+	specs := FindNode(flow, "first").Call.Request
 
 	constructor := &Constructor{}
 	manager, err := constructor.New("input", specs)
@@ -260,7 +260,7 @@ func BenchmarkSimpleUnmarshal(b *testing.B) {
 	}
 
 	flow := FindFlow(manifest, "simple")
-	specs := FindNode(flow, "first").Call.GetRequest()
+	specs := FindNode(flow, "first").Call.Request
 
 	constructor := &Constructor{}
 	manager, err := constructor.New("input", specs)
@@ -298,7 +298,7 @@ func BenchmarkNestedUnmarshal(b *testing.B) {
 	}
 
 	flow := FindFlow(manifest, "nested")
-	specs := FindNode(flow, "first").Call.GetRequest()
+	specs := FindNode(flow, "first").Call.Request
 
 	constructor := &Constructor{}
 	manager, err := constructor.New("input", specs)
@@ -338,7 +338,7 @@ func BenchmarkRepeatedMessagesUnmarshal(b *testing.B) {
 	}
 
 	flow := FindFlow(manifest, "repeated")
-	specs := FindNode(flow, "first").Call.GetRequest()
+	specs := FindNode(flow, "first").Call.Request
 
 	constructor := &Constructor{}
 	manager, err := constructor.New("input", specs)
@@ -376,7 +376,7 @@ func BenchmarkRepeatedValuesUnmarshal(b *testing.B) {
 	}
 
 	flow := FindFlow(manifest, "repeated_values")
-	specs := FindNode(flow, "first").Call.GetRequest()
+	specs := FindNode(flow, "first").Call.Request
 
 	constructor := &Constructor{}
 	manager, err := constructor.New("input", specs)
@@ -402,7 +402,7 @@ func TestMarshal(t *testing.T) {
 	}
 
 	flow := FindFlow(manifest, "complete")
-	req := FindNode(flow, "first").Call.GetRequest()
+	req := FindNode(flow, "first").Call.Request
 
 	constructor := &Constructor{}
 	manager, err := constructor.New("input", req)
@@ -507,7 +507,7 @@ func TestUnmarshal(t *testing.T) {
 	}
 
 	flow := FindFlow(manifest, "complete")
-	req := FindNode(flow, "first").Call.GetRequest()
+	req := FindNode(flow, "first").Call.Request
 
 	constructor := &Constructor{}
 	manager, err := constructor.New("input", req)

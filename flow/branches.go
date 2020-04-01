@@ -8,7 +8,7 @@ import (
 func ConstructBranches(nodes []*Node) {
 	for _, node := range nodes {
 		for _, dependency := range node.DependsOn {
-			ConstructDependency(node, dependency.GetName(), nodes)
+			ConstructDependency(node, dependency.Name, nodes)
 		}
 
 		for _, reference := range node.References {

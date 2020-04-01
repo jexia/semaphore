@@ -129,12 +129,12 @@ func GetObjectSchema(schema schema.Collection, params *specs.ParameterMap) (sche
 // DefineCall defineds the types for the specs call
 func DefineCall(ctx instance.Context, schema schema.Collection, manifest *specs.Manifest, node *specs.Node, call *specs.Call, flow specs.FlowManager) (err error) {
 	if call.Request != nil {
-		err = DefineParameterMap(ctx, node, call.GetRequest(), flow)
+		err = DefineParameterMap(ctx, node, call.Request, flow)
 		if err != nil {
 			return err
 		}
 
-		err = CheckHeader(call.GetRequest().Header, flow)
+		err = CheckHeader(call.Request.Header, flow)
 		if err != nil {
 			return err
 		}
@@ -147,19 +147,19 @@ func DefineCall(ctx instance.Context, schema schema.Collection, manifest *specs.
 
 	if call.Method != "" {
 		ctx.Logger(logger.Core).WithFields(logrus.Fields{
-			"call":    node.GetName(),
-			"method":  call.GetMethod(),
-			"service": call.GetService(),
+			"call":    node.Name,
+			"method":  call.Method,
+			"service": call.Service,
 		}).Info("Defining call types")
 
-		service := schema.GetService(call.GetService())
+		service := schema.GetService(call.Service)
 		if service == nil {
-			return trace.New(trace.WithMessage("undefined service '%s' in flow '%s'", call.GetService(), flow.GetName()))
+			return trace.New(trace.WithMessage("undefined service '%s' in flow '%s'", call.Service, flow.GetName()))
 		}
 
-		method := service.GetMethod(call.GetMethod())
+		method := service.GetMethod(call.Method)
 		if method == nil {
-			return trace.New(trace.WithMessage("undefined method '%s' in flow '%s'", call.GetMethod(), flow.GetName()))
+			return trace.New(trace.WithMessage("undefined method '%s' in flow '%s'", call.Method, flow.GetName()))
 		}
 
 		method.GetInput()
@@ -220,7 +220,7 @@ func DefineFunctions(ctx instance.Context, functions specs.Functions, node *spec
 func DefineCaller(ctx instance.Context, node *specs.Node, manifest *specs.Manifest, call transport.Call, flow specs.FlowManager) (err error) {
 	ctx.Logger(logger.Core).Info("Defining caller references")
 
-	method := call.GetMethod(node.Call.GetMethod())
+	method := call.GetMethod(node.Call.Method)
 	for _, prop := range method.References() {
 		err = DefineProperty(ctx, node, prop, flow)
 		if err != nil {
@@ -270,10 +270,10 @@ func DefineProperty(ctx instance.Context, node *specs.Node, property *specs.Prop
 
 	breakpoint := specs.OutputResource
 	if node != nil {
-		breakpoint = node.GetName()
+		breakpoint = node.Name
 
 		if node.Rollback != nil {
-			rollback := node.Rollback.GetRequest().Property
+			rollback := node.Rollback.Request.Property
 			if InsideProperty(rollback, property) {
 				breakpoint = lookup.GetNextResource(flow, breakpoint)
 			}
