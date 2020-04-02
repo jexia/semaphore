@@ -2,14 +2,13 @@ package json
 
 import (
 	"github.com/francoispqt/gojay"
-	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/specs"
 	"github.com/jexia/maestro/specs/labels"
 	"github.com/jexia/maestro/specs/types"
 )
 
 // NewObject constructs a new object encoder/decoder for the given specs
-func NewObject(resource string, specs map[string]*specs.Property, refs *refs.Store) *Object {
+func NewObject(resource string, specs map[string]*specs.Property, refs specs.Store) *Object {
 	keys := len(specs)
 
 	return &Object{
@@ -24,7 +23,7 @@ func NewObject(resource string, specs map[string]*specs.Property, refs *refs.Sto
 type Object struct {
 	resource string
 	specs    map[string]*specs.Property
-	refs     *refs.Store
+	refs     specs.Store
 	keys     int
 }
 
@@ -77,7 +76,7 @@ func (object *Object) UnmarshalJSONObject(dec *gojay.Decoder, key string) error 
 	}
 
 	if prop.Label == labels.Repeated {
-		ref := refs.New(prop.Path)
+		ref := specs.NewReference(prop.Path)
 		array := NewArray(object.resource, prop, ref, nil)
 		err := dec.AddArray(array)
 		if err != nil {
@@ -94,7 +93,7 @@ func (object *Object) UnmarshalJSONObject(dec *gojay.Decoder, key string) error 
 		return err
 	}
 
-	ref := refs.New(prop.Path)
+	ref := specs.NewReference(prop.Path)
 	ref.Value = DecodeType(dec, prop.Type)
 	object.refs.StoreReference(object.resource, ref)
 	return nil
@@ -111,7 +110,7 @@ func (object *Object) IsNil() bool {
 }
 
 // NewArray constructs a new JSON array encoder/decoder
-func NewArray(resource string, object *specs.Property, ref *refs.Reference, refs []*refs.Store) *Array {
+func NewArray(resource string, object *specs.Property, ref *specs.Reference, refs []specs.Store) *Array {
 	keys := 0
 
 	if object.Nested != nil {
@@ -131,8 +130,8 @@ func NewArray(resource string, object *specs.Property, ref *refs.Reference, refs
 type Array struct {
 	resource string
 	specs    *specs.Property
-	items    []*refs.Store
-	ref      *refs.Reference
+	items    []specs.Store
+	ref      *specs.Reference
 	keys     int
 }
 
@@ -164,7 +163,7 @@ func (array *Array) MarshalJSONArray(enc *gojay.Encoder) {
 
 // UnmarshalJSONArray unmarshals the given specs into the configured reference store
 func (array *Array) UnmarshalJSONArray(dec *gojay.Decoder) error {
-	store := refs.NewStore(array.keys)
+	store := specs.NewReferenceStore(array.keys)
 
 	if array.specs.Type == types.Message {
 		object := NewObject(array.resource, array.specs.Nested, store)

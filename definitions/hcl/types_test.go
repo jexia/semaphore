@@ -1,10 +1,11 @@
-package specs
+package hcl
 
 import (
 	"math/big"
 	"testing"
 
 	"github.com/jexia/maestro/instance"
+	"github.com/jexia/maestro/specs"
 	"github.com/jexia/maestro/specs/types"
 	"github.com/zclconf/go-cty/cty"
 )
@@ -32,7 +33,7 @@ func TestSetDefaultValue(t *testing.T) {
 
 	for input, expected := range tests {
 		ctx := instance.NewContext()
-		property := Property{}
+		property := specs.Property{}
 		SetDefaultValue(ctx, &property, input)
 
 		if expected.Default != property.Default {

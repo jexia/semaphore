@@ -14,7 +14,6 @@ type Resolver func(instance.Context, CustomDefinedFunctions) (*Manifest, error)
 // FlowManager represents a flow manager
 type FlowManager interface {
 	GetName() string
-	GetDependencies() map[string]*Flow
 	GetNodes() []*Node
 	GetInput() *ParameterMap
 	GetOutput() *ParameterMap
@@ -101,21 +100,15 @@ func (manifest *Manifest) Merge(incoming *Manifest) {
 // Calls are nested inside of flows and contain two labels, a unique name within the flow and the service and method to be called.
 // A dependency reference structure is generated within the flow which allows Maestro to figure out which calls could be called parallel to improve performance.
 type Flow struct {
-	Name      string           `json:"name"`
-	DependsOn map[string]*Flow `json:"depends_on"`
-	Input     *ParameterMap    `json:"input"`
-	Nodes     []*Node          `json:"nodes"`
-	Output    *ParameterMap    `json:"output"`
+	Name   string        `json:"name"`
+	Input  *ParameterMap `json:"input"`
+	Nodes  []*Node       `json:"nodes"`
+	Output *ParameterMap `json:"output"`
 }
 
 // GetName returns the flow name
 func (flow *Flow) GetName() string {
 	return flow.Name
-}
-
-// GetDependencies returns the dependencies of the given flow
-func (flow *Flow) GetDependencies() map[string]*Flow {
-	return flow.DependsOn
 }
 
 // GetNodes returns the calls of the given flow
@@ -153,15 +146,26 @@ type Options map[string]string
 type Header map[string]*Property
 
 // CustomDefinedFunctions represents a collection of custom defined functions that could be called inside a template
-type CustomDefinedFunctions map[string]PrepareCustomFunction
+type CustomDefinedFunctions map[string]PrepareFunction
 
-// PrepareCustomFunction prepares the custom defined function.
+// PrepareFunction prepares the custom defined function.
 // The given arguments represent the exprected types that are passed when called.
-type PrepareCustomFunction func(path string, args ...*Property) (*Property, error)
+// Properties returned should be absolute.
+type PrepareFunction func(args ...*Property) (*Property, FunctionExec, error)
 
-// HandleCustomFunction executes the function and passes the expected types as interface{}.
-// The expected property type should always be returned.
-type HandleCustomFunction func(args ...interface{}) interface{}
+// FunctionExec executes the function and passes the expected types as stores
+// A store should be returned which could be used to encode the function property
+type FunctionExec func(store Store) error
+
+// Functions represents a collection of functions
+type Functions map[string]*Function
+
+// Function represents a custom defined function
+type Function struct {
+	Arguments []*Property
+	Fn        FunctionExec
+	Returns   *Property
+}
 
 // PropertyReference represents a mustach template reference
 type PropertyReference struct {
@@ -174,15 +178,6 @@ func (reference *PropertyReference) String() string {
 	return reference.Resource + ReferenceDelimiter + reference.Path
 }
 
-// Clone returns a clone of the given property reference
-func (reference *PropertyReference) Clone() *PropertyReference {
-	return &PropertyReference{
-		Resource: reference.Resource,
-		Path:     reference.Path,
-		Property: reference.Property,
-	}
-}
-
 // Property represents a value property.
 // A value property could contain a constant value or a value reference.
 type Property struct {
@@ -193,56 +188,17 @@ type Property struct {
 	Label     labels.Label
 	Reference *PropertyReference
 	Nested    map[string]*Property
-	Expr      hcl.Expression // TODO: marked for removal
-	Function  HandleCustomFunction
+	Expr      hcl.Expression // TODO: replace this with a custom solution
 	Desciptor schema.Property
-}
-
-// Clone returns a clone of the property
-func (property *Property) Clone(reference *PropertyReference, name string, path string) *Property {
-	result := &Property{
-		Name:      name,
-		Path:      path,
-		Reference: reference,
-		Default:   property.Default,
-		Type:      property.Type,
-		Label:     property.Label,
-		Expr:      property.Expr,
-		Function:  property.Function,
-		Desciptor: property.Desciptor,
-	}
-
-	if property.Reference != nil {
-		result.Reference = &PropertyReference{
-			Resource: property.Reference.Resource,
-			Path:     property.Reference.Path,
-		}
-	}
-
-	if property.Nested != nil {
-		if len(property.Nested) != 0 {
-			result.Nested = make(map[string]*Property, len(property.Nested))
-
-			for key, nested := range property.Nested {
-				ref := &PropertyReference{
-					Resource: result.Reference.Resource,
-					Path:     JoinPath(result.Path, key),
-				}
-
-				result.Nested[key] = nested.Clone(ref, key, JoinPath(path, key))
-			}
-		}
-	}
-
-	return result
 }
 
 // ParameterMap is the initial map of parameter names (keys) and their (templated) values (values)
 type ParameterMap struct {
-	Schema   string    `json:"schema"`
-	Options  Options   `json:"options"`
-	Header   Header    `json:"header"`
-	Property *Property `json:"property"`
+	Schema    string    `json:"schema"`
+	Options   Options   `json:"options"`
+	Header    Header    `json:"header"`
+	Property  *Property `json:"property"`
+	Functions Functions
 }
 
 // Node represents a point inside a given flow where a request or rollback could be preformed.
@@ -253,20 +209,9 @@ type ParameterMap struct {
 type Node struct {
 	Name       string           `json:"name"`
 	DependsOn  map[string]*Node `json:"depends_on"`
-	Type       string           `json:"type"`
 	Call       *Call            `json:"call"`
 	Rollback   *Call            `json:"rollback"`
 	Descriptor schema.Method    `json:"-"`
-}
-
-// GetName returns the call name
-func (call *Node) GetName() string {
-	return call.Name
-}
-
-// GetDescriptor returns the call descriptor
-func (call *Node) GetDescriptor() schema.Method {
-	return call.Descriptor
 }
 
 // Call represents a call which is executed during runtime
@@ -278,37 +223,13 @@ type Call struct {
 	Descriptor schema.Method `json:"-"`
 }
 
-// GetRequest returns the call request parameter map
-func (call *Call) GetRequest() *ParameterMap {
-	return call.Request
-}
-
-// GetResponse returns the call response parameter map
-func (call *Call) GetResponse() *ParameterMap {
-	return call.Response
-}
-
-// GetService returns the call service
-func (call *Call) GetService() string {
-	return call.Service
-}
-
-// GetMethod returns the call endpoint
-func (call *Call) GetMethod() string {
-	return call.Method
-}
-
-// GetDescriptor returns the call descriptor
-func (call *Call) GetDescriptor() schema.Method {
-	return call.Descriptor
+// SetResponse sets the given parameter map as response
+func (call *Call) SetResponse(params *ParameterMap) {
+	call.Response = params
 }
 
 // SetDescriptor sets the call descriptor
 func (call *Call) SetDescriptor(descriptor schema.Method) {
-	if descriptor != nil {
-		call.Response = ToParameterMap(nil, "", descriptor.GetOutput())
-	}
-
 	call.Descriptor = descriptor
 }
 
@@ -316,20 +237,14 @@ func (call *Call) SetDescriptor(descriptor schema.Method) {
 // Proxies could define calls that are executed before the request body is forwarded.
 // A proxy forward could ideally be used for file uploads or large messages which could not be stored in memory.
 type Proxy struct {
-	Name      string           `json:"name"`
-	DependsOn map[string]*Flow `json:"depends_on"`
-	Nodes     []*Node          `json:"nodes"`
-	Forward   *Call            `json:"forward"`
+	Name    string  `json:"name"`
+	Nodes   []*Node `json:"nodes"`
+	Forward *Call   `json:"forward"`
 }
 
 // GetName returns the flow name
 func (proxy *Proxy) GetName() string {
 	return proxy.Name
-}
-
-// GetDependencies returns the dependencies of the given flow
-func (proxy *Proxy) GetDependencies() map[string]*Flow {
-	return proxy.DependsOn
 }
 
 // GetNodes returns the calls of the given flow

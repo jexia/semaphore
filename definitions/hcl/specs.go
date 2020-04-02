@@ -45,6 +45,11 @@ func ParseSpecs(ctx instance.Context, manifest Manifest, functions specs.CustomD
 	return result, nil
 }
 
+// ParseIntermediateFunctions parses the given intermediate function an includes it inside the custom defined functions
+func ParseIntermediateFunctions(ctx instance.Context, functions specs.CustomDefinedFunctions) error {
+	return nil
+}
+
 // ParseIntermediateEndpoint parses the given intermediate endpoint to a specs endpoint
 func ParseIntermediateEndpoint(ctx instance.Context, endpoint Endpoint) *specs.Endpoint {
 	ctx.Logger(logger.Core).WithField("flow", endpoint.Flow).Debug("Parsing intermediate endpoint to specs")
@@ -72,28 +77,93 @@ func ParseIntermediateFlow(ctx instance.Context, flow Flow, functions specs.Cust
 		return nil, err
 	}
 
+	length := len(flow.Nodes)
+	for _, collection := range flow.Resources {
+		attrs, _ := collection.Properties.JustAttributes()
+		length += len(attrs)
+	}
+
 	result := specs.Flow{
-		Name:      flow.Name,
-		DependsOn: make(map[string]*specs.Flow, len(flow.DependsOn)),
-		Input:     input,
-		Nodes:     make([]*specs.Node, len(flow.Resources)),
-		Output:    output,
+		Name:   flow.Name,
+		Input:  input,
+		Nodes:  make([]*specs.Node, 0, length),
+		Output: output,
 	}
 
-	for _, dependency := range flow.DependsOn {
-		result.DependsOn[dependency] = nil
+	before := map[string]*specs.Node{}
+	if flow.Before != nil {
+		for _, resources := range flow.Before.Resources {
+			attrs, _ := resources.Properties.JustAttributes()
+			for _, attr := range attrs {
+				before[attr.Name] = nil
+			}
+
+			flow.Resources = append([]Resources{resources}, flow.Resources...)
+		}
+
+		for _, node := range flow.Before.Nodes {
+			before[node.Name] = nil
+			flow.Nodes = append([]Node{node}, flow.Nodes...)
+		}
 	}
 
-	for index, call := range flow.Resources {
-		node, err := ParseIntermediateNode(ctx, call, functions)
+	for _, resources := range flow.Resources {
+		attrs, _ := resources.Properties.JustAttributes()
+
+		// FIXME: attrs are not always loaded in the same order as they are defined
+		for _, attr := range attrs {
+			methods := specs.Functions{}
+
+			prop, err := ParseIntermediateProperty(ctx, "", methods, functions, attr)
+			if err != nil {
+				return nil, err
+			}
+
+			node := &specs.Node{
+				DependsOn: DependenciesExcept(before, prop.Name),
+				Name:      prop.Name,
+				Call: &specs.Call{
+					Request: &specs.ParameterMap{
+						Functions: methods,
+					},
+					Response: &specs.ParameterMap{
+						Property: prop,
+					},
+				},
+			}
+
+			result.Nodes = append(result.Nodes, node)
+		}
+	}
+
+	for _, intermediate := range flow.Nodes {
+		node, err := ParseIntermediateNode(ctx, intermediate, functions)
 		if err != nil {
 			return nil, err
 		}
 
-		result.Nodes[index] = node
+		for key := range DependenciesExcept(before, node.Name) {
+			node.DependsOn[key] = nil
+		}
+
+		result.Nodes = append(result.Nodes, node)
 	}
 
 	return &result, nil
+}
+
+// DependenciesExcept copies the given dependencies except the given resource
+func DependenciesExcept(dependencies map[string]*specs.Node, resource string) map[string]*specs.Node {
+	result := map[string]*specs.Node{}
+	for key, val := range dependencies {
+		if key == resource {
+			continue
+		}
+
+		result[key] = val
+	}
+
+	return result
 }
 
 // ParseIntermediateInputParameterMap parses the given input parameter map
@@ -112,6 +182,7 @@ func ParseIntermediateInputParameterMap(ctx instance.Context, params *InputParam
 			Label:  labels.Optional,
 			Nested: map[string]*specs.Property{},
 		},
+		Functions: specs.Functions{},
 	}
 
 	for _, key := range params.Header {
@@ -128,7 +199,7 @@ func ParseIntermediateInputParameterMap(ctx instance.Context, params *InputParam
 	}
 
 	for _, attr := range properties {
-		results, err := ParseIntermediateProperty(ctx, attr.Name, functions, attr)
+		results, err := ParseIntermediateProperty(ctx, attr.Name, result.Functions, functions, attr)
 		if err != nil {
 			return nil, err
 		}
@@ -137,7 +208,7 @@ func ParseIntermediateInputParameterMap(ctx instance.Context, params *InputParam
 	}
 
 	for _, nested := range params.Nested {
-		results, err := ParseIntermediateNestedParameterMap(ctx, nested, functions, nested.Name)
+		results, err := ParseIntermediateNestedParameterMap(ctx, nested, result.Functions, functions, nested.Name)
 		if err != nil {
 			return nil, err
 		}
@@ -147,7 +218,7 @@ func ParseIntermediateInputParameterMap(ctx instance.Context, params *InputParam
 
 	for _, intermediate := range params.Repeated {
 		repeated := ParseIntermediateInputRepeatedParameterMap(intermediate)
-		results, err := ParseIntermediateRepeatedParameterMap(ctx, repeated, functions, repeated.Name)
+		results, err := ParseIntermediateRepeatedParameterMap(ctx, repeated, result.Functions, functions, repeated.Name)
 		if err != nil {
 			return nil, err
 		}
@@ -166,17 +237,12 @@ func ParseIntermediateProxy(ctx instance.Context, proxy Proxy, functions specs.C
 	}
 
 	result := specs.Proxy{
-		Name:      proxy.Name,
-		DependsOn: make(map[string]*specs.Flow, len(proxy.DependsOn)),
-		Nodes:     make([]*specs.Node, len(proxy.Resources)),
-		Forward:   forward,
+		Name:    proxy.Name,
+		Nodes:   make([]*specs.Node, len(proxy.Resources)+len(proxy.Nodes)),
+		Forward: forward,
 	}
 
-	for _, dependency := range proxy.DependsOn {
-		result.DependsOn[dependency] = nil
-	}
-
-	for index, node := range proxy.Resources {
+	for index, node := range proxy.Nodes {
 		node, err := ParseIntermediateNode(ctx, node, functions)
 		if err != nil {
 			return nil, err
@@ -192,11 +258,13 @@ func ParseIntermediateProxy(ctx instance.Context, proxy Proxy, functions specs.C
 func ParseIntermediateProxyForward(ctx instance.Context, proxy ProxyForward, functions specs.CustomDefinedFunctions) (*specs.Call, error) {
 	result := specs.Call{
 		Service: proxy.Service,
-		Request: &specs.ParameterMap{},
+		Request: &specs.ParameterMap{
+			Functions: specs.Functions{},
+		},
 	}
 
 	if proxy.Header != nil {
-		header, err := ParseIntermediateHeader(ctx, proxy.Header, functions)
+		header, err := ParseIntermediateHeader(ctx, proxy.Header, result.Request.Functions, functions)
 		if err != nil {
 			return nil, err
 		}
@@ -230,15 +298,10 @@ func ParseIntermediateParameterMap(ctx instance.Context, params *ParameterMap, f
 	}
 
 	properties, _ := params.Properties.JustAttributes()
-	header, err := ParseIntermediateHeader(ctx, params.Header, functions)
-	if err != nil {
-		return nil, err
-	}
 
 	result := specs.ParameterMap{
 		Schema:  params.Schema,
 		Options: make(specs.Options),
-		Header:  header,
 		Property: &specs.Property{
 			Type:   types.Message,
 			Label:  labels.Optional,
@@ -246,12 +309,21 @@ func ParseIntermediateParameterMap(ctx instance.Context, params *ParameterMap, f
 		},
 	}
 
+	if params.Header != nil {
+		header, err := ParseIntermediateHeader(ctx, params.Header, result.Functions, functions)
+		if err != nil {
+			return nil, err
+		}
+
+		result.Header = header
+	}
+
 	if params.Options != nil {
 		result.Options = ParseIntermediateSpecOptions(params.Options.Body)
 	}
 
 	for _, attr := range properties {
-		results, err := ParseIntermediateProperty(ctx, attr.Name, functions, attr)
+		results, err := ParseIntermediateProperty(ctx, "", result.Functions, functions, attr)
 		if err != nil {
 			return nil, err
 		}
@@ -260,7 +332,7 @@ func ParseIntermediateParameterMap(ctx instance.Context, params *ParameterMap, f
 	}
 
 	for _, nested := range params.Nested {
-		results, err := ParseIntermediateNestedParameterMap(ctx, nested, functions, nested.Name)
+		results, err := ParseIntermediateNestedParameterMap(ctx, nested, result.Functions, functions, nested.Name)
 		if err != nil {
 			return nil, err
 		}
@@ -269,7 +341,7 @@ func ParseIntermediateParameterMap(ctx instance.Context, params *ParameterMap, f
 	}
 
 	for _, repeated := range params.Repeated {
-		results, err := ParseIntermediateRepeatedParameterMap(ctx, repeated, functions, repeated.Name)
+		results, err := ParseIntermediateRepeatedParameterMap(ctx, repeated, result.Functions, functions, repeated.Name)
 		if err != nil {
 			return nil, err
 		}
@@ -281,7 +353,7 @@ func ParseIntermediateParameterMap(ctx instance.Context, params *ParameterMap, f
 }
 
 // ParseIntermediateNestedParameterMap parses the given intermediate parameter map to a spec parameter map
-func ParseIntermediateNestedParameterMap(ctx instance.Context, params NestedParameterMap, functions specs.CustomDefinedFunctions, path string) (*specs.Property, error) {
+func ParseIntermediateNestedParameterMap(ctx instance.Context, params NestedParameterMap, methods specs.Functions, functions specs.CustomDefinedFunctions, path string) (*specs.Property, error) {
 	properties, _ := params.Properties.JustAttributes()
 	result := specs.Property{
 		Name:   params.Name,
@@ -292,7 +364,7 @@ func ParseIntermediateNestedParameterMap(ctx instance.Context, params NestedPara
 	}
 
 	for _, nested := range params.Nested {
-		returns, err := ParseIntermediateNestedParameterMap(ctx, nested, functions, specs.JoinPath(path, nested.Name))
+		returns, err := ParseIntermediateNestedParameterMap(ctx, nested, methods, functions, specs.JoinPath(path, nested.Name))
 		if err != nil {
 			return nil, err
 		}
@@ -301,7 +373,7 @@ func ParseIntermediateNestedParameterMap(ctx instance.Context, params NestedPara
 	}
 
 	for _, repeated := range params.Repeated {
-		returns, err := ParseIntermediateRepeatedParameterMap(ctx, repeated, functions, specs.JoinPath(path, repeated.Name))
+		returns, err := ParseIntermediateRepeatedParameterMap(ctx, repeated, methods, functions, specs.JoinPath(path, repeated.Name))
 		if err != nil {
 			return nil, err
 		}
@@ -310,7 +382,7 @@ func ParseIntermediateNestedParameterMap(ctx instance.Context, params NestedPara
 	}
 
 	for _, attr := range properties {
-		returns, err := ParseIntermediateProperty(ctx, specs.JoinPath(path, attr.Name), functions, attr)
+		returns, err := ParseIntermediateProperty(ctx, path, methods, functions, attr)
 		if err != nil {
 			return nil, err
 		}
@@ -322,7 +394,7 @@ func ParseIntermediateNestedParameterMap(ctx instance.Context, params NestedPara
 }
 
 // ParseIntermediateRepeatedParameterMap parses the given intermediate repeated parameter map to a spec repeated parameter map
-func ParseIntermediateRepeatedParameterMap(ctx instance.Context, params RepeatedParameterMap, functions specs.CustomDefinedFunctions, path string) (*specs.Property, error) {
+func ParseIntermediateRepeatedParameterMap(ctx instance.Context, params RepeatedParameterMap, methods specs.Functions, functions specs.CustomDefinedFunctions, path string) (*specs.Property, error) {
 	properties, _ := params.Properties.JustAttributes()
 	result := specs.Property{
 		Name:      params.Name,
@@ -334,7 +406,7 @@ func ParseIntermediateRepeatedParameterMap(ctx instance.Context, params Repeated
 	}
 
 	for _, nested := range params.Nested {
-		returns, err := ParseIntermediateNestedParameterMap(ctx, nested, functions, specs.JoinPath(path, nested.Name))
+		returns, err := ParseIntermediateNestedParameterMap(ctx, nested, methods, functions, specs.JoinPath(path, nested.Name))
 		if err != nil {
 			return nil, err
 		}
@@ -343,7 +415,7 @@ func ParseIntermediateRepeatedParameterMap(ctx instance.Context, params Repeated
 	}
 
 	for _, repeated := range params.Repeated {
-		returns, err := ParseIntermediateRepeatedParameterMap(ctx, repeated, functions, specs.JoinPath(path, repeated.Name))
+		returns, err := ParseIntermediateRepeatedParameterMap(ctx, repeated, methods, functions, specs.JoinPath(path, repeated.Name))
 		if err != nil {
 			return nil, err
 		}
@@ -352,7 +424,7 @@ func ParseIntermediateRepeatedParameterMap(ctx instance.Context, params Repeated
 	}
 
 	for _, attr := range properties {
-		returns, err := ParseIntermediateProperty(ctx, specs.JoinPath(path, attr.Name), functions, attr)
+		returns, err := ParseIntermediateProperty(ctx, path, methods, functions, attr)
 		if err != nil {
 			return nil, err
 		}
@@ -364,16 +436,12 @@ func ParseIntermediateRepeatedParameterMap(ctx instance.Context, params Repeated
 }
 
 // ParseIntermediateHeader parses the given intermediate header to a spec header
-func ParseIntermediateHeader(ctx instance.Context, header *Header, functions specs.CustomDefinedFunctions) (specs.Header, error) {
-	if header == nil {
-		return nil, nil
-	}
-
+func ParseIntermediateHeader(ctx instance.Context, header *Header, methods specs.Functions, functions specs.CustomDefinedFunctions) (specs.Header, error) {
 	attributes, _ := header.Body.JustAttributes()
 	result := make(specs.Header, len(attributes))
 
 	for _, attr := range attributes {
-		results, err := ParseIntermediateProperty(ctx, attr.Name, functions, attr)
+		results, err := ParseIntermediateProperty(ctx, "", methods, functions, attr)
 		if err != nil {
 			return nil, err
 		}
@@ -420,7 +488,6 @@ func ParseIntermediateNode(ctx instance.Context, node Node, functions specs.Cust
 	result := specs.Node{
 		DependsOn: make(map[string]*specs.Node, len(node.DependsOn)),
 		Name:      node.Name,
-		Type:      node.Type,
 		Call:      call,
 		Rollback:  rollback,
 	}
@@ -460,19 +527,23 @@ func ParseIntermediateCallParameterMap(ctx instance.Context, params *Call, funct
 
 	properties, _ := params.Properties.JustAttributes()
 
-	header, err := ParseIntermediateHeader(ctx, params.Header, functions)
-	if err != nil {
-		return nil, err
-	}
-
 	result := specs.ParameterMap{
 		Options: make(specs.Options),
-		Header:  header,
 		Property: &specs.Property{
 			Type:   types.Message,
 			Label:  labels.Optional,
 			Nested: map[string]*specs.Property{},
 		},
+		Functions: specs.Functions{},
+	}
+
+	if params.Header != nil {
+		header, err := ParseIntermediateHeader(ctx, params.Header, result.Functions, functions)
+		if err != nil {
+			return nil, err
+		}
+
+		result.Header = header
 	}
 
 	if params.Options != nil {
@@ -480,7 +551,7 @@ func ParseIntermediateCallParameterMap(ctx instance.Context, params *Call, funct
 	}
 
 	for _, attr := range properties {
-		results, err := ParseIntermediateProperty(ctx, attr.Name, functions, attr)
+		results, err := ParseIntermediateProperty(ctx, "", result.Functions, functions, attr)
 		if err != nil {
 			return nil, err
 		}
@@ -489,7 +560,7 @@ func ParseIntermediateCallParameterMap(ctx instance.Context, params *Call, funct
 	}
 
 	for _, nested := range params.Nested {
-		results, err := ParseIntermediateNestedParameterMap(ctx, nested, functions, nested.Name)
+		results, err := ParseIntermediateNestedParameterMap(ctx, nested, result.Functions, functions, nested.Name)
 		if err != nil {
 			return nil, err
 		}
@@ -498,7 +569,7 @@ func ParseIntermediateCallParameterMap(ctx instance.Context, params *Call, funct
 	}
 
 	for _, repeated := range params.Repeated {
-		results, err := ParseIntermediateRepeatedParameterMap(ctx, repeated, functions, repeated.Name)
+		results, err := ParseIntermediateRepeatedParameterMap(ctx, repeated, result.Functions, functions, repeated.Name)
 		if err != nil {
 			return nil, err
 		}
@@ -510,7 +581,7 @@ func ParseIntermediateCallParameterMap(ctx instance.Context, params *Call, funct
 }
 
 // ParseIntermediateProperty parses the given intermediate property to a spec property
-func ParseIntermediateProperty(ctx instance.Context, path string, functions specs.CustomDefinedFunctions, property *hcl.Attribute) (*specs.Property, error) {
+func ParseIntermediateProperty(ctx instance.Context, path string, methods specs.Functions, functions specs.CustomDefinedFunctions, property *hcl.Attribute) (*specs.Property, error) {
 	if property == nil {
 		return nil, nil
 	}
@@ -520,16 +591,16 @@ func ParseIntermediateProperty(ctx instance.Context, path string, functions spec
 	value, _ := property.Expr.Value(nil)
 	result := &specs.Property{
 		Name: property.Name,
-		Path: path,
+		Path: specs.JoinPath(path, property.Name),
 		Expr: property.Expr,
 	}
 
 	if value.Type() != cty.String || !specs.IsTemplate(value.AsString()) {
-		specs.SetDefaultValue(ctx, result, value)
+		SetDefaultValue(ctx, result, value)
 		return result, nil
 	}
 
-	result, err := specs.ParseTemplate(ctx, path, functions, value.AsString())
+	result, err := specs.ParseTemplate(ctx, path, property.Name, methods, functions, value.AsString())
 	if err != nil {
 		return nil, err
 	}

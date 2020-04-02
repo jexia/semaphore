@@ -68,21 +68,28 @@ func GetNextResource(flow specs.FlowManager, breakpoint string) string {
 // GetAvailableResources fetches the available resources able to be referenced
 // until the given breakpoint (call.Name) has been reached.
 func GetAvailableResources(flow specs.FlowManager, breakpoint string) map[string]ReferenceMap {
-	references := make(map[string]ReferenceMap, len(flow.GetNodes())+1)
+	length := len(flow.GetNodes()) + 2
+	references := make(map[string]ReferenceMap, length)
+	references[specs.StackResource] = ReferenceMap{}
 
 	if flow.GetInput() != nil {
 		references[specs.InputResource] = ReferenceMap{
-			specs.ResourceRequest: ParameterMapLookup(flow.GetInput().Property),
+			specs.ResourceRequest: PropertyLookup(flow.GetInput().Property),
 			specs.ResourceHeader:  HeaderLookup(flow.GetInput().Header),
 		}
 	}
 
 	for _, node := range flow.GetNodes() {
 		references[node.Name] = ReferenceMap{}
-
 		if node.Call != nil {
 			if node.Call.Request != nil {
-				references[node.Name][specs.ResourceRequest] = ParameterMapLookup(node.Call.Request.Property)
+				if node.Call.Request.Functions != nil {
+					for key, function := range node.Call.Request.Functions {
+						references[specs.StackResource][key] = PropertyLookup(function.Returns)
+					}
+				}
+
+				references[node.Name][specs.ResourceRequest] = PropertyLookup(node.Call.Request.Property)
 			}
 		}
 
@@ -92,7 +99,13 @@ func GetAvailableResources(flow specs.FlowManager, breakpoint string) map[string
 
 		if node.Call != nil {
 			if node.Call.Response != nil {
-				references[node.Name][specs.ResourceResponse] = ParameterMapLookup(node.Call.Response.Property)
+				if node.Call.Response.Functions != nil {
+					for key, function := range node.Call.Response.Functions {
+						references[specs.StackResource][key] = PropertyLookup(function.Returns)
+					}
+				}
+
+				references[node.Name][specs.ResourceResponse] = PropertyLookup(node.Call.Response.Property)
 				references[node.Name][specs.ResourceHeader] = VariableHeaderLookup(node.Call.Response.Header)
 			}
 		}
@@ -155,8 +168,8 @@ func HeaderLookup(header specs.Header) PathLookup {
 	}
 }
 
-// ParameterMapLookup attempts to lookup the given path inside the params collection
-func ParameterMapLookup(param *specs.Property) PathLookup {
+// PropertyLookup attempts to lookup the given path inside the params collection
+func PropertyLookup(param *specs.Property) PathLookup {
 	return func(path string) *specs.Property {
 		if path == SelfRef {
 			return param
@@ -171,7 +184,7 @@ func ParameterMapLookup(param *specs.Property) PathLookup {
 		}
 
 		for _, param := range param.Nested {
-			lookup := ParameterMapLookup(param)(path)
+			lookup := PropertyLookup(param)(path)
 			if lookup != nil {
 				return lookup
 			}

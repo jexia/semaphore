@@ -1,15 +1,16 @@
-package specs
+package strict
 
 import (
 	"testing"
 
 	"github.com/jexia/maestro/instance"
+	"github.com/jexia/maestro/specs"
 )
 
 func TestDuplicateManifests(t *testing.T) {
-	tests := []*Manifest{
+	tests := []*specs.Manifest{
 		{
-			Flows: []*Flow{
+			Flows: []*specs.Flow{
 				{
 					Name: "dup",
 				},
@@ -19,10 +20,10 @@ func TestDuplicateManifests(t *testing.T) {
 			},
 		},
 		{
-			Flows: []*Flow{
+			Flows: []*specs.Flow{
 				{
 					Name: "first",
-					Nodes: []*Node{
+					Nodes: []*specs.Node{
 						{
 							Name: "dup",
 						},
@@ -45,10 +46,10 @@ func TestDuplicateManifests(t *testing.T) {
 }
 
 func TestDuplicateFlow(t *testing.T) {
-	tests := []*Flow{
+	tests := []*specs.Flow{
 		{
 			Name: "first",
-			Nodes: []*Node{
+			Nodes: []*specs.Node{
 				{
 					Name: "dup",
 				},

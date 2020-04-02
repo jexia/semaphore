@@ -58,10 +58,10 @@ func MergeContext(ctx context.Context, patchMd MD, overwrite bool) context.Conte
 	}
 	for k, v := range patchMd {
 		if _, ok := cmd[k]; ok && !overwrite {
-			// skip
-		} else {
-			cmd[k] = v
+			continue
 		}
+
+		cmd[k] = v
 	}
 	return context.WithValue(ctx, metaKey{}, cmd)
 

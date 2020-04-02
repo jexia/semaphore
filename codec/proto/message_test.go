@@ -9,7 +9,6 @@ import (
 
 	"github.com/jexia/maestro"
 	"github.com/jexia/maestro/definitions/hcl"
-	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/schema/protoc"
 	"github.com/jexia/maestro/specs"
 	"github.com/jhump/protoreflect/dynamic"
@@ -41,7 +40,7 @@ func FindFlow(manifest *specs.Manifest, name string) *specs.Flow {
 
 func FindNode(flow *specs.Flow, name string) *specs.Node {
 	for _, node := range flow.GetNodes() {
-		if node.GetName() == name {
+		if node.Name == name {
 			return node
 		}
 	}
@@ -49,7 +48,7 @@ func FindNode(flow *specs.Flow, name string) *specs.Node {
 	return nil
 }
 
-func ValidateStore(t *testing.T, resource string, origin string, input map[string]interface{}, store *refs.Store) {
+func ValidateStore(t *testing.T, resource string, origin string, input map[string]interface{}, store specs.Store) {
 	for key, value := range input {
 		path := specs.JoinPath(origin, key)
 		nested, is := value.(map[string]interface{})
@@ -101,7 +100,7 @@ func BenchmarkSimpleMarshal(b *testing.B) {
 		"message": "message",
 	}
 
-	refs := refs.NewStore(len(input))
+	refs := specs.NewReferenceStore(len(input))
 	refs.StoreValues("input", "", input)
 
 	manifest, err := NewMock()
@@ -110,7 +109,7 @@ func BenchmarkSimpleMarshal(b *testing.B) {
 	}
 
 	flow := FindFlow(manifest, "simple")
-	specs := FindNode(flow, "first").Call.GetRequest()
+	specs := FindNode(flow, "first").Call.Request
 
 	constructor := NewConstructor()
 	manager, err := constructor.New("input", specs)
@@ -138,7 +137,7 @@ func BenchmarkNestedMarshal(b *testing.B) {
 		},
 	}
 
-	refs := refs.NewStore(len(input))
+	refs := specs.NewReferenceStore(len(input))
 	refs.StoreValues("input", "", input)
 
 	manifest, err := NewMock()
@@ -147,7 +146,7 @@ func BenchmarkNestedMarshal(b *testing.B) {
 	}
 
 	flow := FindFlow(manifest, "simple")
-	specs := FindNode(flow, "first").Call.GetRequest()
+	specs := FindNode(flow, "first").Call.Request
 
 	constructor := NewConstructor()
 	manager, err := constructor.New("input", specs)
@@ -177,7 +176,7 @@ func BenchmarkRepeatedMarshal(b *testing.B) {
 		},
 	}
 
-	refs := refs.NewStore(len(input))
+	refs := specs.NewReferenceStore(len(input))
 	refs.StoreValues("input", "", input)
 
 	manifest, err := NewMock()
@@ -186,7 +185,7 @@ func BenchmarkRepeatedMarshal(b *testing.B) {
 	}
 
 	flow := FindFlow(manifest, "simple")
-	specs := FindNode(flow, "first").Call.GetRequest()
+	specs := FindNode(flow, "first").Call.Request
 
 	constructor := NewConstructor()
 	manager, err := constructor.New("input", specs)
@@ -217,14 +216,14 @@ func BenchmarkSimpleUnmarshal(b *testing.B) {
 		b.Fatal(err)
 	}
 
-	refs := refs.NewStore(len(input))
+	refs := specs.NewReferenceStore(len(input))
 	manifest, err := NewMock()
 	if err != nil {
 		b.Fatal(err)
 	}
 
 	flow := FindFlow(manifest, "simple")
-	specs := FindNode(flow, "first").Call.GetRequest()
+	specs := FindNode(flow, "first").Call.Request
 
 	desc, err := NewMessage(specs.Property.Name, specs.Property.Nested)
 	if err != nil {
@@ -271,14 +270,14 @@ func BenchmarkNestedUnmarshal(b *testing.B) {
 		b.Fatal(err)
 	}
 
-	refs := refs.NewStore(len(input))
+	refs := specs.NewReferenceStore(len(input))
 	manifest, err := NewMock()
 	if err != nil {
 		b.Fatal(err)
 	}
 
 	flow := FindFlow(manifest, "nested")
-	specs := FindNode(flow, "first").Call.GetRequest()
+	specs := FindNode(flow, "first").Call.Request
 
 	desc, err := NewMessage(specs.Property.Name, specs.Property.Nested)
 	if err != nil {
@@ -327,14 +326,14 @@ func BenchmarkRepeatedUnmarshal(b *testing.B) {
 		b.Fatal(err)
 	}
 
-	refs := refs.NewStore(len(input))
+	refs := specs.NewReferenceStore(len(input))
 	manifest, err := NewMock()
 	if err != nil {
 		b.Fatal(err)
 	}
 
 	flow := FindFlow(manifest, "repeated")
-	specs := FindNode(flow, "first").Call.GetRequest()
+	specs := FindNode(flow, "first").Call.Request
 
 	desc, err := NewMessage(specs.Property.Name, specs.Property.Nested)
 	if err != nil {
@@ -376,8 +375,8 @@ func TestMarshal(t *testing.T) {
 	}
 
 	flow := FindFlow(manifest, "complete")
-	specs := FindNode(flow, "first").Call.GetRequest()
-	desc, err := NewMessage("marshal", specs.Property.Nested)
+	req := FindNode(flow, "first").Call.Request
+	desc, err := NewMessage("marshal", req.Property.Nested)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -385,7 +384,7 @@ func TestMarshal(t *testing.T) {
 	response := dynamic.NewMessage(desc)
 
 	constructor := NewConstructor()
-	manager, err := constructor.New("input", specs)
+	manager, err := constructor.New("input", req)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -435,7 +434,7 @@ func TestMarshal(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			store := refs.NewStore(3)
+			store := specs.NewReferenceStore(3)
 			store.StoreValues("input", "", input)
 
 			reader, err := manager.Marshal(store)
@@ -484,7 +483,7 @@ func TestUnmarshal(t *testing.T) {
 	}
 
 	flow := FindFlow(manifest, "complete")
-	specs := FindNode(flow, "first").Call.GetRequest()
+	req := FindNode(flow, "first").Call.Request
 
 	tests := map[string]map[string]interface{}{
 		"simple": {
@@ -531,7 +530,7 @@ func TestUnmarshal(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			desc, err := NewMessage("input", specs.Property.Nested)
+			desc, err := NewMessage("input", req.Property.Nested)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -547,10 +546,10 @@ func TestUnmarshal(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			store := refs.NewStore(len(input))
+			store := specs.NewReferenceStore(len(input))
 
 			constructor := NewConstructor()
-			manager, err := constructor.New("input", specs)
+			manager, err := constructor.New("input", req)
 			if err != nil {
 				t.Fatal(err)
 			}

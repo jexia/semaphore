@@ -4,20 +4,21 @@ import (
 	"testing"
 
 	"github.com/jexia/maestro/instance"
+	"github.com/jexia/maestro/specs/labels"
 	"github.com/jexia/maestro/specs/types"
 )
 
 func CompareProperties(t *testing.T, left Property, right Property) {
-	if left.Path != right.Path {
-		t.Errorf("unexpected path %s, expected %s", left.Path, right.Path)
-	}
-
 	if left.Default != right.Default {
-		t.Errorf("unexpected default %s, expected %s", left.Default, right.Default)
+		t.Errorf("unexpected default '%s', expected '%s'", left.Default, right.Default)
 	}
 
 	if left.Type != right.Type {
-		t.Errorf("unexpected type %s, expected %s", left.Type, right.Type)
+		t.Errorf("unexpected type '%s', expected '%s'", left.Type, right.Type)
+	}
+
+	if left.Label != right.Label {
+		t.Errorf("unexpected label '%s', expected '%s'", left.Label, right.Label)
 	}
 
 	if right.Reference != nil && left.Reference == nil {
@@ -26,16 +27,12 @@ func CompareProperties(t *testing.T, left Property, right Property) {
 
 	if right.Reference != nil {
 		if left.Reference.Resource != right.Reference.Resource {
-			t.Errorf("unexpected reference resource %s, expected %s", left.Reference.Resource, right.Reference.Resource)
+			t.Errorf("unexpected reference resource '%s', expected '%s'", left.Reference.Resource, right.Reference.Resource)
 		}
 
 		if left.Reference.Path != right.Reference.Path {
-			t.Errorf("unexpected reference path %s, expected %s", left.Reference.Path, right.Reference.Path)
+			t.Errorf("unexpected reference path '%s', expected '%s'", left.Reference.Path, right.Reference.Path)
 		}
-	}
-
-	if right.Function != nil && left.Function == nil {
-		t.Error("function not set but expected")
 	}
 }
 
@@ -46,6 +43,7 @@ func TestJoinPath(t *testing.T) {
 		"ping.pong":    {"ping.", "pong"},
 		"call.me":      {"call.", "me."},
 		"":             {"", ""},
+		".":            {"", "."},
 	}
 
 	for expected, input := range tests {
@@ -96,9 +94,12 @@ func TestGetTemplateContent(t *testing.T) {
 }
 
 func TestParseReference(t *testing.T) {
+	name := ""
 	path := "message"
+
 	tests := map[string]Property{
 		"input:message": Property{
+			Name: name,
 			Path: path,
 			Reference: &PropertyReference{
 				Resource: "input",
@@ -120,22 +121,30 @@ func TestParseReference(t *testing.T) {
 	}
 
 	for input, expected := range tests {
-		property := ParseReference(path, input)
+		property := ParseReference(path, name, input)
+
+		if property.Path != expected.Path {
+			t.Errorf("unexpected path '%s', expected '%s'", property.Path, expected.Path)
+		}
+
 		CompareProperties(t, *property, expected)
 	}
 }
 
 func TestParseFunction(t *testing.T) {
 	path := "message"
+	name := ""
+
 	static := Property{
 		Path:    path,
 		Default: "message",
 		Type:    types.String,
+		Label:   labels.Optional,
 	}
 
 	functions := CustomDefinedFunctions{
-		"add": func(path string, args ...*Property) (*Property, error) {
-			return &static, nil
+		"add": func(args ...*Property) (*Property, FunctionExec, error) {
+			return &static, nil, nil
 		},
 	}
 
@@ -145,17 +154,28 @@ func TestParseFunction(t *testing.T) {
 	}
 
 	for input, expected := range tests {
-		property, err := ParseFunction(path, functions, input)
-		if err != nil {
-			t.Error(err)
-		}
+		t.Run(input, func(t *testing.T) {
+			property, err := ParseFunction(path, name, make(Functions), functions, input)
+			if err != nil {
+				t.Error(err)
+			}
 
-		CompareProperties(t, *property, expected)
+			if property.Reference == nil {
+				t.Fatalf("unexpected property reference, reference not set '%+v'", property)
+			}
+
+			if property.Reference.Property == nil {
+				t.Fatalf("unexpected reference property, reference property not set '%+v'", property)
+			}
+
+			CompareProperties(t, *property.Reference.Property, expected)
+		})
 	}
 }
 
 func TestParseUnavailableFunction(t *testing.T) {
 	path := "message"
+	name := ""
 	functions := CustomDefinedFunctions{}
 
 	tests := []string{
@@ -163,7 +183,7 @@ func TestParseUnavailableFunction(t *testing.T) {
 	}
 
 	for _, input := range tests {
-		_, err := ParseFunction(path, functions, input)
+		_, err := ParseFunction(path, name, make(Functions), functions, input)
 		if err == nil {
 			t.Error("unexpected pass")
 		}
@@ -172,6 +192,8 @@ func TestParseUnavailableFunction(t *testing.T) {
 
 func TestParseTemplate(t *testing.T) {
 	path := "message"
+	name := ""
+
 	static := Property{
 		Path:    path,
 		Default: "message",
@@ -179,8 +201,8 @@ func TestParseTemplate(t *testing.T) {
 	}
 
 	functions := CustomDefinedFunctions{
-		"add": func(path string, args ...*Property) (*Property, error) {
-			return &static, nil
+		"add": func(args ...*Property) (*Property, FunctionExec, error) {
+			return &static, nil, nil
 		},
 	}
 
@@ -196,12 +218,14 @@ func TestParseTemplate(t *testing.T) {
 	}
 
 	for input, expected := range tests {
-		ctx := instance.NewContext()
-		property, err := ParseTemplate(ctx, path, functions, input)
-		if err != nil {
-			t.Error(err)
-		}
+		t.Run(input, func(t *testing.T) {
+			ctx := instance.NewContext()
+			property, err := ParseTemplate(ctx, path, name, make(Functions), functions, input)
+			if err != nil {
+				t.Error(err)
+			}
 
-		CompareProperties(t, *property, expected)
+			CompareProperties(t, *property, expected)
+		})
 	}
 }

@@ -10,7 +10,6 @@ import (
 	"github.com/jexia/maestro/flow"
 	"github.com/jexia/maestro/instance"
 	"github.com/jexia/maestro/metadata"
-	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/schema/mock"
 	"github.com/jexia/maestro/specs"
@@ -19,18 +18,18 @@ import (
 
 func TestCaller(t *testing.T) {
 	ctx := instance.NewContext()
-	specs := &specs.Node{
+	node := &specs.Node{
 		Name: "first",
 	}
 
 	called := 0
-	call := NewCallerFunc(func(ctx context.Context, refs *refs.Store) error {
+	call := NewCallerFunc(func(ctx context.Context, refs specs.Store) error {
 		called++
 		return nil
 	})
 
 	nodes := flow.Nodes{
-		flow.NewNode(ctx, specs, call, nil),
+		flow.NewNode(ctx, node, call, nil),
 	}
 
 	listener, port := NewMockListener(t, nodes)
@@ -79,7 +78,7 @@ func TestCaller(t *testing.T) {
 		Body:   bytes.NewBuffer([]byte{}),
 	}
 
-	err = dial.SendMsg(context.Background(), rw, rq, refs.NewStore(0))
+	err = dial.SendMsg(context.Background(), rw, rq, specs.NewReferenceStore(0))
 	if err != nil {
 		t.Fatal(err)
 	}

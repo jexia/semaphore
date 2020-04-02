@@ -333,21 +333,21 @@ func TestGetAvailableResources(t *testing.T) {
 	tests := map[string]func() ([]string, map[string]ReferenceMap){
 		"input and first": func() ([]string, map[string]ReferenceMap) {
 			flow := NewMockFlow("first")
-			expected := []string{"input", "first", "second"}
+			expected := []string{specs.StackResource, "input", "first", "second"}
 
 			result := GetAvailableResources(flow, "second")
 			return expected, result
 		},
 		"input": func() ([]string, map[string]ReferenceMap) {
 			flow := NewMockFlow("first")
-			expected := []string{"input", "first"}
+			expected := []string{specs.StackResource, "input", "first"}
 
 			result := GetAvailableResources(flow, "first")
 			return expected, result
 		},
 		"output": func() ([]string, map[string]ReferenceMap) {
 			flow := NewMockFlow("first")
-			expected := []string{"input", "first", "second", "third"}
+			expected := []string{specs.StackResource, "input", "first", "second", "third"}
 
 			result := GetAvailableResources(flow, "output")
 			return expected, result
@@ -384,6 +384,9 @@ func TestSkipMissingParameters(t *testing.T) {
 	}
 
 	tests := []test{
+		{
+			name: specs.StackResource,
+		},
 		{
 			name:  "first",
 			empty: []string{specs.ResourceRequest, specs.ResourceHeader},

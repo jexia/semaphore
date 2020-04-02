@@ -6,7 +6,6 @@ import (
 
 	"github.com/jexia/maestro/instance"
 	"github.com/jexia/maestro/logger"
-	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/specs"
 )
 
@@ -36,7 +35,7 @@ func BenchmarkSingleNodeCalling(b *testing.B) {
 		ctx := context.Background()
 		tracker := NewTracker(1)
 		processes := NewProcesses(1)
-		refs := refs.NewStore(0)
+		refs := specs.NewReferenceStore(0)
 
 		node.Do(ctx, tracker, processes, refs)
 	}
@@ -62,7 +61,7 @@ func BenchmarkBranchedNodeCalling(b *testing.B) {
 		ctx := context.Background()
 		tracker := NewTracker(len(nodes))
 		processes := NewProcesses(1)
-		refs := refs.NewStore(0)
+		refs := specs.NewReferenceStore(0)
 
 		nodes[0].Do(ctx, tracker, processes, refs)
 	}
@@ -84,7 +83,7 @@ func TestNodeCalling(t *testing.T) {
 
 	tracker := NewTracker(len(nodes))
 	processes := NewProcesses(1)
-	refs := refs.NewStore(0)
+	refs := specs.NewReferenceStore(0)
 
 	nodes[0].Do(context.Background(), tracker, processes, refs)
 	processes.Wait()
@@ -114,7 +113,7 @@ func TestNodeRevert(t *testing.T) {
 
 	tracker := NewTracker(len(nodes))
 	processes := NewProcesses(1)
-	refs := refs.NewStore(0)
+	refs := specs.NewReferenceStore(0)
 
 	nodes[len(nodes)-1].Revert(context.Background(), tracker, processes, refs)
 	processes.Wait()
@@ -149,7 +148,7 @@ func TestNodeBranchesCalling(t *testing.T) {
 
 	tracker := NewTracker(len(nodes))
 	processes := NewProcesses(1)
-	refs := refs.NewStore(0)
+	refs := specs.NewReferenceStore(0)
 
 	nodes[0].Do(context.Background(), tracker, processes, refs)
 	processes.Wait()

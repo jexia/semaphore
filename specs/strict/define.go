@@ -7,7 +7,6 @@ import (
 	"github.com/jexia/maestro/specs"
 	"github.com/jexia/maestro/specs/lookup"
 	"github.com/jexia/maestro/specs/trace"
-	"github.com/jexia/maestro/specs/types"
 	"github.com/jexia/maestro/transport"
 	"github.com/sirupsen/logrus"
 )
@@ -53,12 +52,10 @@ func DefineProxy(ctx instance.Context, schema schema.Collection, manifest *specs
 		}
 	}
 
-	// TODO: proxy header type checking
-
 	return nil
 }
 
-// DefineFlow checks and defines the types for the given flow
+// DefineFlow defines the types for the given flow
 func DefineFlow(ctx instance.Context, schema schema.Collection, manifest *specs.Manifest, flow *specs.Flow) (err error) {
 	ctx.Logger(logger.Core).WithField("flow", flow.GetName()).Info("Defining flow types")
 
@@ -69,10 +66,6 @@ func DefineFlow(ctx instance.Context, schema schema.Collection, manifest *specs.
 		}
 
 		flow.Input = specs.ToParameterMap(flow.Input, "", message)
-		err = CheckTypes(flow.Input.Property, message, flow)
-		if err != nil {
-			return err
-		}
 	}
 
 	for _, node := range flow.Nodes {
@@ -96,21 +89,6 @@ func DefineFlow(ctx instance.Context, schema schema.Collection, manifest *specs.
 		if err != nil {
 			return err
 		}
-
-		message, err := GetObjectSchema(schema, flow.Output)
-		if err != nil {
-			return err
-		}
-
-		err = CheckHeader(flow.Output.Header, flow)
-		if err != nil {
-			return err
-		}
-
-		err = CheckTypes(flow.Output.Property, message, flow)
-		if err != nil {
-			return err
-		}
 	}
 
 	return nil
@@ -128,52 +106,69 @@ func GetObjectSchema(schema schema.Collection, params *specs.ParameterMap) (sche
 
 // DefineCall defineds the types for the specs call
 func DefineCall(ctx instance.Context, schema schema.Collection, manifest *specs.Manifest, node *specs.Node, call *specs.Call, flow specs.FlowManager) (err error) {
-	if call.GetMethod() == "" {
+	if call.Request != nil {
+		err = DefineParameterMap(ctx, node, call.Request, flow)
+		if err != nil {
+			return err
+		}
+
+		err = DefineFunctions(ctx, call.Request.Functions, node, flow)
+		if err != nil {
+			return err
+		}
+	}
+
+	if call.Method != "" {
+		ctx.Logger(logger.Core).WithFields(logrus.Fields{
+			"call":    node.Name,
+			"method":  call.Method,
+			"service": call.Service,
+		}).Info("Defining call types")
+
+		service := schema.GetService(call.Service)
+		if service == nil {
+			return trace.New(trace.WithMessage("undefined service '%s' in flow '%s'", call.Service, flow.GetName()))
+		}
+
+		method := service.GetMethod(call.Method)
+		if method == nil {
+			return trace.New(trace.WithMessage("undefined method '%s' in flow '%s'", call.Method, flow.GetName()))
+		}
+
+		method.GetInput()
+		call.SetDescriptor(method)
+		call.SetResponse(specs.ToParameterMap(nil, "", method.GetOutput()))
+	}
+
+	if call.Response != nil {
+		err = DefineParameterMap(ctx, node, call.Response, flow)
+		if err != nil {
+			return err
+		}
+
+		err = DefineFunctions(ctx, call.Response.Functions, node, flow)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// DefineFunctions defined all properties within the given functions
+func DefineFunctions(ctx instance.Context, functions specs.Functions, node *specs.Node, flow specs.FlowManager) error {
+	if functions == nil {
 		return nil
 	}
 
-	ctx.Logger(logger.Core).WithFields(logrus.Fields{
-		"call":    node.GetName(),
-		"method":  call.GetMethod(),
-		"service": call.GetService(),
-	}).Info("Defining call types")
-
-	service := schema.GetService(call.GetService())
-	if service == nil {
-		return trace.New(trace.WithMessage("undefined service '%s' in flow '%s'", call.GetService(), flow.GetName()))
-	}
-
-	method := service.GetMethod(call.GetMethod())
-	if method == nil {
-		return trace.New(trace.WithMessage("undefined method '%s' in flow '%s'", call.GetMethod(), flow.GetName()))
-	}
-
-	call.SetDescriptor(method)
-
-	if call.GetRequest() != nil {
-		err = DefineParameterMap(ctx, node, call.GetRequest(), flow)
-		if err != nil {
-			return err
+	for _, function := range functions {
+		if function.Arguments != nil {
+			for _, arg := range function.Arguments {
+				DefineProperty(ctx, node, arg, flow)
+			}
 		}
 
-		err = CheckHeader(call.GetRequest().Header, flow)
-		if err != nil {
-			return err
-		}
-
-		err = CheckTypes(call.GetRequest().Property, method.GetInput(), flow)
-		if err != nil {
-			return err
-		}
-
-		err = CheckTypes(call.GetResponse().Property, method.GetOutput(), flow)
-		if err != nil {
-			return err
-		}
-
-		if call.Response.Header == nil {
-			call.Response.Header = specs.Header{}
-		}
+		DefineProperty(ctx, node, function.Returns, flow)
 	}
 
 	return nil
@@ -183,14 +178,12 @@ func DefineCall(ctx instance.Context, schema schema.Collection, manifest *specs.
 func DefineCaller(ctx instance.Context, node *specs.Node, manifest *specs.Manifest, call transport.Call, flow specs.FlowManager) (err error) {
 	ctx.Logger(logger.Core).Info("Defining caller references")
 
-	method := call.GetMethod(node.Call.GetMethod())
+	method := call.GetMethod(node.Call.Method)
 	for _, prop := range method.References() {
 		err = DefineProperty(ctx, node, prop, flow)
 		if err != nil {
 			return err
 		}
-
-		ResolvePropertyReferences(prop)
 	}
 
 	return nil
@@ -198,6 +191,10 @@ func DefineCaller(ctx instance.Context, node *specs.Node, manifest *specs.Manife
 
 // DefineParameterMap defines the types for the given parameter map
 func DefineParameterMap(ctx instance.Context, node *specs.Node, params *specs.ParameterMap, flow specs.FlowManager) (err error) {
+	if params.Property == nil {
+		return nil
+	}
+
 	for _, header := range params.Header {
 		err = DefineProperty(ctx, node, header, flow)
 		if err != nil {
@@ -210,7 +207,6 @@ func DefineParameterMap(ctx instance.Context, node *specs.Node, params *specs.Pa
 		return err
 	}
 
-	ResolvePropertyReferences(params.Property)
 	return nil
 }
 
@@ -232,10 +228,10 @@ func DefineProperty(ctx instance.Context, node *specs.Node, property *specs.Prop
 
 	breakpoint := specs.OutputResource
 	if node != nil {
-		breakpoint = node.GetName()
+		breakpoint = node.Name
 
 		if node.Rollback != nil {
-			rollback := node.Rollback.GetRequest().Property
+			rollback := node.Rollback.Request.Property
 			if InsideProperty(rollback, property) {
 				breakpoint = lookup.GetNextResource(flow, breakpoint)
 			}
@@ -279,86 +275,6 @@ func InsideProperty(source *specs.Property, target *specs.Property) bool {
 	}
 
 	return false
-}
-
-// CheckHeader checks the given header types
-func CheckHeader(header specs.Header, flow specs.FlowManager) error {
-	for _, header := range header {
-		if header.Type != types.String {
-			return trace.New(trace.WithMessage("cannot use type %s for header.%s in flow %s", header.Type, header.Path, flow.GetName()))
-		}
-	}
-
-	return nil
-}
-
-// CheckTypes checks the given schema against the given schema method types
-func CheckTypes(property *specs.Property, schema schema.Property, flow specs.FlowManager) (err error) {
-	if schema == nil {
-		return trace.New(trace.WithExpression(property.Expr), trace.WithMessage("unable to check types for '%s' no schema given", property.Path))
-	}
-
-	property.Desciptor = schema
-
-	if property.Type != schema.GetType() {
-		return trace.New(trace.WithExpression(property.Expr), trace.WithMessage("cannot use (%s) type (%s) in '%s'", property.Type, schema.GetType(), property.Path))
-	}
-
-	if property.Label != schema.GetLabel() {
-		return trace.New(trace.WithExpression(property.Expr), trace.WithMessage("cannot use (%s) label (%s) in '%s'", property.Label, schema.GetLabel(), property.Path))
-	}
-
-	if len(property.Nested) > 0 {
-		if len(schema.GetNested()) == 0 {
-			return trace.New(trace.WithExpression(property.Expr), trace.WithMessage("property '%s' has a nested object but schema does not '%s'", property.Path, schema.GetName()))
-		}
-
-		for key, nested := range property.Nested {
-			object := schema.GetNested()[key]
-			if object == nil {
-				return trace.New(trace.WithExpression(nested.Expr), trace.WithMessage("undefined schema nested message property '%s' in flow '%s'", nested.Path, flow.GetName()))
-			}
-
-			err := CheckTypes(nested, object, flow)
-			if err != nil {
-				return err
-			}
-		}
-
-		for _, prop := range schema.GetNested() {
-			_, has := property.Nested[prop.GetName()]
-			if has {
-				continue
-			}
-
-			property.Nested[prop.GetName()] = SchemaToProperty(property.Path, prop)
-		}
-	}
-
-	return nil
-}
-
-// ResolvePropertyReferences moves any property reference into the correct data structure
-func ResolvePropertyReferences(property *specs.Property) {
-	if len(property.Nested) > 0 {
-		for _, nested := range property.Nested {
-			ResolvePropertyReferences(nested)
-		}
-
-		return
-	}
-
-	if property.Reference == nil {
-		return
-	}
-
-	if property.Reference.Property == nil {
-		return
-	}
-
-	clone := property.Reference.Property.Clone(property.Reference, property.Name, property.Path)
-	property.Reference = clone.Reference
-	property.Nested = clone.Nested
 }
 
 // SchemaToProperty parses the given schema property to a specs property

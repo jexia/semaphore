@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 
 	"github.com/jexia/maestro/codec"
-	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/specs"
 	"github.com/jexia/maestro/specs/trace"
 	"github.com/jexia/maestro/specs/types"
@@ -65,7 +64,7 @@ func (manager *Manager) Property() *specs.Property {
 
 // Marshal marshals the given reference store into a proto message.
 // This method is called during runtime to encode a new message with the values stored inside the given reference store.
-func (manager *Manager) Marshal(refs *refs.Store) (io.Reader, error) {
+func (manager *Manager) Marshal(refs specs.Store) (io.Reader, error) {
 	result := dynamic.NewMessage(manager.desc)
 	err := manager.Encode(result, manager.desc, manager.specs.Nested, refs)
 	if err != nil {
@@ -82,7 +81,7 @@ func (manager *Manager) Marshal(refs *refs.Store) (io.Reader, error) {
 
 // Encode encodes the given specs object into the given dynamic proto message.
 // References inside the specs are attempted to be fetched from the reference store.
-func (manager *Manager) Encode(proto *dynamic.Message, desc *desc.MessageDescriptor, specs map[string]*specs.Property, store *refs.Store) (err error) {
+func (manager *Manager) Encode(proto *dynamic.Message, desc *desc.MessageDescriptor, specs map[string]*specs.Property, store specs.Store) (err error) {
 	for _, field := range desc.GetFields() {
 		prop, has := specs[field.GetName()]
 		if !has {
@@ -162,7 +161,7 @@ func (manager *Manager) Encode(proto *dynamic.Message, desc *desc.MessageDescrip
 
 // Unmarshal unmarshals the given io reader into the given reference store.
 // This method is called during runtime to decode a new message and store it inside the given reference store
-func (manager *Manager) Unmarshal(reader io.Reader, refs *refs.Store) error {
+func (manager *Manager) Unmarshal(reader io.Reader, refs specs.Store) error {
 	bb, err := ioutil.ReadAll(reader)
 	if err != nil {
 		return err
@@ -179,14 +178,14 @@ func (manager *Manager) Unmarshal(reader io.Reader, refs *refs.Store) error {
 }
 
 // Decode decodes the given proto message into the given reference store.
-func (manager *Manager) Decode(proto *dynamic.Message, properties map[string]*specs.Property, store *refs.Store) {
+func (manager *Manager) Decode(proto *dynamic.Message, properties map[string]*specs.Property, store specs.Store) {
 	for _, field := range proto.GetKnownFields() {
 		prop := properties[field.GetName()]
 
 		if field.IsRepeated() {
 			length := proto.FieldLength(field)
 
-			ref := refs.New(prop.Path)
+			ref := specs.NewReference(prop.Path)
 			ref.Repeating(length)
 
 			for index := 0; index < length; index++ {
@@ -194,13 +193,13 @@ func (manager *Manager) Decode(proto *dynamic.Message, properties map[string]*sp
 
 				if prop.Type == types.Message {
 					message := value.(*dynamic.Message)
-					store := refs.NewStore(len(message.GetKnownFields()))
+					store := specs.NewReferenceStore(len(message.GetKnownFields()))
 					manager.Decode(message, prop.Nested, store)
 					ref.Set(index, store)
 					continue
 				}
 
-				store := refs.NewStore(1)
+				store := specs.NewReferenceStore(1)
 				store.StoreValue("", "", value)
 
 				ref.Set(index, store)
@@ -218,7 +217,7 @@ func (manager *Manager) Decode(proto *dynamic.Message, properties map[string]*sp
 
 		value := proto.GetField(field)
 
-		ref := refs.New(prop.Path)
+		ref := specs.NewReference(prop.Path)
 		ref.Value = value
 
 		store.StoreReference(manager.resource, ref)

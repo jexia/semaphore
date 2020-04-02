@@ -11,7 +11,7 @@ import (
 	"github.com/jexia/maestro/codec/json"
 	"github.com/jexia/maestro/instance"
 	"github.com/jexia/maestro/metadata"
-	"github.com/jexia/maestro/refs"
+	"github.com/jexia/maestro/specs"
 	"github.com/jexia/maestro/specs/labels"
 	"github.com/jexia/maestro/specs/types"
 	"github.com/jexia/maestro/transport"
@@ -27,14 +27,14 @@ func NewMockCaller() *Caller {
 
 func TestCaller(t *testing.T) {
 	message := "hello world"
-	specs := NewSimpleMockSpecs()
+	mock := NewSimpleMockSpecs()
 
-	codec, err := (&json.Constructor{}).New("input", specs)
+	codec, err := (&json.Constructor{}).New("input", mock)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	refs := refs.NewStore(1)
+	refs := specs.NewReferenceStore(1)
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(`{"message":"` + message + `"}`))
 	}))
@@ -160,7 +160,7 @@ func TestCallerReferencesLookup(t *testing.T) {
 	references[0].Type = types.String
 	references[0].Label = labels.Optional
 
-	store := refs.NewStore(1)
+	store := specs.NewReferenceStore(1)
 	ctx := context.Background()
 	req := transport.Request{
 		Method: method,

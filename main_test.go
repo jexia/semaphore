@@ -15,12 +15,12 @@ import (
 )
 
 func TestOptions(t *testing.T) {
-	functions := map[string]specs.PrepareCustomFunction{
+	functions := map[string]specs.PrepareFunction{
 		"cdf": nil,
 	}
 
 	ctx := instance.NewContext()
-	options := constructor.NewOptions(ctx, WithFunctions(functions))
+	options := NewOptions(ctx, WithFunctions(functions))
 
 	if len(options.Functions) != len(functions) {
 		t.Errorf("unexpected functions %+v, expected %+v", options.Functions, functions)
@@ -28,7 +28,7 @@ func TestOptions(t *testing.T) {
 }
 
 func TestNewOptions(t *testing.T) {
-	functions := map[string]specs.PrepareCustomFunction{
+	functions := map[string]specs.PrepareFunction{
 		"cdf": nil,
 	}
 

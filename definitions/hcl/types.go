@@ -1,15 +1,16 @@
-package specs
+package hcl
 
 import (
 	"github.com/jexia/maestro/instance"
 	"github.com/jexia/maestro/logger"
+	"github.com/jexia/maestro/specs"
 	"github.com/jexia/maestro/specs/types"
 	"github.com/zclconf/go-cty/cty"
 	"github.com/zclconf/go-cty/cty/gocty"
 )
 
 // SetDefaultValue sets the given value as default value inside the given property
-func SetDefaultValue(ctx instance.Context, property *Property, value cty.Value) {
+func SetDefaultValue(ctx instance.Context, property *specs.Property, value cty.Value) {
 	ctx.Logger(logger.Core).WithField("path", property.Path).WithField("value", value).Debug("Set default value for property")
 
 	switch value.Type() {

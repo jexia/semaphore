@@ -63,7 +63,7 @@ func run(cmd *cobra.Command, args []string) error {
 	}
 
 	ctx := instance.NewContext()
-	_, err = constructor.Specs(ctx, constructor.NewOptions(ctx, options...))
+	_, err = constructor.Specs(ctx, maestro.NewOptions(ctx, options...))
 	if err != nil {
 		return err
 	}

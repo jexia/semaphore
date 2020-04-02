@@ -54,7 +54,7 @@ func (client *Client) Close() {
 // New constructs a new Maestro instance
 func New(opts ...constructor.Option) (*Client, error) {
 	ctx := instance.NewContext()
-	options := constructor.NewOptions(ctx, opts...)
+	options := NewOptions(ctx, opts...)
 
 	manifest, err := constructor.Specs(ctx, options)
 	if err != nil {

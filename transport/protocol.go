@@ -7,7 +7,6 @@ import (
 	"github.com/jexia/maestro/codec"
 	"github.com/jexia/maestro/instance"
 	"github.com/jexia/maestro/metadata"
-	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/specs"
 )
@@ -50,7 +49,7 @@ type Caller interface {
 
 // Call is a preconfigured interface for a single service
 type Call interface {
-	SendMsg(ctx context.Context, writer ResponseWriter, request *Request, refs *refs.Store) error
+	SendMsg(ctx context.Context, writer ResponseWriter, request *Request, refs specs.Store) error
 	GetMethods() []Method
 	GetMethod(name string) Method
 	Close() error
@@ -78,9 +77,9 @@ func (collection Listeners) Get(name string) Listener {
 
 // Flow represents a flow which could be called by a transport
 type Flow interface {
-	NewStore() *refs.Store
+	NewStore() specs.Store
 	GetName() string
-	Call(ctx context.Context, refs *refs.Store) error
+	Call(ctx context.Context, refs specs.Store) error
 	Wait()
 }
 

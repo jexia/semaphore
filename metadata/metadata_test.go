@@ -6,6 +6,44 @@ import (
 	"testing"
 )
 
+func TestMetadataAppend(t *testing.T) {
+	md := MD{
+		"foo": "bar",
+		"bar": "baz",
+	}
+
+	append := MD{
+		"foo": "bar",
+		"bar": "baz",
+	}
+
+	md.Append(append)
+
+	for k := range append {
+		if _, ok := md[k]; !ok {
+			t.Fatalf("Appended metadata not available %s", k)
+		}
+	}
+}
+
+func TestMetadataGet(t *testing.T) {
+	expected := "baz"
+	md := MD{
+		"foo": "bar",
+		"bar": expected,
+	}
+
+	ctx := NewContext(context.Background(), md)
+	result, has := Get(ctx, "bar")
+	if !has {
+		t.Fatal("key not available inside metadata")
+	}
+
+	if result != expected {
+		t.Fatalf("unexpected result '%s', expected '%s'", result, expected)
+	}
+}
+
 func TestMetadataCopy(t *testing.T) {
 	md := MD{
 		"foo": "bar",
@@ -72,9 +110,13 @@ func TestMergeContext(t *testing.T) {
 			want: MD{"foo": "bar", "sumo": "demo2"},
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got, _ := FromContext(MergeContext(NewContext(context.TODO(), tt.args.existing), tt.args.append, tt.args.overwrite)); !reflect.DeepEqual(got, tt.want) {
+			ctx := NewContext(context.Background(), tt.args.existing)
+			merge := MergeContext(ctx, tt.args.append, tt.args.overwrite)
+
+			if got, _ := FromContext(merge); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("MergeContext() = %v, want %v", got, tt.want)
 			}
 		})

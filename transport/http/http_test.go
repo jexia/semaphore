@@ -8,7 +8,6 @@ import (
 
 	"github.com/jexia/maestro/flow"
 	"github.com/jexia/maestro/metadata"
-	"github.com/jexia/maestro/refs"
 	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/specs"
 	"github.com/jexia/maestro/specs/labels"
@@ -16,10 +15,10 @@ import (
 )
 
 type caller struct {
-	fn func(context.Context, *refs.Store) error
+	fn func(context.Context, specs.Store) error
 }
 
-func (caller *caller) Do(ctx context.Context, store *refs.Store) error {
+func (caller *caller) Do(ctx context.Context, store specs.Store) error {
 	return caller.fn(ctx, store)
 }
 
@@ -27,7 +26,7 @@ func (caller *caller) References() []*specs.Property {
 	return nil
 }
 
-func NewCallerFunc(fn func(context.Context, *refs.Store) error) flow.Call {
+func NewCallerFunc(fn func(context.Context, specs.Store) error) flow.Call {
 	return &caller{fn: fn}
 }
 

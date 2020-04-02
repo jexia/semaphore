@@ -12,12 +12,19 @@ type Manifest struct {
 	Services  []Service  `hcl:"service,block"`
 }
 
+// Before intermediate specification
+type Before struct {
+	Resources []Resources `hcl:"resources,block"`
+	Nodes     []Node      `hcl:"resource,block"`
+}
+
 // Flow intermediate specification
 type Flow struct {
 	Name      string             `hcl:"name,label"`
-	DependsOn []string           `hcl:"depends_on,optional"`
+	Before    *Before            `hcl:"before,block"`
 	Input     *InputParameterMap `hcl:"input,block"`
-	Resources []Node             `hcl:"resource,block"`
+	Resources []Resources        `hcl:"resources,block"`
+	Nodes     []Node             `hcl:"resource,block"`
 	Output    *ParameterMap      `hcl:"output,block"`
 }
 
@@ -29,6 +36,11 @@ type ParameterMap struct {
 	Nested     []NestedParameterMap   `hcl:"message,block"`
 	Repeated   []RepeatedParameterMap `hcl:"repeated,block"`
 	Properties hcl.Body               `hcl:",remain"`
+}
+
+// Resources represent a collection of resources which are references or custom defined functions
+type Resources struct {
+	Properties hcl.Body `hcl:",remain"`
 }
 
 // Endpoint intermediate specification
@@ -87,9 +99,17 @@ type RepeatedParameterMap struct {
 type Node struct {
 	Name      string   `hcl:"name,label"`
 	DependsOn []string `hcl:"depends_on,optional"`
-	Type      string   `hcl:"type,optional"`
 	Request   *Call    `hcl:"request,block"`
 	Rollback  *Call    `hcl:"rollback,block"`
+}
+
+// Function intermediate specification
+type Function struct {
+	Name      string        `hcl:"name,label"`
+	Input     *ParameterMap `hcl:"input,block"`
+	Resources []Resources   `hcl:"resources,block"`
+	Nodes     []Node        `hcl:"resource,block"`
+	Output    *ParameterMap `hcl:"output,block"`
 }
 
 // Call intermediate specification
@@ -125,8 +145,8 @@ type Method struct {
 // Proxy specification
 type Proxy struct {
 	Name      string       `hcl:"name,label"`
-	DependsOn []string     `hcl:"depends_on,optional"`
-	Resources []Node       `hcl:"resource,block"`
+	Resources []Resources  `hcl:"resources,block"`
+	Nodes     []Node       `hcl:"resource,block"`
 	Forward   ProxyForward `hcl:"forward,block"`
 }
 

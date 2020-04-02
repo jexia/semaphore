@@ -23,7 +23,7 @@ flow "echo" {
 		}
 
 		rollback "caller" "Open" {
-			message = "{{ opening:message }}"
+			message = "{{ input:message }}"
 		}
 	}
 

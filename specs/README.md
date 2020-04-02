@@ -16,8 +16,8 @@ Messages are strictly typed and are type-checked. Payloads such as protobuf and 
   * [Flow](#flow)
     + [Input](#input-1)
     + [Output](#output)
+  * [Resource](#resource)
     + [Depends on](#depends-on)
-  * [Call](#call-1)
     + [Options](#options)
     + [Header](#header)
     + [Request](#request)
@@ -26,6 +26,7 @@ Messages are strictly typed and are type-checked. Payloads such as protobuf and 
   * [Service](#service)
     + [Options](#options)
   * [Endpoint](#endpoint)
+- [Functions](#functions)
 
 ## Specification
 
@@ -135,16 +136,7 @@ output "schema.Object" {
 }
 ```
 
-#### Depends on
-Dependencies are flows that need to be called before the given flow is executed. Dependencies could have other dependencies which have to be called.
-
-```hcl
-flow "GetUsers" {
-    depends_on = ["Auth", "HasGetPolicy"]
-}
-```
-
-### Call
+### Resource
 A call calls the given service and method. Calls could be executed synchronously or asynchronously. All calls are referencing a service method, the service should match the alias defined inside the service. The request and response schema messages are used for type definitions.
 A call could contain the request headers, request body and rollback.
 
@@ -152,6 +144,23 @@ A call could contain the request headers, request body and rollback.
 # Calling service alias logger.Log
 resource "log" {
   request "logger" "Log" {
+    message = "{{ input:message }}"
+  }
+}
+```
+
+#### Depends on
+Marks resources as dependencies. This could be usefull if a resource does not have a direct reference dependency but relies on a third party dependency.
+
+```hcl
+resource "log" {
+  request "warehouse" "Ship" {
+    product = "{{ input:product }}"
+  }
+
+  request "logger" "Log" {
+    depends_on = ["warehouse"]
+
     message = "{{ input:message }}"
   }
 }
@@ -281,5 +290,29 @@ Options could be consumed by implementations. The defined key/values are impleme
 ```hcl
 options {
     port = 8080
+}
+```
+
+## Functions
+
+Custom defined functions could be configured and passed to Maestro. Functions could be called inside templates and could accept arguments and return a property as a response.
+Functions could be used to preform computation on properties during runtime. Functions have read access to the entire reference store but could only write to their own stack.
+A unique resource is created for each function call where all references stored during runtime are located. This resource is created during compile time and references made to the given function are automatically adjusted.
+
+A function should always return a property where all paths are absolute. This way it is easier for other properties to reference a resource.
+
+```
+function(...<arguments>)
+```
+
+---
+
+```hcl
+resource "auth" {
+    request "authenticate" "Authenticate" {
+        header {
+            Authorization = "{{ jwt(input.header:Authorization) }}"
+        }
+    }
 }
 ```
