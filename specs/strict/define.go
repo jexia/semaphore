@@ -7,7 +7,6 @@ import (
 	"github.com/jexia/maestro/specs"
 	"github.com/jexia/maestro/specs/lookup"
 	"github.com/jexia/maestro/specs/trace"
-	"github.com/jexia/maestro/specs/types"
 	"github.com/jexia/maestro/transport"
 	"github.com/sirupsen/logrus"
 )
@@ -90,11 +89,6 @@ func DefineFlow(ctx instance.Context, schema schema.Collection, manifest *specs.
 		if err != nil {
 			return err
 		}
-
-		err = CheckHeader(flow.Output.Header, flow)
-		if err != nil {
-			return err
-		}
 	}
 
 	return nil
@@ -114,11 +108,6 @@ func GetObjectSchema(schema schema.Collection, params *specs.ParameterMap) (sche
 func DefineCall(ctx instance.Context, schema schema.Collection, manifest *specs.Manifest, node *specs.Node, call *specs.Call, flow specs.FlowManager) (err error) {
 	if call.Request != nil {
 		err = DefineParameterMap(ctx, node, call.Request, flow)
-		if err != nil {
-			return err
-		}
-
-		err = CheckHeader(call.Request.Header, flow)
 		if err != nil {
 			return err
 		}
@@ -153,11 +142,6 @@ func DefineCall(ctx instance.Context, schema schema.Collection, manifest *specs.
 
 	if call.Response != nil {
 		err = DefineParameterMap(ctx, node, call.Response, flow)
-		if err != nil {
-			return err
-		}
-
-		err = CheckHeader(call.Response.Header, flow)
 		if err != nil {
 			return err
 		}
@@ -291,17 +275,6 @@ func InsideProperty(source *specs.Property, target *specs.Property) bool {
 	}
 
 	return false
-}
-
-// CheckHeader checks the given header types
-func CheckHeader(header specs.Header, flow specs.FlowManager) error {
-	for _, header := range header {
-		if header.Type != types.String {
-			return trace.New(trace.WithMessage("cannot use type %s for header.%s in flow %s", header.Type, header.Path, flow.GetName()))
-		}
-	}
-
-	return nil
 }
 
 // SchemaToProperty parses the given schema property to a specs property

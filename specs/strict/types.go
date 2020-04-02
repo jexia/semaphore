@@ -6,6 +6,7 @@ import (
 	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/specs"
 	"github.com/jexia/maestro/specs/trace"
+	"github.com/jexia/maestro/specs/types"
 	"github.com/sirupsen/logrus"
 )
 
@@ -97,6 +98,13 @@ func CompareFlowTypes(ctx instance.Context, schema schema.Collection, manifest *
 		if err != nil {
 			return err
 		}
+
+		if flow.Output.Header != nil {
+			err = CompareHeader(flow.Output.Header, flow)
+			if err != nil {
+				return err
+			}
+		}
 	}
 
 	return nil
@@ -121,14 +129,32 @@ func CompareCallTypes(ctx instance.Context, schema schema.Collection, manifest *
 			return trace.New(trace.WithMessage("undefined method '%s' in flow '%s'", call.Method, flow.GetName()))
 		}
 
-		err = CheckTypes(call.Request.Property, method.GetInput(), flow)
-		if err != nil {
-			return err
+		if call.Request != nil {
+			if call.Request.Header != nil {
+				err = CompareHeader(call.Request.Header, flow)
+				if err != nil {
+					return err
+				}
+			}
+
+			err = CheckTypes(call.Request.Property, method.GetInput(), flow)
+			if err != nil {
+				return err
+			}
 		}
 
-		err = CheckTypes(call.Response.Property, method.GetOutput(), flow)
-		if err != nil {
-			return err
+		if call.Response != nil {
+			if call.Response.Header != nil {
+				err = CompareHeader(call.Request.Header, flow)
+				if err != nil {
+					return err
+				}
+			}
+
+			err = CheckTypes(call.Response.Property, method.GetOutput(), flow)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -174,6 +200,17 @@ func CheckTypes(property *specs.Property, schema schema.Property, flow specs.Flo
 			}
 
 			property.Nested[prop.GetName()] = SchemaToProperty(property.Path, prop)
+		}
+	}
+
+	return nil
+}
+
+// CompareHeader compares the given header types
+func CompareHeader(header specs.Header, flow specs.FlowManager) error {
+	for _, header := range header {
+		if header.Type != types.String {
+			return trace.New(trace.WithMessage("cannot use type %s for header.%s in flow %s", header.Type, header.Path, flow.GetName()))
 		}
 	}
 
