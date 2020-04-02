@@ -74,9 +74,8 @@ func (caller *Caller) Do(ctx context.Context, store specs.Store) error {
 	}
 
 	if caller.request != nil {
-		for key, function := range caller.request.functions {
-			resource := specs.JoinPath(specs.StackResource, key)
-			err := function.Fn(specs.NewPrefixStore(store, resource, ""))
+		if caller.request.functions != nil {
+			err := ExecuteFunctions(caller.request.functions, store)
 			if err != nil {
 				return err
 			}
@@ -130,8 +129,28 @@ func (caller *Caller) Do(ctx context.Context, store specs.Store) error {
 	}
 
 	if caller.response != nil {
+		if caller.response.functions != nil {
+			err := ExecuteFunctions(caller.response.functions, store)
+			if err != nil {
+				return err
+			}
+		}
+
 		if caller.response.metadata != nil {
 			caller.response.metadata.Unmarshal(w.Header(), store)
+		}
+	}
+
+	return nil
+}
+
+// ExecuteFunctions executes the given functions and writes the results to the given store
+func ExecuteFunctions(functions specs.Functions, store specs.Store) error {
+	for key, function := range functions {
+		resource := specs.JoinPath(specs.StackResource, key)
+		err := function.Fn(specs.NewPrefixStore(store, resource, ""))
+		if err != nil {
+			return err
 		}
 	}
 

@@ -41,12 +41,17 @@ func Specs(ctx instance.Context, options Options) (*specs.Manifest, error) {
 		}
 	}
 
-	err := strict.CheckManifestDuplicates(ctx, result)
+	err := strict.DefineManifest(ctx, options.Schema, result)
 	if err != nil {
 		return nil, err
 	}
 
-	err = strict.DefineManifest(ctx, options.Schema, result)
+	err = strict.CheckManifestDuplicates(ctx, result)
+	if err != nil {
+		return nil, err
+	}
+
+	err = strict.CompareManifestTypes(ctx, options.Schema, result)
 	if err != nil {
 		return nil, err
 	}

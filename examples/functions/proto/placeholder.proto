@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+import "annotations.proto";
+
+package placeholder;
+
+service Service {
+    option (maestro.service) = {
+        host: "https://jsonplaceholder.typicode.com/"
+        transport: "http"
+        codec: "json"
+    };
+
+    rpc GetTodo(Query) returns (Item) {
+        option (maestro.http) = {
+            endpoint: "/todos/1"
+            method: "GET"
+        };
+    };
+
+    rpc GetUser(Query) returns (User) {
+        option (maestro.http) = {
+            endpoint: "/users/1"
+            method: "GET"
+        };
+    };
+}
+
+message Query {
+}
+
+message Item {
+    int32 userId = 1;
+    int32 id = 2;
+    string title = 3;
+    bool completed = 4;
+}
+
+message User {
+    int32 id = 1;
+    string name = 2;
+    string username = 3;
+    string email = 4;
+}

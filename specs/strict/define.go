@@ -53,12 +53,10 @@ func DefineProxy(ctx instance.Context, schema schema.Collection, manifest *specs
 		}
 	}
 
-	// TODO: proxy header type checking
-
 	return nil
 }
 
-// DefineFlow checks and defines the types for the given flow
+// DefineFlow defines the types for the given flow
 func DefineFlow(ctx instance.Context, schema schema.Collection, manifest *specs.Manifest, flow *specs.Flow) (err error) {
 	ctx.Logger(logger.Core).WithField("flow", flow.GetName()).Info("Defining flow types")
 
@@ -69,10 +67,6 @@ func DefineFlow(ctx instance.Context, schema schema.Collection, manifest *specs.
 		}
 
 		flow.Input = specs.ToParameterMap(flow.Input, "", message)
-		err = CheckTypes(flow.Input.Property, message, flow)
-		if err != nil {
-			return err
-		}
 	}
 
 	for _, node := range flow.Nodes {
@@ -97,17 +91,7 @@ func DefineFlow(ctx instance.Context, schema schema.Collection, manifest *specs.
 			return err
 		}
 
-		message, err := GetObjectSchema(schema, flow.Output)
-		if err != nil {
-			return err
-		}
-
 		err = CheckHeader(flow.Output.Header, flow)
-		if err != nil {
-			return err
-		}
-
-		err = CheckTypes(flow.Output.Property, message, flow)
 		if err != nil {
 			return err
 		}
@@ -165,16 +149,6 @@ func DefineCall(ctx instance.Context, schema schema.Collection, manifest *specs.
 		method.GetInput()
 		call.SetDescriptor(method)
 		call.SetResponse(specs.ToParameterMap(nil, "", method.GetOutput()))
-
-		err = CheckTypes(call.Request.Property, method.GetInput(), flow)
-		if err != nil {
-			return err
-		}
-
-		err = CheckTypes(call.Response.Property, method.GetOutput(), flow)
-		if err != nil {
-			return err
-		}
 	}
 
 	if call.Response != nil {
@@ -324,52 +298,6 @@ func CheckHeader(header specs.Header, flow specs.FlowManager) error {
 	for _, header := range header {
 		if header.Type != types.String {
 			return trace.New(trace.WithMessage("cannot use type %s for header.%s in flow %s", header.Type, header.Path, flow.GetName()))
-		}
-	}
-
-	return nil
-}
-
-// CheckTypes checks the given schema against the given schema method types
-func CheckTypes(property *specs.Property, schema schema.Property, flow specs.FlowManager) (err error) {
-	if schema == nil {
-		return trace.New(trace.WithExpression(property.Expr), trace.WithMessage("unable to check types for '%s' no schema given", property.Path))
-	}
-
-	property.Desciptor = schema
-
-	if property.Type != schema.GetType() {
-		return trace.New(trace.WithExpression(property.Expr), trace.WithMessage("cannot use (%s) type (%s) in '%s'", property.Type, schema.GetType(), property.Path))
-	}
-
-	if property.Label != schema.GetLabel() {
-		return trace.New(trace.WithExpression(property.Expr), trace.WithMessage("cannot use (%s) label (%s) in '%s'", property.Label, schema.GetLabel(), property.Path))
-	}
-
-	if len(property.Nested) > 0 {
-		if len(schema.GetNested()) == 0 {
-			return trace.New(trace.WithExpression(property.Expr), trace.WithMessage("property '%s' has a nested object but schema does not '%s'", property.Path, schema.GetName()))
-		}
-
-		for key, nested := range property.Nested {
-			object := schema.GetNested()[key]
-			if object == nil {
-				return trace.New(trace.WithExpression(nested.Expr), trace.WithMessage("undefined schema nested message property '%s' in flow '%s'", nested.Path, flow.GetName()))
-			}
-
-			err := CheckTypes(nested, object, flow)
-			if err != nil {
-				return err
-			}
-		}
-
-		for _, prop := range schema.GetNested() {
-			_, has := property.Nested[prop.GetName()]
-			if has {
-				continue
-			}
-
-			property.Nested[prop.GetName()] = SchemaToProperty(property.Path, prop)
 		}
 	}
 

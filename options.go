@@ -64,7 +64,13 @@ func WithSchema(resolver schema.Resolver) constructor.Option {
 // WithFunctions defines the custom defined functions to be used
 func WithFunctions(functions specs.CustomDefinedFunctions) constructor.Option {
 	return func(options *constructor.Options) {
-		options.Functions = functions
+		if options.Functions == nil {
+			options.Functions = specs.CustomDefinedFunctions{}
+		}
+
+		for key, fn := range functions {
+			options.Functions[key] = fn
+		}
 	}
 }
 
