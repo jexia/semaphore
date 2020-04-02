@@ -9,8 +9,10 @@ import (
 	"google.golang.org/grpc"
 )
 
+// Say represents a simple gRPC service
 type Say struct{}
 
+// Hello returns a message
 func (s *Say) Hello(ctx context.Context, req *proto.Request) (*proto.Response, error) {
 	log.Print("Received Say.Hello request")
 	res := new(proto.Response)
