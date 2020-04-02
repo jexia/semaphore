@@ -31,7 +31,7 @@ func TestNewListener(t *testing.T) {
 			}
 
 			if listener.Name() != "grpc" {
-				t.Fatal("unkown listener name")
+				t.Fatal("unknown listener name")
 			}
 		},
 	}

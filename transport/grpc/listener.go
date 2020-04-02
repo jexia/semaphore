@@ -208,7 +208,7 @@ func (listener *Listener) handler(srv interface{}, stream grpc.ServerStream) err
 
 	err = method.flow.Call(stream.Context(), store)
 	if err != nil {
-		return grpc.Errorf(codes.Internal, "unkown error: %s", err)
+		return grpc.Errorf(codes.Internal, "unknown error: %s", err)
 	}
 
 	if method.res != nil {
@@ -229,7 +229,7 @@ func (listener *Listener) handler(srv interface{}, stream grpc.ServerStream) err
 
 		err = stream.SendMsg(res)
 		if err != nil {
-			return grpc.Errorf(codes.Internal, "unkown error: %s", err)
+			return grpc.Errorf(codes.Internal, "unknown error: %s", err)
 		}
 
 		stream.SetTrailer(CopyMD(header))

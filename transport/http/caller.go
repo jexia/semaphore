@@ -147,7 +147,7 @@ func (call *Call) SendMsg(ctx context.Context, rw transport.ResponseWriter, pr *
 	if pr.Method != nil {
 		method := call.methods[pr.Method.GetName()]
 		if method == nil {
-			return trace.New(trace.WithMessage("unkown method '%s' for service '%s'", pr.Method, call.service))
+			return trace.New(trace.WithMessage("unknown method '%s' for service '%s'", pr.Method, call.service))
 		}
 
 		endpoint := LookupEndpointReferences(method, refs)

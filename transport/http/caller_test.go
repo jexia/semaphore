@@ -92,7 +92,7 @@ func TestCallerUnknownMethod(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	method := call.GetMethod("unkown")
+	method := call.GetMethod("unknown")
 	if method != nil {
 		t.Fatal("unexpected method returned")
 	}
