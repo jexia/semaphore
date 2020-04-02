@@ -37,7 +37,7 @@ func ParseEndpointOptions(endpoint *transport.Endpoint) (*EndpointOptions, error
 	base, has := endpoint.Options[BaseOption]
 	if has {
 		if base != QueryObject && base != MutationObject {
-			return nil, trace.New(trace.WithMessage("unkown base '%s', expected query or mutation", base))
+			return nil, trace.New(trace.WithMessage("unknown base '%s', expected query or mutation", base))
 		}
 
 		result.Base = base

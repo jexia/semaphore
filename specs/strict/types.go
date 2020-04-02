@@ -10,7 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// CompareManifestTypes compares the types defined insde the schema definitions agains the configured specification
+// CompareManifestTypes compares the types defined insde the schema definitions against the configured specification
 func CompareManifestTypes(ctx instance.Context, schema schema.Collection, manifest *specs.Manifest) (err error) {
 	ctx.Logger(logger.Core).Info("Comparing manifest types")
 
@@ -31,7 +31,7 @@ func CompareManifestTypes(ctx instance.Context, schema schema.Collection, manife
 	return nil
 }
 
-// CompareProxyTypes compares the given proxy agains the configured schema types
+// CompareProxyTypes compares the given proxy against the configured schema types
 func CompareProxyTypes(ctx instance.Context, schema schema.Collection, manifest *specs.Manifest, proxy *specs.Proxy) (err error) {
 	ctx.Logger(logger.Core).WithField("proxy", proxy.GetName()).Info("Compare proxy flow types")
 
@@ -56,7 +56,7 @@ func CompareProxyTypes(ctx instance.Context, schema schema.Collection, manifest 
 	return nil
 }
 
-// CompareFlowTypes compares the flow types agains the configured schema types
+// CompareFlowTypes compares the flow types against the configured schema types
 func CompareFlowTypes(ctx instance.Context, schema schema.Collection, manifest *specs.Manifest, flow *specs.Flow) (err error) {
 	ctx.Logger(logger.Core).WithField("flow", flow.GetName()).Info("Comparing flow types")
 
@@ -110,7 +110,7 @@ func CompareFlowTypes(ctx instance.Context, schema schema.Collection, manifest *
 	return nil
 }
 
-// CompareCallTypes compares the given call types agains the configured schema types
+// CompareCallTypes compares the given call types against the configured schema types
 func CompareCallTypes(ctx instance.Context, schema schema.Collection, manifest *specs.Manifest, node *specs.Node, call *specs.Call, flow specs.FlowManager) (err error) {
 	if call.Method != "" {
 		ctx.Logger(logger.Core).WithFields(logrus.Fields{

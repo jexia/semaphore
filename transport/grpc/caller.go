@@ -134,7 +134,7 @@ func (call *Call) Director(ctx context.Context) (*grpc.ClientConn, error) {
 func (call *Call) SendMsg(ctx context.Context, rw transport.ResponseWriter, pr *transport.Request, refs specs.Store) error {
 	method := call.methods[pr.Method.GetName()]
 	if method == nil {
-		return trace.New(trace.WithMessage("unkown service method %s", pr.Method.GetName()))
+		return trace.New(trace.WithMessage("unknown service method %s", pr.Method.GetName()))
 	}
 
 	conn, err := call.Director(ctx)

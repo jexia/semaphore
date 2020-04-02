@@ -140,7 +140,7 @@ func (call *Call) SendMsg(ctx context.Context, rw transport.ResponseWriter, pr *
 
 	method := call.methods[pr.Method.GetName()]
 	if method == nil {
-		return trace.New(trace.WithMessage("unkown service method %s", pr.Method.GetName()))
+		return trace.New(trace.WithMessage("unknown service method %s", pr.Method.GetName()))
 	}
 
 	req := call.client.NewRequest(call.pkg, method.endpoint, &bytes.Frame{

@@ -39,7 +39,7 @@ func TestEndpointOptions(t *testing.T) {
 			PackageOption: "name",
 		}: true,
 		&specs.Options{
-			"unkown": "name",
+			"unknown": "name",
 		}: true,
 	}
 
