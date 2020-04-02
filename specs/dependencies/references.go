@@ -34,11 +34,13 @@ func ResolveNodeReferences(node *specs.Node) {
 
 	if node.Call != nil {
 		if node.Call.Request != nil {
+			ResolveHeaderReferences(node.Call.Request.Header, node.DependsOn)
 			ResolvePropertyReferences(node.Call.Request.Property, node.DependsOn)
 			ResolveFunctionsReferences(node.Call.Request.Functions, node.DependsOn)
 		}
 
 		if node.Call.Response != nil {
+			ResolveHeaderReferences(node.Call.Response.Header, node.DependsOn)
 			ResolvePropertyReferences(node.Call.Response.Property, node.DependsOn)
 			ResolveFunctionsReferences(node.Call.Response.Functions, node.DependsOn)
 		}
@@ -46,11 +48,13 @@ func ResolveNodeReferences(node *specs.Node) {
 
 	if node.Rollback != nil {
 		if node.Rollback.Request != nil {
+			ResolveHeaderReferences(node.Rollback.Request.Header, node.DependsOn)
 			ResolvePropertyReferences(node.Rollback.Request.Property, node.DependsOn)
 			ResolveFunctionsReferences(node.Rollback.Request.Functions, node.DependsOn)
 		}
 
 		if node.Rollback.Response != nil {
+			ResolveHeaderReferences(node.Rollback.Response.Header, node.DependsOn)
 			ResolvePropertyReferences(node.Rollback.Response.Property, node.DependsOn)
 			ResolveFunctionsReferences(node.Rollback.Response.Functions, node.DependsOn)
 		}
@@ -71,6 +75,13 @@ func ResolveFunctionsReferences(functions specs.Functions, dependencies map[stri
 		}
 
 		ResolvePropertyReferences(function.Returns, dependencies)
+	}
+}
+
+// ResolveHeaderReferences resolves all references made inside the header
+func ResolveHeaderReferences(header specs.Header, dependencies map[string]*specs.Node) {
+	for _, prop := range header {
+		ResolvePropertyReferences(prop, dependencies)
 	}
 }
 
