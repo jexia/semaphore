@@ -5,7 +5,7 @@ import (
 )
 
 // NewManager constructs a new metadata manager for the given resource
-func NewManager(resource string, params *specs.ParameterMap) *Manager {
+func NewManager(resource string, params specs.Header) *Manager {
 	return &Manager{
 		Resource: specs.JoinPath(resource, specs.ResourceHeader),
 		Params:   params,
@@ -15,7 +15,7 @@ func NewManager(resource string, params *specs.ParameterMap) *Manager {
 // Manager represents a metadata manager for a given resource
 type Manager struct {
 	Resource string
-	Params   *specs.ParameterMap
+	Params   specs.Header
 }
 
 // Marshal attempts to marshal the given metadata specs from the given refs store
@@ -24,8 +24,8 @@ func (manager *Manager) Marshal(store specs.Store) MD {
 		return make(MD, 0)
 	}
 
-	result := make(MD, len(manager.Params.Header))
-	for key, property := range manager.Params.Header {
+	result := make(MD, len(manager.Params))
+	for key, property := range manager.Params {
 		value := property.Default
 
 		if property.Reference != nil {

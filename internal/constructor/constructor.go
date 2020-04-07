@@ -5,7 +5,6 @@ import (
 	"github.com/jexia/maestro/internal/flow"
 	"github.com/jexia/maestro/internal/instance"
 	"github.com/jexia/maestro/metadata"
-	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/specs"
 	"github.com/jexia/maestro/specs/dependencies"
 	"github.com/jexia/maestro/specs/strict"
@@ -218,12 +217,12 @@ func Request(node *specs.Node, constructor codec.Constructor, params *specs.Para
 		codec = manager
 	}
 
-	metadata := metadata.NewManager(node.Name, params)
+	metadata := metadata.NewManager(node.Name, params.Header)
 	return flow.NewRequest(params.Functions, codec, metadata), nil
 }
 
 // Forward constructs a flow caller for the given call.
-func Forward(manifest *specs.Manifest, call *specs.Call, options Options) (schema.Service, error) {
+func Forward(manifest *specs.Manifest, call *specs.Call, options Options) (*transport.Forward, error) {
 	if call == nil {
 		return nil, nil
 	}
@@ -233,7 +232,15 @@ func Forward(manifest *specs.Manifest, call *specs.Call, options Options) (schem
 		return nil, trace.New(trace.WithMessage("the service for '%s' was not found", call.Method))
 	}
 
-	return service, nil
+	result := &transport.Forward{
+		Service: service,
+	}
+
+	if call.Request != nil {
+		result.Header = call.Request.Header
+	}
+
+	return result, nil
 }
 
 // Listeners constructs the listeners from the given collection of endpoints

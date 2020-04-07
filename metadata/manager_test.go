@@ -10,14 +10,12 @@ import (
 
 func TestNewManager(t *testing.T) {
 	resource := "mock"
-	params := &specs.ParameterMap{
-		Header: specs.Header{
-			"example": &specs.Property{
-				Name:  "example",
-				Path:  "example",
-				Type:  types.String,
-				Label: labels.Optional,
-			},
+	params := specs.Header{
+		"example": &specs.Property{
+			Name:  "example",
+			Path:  "example",
+			Type:  types.String,
+			Label: labels.Optional,
 		},
 	}
 
@@ -30,17 +28,15 @@ func TestNewManager(t *testing.T) {
 func TestManagerMarshal(t *testing.T) {
 	resource := "mock"
 
-	tests := map[string]func() (*specs.ParameterMap, specs.Store, MD){
-		"simple": func() (*specs.ParameterMap, specs.Store, MD) {
-			params := &specs.ParameterMap{
-				Header: specs.Header{
-					"example": &specs.Property{
-						Name:    "example",
-						Path:    "example",
-						Default: "hello",
-						Type:    types.String,
-						Label:   labels.Optional,
-					},
+	tests := map[string]func() (specs.Header, specs.Store, MD){
+		"simple": func() (specs.Header, specs.Store, MD) {
+			header := specs.Header{
+				"example": &specs.Property{
+					Name:    "example",
+					Path:    "example",
+					Default: "hello",
+					Type:    types.String,
+					Label:   labels.Optional,
 				},
 			}
 
@@ -50,14 +46,14 @@ func TestManagerMarshal(t *testing.T) {
 				"example": "hello",
 			}
 
-			return params, store, expected
+			return header, store, expected
 		},
 	}
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			params, store, expected := test()
-			manager := NewManager(resource, params)
+			header, store, expected := test()
+			manager := NewManager(resource, header)
 
 			result := manager.Marshal(store)
 
@@ -78,16 +74,14 @@ func TestManagerMarshal(t *testing.T) {
 func TestManagerUnmarshal(t *testing.T) {
 	resource := "mock"
 
-	tests := map[string]func() (*specs.ParameterMap, MD){
-		"simple": func() (*specs.ParameterMap, MD) {
-			params := &specs.ParameterMap{
-				Header: specs.Header{
-					"example": &specs.Property{
-						Name:  "example",
-						Path:  "example",
-						Type:  types.String,
-						Label: labels.Optional,
-					},
+	tests := map[string]func() (specs.Header, MD){
+		"simple": func() (specs.Header, MD) {
+			params := specs.Header{
+				"example": &specs.Property{
+					Name:  "example",
+					Path:  "example",
+					Type:  types.String,
+					Label: labels.Optional,
 				},
 			}
 
@@ -101,13 +95,13 @@ func TestManagerUnmarshal(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			params, input := test()
-			manager := NewManager(resource, params)
+			header, input := test()
+			manager := NewManager(resource, header)
 
 			store := specs.NewReferenceStore(len(input))
 			manager.Unmarshal(input, store)
 
-			for key, prop := range params.Header {
+			for key, prop := range header {
 				if prop.Reference == nil {
 					continue
 				}

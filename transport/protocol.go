@@ -83,13 +83,19 @@ type Flow interface {
 	Wait()
 }
 
+// Forward represents the forward specifications
+type Forward struct {
+	Header  specs.Header
+	Service schema.Service
+}
+
 // Endpoint represents a transport listener endpoint
 type Endpoint struct {
 	Listener string
 	Flow     Flow
 	Request  *specs.ParameterMap
 	Response *specs.ParameterMap
-	Forward  schema.Service
+	Forward  *Forward
 	Options  specs.Options
 }
 

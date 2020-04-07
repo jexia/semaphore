@@ -52,6 +52,15 @@ func DefineProxy(ctx instance.Context, schema schema.Collection, manifest *specs
 		}
 	}
 
+	if proxy.Forward != nil {
+		for _, header := range proxy.Forward.Request.Header {
+			err = DefineProperty(ctx, nil, header, proxy)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
 	return nil
 }
 
