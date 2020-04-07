@@ -1,5 +1,5 @@
 exception:
-    message: cannot use type int32 for header.Amount in flow echo
+    message: cannot use type (int32) for 'header.Amount' in flow 'echo', expected (string)
 objects:
     input:
         type: "message"
