@@ -7,9 +7,9 @@ import (
 	"testing"
 
 	"github.com/jexia/maestro/definitions/hcl"
-	"github.com/jexia/maestro/instance"
+	"github.com/jexia/maestro/internal/instance"
+	"github.com/jexia/maestro/internal/utils"
 	"github.com/jexia/maestro/schema/mock"
-	"github.com/jexia/maestro/utils"
 )
 
 const (

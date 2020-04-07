@@ -1,7 +1,7 @@
 package instance
 
 import (
-	"github.com/jexia/maestro/logger"
+	"github.com/jexia/maestro/internal/logger"
 	"github.com/sirupsen/logrus"
 )
 

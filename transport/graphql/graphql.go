@@ -8,8 +8,8 @@ import (
 
 	"github.com/graphql-go/graphql"
 	"github.com/jexia/maestro/codec"
-	"github.com/jexia/maestro/instance"
-	"github.com/jexia/maestro/logger"
+	"github.com/jexia/maestro/internal/instance"
+	"github.com/jexia/maestro/internal/logger"
 	"github.com/jexia/maestro/specs"
 	"github.com/jexia/maestro/transport"
 )

@@ -4,9 +4,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/jexia/maestro/instance"
+	"github.com/jexia/maestro/internal/instance"
+	"github.com/jexia/maestro/internal/utils"
 	"github.com/jexia/maestro/schema"
-	"github.com/jexia/maestro/utils"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/desc/protoparse"
 )
