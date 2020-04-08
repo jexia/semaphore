@@ -3,7 +3,7 @@ package strict
 import (
 	"testing"
 
-	"github.com/jexia/maestro/instance"
+	"github.com/jexia/maestro/internal/instance"
 	"github.com/jexia/maestro/specs"
 )
 

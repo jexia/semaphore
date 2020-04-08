@@ -6,7 +6,7 @@ import (
 	"net"
 	"testing"
 
-	"github.com/jexia/maestro/flow"
+	"github.com/jexia/maestro/internal/flow"
 	"github.com/jexia/maestro/metadata"
 	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/specs"

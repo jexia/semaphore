@@ -1,8 +1,8 @@
 package hcl
 
 import (
-	"github.com/jexia/maestro/instance"
-	"github.com/jexia/maestro/logger"
+	"github.com/jexia/maestro/internal/instance"
+	"github.com/jexia/maestro/internal/logger"
 	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/specs/trace"
 	"github.com/sirupsen/logrus"

@@ -2,7 +2,7 @@ package specs
 
 import (
 	"github.com/hashicorp/hcl/v2"
-	"github.com/jexia/maestro/instance"
+	"github.com/jexia/maestro/internal/instance"
 	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/specs/labels"
 	"github.com/jexia/maestro/specs/types"

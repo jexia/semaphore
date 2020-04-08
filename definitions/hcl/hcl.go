@@ -9,11 +9,11 @@ import (
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/gohcl"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
-	"github.com/jexia/maestro/instance"
-	"github.com/jexia/maestro/logger"
+	"github.com/jexia/maestro/internal/instance"
+	"github.com/jexia/maestro/internal/logger"
+	"github.com/jexia/maestro/internal/utils"
 	"github.com/jexia/maestro/schema"
 	"github.com/jexia/maestro/specs"
-	"github.com/jexia/maestro/utils"
 )
 
 // SchemaResolver constructs a schema resolver for the given path.

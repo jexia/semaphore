@@ -2,8 +2,8 @@ package hcl
 
 import (
 	"github.com/hashicorp/hcl/v2"
-	"github.com/jexia/maestro/instance"
-	"github.com/jexia/maestro/logger"
+	"github.com/jexia/maestro/internal/instance"
+	"github.com/jexia/maestro/internal/logger"
 	"github.com/jexia/maestro/specs"
 	"github.com/jexia/maestro/specs/labels"
 	"github.com/jexia/maestro/specs/types"

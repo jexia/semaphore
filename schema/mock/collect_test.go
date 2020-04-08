@@ -5,9 +5,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/jexia/maestro/instance"
+	"github.com/jexia/maestro/internal/instance"
+	"github.com/jexia/maestro/internal/utils"
 	"github.com/jexia/maestro/schema"
-	"github.com/jexia/maestro/utils"
 )
 
 const (

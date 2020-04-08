@@ -4,7 +4,7 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/jexia/maestro/instance"
+	"github.com/jexia/maestro/internal/instance"
 	"github.com/jexia/maestro/specs"
 	"github.com/jexia/maestro/specs/types"
 	"github.com/zclconf/go-cty/cty"
