@@ -124,7 +124,7 @@ func NewHandle(logger *logrus.Logger, endpoint *transport.Endpoint, options *End
 			return nil
 		}
 
-		header := metadata.NewManager(specs.InputResource, endpoint.Request)
+		header := metadata.NewManager(specs.InputResource, endpoint.Request.Header)
 		handle.Request = &Request{
 			Header: header,
 			Codec:  request,
@@ -138,7 +138,7 @@ func NewHandle(logger *logrus.Logger, endpoint *transport.Endpoint, options *End
 			return nil
 		}
 
-		header := metadata.NewManager(specs.OutputResource, endpoint.Response)
+		header := metadata.NewManager(specs.OutputResource, endpoint.Response.Header)
 		handle.Response = &Request{
 			Header: header,
 			Codec:  response,
@@ -146,15 +146,25 @@ func NewHandle(logger *logrus.Logger, endpoint *transport.Endpoint, options *End
 	}
 
 	if endpoint.Forward != nil {
-		url, err := url.Parse(endpoint.Forward.GetHost())
+		url, err := url.Parse(endpoint.Forward.Service.GetHost())
 		if err != nil {
 			return nil
 		}
 
-		handle.Proxy = httputil.NewSingleHostReverseProxy(url)
+		header := metadata.NewManager(specs.OutputResource, endpoint.Forward.Header)
+		handle.Proxy = &Proxy{
+			Header: header,
+			Handle: httputil.NewSingleHostReverseProxy(url),
+		}
 	}
 
 	return handle
+}
+
+// Proxy represents a HTTP reverse proxy
+type Proxy struct {
+	Handle *httputil.ReverseProxy
+	Header *metadata.Manager
 }
 
 // Request represents a codec manager and header manager
@@ -170,7 +180,7 @@ type Handle struct {
 	Options  *EndpointOptions
 	Request  *Request
 	Response *Request
-	Proxy    *httputil.ReverseProxy
+	Proxy    *Proxy
 }
 
 // HTTPFunc represents a HTTP function which could be used inside a HTTP router
@@ -234,6 +244,7 @@ func (handle *Handle) HTTPFunc(w http.ResponseWriter, r *http.Request, ps httpro
 	}
 
 	if handle.Endpoint.Forward != nil {
-		handle.Proxy.ServeHTTP(w, r)
+		SetHTTPHeader(r.Header, handle.Proxy.Header.Marshal(store))
+		handle.Proxy.Handle.ServeHTTP(w, r)
 	}
 }

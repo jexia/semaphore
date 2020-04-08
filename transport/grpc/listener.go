@@ -104,7 +104,7 @@ func (listener *Listener) Handle(endpoints []*transport.Endpoint, codecs map[str
 				return err
 			}
 
-			header := metadata.NewManager(specs.InputResource, endpoint.Request)
+			header := metadata.NewManager(specs.InputResource, endpoint.Request.Header)
 
 			method.req = &Request{
 				param:  endpoint.Request,
@@ -119,7 +119,7 @@ func (listener *Listener) Handle(endpoints []*transport.Endpoint, codecs map[str
 				return err
 			}
 
-			header := metadata.NewManager(specs.InputResource, endpoint.Response)
+			header := metadata.NewManager(specs.InputResource, endpoint.Response.Header)
 
 			method.res = &Request{
 				param:  endpoint.Response,

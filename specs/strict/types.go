@@ -51,7 +51,12 @@ func CompareProxyTypes(ctx instance.Context, schema schema.Collection, manifest 
 		}
 	}
 
-	// TODO: proxy header type checking
+	if proxy.Forward.Request.Header != nil {
+		err = CompareHeader(proxy.Forward.Request.Header, proxy)
+		if err != nil {
+			return err
+		}
+	}
 
 	return nil
 }
@@ -210,7 +215,7 @@ func CheckTypes(property *specs.Property, schema schema.Property, flow specs.Flo
 func CompareHeader(header specs.Header, flow specs.FlowManager) error {
 	for _, header := range header {
 		if header.Type != types.String {
-			return trace.New(trace.WithMessage("cannot use type %s for header.%s in flow %s", header.Type, header.Path, flow.GetName()))
+			return trace.New(trace.WithMessage("cannot use type (%s) for 'header.%s' in flow '%s', expected (%s)", header.Type, header.Path, flow.GetName(), types.String))
 		}
 	}
 
