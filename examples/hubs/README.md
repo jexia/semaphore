@@ -25,5 +25,5 @@ $ maestro run -c config.yaml
 You could execute the `user` flow by executing a `GET` request on port `8080/v1/user`.
 
 ```bash
-$ curl 127.0.0.1:8080/v1/user'
+$ curl 127.0.0.1:8080/v1/user
 ```
