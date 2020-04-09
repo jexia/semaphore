@@ -79,14 +79,11 @@ func (node *Node) Do(ctx context.Context, tracker *Tracker, processes *Processes
 	defer processes.Done()
 	node.logger.WithField("node", node.Name).Debug("Executing node call")
 
-	if !tracker.Met(node.Previous...) {
-		node.logger.WithField("node", node.Name).Debug("Has not met dependencies yet")
-		return
-	}
-
 	tracker.Lock(node)
-	if tracker.Met(node) {
-		node.logger.WithField("node", node.Name).Debug("Node already executed")
+	defer tracker.Unlock(node)
+
+	if !tracker.Reached(node, len(node.Previous)) {
+		node.logger.WithField("node", node.Name).Debug("Has not met dependencies yet")
 		return
 	}
 
@@ -100,9 +97,7 @@ func (node *Node) Do(ctx context.Context, tracker *Tracker, processes *Processes
 	}
 
 	node.logger.WithField("node", node.Name).Debug("Marking node as completed")
-
 	tracker.Mark(node)
-	tracker.Unlock(node)
 
 	if processes.Err() != nil {
 		node.logger.WithField("node", node.Name).Error("Stopping flow execution a error has been thrown")
@@ -111,6 +106,7 @@ func (node *Node) Do(ctx context.Context, tracker *Tracker, processes *Processes
 
 	processes.Add(len(node.Next))
 	for _, next := range node.Next {
+		tracker.Mark(next)
 		go next.Do(ctx, tracker, processes, refs)
 	}
 }
@@ -121,7 +117,10 @@ func (node *Node) Revert(ctx context.Context, tracker *Tracker, processes *Proce
 	defer processes.Done()
 	node.logger.WithField("node", node.Name).Debug("Executing node revert")
 
-	if !tracker.Met(node.Next...) {
+	tracker.Lock(node)
+	defer tracker.Unlock(node)
+
+	if !tracker.Reached(node, len(node.Next)) {
 		node.ctx.Logger(logger.Flow).WithField("node", node.Name).Debug("Has not met dependencies yet")
 		return
 	}
@@ -129,15 +128,10 @@ func (node *Node) Revert(ctx context.Context, tracker *Tracker, processes *Proce
 	defer func() {
 		processes.Add(len(node.Previous))
 		for _, node := range node.Previous {
+			tracker.Mark(node)
 			go node.Revert(ctx, tracker, processes, refs)
 		}
 	}()
-
-	tracker.Lock(node)
-	if tracker.Met(node) {
-		node.logger.WithField("node", node.Name).Debug("Node already executed")
-		return
-	}
 
 	if node.Rollback != nil {
 		err := node.Rollback.Do(ctx, refs)
@@ -148,9 +142,7 @@ func (node *Node) Revert(ctx context.Context, tracker *Tracker, processes *Proce
 	}
 
 	node.logger.WithField("node", node.Name).Debug("Marking node as completed")
-
 	tracker.Mark(node)
-	tracker.Unlock(node)
 }
 
 // Walk iterates over all nodes and returns the lose ends nodes

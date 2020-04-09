@@ -108,7 +108,7 @@ func (manager *Manager) Revert(executed *Tracker, refs specs.Store) {
 	// Include all nodes to the revert tracker that have not been called
 	for _, node := range manager.Starting {
 		node.Walk(ends, func(node *Node) {
-			if !executed.Met(node) {
+			if executed.Reached(node, len(node.Previous)) {
 				tracker.Mark(node)
 			}
 		})
