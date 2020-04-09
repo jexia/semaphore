@@ -70,7 +70,7 @@ func DefinitionResolver(path string) specs.Resolver {
 				return nil, err
 			}
 
-			manifest, err := ParseSpecs(ctx, definition, functions)
+			manifest, err := ParseSpecs(ctx, definition)
 			if err != nil {
 				return nil, err
 			}

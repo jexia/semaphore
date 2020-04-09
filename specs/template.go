@@ -1,20 +1,17 @@
 package specs
 
 import (
-	"crypto/rand"
-	"encoding/hex"
 	"regexp"
 	"strings"
 
 	"github.com/jexia/maestro/internal/instance"
 	"github.com/jexia/maestro/internal/logger"
-	"github.com/jexia/maestro/specs/trace"
 	"github.com/sirupsen/logrus"
 )
 
 var (
-	// FunctionPattern is the matching pattern for custom defined functions
-	FunctionPattern = regexp.MustCompile(`(\w+)\((.*)\)$`)
+	// ReferencePattern is the matching pattern for references
+	ReferencePattern = regexp.MustCompile(`^[a-zA-Z0-9_\.]*:[a-zA-Z0-9_\.]*$`)
 )
 
 const (
@@ -23,8 +20,6 @@ const (
 	// TemplateClose tag
 	TemplateClose = "}}"
 
-	// FunctionArgumentDelimiter represents the character delimiting function arguments
-	FunctionArgumentDelimiter = ","
 	// ReferenceDelimiter represents the value resource reference delimiter
 	ReferenceDelimiter = ":"
 	// PathDelimiter represents the path reference delimiter
@@ -78,83 +73,36 @@ func ParsePropertyReference(value string) *PropertyReference {
 }
 
 // ParseReference parses the given value as a template reference
-func ParseReference(path string, name string, value string) *Property {
+func ParseReference(path string, name string, template string) *Property {
 	prop := &Property{
 		Name:      name,
 		Path:      JoinPath(path, name),
-		Reference: ParsePropertyReference(value),
+		Reference: ParsePropertyReference(template),
+		Raw:       template,
 	}
 
 	return prop
 }
 
-// ParseFunction attempts to parses the given function
-func ParseFunction(path string, name string, collection Functions, methods CustomDefinedFunctions, content string) (*Property, error) {
-	pattern := FunctionPattern.FindStringSubmatch(content)
-	fn := pattern[1]
-	args := strings.Split(pattern[2], FunctionArgumentDelimiter)
-
-	if methods[fn] == nil {
-		return nil, trace.New(trace.WithMessage("undefined custom function '%s' in '%s'", fn, content))
-	}
-
-	arguments := make([]*Property, len(args))
-
-	for index, arg := range args {
-		result, err := ParseTemplateContent(path, name, collection, methods, strings.TrimSpace(arg))
-		if err != nil {
-			return nil, err
-		}
-
-		arguments[index] = result
-	}
-
-	property, handle, err := methods[fn](arguments...)
-	if err != nil {
-		return nil, err
-	}
-
-	stack := GeneratePathPrefix()
-	function := &Function{
-		Arguments: arguments,
-		Fn:        handle,
-		Returns:   property,
-	}
-
-	collection[stack] = function
-
-	result := &Property{
-		Name:    name,
-		Path:    path,
-		Type:    property.Type,
-		Label:   property.Label,
-		Default: property.Default,
-		Reference: &PropertyReference{
-			Resource: JoinPath(StackResource, stack),
-			Path:     ".",
-			Property: property,
-		},
-	}
-
-	return result, nil
-}
-
 // ParseTemplateContent parses the given template function
-func ParseTemplateContent(path string, name string, methods Functions, functions CustomDefinedFunctions, content string) (*Property, error) {
-	if FunctionPattern.MatchString(content) {
-		return ParseFunction(path, name, methods, functions, content)
+func ParseTemplateContent(path string, name string, content string) (*Property, error) {
+	if ReferencePattern.MatchString(content) {
+		return ParseReference(path, name, content), nil
 	}
 
-	// TODO: handle constant
-	return ParseReference(path, name, content), nil
+	return &Property{
+		Name: name,
+		Path: path,
+		Raw:  content,
+	}, nil
 }
 
 // ParseTemplate parses the given value template and sets the resource and path
-func ParseTemplate(ctx instance.Context, path string, name string, methods Functions, functions CustomDefinedFunctions, value string) (*Property, error) {
+func ParseTemplate(ctx instance.Context, path string, name string, value string) (*Property, error) {
 	content := GetTemplateContent(value)
 	ctx.Logger(logger.Core).WithField("path", path).WithField("template", content).Debug("Parsing property template")
 
-	result, err := ParseTemplateContent(path, name, methods, functions, content)
+	result, err := ParseTemplateContent(path, name, content)
 	if err != nil {
 		return nil, err
 	}
@@ -164,7 +112,6 @@ func ParseTemplate(ctx instance.Context, path string, name string, methods Funct
 		"type":      result.Type,
 		"default":   result.Default,
 		"reference": result.Reference,
-		"methods":   methods,
 	}).Debug("Template results in property with type")
 
 	return result, nil
@@ -202,11 +149,4 @@ func JoinPath(values ...string) (result string) {
 // SplitPath splits the given path into parts
 func SplitPath(path string) []string {
 	return strings.Split(path, PathDelimiter)
-}
-
-// GeneratePathPrefix generates a unique path prefix which could be used to isolate functions
-func GeneratePathPrefix() string {
-	bb := make([]byte, 5)
-	rand.Read(bb)
-	return hex.EncodeToString(bb)
 }

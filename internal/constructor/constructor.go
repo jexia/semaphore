@@ -50,6 +50,11 @@ func Specs(ctx instance.Context, options Options) (*specs.Manifest, error) {
 		return nil, err
 	}
 
+	err = strict.PrepareManifestFunctions(ctx, options.Functions, result)
+	if err != nil {
+		return nil, err
+	}
+
 	err = strict.CompareManifestTypes(ctx, options.Schema, result)
 	if err != nil {
 		return nil, err

@@ -4,8 +4,6 @@ import (
 	"testing"
 
 	"github.com/jexia/maestro/internal/instance"
-	"github.com/jexia/maestro/specs/labels"
-	"github.com/jexia/maestro/specs/types"
 )
 
 func CompareProperties(t *testing.T, left Property, right Property) {
@@ -131,96 +129,44 @@ func TestParseReference(t *testing.T) {
 	}
 }
 
-func TestParseFunction(t *testing.T) {
-	path := "message"
-	name := ""
-
-	static := Property{
-		Path:    path,
-		Default: "message",
-		Type:    types.String,
-		Label:   labels.Optional,
-	}
-
-	functions := CustomDefinedFunctions{
-		"add": func(args ...*Property) (*Property, FunctionExec, error) {
-			return &static, nil, nil
-		},
-	}
-
-	// NOTE: testing of sub functions is a function specific implementation and is not part of the template library
-	tests := map[string]Property{
-		"add(input:message)": static,
-	}
-
-	for input, expected := range tests {
-		t.Run(input, func(t *testing.T) {
-			property, err := ParseFunction(path, name, make(Functions), functions, input)
-			if err != nil {
-				t.Error(err)
-			}
-
-			if property.Reference == nil {
-				t.Fatalf("unexpected property reference, reference not set '%+v'", property)
-			}
-
-			if property.Reference.Property == nil {
-				t.Fatalf("unexpected reference property, reference property not set '%+v'", property)
-			}
-
-			CompareProperties(t, *property.Reference.Property, expected)
-		})
-	}
-}
-
-func TestParseUnavailableFunction(t *testing.T) {
-	path := "message"
-	name := ""
-	functions := CustomDefinedFunctions{}
-
-	tests := []string{
-		"add(input:message)",
-	}
-
-	for _, input := range tests {
-		_, err := ParseFunction(path, name, make(Functions), functions, input)
-		if err == nil {
-			t.Error("unexpected pass")
-		}
-	}
-}
-
 func TestParseTemplate(t *testing.T) {
-	path := "message"
 	name := ""
-
-	static := Property{
-		Path:    path,
-		Default: "message",
-		Type:    types.String,
-	}
-
-	functions := CustomDefinedFunctions{
-		"add": func(args ...*Property) (*Property, FunctionExec, error) {
-			return &static, nil, nil
-		},
-	}
 
 	tests := map[string]Property{
 		"{{ input:message }}": Property{
-			Path: path,
+			Path: "message",
 			Reference: &PropertyReference{
 				Resource: "input",
 				Path:     "message",
 			},
 		},
-		"{{ add(input:message) }}": static,
+		"{{ input.prop:message }}": Property{
+			Path: "message",
+			Reference: &PropertyReference{
+				Resource: "input.prop",
+				Path:     "message",
+			},
+		},
+		"{{ input.prop:message.prop }}": Property{
+			Path: "message.prop",
+			Reference: &PropertyReference{
+				Resource: "input.prop",
+				Path:     "message.prop",
+			},
+		},
+		"{{ input:message.prop }}": Property{
+			Path: "messsage.prop",
+			Reference: &PropertyReference{
+				Resource: "input",
+				Path:     "message.prop",
+			},
+		},
 	}
 
 	for input, expected := range tests {
 		t.Run(input, func(t *testing.T) {
 			ctx := instance.NewContext()
-			property, err := ParseTemplate(ctx, path, name, make(Functions), functions, input)
+			property, err := ParseTemplate(ctx, expected.Path, name, input)
 			if err != nil {
 				t.Error(err)
 			}

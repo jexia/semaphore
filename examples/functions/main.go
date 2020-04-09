@@ -59,6 +59,10 @@ func jwt(args ...*specs.Property) (*specs.Property, specs.FunctionExec, error) {
 
 	input := args[0]
 
+	if input.Type != types.String {
+		return nil, nil, fmt.Errorf("invalid argument type (%s), expected (%s)", input.Type, types.String)
+	}
+
 	fn := func(store specs.Store) error {
 		value := input.Default
 

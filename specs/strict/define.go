@@ -120,11 +120,6 @@ func DefineCall(ctx instance.Context, schema schema.Collection, manifest *specs.
 		if err != nil {
 			return err
 		}
-
-		err = DefineFunctions(ctx, call.Request.Functions, node, flow)
-		if err != nil {
-			return err
-		}
 	}
 
 	if call.Method != "" {
@@ -151,11 +146,6 @@ func DefineCall(ctx instance.Context, schema schema.Collection, manifest *specs.
 
 	if call.Response != nil {
 		err = DefineParameterMap(ctx, node, call.Response, flow)
-		if err != nil {
-			return err
-		}
-
-		err = DefineFunctions(ctx, call.Response.Functions, node, flow)
 		if err != nil {
 			return err
 		}
