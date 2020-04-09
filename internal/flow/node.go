@@ -77,30 +77,30 @@ type Node struct {
 // If one of the nodes fails is the error marked and are the processes aborted.
 func (node *Node) Do(ctx context.Context, tracker *Tracker, processes *Processes, refs specs.Store) {
 	defer processes.Done()
-	node.logger.WithField("node", node.Name).Debug("Executing node call")
+	node.logger.Debug("Executing node call", node.Name)
 
 	tracker.Lock(node)
 	defer tracker.Unlock(node)
 
 	if !tracker.Reached(node, len(node.Previous)) {
-		node.logger.WithField("node", node.Name).Debug("Has not met dependencies yet")
+		node.logger.Debug("Has not met dependencies yet", node.Name)
 		return
 	}
 
 	if node.Call != nil {
 		err := node.Call.Do(ctx, refs)
 		if err != nil {
-			node.logger.WithField("node", node.Name).Error("Call failed")
+			node.logger.Error("Call failed", node.Name)
 			processes.Fatal(err)
 			return
 		}
 	}
 
-	node.logger.WithField("node", node.Name).Debug("Marking node as completed")
+	node.logger.Debug("Marking node as completed", node.Name)
 	tracker.Mark(node)
 
 	if processes.Err() != nil {
-		node.logger.WithField("node", node.Name).Error("Stopping flow execution a error has been thrown")
+		node.logger.Error("Stopping flow execution a error has been thrown", node.Name)
 		return
 	}
 
@@ -115,13 +115,13 @@ func (node *Node) Do(ctx context.Context, tracker *Tracker, processes *Processes
 // If one of the nodes fails is the error marked but execution is not aborted.
 func (node *Node) Revert(ctx context.Context, tracker *Tracker, processes *Processes, refs specs.Store) {
 	defer processes.Done()
-	node.logger.WithField("node", node.Name).Debug("Executing node revert")
+	node.logger.Debug("Executing node revert", node.Name)
 
 	tracker.Lock(node)
 	defer tracker.Unlock(node)
 
 	if !tracker.Reached(node, len(node.Next)) {
-		node.ctx.Logger(logger.Flow).WithField("node", node.Name).Debug("Has not met dependencies yet")
+		node.logger.Debug("Has not met dependencies yet", node.Name)
 		return
 	}
 
@@ -141,7 +141,7 @@ func (node *Node) Revert(ctx context.Context, tracker *Tracker, processes *Proce
 		}
 	}
 
-	node.logger.WithField("node", node.Name).Debug("Marking node as completed")
+	node.logger.Debug("Marking node as completed", node.Name)
 	tracker.Mark(node)
 }
 
