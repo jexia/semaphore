@@ -77,30 +77,30 @@ type Node struct {
 // If one of the nodes fails is the error marked and are the processes aborted.
 func (node *Node) Do(ctx context.Context, tracker *Tracker, processes *Processes, refs specs.Store) {
 	defer processes.Done()
-	node.logger.Debug("Executing node call", node.Name)
+	node.logger.Debug("Executing node call:", node.Name)
 
 	tracker.Lock(node)
 	defer tracker.Unlock(node)
 
 	if !tracker.Reached(node, len(node.Previous)) {
-		node.logger.Debug("Has not met dependencies yet", node.Name)
+		node.logger.Debug("Has not met dependencies yet:", node.Name)
 		return
 	}
 
 	if node.Call != nil {
 		err := node.Call.Do(ctx, refs)
 		if err != nil {
-			node.logger.Error("Call failed", node.Name)
+			node.logger.Error("Call failed:", node.Name)
 			processes.Fatal(err)
 			return
 		}
 	}
 
-	node.logger.Debug("Marking node as completed", node.Name)
+	node.logger.Debug("Marking node as completed:", node.Name)
 	tracker.Mark(node)
 
 	if processes.Err() != nil {
-		node.logger.Error("Stopping flow execution a error has been thrown", node.Name)
+		node.logger.Error("Stopping flow execution a error has been thrown:", node.Name)
 		return
 	}
 
@@ -121,7 +121,7 @@ func (node *Node) Revert(ctx context.Context, tracker *Tracker, processes *Proce
 	defer tracker.Unlock(node)
 
 	if !tracker.Reached(node, len(node.Next)) {
-		node.logger.Debug("Has not met dependencies yet", node.Name)
+		node.logger.Debug("Has not met dependencies yet:", node.Name)
 		return
 	}
 
@@ -141,7 +141,7 @@ func (node *Node) Revert(ctx context.Context, tracker *Tracker, processes *Proce
 		}
 	}
 
-	node.logger.Debug("Marking node as completed", node.Name)
+	node.logger.Debug("Marking node as completed:", node.Name)
 	tracker.Mark(node)
 }
 
