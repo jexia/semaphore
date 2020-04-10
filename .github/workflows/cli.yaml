@@ -3,8 +3,6 @@ on:
   push:
     tags:
       - v*
-env:
-  IMAGE_NAME: cli
 jobs:
   push:
     runs-on: ubuntu-latest
@@ -15,13 +13,8 @@ jobs:
       - name: Build image
         run: docker build . --file cmd/maestro/Dockerfile --tag image
 
-      - name: Log into registry
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
-
-      - name: Push image
+      - name: Format version
         run: |
-          IMAGE_ID=docker.pkg.github.com/${{ github.repository }}/$IMAGE_NAME
-
           # Strip git ref prefix from version
           VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
 
@@ -31,8 +24,31 @@ jobs:
           # Use Docker `latest` tag convention
           [ "$VERSION" == "master" ] && VERSION=latest
 
-          echo IMAGE_ID=$IMAGE_ID
           echo VERSION=$VERSION
+          echo "::set-env name=VERSION::$VERSION"
+
+      - name: Log into Docker hub
+        run: echo "${{ secrets.DOCKER_HUB_TOKEN }}" | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
+      
+      - name: Push image Docker hub
+        run: |
+          IMAGE_ID=jexiacom/maestro
+
+          echo IMAGE_ID=$IMAGE_ID:$VERSION
+
+          docker tag image $IMAGE_ID:$VERSION
+          docker tag image latest
+
+          docker push $IMAGE_ID:$VERSION
+      
+      - name: Log into Github registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
+
+      - name: Push image Github registry
+        run: |
+          IMAGE_ID=docker.pkg.github.com/${{ github.repository }}/cli
+
+          echo IMAGE_ID=$IMAGE_ID:$VERSION
 
           docker tag image $IMAGE_ID:$VERSION
           docker tag image latest
