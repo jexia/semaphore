@@ -2,13 +2,11 @@ package strict
 
 import (
 	"github.com/jexia/maestro/internal/logger"
-	"github.com/jexia/maestro/pkg/functions"
 	"github.com/jexia/maestro/pkg/instance"
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jexia/maestro/pkg/specs/lookup"
 	"github.com/jexia/maestro/pkg/specs/template"
 	"github.com/jexia/maestro/pkg/specs/trace"
-	"github.com/jexia/maestro/pkg/transport"
 	"github.com/sirupsen/logrus"
 )
 
@@ -141,40 +139,6 @@ func DefineCall(ctx instance.Context, services *specs.ServicesManifest, schema *
 
 	if call.Response != nil {
 		err = DefineParameterMap(ctx, node, call.Response, flow)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// DefineFunctions defined all properties within the given functions
-func DefineFunctions(ctx instance.Context, functions functions.Stack, node *specs.Node, flow specs.FlowResourceManager) error {
-	if functions == nil {
-		return nil
-	}
-
-	for _, function := range functions {
-		if function.Arguments != nil {
-			for _, arg := range function.Arguments {
-				DefineProperty(ctx, node, arg, flow)
-			}
-		}
-
-		DefineProperty(ctx, node, function.Returns, flow)
-	}
-
-	return nil
-}
-
-// DefineCaller defineds the types for the given transport caller
-func DefineCaller(ctx instance.Context, node *specs.Node, manifest *specs.FlowsManifest, call transport.Call, flow specs.FlowResourceManager) (err error) {
-	ctx.Logger(logger.Core).Info("Defining caller references")
-
-	method := call.GetMethod(node.Call.Method)
-	for _, prop := range method.References() {
-		err = DefineProperty(ctx, node, prop, flow)
 		if err != nil {
 			return err
 		}

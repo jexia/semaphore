@@ -69,7 +69,7 @@ func Specs(ctx instance.Context, options Options) (functions.Collection, *specs.
 	}
 
 	mem := functions.Collection{}
-	err = strict.PrepareManifestFunctions(ctx, mem, options.Functions, flows)
+	err = functions.PrepareManifestFunctions(ctx, mem, options.Functions, flows)
 	if err != nil {
 		return nil, nil, nil, nil, err
 	}
@@ -188,12 +188,12 @@ func NewServiceCall(ctx instance.Context, mem functions.Collection, services *sp
 		return nil, trace.New(trace.WithMessage("transport constructor not found '%s' for service '%s'", service.Transport, service.Name))
 	}
 
-	transport, err := constructor.Dial(service, options.Functions, service.Options)
+	dialer, err := constructor.Dial(service, options.Functions, service.Options)
 	if err != nil {
 		return nil, err
 	}
 
-	err = strict.DefineCaller(ctx, node, flows, transport, manager)
+	err = transport.DefineCaller(ctx, node, flows, dialer, manager)
 	if err != nil {
 		return nil, err
 	}
@@ -214,8 +214,8 @@ func NewServiceCall(ctx instance.Context, mem functions.Collection, services *sp
 	}
 
 	caller := flow.NewCall(ctx, node, &flow.CallOptions{
-		Transport: transport,
-		Method:    transport.GetMethod(call.Method),
+		Transport: dialer,
+		Method:    dialer.GetMethod(call.Method),
 		Request:   request,
 		Response:  response,
 	})
@@ -239,7 +239,7 @@ func Request(node *specs.Node, mem functions.Collection, constructor codec.Const
 		codec = manager
 	}
 
-	stack := mem[node]
+	stack := mem[params]
 	metadata := metadata.NewManager(node.Name, params.Header)
 	return flow.NewRequest(stack, codec, metadata), nil
 }
