@@ -60,26 +60,22 @@ func TestParseFunction(t *testing.T) {
 	for input, expected := range tests {
 		t.Run(input, func(t *testing.T) {
 			ctx := instance.NewContext()
-			prop := &specs.Property{
+			prop := specs.Property{
 				Name: "",
 				Path: "message",
 				Raw:  input,
 			}
 
-			result, err := PrepareFunction(ctx, nil, nil, prop, make(functions.Stack), custom)
+			err := PrepareFunction(ctx, nil, nil, &prop, make(functions.Stack), custom)
 			if err != nil {
 				t.Error(err)
 			}
 
-			if result.Reference == nil {
-				t.Fatalf("unexpected property reference, reference not set '%+v'", result)
+			if prop.Reference.Property == nil {
+				t.Fatalf("unexpected reference property, reference property not set '%+v'", prop)
 			}
 
-			if result.Reference.Property == nil {
-				t.Fatalf("unexpected reference property, reference property not set '%+v'", result)
-			}
-
-			CompareProperties(t, *result.Reference.Property, expected)
+			CompareProperties(t, prop, expected)
 		})
 	}
 }
@@ -98,7 +94,7 @@ func TestParseUnavailableFunction(t *testing.T) {
 		}
 
 		ctx := instance.NewContext()
-		_, err := PrepareFunction(ctx, nil, nil, prop, make(functions.Stack), custom)
+		err := PrepareFunction(ctx, nil, nil, prop, make(functions.Stack), custom)
 		if err == nil {
 			t.Error("unexpected pass")
 		}

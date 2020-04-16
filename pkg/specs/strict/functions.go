@@ -156,22 +156,18 @@ func PreparePropertyFunctions(ctx instance.Context, node *specs.Node, flow specs
 		}
 	}
 
-	prop, err := PrepareFunction(ctx, node, flow, prop, stack, functions)
+	err := PrepareFunction(ctx, node, flow, prop, stack, functions)
 	if err != nil {
 		return err
-	}
-
-	if prop != nil {
-		// override prop
 	}
 
 	return nil
 }
 
 // PrepareFunction attempts to parses the given function
-func PrepareFunction(ctx instance.Context, node *specs.Node, flow specs.FlowResourceManager, property *specs.Property, stack functions.Stack, methods functions.Custom) (*specs.Property, error) {
+func PrepareFunction(ctx instance.Context, node *specs.Node, flow specs.FlowResourceManager, property *specs.Property, stack functions.Stack, methods functions.Custom) error {
 	if !FunctionPattern.MatchString(property.Raw) {
-		return nil, nil
+		return nil
 	}
 
 	pattern := FunctionPattern.FindStringSubmatch(property.Raw)
@@ -179,7 +175,7 @@ func PrepareFunction(ctx instance.Context, node *specs.Node, flow specs.FlowReso
 	args := strings.Split(pattern[2], FunctionArgumentDelimiter)
 
 	if methods[fn] == nil {
-		return nil, trace.New(trace.WithMessage("undefined custom function '%s' in '%s'", fn, property.Raw))
+		return trace.New(trace.WithMessage("undefined custom function '%s' in '%s'", fn, property.Raw))
 	}
 
 	arguments := make([]*specs.Property, len(args))
@@ -187,12 +183,12 @@ func PrepareFunction(ctx instance.Context, node *specs.Node, flow specs.FlowReso
 	for index, arg := range args {
 		result, err := template.ParseContent(property.Path, property.Name, strings.TrimSpace(arg))
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		err = DefineProperty(ctx, node, result, flow)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		arguments[index] = result
@@ -200,7 +196,7 @@ func PrepareFunction(ctx instance.Context, node *specs.Node, flow specs.FlowReso
 
 	returns, handle, err := methods[fn](arguments...)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	ref := GenerateStackReference()
@@ -212,21 +208,16 @@ func PrepareFunction(ctx instance.Context, node *specs.Node, flow specs.FlowReso
 
 	stack[ref] = function
 
-	result := &specs.Property{
-		Name:    property.Name,
-		Path:    property.Path,
-		Type:    returns.Type,
-		Label:   returns.Label,
-		Default: returns.Default,
-		Reference: &specs.PropertyReference{
-			Resource: template.JoinPath(template.StackResource, ref),
-			Path:     ".",
-			Property: returns,
-		},
-		Raw: property.Raw,
+	property.Type = returns.Type
+	property.Label = returns.Label
+	property.Default = returns.Default
+	property.Reference = &specs.PropertyReference{
+		Resource: template.JoinPath(template.StackResource, ref),
+		Path:     ".",
+		Property: returns,
 	}
 
-	return result, nil
+	return nil
 }
 
 // GenerateStackReference generates a unique path prefix which could be used to isolate functions
