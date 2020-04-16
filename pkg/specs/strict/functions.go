@@ -65,12 +65,13 @@ func PrepareProxyFunctions(ctx instance.Context, mem functions.Collection, funct
 		}
 	}
 
-	// if proxy.Forward.Request.Header != nil {
-	// 	err = PrepareHeaderFunctions(proxy.Forward.Request.Header, proxy)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// }
+	if proxy.Forward.Request.Header != nil {
+		stack := mem.Reserve(nil)
+		err = PrepareHeaderFunctions(ctx, proxy, stack, proxy.Forward.Request.Header, functions)
+		if err != nil {
+			return err
+		}
+	}
 
 	return nil
 }
@@ -133,9 +134,30 @@ func PrepareCallFunctions(ctx instance.Context, node *specs.Node, flow specs.Flo
 
 // PrepareParameterMapFunctions prepares the function definitions inside the given parameter map
 func PrepareParameterMapFunctions(ctx instance.Context, node *specs.Node, flow specs.FlowResourceManager, stack functions.Stack, params *specs.ParameterMap, functions functions.Custom) error {
-	err := PreparePropertyFunctions(ctx, node, flow, stack, params.Property, functions)
-	if err != nil {
-		return err
+	if params.Header != nil {
+		err := PrepareHeaderFunctions(ctx, flow, stack, params.Header, functions)
+		if err != nil {
+			return err
+		}
+	}
+
+	if params.Property != nil {
+		err := PreparePropertyFunctions(ctx, node, flow, stack, params.Property, functions)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// PrepareHeaderFunctions prepares the function definitions inside the given header
+func PrepareHeaderFunctions(ctx instance.Context, flow specs.FlowResourceManager, stack functions.Stack, header specs.Header, functions functions.Custom) error {
+	for _, prop := range header {
+		err := PrepareFunction(ctx, nil, flow, prop, stack, functions)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
