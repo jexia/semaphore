@@ -1,15 +1,20 @@
-# CLI
+# Maestro
 
-Use the standard CLI or develop your own implementation.
+Maestro is invoked from the command line. The CLI could be used to spin up a Maestro instance, validate flow definitions or manage your already running instances.
+Execute `maestro` with the `--help` flag for more information.
+
+```bash
+$ maestro run --config config.yaml
+```
 
 ## Installing
 
 ### Docker images
 
-Official docker images are available on Github. These images contain the Maestro CLI and could be used to set up a server.
+Official docker images are available on Github. These images contain the Maestro CLI.
 
 ```
-docker pull docker.pkg.github.com/jexia/maestro/cli:latest
+docker pull jexiacom/maestro-cli
 ```
 
 ### Using a Package Manager (Preferred)

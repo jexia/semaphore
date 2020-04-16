@@ -34,7 +34,7 @@ We are excited to see how you will implement Maestro in your architecture.
 
 ## Getting started
 
-1. [⚡ Daemon](https://github.com/jexia/maestro/tree/master/cmd/daemon)
+1. [⚡ CLI](https://github.com/jexia/maestro/tree/master/cmd/maestro)
 1. [🚀 Examples](https://github.com/jexia/maestro/tree/master/examples)
 1. [📚 Documentation](https://jexia.gitbook.io/maestro/)
 

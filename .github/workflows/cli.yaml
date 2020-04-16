@@ -47,7 +47,7 @@ jobs:
 
       - name: Push image Github registry
         run: |
-          IMAGE_ID=docker.pkg.github.com/${{ github.repository }}/cli
+          IMAGE_ID=docker.pkg.github.com/${{ github.repository }}/server
 
           echo IMAGE_ID=$IMAGE_ID:$VERSION
 
