@@ -8,18 +8,29 @@
   <a href="https://discord.gg/q54Q8GH"><img src="https://img.shields.io/badge/chat-on%20discord-7289da.svg?sanitize=true" alt="Chat on Discord"></a>
 </p>
 
-<img align="center" src="https://user-images.githubusercontent.com/3440116/77703025-154a1c00-6fba-11ea-9515-71156bcda177.png">
+Maestro is a feature-rich service orchistrator. Create advanced data flows and expose them through endpoints.
+Have full controll over your exposed endpoints, expose single flows for multiple protocols such as gRPC and GraphQL.
+Maestro adapts to your environment, create custom extentions or use the available of custom functions and protocol implementations.
 
-Maestro is a tool to orchestrate requests inside your microservice architecture.
-A request could be manipulated passed branched to different services to be returned as a single output.
+## Table of contents
 
-The key features of Maestro are:
+1. [Using Maestro](#using-maestro)
+1. [Getting started](#getting-started)
+1. [Contributing](#contributing)
 
-* **Call branching**: All calls within a flow are executed [concurrently](https://github.com/jexia/maestro/tree/master/flow) from one another. Dependencies between calls are created through references or when specified.
+## Using Maestro
 
-* **SAGA patterns**: Rollbacks are easily implemented and automatically executed when an unexpected error is thrown during execution. Rollbacks could reference data received from other services.
+Maestro could be used in a wide variety of cases. It could be used to let teams have full controll over their exposed endpoints.
+Create SAGA patterns to autimatically rollback requests on failure. Allow users to implement your product with their tools of choice.
+We are excited to see how you will implement Maestro in your architecture.
 
-* **Proxy forwarding**: Allows support for streaming protocols such as websockets and to run Maestro instances in front of each other. Allow your own team to be in charge of their own flow definitions. Check out the [hubs example](https://github.com/jexia/maestro/tree/master/examples/hubs) for more information.
+* **Gateway**: Maestro redefines the gateway. Expose a single flow through the multiple protocols without changing any of your services.
+
+* **Scalable**: You are able to scale Maestro up to your needs. All calls within a flow are executed in the most optimal path possible. Branches are created to execute calls [concurrently](https://github.com/jexia/maestro/tree/master/flow) from one another when possible.
+
+* **SAGA patterns**: Define rollbacks inside your flows in the case of failure. Rollbacks are automatically executed if a request fails. Rollbacks could reference data received from other services.
+
+* **E2E testing**: Expose your internal e2e tests through any protocol. Deploy a Maestro instance to expose internal endpoints without exposing them to the public.
 
 ## Getting started
 
@@ -27,17 +38,17 @@ The key features of Maestro are:
 1. [🚀 Examples](https://github.com/jexia/maestro/tree/master/examples)
 1. [📚 Documentation](https://jexia.gitbook.io/maestro/)
 
-You could download the CLI from source or most commonly used package managers. Or pull one of the available docker images.
+You could download the daemon from source or most commonly used package managers. Or pull one of the available [docker images](https://hub.docker.com/r/jexiacom/maestro).
 
 ```bash
-docker pull docker.pkg.github.com/jexia/maestro/cli:latest
+docker pull jexiacom/maestro
 ```
 
 ---
 
-All data streams inside Maestro are called flows.
-A flow can manipulate, deconstruct and forwarded data in between calls and services.
-Flows are exposed through endpoints. Flows are generic and could handle different transports and codecs within a single flow.
+Data streams inside Maestro are defined inside flows.
+A flow could manipulate, deconstruct and forwarded data in between calls and services.
+Flows are exposed through endpoints. Flows are generic and could handle different protocols and codecs within a single flow.
 All flows are strictly typed through schema definitions. These schemas define the contracts provided and accepted by services.
 
 ```hcl
