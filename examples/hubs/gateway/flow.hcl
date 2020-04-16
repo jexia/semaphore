@@ -11,7 +11,7 @@ proxy "gateway" {
 
 	forward "proto.Hub" {
 		header {
-			User = "{{ query:id }}"
+			User = "{{ query:name }}"
 		}
 	}
 }

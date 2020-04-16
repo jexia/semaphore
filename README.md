@@ -15,7 +15,7 @@ A request could be manipulated passed branched to different services to be retur
 
 The key features of Maestro are:
 
-* **Call branching**: All calls within a flow are executed [concurrently](https://github.com/jexia/maestro/tree/master/flow) from one another. Dependencies between calls are created through references or when specified.
+* **Call branching**: All calls within a flow are executed [concurrently](https://github.com/jexia/maestro/tree/master/pkg/flow) from one another. Dependencies between calls are created through references or when specified.
 
 * **SAGA patterns**: Rollbacks are easily implemented and automatically executed when an unexpected error is thrown during execution. Rollbacks could reference data received from other services.
 
@@ -23,14 +23,14 @@ The key features of Maestro are:
 
 ## Getting started
 
-1. [⚡ CLI](https://github.com/jexia/maestro/tree/master/cmd/maestro)
+1. [⚡ Daemon](https://github.com/jexia/maestro/tree/master/cmd/daemon)
 1. [🚀 Examples](https://github.com/jexia/maestro/tree/master/examples)
 1. [📚 Documentation](https://jexia.gitbook.io/maestro/)
 
-You could download the CLI from source or most commonly used package managers. Or pull one of the available docker images.
+You could download the daemon from source or most commonly used package managers. Or pull one of the available docker images.
 
 ```bash
-docker pull docker.pkg.github.com/jexia/maestro/cli:latest
+docker pull docker.pkg.github.com/jexia/maestro/daemon:latest
 ```
 
 ---

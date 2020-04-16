@@ -1,7 +1,7 @@
 package logger
 
 import (
-	"github.com/jexia/maestro/specs/trace"
+	"github.com/jexia/maestro/pkg/specs/trace"
 	"github.com/sirupsen/logrus"
 )
 

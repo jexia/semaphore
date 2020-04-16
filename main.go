@@ -4,17 +4,19 @@ import (
 	"sync"
 
 	"github.com/jexia/maestro/internal/constructor"
-	"github.com/jexia/maestro/internal/instance"
 	"github.com/jexia/maestro/internal/logger"
-	"github.com/jexia/maestro/specs"
-	"github.com/jexia/maestro/transport"
+	"github.com/jexia/maestro/pkg/instance"
+	"github.com/jexia/maestro/pkg/specs"
+	"github.com/jexia/maestro/pkg/transport"
 )
 
 // Client represents a maestro instance
 type Client struct {
 	Ctx       instance.Context
 	Endpoints []*transport.Endpoint
-	Manifest  *specs.Manifest
+	Flows     *specs.FlowsManifest
+	Services  *specs.ServicesManifest
+	Schema    *specs.SchemaManifest
 	Listeners []transport.Listener
 	Options   constructor.Options
 }
@@ -56,12 +58,12 @@ func New(opts ...constructor.Option) (*Client, error) {
 	ctx := instance.NewContext()
 	options := NewOptions(ctx, opts...)
 
-	manifest, err := constructor.Specs(ctx, options)
+	mem, flows, services, schema, err := constructor.Specs(ctx, options)
 	if err != nil {
 		return nil, err
 	}
 
-	endpoints, err := constructor.FlowManager(ctx, manifest, options)
+	endpoints, err := constructor.FlowManager(ctx, mem, services, flows, options)
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +71,9 @@ func New(opts ...constructor.Option) (*Client, error) {
 	client := &Client{
 		Ctx:       ctx,
 		Endpoints: endpoints,
-		Manifest:  manifest,
+		Flows:     flows,
+		Services:  services,
+		Schema:    schema,
 		Listeners: options.Listeners,
 		Options:   options,
 	}

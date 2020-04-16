@@ -1,0 +1,23 @@
+exception:
+    message: cannot use type (int32) for 'header.Amount' in flow 'echo', expected (string)
+properties:
+    com.input:
+        type: "message"
+        label: "optional"
+        nested:
+            amount:
+                type: "int32"
+                label: "optional"
+    com.output:
+        type: "message"
+        label: "optional"
+        nested:
+            amount:
+                type: "string"
+                label: "optional"
+services:
+    caller:
+        methods:
+            Open:
+                input: "com.output"
+                output: "com.output"

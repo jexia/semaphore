@@ -1,4 +1,4 @@
-objects:
+properties:
     input:
         type: "message"
         label: "optional"
