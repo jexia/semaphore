@@ -1,0 +1,100 @@
+properties:
+    com.complete.input:
+        type: "message"
+        label: "optional"
+        nested:
+            message:
+                type: "string"
+                label: "optional"
+            nested:
+                type: "message"
+                label: "optional"
+                nested:
+                    value:
+                        type: "string"
+                        label: "optional"
+            repeating:
+                type: "message"
+                label: "repeated"
+                nested:
+                    value:
+                        type: "string"
+                        label: "optional"
+            repeating_values:
+                type: "string"
+                label: "repeated"
+    com.complete.output:
+        type: "message"
+        label: "optional"
+        nested:
+            id:
+                type: "int64"
+                label: "optional"
+    com.simple.input:
+        type: "message"
+        label: "optional"
+        nested:
+            message:
+                type: "string"
+                label: "optional"
+    com.simple.output:
+        type: "message"
+        label: "optional"
+        nested:
+            id:
+                type: "int64"
+                label: "optional"
+    com.repeated.input:
+        type: "message"
+        label: "optional"
+        nested:
+            repeating:
+                type: "message"
+                label: "repeated"
+                nested:
+                    value:
+                        type: "string"
+                        label: "optional"
+    com.repeated.output:
+        type: "message"
+        label: "optional"
+        nested:
+            id:
+                type: "int64"
+                label: "optional"
+    com.repeated_values.input:
+        type: "message"
+        label: "optional"
+        nested:
+            repeated_values:
+                type: "string"
+                label: "repeated"
+    com.nested.input:
+        type: "message"
+        label: "optional"
+        nested:
+            nested:
+                type: "message"
+                label: "optional"
+                nested:
+                    value:
+                        type: "string"
+                        label: "optional"
+services:
+    mock:
+        methods:
+            complete:
+                input: "com.complete.input"
+                output: "com.complete.output"
+            simple:
+                input: "com.simple.input"
+                output: "com.simple.output"
+            repeated:
+                input: "com.repeated.input"
+                output: "com.repeated.output"
+            repeated_values:
+                input: "com.repeated_values.input"
+                output: "com.repeated.output"
+            nested:
+                input: "com.nested.input"
+                output: "com.simple.output"

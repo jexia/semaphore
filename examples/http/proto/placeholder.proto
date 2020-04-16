@@ -6,9 +6,9 @@ package placeholder;
 
 service Service {
     option (maestro.service) = {
-        host: "https://jsonplaceholder.typicode.com/"
         transport: "http"
         codec: "json"
+        host: "https://jsonplaceholder.typicode.com/"
     };
 
     rpc GetTodo(Query) returns (Item) {

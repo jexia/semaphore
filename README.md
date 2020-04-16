@@ -18,7 +18,11 @@ Maestro adapts to your environment, create custom extentions or use the availabl
 1. [Getting started](#getting-started)
 1. [Contributing](#contributing)
 
+<<<<<<< HEAD
 ## Using Maestro
+=======
+* **Call branching**: All calls within a flow are executed [concurrently](https://github.com/jexia/maestro/tree/master/pkg/flow) from one another. Dependencies between calls are created through references or when specified.
+>>>>>>> 45bc5f92eaafff5df837cad74da5e3da18c16384
 
 Maestro could be used in a wide variety of cases. It could be used to let teams have full controll over their exposed endpoints.
 Create SAGA patterns to autimatically rollback requests on failure. Allow users to implement your product with their tools of choice.
@@ -34,14 +38,21 @@ We are excited to see how you will implement Maestro in your architecture.
 
 ## Getting started
 
-1. [⚡ CLI](https://github.com/jexia/maestro/tree/master/cmd/maestro)
+1. [⚡ Daemon](https://github.com/jexia/maestro/tree/master/cmd/daemon)
 1. [🚀 Examples](https://github.com/jexia/maestro/tree/master/examples)
 1. [📚 Documentation](https://jexia.gitbook.io/maestro/)
 
+<<<<<<< HEAD
 You could download the daemon from source or most commonly used package managers. Or pull one of the available [docker images](https://hub.docker.com/r/jexiacom/maestro).
 
 ```bash
 docker pull jexiacom/maestro
+=======
+You could download the daemon from source or most commonly used package managers. Or pull one of the available docker images.
+
+```bash
+docker pull docker.pkg.github.com/jexia/maestro/daemon:latest
+>>>>>>> 45bc5f92eaafff5df837cad74da5e3da18c16384
 ```
 
 ---

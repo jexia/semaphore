@@ -1,0 +1,25 @@
+properties:
+    com.input:
+        type: "message"
+        label: "optional"
+        nested:
+            repeating:
+                type: "message"
+                label: "repeated"
+                nested:
+                    value:
+                        type: "string"
+                        label: "optional"
+    com.output:
+        type: "message"
+        label: "optional"
+        nested:
+            message:
+                type: "int32"
+                label: "optional"
+services:
+    caller:
+        methods:
+            Open:
+                input: com.input
+                output: com.output

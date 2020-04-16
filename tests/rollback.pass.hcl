@@ -1,4 +1,6 @@
-service "com.maestro" "caller" "http" "json" {
+service "com.maestro" "caller" {
+	transport = "http"
+	codec = "json"
 	host = ""
 
 	method "Open" {
@@ -18,11 +20,11 @@ flow "echo" {
 	}
 
 	resource "opening" {
-		request "caller" "Open" {
+		request "com.maestro.caller" "Open" {
 			message = "{{ input:message }}"
 		}
 
-		rollback "caller" "Open" {
+		rollback "com.maestro.caller" "Open" {
 			message = "{{ input:message }}"
 		}
 	}
