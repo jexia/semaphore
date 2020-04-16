@@ -1,23 +1,18 @@
 package maestro
 
 import (
-	"github.com/jexia/maestro/codec"
 	"github.com/jexia/maestro/internal/constructor"
-	"github.com/jexia/maestro/internal/instance"
 	"github.com/jexia/maestro/internal/logger"
-	"github.com/jexia/maestro/schema"
-	"github.com/jexia/maestro/specs"
-	"github.com/jexia/maestro/transport"
+	"github.com/jexia/maestro/pkg/codec"
+	"github.com/jexia/maestro/pkg/definitions"
+	"github.com/jexia/maestro/pkg/functions"
+	"github.com/jexia/maestro/pkg/instance"
+	"github.com/jexia/maestro/pkg/transport"
 )
 
 // NewOptions constructs a constructor.Options object from the given constructor.Option constructors
 func NewOptions(ctx instance.Context, options ...constructor.Option) constructor.Options {
-	result := constructor.Options{
-		Ctx:         ctx,
-		Definitions: make([]specs.Resolver, 0),
-		Codec:       make(map[string]codec.Constructor),
-		Schema:      schema.NewStore(ctx),
-	}
+	result := constructor.NewOptions(ctx)
 
 	for _, option := range options {
 		option(&result)
@@ -26,10 +21,24 @@ func NewOptions(ctx instance.Context, options ...constructor.Option) constructor
 	return result
 }
 
-// WithDefinitions defines the HCL definitions path to be used
-func WithDefinitions(definition specs.Resolver) constructor.Option {
+// WithFlows defines the HCL definitions path to be used
+func WithFlows(definition definitions.FlowsResolver) constructor.Option {
 	return func(options *constructor.Options) {
-		options.Definitions = append(options.Definitions, definition)
+		options.Flows = append(options.Flows, definition)
+	}
+}
+
+// WithServices defines the HCL definitions path to be used
+func WithServices(definition definitions.ServicesResolver) constructor.Option {
+	return func(options *constructor.Options) {
+		options.Services = append(options.Services, definition)
+	}
+}
+
+// WithSchema appends the schema collection to the schema store
+func WithSchema(resolver definitions.SchemaResolver) constructor.Option {
+	return func(options *constructor.Options) {
+		options.Schemas = append(options.Schemas, resolver)
 	}
 }
 
@@ -54,21 +63,14 @@ func WithListener(listener transport.NewListener) constructor.Option {
 	}
 }
 
-// WithSchema appends the schema collection to the schema store
-func WithSchema(resolver schema.Resolver) constructor.Option {
-	return func(options *constructor.Options) {
-		options.Schemas = append(options.Schemas, resolver)
-	}
-}
-
 // WithFunctions defines the custom defined functions to be used
-func WithFunctions(functions specs.CustomDefinedFunctions) constructor.Option {
+func WithFunctions(custom functions.Custom) constructor.Option {
 	return func(options *constructor.Options) {
 		if options.Functions == nil {
-			options.Functions = specs.CustomDefinedFunctions{}
+			options.Functions = functions.Custom{}
 		}
 
-		for key, fn := range functions {
+		for key, fn := range custom {
 			options.Functions[key] = fn
 		}
 	}

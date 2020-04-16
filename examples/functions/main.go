@@ -5,32 +5,30 @@ import (
 	"fmt"
 
 	"github.com/jexia/maestro"
-	"github.com/jexia/maestro/codec/json"
-	"github.com/jexia/maestro/codec/proto"
-	"github.com/jexia/maestro/definitions/hcl"
 	"github.com/jexia/maestro/internal/logger"
-	"github.com/jexia/maestro/schema/protoc"
-	"github.com/jexia/maestro/specs"
-	"github.com/jexia/maestro/specs/labels"
-	"github.com/jexia/maestro/specs/types"
-	"github.com/jexia/maestro/transport/http"
+	"github.com/jexia/maestro/pkg/codec/json"
+	"github.com/jexia/maestro/pkg/codec/proto"
+	"github.com/jexia/maestro/pkg/definitions/hcl"
+	"github.com/jexia/maestro/pkg/definitions/protoc"
+	"github.com/jexia/maestro/pkg/functions"
+	"github.com/jexia/maestro/pkg/refs"
+	"github.com/jexia/maestro/pkg/specs"
+	"github.com/jexia/maestro/pkg/specs/labels"
+	"github.com/jexia/maestro/pkg/specs/types"
+	"github.com/jexia/maestro/pkg/transport/http"
 )
 
 func main() {
-	collection, err := protoc.Collect([]string{"../../annotations", "./proto"}, "./proto/*.proto")
-	if err != nil {
-		panic(err)
-	}
-
-	functions := specs.CustomDefinedFunctions{
+	functions := functions.Custom{
 		"jwt": jwt,
 	}
 
 	client, err := maestro.New(
 		maestro.WithLogLevel(logger.Global, "debug"),
 		maestro.WithListener(http.NewListener(":8080", specs.Options{})),
-		maestro.WithDefinitions(hcl.DefinitionResolver("./*.hcl")),
-		maestro.WithSchema(collection),
+		maestro.WithFlows(hcl.FlowsResolver("./*.hcl")),
+		maestro.WithSchema(protoc.SchemaResolver([]string{"../../annotations", "./proto"}, "./proto/*.proto")),
+		maestro.WithServices(protoc.ServiceResolver([]string{"../../annotations", "./proto"}, "./proto/*.proto")),
 		maestro.WithCodec(json.NewConstructor()),
 		maestro.WithCodec(proto.NewConstructor()),
 		maestro.WithCaller(http.NewCaller()),
@@ -47,7 +45,7 @@ func main() {
 	}
 }
 
-func jwt(args ...*specs.Property) (*specs.Property, specs.FunctionExec, error) {
+func jwt(args ...*specs.Property) (*specs.Property, functions.Exec, error) {
 	prop := &specs.Property{
 		Type:  types.String,
 		Label: labels.Optional,
@@ -63,7 +61,7 @@ func jwt(args ...*specs.Property) (*specs.Property, specs.FunctionExec, error) {
 		return nil, nil, fmt.Errorf("invalid argument type (%s), expected (%s)", input.Type, types.String)
 	}
 
-	fn := func(store specs.Store) error {
+	fn := func(store refs.Store) error {
 		value := input.Default
 
 		if input.Reference != nil {

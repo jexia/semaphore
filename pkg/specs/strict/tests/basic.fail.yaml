@@ -1,0 +1,23 @@
+exception:
+    message: cannot use (string) type (int32) in 'message'
+properties:
+    com.output:
+        type: "message"
+        label: "optional"
+        nested:
+            message:
+                type: "int32"
+                label: "optional"
+    com.input:
+        type: "message"
+        label: "optional"
+        nested:
+            message:
+                type: "string"
+                label: "optional"
+services:
+    caller:
+        methods:
+            Open:
+                input: "com.output"
+                output: "com.output"

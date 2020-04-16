@@ -2,26 +2,22 @@ package main
 
 import (
 	"github.com/jexia/maestro"
-	"github.com/jexia/maestro/codec/json"
-	"github.com/jexia/maestro/codec/proto"
-	"github.com/jexia/maestro/definitions/hcl"
 	"github.com/jexia/maestro/internal/logger"
-	"github.com/jexia/maestro/schema/protoc"
-	"github.com/jexia/maestro/specs"
-	"github.com/jexia/maestro/transport/http"
+	"github.com/jexia/maestro/pkg/codec/json"
+	"github.com/jexia/maestro/pkg/codec/proto"
+	"github.com/jexia/maestro/pkg/definitions/hcl"
+	"github.com/jexia/maestro/pkg/definitions/protoc"
+	"github.com/jexia/maestro/pkg/specs"
+	"github.com/jexia/maestro/pkg/transport/http"
 )
 
 func main() {
-	collection, err := protoc.Collect([]string{"../../annotations", "./proto"}, "./proto/*.proto")
-	if err != nil {
-		panic(err)
-	}
-
 	client, err := maestro.New(
 		maestro.WithLogLevel(logger.Global, "debug"),
 		maestro.WithListener(http.NewListener(":8080", specs.Options{})),
-		maestro.WithDefinitions(hcl.DefinitionResolver("./*.hcl")),
-		maestro.WithSchema(collection),
+		maestro.WithFlows(hcl.FlowsResolver("./*.hcl")),
+		maestro.WithSchema(protoc.SchemaResolver([]string{"../../annotations", "./proto"}, "./proto/*.proto")),
+		maestro.WithServices(protoc.ServiceResolver([]string{"../../annotations", "./proto"}, "./proto/*.proto")),
 		maestro.WithCodec(json.NewConstructor()),
 		maestro.WithCodec(proto.NewConstructor()),
 		maestro.WithCaller(http.NewCaller()),

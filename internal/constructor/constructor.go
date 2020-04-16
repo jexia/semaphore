@@ -1,32 +1,48 @@
 package constructor
 
 import (
-	"github.com/jexia/maestro/codec"
-	"github.com/jexia/maestro/internal/flow"
-	"github.com/jexia/maestro/internal/instance"
-	"github.com/jexia/maestro/metadata"
-	"github.com/jexia/maestro/specs"
-	"github.com/jexia/maestro/specs/dependencies"
-	"github.com/jexia/maestro/specs/strict"
-	"github.com/jexia/maestro/specs/trace"
-	"github.com/jexia/maestro/transport"
+	"github.com/jexia/maestro/pkg/codec"
+	"github.com/jexia/maestro/pkg/flow"
+	"github.com/jexia/maestro/pkg/functions"
+	"github.com/jexia/maestro/pkg/instance"
+	"github.com/jexia/maestro/pkg/metadata"
+	"github.com/jexia/maestro/pkg/specs"
+	"github.com/jexia/maestro/pkg/specs/dependencies"
+	"github.com/jexia/maestro/pkg/specs/strict"
+	"github.com/jexia/maestro/pkg/specs/trace"
+	"github.com/jexia/maestro/pkg/transport"
 )
 
 // Specs construct a specs manifest from the given options
-func Specs(ctx instance.Context, options Options) (*specs.Manifest, error) {
-	result := &specs.Manifest{}
+func Specs(ctx instance.Context, options Options) (functions.Collection, *specs.FlowsManifest, *specs.ServicesManifest, *specs.SchemaManifest, error) {
+	flows := specs.NewFlowsManifest()
+	services := specs.NewServicesManifest()
+	schema := specs.NewSchemaManifest()
 
-	for _, resolver := range options.Definitions {
+	for _, resolver := range options.Flows {
 		if resolver == nil {
 			continue
 		}
 
-		manifest, err := resolver(ctx, options.Functions)
+		manifest, err := resolver(ctx)
 		if err != nil {
-			return nil, err
+			return nil, nil, nil, nil, err
 		}
 
-		result.Merge(manifest)
+		flows.Merge(manifest)
+	}
+
+	for _, resolver := range options.Services {
+		if resolver == nil {
+			continue
+		}
+
+		manifest, err := resolver(ctx)
+		if err != nil {
+			return nil, nil, nil, nil, err
+		}
+
+		services.Merge(manifest)
 	}
 
 	for _, resolver := range options.Schemas {
@@ -34,47 +50,49 @@ func Specs(ctx instance.Context, options Options) (*specs.Manifest, error) {
 			continue
 		}
 
-		err := resolver(ctx, options.Schema)
+		manifest, err := resolver(ctx)
 		if err != nil {
-			return nil, err
+			return nil, nil, nil, nil, err
 		}
+
+		schema.Merge(manifest)
 	}
 
-	err := strict.DefineManifest(ctx, options.Schema, result)
+	err := strict.DefineManifest(ctx, services, schema, flows)
 	if err != nil {
-		return nil, err
+		return nil, nil, nil, nil, err
 	}
 
-	err = strict.CheckManifestDuplicates(ctx, result)
+	err = strict.CheckManifestDuplicates(ctx, flows)
 	if err != nil {
-		return nil, err
+		return nil, nil, nil, nil, err
 	}
 
-	err = strict.PrepareManifestFunctions(ctx, options.Functions, result)
+	mem := functions.Collection{}
+	err = strict.PrepareManifestFunctions(ctx, mem, options.Functions, flows)
 	if err != nil {
-		return nil, err
+		return nil, nil, nil, nil, err
 	}
-
-	err = strict.CompareManifestTypes(ctx, options.Schema, result)
+	err = strict.CompareManifestTypes(ctx, services, schema, flows)
 	if err != nil {
-		return nil, err
+		return nil, nil, nil, nil, err
 	}
 
-	dependencies.ResolveReferences(ctx, result)
-	err = dependencies.ResolveManifest(ctx, result)
+	dependencies.ResolveReferences(ctx, flows)
+	err = dependencies.ResolveManifest(ctx, flows)
 	if err != nil {
-		return nil, err
+		return nil, nil, nil, nil, err
 	}
 
-	return result, nil
+	return mem, flows, services, schema, nil
 }
 
 // FlowManager constructs the flow managers from the given specs manifest
-func FlowManager(ctx instance.Context, manifest *specs.Manifest, options Options) ([]*transport.Endpoint, error) {
-	endpoints := make([]*transport.Endpoint, len(manifest.Endpoints))
+func FlowManager(ctx instance.Context, mem functions.Collection, services *specs.ServicesManifest, flows *specs.FlowsManifest, options Options) ([]*transport.Endpoint, error) {
+	endpoints := make([]*transport.Endpoint, len(flows.Endpoints))
 
-	for index, endpoint := range manifest.Endpoints {
-		manager := manifest.GetFlow(endpoint.Flow)
+	for index, endpoint := range flows.Endpoints {
+		manager := flows.GetFlow(endpoint.Flow)
 		if manager == nil {
 			continue
 		}
@@ -89,12 +107,12 @@ func FlowManager(ctx instance.Context, manifest *specs.Manifest, options Options
 		}
 
 		for index, node := range manager.GetNodes() {
-			caller, err := Call(ctx, manifest, node, node.Call, options, manager)
+			caller, err := Call(ctx, mem, services, flows, node, node.Call, options, manager)
 			if err != nil {
 				return nil, err
 			}
 
-			rollback, err := Call(ctx, manifest, node, node.Rollback, options, manager)
+			rollback, err := Call(ctx, mem, services, flows, node, node.Rollback, options, manager)
 			if err != nil {
 				return nil, err
 			}
@@ -102,7 +120,7 @@ func FlowManager(ctx instance.Context, manifest *specs.Manifest, options Options
 			nodes[index] = flow.NewNode(ctx, node, caller, rollback)
 		}
 
-		forward, err := Forward(manifest, manager.GetForward(), options)
+		forward, err := Forward(services, flows, manager.GetForward(), options)
 		if err != nil {
 			return nil, err
 		}
@@ -122,21 +140,21 @@ func FlowManager(ctx instance.Context, manifest *specs.Manifest, options Options
 }
 
 // Call constructs a flow caller for the given node call.
-func Call(ctx instance.Context, manifest *specs.Manifest, node *specs.Node, call *specs.Call, options Options, manager specs.FlowManager) (flow.Call, error) {
+func Call(ctx instance.Context, mem functions.Collection, services *specs.ServicesManifest, flows *specs.FlowsManifest, node *specs.Node, call *specs.Call, options Options, manager specs.FlowResourceManager) (flow.Call, error) {
 	if call == nil {
 		return nil, nil
 	}
 
 	if call.Service != "" {
-		return NewServiceCall(ctx, manifest, node, call, options, manager)
+		return NewServiceCall(ctx, mem, services, flows, node, call, options, manager)
 	}
 
-	request, err := Request(node, nil, call.Request)
+	request, err := Request(node, mem, nil, call.Request)
 	if err != nil {
 		return nil, err
 	}
 
-	response, err := Request(node, nil, call.Response)
+	response, err := Request(node, mem, nil, call.Response)
 	if err != nil {
 		return nil, err
 	}
@@ -150,7 +168,7 @@ func Call(ctx instance.Context, manifest *specs.Manifest, node *specs.Node, call
 }
 
 // NewServiceCall constructs a new flow caller for the given service
-func NewServiceCall(ctx instance.Context, manifest *specs.Manifest, node *specs.Node, call *specs.Call, options Options, manager specs.FlowManager) (flow.Call, error) {
+func NewServiceCall(ctx instance.Context, mem functions.Collection, services *specs.ServicesManifest, flows *specs.FlowsManifest, node *specs.Node, call *specs.Call, options Options, manager specs.FlowResourceManager) (flow.Call, error) {
 	if call == nil {
 		return nil, nil
 	}
@@ -159,43 +177,38 @@ func NewServiceCall(ctx instance.Context, manifest *specs.Manifest, node *specs.
 		return nil, trace.New(trace.WithMessage("invalid service name, no service name configured in '%s'", node.Name))
 	}
 
-	service := options.Schema.GetService(call.Service)
+	service := services.GetService(call.Service)
 	if service == nil {
 		return nil, trace.New(trace.WithMessage("the service for '%s' was not found in '%s'", call.Service, node.Name))
 	}
 
-	constructor := options.Callers.Get(service.GetTransport())
-	schema := options.Schema.GetService(service.GetFullyQualifiedName())
-
-	if schema == nil {
-		return nil, trace.New(trace.WithMessage("service not found '%s'", service.GetFullyQualifiedName()))
-	}
+	constructor := options.Callers.Get(service.Transport)
 
 	if constructor == nil {
-		return nil, trace.New(trace.WithMessage("transport constructor not found '%s' for service '%s'", service.GetTransport(), service.GetName()))
+		return nil, trace.New(trace.WithMessage("transport constructor not found '%s' for service '%s'", service.Transport, service.Name))
 	}
 
-	transport, err := constructor.Dial(schema, options.Functions, service.GetOptions())
+	transport, err := constructor.Dial(service, options.Functions, service.Options)
 	if err != nil {
 		return nil, err
 	}
 
-	err = strict.DefineCaller(ctx, node, manifest, transport, manager)
+	err = strict.DefineCaller(ctx, node, flows, transport, manager)
 	if err != nil {
 		return nil, err
 	}
 
-	codec := options.Codec.Get(service.GetCodec())
+	codec := options.Codec.Get(service.Codec)
 	if codec == nil {
-		return nil, trace.New(trace.WithMessage("codec not found '%s'", service.GetCodec()))
+		return nil, trace.New(trace.WithMessage("codec not found '%s'", service.Codec))
 	}
 
-	request, err := Request(node, codec, call.Request)
+	request, err := Request(node, mem, codec, call.Request)
 	if err != nil {
 		return nil, err
 	}
 
-	response, err := Request(node, codec, call.Response)
+	response, err := Request(node, mem, codec, call.Response)
 	if err != nil {
 		return nil, err
 	}
@@ -211,7 +224,11 @@ func NewServiceCall(ctx instance.Context, manifest *specs.Manifest, node *specs.
 }
 
 // Request constructs a new request from the given parameter map and codec
-func Request(node *specs.Node, constructor codec.Constructor, params *specs.ParameterMap) (*flow.Request, error) {
+func Request(node *specs.Node, mem functions.Collection, constructor codec.Constructor, params *specs.ParameterMap) (*flow.Request, error) {
+	if params == nil {
+		return nil, nil
+	}
+
 	var codec codec.Manager
 	if constructor != nil {
 		manager, err := constructor.New(node.Name, params)
@@ -222,17 +239,18 @@ func Request(node *specs.Node, constructor codec.Constructor, params *specs.Para
 		codec = manager
 	}
 
+	stack := mem[node]
 	metadata := metadata.NewManager(node.Name, params.Header)
-	return flow.NewRequest(params.Functions, codec, metadata), nil
+	return flow.NewRequest(stack, codec, metadata), nil
 }
 
 // Forward constructs a flow caller for the given call.
-func Forward(manifest *specs.Manifest, call *specs.Call, options Options) (*transport.Forward, error) {
+func Forward(services *specs.ServicesManifest, flows *specs.FlowsManifest, call *specs.Call, options Options) (*transport.Forward, error) {
 	if call == nil {
 		return nil, nil
 	}
 
-	service := options.Schema.GetService(call.Service)
+	service := services.GetService(call.Service)
 	if service == nil {
 		return nil, trace.New(trace.WithMessage("the service for '%s' was not found", call.Method))
 	}

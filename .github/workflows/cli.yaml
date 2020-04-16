@@ -94,7 +94,7 @@ jobs:
       run: go get -v -t -d ./...
 
     - name: Build
-      run: go build -o ${{ matrix.artifact_name }} ./cmd/maestro
+      run: go build -o ${{ matrix.artifact_name }} ./cmd/daemon
 
     - name: Upload binaries to release
       uses: svenstaro/upload-release-action@v1-release

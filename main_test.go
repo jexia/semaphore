@@ -5,19 +5,19 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jexia/maestro/codec/json"
-	"github.com/jexia/maestro/definitions/hcl"
 	"github.com/jexia/maestro/internal/constructor"
-	"github.com/jexia/maestro/internal/instance"
 	"github.com/jexia/maestro/internal/logger"
 	"github.com/jexia/maestro/internal/utils"
-	"github.com/jexia/maestro/schema/mock"
-	"github.com/jexia/maestro/specs"
-	"github.com/jexia/maestro/transport/http"
+	"github.com/jexia/maestro/pkg/codec/json"
+	"github.com/jexia/maestro/pkg/definitions/hcl"
+	"github.com/jexia/maestro/pkg/definitions/mock"
+	"github.com/jexia/maestro/pkg/functions"
+	"github.com/jexia/maestro/pkg/instance"
+	"github.com/jexia/maestro/pkg/transport/http"
 )
 
 func TestOptions(t *testing.T) {
-	functions := map[string]specs.PrepareFunction{
+	functions := map[string]functions.Intermediate{
 		"cdf": nil,
 	}
 
@@ -30,16 +30,16 @@ func TestOptions(t *testing.T) {
 }
 
 func TestNewOptions(t *testing.T) {
-	functions := map[string]specs.PrepareFunction{
+	functions := map[string]functions.Intermediate{
 		"cdf": nil,
 	}
 
 	tests := [][]constructor.Option{
-		{WithDefinitions(nil), WithSchema(nil)},
-		{WithDefinitions(nil)},
+		{WithFlows(nil), WithSchema(nil)},
+		{WithFlows(nil)},
 		{WithSchema(nil)},
 		{WithFunctions(functions)},
-		{WithDefinitions(nil), WithSchema(nil), WithFunctions(functions)},
+		{WithFlows(nil), WithSchema(nil), WithFunctions(functions)},
 	}
 
 	for _, input := range tests {
@@ -67,9 +67,9 @@ func TestNewClient(t *testing.T) {
 			schema := filepath.Join(filepath.Dir(file.Path), clean+".yaml")
 
 			_, err = New(
-				WithDefinitions(hcl.DefinitionResolver(file.Path)),
+				WithFlows(hcl.FlowsResolver(file.Path)),
+				WithServices(hcl.ServicesResolver(file.Path)),
 				WithSchema(mock.SchemaResolver(schema)),
-				WithSchema(hcl.SchemaResolver(file.Path)),
 				WithCodec(json.NewConstructor()),
 				WithListener(http.NewListener(":0", nil)),
 				WithCaller(http.NewCaller()),
@@ -100,9 +100,9 @@ func TestServe(t *testing.T) {
 			schema := filepath.Join(filepath.Dir(file.Path), clean+".yaml")
 
 			client, err := New(
-				WithDefinitions(hcl.DefinitionResolver(file.Path)),
+				WithFlows(hcl.FlowsResolver(file.Path)),
+				WithServices(hcl.ServicesResolver(file.Path)),
 				WithSchema(mock.SchemaResolver(schema)),
-				WithSchema(hcl.SchemaResolver(file.Path)),
 				WithCodec(json.NewConstructor()),
 				WithListener(http.NewListener(":0", nil)),
 				WithCaller(http.NewCaller()),
