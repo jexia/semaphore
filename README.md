@@ -1,6 +1,6 @@
-<h1 align="center">Maestro <a href="https://jexia.com"><img src="https://user-images.githubusercontent.com/3440116/77702983-019eb580-6fba-11ea-8d2c-f6a6b8e60cbd.jpg" alt="Jexia"></a></h1>
+<h1 align="left"><a href="https://jexia.com"><img src="https://user-images.githubusercontent.com/3440116/77702983-019eb580-6fba-11ea-8d2c-f6a6b8e60cbd.jpg" alt="Jexia"></a> Maestro</h1>
 
-<p align="center">
+<p align="left">
   <a href="https://pkg.go.dev/github.com/jexia/maestro"><img src="https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white" alt="GoDev"></a>
   <a href="https://github.com/jexia/maestro/actions?query=workflow%3A%22Go+CI%22"><img src="https://github.com/jexia/maestro/workflows/Go%20CI/badge.svg" alt="Go CI"></a>
   <a href="https://goreportcard.com/report/github.com/jexia/maestro"><img src="https://goreportcard.com/badge/github.com/jexia/maestro" alt="Go report"></a>
