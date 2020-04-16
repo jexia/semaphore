@@ -6,7 +6,7 @@ import (
 	"syscall"
 
 	"github.com/jexia/maestro"
-	"github.com/jexia/maestro/cmd/daemon/config"
+	"github.com/jexia/maestro/cmd/maestro/config"
 	"github.com/jexia/maestro/internal/constructor"
 	"github.com/jexia/maestro/internal/logger"
 	"github.com/jexia/maestro/pkg/codec/json"
