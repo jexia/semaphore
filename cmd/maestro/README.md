@@ -28,7 +28,7 @@ configured, you can install the development version of `maestro` from
 the command line.
 
 ```
-go install github.com/jexia/maestro/cmd/cli
+go install github.com/jexia/maestro/cmd/maestro
 ```
 
 While the development version is a good way to take a peek at
