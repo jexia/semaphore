@@ -5,7 +5,7 @@ on:
       - v*
 jobs:
   push:
-    name: Build docker images
+    name: Publish docker images
     runs-on: ubuntu-latest
 
     steps:
