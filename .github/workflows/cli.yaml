@@ -5,6 +5,7 @@ on:
       - v*
 jobs:
   push:
+    name: Build docker images
     runs-on: ubuntu-latest
 
     steps:
@@ -59,7 +60,7 @@ jobs:
 
   publish:
     name: Publish for ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         include:
