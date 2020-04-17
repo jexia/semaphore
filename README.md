@@ -8,9 +8,9 @@
   <a href="https://discord.gg/q54Q8GH"><img src="https://img.shields.io/badge/chat-on%20discord-7289da.svg?sanitize=true" alt="Chat on Discord"></a>
 </p>
 
-Maestro is a feature-rich service orchistrator. Create advanced data flows and expose them through endpoints.
-Have full controll over your exposed endpoints, expose single flows for multiple protocols such as gRPC and GraphQL.
-Maestro adapts to your environment, create custom extentions or use the available of custom functions and protocol implementations.
+Maestro is a feature-rich service orchestrator. Create advanced data flows and expose them through endpoints.
+Have full control over your exposed endpoints, expose single flows for multiple protocols such as gRPC and GraphQL.
+Maestro adapts to your environment. Create custom extensions or use the availability of custom functions and protocol implementations.
 
 ## Table of contents
 
@@ -20,13 +20,13 @@ Maestro adapts to your environment, create custom extentions or use the availabl
 
 ## Using Maestro
 
-Maestro could be used in a wide variety of cases. It could be used to let teams have full controll over their exposed endpoints.
-Create SAGA patterns to autimatically rollback requests on failure. Allow users to implement your product with their tools of choice.
-We are excited to see how you will implement Maestro in your architecture.
+Maestro could be used in a wide variety of cases. It could be used to let teams have full control over their exposed endpoints.
+Create SAGA patterns to automatically rollback requests on failure.
+Allow users to implement your product with their tools of choice. We are excited to see how you will implement Maestro in your architecture.
 
-* **Gateway**: Maestro redefines the gateway. Expose a single flow through the multiple protocols without changing any of your services.
+* **Gateway**: Maestro redefines the gateway. Expose a single flow through multiple protocols without changing any of your services.
 
-* **Scalable**: You are able to scale Maestro up to your needs. All calls within a flow are executed in the most optimal path possible. Branches are created to execute calls [concurrently](https://github.com/jexia/maestro/tree/master/flow) from one another when possible.
+* **Scalable**: You can scale Maestro up to your needs. All calls within a flow are executed in the most optimal path possible. Branches are created to execute calls [concurrently](https://github.com/jexia/maestro/tree/master/flow) from one another when possible.
 
 * **SAGA patterns**: Define rollbacks inside your flows in the case of failure. Rollbacks are automatically executed if a request fails. Rollbacks could reference data received from other services.
 
