@@ -65,12 +65,18 @@ jobs:
         include:
           - os: ubuntu-latest
             artifact_name: maestro
+            goos: linux
+            arch: amd64
             asset_name: maestro-linux-amd64
           - os: windows-latest
             artifact_name: maestro.exe
+            goos: windows
+            arch: amd64
             asset_name: maestro-windows-amd64
           - os: macos-latest
             artifact_name: maestro
+            goos: darwin
+            arch: amd64
             asset_name: maestro-macos-amd64
 
     steps:
@@ -94,7 +100,7 @@ jobs:
       run: go get -v -t -d ./...
 
     - name: Build
-      run: go build -o ${{ matrix.artifact_name }} ./cmd/daemon
+      run: CGO_ENABLED=0 GOOS=${{ matrix.goos }} GOARCH=${{ matrix.arch }} go build -o ${{ matrix.artifact_name }} ./cmd/maestro
 
     - name: Upload binaries to release
       uses: svenstaro/upload-release-action@v1-release
