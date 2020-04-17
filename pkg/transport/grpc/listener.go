@@ -23,11 +23,6 @@ import (
 
 // NewListener constructs a new listener for the given addr
 func NewListener(addr string, opts specs.Options) transport.NewListener {
-	// options, err := ParseListenerOptions(opts)
-	// if err != nil {
-	// 	// TODO: log err
-	// }
-
 	return func(ctx instance.Context) transport.Listener {
 		return &Listener{
 			addr: addr,

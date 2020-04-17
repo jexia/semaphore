@@ -13,6 +13,7 @@ import (
 	"github.com/jexia/maestro/pkg/metadata"
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jexia/maestro/pkg/specs/template"
+	"github.com/jexia/maestro/pkg/specs/trace"
 	"github.com/jexia/maestro/pkg/transport"
 	"github.com/julienschmidt/httprouter"
 	"github.com/sirupsen/logrus"
@@ -20,12 +21,12 @@ import (
 
 // NewListener constructs a new listener for the given addr
 func NewListener(addr string, opts specs.Options) transport.NewListener {
-	options, err := ParseListenerOptions(opts)
-	if err != nil {
-		// TODO: log err
-	}
-
 	return func(ctx instance.Context) transport.Listener {
+		options, err := ParseListenerOptions(opts)
+		if err != nil {
+			ctx.Logger(logger.Transport).Warnf("unable to parse HTTP listener options, unexpected error %s", err)
+		}
+
 		return &Listener{
 			ctx: ctx,
 			server: &http.Server{
@@ -83,7 +84,11 @@ func (listener *Listener) Handle(endpoints []*transport.Endpoint, codecs map[str
 			return err
 		}
 
-		handle := NewHandle(logger, endpoint, options, codecs)
+		handle, err := NewHandle(logger, endpoint, options, codecs)
+		if err != nil {
+			return err
+		}
+
 		router.Handle(options.Method, options.Endpoint, handle.HTTPFunc)
 	}
 
@@ -101,15 +106,14 @@ func (listener *Listener) Close() error {
 }
 
 // NewHandle constructs a new handle function for the given endpoint to the given flow
-func NewHandle(logger *logrus.Logger, endpoint *transport.Endpoint, options *EndpointOptions, constructors map[string]codec.Constructor) *Handle {
+func NewHandle(logger *logrus.Logger, endpoint *transport.Endpoint, options *EndpointOptions, constructors map[string]codec.Constructor) (*Handle, error) {
 	if constructors == nil {
 		constructors = make(map[string]codec.Constructor)
 	}
 
 	codec := constructors[options.Codec]
 	if codec == nil {
-		// TODO log
-		return nil
+		return nil, trace.New(trace.WithMessage("codec not found '%s'", options.Codec))
 	}
 
 	handle := &Handle{
@@ -121,8 +125,7 @@ func NewHandle(logger *logrus.Logger, endpoint *transport.Endpoint, options *End
 	if endpoint.Request != nil {
 		request, err := codec.New(template.InputResource, endpoint.Request)
 		if err != nil {
-			// TODO log
-			return nil
+			return nil, trace.New(trace.WithMessage("unable to construct a new HTTP codec manager for '%s'", endpoint.Flow))
 		}
 
 		header := metadata.NewManager(template.InputResource, endpoint.Request.Header)
@@ -135,8 +138,7 @@ func NewHandle(logger *logrus.Logger, endpoint *transport.Endpoint, options *End
 	if endpoint.Response != nil {
 		response, err := codec.New(template.OutputResource, endpoint.Response)
 		if err != nil {
-			// TODO log
-			return nil
+			return nil, trace.New(trace.WithMessage("unable to construct a new HTTP codec manager for '%s'", endpoint.Flow))
 		}
 
 		header := metadata.NewManager(template.OutputResource, endpoint.Response.Header)
@@ -149,7 +151,7 @@ func NewHandle(logger *logrus.Logger, endpoint *transport.Endpoint, options *End
 	if endpoint.Forward != nil {
 		url, err := url.Parse(endpoint.Forward.Service.Host)
 		if err != nil {
-			return nil
+			return nil, trace.New(trace.WithMessage("unable to parse the proxy forward host '%s'", endpoint.Forward.Service.Host))
 		}
 
 		header := metadata.NewManager(template.OutputResource, endpoint.Forward.Header)
@@ -159,7 +161,7 @@ func NewHandle(logger *logrus.Logger, endpoint *transport.Endpoint, options *End
 		}
 	}
 
-	return handle
+	return handle, nil
 }
 
 // Proxy represents a HTTP reverse proxy

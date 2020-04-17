@@ -189,5 +189,5 @@ type Call struct {
 	Method     string        `json:"method"`
 	Request    *ParameterMap `json:"request"`
 	Response   *ParameterMap `json:"response"`
-	Descriptor *Method       `json:"-"` // TODO: check the usage of the descriptor
+	Descriptor *Method       `json:"-"`
 }

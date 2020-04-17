@@ -81,7 +81,7 @@ func WithLogLevel(module logger.Module, level string) constructor.Option {
 	return func(options *constructor.Options) {
 		err := options.Ctx.SetLevel(module, level)
 		if err != nil {
-			// TODO: handle error
+			options.Ctx.Logger(logger.Core).Warnf("unable to set the logging level, %s", err)
 		}
 	}
 }

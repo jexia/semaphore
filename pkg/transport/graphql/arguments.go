@@ -9,6 +9,8 @@ import (
 // NewArgs construct new field config arguments for the graphql schema
 func NewArgs(prop *specs.Property) graphql.FieldConfigArgument {
 	args := graphql.FieldConfigArgument{}
+	// TODO: support repeated types (#71)
+
 	if prop.Type == types.Message {
 		if len(prop.Nested) == 0 {
 			return nil
