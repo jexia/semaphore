@@ -1,4 +1,4 @@
-package references
+package compare
 
 import (
 	"github.com/jexia/maestro/internal/logger"
@@ -9,19 +9,19 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// CompareManifestTypes compares the types defined insde the schema definitions against the configured specification
-func CompareManifestTypes(ctx instance.Context, services *specs.ServicesManifest, schema *specs.SchemaManifest, flows *specs.FlowsManifest) (err error) {
+// ManifestTypes compares the types defined insde the schema definitions against the configured specification
+func ManifestTypes(ctx instance.Context, services *specs.ServicesManifest, schema *specs.SchemaManifest, flows *specs.FlowsManifest) (err error) {
 	ctx.Logger(logger.Core).Info("Comparing manifest types")
 
 	for _, flow := range flows.Flows {
-		err := CompareFlowTypes(ctx, services, schema, flows, flow)
+		err := FlowTypes(ctx, services, schema, flows, flow)
 		if err != nil {
 			return err
 		}
 	}
 
 	for _, proxy := range flows.Proxy {
-		err := CompareProxyTypes(ctx, services, schema, flows, proxy)
+		err := ProxyTypes(ctx, services, schema, flows, proxy)
 		if err != nil {
 			return err
 		}
@@ -30,20 +30,20 @@ func CompareManifestTypes(ctx instance.Context, services *specs.ServicesManifest
 	return nil
 }
 
-// CompareProxyTypes compares the given proxy against the configured schema types
-func CompareProxyTypes(ctx instance.Context, services *specs.ServicesManifest, schema *specs.SchemaManifest, flows *specs.FlowsManifest, proxy *specs.Proxy) (err error) {
+// ProxyTypes compares the given proxy against the configured schema types
+func ProxyTypes(ctx instance.Context, services *specs.ServicesManifest, schema *specs.SchemaManifest, flows *specs.FlowsManifest, proxy *specs.Proxy) (err error) {
 	ctx.Logger(logger.Core).WithField("proxy", proxy.GetName()).Info("Compare proxy flow types")
 
 	for _, node := range proxy.Nodes {
 		if node.Call != nil {
-			err = CompareCallTypes(ctx, services, schema, flows, node, node.Call, proxy)
+			err = CallTypes(ctx, services, schema, flows, node, node.Call, proxy)
 			if err != nil {
 				return err
 			}
 		}
 
 		if node.Rollback != nil {
-			err = CompareCallTypes(ctx, services, schema, flows, node, node.Rollback, proxy)
+			err = CallTypes(ctx, services, schema, flows, node, node.Rollback, proxy)
 			if err != nil {
 				return err
 			}
@@ -51,7 +51,7 @@ func CompareProxyTypes(ctx instance.Context, services *specs.ServicesManifest, s
 	}
 
 	if proxy.Forward.Request.Header != nil {
-		err = CompareHeader(proxy.Forward.Request.Header, proxy)
+		err = Header(proxy.Forward.Request.Header, proxy)
 		if err != nil {
 			return err
 		}
@@ -60,8 +60,8 @@ func CompareProxyTypes(ctx instance.Context, services *specs.ServicesManifest, s
 	return nil
 }
 
-// CompareFlowTypes compares the flow types against the configured schema types
-func CompareFlowTypes(ctx instance.Context, services *specs.ServicesManifest, schema *specs.SchemaManifest, flows *specs.FlowsManifest, flow *specs.Flow) (err error) {
+// FlowTypes compares the flow types against the configured schema types
+func FlowTypes(ctx instance.Context, services *specs.ServicesManifest, schema *specs.SchemaManifest, flows *specs.FlowsManifest, flow *specs.Flow) (err error) {
 	ctx.Logger(logger.Core).WithField("flow", flow.GetName()).Info("Comparing flow types")
 
 	if flow.Input != nil {
@@ -78,14 +78,14 @@ func CompareFlowTypes(ctx instance.Context, services *specs.ServicesManifest, sc
 
 	for _, node := range flow.Nodes {
 		if node.Call != nil {
-			err = CompareCallTypes(ctx, services, schema, flows, node, node.Call, flow)
+			err = CallTypes(ctx, services, schema, flows, node, node.Call, flow)
 			if err != nil {
 				return err
 			}
 		}
 
 		if node.Rollback != nil {
-			err = CompareCallTypes(ctx, services, schema, flows, node, node.Rollback, flow)
+			err = CallTypes(ctx, services, schema, flows, node, node.Rollback, flow)
 			if err != nil {
 				return err
 			}
@@ -104,7 +104,7 @@ func CompareFlowTypes(ctx instance.Context, services *specs.ServicesManifest, sc
 		}
 
 		if flow.Output.Header != nil {
-			err = CompareHeader(flow.Output.Header, flow)
+			err = Header(flow.Output.Header, flow)
 			if err != nil {
 				return err
 			}
@@ -114,8 +114,8 @@ func CompareFlowTypes(ctx instance.Context, services *specs.ServicesManifest, sc
 	return nil
 }
 
-// CompareCallTypes compares the given call types against the configured schema types
-func CompareCallTypes(ctx instance.Context, services *specs.ServicesManifest, schema *specs.SchemaManifest, flows *specs.FlowsManifest, node *specs.Node, call *specs.Call, flow specs.FlowResourceManager) (err error) {
+// CallTypes compares the given call types against the configured schema types
+func CallTypes(ctx instance.Context, services *specs.ServicesManifest, schema *specs.SchemaManifest, flows *specs.FlowsManifest, node *specs.Node, call *specs.Call, flow specs.FlowResourceManager) (err error) {
 	if call.Method != "" {
 		ctx.Logger(logger.Core).WithFields(logrus.Fields{
 			"call":    node.Name,
@@ -135,7 +135,7 @@ func CompareCallTypes(ctx instance.Context, services *specs.ServicesManifest, sc
 
 		if call.Request != nil {
 			if call.Request.Header != nil {
-				err = CompareHeader(call.Request.Header, flow)
+				err = Header(call.Request.Header, flow)
 				if err != nil {
 					return err
 				}
@@ -149,7 +149,7 @@ func CompareCallTypes(ctx instance.Context, services *specs.ServicesManifest, sc
 
 		if call.Response != nil {
 			if call.Response.Header != nil {
-				err = CompareHeader(call.Request.Header, flow)
+				err = Header(call.Request.Header, flow)
 				if err != nil {
 					return err
 				}
@@ -212,8 +212,8 @@ func CheckTypes(property *specs.Property, schema *specs.Property, flow specs.Flo
 	return nil
 }
 
-// CompareHeader compares the given header types
-func CompareHeader(header specs.Header, flow specs.FlowResourceManager) error {
+// Header compares the given header types
+func Header(header specs.Header, flow specs.FlowResourceManager) error {
 	for _, header := range header {
 		if header.Type != types.String {
 			return trace.New(trace.WithMessage("cannot use type (%s) for 'header.%s' in flow '%s', expected (%s)", header.Type, header.Path, flow.GetName(), types.String))

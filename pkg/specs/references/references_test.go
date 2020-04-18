@@ -9,6 +9,7 @@ import (
 	"github.com/jexia/maestro/pkg/definitions/hcl"
 	"github.com/jexia/maestro/pkg/definitions/mock"
 	"github.com/jexia/maestro/pkg/instance"
+	"github.com/jexia/maestro/pkg/specs/compare"
 )
 
 const (
@@ -59,7 +60,7 @@ func TestUnmarshalFile(t *testing.T) {
 				t.Fatalf("expected test to pass but failed instead %s, %v", file.Name(), err)
 			}
 
-			err = CompareManifestTypes(ctx, services, schema, flows)
+			err = compare.ManifestTypes(ctx, services, schema, flows)
 
 			if strings.HasSuffix(clean, pass) && err != nil {
 				t.Fatalf("expected test to pass but failed instead %s, %v", file.Name(), err)

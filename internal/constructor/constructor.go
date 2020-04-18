@@ -8,6 +8,7 @@ import (
 	"github.com/jexia/maestro/pkg/metadata"
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jexia/maestro/pkg/specs/checks"
+	"github.com/jexia/maestro/pkg/specs/compare"
 	"github.com/jexia/maestro/pkg/specs/dependencies"
 	"github.com/jexia/maestro/pkg/specs/references"
 	"github.com/jexia/maestro/pkg/specs/trace"
@@ -74,7 +75,7 @@ func Specs(ctx instance.Context, options Options) (functions.Collection, *specs.
 	if err != nil {
 		return nil, nil, nil, nil, err
 	}
-	err = references.CompareManifestTypes(ctx, services, schema, flows)
+	err = compare.ManifestTypes(ctx, services, schema, flows)
 	if err != nil {
 		return nil, nil, nil, nil, err
 	}
