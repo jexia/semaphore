@@ -4,7 +4,7 @@ import (
 	"github.com/jexia/maestro/internal/logger"
 	"github.com/jexia/maestro/pkg/instance"
 	"github.com/jexia/maestro/pkg/specs"
-	"github.com/jexia/maestro/pkg/specs/strict"
+	"github.com/jexia/maestro/pkg/specs/references"
 )
 
 // DefineCaller defineds the types for the given transport caller
@@ -13,7 +13,7 @@ func DefineCaller(ctx instance.Context, node *specs.Node, manifest *specs.FlowsM
 
 	method := call.GetMethod(node.Call.Method)
 	for _, prop := range method.References() {
-		err = strict.DefineProperty(ctx, node, prop, flow)
+		err = references.DefineProperty(ctx, node, prop, flow)
 		if err != nil {
 			return err
 		}

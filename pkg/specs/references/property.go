@@ -1,4 +1,4 @@
-package strict
+package references
 
 import (
 	"github.com/jexia/maestro/pkg/specs"

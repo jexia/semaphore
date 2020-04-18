@@ -1,4 +1,4 @@
-package strict
+package references
 
 import (
 	"testing"

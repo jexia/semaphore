@@ -8,7 +8,7 @@ import (
 	"github.com/jexia/maestro/pkg/metadata"
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jexia/maestro/pkg/specs/dependencies"
-	"github.com/jexia/maestro/pkg/specs/strict"
+	"github.com/jexia/maestro/pkg/specs/references"
 	"github.com/jexia/maestro/pkg/specs/trace"
 	"github.com/jexia/maestro/pkg/transport"
 )
@@ -58,12 +58,12 @@ func Specs(ctx instance.Context, options Options) (functions.Collection, *specs.
 		schema.Merge(manifest)
 	}
 
-	err := strict.DefineManifest(ctx, services, schema, flows)
+	err := references.DefineManifest(ctx, services, schema, flows)
 	if err != nil {
 		return nil, nil, nil, nil, err
 	}
 
-	err = strict.CheckManifestDuplicates(ctx, flows)
+	err = references.CheckManifestDuplicates(ctx, flows)
 	if err != nil {
 		return nil, nil, nil, nil, err
 	}
@@ -73,7 +73,7 @@ func Specs(ctx instance.Context, options Options) (functions.Collection, *specs.
 	if err != nil {
 		return nil, nil, nil, nil, err
 	}
-	err = strict.CompareManifestTypes(ctx, services, schema, flows)
+	err = references.CompareManifestTypes(ctx, services, schema, flows)
 	if err != nil {
 		return nil, nil, nil, nil, err
 	}

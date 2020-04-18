@@ -10,7 +10,7 @@ import (
 	"github.com/jexia/maestro/pkg/instance"
 	"github.com/jexia/maestro/pkg/refs"
 	"github.com/jexia/maestro/pkg/specs"
-	"github.com/jexia/maestro/pkg/specs/strict"
+	"github.com/jexia/maestro/pkg/specs/references"
 	"github.com/jexia/maestro/pkg/specs/template"
 	"github.com/jexia/maestro/pkg/specs/trace"
 )
@@ -246,7 +246,7 @@ func PrepareFunction(ctx instance.Context, node *specs.Node, flow specs.FlowReso
 			return err
 		}
 
-		err = strict.DefineProperty(ctx, node, result, flow)
+		err = references.DefineProperty(ctx, node, result, flow)
 		if err != nil {
 			return err
 		}
