@@ -150,17 +150,19 @@ resource "log" {
 ```
 
 #### Depends on
-Marks resources as dependencies. This could be usefull if a resource does not have a direct reference dependency but relies on a third party dependency.
+Marks resources as dependencies. This could be usefull if a resource does not have a direct reference dependency.
 
 ```hcl
-resource "log" {
+resource "warehouse" {
   request "warehouse" "Ship" {
     product = "{{ input:product }}"
   }
+}
+
+resource "log" {
+  depends_on = ["warehouse"]
 
   request "logger" "Log" {
-    depends_on = ["warehouse"]
-
     message = "{{ input:message }}"
   }
 }
