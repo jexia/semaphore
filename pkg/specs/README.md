@@ -269,7 +269,9 @@ Each service references a caller implementation to be used.
 Codec is the message format used for request and response messages.
 
 ```hcl
-service "logger" "http" "proto" {
+service "logger" {
+    transport = "http"
+    codec = "proto"
     host = "https://service.prod.svc.cluster.local"
 }
 ```
