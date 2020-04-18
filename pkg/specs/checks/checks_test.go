@@ -1,4 +1,4 @@
-package references
+package checks
 
 import (
 	"testing"
@@ -38,7 +38,7 @@ func TestDuplicateManifests(t *testing.T) {
 
 	for _, input := range tests {
 		ctx := instance.NewContext()
-		err := CheckManifestDuplicates(ctx, input)
+		err := ManifestDuplicates(ctx, input)
 		if err == nil {
 			t.Fatal("unexpected pass", input)
 		}
@@ -62,7 +62,7 @@ func TestDuplicateFlow(t *testing.T) {
 
 	for _, input := range tests {
 		ctx := instance.NewContext()
-		err := CheckFlowDuplicates(ctx, input)
+		err := FlowDuplicates(ctx, input)
 		if err == nil {
 			t.Fatal("unexpected pass", input)
 		}

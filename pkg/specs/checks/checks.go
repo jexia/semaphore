@@ -1,4 +1,4 @@
-package references
+package checks
 
 import (
 	"sync"
@@ -9,8 +9,8 @@ import (
 	"github.com/jexia/maestro/pkg/specs/trace"
 )
 
-// CheckManifestDuplicates checks for duplicate definitions
-func CheckManifestDuplicates(ctx instance.Context, manifest *specs.FlowsManifest) error {
+// ManifestDuplicates checks for duplicate definitions
+func ManifestDuplicates(ctx instance.Context, manifest *specs.FlowsManifest) error {
 	ctx.Logger(logger.Core).Info("Checking manifest duplicates")
 
 	flows := sync.Map{}
@@ -21,7 +21,7 @@ func CheckManifestDuplicates(ctx instance.Context, manifest *specs.FlowsManifest
 			return trace.New(trace.WithMessage("duplicate flow '%s'", flow.Name))
 		}
 
-		err := CheckFlowDuplicates(ctx, flow)
+		err := FlowDuplicates(ctx, flow)
 		if err != nil {
 			return err
 		}
@@ -30,8 +30,8 @@ func CheckManifestDuplicates(ctx instance.Context, manifest *specs.FlowsManifest
 	return nil
 }
 
-// CheckFlowDuplicates checks for duplicate definitions
-func CheckFlowDuplicates(ctx instance.Context, flow *specs.Flow) error {
+// FlowDuplicates checks for duplicate definitions
+func FlowDuplicates(ctx instance.Context, flow *specs.Flow) error {
 	ctx.Logger(logger.Core).Info("Checking flow duplicates")
 
 	calls := sync.Map{}
