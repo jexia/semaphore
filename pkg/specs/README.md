@@ -269,8 +269,7 @@ Each service references a caller implementation to be used.
 Codec is the message format used for request and response messages.
 
 ```hcl
-service "logger" {
-    transport = "http"
+service "logger" "http" {
     codec = "proto"
     host = "https://service.prod.svc.cluster.local"
 }
@@ -291,10 +290,11 @@ An endpoint exposes a flow. Endpoints are not parsed by Maestro and have custom 
 All servers should define their own request/response message formats.
 
 ```hcl
-endpoint "users" "http" "json" {
+endpoint "users" "http" {
     method = "GET"
     endpoint = "/users/:project"
     status = "202"
+    codec = "json"
 }
 ```
 
@@ -302,8 +302,10 @@ endpoint "users" "http" "json" {
 Options could be consumed by implementations. The defined key/values are implementation-specific.
 
 ```hcl
-options {
-    port = 8080
+endpoint "users" "http" {
+    options {
+        port = 8080
+    }
 }
 ```
 
