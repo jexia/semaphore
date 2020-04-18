@@ -172,21 +172,13 @@ resource "log" {
 Options could be consumed by implementations. The defined key/values are implementation-specific.
 
 ```hcl
-options {
-    // HTTP method
-    method = "GET"
-}
-```
-
-#### Depends on
-Dependencies define call dependencies without having a direct reference dependency.
-Defining a dependency prevents both calls to be executed in parallel.
-
-```hcl
 resource "log" {
-    depends_on = [
-        "billing",
-    ]
+    request "logger" "Log" {
+        options {
+            // HTTP method
+            method = "GET"
+        }
+    }
 }
 ```
 
@@ -194,13 +186,29 @@ resource "log" {
 Headers are represented as keys and values. Both keys and values are strings. Values could reference properties from other resources.
 
 ```hcl
-header {
-    Authorization = "{{ input.header:Authorization }}"
+input "schema.Input" {
+    header = ["Authorization"]
+}
+
+resource "log" {
+    request "logger" "Log" {
+        header {
+            Authorization = "{{ input.header:Authorization }}"
+        }
+    }
 }
 ```
 
 #### Request
 The request acts as a message. The request could contain nested messages and repeated messages.
+
+```hcl
+resource "log" {
+    request "logger" "Log" {
+        key = "value"
+    }
+}
+```
 
 #### Rollback
 Rollbacks are called in a reversed chronological order when a call inside the flow fails.
@@ -209,12 +217,14 @@ Rollbacks consist of a call endpoint and a request message.
 Rollback templates could only reference properties from any previous calls and the input.
 
 ```hcl
-rollback "logger" "Log" {
-    header {
-        Claim = "{{ input:Claim }}"
+resource "log" {
+    rollback "logger" "Log" {
+        header {
+            Claim = "{{ input:Claim }}"
+        }
+        
+        message = "Something went wrong"
     }
-    
-    message = "Something went wrong while"
 }
 ```
 
@@ -306,8 +316,6 @@ A function should always return a property where all paths are absolute. This wa
 ```
 function(...<arguments>)
 ```
-
----
 
 ```hcl
 resource "auth" {
