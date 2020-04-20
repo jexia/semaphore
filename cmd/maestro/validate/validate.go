@@ -30,7 +30,7 @@ var Cmd = &cobra.Command{
 func init() {
 	Cmd.PersistentFlags().StringP("config", "c", "", "Config file path")
 	Cmd.PersistentFlags().StringSliceVar(&global.Protobuffers, "proto", []string{}, "If set are all proto definitions found inside the given path passed as schema definitions, all proto definitions are also passed as imports")
-	Cmd.PersistentFlags().StringSliceVar(&global.Flows, "flow", []string{}, "If set are all flow definitions inside the given path passed as flow definitions")
+	Cmd.PersistentFlags().StringSliceVar(&global.HCL, "flow", []string{}, "If set are all flow definitions inside the given path passed as flow definitions")
 	Cmd.PersistentFlags().StringVar(&global.LogLevel, "level", "error", "Logging level")
 }
 
@@ -49,8 +49,10 @@ func run(cmd *cobra.Command, args []string) error {
 		maestro.WithCaller(grpc.NewCaller()),
 	}
 
-	for _, flow := range global.Flows {
-		options = append(options, maestro.WithFlows(hcl.FlowsResolver(flow)))
+	for _, path := range global.HCL {
+		options = append(options, maestro.WithFlows(hcl.FlowsResolver(path)))
+		options = append(options, maestro.WithServices(hcl.ServicesResolver(path)))
+		options = append(options, maestro.WithEndpoints(hcl.EndpointsResolver(path)))
 	}
 
 	for _, path := range global.Protobuffers {
@@ -58,7 +60,7 @@ func run(cmd *cobra.Command, args []string) error {
 	}
 
 	ctx := instance.NewContext()
-	_, _, _, _, err = constructor.Specs(ctx, maestro.NewOptions(ctx, options...))
+	_, _, _, _, _, err = constructor.Specs(ctx, maestro.NewOptions(ctx, options...))
 	if err != nil {
 		return err
 	}

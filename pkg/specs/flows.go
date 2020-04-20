@@ -3,17 +3,15 @@ package specs
 // NewFlowsManifest constructs a new empty flows manifest
 func NewFlowsManifest() *FlowsManifest {
 	return &FlowsManifest{
-		Flows:     make(Flows, 0),
-		Proxy:     make(Proxies, 0),
-		Endpoints: make(Endpoints, 0),
+		Flows: make(Flows, 0),
+		Proxy: make(Proxies, 0),
 	}
 }
 
 // FlowsManifest holds a collection of definitions and resources
 type FlowsManifest struct {
-	Flows     Flows     `json:"flows"`
-	Proxy     Proxies   `json:"proxies"`
-	Endpoints Endpoints `json:"endpoints"`
+	Flows Flows   `json:"flows"`
+	Proxy Proxies `json:"proxies"`
 }
 
 // GetFlow attempts to find a flow or proxy matching the given name
@@ -35,7 +33,6 @@ func (manifest *FlowsManifest) GetFlow(name string) FlowResourceManager {
 func (manifest *FlowsManifest) Merge(incoming *FlowsManifest) {
 	manifest.Flows = append(manifest.Flows, incoming.Flows...)
 	manifest.Proxy = append(manifest.Proxy, incoming.Proxy...)
-	manifest.Endpoints = append(manifest.Endpoints, incoming.Endpoints...)
 }
 
 // FlowResourceManager represents a proxy or flow manager.
@@ -100,14 +97,6 @@ func (flow *Flow) GetForward() *Call {
 	return nil
 }
 
-// Endpoint exposes a flow. Endpoints are not parsed by Maestro and have custom implementations in each caller.
-// The name of the endpoint represents the flow which should be executed.
-type Endpoint struct {
-	Flow     string  `json:"flow"`
-	Listener string  `json:"listener"`
-	Options  Options `json:"options"`
-}
-
 // Proxies represents a collection of proxies
 type Proxies []*Proxy
 
@@ -154,21 +143,6 @@ func (proxy *Proxy) GetOutput() *ParameterMap {
 // GetForward returns the proxy forward of the given flow
 func (proxy *Proxy) GetForward() *Call {
 	return proxy.Forward
-}
-
-// Endpoints represents a collection of endpoints
-type Endpoints []*Endpoint
-
-// Get attempts to find a endpoint for the given flow
-func (collection Endpoints) Get(flow string) []*Endpoint {
-	result := make([]*Endpoint, 0)
-	for _, endpoint := range collection {
-		if endpoint.Flow == flow {
-			result = append(result, endpoint)
-		}
-	}
-
-	return result
 }
 
 // Node represents a point inside a given flow where a request or rollback could be preformed.

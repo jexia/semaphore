@@ -37,7 +37,7 @@ func init() {
 	Cmd.PersistentFlags().StringVar(&global.GraphQL.Address, "graphql", "", "If set starts the GraphQL listener on the given TCP address")
 	Cmd.PersistentFlags().StringVar(&global.GRPC.Address, "grpc", "", "If set starts the gRPC listener on the given TCP address")
 	Cmd.PersistentFlags().StringSliceVar(&global.Protobuffers, "proto", []string{}, "If set are all proto definitions found inside the given path passed as schema definitions, all proto definitions are also passed as imports")
-	Cmd.PersistentFlags().StringSliceVar(&global.Flows, "flow", []string{}, "If set are all flow definitions inside the given path passed as flow definitions")
+	Cmd.PersistentFlags().StringSliceVar(&global.HCL, "hcl", []string{}, "If set are all definitions inside the given path parsed")
 	Cmd.PersistentFlags().StringVar(&global.LogLevel, "level", "info", "Logging level")
 }
 
@@ -56,8 +56,10 @@ func run(cmd *cobra.Command, args []string) error {
 		maestro.WithCaller(http.NewCaller()),
 	}
 
-	for _, flow := range global.Flows {
-		options = append(options, maestro.WithFlows(hcl.FlowsResolver(flow)))
+	for _, path := range global.HCL {
+		options = append(options, maestro.WithFlows(hcl.FlowsResolver(path)))
+		options = append(options, maestro.WithServices(hcl.ServicesResolver(path)))
+		options = append(options, maestro.WithEndpoints(hcl.EndpointsResolver(path)))
 	}
 
 	for _, path := range global.Protobuffers {

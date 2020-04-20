@@ -58,19 +58,19 @@ func New(opts ...constructor.Option) (*Client, error) {
 	ctx := instance.NewContext()
 	options := NewOptions(ctx, opts...)
 
-	mem, flows, services, schema, err := constructor.Specs(ctx, options)
+	mem, flows, endpoints, services, schema, err := constructor.Specs(ctx, options)
 	if err != nil {
 		return nil, err
 	}
 
-	endpoints, err := constructor.FlowManager(ctx, mem, services, flows, options)
+	managers, err := constructor.FlowManager(ctx, mem, services, endpoints, flows, options)
 	if err != nil {
 		return nil, err
 	}
 
 	client := &Client{
 		Ctx:       ctx,
-		Endpoints: endpoints,
+		Endpoints: managers,
 		Flows:     flows,
 		Services:  services,
 		Schema:    schema,

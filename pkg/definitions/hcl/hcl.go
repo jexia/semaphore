@@ -72,7 +72,7 @@ func FlowsResolver(path string) definitions.FlowsResolver {
 				return nil, err
 			}
 
-			manifest, err := ParseSpecs(ctx, definition)
+			manifest, err := ParseFlows(ctx, definition)
 			if err != nil {
 				return nil, err
 			}
@@ -81,6 +81,39 @@ func FlowsResolver(path string) definitions.FlowsResolver {
 		}
 
 		return flows, nil
+	}
+}
+
+// EndpointsResolver constructs a resource resolver for the given path
+func EndpointsResolver(path string) definitions.EndpointsResolver {
+	return func(ctx instance.Context) (*specs.EndpointsManifest, error) {
+		files, err := utils.ResolvePath(path)
+		if err != nil {
+			return nil, err
+		}
+
+		endpoints := &specs.EndpointsManifest{}
+
+		for _, file := range files {
+			reader, err := os.Open(file.Path)
+			if err != nil {
+				return nil, err
+			}
+
+			definition, err := UnmarshalHCL(ctx, file.Name(), reader)
+			if err != nil {
+				return nil, err
+			}
+
+			manifest, err := ParseEndpoints(ctx, definition)
+			if err != nil {
+				return nil, err
+			}
+
+			endpoints.Merge(manifest)
+		}
+
+		return endpoints, nil
 	}
 }
 

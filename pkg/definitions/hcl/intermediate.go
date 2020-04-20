@@ -6,10 +6,14 @@ import (
 
 // Manifest intermediate specs
 type Manifest struct {
-	Flows     []Flow     `hcl:"flow,block"`
-	Proxy     []Proxy    `hcl:"proxy,block"`
-	Endpoints []Endpoint `hcl:"endpoint,block"`
-	Services  []Service  `hcl:"service,block"`
+	LogLevel        string     `hcl:"log_level,optional"`
+	Protobuffers    []string   `hcl:"protobuffers,optional"`
+	Include         []string   `hcl:"include,optional"`
+	Flows           []Flow     `hcl:"flow,block"`
+	Proxy           []Proxy    `hcl:"proxy,block"`
+	Endpoints       []Endpoint `hcl:"endpoint,block"`
+	Services        []Service  `hcl:"service,block"`
+	ServiceSelector []Services `hcl:"services,block"`
 }
 
 // Before intermediate specification
@@ -132,6 +136,17 @@ type Service struct {
 	Host      string   `hcl:"host,optional"`
 	Methods   []Method `hcl:"method,block"`
 	Options   *Options `hcl:"options,block"`
+}
+
+// ServiceSelector targets any service matchine the given service selector
+type ServiceSelector struct {
+	Selector string `hcl:"selector,label"`
+	Host     string `hcl:"host,optional"`
+}
+
+// Services specification
+type Services struct {
+	Selectors []ServiceSelector `hcl:"select,block"`
 }
 
 // Method represents a service method

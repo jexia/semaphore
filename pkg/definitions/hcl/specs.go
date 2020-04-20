@@ -11,18 +11,13 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
-// ParseSpecs parses the given intermediate manifest to a specs manifest
-func ParseSpecs(ctx instance.Context, manifest Manifest) (*specs.FlowsManifest, error) {
-	ctx.Logger(logger.Core).Info("Parsing intermediate manifest to specs")
+// ParseFlows parses the given intermediate manifest to a flows manifest
+func ParseFlows(ctx instance.Context, manifest Manifest) (*specs.FlowsManifest, error) {
+	ctx.Logger(logger.Core).Info("Parsing intermediate manifest to flows manifest")
 
 	result := &specs.FlowsManifest{
-		Endpoints: make([]*specs.Endpoint, len(manifest.Endpoints)),
-		Flows:     make([]*specs.Flow, len(manifest.Flows)),
-		Proxy:     make([]*specs.Proxy, len(manifest.Proxy)),
-	}
-
-	for index, endpoint := range manifest.Endpoints {
-		result.Endpoints[index] = ParseIntermediateEndpoint(ctx, endpoint)
+		Flows: make([]*specs.Flow, len(manifest.Flows)),
+		Proxy: make([]*specs.Proxy, len(manifest.Proxy)),
 	}
 
 	for index, flow := range manifest.Flows {
@@ -41,6 +36,21 @@ func ParseSpecs(ctx instance.Context, manifest Manifest) (*specs.FlowsManifest, 
 		}
 
 		result.Proxy[index] = proxy
+	}
+
+	return result, nil
+}
+
+// ParseEndpoints parses the given intermediate manifest to a endpoints manifest
+func ParseEndpoints(ctx instance.Context, manifest Manifest) (*specs.EndpointsManifest, error) {
+	ctx.Logger(logger.Core).Info("Parsing intermediate manifest to endpoints manifest")
+
+	result := &specs.EndpointsManifest{
+		Endpoints: make([]*specs.Endpoint, len(manifest.Endpoints)),
+	}
+
+	for index, endpoint := range manifest.Endpoints {
+		result.Endpoints[index] = ParseIntermediateEndpoint(ctx, endpoint)
 	}
 
 	return result, nil

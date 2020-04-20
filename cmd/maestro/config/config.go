@@ -14,7 +14,7 @@ func New() *Maestro {
 		GraphQL:      GraphQL{},
 		GRPC:         GRPC{},
 		Protobuffers: []string{},
-		Flows:        []string{},
+		HCL:          []string{},
 	}
 }
 
@@ -45,25 +45,25 @@ func Read(cmd *cobra.Command, target *Maestro) error {
 
 // Maestro configurations
 type Maestro struct {
-	LogLevel     string   `yaml:"level"`
-	HTTP         HTTP     `yaml:"http"`
-	GraphQL      GraphQL  `yaml:"graphql"`
-	GRPC         GRPC     `yaml:"grpc"`
-	Protobuffers []string `yaml:"protobuffers"`
-	Flows        []string `yaml:"flows"`
+	LogLevel     string
+	HTTP         HTTP
+	GraphQL      GraphQL
+	GRPC         GRPC
+	Protobuffers []string
+	HCL          []string
 }
 
 // HTTP configurations
 type HTTP struct {
-	Address string `yaml:"address"`
+	Address string
 }
 
 // GRPC configurations
 type GRPC struct {
-	Address string `yaml:"address"`
+	Address string
 }
 
 // GraphQL configurations
 type GraphQL struct {
-	Address string `yaml:"address"`
+	Address string
 }

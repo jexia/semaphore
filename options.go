@@ -21,17 +21,24 @@ func NewOptions(ctx instance.Context, options ...constructor.Option) constructor
 	return result
 }
 
-// WithFlows defines the HCL definitions path to be used
+// WithFlows appends the given flows resolver to the available flow resolvers
 func WithFlows(definition definitions.FlowsResolver) constructor.Option {
 	return func(options *constructor.Options) {
 		options.Flows = append(options.Flows, definition)
 	}
 }
 
-// WithServices defines the HCL definitions path to be used
+// WithServices appends the given service resolver to the available service resolvers
 func WithServices(definition definitions.ServicesResolver) constructor.Option {
 	return func(options *constructor.Options) {
 		options.Services = append(options.Services, definition)
+	}
+}
+
+// WithEndpoints appends the given endpoint resolver to the available endpoint resolvers
+func WithEndpoints(definition definitions.EndpointsResolver) constructor.Option {
+	return func(options *constructor.Options) {
+		options.Endpoints = append(options.Endpoints, definition)
 	}
 }
 

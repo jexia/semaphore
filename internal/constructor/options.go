@@ -29,6 +29,7 @@ type Options struct {
 	Callers   transport.Callers
 	Listeners transport.Listeners
 	Flows     []definitions.FlowsResolver
+	Endpoints []definitions.EndpointsResolver
 	Services  []definitions.ServicesResolver
 	Schemas   []definitions.SchemaResolver
 	Functions functions.Custom
