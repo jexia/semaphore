@@ -13,15 +13,27 @@ import (
 func ManifestDuplicates(ctx instance.Context, manifest *specs.FlowsManifest) error {
 	ctx.Logger(logger.Core).Info("Checking manifest duplicates")
 
-	flows := sync.Map{}
+	tracker := sync.Map{}
 
 	for _, flow := range manifest.Flows {
-		_, duplicate := flows.LoadOrStore(flow.Name, flow)
+		_, duplicate := tracker.LoadOrStore(flow.Name, flow)
 		if duplicate {
 			return trace.New(trace.WithMessage("duplicate flow '%s'", flow.Name))
 		}
 
-		err := FlowDuplicates(ctx, flow)
+		err := NodeDuplicates(ctx, flow.Name, flow.Nodes)
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, proxy := range manifest.Proxy {
+		_, duplicate := tracker.LoadOrStore(proxy.Name, proxy)
+		if duplicate {
+			return trace.New(trace.WithMessage("duplicate flow '%s'", proxy.Name))
+		}
+
+		err := NodeDuplicates(ctx, proxy.Name, proxy.Nodes)
 		if err != nil {
 			return err
 		}
@@ -30,16 +42,16 @@ func ManifestDuplicates(ctx instance.Context, manifest *specs.FlowsManifest) err
 	return nil
 }
 
-// FlowDuplicates checks for duplicate definitions
-func FlowDuplicates(ctx instance.Context, flow *specs.Flow) error {
+// NodeDuplicates checks for duplicate definitions
+func NodeDuplicates(ctx instance.Context, flow string, nodes []*specs.Node) error {
 	ctx.Logger(logger.Core).Info("Checking flow duplicates")
 
 	calls := sync.Map{}
 
-	for _, node := range flow.Nodes {
+	for _, node := range nodes {
 		_, duplicate := calls.LoadOrStore(node.Name, node)
 		if duplicate {
-			return trace.New(trace.WithMessage("duplicate resource '%s' in flow '%s'", node.Name, flow.Name))
+			return trace.New(trace.WithMessage("duplicate resource '%s' in flow '%s'", node.Name, flow))
 		}
 	}
 

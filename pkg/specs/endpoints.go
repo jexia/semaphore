@@ -1,20 +1,15 @@
 package specs
 
-// NewEndpointsManifest constructs a new empty endpoints manifest
-func NewEndpointsManifest() *EndpointsManifest {
-	return &EndpointsManifest{
-		Endpoints: make(Endpoints, 0),
-	}
-}
-
 // EndpointsManifest holds a collection of flow endpoints
 type EndpointsManifest struct {
 	Endpoints Endpoints `json:"endpoints"`
 }
 
-// Merge merges the incoming manifest to the existing (left) manifest
-func (manifest *EndpointsManifest) Merge(incoming *EndpointsManifest) {
-	manifest.Endpoints = append(manifest.Endpoints, incoming.Endpoints...)
+// MergeEndpointsManifest merges the incoming manifest to the existing (left) manifest
+func MergeEndpointsManifest(left *EndpointsManifest, incoming ...*EndpointsManifest) {
+	for _, manifest := range incoming {
+		left.Endpoints = append(left.Endpoints, manifest.Endpoints...)
+	}
 }
 
 // Endpoints represents a collection of endpoints

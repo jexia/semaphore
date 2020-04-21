@@ -1,29 +1,24 @@
 package specs
 
-// NewSchemaManifest constructs a new schema manifest
-func NewSchemaManifest() *SchemaManifest {
-	return &SchemaManifest{
-		Properties: make(map[string]*Property, 0),
-	}
-}
-
 // SchemaManifest represents a collection of messages which are used for type checks
 type SchemaManifest struct {
 	Properties map[string]*Property
 }
 
-// Merge merges the incoming schema into the given schema manifest
-func (schema *SchemaManifest) Merge(incoming *SchemaManifest) {
-	if incoming == nil || schema == nil {
+// MergeSchemaManifest merges the incoming schema into the given schema manifest
+func MergeSchemaManifest(left *SchemaManifest, incoming ...*SchemaManifest) {
+	if left == nil {
 		return
 	}
 
-	if incoming.Properties == nil || schema.Properties == nil {
-		return
+	if left.Properties == nil {
+		left.Properties = make(map[string]*Property, 0)
 	}
 
-	for key, val := range incoming.Properties {
-		schema.Properties[key] = val
+	for _, manifest := range incoming {
+		for key, val := range manifest.Properties {
+			left.Properties[key] = val
+		}
 	}
 }
 

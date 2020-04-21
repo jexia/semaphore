@@ -4,10 +4,10 @@ This example uses the GraphQL and HTTP implementations to call the API endpoints
 
 # Getting started
 
-You could get started by  the Maestro CLI.
+You could get started by executing the Maestro CLI.
 
 ```bash
-$ maestro run -c config.yaml
+$ maestro run -f config.hcl
 ```
 
 Once Maestro is up and running you could execute the `todo` flow by calling the service on port `8080`.

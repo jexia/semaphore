@@ -20,7 +20,7 @@ const (
 )
 
 // NewServices constructs a new service(s) manifest from the given file descriptors
-func NewServices(descriptors []*desc.FileDescriptor) *specs.ServicesManifest {
+func NewServices(descriptors []*desc.FileDescriptor) []*specs.ServicesManifest {
 	result := &specs.ServicesManifest{
 		Services: make([]*specs.Service, 0),
 	}
@@ -31,7 +31,7 @@ func NewServices(descriptors []*desc.FileDescriptor) *specs.ServicesManifest {
 		}
 	}
 
-	return result
+	return []*specs.ServicesManifest{result}
 }
 
 // NewService constructs a new service with the given descriptor

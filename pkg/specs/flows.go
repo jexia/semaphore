@@ -1,13 +1,5 @@
 package specs
 
-// NewFlowsManifest constructs a new empty flows manifest
-func NewFlowsManifest() *FlowsManifest {
-	return &FlowsManifest{
-		Flows: make(Flows, 0),
-		Proxy: make(Proxies, 0),
-	}
-}
-
 // FlowsManifest holds a collection of definitions and resources
 type FlowsManifest struct {
 	Flows Flows   `json:"flows"`
@@ -29,10 +21,12 @@ func (manifest *FlowsManifest) GetFlow(name string) FlowResourceManager {
 	return nil
 }
 
-// Merge merges the incoming manifest to the existing (left) manifest
-func (manifest *FlowsManifest) Merge(incoming *FlowsManifest) {
-	manifest.Flows = append(manifest.Flows, incoming.Flows...)
-	manifest.Proxy = append(manifest.Proxy, incoming.Proxy...)
+// MergeFlowsManifest merges the incoming manifest to the existing (left) manifest
+func MergeFlowsManifest(left *FlowsManifest, incoming ...*FlowsManifest) {
+	for _, manifest := range incoming {
+		left.Flows = append(left.Flows, manifest.Flows...)
+		left.Proxy = append(left.Proxy, manifest.Proxy...)
+	}
 }
 
 // FlowResourceManager represents a proxy or flow manager.

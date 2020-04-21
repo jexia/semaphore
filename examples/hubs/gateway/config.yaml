@@ -1,8 +1,0 @@
-level: "debug"
-http:
-    address: ":8080"
-protobuffers:
-- "../../../annotations"
-- "../proto/*.proto"
-flows:
-- "./*.hcl"

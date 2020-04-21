@@ -73,7 +73,7 @@ func ParseIntermediateMethods(ctx instance.Context, methods []Method) ([]*specs.
 }
 
 // ParseIntermediateDefinitionOptions parses the given intermediate options to a definitions options
-func ParseIntermediateDefinitionOptions(options *Options) specs.Options {
+func ParseIntermediateDefinitionOptions(options *BlockOptions) specs.Options {
 	if options == nil {
 		return specs.Options{}
 	}

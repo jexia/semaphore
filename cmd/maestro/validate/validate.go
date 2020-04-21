@@ -4,23 +4,15 @@ import (
 	"github.com/jexia/maestro"
 	"github.com/jexia/maestro/cmd/maestro/config"
 	"github.com/jexia/maestro/internal/constructor"
-	"github.com/jexia/maestro/internal/logger"
-	"github.com/jexia/maestro/pkg/codec/json"
-	"github.com/jexia/maestro/pkg/codec/proto"
-	"github.com/jexia/maestro/pkg/definitions/hcl"
-	"github.com/jexia/maestro/pkg/definitions/protoc"
+	"github.com/jexia/maestro/pkg/functions"
 	"github.com/jexia/maestro/pkg/instance"
-	"github.com/jexia/maestro/pkg/transport/grpc"
-	"github.com/jexia/maestro/pkg/transport/http"
-	"github.com/jexia/maestro/pkg/transport/micro"
-	microGRPC "github.com/micro/go-micro/service/grpc"
 	"github.com/spf13/cobra"
 )
 
-var global = config.New()
+var params = config.New()
 
-// Cmd represents the maestro validate command
-var Cmd = &cobra.Command{
+// Command represents the maestro validate command
+var Command = &cobra.Command{
 	Use:          "validate",
 	Short:        "Validate the flow definitions with the configured schema format(s)",
 	RunE:         run,
@@ -28,39 +20,19 @@ var Cmd = &cobra.Command{
 }
 
 func init() {
-	Cmd.PersistentFlags().StringP("config", "c", "", "Config file path")
-	Cmd.PersistentFlags().StringSliceVar(&global.Protobuffers, "proto", []string{}, "If set are all proto definitions found inside the given path passed as schema definitions, all proto definitions are also passed as imports")
-	Cmd.PersistentFlags().StringSliceVar(&global.HCL, "flow", []string{}, "If set are all flow definitions inside the given path passed as flow definitions")
-	Cmd.PersistentFlags().StringVar(&global.LogLevel, "level", "error", "Logging level")
+	Command.PersistentFlags().StringSliceVar(&params.Protobuffers, "proto", []string{}, "If set are all proto definitions found inside the given path passed as schema definitions, all proto definitions are also passed as imports")
+	Command.PersistentFlags().StringSliceVarP(&params.Files, "file", "f", []string{}, "Parses the given file as a definition file")
+	Command.PersistentFlags().StringVar(&params.LogLevel, "level", "info", "Global logging level, this value will override the defined log level inside the file definitions")
 }
 
 func run(cmd *cobra.Command, args []string) error {
-	err := config.Read(cmd, global)
+	arguments, err := config.ConstructArguments(params)
 	if err != nil {
 		return err
 	}
 
-	options := []constructor.Option{
-		maestro.WithLogLevel(logger.Global, global.LogLevel),
-		maestro.WithCodec(json.NewConstructor()),
-		maestro.WithCodec(proto.NewConstructor()),
-		maestro.WithCaller(micro.New("micro-grpc", microGRPC.NewService())),
-		maestro.WithCaller(http.NewCaller()),
-		maestro.WithCaller(grpc.NewCaller()),
-	}
-
-	for _, path := range global.HCL {
-		options = append(options, maestro.WithFlows(hcl.FlowsResolver(path)))
-		options = append(options, maestro.WithServices(hcl.ServicesResolver(path)))
-		options = append(options, maestro.WithEndpoints(hcl.EndpointsResolver(path)))
-	}
-
-	for _, path := range global.Protobuffers {
-		options = append(options, maestro.WithSchema(protoc.SchemaResolver(global.Protobuffers, path)))
-	}
-
 	ctx := instance.NewContext()
-	_, _, _, _, _, err = constructor.Specs(ctx, maestro.NewOptions(ctx, options...))
+	_, err = constructor.Specs(ctx, functions.Collection{}, maestro.NewOptions(ctx, arguments...))
 	if err != nil {
 		return err
 	}

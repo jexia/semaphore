@@ -16,91 +16,38 @@ import (
 )
 
 // Specs construct a specs manifest from the given options
-func Specs(ctx instance.Context, options Options) (functions.Collection, *specs.FlowsManifest, *specs.EndpointsManifest, *specs.ServicesManifest, *specs.SchemaManifest, error) {
-	flows := specs.NewFlowsManifest()
-	endpoints := specs.NewEndpointsManifest()
-	services := specs.NewServicesManifest()
-	schema := specs.NewSchemaManifest()
-
-	for _, resolver := range options.Flows {
-		if resolver == nil {
-			continue
-		}
-
-		manifest, err := resolver(ctx)
-		if err != nil {
-			return nil, nil, nil, nil, nil, err
-		}
-
-		flows.Merge(manifest)
-	}
-
-	for _, resolver := range options.Endpoints {
-		if resolver == nil {
-			continue
-		}
-
-		manifest, err := resolver(ctx)
-		if err != nil {
-			return nil, nil, nil, nil, nil, err
-		}
-
-		endpoints.Merge(manifest)
-	}
-
-	for _, resolver := range options.Services {
-		if resolver == nil {
-			continue
-		}
-
-		manifest, err := resolver(ctx)
-		if err != nil {
-			return nil, nil, nil, nil, nil, err
-		}
-
-		services.Merge(manifest)
-	}
-
-	for _, resolver := range options.Schemas {
-		if resolver == nil {
-			continue
-		}
-
-		manifest, err := resolver(ctx)
-		if err != nil {
-			return nil, nil, nil, nil, nil, err
-		}
-
-		schema.Merge(manifest)
-	}
-
-	err := references.DefineManifest(ctx, services, schema, flows)
+func Specs(ctx instance.Context, mem functions.Collection, options Options) (*Collection, error) {
+	collection, err := CollectSpecs(ctx, options)
 	if err != nil {
-		return nil, nil, nil, nil, nil, err
+		return nil, err
 	}
 
-	err = checks.ManifestDuplicates(ctx, flows)
+	err = references.DefineManifest(ctx, collection.Services, collection.Schema, collection.Flows)
 	if err != nil {
-		return nil, nil, nil, nil, nil, err
+		return nil, err
 	}
 
-	mem := functions.Collection{}
-	err = functions.PrepareManifestFunctions(ctx, mem, options.Functions, flows)
+	err = checks.ManifestDuplicates(ctx, collection.Flows)
 	if err != nil {
-		return nil, nil, nil, nil, nil, err
-	}
-	err = compare.ManifestTypes(ctx, services, schema, flows)
-	if err != nil {
-		return nil, nil, nil, nil, nil, err
+		return nil, err
 	}
 
-	dependencies.ResolveReferences(ctx, flows)
-	err = dependencies.ResolveManifest(ctx, flows)
+	err = functions.PrepareManifestFunctions(ctx, mem, options.Functions, collection.Flows)
 	if err != nil {
-		return nil, nil, nil, nil, nil, err
+		return nil, err
+	}
+	err = compare.ManifestTypes(ctx, collection.Services, collection.Schema, collection.Flows)
+	if err != nil {
+		return nil, err
 	}
 
-	return mem, flows, endpoints, services, schema, nil
+	dependencies.ResolveReferences(ctx, collection.Flows)
+	err = dependencies.ResolveManifest(ctx, collection.Flows)
+	if err != nil {
+		return nil, err
+	}
+
+	return collection, nil
 }
 
 // FlowManager constructs the flow managers from the given specs manifest

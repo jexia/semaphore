@@ -1,14 +1,10 @@
 log_level = "$LOG_LEVEL"
 protobuffers = ["../../annotations", "./proto/*.proto"]
 
-include = ["flow.hcl", "endpoints.$ENV.hcl", "services.$ENV.hcl"]
+include = ["flow.hcl"]
 
 graphql {
-    address = "$GRAPHQL_ADDRESS"
-}
-
-http {
-    address = "$HTTP_ADDRESS"
+    address = ":8080"
 }
 
 services {

@@ -18,8 +18,8 @@ Requests could be manipulated, passed and branched to different services to be r
 }
 
 func init() {
-	cmd.AddCommand(run.Cmd)
-	cmd.AddCommand(validate.Cmd)
+	cmd.AddCommand(run.Command)
+	cmd.AddCommand(validate.Command)
 }
 
 func main() {

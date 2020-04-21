@@ -10,6 +10,12 @@ import (
 	"github.com/jexia/maestro/pkg/transport"
 )
 
+// BeforeOptionsFn gets called before initialising the options
+type BeforeOptionsFn func(instance.Context, *constructor.Options) error
+
+// AfterOptionsFn gets called after all options have been initialised
+type AfterOptionsFn func(instance.Context, *constructor.Options) error
+
 // NewOptions constructs a constructor.Options object from the given constructor.Option constructors
 func NewOptions(ctx instance.Context, options ...constructor.Option) constructor.Options {
 	result := constructor.NewOptions(ctx)
@@ -20,6 +26,20 @@ func NewOptions(ctx instance.Context, options ...constructor.Option) constructor
 
 	return result
 }
+
+// // BeforeOptions the passed function gets called once before any options get applied
+// func BeforeOptions(fn BeforeOptionsFn) constructor.Option {
+// 	return func(options *constructor.Options) {
+// 		options.BeforeOptions = fn
+// 	}
+// }
+
+// // AfterOptions the passed function gets called once all options have been applied
+// func AfterOptions(fn AfterOptionsFn) constructor.Option {
+// 	return func(options *constructor.Options) {
+// 		options.AfterOptions = fn
+// 	}
+// }
 
 // WithFlows appends the given flows resolver to the available flow resolvers
 func WithFlows(definition definitions.FlowsResolver) constructor.Option {

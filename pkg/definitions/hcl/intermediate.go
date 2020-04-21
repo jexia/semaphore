@@ -7,6 +7,9 @@ import (
 // Manifest intermediate specs
 type Manifest struct {
 	LogLevel        string     `hcl:"log_level,optional"`
+	GraphQL         *GraphQL   `hcl:"graphql,block"`
+	HTTP            *HTTP      `hcl:"http,block"`
+	GRPC            *GRPC      `hcl:"grpc,block"`
 	Protobuffers    []string   `hcl:"protobuffers,optional"`
 	Include         []string   `hcl:"include,optional"`
 	Flows           []Flow     `hcl:"flow,block"`
@@ -14,6 +17,21 @@ type Manifest struct {
 	Endpoints       []Endpoint `hcl:"endpoint,block"`
 	Services        []Service  `hcl:"service,block"`
 	ServiceSelector []Services `hcl:"services,block"`
+}
+
+// GraphQL represents the GraphQL option definitions
+type GraphQL struct {
+	Address string `hcl:"address"`
+}
+
+// HTTP represent the HTTP option definitions
+type HTTP struct {
+	Address string `hcl:"address"`
+}
+
+// GRPC represent the gRPC option definitions
+type GRPC struct {
+	Address string `hcl:"address"`
 }
 
 // Before intermediate specification
@@ -35,7 +53,7 @@ type Flow struct {
 // ParameterMap is the initial map of parameter names (keys) and their (templated) values (values)
 type ParameterMap struct {
 	Schema     string                 `hcl:"schema,label"`
-	Options    *Options               `hcl:"options,block"`
+	Options    *BlockOptions          `hcl:"options,block"`
 	Header     *Header                `hcl:"header,block"`
 	Nested     []NestedParameterMap   `hcl:"message,block"`
 	Repeated   []RepeatedParameterMap `hcl:"repeated,block"`
@@ -62,15 +80,15 @@ type Header struct {
 // InputParameterMap is the initial map of parameter names (keys) and their (templated) values (values)
 type InputParameterMap struct {
 	Schema     string                      `hcl:"schema,label"`
-	Options    *Options                    `hcl:"options,block"`
+	Options    *BlockOptions               `hcl:"options,block"`
 	Header     []string                    `hcl:"header,optional"`
 	Nested     []NestedParameterMap        `hcl:"message,block"`
 	Repeated   []InputRepeatedParameterMap `hcl:"repeated,block"`
 	Properties hcl.Body                    `hcl:",remain"`
 }
 
-// Options holds the raw options
-type Options struct {
+// BlockOptions holds the raw options
+type BlockOptions struct {
 	Body hcl.Body `hcl:",remain"`
 }
 
@@ -120,7 +138,7 @@ type Function struct {
 type Call struct {
 	Service    string                 `hcl:"service,label"`
 	Method     string                 `hcl:"method,label"`
-	Options    *Options               `hcl:"options,block"`
+	Options    *BlockOptions          `hcl:"options,block"`
 	Header     *Header                `hcl:"header,block"`
 	Nested     []NestedParameterMap   `hcl:"message,block"`
 	Repeated   []RepeatedParameterMap `hcl:"repeated,block"`
@@ -129,13 +147,13 @@ type Call struct {
 
 // Service specification
 type Service struct {
-	Package   string   `hcl:"package,label"`
-	Name      string   `hcl:"name,label"`
-	Transport string   `hcl:"transport,optional"`
-	Codec     string   `hcl:"codec,optional"`
-	Host      string   `hcl:"host,optional"`
-	Methods   []Method `hcl:"method,block"`
-	Options   *Options `hcl:"options,block"`
+	Package   string        `hcl:"package,label"`
+	Name      string        `hcl:"name,label"`
+	Transport string        `hcl:"transport,optional"`
+	Codec     string        `hcl:"codec,optional"`
+	Host      string        `hcl:"host,optional"`
+	Methods   []Method      `hcl:"method,block"`
+	Options   *BlockOptions `hcl:"options,block"`
 }
 
 // ServiceSelector targets any service matchine the given service selector
@@ -151,10 +169,10 @@ type Services struct {
 
 // Method represents a service method
 type Method struct {
-	Name    string   `hcl:"name,label"`
-	Input   string   `hcl:"request,optional"`
-	Output  string   `hcl:"response,optional"`
-	Options *Options `hcl:"options,block"`
+	Name    string        `hcl:"name,label"`
+	Input   string        `hcl:"request,optional"`
+	Output  string        `hcl:"response,optional"`
+	Options *BlockOptions `hcl:"options,block"`
 }
 
 // Proxy specification

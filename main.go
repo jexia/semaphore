@@ -5,6 +5,7 @@ import (
 
 	"github.com/jexia/maestro/internal/constructor"
 	"github.com/jexia/maestro/internal/logger"
+	"github.com/jexia/maestro/pkg/functions"
 	"github.com/jexia/maestro/pkg/instance"
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jexia/maestro/pkg/transport"
@@ -12,13 +13,14 @@ import (
 
 // Client represents a maestro instance
 type Client struct {
-	Ctx       instance.Context
-	Endpoints []*transport.Endpoint
-	Flows     *specs.FlowsManifest
-	Services  *specs.ServicesManifest
-	Schema    *specs.SchemaManifest
-	Listeners []transport.Listener
-	Options   constructor.Options
+	Ctx          instance.Context
+	Transporters []*transport.Endpoint
+	Flows        *specs.FlowsManifest
+	Services     *specs.ServicesManifest
+	Schema       *specs.SchemaManifest
+	Endpoints    *specs.EndpointsManifest
+	Listeners    []transport.Listener
+	Options      constructor.Options
 }
 
 // Serve opens all listeners inside the given maestro client
@@ -48,8 +50,8 @@ func (client *Client) Close() {
 		listener.Close()
 	}
 
-	for _, endpoint := range client.Endpoints {
-		endpoint.Flow.Wait()
+	for _, transporter := range client.Transporters {
+		transporter.Flow.Wait()
 	}
 }
 
@@ -58,24 +60,26 @@ func New(opts ...constructor.Option) (*Client, error) {
 	ctx := instance.NewContext()
 	options := NewOptions(ctx, opts...)
 
-	mem, flows, endpoints, services, schema, err := constructor.Specs(ctx, options)
+	mem := functions.Collection{}
+	collection, err := constructor.Specs(ctx, mem, options)
 	if err != nil {
 		return nil, err
 	}
 
-	managers, err := constructor.FlowManager(ctx, mem, services, endpoints, flows, options)
+	managers, err := constructor.FlowManager(ctx, mem, collection.Services, collection.Endpoints, collection.Flows, options)
 	if err != nil {
 		return nil, err
 	}
 
 	client := &Client{
-		Ctx:       ctx,
-		Endpoints: managers,
-		Flows:     flows,
-		Services:  services,
-		Schema:    schema,
-		Listeners: options.Listeners,
-		Options:   options,
+		Ctx:          ctx,
+		Transporters: managers,
+		Flows:        collection.Flows,
+		Services:     collection.Services,
+		Schema:       collection.Schema,
+		Endpoints:    collection.Endpoints,
+		Listeners:    options.Listeners,
+		Options:      options,
 	}
 
 	return client, nil

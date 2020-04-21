@@ -1,20 +1,15 @@
 package specs
 
-// NewServicesManifest constructs a new service(s) manifest
-func NewServicesManifest() *ServicesManifest {
-	return &ServicesManifest{
-		Services: make([]*Service, 0),
-	}
-}
-
 // ServicesManifest holds a collection of services
 type ServicesManifest struct {
 	Services []*Service `json:"services"`
 }
 
-// Merge merges the incoming services into the given service manifest
-func (services *ServicesManifest) Merge(incoming *ServicesManifest) {
-	services.Services = append(services.Services, incoming.Services...)
+// MergeServiceManifest merges the incoming services into the given service manifest
+func MergeServiceManifest(left *ServicesManifest, incoming ...*ServicesManifest) {
+	for _, manifest := range incoming {
+		left.Services = append(left.Services, manifest.Services...)
+	}
 }
 
 // GetService attempts to find and return a flow with the given name
