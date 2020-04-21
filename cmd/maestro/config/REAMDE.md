@@ -19,11 +19,11 @@ http {
 }
 
 services {
-    select "proto.kerberos.*" {
+    select "proto.users.*" {
         host = "api.jexia.com"
     }
 
-    select "proto.andvari.*" {
+    select "proto.projects.*" {
         host = "api.jexia.com"
     }
 }
