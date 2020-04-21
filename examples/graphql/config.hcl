@@ -8,11 +8,7 @@ graphql {
 }
 
 services {
-    select "proto.kerberos.*" {
-        host = "api.jexia.com"
-    }
-
-    select "proto.andvari.*" {
-        host = "api.jexia.com"
+    select "proto.*" {
+        host = "https://jsonplaceholder.typicode.com/"
     }
 }

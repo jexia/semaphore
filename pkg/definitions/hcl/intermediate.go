@@ -158,8 +158,8 @@ type Service struct {
 
 // ServiceSelector targets any service matchine the given service selector
 type ServiceSelector struct {
-	Selector string `hcl:"selector,label"`
-	Host     string `hcl:"host,optional"`
+	Pattern string `hcl:"pattern,label"`
+	Host    string `hcl:"host,optional"`
 }
 
 // Services specification

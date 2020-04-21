@@ -24,13 +24,20 @@ func NewOptions(ctx instance.Context) Options {
 
 // Options represents all the available options
 type Options struct {
-	Ctx       instance.Context
-	Codec     codec.Constructors
-	Callers   transport.Callers
-	Listeners transport.Listeners
-	Flows     []definitions.FlowsResolver
-	Endpoints []definitions.EndpointsResolver
-	Services  []definitions.ServicesResolver
-	Schemas   []definitions.SchemaResolver
-	Functions functions.Custom
+	Ctx              instance.Context
+	Codec            codec.Constructors
+	Callers          transport.Callers
+	Listeners        transport.Listeners
+	Flows            []definitions.FlowsResolver
+	Endpoints        []definitions.EndpointsResolver
+	Services         []definitions.ServicesResolver
+	Schemas          []definitions.SchemaResolver
+	AfterConstructor AfterConstructor
+	Functions        functions.Custom
 }
+
+// AfterConstructor is called after the specifications is constructored
+type AfterConstructor func(instance.Context, *Collection) error
+
+// AfterConstructorWrapper wraps the after constructed function to allow middleware to be chained
+type AfterConstructorWrapper func(AfterConstructor) AfterConstructor

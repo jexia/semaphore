@@ -16,22 +16,6 @@ import (
 	"github.com/jexia/maestro/pkg/specs"
 )
 
-// // AfterOptions manipulates a set of options once the options has been initialised
-// func AfterOptions(path string) constructor.AfterOptions {
-// 	return func(ctx instance.Context, options *constructor.Options) error {
-// 		definitions, err := ResolvePath(ctx, path)
-// 		if err != nil {
-// 			return err
-// 		}
-
-// 		for _, definition := range definitions {
-
-// 		}
-
-// 		return nil
-// 	}
-// }
-
 // ServicesResolver constructs a schema resolver for the given path.
 // The HCL schema resolver relies on other schema registries.
 // Those need to be resolved before the HCL schemas are resolved.

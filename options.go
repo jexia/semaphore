@@ -27,19 +27,17 @@ func NewOptions(ctx instance.Context, options ...constructor.Option) constructor
 	return result
 }
 
-// // BeforeOptions the passed function gets called once before any options get applied
-// func BeforeOptions(fn BeforeOptionsFn) constructor.Option {
-// 	return func(options *constructor.Options) {
-// 		options.BeforeOptions = fn
-// 	}
-// }
+// AfterConstructor the passed function gets called once all options have been applied
+func AfterConstructor(wrapper constructor.AfterConstructorWrapper) constructor.Option {
+	return func(options *constructor.Options) {
+		if options.AfterConstructor == nil {
+			options.AfterConstructor = wrapper(func(instance.Context, *constructor.Collection) error { return nil })
+			return
+		}
 
-// // AfterOptions the passed function gets called once all options have been applied
-// func AfterOptions(fn AfterOptionsFn) constructor.Option {
-// 	return func(options *constructor.Options) {
-// 		options.AfterOptions = fn
-// 	}
-// }
+		options.AfterConstructor = wrapper(options.AfterConstructor)
+	}
+}
 
 // WithFlows appends the given flows resolver to the available flow resolvers
 func WithFlows(definition definitions.FlowsResolver) constructor.Option {

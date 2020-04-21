@@ -8,6 +8,7 @@ import (
 	"github.com/jexia/maestro/pkg/codec/proto"
 	"github.com/jexia/maestro/pkg/definitions/hcl"
 	"github.com/jexia/maestro/pkg/definitions/protoc"
+	"github.com/jexia/maestro/pkg/middleware"
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jexia/maestro/pkg/transport/graphql"
 	"github.com/jexia/maestro/pkg/transport/grpc"
@@ -30,6 +31,7 @@ func ConstructArguments(params *Maestro) ([]constructor.Option, error) {
 		arguments = append(arguments, maestro.WithFlows(hcl.FlowsResolver(path)))
 		arguments = append(arguments, maestro.WithServices(hcl.ServicesResolver(path)))
 		arguments = append(arguments, maestro.WithEndpoints(hcl.EndpointsResolver(path)))
+		arguments = append(arguments, maestro.AfterConstructor(middleware.ServiceSelector(path)))
 
 		options, err := hcl.GetOptions(path)
 		if err != nil {

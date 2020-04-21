@@ -47,6 +47,13 @@ func Specs(ctx instance.Context, mem functions.Collection, options Options) (*Co
 		return nil, err
 	}
 
+	if options.AfterConstructor != nil {
+		err = options.AfterConstructor(ctx, collection)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return collection, nil
 }
 
