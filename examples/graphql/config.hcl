@@ -1,5 +1,5 @@
 log_level = "$LOG_LEVEL"
-protobuffers = ["../../annotations", "./proto/*.proto"]
+protobuffers = ["./annotations", "./proto/*.proto"]
 
 include = ["flow.hcl"]
 
