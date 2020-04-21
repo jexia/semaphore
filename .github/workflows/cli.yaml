@@ -68,17 +68,17 @@ jobs:
             artifact_name: maestro
             goos: linux
             arch: amd64
-            asset_name: maestro-linux-amd64
+            asset_name: maestro-${{ github.ref }}-linux-amd64
           - os: windows-latest
             artifact_name: maestro.exe
             goos: windows
             arch: amd64
-            asset_name: maestro-windows-amd64
-          - os: macos-latest
+            asset_name: maestro-${{ github.ref }}-windows-amd64
+          - os: darwin-latest
             artifact_name: maestro
             goos: darwin
             arch: amd64
-            asset_name: maestro-macos-amd64
+            asset_name: maestro-${{ github.ref }}-darwin-amd64
 
     steps:
     - name: Set up Go 1.13
