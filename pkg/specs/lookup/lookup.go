@@ -194,3 +194,12 @@ func PropertyLookup(param *specs.Property) PathLookup {
 		return nil
 	}
 }
+
+// ResolveSelfReference appends the given resource if the path is a self reference
+func ResolveSelfReference(path string, resource string) string {
+	if string(path[0]) != SelfRef {
+		return path
+	}
+
+	return template.JoinPath(resource, path[1:])
+}

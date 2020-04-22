@@ -107,7 +107,7 @@ func ResolvePropertyReferences(property *specs.Property, dependencies map[string
 
 	resource, _ := lookup.ParseResource(property.Reference.Resource)
 	if resource != template.StackResource && resource != template.InputResource {
-		dependencies[property.Reference.Resource] = nil
+		dependencies[template.SplitPath(property.Reference.Resource)[0]] = nil
 	}
 
 	clone := CloneProperty(property.Reference.Property, property.Reference, property.Name, property.Path)

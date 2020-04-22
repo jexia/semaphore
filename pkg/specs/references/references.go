@@ -196,8 +196,7 @@ func DefineProperty(ctx instance.Context, node *specs.Node, property *specs.Prop
 		}
 	}
 
-	// Self ref issue
-	// lookup.ResolveSelfReference(node, property.Reference)
+	property.Reference.Resource = lookup.ResolveSelfReference(property.Reference.Resource, breakpoint)
 
 	ctx.Logger(logger.Core).WithFields(logrus.Fields{
 		"breakpoint": breakpoint,
@@ -211,8 +210,9 @@ func DefineProperty(ctx instance.Context, node *specs.Node, property *specs.Prop
 	}
 
 	ctx.Logger(logger.Core).WithFields(logrus.Fields{
-		"name": reference.Name,
-		"path": reference.Path,
+		"reference": property.Reference,
+		"name":      reference.Name,
+		"path":      reference.Path,
 	}).Debug("References lookup result")
 
 	property.Type = reference.Type

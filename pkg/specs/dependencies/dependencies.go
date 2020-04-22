@@ -42,6 +42,12 @@ func ResolveNode(manager specs.FlowResourceManager, node *specs.Node, unresolved
 
 lookup:
 	for edge := range node.DependsOn {
+		// Remove any self references
+		if edge == node.Name {
+			delete(unresolved, edge)
+			continue
+		}
+
 		_, unresolv := unresolved[edge]
 		if unresolv {
 			return trace.New(trace.WithMessage("Circular dependency detected: %s.%s <-> %s.%s", manager.GetName(), node.Name, manager.GetName(), edge))
