@@ -2,9 +2,11 @@ package hcl
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/gohcl"
@@ -131,6 +133,8 @@ type Resolve struct {
 // ResolvePath resolves the given path and returns the available manifests.
 // All defined includes are followed and their manifests are included
 func ResolvePath(ctx instance.Context, path string) ([]Manifest, error) {
+	ctx.Logger(logger.Core).WithField("path", path).Info("Resolving HCL path")
+
 	files, err := utils.ResolvePath(path)
 	if err != nil {
 		return nil, err
@@ -149,12 +153,18 @@ func ResolvePath(ctx instance.Context, path string) ([]Manifest, error) {
 			return nil, err
 		}
 
+		if definition.Protobuffers != nil {
+			for index, proto := range definition.Protobuffers {
+				definition.Protobuffers[index] = filepath.Join(filepath.Dir(file.Path), proto)
+			}
+		}
+
 		definitions = append(definitions, definition)
 
 		for _, include := range definition.Include {
-			manifests, err := ResolvePath(ctx, include)
+			manifests, err := ResolvePath(ctx, filepath.Join(filepath.Dir(file.Path), include))
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("unable to read include %s: %s", include, err)
 			}
 
 			definitions = append(definitions, manifests...)

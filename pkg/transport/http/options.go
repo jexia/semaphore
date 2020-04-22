@@ -1,6 +1,7 @@
 package http
 
 import (
+	"net/http"
 	"strconv"
 	"time"
 
@@ -76,13 +77,20 @@ type EndpointOptions struct {
 // ParseEndpointOptions parses the given specs options into HTTP options
 func ParseEndpointOptions(options specs.Options) (*EndpointOptions, error) {
 	result := &EndpointOptions{
+		Method:       http.MethodGet,
+		Endpoint:     "/",
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 5 * time.Second,
 		Codec:        "json",
 	}
 
-	result.Method = options[MethodOption]
-	result.Endpoint = options[EndpointOption]
+	if options[MethodOption] != "" {
+		result.Method = options[MethodOption]
+	}
+
+	if options[EndpointOption] != "" {
+		result.Endpoint = options[EndpointOption]
+	}
 
 	codec, has := options[CodecOption]
 	if has {

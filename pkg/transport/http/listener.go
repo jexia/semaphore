@@ -1,6 +1,7 @@
 package http
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httputil"
@@ -81,7 +82,7 @@ func (listener *Listener) Handle(endpoints []*transport.Endpoint, codecs map[str
 	for _, endpoint := range endpoints {
 		options, err := ParseEndpointOptions(endpoint.Options)
 		if err != nil {
-			return err
+			return fmt.Errorf("endpoint %s: %s", endpoint.Flow, err)
 		}
 
 		handle, err := NewHandle(logger, endpoint, options, codecs)

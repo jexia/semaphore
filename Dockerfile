@@ -9,4 +9,8 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o /usr/local/bin/maestro ./cmd/maestro
 
 FROM alpine
 COPY --from=build /usr/local/bin/maestro /bin/maestro
-ENTRYPOINT ["/bin/maestro"]
+
+RUN mkdir -p /etc/maestro/
+COPY ./resources/default/ /etc/maestro/
+
+ENTRYPOINT ["/bin/maestro", "run"]

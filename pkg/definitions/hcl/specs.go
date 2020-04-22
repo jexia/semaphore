@@ -587,9 +587,10 @@ func ParseIntermediateProperty(ctx instance.Context, path string, property *hcl.
 
 	value, _ := property.Expr.Value(nil)
 	result := &specs.Property{
-		Name: property.Name,
-		Path: template.JoinPath(path, property.Name),
-		Expr: property.Expr,
+		Name:  property.Name,
+		Path:  template.JoinPath(path, property.Name),
+		Expr:  property.Expr,
+		Label: labels.Optional,
 	}
 
 	if value.Type() != cty.String || !template.Is(value.AsString()) {
