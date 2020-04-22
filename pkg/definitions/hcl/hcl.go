@@ -9,10 +9,10 @@ import (
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/gohcl"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
-	"github.com/jexia/maestro/internal/logger"
 	"github.com/jexia/maestro/internal/utils"
 	"github.com/jexia/maestro/pkg/definitions"
 	"github.com/jexia/maestro/pkg/instance"
+	"github.com/jexia/maestro/pkg/logger"
 	"github.com/jexia/maestro/pkg/specs"
 )
 

@@ -4,9 +4,9 @@ import (
 	"path/filepath"
 
 	"github.com/jexia/maestro/internal/constructor"
-	"github.com/jexia/maestro/internal/logger"
 	"github.com/jexia/maestro/pkg/definitions/hcl"
 	"github.com/jexia/maestro/pkg/instance"
+	"github.com/jexia/maestro/pkg/logger"
 	"github.com/jexia/maestro/pkg/specs/template"
 	"github.com/sirupsen/logrus"
 )

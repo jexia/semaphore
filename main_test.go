@@ -6,13 +6,13 @@ import (
 	"time"
 
 	"github.com/jexia/maestro/internal/constructor"
-	"github.com/jexia/maestro/internal/logger"
 	"github.com/jexia/maestro/internal/utils"
 	"github.com/jexia/maestro/pkg/codec/json"
 	"github.com/jexia/maestro/pkg/definitions/hcl"
 	"github.com/jexia/maestro/pkg/definitions/mock"
 	"github.com/jexia/maestro/pkg/functions"
 	"github.com/jexia/maestro/pkg/instance"
+	"github.com/jexia/maestro/pkg/logger"
 	"github.com/jexia/maestro/pkg/transport/http"
 )
 

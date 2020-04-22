@@ -3,11 +3,11 @@ package config
 import (
 	"github.com/jexia/maestro"
 	"github.com/jexia/maestro/internal/constructor"
-	"github.com/jexia/maestro/internal/logger"
 	"github.com/jexia/maestro/pkg/codec/json"
 	"github.com/jexia/maestro/pkg/codec/proto"
 	"github.com/jexia/maestro/pkg/definitions/hcl"
 	"github.com/jexia/maestro/pkg/definitions/protoc"
+	"github.com/jexia/maestro/pkg/logger"
 	"github.com/jexia/maestro/pkg/middleware"
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jexia/maestro/pkg/transport/graphql"

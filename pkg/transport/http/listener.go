@@ -7,9 +7,9 @@ import (
 	"net/url"
 	"sync"
 
-	"github.com/jexia/maestro/internal/logger"
 	"github.com/jexia/maestro/pkg/codec"
 	"github.com/jexia/maestro/pkg/instance"
+	"github.com/jexia/maestro/pkg/logger"
 	"github.com/jexia/maestro/pkg/metadata"
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jexia/maestro/pkg/specs/template"
