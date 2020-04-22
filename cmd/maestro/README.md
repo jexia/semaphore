@@ -9,6 +9,11 @@ $ maestro run --config config.yaml
 
 ## Installing
 
+### Release (Preferred)
+
+You are able to download a prebuild artifact from the [latest release](https://github.com/jexia/maestro/releases).
+Feel free to open a new PR if you require a specific build for your CPU architecture.
+
 ### Docker images
 
 Official docker images are available on Github. These images contain the Maestro CLI.
@@ -17,7 +22,7 @@ Official docker images are available on Github. These images contain the Maestro
 docker pull jexiacom/maestro-cli
 ```
 
-### Using a Package Manager (Preferred)
+### Using a Package Manager
 
 > 🚧 Currently it is only possible to download + build the CLI from source
 
