@@ -14,6 +14,10 @@ graphql {
     address = "$GRAPHQL_ADDRESS"
 }
 
+grpc {
+    address = "$GRPC_ADDRESS"
+}
+
 http {
     address = "$HTTP_ADDRESS"
 }
