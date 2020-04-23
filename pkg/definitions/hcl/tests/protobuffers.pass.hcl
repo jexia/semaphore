@@ -1,0 +1,1 @@
+protobuffers = ["sample.proto", "*.proto"]

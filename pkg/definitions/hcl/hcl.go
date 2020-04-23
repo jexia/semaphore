@@ -16,6 +16,7 @@ import (
 	"github.com/jexia/maestro/pkg/instance"
 	"github.com/jexia/maestro/pkg/logger"
 	"github.com/jexia/maestro/pkg/specs"
+	"github.com/jexia/maestro/pkg/specs/trace"
 )
 
 // ServicesResolver constructs a schema resolver for the given path.
@@ -135,12 +136,19 @@ type Resolve struct {
 func ResolvePath(ctx instance.Context, path string) ([]Manifest, error) {
 	ctx.Logger(logger.Core).WithField("path", path).Info("Resolving HCL path")
 
+	definitions := make([]Manifest, 0)
+	if path == "" {
+		return definitions, nil
+	}
+
 	files, err := utils.ResolvePath(path)
 	if err != nil {
 		return nil, err
 	}
 
-	definitions := make([]Manifest, 0)
+	if len(files) == 0 {
+		return nil, trace.New(trace.WithMessage("unable to resolve path, no files found '%s'", path))
+	}
 
 	for _, file := range files {
 		reader, err := os.Open(file.Path)

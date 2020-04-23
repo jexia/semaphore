@@ -12,6 +12,10 @@ service "com.maestro" "users" {
     codec = "proto"
     host = "https://users.com"
 
+    options {
+        sample = "value"
+    }
+
     method "Add" {
         request = "proto.Request"
         response = "proto.Response"
