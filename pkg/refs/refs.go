@@ -1,6 +1,7 @@
 package refs
 
 import (
+	"log"
 	"sync"
 
 	"github.com/jexia/maestro/pkg/specs"
@@ -170,6 +171,7 @@ func (prefix *PrefixStore) Load(resource string, path string) *Reference {
 
 // StoreReference stores the given resource, path and value inside the references store
 func (prefix *PrefixStore) StoreReference(resource string, reference *Reference) {
+	reference.Path = template.JoinPath(prefix.path, reference.Path)
 	prefix.store.StoreReference(prefix.resource, reference)
 }
 
@@ -230,6 +232,7 @@ func PropertyReferences(property *specs.Property) References {
 
 	if property.Nested != nil {
 		for _, nested := range property.Nested {
+			log.Println(nested)
 			for key, ref := range PropertyReferences(nested) {
 				result[key] = ref
 			}
