@@ -23,13 +23,15 @@ func (codec *MockCodec) Unmarshal(io.Reader, refs.Store) error {
 }
 
 type caller struct {
-	Counter int
-	mutex   sync.Mutex
-	Err     error
+	name       string
+	Counter    int
+	mutex      sync.Mutex
+	Err        error
+	references []*specs.Property
 }
 
 func (caller *caller) References() []*specs.Property {
-	return nil
+	return caller.references
 }
 
 func (caller *caller) Do(context.Context, refs.Store) error {
@@ -64,6 +66,29 @@ func NewMockFlowManager(caller Call, revert Call) ([]*Node, *Manager) {
 		References: 0,
 		Nodes:      len(nodes),
 		Ends:       1,
+	}
+}
+
+func TestNewManager(t *testing.T) {
+	tests := map[string][]*Node{
+		"default": {
+			{
+				Name: "first",
+			},
+			{
+				Name: "second",
+			},
+		},
+	}
+
+	for name, nodes := range tests {
+		t.Run(name, func(t *testing.T) {
+			ctx := instance.NewContext()
+			manager := NewManager(ctx, name, nodes)
+			if manager == nil {
+				t.Fatal("unexpected result, expected a manager to be returned")
+			}
+		})
 	}
 }
 

@@ -53,6 +53,10 @@ func (manager *Manager) Property() *specs.Property {
 // Marshal marshals the given reference store into a JSON message.
 // This method is called during runtime to encode a new message with the values stored inside the given reference store
 func (manager *Manager) Marshal(refs refs.Store) (io.Reader, error) {
+	if manager.specs == nil {
+		return nil, nil
+	}
+
 	object := NewObject(manager.resource, manager.specs.Nested, refs)
 	bb, err := gojay.MarshalJSONObject(object)
 	if err != nil {
@@ -65,6 +69,10 @@ func (manager *Manager) Marshal(refs refs.Store) (io.Reader, error) {
 // Unmarshal unmarshals the given JSON io reader into the given reference store.
 // This method is called during runtime to decode a new message and store it inside the given reference store
 func (manager *Manager) Unmarshal(reader io.Reader, refs refs.Store) error {
+	if manager.specs == nil {
+		return nil
+	}
+
 	bb, err := ioutil.ReadAll(reader)
 	if err != nil {
 		return err

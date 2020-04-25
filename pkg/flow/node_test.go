@@ -2,7 +2,9 @@ package flow
 
 import (
 	"context"
+	"errors"
 	"testing"
+	"time"
 
 	"github.com/jexia/maestro/pkg/instance"
 	"github.com/jexia/maestro/pkg/logger"
@@ -68,6 +70,163 @@ func BenchmarkBranchedNodeCalling(b *testing.B) {
 	}
 }
 
+func TestConstructingNode(t *testing.T) {
+	type test struct {
+		Node     *specs.Node
+		Call     Call
+		Rollback Call
+		Expected int
+	}
+
+	tests := map[string]*test{
+		"node call": {
+			Expected: 2,
+			Node: &specs.Node{
+				Call: &specs.Call{
+					Request: &specs.ParameterMap{
+						Property: &specs.Property{
+							Nested: map[string]*specs.Property{
+								"first": {
+									Reference: &specs.PropertyReference{
+										Resource: "input",
+										Path:     "first",
+									},
+								},
+								"second": {
+									Reference: &specs.PropertyReference{
+										Resource: "input",
+										Path:     "second",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		"combination": {
+			Expected: 1,
+			Node: &specs.Node{
+				Call: &specs.Call{
+					Request: &specs.ParameterMap{
+						Property: &specs.Property{
+							Nested: map[string]*specs.Property{
+								"first": {
+									Reference: &specs.PropertyReference{
+										Resource: "input",
+										Path:     "first",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			Call: &caller{
+				references: []*specs.Property{
+					{
+						Reference: &specs.PropertyReference{
+							Resource: "input",
+							Path:     "first",
+						},
+					},
+				},
+			},
+			Rollback: &caller{
+				references: []*specs.Property{
+					{
+						Reference: &specs.PropertyReference{
+							Resource: "input",
+							Path:     "first",
+						},
+					},
+				},
+			},
+		},
+		"call references": {
+			Expected: 2,
+			Node:     &specs.Node{},
+			Call: &caller{
+				references: []*specs.Property{
+					{
+						Reference: &specs.PropertyReference{
+							Resource: "input",
+							Path:     "first",
+						},
+					},
+					{
+						Reference: &specs.PropertyReference{
+							Resource: "input",
+							Path:     "second",
+						},
+					},
+				},
+			},
+		},
+		"rollback references": {
+			Expected: 2,
+			Node:     &specs.Node{},
+			Rollback: &caller{
+				references: []*specs.Property{
+					{
+						Reference: &specs.PropertyReference{
+							Resource: "input",
+							Path:     "first",
+						},
+					},
+					{
+						Reference: &specs.PropertyReference{
+							Resource: "input",
+							Path:     "second",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			ctx := instance.NewContext()
+			result := NewNode(ctx, test.Node, test.Call, test.Rollback)
+
+			if len(result.References) != test.Expected {
+				t.Fatalf("unexpected amount of references %d, expected %d", len(result.References), test.Expected)
+			}
+		})
+	}
+}
+
+func TestConstructingNodeReferences(t *testing.T) {
+	ctx := instance.NewContext()
+	call := &caller{}
+	rollback := &caller{}
+
+	node := &specs.Node{
+		Name: "mock",
+	}
+
+	result := NewNode(ctx, node, call, rollback)
+	if result == nil {
+		t.Fatal("nil node returned")
+	}
+}
+
+func TestNodeHas(t *testing.T) {
+	nodes := make(Nodes, 2)
+
+	nodes[0] = &Node{Name: "first"}
+	nodes[1] = &Node{Name: "second"}
+
+	if !nodes.Has("first") {
+		t.Fatal("unexpected result, expected 'first' to be available")
+	}
+
+	if nodes.Has("unexpected") {
+		t.Fatal("unexpected result, expected 'unexpected' to be unavailable")
+	}
+}
+
 func TestNodeCalling(t *testing.T) {
 	caller := &caller{}
 
@@ -95,6 +254,51 @@ func TestNodeCalling(t *testing.T) {
 
 	if caller.Counter != len(nodes) {
 		t.Errorf("unexpected counter total %d, expected %d", caller.Counter, len(nodes))
+	}
+}
+
+func TestSlowNodeAbortingOnErr(t *testing.T) {
+	slow := &caller{name: "slow"}
+	failed := &caller{name: "failed", Err: errors.New("unexpected")}
+	caller := &caller{}
+
+	nodes := []*Node{
+		NewMockNode("first", caller, nil),
+		NewMockNode("second", slow, nil),
+		NewMockNode("third", failed, nil),
+		NewMockNode("fourth", caller, nil),
+	}
+
+	nodes[0].Next = []*Node{nodes[1], nodes[2]}
+
+	nodes[1].Previous = []*Node{nodes[0]}
+	nodes[1].Next = []*Node{nodes[3]}
+
+	nodes[2].Previous = []*Node{nodes[0]}
+	nodes[2].Next = []*Node{nodes[3]}
+
+	nodes[3].Previous = []*Node{nodes[1], nodes[2]}
+
+	tracker := NewTracker(len(nodes))
+	processes := NewProcesses(1)
+	refs := refs.NewReferenceStore(0)
+
+	slow.mutex.Lock()
+	failed.mutex.Lock()
+
+	go func() {
+		failed.mutex.Unlock()
+		time.Sleep(100 * time.Millisecond)
+		slow.mutex.Unlock()
+	}()
+
+	nodes[0].Do(context.Background(), tracker, processes, refs)
+
+	processes.Wait()
+
+	counter := (caller.Counter + slow.Counter + failed.Counter)
+	if counter != 3 {
+		t.Fatalf("unexpected counter total %d, expected %d", counter, 3)
 	}
 }
 

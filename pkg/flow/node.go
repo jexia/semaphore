@@ -101,7 +101,7 @@ func (node *Node) Do(ctx context.Context, tracker *Tracker, processes *Processes
 	tracker.Mark(node)
 
 	if processes.Err() != nil {
-		node.logger.Error("Stopping flow execution a error has been thrown:", node.Name)
+		node.logger.Error("Stopping execution a error has been thrown:", node.Name)
 		return
 	}
 

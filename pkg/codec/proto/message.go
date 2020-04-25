@@ -66,6 +66,10 @@ func (manager *Manager) Property() *specs.Property {
 // Marshal marshals the given reference store into a proto message.
 // This method is called during runtime to encode a new message with the values stored inside the given reference store.
 func (manager *Manager) Marshal(refs refs.Store) (io.Reader, error) {
+	if manager.specs == nil {
+		return nil, nil
+	}
+
 	result := dynamic.NewMessage(manager.desc)
 	err := manager.Encode(result, manager.desc, manager.specs.Nested, refs)
 	if err != nil {
@@ -163,6 +167,10 @@ func (manager *Manager) Encode(proto *dynamic.Message, desc *desc.MessageDescrip
 // Unmarshal unmarshals the given io reader into the given reference store.
 // This method is called during runtime to decode a new message and store it inside the given reference store
 func (manager *Manager) Unmarshal(reader io.Reader, refs refs.Store) error {
+	if manager.specs == nil {
+		return nil
+	}
+
 	bb, err := ioutil.ReadAll(reader)
 	if err != nil {
 		return err
