@@ -61,47 +61,72 @@ func (nodes Nodes) Has(name string) bool {
 	return false
 }
 
+// BeforeNode is called before a node is executed
+type BeforeNode func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store refs.Store) error
+
+// BeforeNodeHandler wraps the before node function to allow middleware to be chained
+type BeforeNodeHandler func(BeforeNode) BeforeNode
+
+// AfterNode is called after a node is executed
+type AfterNode func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store refs.Store) error
+
+// AfterNodeHandler wraps the after node function to allow middleware to be chained
+type AfterNodeHandler func(AfterNode) AfterNode
+
 // Node represents a collection of callers and rollbacks which could be executed parallel.
 type Node struct {
-	ctx        instance.Context
-	logger     *logrus.Logger
-	Name       string
-	Previous   Nodes
-	Call       Call
-	Rollback   Call
-	DependsOn  map[string]*specs.Node
-	References map[string]*specs.PropertyReference
-	Next       Nodes
+	BeforeDo     BeforeNode
+	BeforeRevert BeforeNode
+	ctx          instance.Context
+	logger       *logrus.Logger
+	Name         string
+	Previous     Nodes
+	Call         Call
+	Rollback     Call
+	DependsOn    map[string]*specs.Node
+	References   map[string]*specs.PropertyReference
+	Next         Nodes
+	AfterDo      AfterNode
+	AfterRevert  AfterNode
 }
 
 // Do executes the given node an calls the next nodes.
 // If one of the nodes fails is the error marked and are the processes aborted.
 func (node *Node) Do(ctx context.Context, tracker *Tracker, processes *Processes, refs refs.Store) {
 	defer processes.Done()
-	node.logger.Debug("Executing node call:", node.Name)
+	node.logger.Debug("Executing node call: ", node.Name)
 
 	tracker.Lock(node)
 	defer tracker.Unlock(node)
 
 	if !tracker.Reached(node, len(node.Previous)) {
-		node.logger.Debug("Has not met dependencies yet:", node.Name)
+		node.logger.Debug("Has not met dependencies yet: ", node.Name)
 		return
 	}
 
-	if node.Call != nil {
-		err := node.Call.Do(ctx, refs)
+	if node.BeforeDo != nil {
+		err := node.BeforeDo(ctx, node, tracker, processes, refs)
 		if err != nil {
-			node.logger.Error("Call failed:", node.Name)
+			node.logger.Error("Node before middleware failed: ", err)
 			processes.Fatal(err)
 			return
 		}
 	}
 
-	node.logger.Debug("Marking node as completed:", node.Name)
+	if node.Call != nil {
+		err := node.Call.Do(ctx, refs)
+		if err != nil {
+			node.logger.Error("Call failed: ", node.Name)
+			processes.Fatal(err)
+			return
+		}
+	}
+
+	node.logger.Debug("Marking node as completed: ", node.Name)
 	tracker.Mark(node)
 
 	if processes.Err() != nil {
-		node.logger.Error("Stopping execution a error has been thrown:", node.Name)
+		node.logger.Error("Stopping execution a error has been thrown: ", node.Name)
 		return
 	}
 
@@ -110,20 +135,38 @@ func (node *Node) Do(ctx context.Context, tracker *Tracker, processes *Processes
 		tracker.Mark(next)
 		go next.Do(ctx, tracker, processes, refs)
 	}
+
+	if node.AfterDo != nil {
+		err := node.AfterDo(ctx, node, tracker, processes, refs)
+		if err != nil {
+			node.logger.Error("Node after middleware failed: ", err)
+			processes.Fatal(err)
+			return
+		}
+	}
 }
 
 // Revert executes the given node rollback an calls the previous nodes.
 // If one of the nodes fails is the error marked but execution is not aborted.
 func (node *Node) Revert(ctx context.Context, tracker *Tracker, processes *Processes, refs refs.Store) {
 	defer processes.Done()
-	node.logger.Debug("Executing node revert", node.Name)
+	node.logger.Debug("Executing node revert ", node.Name)
 
 	tracker.Lock(node)
 	defer tracker.Unlock(node)
 
 	if !tracker.Reached(node, len(node.Next)) {
-		node.logger.Debug("Has not met dependencies yet:", node.Name)
+		node.logger.Debug("Has not met dependencies yet: ", node.Name)
 		return
+	}
+
+	if node.BeforeRevert != nil {
+		err := node.BeforeRevert(ctx, node, tracker, processes, refs)
+		if err != nil {
+			node.logger.Error("Node before middleware failed: ", err)
+			processes.Fatal(err)
+			return
+		}
 	}
 
 	defer func() {
@@ -142,8 +185,17 @@ func (node *Node) Revert(ctx context.Context, tracker *Tracker, processes *Proce
 		}
 	}
 
-	node.logger.Debug("Marking node as completed:", node.Name)
+	node.logger.Debug("Marking node as completed: ", node.Name)
 	tracker.Mark(node)
+
+	if node.AfterRevert != nil {
+		err := node.AfterRevert(ctx, node, tracker, processes, refs)
+		if err != nil {
+			node.logger.Error("Node after middleware failed: ", err)
+			processes.Fatal(err)
+			return
+		}
+	}
 }
 
 // Walk iterates over all nodes and returns the lose ends nodes

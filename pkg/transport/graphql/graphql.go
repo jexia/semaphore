@@ -98,7 +98,7 @@ func (listener *Listener) Handle(endpoints []*transport.Endpoint, constructors m
 
 				store.StoreValues(template.InputResource, "", p.Args)
 
-				err = endpoint.Flow.Call(ctx, store)
+				err = endpoint.Flow.Do(ctx, store)
 				if err != nil {
 					return nil, err
 				}

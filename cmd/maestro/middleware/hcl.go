@@ -12,7 +12,7 @@ import (
 )
 
 // ServiceSelector parses the HCL definition on the given path and manipulates the collected services after constructed
-func ServiceSelector(path string) constructor.AfterConstructorWrapper {
+func ServiceSelector(path string) constructor.AfterConstructorHandler {
 	return func(next constructor.AfterConstructor) constructor.AfterConstructor {
 		return func(ctx instance.Context, collection *constructor.Collection) error {
 			definitions, err := hcl.ResolvePath(ctx, path)

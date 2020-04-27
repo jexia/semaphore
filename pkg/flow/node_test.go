@@ -366,3 +366,175 @@ func TestNodeBranchesCalling(t *testing.T) {
 		t.Errorf("unexpected counter total %d, expected %d", caller.Counter, len(nodes))
 	}
 }
+
+func TestBeforeDoNode(t *testing.T) {
+	counter := 0
+	call := &caller{}
+	node := NewMockNode("mock", call, nil)
+
+	node.BeforeDo = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store refs.Store) error {
+		counter++
+		return nil
+	}
+
+	processes := NewProcesses(1)
+	node.Do(context.Background(), NewTracker(1), processes, nil)
+	if processes.Err() != nil {
+		t.Error(processes.Err())
+	}
+
+	if counter != 1 {
+		t.Fatalf("unexpected counter %d, expected after rollback function to be called", counter)
+	}
+}
+
+func TestBeforeDoNodeErr(t *testing.T) {
+	expected := errors.New("unexpected err")
+	counter := 0
+	call := &caller{}
+	node := NewMockNode("mock", call, nil)
+
+	node.BeforeDo = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store refs.Store) error {
+		counter++
+		return expected
+	}
+
+	processes := NewProcesses(1)
+	node.Do(context.Background(), NewTracker(1), processes, nil)
+	if processes.Err() != expected {
+		t.Errorf("unexpected err '%s', expected '%s' to be thrown", processes.Err(), expected)
+	}
+
+	if counter != 1 {
+		t.Fatalf("unexpected counter %d, expected after rollback function to be called", counter)
+	}
+}
+
+func TestAfterDoNode(t *testing.T) {
+	counter := 0
+	call := &caller{}
+	node := NewMockNode("mock", call, nil)
+
+	node.AfterDo = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store refs.Store) error {
+		counter++
+		return nil
+	}
+
+	processes := NewProcesses(1)
+	node.Do(context.Background(), NewTracker(1), processes, nil)
+	if processes.Err() != nil {
+		t.Error(processes.Err())
+	}
+
+	if counter != 1 {
+		t.Fatalf("unexpected counter %d, expected after rollback function to be called", counter)
+	}
+}
+
+func TestAfterDoNodeErr(t *testing.T) {
+	expected := errors.New("unexpected err")
+	counter := 0
+	call := &caller{}
+	node := NewMockNode("mock", call, nil)
+
+	node.AfterDo = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store refs.Store) error {
+		counter++
+		return expected
+	}
+
+	processes := NewProcesses(1)
+	node.Do(context.Background(), NewTracker(1), processes, nil)
+	if processes.Err() != expected {
+		t.Errorf("unexpected err '%s', expected '%s' to be thrown", processes.Err(), expected)
+	}
+
+	if counter != 1 {
+		t.Fatalf("unexpected counter %d, expected after rollback function to be called", counter)
+	}
+}
+
+func TestBeforeRevertNode(t *testing.T) {
+	counter := 0
+	call := &caller{}
+	node := NewMockNode("mock", call, nil)
+
+	node.BeforeRevert = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store refs.Store) error {
+		counter++
+		return nil
+	}
+
+	processes := NewProcesses(1)
+	node.Revert(context.Background(), NewTracker(1), processes, nil)
+	if processes.Err() != nil {
+		t.Error(processes.Err())
+	}
+
+	if counter != 1 {
+		t.Fatalf("unexpected counter %d, expected after revert function to be called", counter)
+	}
+}
+
+func TestBeforeRevertNodeErr(t *testing.T) {
+	expected := errors.New("unexpected err")
+	counter := 0
+	call := &caller{}
+	node := NewMockNode("mock", call, nil)
+
+	node.BeforeRevert = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store refs.Store) error {
+		counter++
+		return expected
+	}
+
+	processes := NewProcesses(1)
+	node.Revert(context.Background(), NewTracker(1), processes, nil)
+	if processes.Err() != expected {
+		t.Errorf("unexpected err '%s', expected '%s' to be thrown", processes.Err(), expected)
+	}
+
+	if counter != 1 {
+		t.Fatalf("unexpected counter %d, expected after revert function to be called", counter)
+	}
+}
+
+func TestAfterRevertNode(t *testing.T) {
+	counter := 0
+	call := &caller{}
+	node := NewMockNode("mock", call, nil)
+
+	node.AfterRevert = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store refs.Store) error {
+		counter++
+		return nil
+	}
+
+	processes := NewProcesses(1)
+	node.Revert(context.Background(), NewTracker(1), processes, nil)
+	if processes.Err() != nil {
+		t.Error(processes.Err())
+	}
+
+	if counter != 1 {
+		t.Fatalf("unexpected counter %d, expected after revert function to be called", counter)
+	}
+}
+
+func TestAfterRevertNodeErr(t *testing.T) {
+	expected := errors.New("unexpected err")
+	counter := 0
+	call := &caller{}
+	node := NewMockNode("mock", call, nil)
+
+	node.AfterRevert = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store refs.Store) error {
+		counter++
+		return expected
+	}
+
+	processes := NewProcesses(1)
+	node.Revert(context.Background(), NewTracker(1), processes, nil)
+	if processes.Err() != expected {
+		t.Errorf("unexpected err '%s', expected '%s' to be thrown", processes.Err(), expected)
+	}
+
+	if counter != 1 {
+		t.Fatalf("unexpected counter %d, expected after revert function to be called", counter)
+	}
+}

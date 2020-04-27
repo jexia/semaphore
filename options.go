@@ -28,7 +28,7 @@ func NewOptions(ctx instance.Context, options ...constructor.Option) constructor
 }
 
 // AfterConstructor the passed function gets called once all options have been applied
-func AfterConstructor(wrapper constructor.AfterConstructorWrapper) constructor.Option {
+func AfterConstructor(wrapper constructor.AfterConstructorHandler) constructor.Option {
 	return func(options *constructor.Options) {
 		if options.AfterConstructor == nil {
 			options.AfterConstructor = wrapper(func(instance.Context, *constructor.Collection) error { return nil })
