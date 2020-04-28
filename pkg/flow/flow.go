@@ -106,6 +106,7 @@ func (manager *Manager) Do(ctx context.Context, refs refs.Store) error {
 			"err":  processes.Err(),
 		}).Error("An error occurred, executing rollback")
 
+		manager.wg.Add(1)
 		go manager.Revert(tracker, refs)
 		return processes.Err()
 	}
@@ -130,7 +131,6 @@ func (manager *Manager) NewStore() refs.Store {
 // Revert reverts the executed nodes found inside the given tracker.
 // All nodes that have not been executed will be ignored.
 func (manager *Manager) Revert(executed *Tracker, refs refs.Store) {
-	manager.wg.Add(1)
 	defer manager.wg.Done()
 
 	ctx := context.Background()

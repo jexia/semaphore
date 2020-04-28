@@ -225,6 +225,7 @@ func TestBeforeRollbackFlow(t *testing.T) {
 		return nil
 	}
 
+	manager.wg.Add(1)
 	manager.Revert(NewTracker(len(nodes)), nil)
 
 	if counter != 1 {
@@ -243,6 +244,7 @@ func TestBeforeRollbackFlowErr(t *testing.T) {
 		return expected
 	}
 
+	manager.wg.Add(1)
 	manager.Revert(NewTracker(len(nodes)), nil)
 
 	if counter != 1 {
@@ -260,6 +262,7 @@ func TestAfterRollbackFlow(t *testing.T) {
 		return nil
 	}
 
+	manager.wg.Add(1)
 	manager.Revert(NewTracker(len(nodes)), nil)
 
 	if counter != 1 {
@@ -278,6 +281,7 @@ func TestAfterRollbackFlowErr(t *testing.T) {
 		return expected
 	}
 
+	manager.wg.Add(1)
 	manager.Revert(NewTracker(len(nodes)), nil)
 
 	if counter != 1 {
