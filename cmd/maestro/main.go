@@ -12,9 +12,10 @@ var cmd = &cobra.Command{
 	Use:     "maestro",
 	Version: "0.1.0",
 	Short:   "A straightforward micro-service conductor",
-	Long: `A straightforward micro-service conductor.
-Maestro is a tool to orchestrate requests inside your microservice architecture.
-Requests could be manipulated, passed and branched to different services to be returned as a single output.`,
+	Long: `Maestro is a feature-rich service orchestrator.
+Create advanced data flows and expose them through endpoints. Have full control over your exposed endpoints,
+expose single flows for multiple protocols such as gRPC and GraphQL. Maestro adapts to your environment.
+Create custom extensions or use the availability of custom functions and protocol implementations.`,
 }
 
 func init() {
