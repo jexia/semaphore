@@ -15,7 +15,7 @@ var params = config.New()
 // Command represents the maestro run command
 var Command = &cobra.Command{
 	Use:   "run",
-	Short: "Run the flow definitions with the passed definitions",
+	Short: "Run the passed definitions and expose the configured endpoints",
 	RunE:  run,
 }
 
