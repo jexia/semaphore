@@ -7,7 +7,12 @@ import (
 )
 
 // NewArgs construct new field config arguments for the graphql schema
-func NewArgs(prop *specs.Property) graphql.FieldConfigArgument {
+func NewArgs(props *specs.ParameterMap) graphql.FieldConfigArgument {
+	if props == nil {
+		return graphql.FieldConfigArgument{}
+	}
+
+	prop := props.Property
 	args := graphql.FieldConfigArgument{}
 	// TODO: support repeated types (#71)
 

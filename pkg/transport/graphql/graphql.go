@@ -85,7 +85,7 @@ func (listener *Listener) Handle(endpoints []*transport.Endpoint, constructors m
 	}
 
 	for _, endpoint := range endpoints {
-		req := NewArgs(endpoint.Request.Property)
+		req := NewArgs(endpoint.Request)
 		options, err := ParseEndpointOptions(endpoint)
 		if err != nil {
 			return err
@@ -119,10 +119,13 @@ func (listener *Listener) Handle(endpoints []*transport.Endpoint, constructors m
 
 		path := options.Path
 		field := &graphql.Field{
-			Args:        req,
-			Type:        res,
-			Resolve:     resolve,
-			Description: endpoint.Request.Property.Comment,
+			Args:    req,
+			Type:    res,
+			Resolve: resolve,
+		}
+
+		if endpoint.Request != nil {
+			field.Description = endpoint.Request.Property.Comment
 		}
 
 		err = SetField(path, fields[options.Base], field)
