@@ -10,7 +10,7 @@ import (
 
 var cmd = &cobra.Command{
 	Use:     "maestro",
-	Version: "0.1.0",
+	Version: "2.0.0",
 	Short:   "A straightforward micro-service conductor",
 	Long: `Maestro is a feature-rich service orchestrator.
 Create advanced data flows and expose them through endpoints. Have full control over your exposed endpoints,
