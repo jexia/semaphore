@@ -80,7 +80,12 @@ type Objects struct {
 
 // NewSchemaObject constructs a new object for the given property with the given name.
 // If a object with the same name already exists is it used instead.
-func NewSchemaObject(objects *Objects, name string, property *specs.Property) (*graphql.Object, error) {
+func NewSchemaObject(objects *Objects, name string, params *specs.ParameterMap) (*graphql.Object, error) {
+	if params == nil {
+		return &graphql.Object{}, nil
+	}
+
+	property := params.Property
 	_, has := objects.collection[name]
 	if has {
 		if objects.properties[name] != property {

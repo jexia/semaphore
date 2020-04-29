@@ -28,6 +28,9 @@ func (listener *Listener) ServerReflectionInfo(stream rpb.ServerReflection_Serve
 
 		switch req := in.MessageRequest.(type) {
 		case *rpb.ServerReflectionRequest_FileByFilename:
+			out.MessageResponse = &rpb.ServerReflectionResponse_FileDescriptorResponse{
+				FileDescriptorResponse: &rpb.FileDescriptorResponse{FileDescriptorProto: [][]byte{}},
+			}
 		case *rpb.ServerReflectionRequest_FileContainingSymbol:
 			service := listener.services[req.FileContainingSymbol]
 			if service == nil {

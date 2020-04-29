@@ -11,7 +11,7 @@ import (
 // NewMessage attempts to construct a new proto message descriptor for the given specs property
 func NewMessage(resource string, specs map[string]*specs.Property) (*desc.MessageDescriptor, error) {
 	msg := builder.NewMessage(resource)
-	err := ConstructMessage(msg, specs)
+	err := ConstructMessage(msg, nil, specs)
 	if err != nil {
 		return nil, err
 	}
@@ -20,18 +20,19 @@ func NewMessage(resource string, specs map[string]*specs.Property) (*desc.Messag
 }
 
 // ConstructMessage constructs a proto message of the given specs into the given message builders
-func ConstructMessage(msg *builder.MessageBuilder, specs map[string]*specs.Property) (err error) {
+func ConstructMessage(msg *builder.MessageBuilder, file *builder.FileBuilder, specs map[string]*specs.Property) (err error) {
 	for key, prop := range specs {
 		if prop.Type == types.Message {
-			nested := builder.NewMessage(key)
-			err = ConstructMessage(nested, prop.Nested)
+			name := key // TODO: the name is not unique causing that two properties with the same name will conflict
+			nested := builder.NewMessage(name)
+			err = ConstructMessage(nested, file, prop.Nested)
 			if err != nil {
 				return err
 			}
 
 			message := builder.FieldTypeMessage(nested)
-			field := builder.NewField(key, message)
-			field.SetJsonName(key)
+			field := builder.NewField(name, message)
+			field.SetJsonName(name)
 			field.SetLabel(protoc.ProtoLabels[prop.Label])
 			field.SetComments(builder.Comments{
 				LeadingComment: prop.Comment,
@@ -40,6 +41,13 @@ func ConstructMessage(msg *builder.MessageBuilder, specs map[string]*specs.Prope
 			err = msg.TryAddField(field.SetNumber(prop.Position))
 			if err != nil {
 				return err
+			}
+
+			if file != nil {
+				err = file.TryAddMessage(nested)
+				if err != nil {
+					return err
+				}
 			}
 
 			continue

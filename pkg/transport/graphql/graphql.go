@@ -112,7 +112,7 @@ func (listener *Listener) Handle(endpoints []*transport.Endpoint, constructors m
 			}
 		}(endpoint)
 
-		res, err := NewSchemaObject(objects, options.Name, endpoint.Response.Property)
+		res, err := NewSchemaObject(objects, options.Name, endpoint.Response)
 		if err != nil {
 			return err
 		}
