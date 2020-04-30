@@ -23,16 +23,16 @@ func NewMessage(resource string, specs map[string]*specs.Property) (*desc.Messag
 func ConstructMessage(msg *builder.MessageBuilder, specs map[string]*specs.Property) (err error) {
 	for key, prop := range specs {
 		if prop.Type == types.Message {
-			name := key // TODO: the name is not unique causing that two properties with the same name will conflict
-			nested := builder.NewMessage(name)
+			// TODO: appending a fixed prefix is probably not a good idea.
+			nested := builder.NewMessage(key + "Nested")
 			err = ConstructMessage(nested, prop.Nested)
 			if err != nil {
 				return err
 			}
 
 			message := builder.FieldTypeMessage(nested)
-			field := builder.NewField(name, message)
-			field.SetJsonName(name)
+			field := builder.NewField(key, message)
+			field.SetJsonName(key)
 			field.SetLabel(protoc.ProtoLabels[prop.Label])
 			field.SetComments(builder.Comments{
 				LeadingComment: prop.Comment,
