@@ -47,13 +47,13 @@ func NewServiceDescriptor(file *builder.FileBuilder, name string, methods Method
 	for _, method := range methods {
 		name := strings.Title(name) + strings.Title(method.GetName())
 		req := builder.NewMessage(name + "Request")
-		err := ConstructMessage(req, file, method.GetRequest())
+		err := ConstructMessage(req, method.GetRequest())
 		if err != nil {
 			return err
 		}
 
 		resp := builder.NewMessage(name + "Response")
-		err = ConstructMessage(resp, file, method.GetResponse())
+		err = ConstructMessage(resp, method.GetResponse())
 		if err != nil {
 			return err
 		}

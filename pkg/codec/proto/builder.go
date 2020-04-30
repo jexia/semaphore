@@ -11,7 +11,7 @@ import (
 // NewMessage attempts to construct a new proto message descriptor for the given specs property
 func NewMessage(resource string, specs map[string]*specs.Property) (*desc.MessageDescriptor, error) {
 	msg := builder.NewMessage(resource)
-	err := ConstructMessage(msg, nil, specs)
+	err := ConstructMessage(msg, specs)
 	if err != nil {
 		return nil, err
 	}
@@ -20,12 +20,12 @@ func NewMessage(resource string, specs map[string]*specs.Property) (*desc.Messag
 }
 
 // ConstructMessage constructs a proto message of the given specs into the given message builders
-func ConstructMessage(msg *builder.MessageBuilder, file *builder.FileBuilder, specs map[string]*specs.Property) (err error) {
+func ConstructMessage(msg *builder.MessageBuilder, specs map[string]*specs.Property) (err error) {
 	for key, prop := range specs {
 		if prop.Type == types.Message {
 			name := key // TODO: the name is not unique causing that two properties with the same name will conflict
 			nested := builder.NewMessage(name)
-			err = ConstructMessage(nested, file, prop.Nested)
+			err = ConstructMessage(nested, prop.Nested)
 			if err != nil {
 				return err
 			}
@@ -43,11 +43,9 @@ func ConstructMessage(msg *builder.MessageBuilder, file *builder.FileBuilder, sp
 				return err
 			}
 
-			if file != nil {
-				err = file.TryAddMessage(nested)
-				if err != nil {
-					return err
-				}
+			err = msg.TryAddNestedMessage(nested)
+			if err != nil {
+				return err
 			}
 
 			continue
