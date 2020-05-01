@@ -80,7 +80,7 @@ func (collection Listeners) Get(name string) Listener {
 type Flow interface {
 	NewStore() refs.Store
 	GetName() string
-	Call(ctx context.Context, refs refs.Store) error
+	Do(ctx context.Context, refs refs.Store) error
 	Wait()
 }
 

@@ -218,7 +218,7 @@ func (handle *Handle) HTTPFunc(w http.ResponseWriter, r *http.Request, ps httpro
 		}
 	}
 
-	err = handle.Endpoint.Flow.Call(r.Context(), store)
+	err = handle.Endpoint.Flow.Do(r.Context(), store)
 	if err != nil {
 		w.WriteHeader(http.StatusServiceUnavailable)
 		return

@@ -1,7 +1,6 @@
 package refs
 
 import (
-	"log"
 	"sync"
 
 	"github.com/jexia/maestro/pkg/specs"
@@ -232,7 +231,6 @@ func PropertyReferences(property *specs.Property) References {
 
 	if property.Nested != nil {
 		for _, nested := range property.Nested {
-			log.Println(nested)
 			for key, ref := range PropertyReferences(nested) {
 				result[key] = ref
 			}

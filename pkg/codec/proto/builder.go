@@ -23,7 +23,8 @@ func NewMessage(resource string, specs map[string]*specs.Property) (*desc.Messag
 func ConstructMessage(msg *builder.MessageBuilder, specs map[string]*specs.Property) (err error) {
 	for key, prop := range specs {
 		if prop.Type == types.Message {
-			nested := builder.NewMessage(key)
+			// TODO: appending a fixed prefix is probably not a good idea.
+			nested := builder.NewMessage(key + "Nested")
 			err = ConstructMessage(nested, prop.Nested)
 			if err != nil {
 				return err
@@ -38,6 +39,11 @@ func ConstructMessage(msg *builder.MessageBuilder, specs map[string]*specs.Prope
 			})
 
 			err = msg.TryAddField(field.SetNumber(prop.Position))
+			if err != nil {
+				return err
+			}
+
+			err = msg.TryAddNestedMessage(nested)
 			if err != nil {
 				return err
 			}

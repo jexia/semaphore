@@ -39,5 +39,5 @@ type Options struct {
 // AfterConstructor is called after the specifications is constructored
 type AfterConstructor func(instance.Context, *Collection) error
 
-// AfterConstructorWrapper wraps the after constructed function to allow middleware to be chained
-type AfterConstructorWrapper func(AfterConstructor) AfterConstructor
+// AfterConstructorHandler wraps the after constructed function to allow middleware to be chained
+type AfterConstructorHandler func(AfterConstructor) AfterConstructor

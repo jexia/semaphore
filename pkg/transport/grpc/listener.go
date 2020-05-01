@@ -202,7 +202,7 @@ func (listener *Listener) handler(srv interface{}, stream grpc.ServerStream) err
 		}
 	}
 
-	err = method.flow.Call(stream.Context(), store)
+	err = method.flow.Do(stream.Context(), store)
 	if err != nil {
 		return grpc.Errorf(codes.Internal, "unknown error: %s", err)
 	}

@@ -15,7 +15,7 @@ var params = config.New()
 // Command represents the maestro run command
 var Command = &cobra.Command{
 	Use:   "run",
-	Short: "Run the flow definitions with the passed definitions",
+	Short: "Run the passed definitions and expose the configured endpoints",
 	RunE:  run,
 }
 
@@ -24,7 +24,7 @@ func init() {
 	Command.PersistentFlags().StringVar(&params.GraphQL.Address, "graphql", "", "If set starts the GraphQL listener on the given TCP address")
 	Command.PersistentFlags().StringVar(&params.GRPC.Address, "grpc", "", "If set starts the gRPC listener on the given TCP address")
 	Command.PersistentFlags().StringSliceVar(&params.Protobuffers, "proto", []string{}, "If set are all proto definitions found inside the given path passed as schema definitions, all proto definitions are also passed as imports")
-	Command.PersistentFlags().StringSliceVarP(&params.Files, "file", "f", []string{"/etc/maestro/config.hcl"}, "Parses the given file as a definition file")
+	Command.PersistentFlags().StringSliceVarP(&params.Files, "file", "f", []string{"config.hcl"}, "Parses the given file as a definition file")
 	Command.PersistentFlags().StringVar(&params.LogLevel, "level", "", "Global logging level, this value will override the defined log level inside the file definitions")
 }
 

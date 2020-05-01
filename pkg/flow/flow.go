@@ -42,15 +42,31 @@ func NewManager(ctx instance.Context, name string, nodes []*Node) *Manager {
 	return manager
 }
 
+// BeforeManager is called before a manager get's calles
+type BeforeManager func(ctx context.Context, manager *Manager, store refs.Store) error
+
+// BeforeManagerHandler wraps the before call function to allow middleware to be chained
+type BeforeManagerHandler func(BeforeManager) BeforeManager
+
+// AfterManager is called after a manager is called
+type AfterManager func(ctx context.Context, manager *Manager, store refs.Store) error
+
+// AfterManagerHandler wraps the after call function to allow middleware to be chained
+type AfterManagerHandler func(AfterManager) AfterManager
+
 // Manager is responsible for the handling of a flow and its steps
 type Manager struct {
-	ctx        instance.Context
-	Name       string
-	Starting   []*Node
-	References int
-	Nodes      int
-	Ends       int
-	wg         sync.WaitGroup
+	BeforeDo       BeforeManager
+	BeforeRollback BeforeManager
+	ctx            instance.Context
+	Name           string
+	Starting       []*Node
+	References     int
+	Nodes          int
+	Ends           int
+	wg             sync.WaitGroup
+	AfterDo        AfterManager
+	AfterRollback  AfterManager
 }
 
 // GetName returns the name of the given flow manager
@@ -58,9 +74,16 @@ func (manager *Manager) GetName() string {
 	return manager.Name
 }
 
-// Call calls all the nodes inside the manager if a error is returned is a rollback of all the already executed steps triggered.
+// Do calls all the nodes inside the manager if a error is returned is a rollback of all the already executed steps triggered.
 // Nodes are executed concurrently to one another.
-func (manager *Manager) Call(ctx context.Context, refs refs.Store) error {
+func (manager *Manager) Do(ctx context.Context, refs refs.Store) error {
+	if manager.BeforeDo != nil {
+		err := manager.BeforeDo(ctx, manager, refs)
+		if err != nil {
+			return err
+		}
+	}
+
 	manager.wg.Add(1)
 	defer manager.wg.Done()
 
@@ -89,6 +112,14 @@ func (manager *Manager) Call(ctx context.Context, refs refs.Store) error {
 	}
 
 	manager.ctx.Logger(logger.Flow).WithField("flow", manager.Name).Debug("Flow completed")
+
+	if manager.AfterDo != nil {
+		err := manager.AfterDo(ctx, manager, refs)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -103,6 +134,15 @@ func (manager *Manager) Revert(executed *Tracker, refs refs.Store) {
 	defer manager.wg.Done()
 
 	ctx := context.Background()
+
+	if manager.BeforeRollback != nil {
+		err := manager.BeforeRollback(ctx, manager, refs)
+		if err != nil {
+			manager.ctx.Logger(logger.Flow).Error("Revert failed before rollback returned a error: ", err)
+			return
+		}
+	}
+
 	tracker := NewTracker(manager.Nodes)
 	ends := make(map[string]*Node, manager.Ends)
 
@@ -122,6 +162,14 @@ func (manager *Manager) Revert(executed *Tracker, refs refs.Store) {
 	}
 
 	processes.Wait()
+
+	if manager.AfterRollback != nil {
+		err := manager.AfterRollback(ctx, manager, refs)
+		if err != nil {
+			manager.ctx.Logger(logger.Flow).Error("Revert failed after rollback returned a error: ", err)
+			return
+		}
+	}
 }
 
 // Wait awaits till all calls and rollbacks are completed
