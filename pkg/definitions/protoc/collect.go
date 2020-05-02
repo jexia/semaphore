@@ -4,7 +4,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/jexia/maestro/internal/utils"
 	"github.com/jexia/maestro/pkg/definitions"
 	"github.com/jexia/maestro/pkg/instance"
 	"github.com/jexia/maestro/pkg/specs"
@@ -33,7 +32,7 @@ func Collect(paths []string, path string) ([]*desc.FileDescriptor, error) {
 		imports[index] = path
 	}
 
-	files, err := utils.ResolvePath(path)
+	files, err := definitions.ResolvePath(path)
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +86,7 @@ func SchemaResolver(imports []string, path string) definitions.SchemaResolver {
 
 // UnmarshalFiles attempts to parse the given HCL files to intermediate resources.
 // Files are parsed based from the given import paths
-func UnmarshalFiles(imports []string, files []*utils.FileInfo) ([]*desc.FileDescriptor, error) {
+func UnmarshalFiles(imports []string, files []*definitions.FileInfo) ([]*desc.FileDescriptor, error) {
 	parser := &protoparse.Parser{
 		ImportPaths:           imports,
 		IncludeSourceCodeInfo: true,

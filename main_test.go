@@ -5,9 +5,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jexia/maestro/internal/constructor"
-	"github.com/jexia/maestro/internal/utils"
 	"github.com/jexia/maestro/pkg/codec/json"
+	"github.com/jexia/maestro/pkg/constructor"
+	"github.com/jexia/maestro/pkg/definitions"
 	"github.com/jexia/maestro/pkg/definitions/hcl"
 	"github.com/jexia/maestro/pkg/definitions/mock"
 	"github.com/jexia/maestro/pkg/functions"
@@ -56,7 +56,7 @@ func TestNewClient(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	files, err := utils.ResolvePath(path)
+	files, err := definitions.ResolvePath(path)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -89,7 +89,7 @@ func TestServe(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	files, err := utils.ResolvePath(path)
+	files, err := definitions.ResolvePath(path)
 	if err != nil {
 		t.Fatal(err)
 	}

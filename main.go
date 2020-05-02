@@ -3,11 +3,12 @@ package maestro
 import (
 	"sync"
 
-	"github.com/jexia/maestro/internal/constructor"
+	"github.com/jexia/maestro/pkg/constructor"
 	"github.com/jexia/maestro/pkg/functions"
 	"github.com/jexia/maestro/pkg/instance"
 	"github.com/jexia/maestro/pkg/logger"
 	"github.com/jexia/maestro/pkg/specs"
+	"github.com/jexia/maestro/pkg/specs/trace"
 	"github.com/jexia/maestro/pkg/transport"
 )
 
@@ -25,6 +26,10 @@ type Client struct {
 
 // Serve opens all listeners inside the given maestro client
 func (client *Client) Serve() (result error) {
+	if len(client.Listeners) == 0 {
+		return trace.New(trace.WithMessage("no listeners configured to serve"))
+	}
+
 	wg := sync.WaitGroup{}
 	wg.Add(len(client.Listeners))
 
