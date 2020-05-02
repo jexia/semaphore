@@ -12,5 +12,6 @@ COPY --from=build /usr/local/bin/maestro /bin/maestro
 
 RUN mkdir -p /etc/maestro/
 COPY ./resources/default/ /etc/maestro/
+WORKDIR /etc/maestro
 
-ENTRYPOINT ["/bin/maestro", "run"]
+ENTRYPOINT ["/bin/maestro", "daemon"]

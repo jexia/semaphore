@@ -11,7 +11,6 @@ import (
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/gohcl"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
-	"github.com/jexia/maestro/internal/utils"
 	"github.com/jexia/maestro/pkg/definitions"
 	"github.com/jexia/maestro/pkg/instance"
 	"github.com/jexia/maestro/pkg/logger"
@@ -126,7 +125,7 @@ func GetOptions(path string) (*Options, error) {
 
 // Resolve represents a resolve object
 type Resolve struct {
-	File     *utils.FileInfo
+	File     *definitions.FileInfo
 	Manifest Manifest
 	Err      error
 }
@@ -136,12 +135,12 @@ type Resolve struct {
 func ResolvePath(ctx instance.Context, path string) ([]Manifest, error) {
 	ctx.Logger(logger.Core).WithField("path", path).Info("Resolving HCL path")
 
-	definitions := make([]Manifest, 0)
+	manifests := make([]Manifest, 0)
 	if path == "" {
-		return definitions, nil
+		return manifests, nil
 	}
 
-	files, err := utils.ResolvePath(path)
+	files, err := definitions.ResolvePath(path)
 	if err != nil {
 		return nil, err
 	}
@@ -167,7 +166,7 @@ func ResolvePath(ctx instance.Context, path string) ([]Manifest, error) {
 			}
 		}
 
-		definitions = append(definitions, definition)
+		manifests = append(manifests, definition)
 
 		for _, include := range definition.Include {
 			manifests, err := ResolvePath(ctx, filepath.Join(filepath.Dir(file.Path), include))
@@ -175,11 +174,11 @@ func ResolvePath(ctx instance.Context, path string) ([]Manifest, error) {
 				return nil, fmt.Errorf("unable to read include %s: %s", include, err)
 			}
 
-			definitions = append(definitions, manifests...)
+			manifests = append(manifests, manifests...)
 		}
 	}
 
-	return definitions, nil
+	return manifests, nil
 }
 
 // UnmarshalHCL unmarshals the given HCL stream into a intermediate resource.

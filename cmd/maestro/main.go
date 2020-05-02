@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/jexia/maestro/cmd/maestro/run"
+	"github.com/jexia/maestro/cmd/maestro/daemon"
 	"github.com/jexia/maestro/cmd/maestro/validate"
 	"github.com/spf13/cobra"
 )
@@ -19,7 +19,7 @@ Create custom extensions or use the availability of custom functions and protoco
 }
 
 func init() {
-	cmd.AddCommand(run.Command)
+	cmd.AddCommand(daemon.Command)
 	cmd.AddCommand(validate.Command)
 }
 

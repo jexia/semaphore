@@ -3,7 +3,7 @@ package validate
 import (
 	"github.com/jexia/maestro"
 	"github.com/jexia/maestro/cmd/maestro/config"
-	"github.com/jexia/maestro/internal/constructor"
+	"github.com/jexia/maestro/pkg/constructor"
 	"github.com/jexia/maestro/pkg/functions"
 	"github.com/jexia/maestro/pkg/instance"
 	"github.com/spf13/cobra"

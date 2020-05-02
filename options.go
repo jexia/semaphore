@@ -1,8 +1,8 @@
 package maestro
 
 import (
-	"github.com/jexia/maestro/internal/constructor"
 	"github.com/jexia/maestro/pkg/codec"
+	"github.com/jexia/maestro/pkg/constructor"
 	"github.com/jexia/maestro/pkg/definitions"
 	"github.com/jexia/maestro/pkg/functions"
 	"github.com/jexia/maestro/pkg/instance"

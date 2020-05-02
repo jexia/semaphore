@@ -3,7 +3,7 @@ package middleware
 import (
 	"path/filepath"
 
-	"github.com/jexia/maestro/internal/constructor"
+	"github.com/jexia/maestro/pkg/constructor"
 	"github.com/jexia/maestro/pkg/definitions/hcl"
 	"github.com/jexia/maestro/pkg/instance"
 	"github.com/jexia/maestro/pkg/logger"

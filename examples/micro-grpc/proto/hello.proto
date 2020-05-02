@@ -2,12 +2,12 @@ syntax = "proto3";
 
 package go.micro.srv.greeter;
 
-import "annotations.proto";
+import "maestro/api/annotations.proto";
 
 option go_package = "proto";
 
 service Say {
-	option (maestro.service) = {
+	option (maestro.api.service) = {
         transport: "micro-grpc"
         codec: "proto"
 	};

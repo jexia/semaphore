@@ -2,12 +2,12 @@ syntax = "proto3";
 
 package maestro.greeter;
 
-import "annotations.proto";
+import "maestro/api/annotations.proto";
 
 option go_package = "proto";
 
 service Say {
-	option (maestro.service) = {
+	option (maestro.api.service) = {
 		host: "127.0.0.1:5050"
         transport: "grpc"
         codec: "proto"

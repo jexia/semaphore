@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/jexia/maestro/internal/utils"
+	"github.com/jexia/maestro/pkg/definitions"
 	"github.com/jexia/maestro/pkg/instance"
 )
 
@@ -15,7 +15,7 @@ func TestSchemaParsing(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	files, err := utils.ResolvePath(path)
+	files, err := definitions.ResolvePath(path)
 	if err != nil {
 		t.Fatal(err)
 	}
