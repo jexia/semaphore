@@ -2,7 +2,7 @@ package protoc
 
 import (
 	"github.com/golang/protobuf/proto"
-	"github.com/jexia/maestro/annotations"
+	annotations "github.com/jexia/maestro/api"
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jexia/maestro/pkg/transport/http"
 	"github.com/jhump/protoreflect/desc"

@@ -1,10 +1,10 @@
 syntax = "proto3";
 
-package maestro;
+package maestro.api;
 
 import "google/protobuf/descriptor.proto";
 
-option go_package = "github.com/jexia/maestro/annotations";
+option go_package = "github.com/jexia/maestro/api;api";
 
 extend google.protobuf.ServiceOptions {
   Service service = 50012;

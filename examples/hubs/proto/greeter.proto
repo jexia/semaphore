@@ -2,24 +2,24 @@ syntax = "proto3";
 
 package proto;
 
-import "annotations.proto";
+import "maestro/api/annotations.proto";
 
 service Users {
-    option (maestro.service) = {
+    option (maestro.api.service) = {
         host: "https://jsonplaceholder.typicode.com/"
         transport: "http"
         codec: "json"
     };
 
     rpc GetUser(Query) returns (User) {
-        option (maestro.http) = {
+        option (maestro.api.http) = {
             endpoint: "/users/1"
             method: "GET"
         };
     };
 
     rpc ValidateUser(Query) returns (User) {
-        option (maestro.http) = {
+        option (maestro.api.http) = {
             endpoint: "/users/1"
             method: "GET"
         };
@@ -27,7 +27,7 @@ service Users {
 }
 
 service Hub {
-    option (maestro.service) = {
+    option (maestro.api.service) = {
         host: "http://localhost:9090"
         transport: "http"
     };

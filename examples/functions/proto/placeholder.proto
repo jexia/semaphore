@@ -1,25 +1,25 @@
 syntax = "proto3";
 
-import "annotations.proto";
+import "maestro/api/annotations.proto";
 
 package placeholder;
 
 service Service {
-    option (maestro.service) = {
+    option (maestro.api.service) = {
         host: "https://jsonplaceholder.typicode.com/"
         transport: "http"
         codec: "json"
     };
 
     rpc GetTodo(Query) returns (Item) {
-        option (maestro.http) = {
+        option (maestro.api.http) = {
             endpoint: "/todos/1"
             method: "GET"
         };
     };
 
     rpc GetUser(Query) returns (User) {
-        option (maestro.http) = {
+        option (maestro.api.http) = {
             endpoint: "/users/1"
             method: "GET"
         };

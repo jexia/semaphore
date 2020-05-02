@@ -1,4 +1,4 @@
-PROTODIR = annotations
+PROTODIR = api
 
 proto-build: $(PROTODIR)/annotations.pb.go
 
