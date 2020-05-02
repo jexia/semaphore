@@ -68,6 +68,8 @@ func (listener *Listener) Serve() error {
 		json.NewEncoder(w).Encode(result)
 	})
 
+	listener.ctx.Logger(logger.Flow).WithField("addr", listener.server.Addr).Infof("Serving GraphQL listener")
+
 	err := listener.server.ListenAndServe()
 	if err == http.ErrServerClosed {
 		return nil
