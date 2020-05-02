@@ -1,4 +1,4 @@
-package run
+package daemon
 
 import (
 	"os"
@@ -14,8 +14,8 @@ var params = config.New()
 
 // Command represents the maestro run command
 var Command = &cobra.Command{
-	Use:   "run",
-	Short: "Run the passed definitions and expose the configured endpoints",
+	Use:   "daemon",
+	Short: "Starts the Maestro daemon, it will execute with the passed definitions and expose the configured endpoints",
 	RunE:  run,
 }
 
