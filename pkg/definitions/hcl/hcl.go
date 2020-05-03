@@ -2,7 +2,6 @@ package hcl
 
 import (
 	"errors"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -16,6 +15,7 @@ import (
 	"github.com/jexia/maestro/pkg/logger"
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jexia/maestro/pkg/specs/trace"
+	"github.com/sirupsen/logrus"
 )
 
 // ServicesResolver constructs a schema resolver for the given path.
@@ -149,7 +149,14 @@ func ResolvePath(ctx instance.Context, path string) ([]Manifest, error) {
 		return nil, trace.New(trace.WithMessage("unable to resolve path, no files found '%s'", path))
 	}
 
+	ctx.Logger(logger.Core).WithFields(logrus.Fields{
+		"path":  path,
+		"files": len(files),
+	}).Debug("Files found after resolving path")
+
 	for _, file := range files {
+		ctx.Logger(logger.Core).WithField("path", file.Path).Debug("Resolving file")
+
 		reader, err := os.Open(file.Path)
 		if err != nil {
 			return nil, err
@@ -169,14 +176,22 @@ func ResolvePath(ctx instance.Context, path string) ([]Manifest, error) {
 		manifests = append(manifests, definition)
 
 		for _, include := range definition.Include {
-			manifests, err := ResolvePath(ctx, filepath.Join(filepath.Dir(file.Path), include))
+			path := filepath.Join(filepath.Dir(file.Path), include)
+			ctx.Logger(logger.Core).WithField("path", path).Info("Including HCL file")
+
+			results, err := ResolvePath(ctx, path)
 			if err != nil {
-				return nil, fmt.Errorf("unable to read include %s: %s", include, err)
+				return nil, trace.New(trace.WithMessage("unable to read include %s: %s", include, err))
 			}
 
-			manifests = append(manifests, manifests...)
+			manifests = append(manifests, results...)
 		}
 	}
+
+	ctx.Logger(logger.Core).WithFields(logrus.Fields{
+		"path":      path,
+		"manifests": len(files),
+	}).Debug("Resolve path result")
 
 	return manifests, nil
 }

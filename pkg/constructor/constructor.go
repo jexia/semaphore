@@ -36,6 +36,7 @@ func Specs(ctx instance.Context, mem functions.Collection, options Options) (*Co
 	if err != nil {
 		return nil, err
 	}
+
 	err = compare.ManifestTypes(ctx, collection.Services, collection.Schema, collection.Flows)
 	if err != nil {
 		return nil, err

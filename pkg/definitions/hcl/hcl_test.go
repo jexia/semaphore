@@ -80,6 +80,24 @@ func TestResolveInclude(t *testing.T) {
 	}
 }
 
+func TestResolveIncludeNoFiles(t *testing.T) {
+	tests := map[string]string{
+		"include": "./tests/unkown.hcl",
+	}
+
+	for name, path := range tests {
+		t.Run(name, func(t *testing.T) {
+			ctx := instance.NewContext()
+			resolver := ServicesResolver(path)
+
+			_, err := resolver(ctx)
+			if err == nil {
+				t.Fatal("unexpected pass expected resolver to return a error")
+			}
+		})
+	}
+}
+
 func TestResolveFlows(t *testing.T) {
 	tests := map[string]string{
 		"basic": "./tests/flows.pass.hcl",
