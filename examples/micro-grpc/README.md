@@ -16,7 +16,7 @@ Start Maestro to expose the greeting service on port `8080`.
 
 ```bash
 $ cd maestro
-$ maestro run -f config.hcl
+$ maestro daemon
 ```
 
 You could execute the `greeter` flow by executing a `POST` request on port `8080`.

@@ -4,7 +4,7 @@ Maestro is invoked from the command line. The CLI could be used to spin up a Mae
 Execute `maestro` with the `--help` flag for more information.
 
 ```bash
-$ maestro run --config config.yaml
+$ maestro daemon -f config.hcl
 ```
 
 ## Installing

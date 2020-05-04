@@ -5,19 +5,19 @@ endpoint "FetchLatestProject" "http" {
 }
 
 flow "FetchLatestProject" {
-	input "com.maestro.Query" {}
+	input "placeholder.Query" {}
 
 	resource "query" {
-		request "com.maestro.Service" "GetTodo" {
+		request "placeholder.Service" "GetTodo" {
 		}
 	}
 
 	resource "user" {
-		request "com.maestro.Service" "GetUser" {
+		request "placeholder.Service" "GetUser" {
 		}
 	}
 
-	output "com.maestro.Item" {
+	output "placeholder.Item" {
 		header {
 			Username = "{{ user:username }}"
 		}
