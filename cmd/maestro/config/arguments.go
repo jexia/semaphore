@@ -8,6 +8,7 @@ import (
 	"github.com/jexia/maestro/pkg/constructor"
 	"github.com/jexia/maestro/pkg/definitions/hcl"
 	"github.com/jexia/maestro/pkg/definitions/protoc"
+	"github.com/jexia/maestro/pkg/instance"
 	"github.com/jexia/maestro/pkg/logger"
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jexia/maestro/pkg/transport/graphql"
@@ -20,6 +21,7 @@ import (
 // ConstructArguments constructs the option arguments from the given parameters
 func ConstructArguments(params *Maestro) ([]constructor.Option, error) {
 	arguments := []constructor.Option{
+		maestro.WithLogLevel(logger.Global, params.LogLevel),
 		maestro.WithCodec(json.NewConstructor()),
 		maestro.WithCodec(proto.NewConstructor()),
 		maestro.WithCaller(micro.New("micro-grpc", microGRPC.NewService())),
@@ -27,13 +29,16 @@ func ConstructArguments(params *Maestro) ([]constructor.Option, error) {
 		maestro.WithCaller(http.NewCaller()),
 	}
 
+	ctx := instance.NewContext()
+	ctx.SetLevel(logger.Global, params.LogLevel)
+
 	for _, path := range params.Files {
 		arguments = append(arguments, maestro.WithFlows(hcl.FlowsResolver(path)))
 		arguments = append(arguments, maestro.WithServices(hcl.ServicesResolver(path)))
 		arguments = append(arguments, maestro.WithEndpoints(hcl.EndpointsResolver(path)))
 		arguments = append(arguments, maestro.AfterConstructor(middleware.ServiceSelector(path)))
 
-		options, err := hcl.GetOptions(path)
+		options, err := hcl.GetOptions(ctx, path)
 		if err != nil {
 			return nil, err
 		}
@@ -57,8 +62,6 @@ func ConstructArguments(params *Maestro) ([]constructor.Option, error) {
 	if params.GRPC.Address != "" {
 		arguments = append(arguments, maestro.WithListener(grpc.NewListener(params.GRPC.Address, specs.Options{})))
 	}
-
-	arguments = append(arguments, maestro.WithLogLevel(logger.Global, params.LogLevel))
 
 	return arguments, nil
 }
