@@ -7,7 +7,7 @@
 All examples could be executed with the [Maestro CLI](https://github.com/jexia/maestro/tree/master/cmd/daemon) or by executing the provided Go scripts.
 
 ```bash
-$ maestro run -f config.hcl
+$ maestro daemon -f config.hcl
 ```
 
 ```bash
