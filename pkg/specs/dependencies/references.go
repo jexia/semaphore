@@ -20,8 +20,10 @@ func ResolveReferences(ctx instance.Context, manifest *specs.FlowsManifest) {
 			ResolveNodeReferences(node)
 		}
 
-		if flow.Output != nil && flow.Output.Property != nil {
-			ResolvePropertyReferences(flow.Output.Property, map[string]*specs.Node{}) // The output dependencies could safely be ignored
+		if flow.Output != nil {
+			empty := map[string]*specs.Node{} // The output dependencies could safely be ignored
+			ResolveHeaderReferences(flow.Output.Header, empty)
+			ResolvePropertyReferences(flow.Output.Property, empty)
 		}
 	}
 
