@@ -19,6 +19,10 @@ func ResolveReferences(ctx instance.Context, manifest *specs.FlowsManifest) {
 		for _, node := range flow.Nodes {
 			ResolveNodeReferences(node)
 		}
+
+		if flow.Output != nil && flow.Output.Property != nil {
+			ResolvePropertyReferences(flow.Output.Property, map[string]*specs.Node{}) // The output dependencies could safely be ignored
+		}
 	}
 
 	for _, proxy := range manifest.Proxy {
