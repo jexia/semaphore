@@ -12,7 +12,7 @@ import (
 
 var params = config.New()
 
-// Command represents the maestro run command
+// Command represents the maestro daemon command
 var Command = &cobra.Command{
 	Use:   "daemon",
 	Short: "Starts the Maestro daemon, it will execute with the passed definitions and expose the configured endpoints",

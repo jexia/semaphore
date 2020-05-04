@@ -182,7 +182,7 @@ func TestResolveOptions(t *testing.T) {
 
 	for name, path := range tests {
 		t.Run(name, func(t *testing.T) {
-			_, err := GetOptions(path)
+			_, err := GetOptions(instance.NewContext(), path)
 			if err != nil {
 				t.Fatal(err)
 			}

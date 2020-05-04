@@ -49,6 +49,85 @@ func TestGetDefaultProp(t *testing.T) {
 	}
 }
 
+func TestGetNextResource(t *testing.T) {
+	type test struct {
+		breakpoint string
+		expected   string
+		manager    *specs.Flow
+	}
+
+	tests := map[string]*test{
+		"first": {
+			breakpoint: "first",
+			expected:   "second",
+			manager: &specs.Flow{
+				Nodes: []*specs.Node{
+					{
+						Name: "first",
+					},
+					{
+						Name: "second",
+					},
+				},
+			},
+		},
+		"second": {
+			breakpoint: "second",
+			expected:   "third",
+			manager: &specs.Flow{
+				Nodes: []*specs.Node{
+					{
+						Name: "first",
+					},
+					{
+						Name: "second",
+					},
+					{
+						Name: "third",
+					},
+				},
+			},
+		},
+		"output": {
+			breakpoint: "last",
+			expected:   template.OutputResource,
+			manager: &specs.Flow{
+				Nodes: []*specs.Node{
+					{
+						Name: "first",
+					},
+					{
+						Name: "last",
+					},
+				},
+			},
+		},
+		"unkown": {
+			breakpoint: "unkown",
+			expected:   "unkown",
+			manager: &specs.Flow{
+				Nodes: []*specs.Node{
+					{
+						Name: "first",
+					},
+					{
+						Name: "second",
+					},
+				},
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			result := GetNextResource(test.manager, test.breakpoint)
+			if result != test.expected {
+				t.Fatalf("unexpected result '%s', expected '%s'", result, test.expected)
+			}
+		})
+	}
+}
+
 func NewInputMockProperty() *specs.Property {
 	return &specs.Property{
 		Path:  "",
@@ -353,6 +432,25 @@ func TestGetAvailableResources(t *testing.T) {
 			result := GetAvailableResources(flow, "output")
 			return expected, result
 		},
+		"stack lookup": func() ([]string, map[string]ReferenceMap) {
+			flow := NewMockFlow("first")
+			expected := []string{template.StackResource, "input", "first", "second", "third"}
+
+			flow.Nodes[0].Call.Request.Stack = map[string]*specs.Property{
+				"ref": {
+					Path: "ref",
+				},
+			}
+
+			flow.Nodes[0].Call.Response.Stack = map[string]*specs.Property{
+				"ref": {
+					Path: "ref",
+				},
+			}
+
+			result := GetAvailableResources(flow, "output")
+			return expected, result
+		},
 	}
 
 	for key, test := range tests {
@@ -438,10 +536,12 @@ func NewPropertyReference(resource string, path string) *specs.PropertyReference
 func TestGetResourceReference(t *testing.T) {
 	flow := NewMockFlow("first")
 	references := GetAvailableResources(flow, "output")
+	breakpoint := "first"
 
 	tests := map[*specs.PropertyReference]*specs.Property{
 		NewPropertyReference("input", "message"):                           flow.Input.Property.Nested["message"],
 		NewPropertyReference("first", "result"):                            flow.Nodes[0].Call.Response.Property.Nested["result"],
+		NewPropertyReference("", "result"):                                 flow.Nodes[0].Call.Response.Property.Nested["result"],
 		NewPropertyReference("first.response", "result"):                   flow.Nodes[0].Call.Response.Property.Nested["result"],
 		NewPropertyReference("first.request", "message"):                   flow.Nodes[0].Call.Request.Property.Nested["message"],
 		NewPropertyReference("first.request", "message"):                   flow.Nodes[0].Call.Request.Property.Nested["message"],
@@ -464,14 +564,191 @@ func TestGetResourceReference(t *testing.T) {
 
 	for input, expected := range tests {
 		t.Run(input.String(), func(t *testing.T) {
-			result := GetResourceReference(input, references, "output")
+			result := GetResourceReference(input, references, breakpoint)
 			if result == nil {
-				t.Fatalf("unexpected result on lookup %s, expected %+v", input, expected)
+				t.Fatalf("unexpected empty result on lookup '%s', expected '%+v'", input, expected)
 			}
 
 			if result.Path != expected.Path {
-				t.Fatalf("unexpected result %+v, expected %+v", result, expected)
+				t.Fatalf("unexpected result '%+v', expected '%+v'", result, expected)
 			}
 		})
+	}
+}
+
+func TestGetUnkownResourceReference(t *testing.T) {
+	flow := NewMockFlow("first")
+	references := GetAvailableResources(flow, "output")
+	breakpoint := "first"
+
+	tests := map[string]*specs.PropertyReference{
+		"unkown": NewPropertyReference("unkown", "unkown"),
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			result := GetResourceReference(test, references, breakpoint)
+			if result != nil {
+				t.Fatalf("unexpected result")
+			}
+		})
+	}
+}
+
+func TestHeaderLookup(t *testing.T) {
+	type test struct {
+		path   string
+		header specs.Header
+	}
+
+	tests := map[string]*test{
+		"simple": {
+			path: "key",
+			header: specs.Header{
+				"key": &specs.Property{
+					Path: "key",
+				},
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			resolver := HeaderLookup(test.header)
+			prop := resolver(test.path)
+			if prop == nil {
+				t.Fatalf("unexpected result expected a prop to be returned for '%s'", test.path)
+			}
+		})
+	}
+}
+
+func TestUnkownHeaderLookup(t *testing.T) {
+	type test struct {
+		path   string
+		header specs.Header
+	}
+
+	tests := map[string]*test{
+		"simple": {
+			path:   "key",
+			header: specs.Header{},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			resolver := HeaderLookup(test.header)
+			prop := resolver(test.path)
+			if prop != nil {
+				t.Fatalf("unexpected result expected nil to be returned for '%s'", test.path)
+			}
+		})
+	}
+}
+
+func TestPropertyLookup(t *testing.T) {
+	type test struct {
+		path  string
+		param *specs.Property
+	}
+
+	tests := map[string]*test{
+		"self reference": {
+			path: ".",
+			param: &specs.Property{
+				Path: "key",
+			},
+		},
+		"simple": {
+			path: "key",
+			param: &specs.Property{
+				Path: "key",
+			},
+		},
+		"nested": {
+			path: "key.nested",
+			param: &specs.Property{
+				Path: "key",
+				Nested: map[string]*specs.Property{
+					"nested": {
+						Path: "key.nested",
+					},
+				},
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			lookup := PropertyLookup(test.param)
+			result := lookup(test.path)
+			if result == nil {
+				t.Fatal("unexpected empty result")
+			}
+		})
+	}
+}
+
+func TestResolveSelfReference(t *testing.T) {
+	type test struct {
+		path     string
+		expected string
+		resource string
+	}
+
+	tests := map[string]*test{
+		"self reference": {
+			path:     ".request",
+			resource: "input",
+			expected: "input.request",
+		},
+		"resource reference": {
+			path:     "input.request",
+			resource: "first",
+			expected: "input.request",
+		},
+		"broken path": {
+			path:     "input.",
+			resource: "first",
+			expected: "input.",
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			result := ResolveSelfReference(test.path, test.resource)
+			if result != test.expected {
+				t.Fatalf("unexpected result '%s', expected '%s'", result, test.expected)
+			}
+		})
+	}
+}
+
+func TestGetReference(t *testing.T) {
+	path := "key"
+	prop := "input.request"
+
+	references := ReferenceMap{
+		prop: PropertyLookup(&specs.Property{Path: path}),
+	}
+
+	result := GetReference(path, prop, references)
+	if result == nil {
+		t.Fatal("unexpected empty result")
+	}
+}
+
+func TestUnkownReference(t *testing.T) {
+	path := "key"
+	prop := "input.request"
+
+	references := ReferenceMap{
+		prop: PropertyLookup(&specs.Property{Path: path}),
+	}
+
+	result := GetReference(path, "unkown", references)
+	if result != nil {
+		t.Fatal("unexpected result")
 	}
 }

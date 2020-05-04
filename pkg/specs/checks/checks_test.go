@@ -20,9 +20,36 @@ func TestDuplicateManifests(t *testing.T) {
 				},
 			},
 		},
+		"duplicate proxy": {
+
+			Proxy: []*specs.Proxy{
+				{
+					Name: "dup",
+				},
+				{
+					Name: "dup",
+				},
+			},
+		},
 		"duplicate node": {
 
 			Flows: []*specs.Flow{
+				{
+					Name: "first",
+					Nodes: []*specs.Node{
+						{
+							Name: "dup",
+						},
+						{
+							Name: "dup",
+						},
+					},
+				},
+			},
+		},
+		"duplicate proxy node": {
+
+			Proxy: []*specs.Proxy{
 				{
 					Name: "first",
 					Nodes: []*specs.Node{

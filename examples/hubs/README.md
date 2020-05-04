@@ -12,14 +12,14 @@ First start the gateway on port `8080`.
 
 ```bash
 $ cd gateway
-$ maestro run -f config.hcl
+$ maestro daemon -f config.hcl
 ```
 
 Start the Maestro hub to expose the users service on port `9090`.
 
 ```bash
 $ cd hub
-$ maestro run -f config.hcl
+$ maestro daemon -f config.hcl
 ```
 
 You could execute the `user` flow by executing a `GET` request on port `8080/v1/user`.

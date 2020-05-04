@@ -8,7 +8,7 @@ To run this example you need to have Go 1.13> installed on your machine.
 First start the service by simply executing the files inside the service directory.
 
 ```bash
-$ maestro daemon
+$ go run .
 ```
 
 You could execute the `FetchLatestProject` flow by executing a `GET` request on port `8080`.

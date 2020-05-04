@@ -90,8 +90,8 @@ func EndpointsResolver(path string) definitions.EndpointsResolver {
 }
 
 // GetOptions returns the defined options inside the given path
-func GetOptions(path string) (*Options, error) {
-	definitions, err := ResolvePath(instance.NewContext(), path)
+func GetOptions(ctx instance.Context, path string) (*Options, error) {
+	definitions, err := ResolvePath(ctx, path)
 	if err != nil {
 		return nil, err
 	}
