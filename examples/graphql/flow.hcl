@@ -38,5 +38,6 @@ flow "todo" {
 		id = "{{ query:id }}"
 		title = "{{ query:title }}"
 		completed = "{{ query:completed }}"
+		// status = "{{ query:status }}"
 	}
 }

@@ -34,6 +34,11 @@ message Query {
 message Empty {
 }
 
+enum Status {
+    UNKOWN = 0;
+    PENDING = 1;
+}
+
 message Item {
     // user id that owns the givne todo item
     int32 userId = 1;
@@ -43,4 +48,6 @@ message Item {
     string title = 3;
     // represents whether the todo is completed or not
     bool completed = 4;
+
+    Status status = 5;
 }

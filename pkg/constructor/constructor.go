@@ -5,6 +5,7 @@ import (
 	"github.com/jexia/maestro/pkg/flow"
 	"github.com/jexia/maestro/pkg/functions"
 	"github.com/jexia/maestro/pkg/instance"
+	"github.com/jexia/maestro/pkg/logger"
 	"github.com/jexia/maestro/pkg/metadata"
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jexia/maestro/pkg/specs/checks"
@@ -13,6 +14,7 @@ import (
 	"github.com/jexia/maestro/pkg/specs/references"
 	"github.com/jexia/maestro/pkg/specs/trace"
 	"github.com/jexia/maestro/pkg/transport"
+	"github.com/sirupsen/logrus"
 )
 
 // Specs construct a specs manifest from the given options
@@ -246,8 +248,17 @@ func Listeners(endpoints []*transport.Endpoint, options Options) error {
 			continue
 		}
 
+		options.Ctx.Logger(logger.Core).WithFields(logrus.Fields{
+			"flow":     endpoint.Flow.GetName(),
+			"listener": endpoint.Listener,
+		}).Info("Preparing endpoint")
+
 		listener := options.Listeners.Get(endpoint.Listener)
 		if listener == nil {
+			options.Ctx.Logger(logger.Core).WithFields(logrus.Fields{
+				"listener": endpoint.Listener,
+			}).Error("Listener not found")
+
 			return trace.New(trace.WithMessage("unknown listener %s", endpoint.Listener))
 		}
 
@@ -258,6 +269,11 @@ func Listeners(endpoints []*transport.Endpoint, options Options) error {
 		listener := options.Listeners.Get(key)
 		err := listener.Handle(collection, options.Codec)
 		if err != nil {
+			options.Ctx.Logger(logger.Core).WithFields(logrus.Fields{
+				"listener": listener.Name(),
+				"err":      err,
+			}).Error("Listener returned an error")
+
 			return err
 		}
 	}

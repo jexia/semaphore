@@ -32,6 +32,20 @@ type Property struct {
 	Expr      hcl.Expression       `json:"expr"` // TODO: replace this with a custom solution
 	Raw       string               `json:"raw"`
 	Options   Options              `json:"options"`
+	Enum      *Enum                `json:"enum"`
+}
+
+// Enum represents a enum configuration
+type Enum struct {
+	Name        string                `json:"name"`
+	Values      map[string]*EnumValue `json:"values"`
+	Description string                `json:"description"`
+}
+
+// EnumValue represents a enum configuration
+type EnumValue struct {
+	Value       interface{} `json:"value"`
+	Description string      `json:"description"`
 }
 
 // ParameterMap is the initial map of parameter names (keys) and their (templated) values (values)

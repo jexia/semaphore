@@ -45,11 +45,29 @@ func NewObject(name string, prop *specs.Property) (*graphql.Object, error) {
 			Description: nested.Comment,
 		}
 
-		typ := gtypes[nested.Type]
+		field.Type = gtypes[nested.Type]
+
 		if nested.Label == labels.Repeated {
-			field.Type = graphql.NewList(typ)
-		} else {
-			field.Type = typ
+			field.Type = graphql.NewList(gtypes[nested.Type])
+		}
+
+		if nested.Type == types.Enum {
+			values := graphql.EnumValueConfigMap{}
+
+			for key, field := range nested.Enum.Values {
+				values[key] = &graphql.EnumValueConfig{
+					Value:       field.Value,
+					Description: field.Description,
+				}
+			}
+
+			config := graphql.EnumConfig{
+				Name:        name + "_" + nested.Enum.Name,
+				Description: nested.Enum.Description,
+				Values:      values,
+			}
+
+			field.Type = graphql.NewEnum(config)
 		}
 
 		fields[nested.Name] = field
