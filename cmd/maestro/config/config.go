@@ -1,6 +1,8 @@
 package config
 
 import (
+	"log"
+
 	"github.com/jexia/maestro/pkg/definitions/hcl"
 )
 
@@ -20,6 +22,7 @@ func Parse(options *hcl.Options, target *Maestro) {
 	if target.LogLevel == "" && options.LogLevel != "" {
 		target.LogLevel = options.LogLevel
 	}
+	log.Println(target.LogLevel)
 
 	if len(options.Protobuffers) > 0 {
 		target.Protobuffers = append(target.Protobuffers, options.Protobuffers...)
