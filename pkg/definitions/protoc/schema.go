@@ -63,7 +63,7 @@ func NewProperty(path string, descriptor *desc.FieldDescriptor) *specs.Property 
 
 		for _, value := range enum.GetValues() {
 			values[value.GetName()] = &specs.EnumValue{
-				Value:       value.GetNumber(),
+				Position:    value.GetNumber(),
 				Description: value.GetSourceInfo().GetLeadingComments(),
 			}
 		}

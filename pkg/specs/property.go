@@ -44,8 +44,8 @@ type Enum struct {
 
 // EnumValue represents a enum configuration
 type EnumValue struct {
-	Value       interface{} `json:"value"`
-	Description string      `json:"description"`
+	Position    int32  `json:"position"`
+	Description string `json:"description"`
 }
 
 // ParameterMap is the initial map of parameter names (keys) and their (templated) values (values)

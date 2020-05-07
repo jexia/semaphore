@@ -28,6 +28,8 @@ func AddTypeKey(encoder *gojay.Encoder, key string, typed types.Type, value inte
 		encoder.AddFloat32Key(key, Float32Empty(value))
 	case types.String:
 		encoder.AddStringKey(key, StringEmpty(value))
+	case types.Enum:
+		encoder.AddStringKey(key, StringEmpty(value))
 	case types.Bool:
 		encoder.AddBoolKey(key, BoolEmpty(value))
 	case types.Bytes:
@@ -63,6 +65,8 @@ func AddType(encoder *gojay.Encoder, typed types.Type, value interface{}) {
 	case types.Float:
 		encoder.AddFloat32(Float32Empty(value))
 	case types.String:
+		encoder.AddString(StringEmpty(value))
+	case types.Enum:
 		encoder.AddString(StringEmpty(value))
 	case types.Bool:
 		encoder.AddBool(BoolEmpty(value))
