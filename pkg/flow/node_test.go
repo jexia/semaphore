@@ -40,10 +40,11 @@ func BenchmarkSingleNodeCallingJSONCodec(b *testing.B) {
 			Label: labels.Optional,
 			Nested: map[string]*specs.Property{
 				"key": {
-					Name:  "key",
-					Path:  "key",
-					Type:  types.String,
-					Label: labels.Optional,
+					Name:    "key",
+					Path:    "key",
+					Type:    types.String,
+					Label:   labels.Optional,
+					Default: "message",
 				},
 			},
 		},
@@ -53,16 +54,17 @@ func BenchmarkSingleNodeCallingJSONCodec(b *testing.B) {
 		b.Fatal(err)
 	}
 
-	res, err := constructor.New("input", &specs.ParameterMap{
+	res, err := constructor.New("output", &specs.ParameterMap{
 		Property: &specs.Property{
 			Type:  types.Message,
 			Label: labels.Optional,
 			Nested: map[string]*specs.Property{
 				"key": {
-					Name:  "key",
-					Path:  "key",
-					Type:  types.String,
-					Label: labels.Optional,
+					Name:    "key",
+					Path:    "key",
+					Type:    types.String,
+					Label:   labels.Optional,
+					Default: "message",
 				},
 			},
 		},
