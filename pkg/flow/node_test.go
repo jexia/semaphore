@@ -34,7 +34,7 @@ func BenchmarkSingleNodeCallingJSONCodec(b *testing.B) {
 	ctx := instance.NewContext()
 	constructor := json.NewConstructor()
 
-	req, err := constructor.New("input", &specs.ParameterMap{
+	req, err := constructor.New("first.request", &specs.ParameterMap{
 		Property: &specs.Property{
 			Type:  types.Message,
 			Label: labels.Optional,
@@ -54,7 +54,7 @@ func BenchmarkSingleNodeCallingJSONCodec(b *testing.B) {
 		b.Fatal(err)
 	}
 
-	res, err := constructor.New("output", &specs.ParameterMap{
+	res, err := constructor.New("first.response", &specs.ParameterMap{
 		Property: &specs.Property{
 			Type:  types.Message,
 			Label: labels.Optional,
@@ -85,14 +85,16 @@ func BenchmarkSingleNodeCallingJSONCodec(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 
-	for i := 0; i < b.N; i++ {
-		ctx := context.Background()
-		tracker := NewTracker(1)
-		processes := NewProcesses(1)
-		refs := refs.NewReferenceStore(0)
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			ctx := context.Background()
+			tracker := NewTracker(1)
+			processes := NewProcesses(1)
+			refs := refs.NewReferenceStore(0)
 
-		node.Do(ctx, tracker, processes, refs)
-	}
+			node.Do(ctx, tracker, processes, refs)
+		}
+	})
 }
 
 func BenchmarkSingleNodeCalling(b *testing.B) {
