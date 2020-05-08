@@ -6,10 +6,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jexia/maestro/pkg/codec/json"
 	"github.com/jexia/maestro/pkg/instance"
 	"github.com/jexia/maestro/pkg/logger"
 	"github.com/jexia/maestro/pkg/refs"
 	"github.com/jexia/maestro/pkg/specs"
+	"github.com/jexia/maestro/pkg/specs/labels"
+	"github.com/jexia/maestro/pkg/specs/types"
 )
 
 func NewMockNode(name string, caller Call, rollback Call) *Node {
@@ -24,6 +27,69 @@ func NewMockNode(name string, caller Call, rollback Call) *Node {
 		Rollback:   rollback,
 		DependsOn:  map[string]*specs.Node{},
 		References: map[string]*specs.PropertyReference{},
+	}
+}
+
+func BenchmarkSingleNodeCallingJSONCodec(b *testing.B) {
+	ctx := instance.NewContext()
+	constructor := json.NewConstructor()
+
+	req, err := constructor.New("input", &specs.ParameterMap{
+		Property: &specs.Property{
+			Type:  types.Message,
+			Label: labels.Optional,
+			Nested: map[string]*specs.Property{
+				"key": {
+					Name:  "key",
+					Path:  "key",
+					Type:  types.String,
+					Label: labels.Optional,
+				},
+			},
+		},
+	})
+
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	res, err := constructor.New("input", &specs.ParameterMap{
+		Property: &specs.Property{
+			Type:  types.Message,
+			Label: labels.Optional,
+			Nested: map[string]*specs.Property{
+				"key": {
+					Name:  "key",
+					Path:  "key",
+					Type:  types.String,
+					Label: labels.Optional,
+				},
+			},
+		},
+	})
+
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	options := &CallOptions{
+		Request:  NewRequest(nil, req, nil),
+		Response: NewRequest(nil, res, nil),
+	}
+
+	call := NewCall(ctx, nil, options)
+	node := NewMockNode("first", call, nil)
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		ctx := context.Background()
+		tracker := NewTracker(1)
+		processes := NewProcesses(1)
+		refs := refs.NewReferenceStore(0)
+
+		node.Do(ctx, tracker, processes, refs)
 	}
 }
 
