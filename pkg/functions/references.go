@@ -19,6 +19,10 @@ func DefineFunctions(ctx instance.Context, functions Stack, node *specs.Node, fl
 			}
 		}
 
+		if function.Returns == nil {
+			continue
+		}
+
 		references.DefineProperty(ctx, node, function.Returns, flow)
 	}
 

@@ -226,6 +226,10 @@ func PreparePropertyFunctions(ctx instance.Context, node *specs.Node, flow specs
 
 // PrepareFunction attempts to parses the given function
 func PrepareFunction(ctx instance.Context, node *specs.Node, flow specs.FlowResourceManager, property *specs.Property, stack Stack, methods Custom) error {
+	if property == nil {
+		return nil
+	}
+
 	if !FunctionPattern.MatchString(property.Raw) {
 		return nil
 	}

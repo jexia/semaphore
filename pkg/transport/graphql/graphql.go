@@ -87,7 +87,11 @@ func (listener *Listener) Handle(endpoints []*transport.Endpoint, constructors m
 	}
 
 	for _, endpoint := range endpoints {
-		req := NewArgs(endpoint.Request)
+		req, err := NewArgs(endpoint.Request)
+		if err != nil {
+			return err
+		}
+
 		options, err := ParseEndpointOptions(endpoint)
 		if err != nil {
 			return err

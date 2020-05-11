@@ -3,6 +3,10 @@
 We'd love to accept your patches and contributions to this project. There are
 a just a few small guidelines you need to follow.
 
+## Proposing a change ##
+
+When wanting to propose or discuss a change feel free to open a new issue. When wanting to discuss your proposal before opening a new issue feel free to reach out to the maintainers on [Discord](https://chat.jexia.com).
+
 ## Reporting issues ##
 
 Bugs, feature requests, and development-related questions should be directed to

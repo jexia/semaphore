@@ -5,12 +5,17 @@
   <a href="https://github.com/jexia/maestro/actions?query=workflow%3A%22Go+CI%22"><img src="https://github.com/jexia/maestro/workflows/Go%20CI/badge.svg" alt="Go CI"></a>
   <a href="https://goreportcard.com/report/github.com/jexia/maestro"><img src="https://goreportcard.com/badge/github.com/jexia/maestro" alt="Go report"></a>
   <a href="https://jexia.gitbook.io/maestro/"><img src="https://img.shields.io/badge/docs-gitbook-green" alt="Gitbook"></a>
-  <a href="https://discord.gg/q54Q8GH"><img src="https://img.shields.io/badge/chat-on%20discord-7289da.svg?sanitize=true" alt="Chat on Discord"></a>
+  <a href="https://chat.jexia.com"><img src="https://img.shields.io/badge/chat-on%20discord-7289da.svg?sanitize=true" alt="Chat on Discord"></a>
+  <a href="https://codecov.io/gh/jexia/maestro"><img src="https://codecov.io/gh/jexia/maestro/branch/master/graph/badge.svg" alt="Code test coverage"></a>
 </p>
 
 Maestro is a feature-rich service orchestrator. Create advanced data flows and expose them through endpoints.
 Have full control over your exposed endpoints, expose single flows for multiple protocols such as gRPC and GraphQL.
 Maestro adapts to your environment. Create custom extensions or use the availability of custom functions and protocol implementations.
+
+## Adapts to your environment
+
+Maestro integrates with your existing system(s). Define flows through simple and strict typed definitions. Use your already existing schema definitions such as Protobuffers and Avro. Or extend Maestro with custom modules and proprietary software. Integrate services through flow definitions and reate a great experience for your customers and your teams.
 
 ## Table of contents
 

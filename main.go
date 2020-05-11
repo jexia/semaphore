@@ -56,6 +56,10 @@ func (client *Client) Close() {
 	}
 
 	for _, transporter := range client.Transporters {
+		if transporter.Flow == nil {
+			continue
+		}
+
 		transporter.Flow.Wait()
 	}
 }

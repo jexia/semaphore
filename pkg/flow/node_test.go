@@ -6,10 +6,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jexia/maestro/pkg/codec/json"
 	"github.com/jexia/maestro/pkg/instance"
 	"github.com/jexia/maestro/pkg/logger"
 	"github.com/jexia/maestro/pkg/refs"
 	"github.com/jexia/maestro/pkg/specs"
+	"github.com/jexia/maestro/pkg/specs/labels"
+	"github.com/jexia/maestro/pkg/specs/types"
 )
 
 func NewMockNode(name string, caller Call, rollback Call) *Node {
@@ -27,7 +30,158 @@ func NewMockNode(name string, caller Call, rollback Call) *Node {
 	}
 }
 
-func BenchmarkSingleNodeCalling(b *testing.B) {
+func BenchmarkSingleNodeCallingJSONCodecParallel(b *testing.B) {
+	ctx := instance.NewContext()
+	constructor := json.NewConstructor()
+
+	req, err := constructor.New("first.request", &specs.ParameterMap{
+		Property: &specs.Property{
+			Type:  types.Message,
+			Label: labels.Optional,
+			Nested: map[string]*specs.Property{
+				"key": {
+					Name:    "key",
+					Path:    "key",
+					Type:    types.String,
+					Label:   labels.Optional,
+					Default: "message",
+				},
+			},
+		},
+	})
+
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	res, err := constructor.New("first.response", &specs.ParameterMap{
+		Property: &specs.Property{
+			Type:  types.Message,
+			Label: labels.Optional,
+			Nested: map[string]*specs.Property{
+				"key": {
+					Name:    "key",
+					Path:    "key",
+					Type:    types.String,
+					Label:   labels.Optional,
+					Default: "message",
+				},
+			},
+		},
+	})
+
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	options := &CallOptions{
+		Request:  NewRequest(nil, req, nil),
+		Response: NewRequest(nil, res, nil),
+	}
+
+	call := NewCall(ctx, nil, options)
+	node := NewMockNode("first", call, nil)
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			ctx := context.Background()
+			tracker := NewTracker(1)
+			processes := NewProcesses(1)
+			refs := refs.NewReferenceStore(0)
+
+			node.Do(ctx, tracker, processes, refs)
+		}
+	})
+}
+
+func BenchmarkSingleNodeCallingJSONCodecSerial(b *testing.B) {
+	ctx := instance.NewContext()
+	constructor := json.NewConstructor()
+
+	req, err := constructor.New("first.request", &specs.ParameterMap{
+		Property: &specs.Property{
+			Type:  types.Message,
+			Label: labels.Optional,
+			Nested: map[string]*specs.Property{
+				"key": {
+					Name:    "key",
+					Path:    "key",
+					Type:    types.String,
+					Label:   labels.Optional,
+					Default: "message",
+				},
+			},
+		},
+	})
+
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	res, err := constructor.New("first.response", &specs.ParameterMap{
+		Property: &specs.Property{
+			Type:  types.Message,
+			Label: labels.Optional,
+			Nested: map[string]*specs.Property{
+				"key": {
+					Name:    "key",
+					Path:    "key",
+					Type:    types.String,
+					Label:   labels.Optional,
+					Default: "message",
+				},
+			},
+		},
+	})
+
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	options := &CallOptions{
+		Request:  NewRequest(nil, req, nil),
+		Response: NewRequest(nil, res, nil),
+	}
+
+	call := NewCall(ctx, nil, options)
+	node := NewMockNode("first", call, nil)
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		ctx := context.Background()
+		tracker := NewTracker(1)
+		processes := NewProcesses(1)
+		refs := refs.NewReferenceStore(0)
+
+		node.Do(ctx, tracker, processes, refs)
+	}
+}
+
+func BenchmarkSingleNodeCallingParallel(b *testing.B) {
+	caller := &caller{}
+	node := NewMockNode("first", caller, nil)
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			ctx := context.Background()
+			tracker := NewTracker(1)
+			processes := NewProcesses(1)
+			refs := refs.NewReferenceStore(0)
+
+			node.Do(ctx, tracker, processes, refs)
+		}
+	})
+}
+
+func BenchmarkSingleNodeCallingSerial(b *testing.B) {
 	caller := &caller{}
 	node := NewMockNode("first", caller, nil)
 
@@ -44,7 +198,35 @@ func BenchmarkSingleNodeCalling(b *testing.B) {
 	}
 }
 
-func BenchmarkBranchedNodeCalling(b *testing.B) {
+func BenchmarkBranchedNodeCallingParallel(b *testing.B) {
+	caller := &caller{}
+	nodes := []*Node{
+		NewMockNode("first", caller, nil),
+		NewMockNode("second", caller, nil),
+		NewMockNode("third", caller, nil),
+	}
+
+	nodes[0].Next = []*Node{nodes[1]}
+	nodes[1].Previous = []*Node{nodes[0]}
+	nodes[1].Next = []*Node{nodes[2]}
+	nodes[2].Previous = []*Node{nodes[1]}
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			ctx := context.Background()
+			tracker := NewTracker(len(nodes))
+			processes := NewProcesses(1)
+			refs := refs.NewReferenceStore(0)
+
+			nodes[0].Do(ctx, tracker, processes, refs)
+		}
+	})
+}
+
+func BenchmarkBranchedNodeCallingSerial(b *testing.B) {
 	caller := &caller{}
 	nodes := []*Node{
 		NewMockNode("first", caller, nil),

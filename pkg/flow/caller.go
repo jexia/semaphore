@@ -1,8 +1,8 @@
 package flow
 
 import (
+	"bytes"
 	"context"
-	"io"
 
 	"github.com/jexia/maestro/pkg/codec"
 	"github.com/jexia/maestro/pkg/functions"
@@ -70,8 +70,8 @@ func (caller *Caller) References() []*specs.Property {
 
 // Do is called by the flow manager to call the configured service
 func (caller *Caller) Do(ctx context.Context, store refs.Store) error {
-	reader, writer := io.Pipe()
-	w := transport.NewResponseWriter(writer)
+	bb := bytes.NewBuffer(make([]byte, 0))
+	w := transport.NewResponseWriter(bb)
 	r := &transport.Request{
 		Method: caller.method,
 	}
@@ -102,8 +102,6 @@ func (caller *Caller) Do(ctx context.Context, store refs.Store) error {
 	defer close(result)
 
 	go func() {
-		defer writer.Close()
-
 		if caller.transport == nil {
 			result <- nil
 			return
@@ -114,7 +112,7 @@ func (caller *Caller) Do(ctx context.Context, store refs.Store) error {
 
 	if caller.response != nil {
 		if caller.response.codec != nil {
-			err := caller.response.codec.Unmarshal(reader, store)
+			err := caller.response.codec.Unmarshal(bb, store)
 			if err != nil {
 				return err
 			}

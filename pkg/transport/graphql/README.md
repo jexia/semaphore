@@ -7,6 +7,6 @@ All flows could be exposed with `graphql` endpoints and the following optional o
 endpoint "flow" "graphql" {
     path = "user.address"
     name = "address"
-	base = "mutation"
+    base = "mutation"
 }
 ```

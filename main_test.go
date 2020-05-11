@@ -1,6 +1,8 @@
 package maestro
 
 import (
+	"errors"
+	"net"
 	"path/filepath"
 	"testing"
 	"time"
@@ -13,21 +15,9 @@ import (
 	"github.com/jexia/maestro/pkg/functions"
 	"github.com/jexia/maestro/pkg/instance"
 	"github.com/jexia/maestro/pkg/logger"
+	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jexia/maestro/pkg/transport/http"
 )
-
-func TestOptions(t *testing.T) {
-	functions := map[string]functions.Intermediate{
-		"cdf": nil,
-	}
-
-	ctx := instance.NewContext()
-	options := NewOptions(ctx, WithFunctions(functions))
-
-	if len(options.Functions) != len(functions) {
-		t.Errorf("unexpected functions %+v, expected %+v", options.Functions, functions)
-	}
-}
 
 func TestNewOptions(t *testing.T) {
 	functions := map[string]functions.Intermediate{
@@ -123,5 +113,84 @@ func TestServe(t *testing.T) {
 				t.Error(err)
 			}
 		})
+	}
+}
+
+func TestErrServe(t *testing.T) {
+	path, err := filepath.Abs("./tests/*.hcl")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	files, err := definitions.ResolvePath(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	listener, err := net.Listen("tcp", ":0")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer listener.Close()
+
+	for _, file := range files {
+		t.Run(file.Name(), func(t *testing.T) {
+			clean := file.Name()[:len(file.Name())-len(filepath.Ext(file.Name()))]
+			schema := filepath.Join(filepath.Dir(file.Path), clean+".yaml")
+
+			client, err := New(
+				WithFlows(hcl.FlowsResolver(file.Path)),
+				WithServices(hcl.ServicesResolver(file.Path)),
+				WithSchema(mock.SchemaResolver(schema)),
+				WithCodec(json.NewConstructor()),
+				WithListener(http.NewListener(listener.Addr().String(), nil)),
+				WithCaller(http.NewCaller()),
+				WithLogLevel(logger.Core, "debug"),
+			)
+
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			err = client.Serve()
+			if err == nil {
+				t.Fatal("unexpected pass expected error to be returned")
+			}
+		})
+	}
+}
+
+func TestServeNoListeners(t *testing.T) {
+	client, err := New()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = client.Serve()
+	if err == nil {
+		t.Fatal("unexpected pass expected error to be returned")
+	}
+}
+
+func TestNewServiceErr(t *testing.T) {
+	resolver := func(instance.Context) ([]*specs.ServicesManifest, error) { return nil, errors.New("unexpected") }
+	_, err := New(
+		WithServices(resolver),
+	)
+
+	if err == nil {
+		t.Fatal("unexpected pass expected error to be returned")
+	}
+}
+
+func TestNewFlowsErr(t *testing.T) {
+	resolver := func(instance.Context) ([]*specs.FlowsManifest, error) { return nil, errors.New("unexpected") }
+	_, err := New(
+		WithFlows(resolver),
+	)
+
+	if err == nil {
+		t.Fatal("unexpected pass expected error to be returned")
 	}
 }
