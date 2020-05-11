@@ -6,6 +6,7 @@
   <a href="https://goreportcard.com/report/github.com/jexia/maestro"><img src="https://goreportcard.com/badge/github.com/jexia/maestro" alt="Go report"></a>
   <a href="https://jexia.gitbook.io/maestro/"><img src="https://img.shields.io/badge/docs-gitbook-green" alt="Gitbook"></a>
   <a href="https://chat.jexia.com"><img src="https://img.shields.io/badge/chat-on%20discord-7289da.svg?sanitize=true" alt="Chat on Discord"></a>
+  <a href="https://codecov.io/gh/jexia/maestro"><img src="https://codecov.io/gh/jexia/maestro/branch/master/graph/badge.svg" alt="Code test coverage"></a>
 </p>
 
 Maestro is a feature-rich service orchestrator. Create advanced data flows and expose them through endpoints.
