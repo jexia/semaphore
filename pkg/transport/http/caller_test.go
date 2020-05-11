@@ -25,6 +25,19 @@ func NewMockCaller() *Caller {
 	return caller
 }
 
+func TestNewCaller(t *testing.T) {
+	ctx := instance.NewContext()
+	constructor := NewCaller()
+	listener := constructor(ctx)
+	if listener == nil {
+		t.Fatal("unexpected result, expected a listener to be constructed")
+	}
+
+	if listener.Name() != "http" {
+		t.Fatalf("unexpected name '%s', expected listener to be called http", listener.Name())
+	}
+}
+
 func TestCaller(t *testing.T) {
 	message := "hello world"
 	mock := NewSimpleMockSpecs()
@@ -96,6 +109,10 @@ func TestCallerUnknownMethod(t *testing.T) {
 	if method != nil {
 		t.Fatal("unexpected method returned")
 	}
+
+	if len(call.GetMethods()) != 1 {
+		t.Fatalf("unexpected methods %+v, expected a single method to be defined", call.GetMethods())
+	}
 }
 
 func TestCallerReferences(t *testing.T) {
@@ -113,6 +130,10 @@ func TestCallerReferences(t *testing.T) {
 	references := method.References()
 	if len(references) != 1 {
 		t.Fatalf("unexpected references %+v", references)
+	}
+
+	if len(call.GetMethods()) != 1 {
+		t.Fatalf("unexpected methods %+v, expected a single method to be defined", call.GetMethods())
 	}
 
 	reference := references[0]
