@@ -1,6 +1,7 @@
 package functions
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/jexia/maestro/pkg/instance"
@@ -11,6 +12,7 @@ import (
 
 type counter struct {
 	total int
+	err   error
 }
 
 func (counter *counter) fn(args ...*specs.Property) (*specs.Property, Exec, error) {
@@ -22,7 +24,7 @@ func (counter *counter) fn(args ...*specs.Property) (*specs.Property, Exec, erro
 		Default: "",
 	}
 
-	return result, nil, nil
+	return result, nil, counter.err
 }
 
 func CompareProperties(t *testing.T, left specs.Property, right specs.Property) {
@@ -403,6 +405,86 @@ func TestPrepareManifestFunctions(t *testing.T) {
 				},
 			},
 		},
+		"nil request header property": {
+			expected:    0,
+			collections: 1,
+			manifest: &specs.FlowsManifest{
+				Proxy: specs.Proxies{
+					&specs.Proxy{
+						Nodes: []*specs.Node{
+							{
+								Call: &specs.Call{
+									Request: &specs.ParameterMap{
+										Header: specs.Header{
+											"fn": nil,
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		"nil response header property": {
+			expected:    0,
+			collections: 1,
+			manifest: &specs.FlowsManifest{
+				Proxy: specs.Proxies{
+					&specs.Proxy{
+						Nodes: []*specs.Node{
+							{
+								Call: &specs.Call{
+									Response: &specs.ParameterMap{
+										Header: specs.Header{
+											"fn": nil,
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		"nil request property": {
+			expected:    0,
+			collections: 1,
+			manifest: &specs.FlowsManifest{
+				Proxy: specs.Proxies{
+					&specs.Proxy{
+						Nodes: []*specs.Node{
+							{
+								Call: &specs.Call{
+									Request: &specs.ParameterMap{
+										Property: nil,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		"nil response property": {
+			expected:    0,
+			collections: 1,
+			manifest: &specs.FlowsManifest{
+				Proxy: specs.Proxies{
+					&specs.Proxy{
+						Nodes: []*specs.Node{
+							{
+								Call: &specs.Call{
+									Response: &specs.ParameterMap{
+										Property: nil,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 
 	for name, test := range tests {
@@ -426,6 +508,316 @@ func TestPrepareManifestFunctions(t *testing.T) {
 
 			if len(mem) != test.collections {
 				t.Fatalf("unexpected collections length %d, expected %d collections to be defined", len(mem), test.collections)
+			}
+		})
+	}
+}
+
+func TestPrepareManifestFunctionsErr(t *testing.T) {
+	type test struct {
+		expected    int
+		collections int
+		manifest    *specs.FlowsManifest
+	}
+
+	tests := map[string]test{
+		"flow": {
+			expected:    3,
+			collections: 3,
+			manifest: &specs.FlowsManifest{
+				Flows: specs.Flows{
+					&specs.Flow{
+						Nodes: []*specs.Node{
+							{
+								Call: &specs.Call{
+									Request: &specs.ParameterMap{
+										Property: &specs.Property{
+											Type:  types.Message,
+											Label: labels.Optional,
+											Nested: map[string]*specs.Property{
+												"fn": {
+													Name: "fn",
+													Path: "fn",
+													Raw:  "mock()",
+												},
+											},
+										},
+									},
+									Response: &specs.ParameterMap{
+										Property: &specs.Property{
+											Type:  types.Message,
+											Label: labels.Optional,
+											Nested: map[string]*specs.Property{
+												"fn": {
+													Name: "fn",
+													Path: "fn",
+													Raw:  "mock()",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+						Output: &specs.ParameterMap{
+							Property: &specs.Property{
+								Type:  types.Message,
+								Label: labels.Optional,
+								Nested: map[string]*specs.Property{
+									"fn": {
+										Name: "fn",
+										Path: "fn",
+										Raw:  "mock()",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		"flow rollback": {
+			expected:    6,
+			collections: 2,
+			manifest: &specs.FlowsManifest{
+				Flows: specs.Flows{
+					&specs.Flow{
+						Nodes: []*specs.Node{
+							{
+								Rollback: &specs.Call{
+									Request: &specs.ParameterMap{
+										Header: specs.Header{
+											"fn": &specs.Property{
+												Name: "fn",
+												Path: "fn",
+												Raw:  "mock(mock())",
+											},
+										},
+										Property: &specs.Property{
+											Type:  types.Message,
+											Label: labels.Optional,
+											Nested: map[string]*specs.Property{
+												"fn": {
+													Name: "fn",
+													Path: "fn",
+													Raw:  "mock()",
+												},
+											},
+										},
+									},
+									Response: &specs.ParameterMap{
+										Header: specs.Header{
+											"fn": &specs.Property{
+												Name: "fn",
+												Path: "fn",
+												Raw:  "mock(mock())",
+											},
+										},
+										Property: &specs.Property{
+											Type:  types.Message,
+											Label: labels.Optional,
+											Nested: map[string]*specs.Property{
+												"fn": {
+													Name: "fn",
+													Path: "fn",
+													Raw:  "mock()",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		"flow header": {
+			expected:    4,
+			collections: 2,
+			manifest: &specs.FlowsManifest{
+				Flows: specs.Flows{
+					&specs.Flow{
+						Nodes: []*specs.Node{
+							{
+								Call: &specs.Call{
+									Request: &specs.ParameterMap{
+										Header: specs.Header{
+											"fn": &specs.Property{
+												Name: "fn",
+												Path: "fn",
+												Raw:  "mock(mock())",
+											},
+										},
+									},
+								},
+							},
+						},
+						Output: &specs.ParameterMap{
+							Header: specs.Header{
+								"fn": &specs.Property{
+									Name: "fn",
+									Path: "fn",
+									Raw:  "mock(mock())",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		"proxy": {
+			expected:    2,
+			collections: 2,
+			manifest: &specs.FlowsManifest{
+				Proxy: specs.Proxies{
+					&specs.Proxy{
+						Nodes: []*specs.Node{
+							{
+								Call: &specs.Call{
+									Request: &specs.ParameterMap{
+										Property: &specs.Property{
+											Type:  types.Message,
+											Label: labels.Optional,
+											Nested: map[string]*specs.Property{
+												"fn": {
+													Name: "fn",
+													Path: "fn",
+													Raw:  "mock()",
+												},
+											},
+										},
+									},
+									Response: &specs.ParameterMap{
+										Property: &specs.Property{
+											Type:  types.Message,
+											Label: labels.Optional,
+											Nested: map[string]*specs.Property{
+												"fn": {
+													Name: "fn",
+													Path: "fn",
+													Raw:  "mock()",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		"proxy rollback": {
+			expected:    6,
+			collections: 2,
+			manifest: &specs.FlowsManifest{
+				Proxy: specs.Proxies{
+					&specs.Proxy{
+						Nodes: []*specs.Node{
+							{
+								Rollback: &specs.Call{
+									Request: &specs.ParameterMap{
+										Header: specs.Header{
+											"fn": &specs.Property{
+												Name: "fn",
+												Path: "fn",
+												Raw:  "mock(mock())",
+											},
+										},
+										Property: &specs.Property{
+											Type:  types.Message,
+											Label: labels.Optional,
+											Nested: map[string]*specs.Property{
+												"fn": {
+													Name: "fn",
+													Path: "fn",
+													Raw:  "mock()",
+												},
+											},
+										},
+									},
+									Response: &specs.ParameterMap{
+										Header: specs.Header{
+											"fn": &specs.Property{
+												Name: "fn",
+												Path: "fn",
+												Raw:  "mock(mock())",
+											},
+										},
+										Property: &specs.Property{
+											Type:  types.Message,
+											Label: labels.Optional,
+											Nested: map[string]*specs.Property{
+												"fn": {
+													Name: "fn",
+													Path: "fn",
+													Raw:  "mock()",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		"proxy header": {
+			expected:    4,
+			collections: 2,
+			manifest: &specs.FlowsManifest{
+				Proxy: specs.Proxies{
+					&specs.Proxy{
+						Nodes: []*specs.Node{
+							{
+								Call: &specs.Call{
+									Request: &specs.ParameterMap{
+										Header: specs.Header{
+											"fn": &specs.Property{
+												Name: "fn",
+												Path: "fn",
+												Raw:  "mock(mock())",
+											},
+										},
+									},
+								},
+							},
+						},
+						Forward: &specs.Call{
+							Request: &specs.ParameterMap{
+								Header: specs.Header{
+									"fn": &specs.Property{
+										Name: "fn",
+										Path: "fn",
+										Raw:  "mock(mock())",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			counter := counter{
+				err: errors.New("unexpected err"),
+			}
+
+			functions := Custom{
+				"mock": counter.fn,
+			}
+
+			ctx := instance.NewContext()
+			mem := Collection{}
+
+			err := PrepareManifestFunctions(ctx, mem, functions, test.manifest)
+			if err == nil {
+				t.Fatal("unexpected pass expected prepare to fail")
 			}
 		})
 	}
