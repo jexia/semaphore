@@ -34,13 +34,8 @@ message Query {
 message Empty {
 }
 
-enum Status {
-    UNKOWN = 0;
-    PENDING = 1;
-}
-
 message Item {
-    // user id that owns the givne todo item
+    // user id owning the given todo
     int32 userId = 1;
     // id of a given todo
     int32 id = 2;
@@ -48,6 +43,4 @@ message Item {
     string title = 3;
     // represents whether the todo is completed or not
     bool completed = 4;
-
-    Status status = 5;
 }

@@ -38,12 +38,14 @@ type Property struct {
 // Enum represents a enum configuration
 type Enum struct {
 	Name        string                `json:"name"`
-	Values      map[string]*EnumValue `json:"values"`
+	Keys        map[string]*EnumValue `json:"keys"`
+	Positions   map[int32]*EnumValue  `json:"positions"`
 	Description string                `json:"description"`
 }
 
 // EnumValue represents a enum configuration
 type EnumValue struct {
+	Key         string `json:"key"`
 	Position    int32  `json:"position"`
 	Description string `json:"description"`
 }

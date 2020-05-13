@@ -31,6 +31,7 @@ type Reference struct {
 	Path     string
 	Value    interface{}
 	Repeated []Store
+	Enum     *int32
 	mutex    sync.Mutex
 }
 

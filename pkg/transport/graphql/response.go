@@ -30,7 +30,12 @@ func ResponseValue(specs *specs.Property, refs refs.Store) (interface{}, error) 
 					continue
 				}
 
-				// TODO: support repeated types
+				ref := store.Load("", "")
+				if ref == nil {
+					continue
+				}
+
+				repeating[index] = ref.Value
 			}
 
 			result[nested.Name] = repeating
@@ -53,6 +58,12 @@ func ResponseValue(specs *specs.Property, refs refs.Store) (interface{}, error) 
 
 		ref := refs.Load(nested.Reference.Resource, nested.Reference.Path)
 		if ref == nil {
+			continue
+		}
+
+		if ref.Enum != nil && nested.Enum != nil {
+			// Enum should exist and a additional nil check should not be necessary
+			result[nested.Name] = nested.Enum.Positions[*ref.Enum].Key
 			continue
 		}
 

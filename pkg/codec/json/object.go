@@ -57,7 +57,14 @@ func (object *Object) MarshalJSONObject(encoder *gojay.Encoder) {
 		if prop.Reference != nil {
 			ref := object.refs.Load(prop.Reference.Resource, prop.Reference.Path)
 			if ref != nil {
-				val = ref.Value
+				if prop.Type == types.Enum && ref.Enum != nil {
+					enum := prop.Enum.Positions[*ref.Enum]
+					if enum != nil {
+						val = enum.Key
+					}
+				} else if ref.Value != nil {
+					val = ref.Value
+				}
 			}
 		}
 
@@ -95,7 +102,19 @@ func (object *Object) UnmarshalJSONObject(dec *gojay.Decoder, key string) error 
 	}
 
 	ref := refs.NewReference(prop.Path)
-	ref.Value = DecodeType(dec, prop.Type)
+
+	if prop.Type == types.Enum {
+		var key string
+		dec.AddString(&key)
+
+		enum := prop.Enum.Keys[key]
+		if enum != nil {
+			ref.Enum = &enum.Position
+		}
+	} else {
+		ref.Value = DecodeType(dec, prop.Type)
+	}
+
 	object.refs.StoreReference(object.resource, ref)
 	return nil
 }

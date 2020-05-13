@@ -36,8 +36,8 @@ flow "todo" {
 
 	output "proto.Item" {
 		id = "{{ query:id }}"
+		userId = "{{ query:userId }}"
 		title = "{{ query:title }}"
 		completed = "{{ query:completed }}"
-		status = "{{ query:status }}"
 	}
 }

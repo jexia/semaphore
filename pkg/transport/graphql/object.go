@@ -54,7 +54,7 @@ func NewObject(name string, prop *specs.Property) (*graphql.Object, error) {
 		if nested.Type == types.Enum {
 			values := graphql.EnumValueConfigMap{}
 
-			for key, field := range nested.Enum.Values {
+			for key, field := range nested.Enum.Keys {
 				values[key] = &graphql.EnumValueConfig{
 					Value:       key,
 					Description: field.Description,
