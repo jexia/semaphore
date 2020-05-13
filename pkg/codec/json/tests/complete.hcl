@@ -15,6 +15,7 @@ flow "complete" {
 
 			repeating_values = "{{ input:repeating_values }}"
 			enum = "{{ input:enum }}"
+			repeating_enum = "{{ input:repeating_enum }}"
 		}
 	}
 }

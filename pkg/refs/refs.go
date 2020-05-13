@@ -17,6 +17,8 @@ type Store interface {
 	StoreValues(resource string, path string, values map[string]interface{})
 	// StoreValue stores the given value for the given resource and path
 	StoreValue(resource string, path string, value interface{})
+	// StoreEnum stores the given enum on the given path
+	StoreEnum(resource string, path string, enum int32)
 }
 
 // NewReference constructs a new reference with the given path
@@ -126,6 +128,14 @@ func (store *store) StoreValue(resource string, path string, value interface{}) 
 	store.StoreReference(resource, reference)
 }
 
+// StoreEnum stores the given enum for the given resource and path
+func (store *store) StoreEnum(resource string, path string, enum int32) {
+	reference := NewReference(path)
+	reference.Enum = &enum
+
+	store.StoreReference(resource, reference)
+}
+
 // NewRepeatingMessages appends the given repeating messages to the given reference
 func (store *store) NewRepeatingMessages(resource string, path string, reference *Reference, values []map[string]interface{}) {
 	reference.Repeating(len(values))
@@ -183,6 +193,11 @@ func (prefix *PrefixStore) StoreValues(resource string, path string, values map[
 // StoreValue stores the given value for the given resource and path
 func (prefix *PrefixStore) StoreValue(resource string, path string, value interface{}) {
 	prefix.store.StoreValue(prefix.resource, template.JoinPath(prefix.path, path), value)
+}
+
+// StoreEnum stores the given enum for the given resource and path
+func (prefix *PrefixStore) StoreEnum(resource string, path string, enum int32) {
+	prefix.store.StoreEnum(prefix.resource, template.JoinPath(prefix.path, path), enum)
 }
 
 // References represents a map of property references

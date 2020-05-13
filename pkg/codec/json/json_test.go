@@ -58,6 +58,10 @@ func NewMock() (*specs.FlowsManifest, error) {
 func ValidateStore(t *testing.T, prop *specs.Property, resource string, origin string, input map[string]interface{}, store refs.Store) {
 	for key, value := range input {
 		nprop := prop.Nested[key]
+		if nprop == nil {
+			nprop = prop
+		}
+
 		path := template.JoinPath(origin, key)
 		nested, is := value.(map[string]interface{})
 		if is {
@@ -435,6 +439,13 @@ func TestMarshal(t *testing.T) {
 			"nested": map[string]interface{}{},
 			"enum":   "PENDING",
 		},
+		"repeating_enum": {
+			"nested": map[string]interface{}{},
+			"repeating_enum": []interface{}{
+				"UNKOWN",
+				"PENDING",
+			},
+		},
 		"repeating": {
 			"nested": map[string]interface{}{},
 			"repeating": []map[string]interface{}{
@@ -542,6 +553,12 @@ func TestUnmarshal(t *testing.T) {
 		},
 		"enum": {
 			"enum": "PENDING",
+		},
+		"repeating_enum": {
+			"repeating_enum": []interface{}{
+				"UNKOWN",
+				"PENDING",
+			},
 		},
 		"repeating": {
 			"nested": map[string]interface{}{},

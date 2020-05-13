@@ -31,6 +31,14 @@ properties:
                         position: 1
                     PENDING:
                         position: 2
+            repeating_enum:
+                type: "enum"
+                label: "repeated"
+                enum:
+                    UNKOWN:
+                        position: 1
+                    PENDING:
+                        position: 2
     com.complete.output:
         type: "message"
         label: "optional"
@@ -52,6 +60,18 @@ properties:
             enum:
                 type: "enum"
                 label: "optional"
+                enum:
+                    UNKOWN:
+                        position: 1
+                    PENDING:
+                        position: 2
+    com.repeating_enum.input:
+        type: "message"
+        label: "optional"
+        nested:
+            enum:
+                type: "enum"
+                label: "repeated"
                 enum:
                     UNKOWN:
                         position: 1
@@ -120,4 +140,7 @@ services:
                 output: "com.simple.output"
             enum:
                 input: "com.enum.input"
+                output: "com.simple.output"
+            repeating_enum:
+                input: "com.repeating_enum.input"
                 output: "com.simple.output"
