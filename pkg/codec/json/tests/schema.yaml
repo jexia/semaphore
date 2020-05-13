@@ -23,6 +23,14 @@ properties:
             repeating_values:
                 type: "string"
                 label: "repeated"
+            enum:
+                type: "enum"
+                label: "optional"
+                enum:
+                    UNKOWN:
+                        position: 1
+                    PENDING:
+                        position: 2
     com.complete.output:
         type: "message"
         label: "optional"
@@ -37,6 +45,18 @@ properties:
             message:
                 type: "string"
                 label: "optional"
+    com.enum.input:
+        type: "message"
+        label: "optional"
+        nested:
+            enum:
+                type: "enum"
+                label: "optional"
+                enum:
+                    UNKOWN:
+                        position: 1
+                    PENDING:
+                        position: 2
     com.simple.output:
         type: "message"
         label: "optional"
@@ -97,4 +117,7 @@ services:
                 output: "com.repeated.output"
             nested:
                 input: "com.nested.input"
+                output: "com.simple.output"
+            enum:
+                input: "com.enum.input"
                 output: "com.simple.output"

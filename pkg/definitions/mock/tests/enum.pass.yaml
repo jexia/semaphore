@@ -1,0 +1,12 @@
+properties:
+    com.input:
+        type: "enum"
+        label: "optional"
+        enum:
+            UNKOWN:
+                position: 1
+                description: "unkown status"
+            PENDING:
+                position: 2
+                description: "pending status"
+            

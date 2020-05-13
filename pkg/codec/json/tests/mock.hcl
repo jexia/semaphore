@@ -41,3 +41,13 @@ flow "repeated_values" {
 		}
 	}
 }
+
+flow "enum" {
+	input "com.complete.input" {}
+
+	resource "first" {
+		request "mock" "enum" {
+			enum = "{{ input:enum }}"
+		}
+	}
+}
