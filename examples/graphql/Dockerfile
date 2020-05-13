@@ -8,4 +8,4 @@ COPY *.hcl ./
 COPY proto/ ./proto/
 COPY annotations/ ./annotations/
 
-ENTRYPOINT ["maestro", "run", "-f", "config.hcl"]
+ENTRYPOINT ["maestro", "daemon", "-f", "config.hcl"]
