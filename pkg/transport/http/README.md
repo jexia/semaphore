@@ -48,3 +48,20 @@ rpc Mock(Empty) returns (Empty) {
 	};
 };
 ```
+
+Override services options through a select.
+
+```hcl
+services {
+    select "proto.users.*" {
+        host = "api.jexia.com"
+		insecure = "false"
+		ca_file = "/etc/ca.crt"
+    }
+
+    select "proto.projects.*" {
+        host = "api.jexia.com"
+		insecure = "true"
+    }
+}
+```

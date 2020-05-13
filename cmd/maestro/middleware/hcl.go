@@ -9,6 +9,7 @@ import (
 	"github.com/jexia/maestro/pkg/logger"
 	"github.com/jexia/maestro/pkg/specs/template"
 	"github.com/sirupsen/logrus"
+	"github.com/zclconf/go-cty/cty"
 )
 
 // ServiceSelector parses the HCL definition on the given path and manipulates the collected services after constructed
@@ -48,6 +49,16 @@ func ServiceSelector(path string) constructor.AfterConstructorHandler {
 							}).Info("overriding service configuration")
 
 							service.Host = selector.Host
+
+							attrs, _ := selector.Options.JustAttributes()
+							for _, attr := range attrs {
+								value, _ := attr.Expr.Value(nil)
+								if value.Type() != cty.String {
+									continue
+								}
+
+								service.Options[attr.Name] = value.AsString()
+							}
 						}
 					}
 				}

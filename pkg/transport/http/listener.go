@@ -29,7 +29,8 @@ func NewListener(addr string, opts specs.Options) transport.NewListener {
 		}
 
 		return &Listener{
-			ctx: ctx,
+			ctx:     ctx,
+			options: options,
 			server: &http.Server{
 				Addr:         addr,
 				ReadTimeout:  options.ReadTimeout,
@@ -41,10 +42,11 @@ func NewListener(addr string, opts specs.Options) transport.NewListener {
 
 // Listener represents a HTTP listener
 type Listener struct {
-	ctx    instance.Context
-	server *http.Server
-	mutex  sync.RWMutex
-	router http.Handler
+	ctx     instance.Context
+	options *ListenerOptions
+	server  *http.Server
+	mutex   sync.RWMutex
+	router  http.Handler
 }
 
 // Name returns the name of the given listener
@@ -53,7 +55,7 @@ func (listener *Listener) Name() string {
 }
 
 // Serve opens the HTTP listener and calls the given handler function on reach request
-func (listener *Listener) Serve() error {
+func (listener *Listener) Serve() (err error) {
 	listener.ctx.Logger(logger.Transport).WithField("addr", listener.server.Addr).Info("Serving HTTP listener")
 
 	listener.server.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -64,7 +66,12 @@ func (listener *Listener) Serve() error {
 		listener.mutex.RUnlock()
 	})
 
-	err := listener.server.ListenAndServe()
+	if listener.options.CertFile != "" && listener.options.KeyFile != "" {
+		err = listener.server.ListenAndServeTLS(listener.options.CertFile, listener.options.KeyFile)
+	} else {
+		err = listener.server.ListenAndServe()
+	}
+
 	if err == http.ErrServerClosed {
 		return nil
 	}

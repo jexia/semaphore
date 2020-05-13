@@ -9,6 +9,14 @@ import (
 )
 
 const (
+	// InsecureOption connection flag
+	InsecureOption = "insecure"
+	// CAFileOption certificate authority file path
+	CAFileOption = "ca_file"
+	// CertFileOption certificate file path
+	CertFileOption = "cert_file"
+	// KeyFileOption certificate key file path
+	KeyFileOption = "key_file"
 	// ReadTimeoutOption represents the HTTP read timeout option key
 	ReadTimeoutOption = "read_timeout"
 	// WriteTimeoutOption represents the HTTP write timeout option key
@@ -33,6 +41,8 @@ const (
 type ListenerOptions struct {
 	ReadTimeout  time.Duration
 	WriteTimeout time.Duration
+	CertFile     string
+	KeyFile      string
 }
 
 // ParseListenerOptions parses the given specs options into HTTP options
@@ -60,6 +70,16 @@ func ParseListenerOptions(options specs.Options) (*ListenerOptions, error) {
 		}
 
 		result.WriteTimeout = duration
+	}
+
+	key, has := options[KeyFileOption]
+	if has {
+		result.KeyFile = key
+	}
+
+	crt, has := options[CertFileOption]
+	if has {
+		result.CertFile = crt
 	}
 
 	return result, nil
@@ -126,6 +146,8 @@ type CallerOptions struct {
 	KeepAlive     time.Duration
 	FlushInterval time.Duration
 	MaxIdleConns  int
+	Insecure      bool
+	CAFile        string
 }
 
 // ParseCallerOptions parses the given specs options into HTTP options
@@ -134,6 +156,22 @@ func ParseCallerOptions(options specs.Options) (*CallerOptions, error) {
 		Timeout:      60 * time.Second,
 		KeepAlive:    60 * time.Second,
 		MaxIdleConns: 100,
+		Insecure:     false,
+	}
+
+	insecure, has := options[InsecureOption]
+	if has {
+		val, err := strconv.ParseBool(insecure)
+		if err != nil {
+			return nil, err
+		}
+
+		result.Insecure = val
+	}
+
+	caFile, has := options[CAFileOption]
+	if has {
+		result.CAFile = caFile
 	}
 
 	flush, has := options[FlushIntervalOption]
