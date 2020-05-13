@@ -153,6 +153,7 @@ type Property struct {
 	Position int32                `yaml:"position"`
 	Nested   map[string]*Property `yaml:"nested"`
 	Options  specs.Options        `yaml:"options"`
+	Enum     map[string]Enum      `yaml:"enum"`
 }
 
 // GetNested returns the field nested object
@@ -163,4 +164,10 @@ func (property *Property) GetNested() map[string]*Property {
 	}
 
 	return result
+}
+
+// Enum represents a property enum value
+type Enum struct {
+	Position    int32  `yaml:"position"`
+	Description string `yaml:"description"`
 }

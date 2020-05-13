@@ -57,6 +57,30 @@ func NewProperty(path string, descriptor *desc.FieldDescriptor) *specs.Property 
 		Options:  specs.Options{},
 	}
 
+	if descriptor.GetType() == protobuf.FieldDescriptorProto_TYPE_ENUM {
+		enum := descriptor.GetEnumType()
+		keys := map[string]*specs.EnumValue{}
+		positions := map[int32]*specs.EnumValue{}
+
+		for _, value := range enum.GetValues() {
+			result := &specs.EnumValue{
+				Key:         value.GetName(),
+				Position:    value.GetNumber(),
+				Description: value.GetSourceInfo().GetLeadingComments(),
+			}
+
+			keys[value.GetName()] = result
+			positions[value.GetNumber()] = result
+		}
+
+		result.Enum = &specs.Enum{
+			Name:        enum.GetName(),
+			Description: enum.GetSourceInfo().GetLeadingComments(),
+			Keys:        keys,
+			Positions:   positions,
+		}
+	}
+
 	if descriptor.GetType() != protobuf.FieldDescriptorProto_TYPE_MESSAGE {
 		return result
 	}

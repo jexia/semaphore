@@ -17,6 +17,7 @@ var gtypes = map[types.Type]graphql.Output{
 	types.Bool:     graphql.Boolean,
 	types.String:   graphql.String,
 	types.Bytes:    graphql.String,
+	types.Enum:     graphql.EnumValueType,
 	types.Sfixed64: graphql.Float,
 	types.Sfixed32: graphql.Float,
 	types.Sint64:   graphql.Int,

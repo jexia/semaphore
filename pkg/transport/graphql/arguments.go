@@ -44,6 +44,25 @@ func NewArgs(props *specs.ParameterMap) (graphql.FieldConfigArgument, error) {
 			typ = graphql.NewList(typ)
 		}
 
+		if nested.Type == types.Enum {
+			values := graphql.EnumValueConfigMap{}
+
+			for key, field := range nested.Enum.Keys {
+				values[key] = &graphql.EnumValueConfig{
+					Value:       key,
+					Description: field.Description,
+				}
+			}
+
+			config := graphql.EnumConfig{
+				Name:        nested.Name + "_" + nested.Enum.Name,
+				Description: nested.Enum.Description,
+				Values:      values,
+			}
+
+			typ = graphql.NewEnum(config)
+		}
+
 		args[nested.Name] = &graphql.ArgumentConfig{
 			Type:        typ,
 			Description: nested.Comment,
@@ -74,6 +93,25 @@ func NewInputArgObject(prop *specs.Property) (*graphql.InputObject, error) {
 
 		if prop.Label == labels.Repeated {
 			typ = graphql.NewList(typ)
+		}
+
+		if nested.Type == types.Enum {
+			values := graphql.EnumValueConfigMap{}
+
+			for key, field := range nested.Enum.Keys {
+				values[key] = &graphql.EnumValueConfig{
+					Value:       key,
+					Description: field.Description,
+				}
+			}
+
+			config := graphql.EnumConfig{
+				Name:        nested.Name + "_" + nested.Enum.Name,
+				Description: nested.Enum.Description,
+				Values:      values,
+			}
+
+			typ = graphql.NewEnum(config)
 		}
 
 		fields[nested.Name] = &graphql.InputObjectFieldConfig{

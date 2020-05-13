@@ -2,6 +2,7 @@ package refs
 
 import (
 	"encoding/json"
+	"strconv"
 	"testing"
 
 	"github.com/jexia/maestro/pkg/specs"
@@ -86,6 +87,25 @@ func BenchmarkComplexUnmarshal(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		store := NewReferenceStore(len(data))
 		store.StoreValues("input", "", data)
+	}
+}
+
+func TestEnumJSON(t *testing.T) {
+	expected := "PENDING"
+	val := Enum(expected, 1)
+	bb, err := val.MarshalJSON()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	want := strconv.Quote(expected)
+	if string(bb) != want {
+		t.Fatalf("unexpected result '%s', expected '%s'", string(bb), want)
+	}
+
+	err = val.UnmarshalJSON([]byte(want))
+	if err != nil {
+		t.Fatal(err)
 	}
 }
 
@@ -215,6 +235,81 @@ func TestStoreRepeatedMap(t *testing.T) {
 	}
 }
 
+func TestStoreEnum(t *testing.T) {
+	store := NewReferenceStore(1)
+
+	key := "enum"
+	expected := int32(1)
+
+	resource := "input"
+	values := map[string]interface{}{
+		key: Enum("PENDING", expected),
+	}
+
+	store.StoreValues(resource, "", values)
+	result := store.Load(resource, key)
+	if result == nil {
+		t.Fatal("did not return reference")
+	}
+
+	if result.Path != key {
+		t.Fatalf("unexpected repeated reference path %s, expected %s", result.Path, key)
+	}
+
+	if result.Enum == nil {
+		t.Fatal("unexpected result expected enum to be set")
+	}
+
+	if *result.Enum != 1 {
+		t.Fatalf("unexpected enum result '%d', expected '%d'", result.Enum, expected)
+	}
+}
+
+func TestStoreRepeatingEnum(t *testing.T) {
+	store := NewReferenceStore(1)
+
+	key := "enum"
+	expected := []interface{}{
+		Enum("PENDING", 1),
+		Enum("UNKOWN", 0),
+	}
+
+	resource := "input"
+	values := map[string]interface{}{
+		key: expected,
+	}
+
+	store.StoreValues(resource, "", values)
+	result := store.Load(resource, key)
+	if result == nil {
+		t.Fatal("did not return reference")
+	}
+
+	if len(result.Repeated) != len(expected) {
+		t.Fatalf("unexpected repeated store length %d, expected %d", len(result.Repeated), len(expected))
+	}
+
+	if result.Path != key {
+		t.Fatalf("unexpected repeated reference path %s, expected %s", result.Path, key)
+	}
+
+	for index, store := range result.Repeated {
+		ref := store.Load("", "")
+		if ref == nil {
+			t.Fatal("unexpected empty reference expected reference to be returned")
+		}
+
+		if ref.Enum == nil {
+			t.Fatal("unexpected enum expected enum to be defined")
+		}
+
+		want := expected[index].(*EnumVal).pos
+		if *ref.Enum != want {
+			t.Fatalf("unexpected enum %d, expected %d", ref.Enum, want)
+		}
+	}
+}
+
 func TestStoreRepeatedValues(t *testing.T) {
 	store := NewReferenceStore(1)
 
@@ -324,6 +419,37 @@ func TestPrefixStoreValue(t *testing.T) {
 
 	if ref.Value != value {
 		t.Fatalf("unexpected reference value '%+v', expected '%+v'", ref.Value, value)
+	}
+}
+
+func TestPrefixStoreEnum(t *testing.T) {
+	store := NewReferenceStore(1)
+
+	key := "enum"
+	expected := int32(1)
+	prefix := "prefix"
+	path := "key"
+
+	resource := "input"
+
+	pstore := NewPrefixStore(store, resource, prefix)
+	pstore.StoreEnum("", path, expected)
+
+	result := store.Load(resource, template.JoinPath(prefix, path))
+	if result == nil {
+		t.Fatal("did not return reference")
+	}
+
+	if result.Path != template.JoinPath(prefix, path) {
+		t.Fatalf("unexpected repeated reference path %s, expected %s", result.Path, key)
+	}
+
+	if result.Enum == nil {
+		t.Fatal("unexpected result expected enum to be set")
+	}
+
+	if *result.Enum != expected {
+		t.Fatalf("unexpected enum result '%d', expected '%d'", result.Enum, expected)
 	}
 }
 

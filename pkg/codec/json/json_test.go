@@ -55,12 +55,17 @@ func NewMock() (*specs.FlowsManifest, error) {
 	return client.Flows, nil
 }
 
-func ValidateStore(t *testing.T, resource string, origin string, input map[string]interface{}, store refs.Store) {
+func ValidateStore(t *testing.T, prop *specs.Property, resource string, origin string, input map[string]interface{}, store refs.Store) {
 	for key, value := range input {
+		nprop := prop.Nested[key]
+		if nprop == nil {
+			nprop = prop
+		}
+
 		path := template.JoinPath(origin, key)
 		nested, is := value.(map[string]interface{})
 		if is {
-			ValidateStore(t, resource, path, nested, store)
+			ValidateStore(t, nprop, resource, path, nested, store)
 			continue
 		}
 
@@ -68,7 +73,7 @@ func ValidateStore(t *testing.T, resource string, origin string, input map[strin
 		if is {
 			repeating := store.Load(resource, path)
 			for index, store := range repeating.Repeated {
-				ValidateStore(t, resource, path, repeated[index], store)
+				ValidateStore(t, nprop, resource, path, repeated[index], store)
 			}
 			continue
 		}
@@ -82,7 +87,7 @@ func ValidateStore(t *testing.T, resource string, origin string, input map[strin
 					"": values[index],
 				}
 
-				ValidateStore(t, "", "", wrapper, store)
+				ValidateStore(t, nprop, "", "", wrapper, store)
 			}
 			continue
 		}
@@ -90,6 +95,13 @@ func ValidateStore(t *testing.T, resource string, origin string, input map[strin
 		ref := store.Load(resource, path)
 		if ref == nil {
 			t.Fatalf("resource not found %s", path)
+		}
+
+		if ref.Enum != nil && nprop.Enum != nil {
+			if nprop.Enum.Positions[*ref.Enum] == nil {
+				t.Fatalf("unexpected enum value at %s '%+v', expected '%+v'", path, ref.Enum, value)
+			}
+			continue
 		}
 
 		if ref.Value != value {
@@ -423,6 +435,17 @@ func TestMarshal(t *testing.T) {
 				"value": "some message",
 			},
 		},
+		"enum": {
+			"nested": map[string]interface{}{},
+			"enum":   "PENDING",
+		},
+		"repeating_enum": {
+			"nested": map[string]interface{}{},
+			"repeating_enum": []interface{}{
+				"UNKOWN",
+				"PENDING",
+			},
+		},
 		"repeating": {
 			"nested": map[string]interface{}{},
 			"repeating": []map[string]interface{}{
@@ -528,6 +551,15 @@ func TestUnmarshal(t *testing.T) {
 				"value": "some message",
 			},
 		},
+		"enum": {
+			"enum": "PENDING",
+		},
+		"repeating_enum": {
+			"repeating_enum": []interface{}{
+				"UNKOWN",
+				"PENDING",
+			},
+		},
 		"repeating": {
 			"nested": map[string]interface{}{},
 			"repeating": []map[string]interface{}{
@@ -577,7 +609,7 @@ func TestUnmarshal(t *testing.T) {
 
 			t.Log(store)
 
-			ValidateStore(t, "input", "", input, store)
+			ValidateStore(t, req.Property, "input", "", input, store)
 		})
 	}
 }

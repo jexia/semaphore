@@ -220,7 +220,9 @@ func DefineProperty(ctx instance.Context, node *specs.Node, property *specs.Prop
 	property.Default = reference.Default
 	property.Reference.Property = reference
 
-	// TODO: support enum type
+	if reference.Enum != nil {
+		property.Enum = reference.Enum
+	}
 
 	return nil
 }

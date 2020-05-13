@@ -14,6 +14,8 @@ flow "complete" {
 			}
 
 			repeating_values = "{{ input:repeating_values }}"
+			status = "{{ input:status }}"
+			repeating_status = "{{ input:repeating_status }}"
 		}
 	}
 }

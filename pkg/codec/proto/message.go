@@ -115,6 +115,13 @@ func (manager *Manager) Encode(proto *dynamic.Message, desc *desc.MessageDescrip
 					}
 
 					value = item
+				case types.Enum:
+					ref := store.Load("", "")
+					if ref == nil || ref.Enum == nil {
+						continue
+					}
+
+					value = *ref.Enum
 				default:
 					ref := store.Load("", "")
 					value = ref.Value
@@ -129,15 +136,6 @@ func (manager *Manager) Encode(proto *dynamic.Message, desc *desc.MessageDescrip
 			continue
 		}
 
-		value := prop.Default
-
-		if prop.Reference != nil {
-			ref := store.Load(prop.Reference.Resource, prop.Reference.Path)
-			if ref != nil {
-				value = ref.Value
-			}
-		}
-
 		if prop.Type == types.Message {
 			dynamic := dynamic.NewMessage(field.GetMessageType())
 			err = manager.Encode(dynamic, field.GetMessageType(), prop.Nested, store)
@@ -148,6 +146,23 @@ func (manager *Manager) Encode(proto *dynamic.Message, desc *desc.MessageDescrip
 			err = proto.TrySetField(field, dynamic)
 			if err != nil {
 				return err
+			}
+
+			continue
+		}
+
+		value := prop.Default
+
+		if prop.Reference != nil {
+			ref := store.Load(prop.Reference.Resource, prop.Reference.Path)
+			if ref != nil {
+				if prop.Type == types.Enum && ref.Enum != nil {
+					value = ref.Enum
+				}
+
+				if value == nil {
+					value = ref.Value
+				}
 			}
 		}
 
@@ -209,8 +224,19 @@ func (manager *Manager) Decode(proto *dynamic.Message, properties map[string]*sp
 				}
 
 				store := refs.NewReferenceStore(1)
-				store.StoreValue("", "", value)
 
+				if prop.Type == types.Enum {
+					enum, is := value.(int32)
+					if !is {
+						continue
+					}
+
+					store.StoreEnum("", "", enum)
+					ref.Set(index, store)
+					continue
+				}
+
+				store.StoreValue("", "", value)
 				ref.Set(index, store)
 			}
 
@@ -225,10 +251,20 @@ func (manager *Manager) Decode(proto *dynamic.Message, properties map[string]*sp
 		}
 
 		value := proto.GetField(field)
-
 		ref := refs.NewReference(prop.Path)
-		ref.Value = value
 
+		if prop.Type == types.Enum {
+			enum, is := value.(int32)
+			if !is {
+				continue
+			}
+
+			ref.Enum = &enum
+			store.StoreReference(manager.resource, ref)
+			continue
+		}
+
+		ref.Value = value
 		store.StoreReference(manager.resource, ref)
 	}
 }

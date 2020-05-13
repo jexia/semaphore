@@ -1,6 +1,7 @@
 package refs
 
 import (
+	"strconv"
 	"sync"
 
 	"github.com/jexia/maestro/pkg/specs"
@@ -17,6 +18,8 @@ type Store interface {
 	StoreValues(resource string, path string, values map[string]interface{})
 	// StoreValue stores the given value for the given resource and path
 	StoreValue(resource string, path string, value interface{})
+	// StoreEnum stores the given enum on the given path
+	StoreEnum(resource string, path string, enum int32)
 }
 
 // NewReference constructs a new reference with the given path
@@ -31,7 +34,32 @@ type Reference struct {
 	Path     string
 	Value    interface{}
 	Repeated []Store
+	Enum     *int32
 	mutex    sync.Mutex
+}
+
+// EnumVal represents a enum value
+type EnumVal struct {
+	key string
+	pos int32
+}
+
+// MarshalJSON custom marshal implementation mainly used for testing purposes
+func (val *EnumVal) MarshalJSON() ([]byte, error) {
+	return []byte(strconv.Quote(val.key)), nil
+}
+
+// UnmarshalJSON custom unmarshal implementation mainly used for testing purposes
+func (val *EnumVal) UnmarshalJSON([]byte) error {
+	return nil
+}
+
+// Enum value type
+func Enum(key string, pos int32) *EnumVal {
+	return &EnumVal{
+		key: key,
+		pos: pos,
+	}
 }
 
 // Repeating prepares the given reference to store repeating values
@@ -113,6 +141,12 @@ func (store *store) StoreValues(resource string, path string, values map[string]
 			continue
 		}
 
+		enum, is := val.(*EnumVal)
+		if is {
+			store.StoreEnum(resource, path, enum.pos)
+			continue
+		}
+
 		store.StoreValue(resource, path, val)
 	}
 }
@@ -121,6 +155,14 @@ func (store *store) StoreValues(resource string, path string, values map[string]
 func (store *store) StoreValue(resource string, path string, value interface{}) {
 	reference := NewReference(path)
 	reference.Value = value
+
+	store.StoreReference(resource, reference)
+}
+
+// StoreEnum stores the given enum for the given resource and path
+func (store *store) StoreEnum(resource string, path string, enum int32) {
+	reference := NewReference(path)
+	reference.Enum = &enum
 
 	store.StoreReference(resource, reference)
 }
@@ -142,6 +184,14 @@ func (store *store) NewRepeating(resource string, path string, reference *Refere
 
 	for index, value := range values {
 		store := NewReferenceStore(1)
+
+		enum, is := value.(*EnumVal)
+		if is {
+			store.StoreEnum("", "", enum.pos)
+			reference.Set(index, store)
+			continue
+		}
+
 		store.StoreValue("", "", value)
 		reference.Set(index, store)
 	}
@@ -182,6 +232,11 @@ func (prefix *PrefixStore) StoreValues(resource string, path string, values map[
 // StoreValue stores the given value for the given resource and path
 func (prefix *PrefixStore) StoreValue(resource string, path string, value interface{}) {
 	prefix.store.StoreValue(prefix.resource, template.JoinPath(prefix.path, path), value)
+}
+
+// StoreEnum stores the given enum for the given resource and path
+func (prefix *PrefixStore) StoreEnum(resource string, path string, enum int32) {
+	prefix.store.StoreEnum(prefix.resource, template.JoinPath(prefix.path, path), enum)
 }
 
 // References represents a map of property references

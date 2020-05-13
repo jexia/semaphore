@@ -31,6 +31,25 @@ func SpecsProperty(path string, property *Property) *specs.Property {
 		Options:  property.Options,
 	}
 
+	if property.Enum != nil {
+		result.Enum = &specs.Enum{
+			Name:      property.Name,
+			Keys:      make(map[string]*specs.EnumValue, len(property.Enum)),
+			Positions: make(map[int32]*specs.EnumValue, len(property.Enum)),
+		}
+
+		for key, value := range property.Enum {
+			value := &specs.EnumValue{
+				Key:         key,
+				Position:    value.Position,
+				Description: value.Description,
+			}
+
+			result.Enum.Keys[value.Key] = value
+			result.Enum.Positions[value.Position] = value
+		}
+	}
+
 	if property.Nested != nil {
 		result.Nested = make(map[string]*specs.Property, len(property.Nested))
 
