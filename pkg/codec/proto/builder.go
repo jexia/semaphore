@@ -51,7 +51,34 @@ func ConstructMessage(msg *builder.MessageBuilder, specs map[string]*specs.Prope
 			continue
 		}
 
-		typ := builder.FieldTypeScalar(protoc.ProtoTypes[prop.Type])
+		var typ *builder.FieldType
+
+		if prop.Type == types.Enum {
+			enum := builder.NewEnum(key + "Enum")
+
+			for _, value := range prop.Enum.Keys {
+				eval := builder.NewEnumValue(value.Key)
+
+				eval.SetNumber(value.Position)
+				eval.SetComments(builder.Comments{
+					LeadingComment: value.Description,
+				})
+
+				enum.AddValue(eval)
+			}
+
+			err = msg.TryAddNestedEnum(enum)
+			if err != nil {
+				return err
+			}
+
+			typ = builder.FieldTypeEnum(enum)
+		}
+
+		if typ == nil {
+			typ = builder.FieldTypeScalar(protoc.ProtoTypes[prop.Type])
+		}
+
 		field := builder.NewField(key, typ)
 		field.SetJsonName(key)
 		field.SetLabel(protoc.ProtoLabels[prop.Label])

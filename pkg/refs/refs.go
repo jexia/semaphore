@@ -1,6 +1,7 @@
 package refs
 
 import (
+	"strconv"
 	"sync"
 
 	"github.com/jexia/maestro/pkg/specs"
@@ -35,6 +36,30 @@ type Reference struct {
 	Repeated []Store
 	Enum     *int32
 	mutex    sync.Mutex
+}
+
+// EnumVal represents a enum value
+type EnumVal struct {
+	key string
+	pos int32
+}
+
+// MarshalJSON custom marshal implementation mainly used for testing purposes
+func (val *EnumVal) MarshalJSON() ([]byte, error) {
+	return []byte(strconv.Quote(val.key)), nil
+}
+
+// UnmarshalJSON custom unmarshal implementation mainly used for testing purposes
+func (val *EnumVal) UnmarshalJSON([]byte) error {
+	return nil
+}
+
+// Enum value type
+func Enum(key string, pos int32) *EnumVal {
+	return &EnumVal{
+		key: key,
+		pos: pos,
+	}
 }
 
 // Repeating prepares the given reference to store repeating values
@@ -116,6 +141,12 @@ func (store *store) StoreValues(resource string, path string, values map[string]
 			continue
 		}
 
+		enum, is := val.(*EnumVal)
+		if is {
+			store.StoreEnum(resource, path, enum.pos)
+			continue
+		}
+
 		store.StoreValue(resource, path, val)
 	}
 }
@@ -153,6 +184,14 @@ func (store *store) NewRepeating(resource string, path string, reference *Refere
 
 	for index, value := range values {
 		store := NewReferenceStore(1)
+
+		enum, is := value.(*EnumVal)
+		if is {
+			store.StoreEnum("", "", enum.pos)
+			reference.Set(index, store)
+			continue
+		}
+
 		store.StoreValue("", "", value)
 		reference.Set(index, store)
 	}

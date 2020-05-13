@@ -9,6 +9,11 @@ service mock {
     rpc repeated_values(RepeatedValues) returns (Empty);
 }
 
+enum Status {
+    UNKOWN = 0;
+    PENDING = 1;
+}
+
 message Simple {
     string message = 1;
 }
@@ -23,6 +28,14 @@ message Repeated {
 
 message RepeatedValues {
     repeated string repeating = 2;
+}
+
+message Enum {
+    Status status = 1;
+}
+
+message RepeatedEnum {
+    repeated Status status = 1;
 }
 
 message Value {
