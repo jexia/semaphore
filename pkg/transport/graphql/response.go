@@ -30,12 +30,19 @@ func ResponseValue(specs *specs.Property, refs refs.Store) (interface{}, error) 
 					continue
 				}
 
+				val := nested.Default
 				ref := store.Load("", "")
-				if ref == nil {
-					continue
+				if ref != nil {
+					if ref.Enum != nil {
+						val = nested.Enum.Positions[*ref.Enum].Key
+					}
+
+					if ref.Value != nil && val == nil {
+						val = ref.Value
+					}
 				}
 
-				repeating[index] = ref.Value
+				repeating[index] = val
 			}
 
 			result[nested.Name] = repeating
@@ -52,22 +59,23 @@ func ResponseValue(specs *specs.Property, refs refs.Store) (interface{}, error) 
 			continue
 		}
 
-		if nested.Reference == nil {
-			continue
+		val := nested.Default
+
+		if nested.Reference != nil {
+			ref := refs.Load(nested.Reference.Resource, nested.Reference.Path)
+			if ref != nil {
+				if ref.Enum != nil {
+					// Enum should exist and a additional nil check should not be necessary
+					val = nested.Enum.Positions[*ref.Enum].Key
+				}
+
+				if ref.Value != nil && val == nil {
+					val = ref.Value
+				}
+			}
 		}
 
-		ref := refs.Load(nested.Reference.Resource, nested.Reference.Path)
-		if ref == nil {
-			continue
-		}
-
-		if ref.Enum != nil && nested.Enum != nil {
-			// Enum should exist and a additional nil check should not be necessary
-			result[nested.Name] = nested.Enum.Positions[*ref.Enum].Key
-			continue
-		}
-
-		result[nested.Name] = ref.Value
+		result[nested.Name] = val
 	}
 
 	return result, nil
