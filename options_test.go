@@ -3,37 +3,10 @@ package maestro
 import (
 	"testing"
 
-	"github.com/jexia/maestro/pkg/constructor"
 	"github.com/jexia/maestro/pkg/instance"
 	"github.com/jexia/maestro/pkg/logger"
 	"github.com/jexia/maestro/pkg/specs"
 )
-
-func TestAfterConstructorOption(t *testing.T) {
-	fn := func(next constructor.AfterConstructor) constructor.AfterConstructor { return next }
-
-	result, err := New(AfterConstructor(fn))
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if result.Options.AfterConstructor == nil {
-		t.Fatal("unexpected result expected after constructor to be set")
-	}
-}
-
-func TestMultipleAfterConstructorOption(t *testing.T) {
-	fn := func(next constructor.AfterConstructor) constructor.AfterConstructor { return next }
-
-	result, err := New(AfterConstructor(fn), AfterConstructor(fn))
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if result.Options.AfterConstructor == nil {
-		t.Fatal("unexpected result expected after constructor to be set")
-	}
-}
 
 func TestWithFlowsOption(t *testing.T) {
 	resolver := func(instance.Context) ([]*specs.FlowsManifest, error) { return nil, nil }
