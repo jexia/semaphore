@@ -7,6 +7,10 @@ graphql {
     address = ":8080"
 }
 
+prometheus {
+    address = ":5050"
+}
+
 services {
     select "proto.*" {
         host = "https://jsonplaceholder.typicode.com/"

@@ -90,7 +90,12 @@ func FlowManager(ctx instance.Context, mem functions.Collection, services *specs
 				return nil, err
 			}
 
-			nodes[index] = flow.NewNode(ctx, node, caller, rollback)
+			nodes[index] = flow.NewNode(ctx, node, caller, rollback, &flow.NodeMiddleware{
+				BeforeDo:       options.BeforeNodeDo,
+				AfterDo:        options.AfterNodeDo,
+				BeforeRollback: options.BeforeNodeRollback,
+				AfterRollback:  options.AfterNodeRollback,
+			})
 		}
 
 		forward, err := Forward(services, flows, manager.GetForward(), options)
@@ -98,7 +103,13 @@ func FlowManager(ctx instance.Context, mem functions.Collection, services *specs
 			return nil, err
 		}
 
-		result.Flow = flow.NewManager(ctx, manager.GetName(), nodes)
+		result.Flow = flow.NewManager(ctx, manager.GetName(), nodes, &flow.ManagerMiddleware{
+			BeforeDo:       options.BeforeManagerDo,
+			AfterDo:        options.AfterManagerDo,
+			BeforeRollback: options.BeforeManagerRollback,
+			AfterRollback:  options.AfterManagerRollback,
+		})
+
 		result.Forward = forward
 
 		results[index] = result

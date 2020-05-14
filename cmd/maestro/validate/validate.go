@@ -32,7 +32,12 @@ func run(cmd *cobra.Command, args []string) error {
 	}
 
 	ctx := instance.NewContext()
-	_, err = constructor.Specs(ctx, functions.Collection{}, maestro.NewOptions(ctx, arguments...))
+	options, err := maestro.NewOptions(ctx, arguments...)
+	if err != nil {
+		return err
+	}
+
+	_, err = constructor.Specs(ctx, functions.Collection{}, options)
 	if err != nil {
 		return err
 	}

@@ -42,6 +42,12 @@ func Parse(options *hcl.Options, target *Maestro) {
 			Address: options.GRPC.Address,
 		}
 	}
+
+	if options.Prometheus != nil && target.Prometheus.Address == "" {
+		target.Prometheus = Prometheus{
+			Address: options.Prometheus.Address,
+		}
+	}
 }
 
 // Maestro configurations
@@ -50,8 +56,14 @@ type Maestro struct {
 	HTTP         HTTP
 	GraphQL      GraphQL
 	GRPC         GRPC
+	Prometheus   Prometheus
 	Protobuffers []string
 	Files        []string
+}
+
+// Prometheus configurations
+type Prometheus struct {
+	Address string
 }
 
 // HTTP configurations

@@ -3,7 +3,7 @@ package flow
 import "testing"
 
 func TestTrackerMark(t *testing.T) {
-	tracker := NewTracker(1)
+	tracker := NewTracker("", 1)
 	node := NewMockNode("first", nil, nil)
 
 	if tracker.Met(node) {

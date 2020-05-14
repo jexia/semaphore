@@ -84,7 +84,7 @@ func TestNewManager(t *testing.T) {
 	for name, nodes := range tests {
 		t.Run(name, func(t *testing.T) {
 			ctx := instance.NewContext()
-			manager := NewManager(ctx, name, nodes)
+			manager := NewManager(ctx, name, nodes, nil)
 			if manager == nil {
 				t.Fatal("unexpected result, expected a manager to be returned")
 			}
@@ -138,9 +138,9 @@ func TestBeforeDoFlow(t *testing.T) {
 	call := &caller{}
 	_, manager := NewMockFlowManager(call, nil)
 
-	manager.BeforeDo = func(ctx context.Context, manager *Manager, store refs.Store) error {
+	manager.BeforeDo = func(ctx context.Context, manager *Manager, store refs.Store) (context.Context, error) {
 		counter++
-		return nil
+		return ctx, nil
 	}
 
 	err := manager.Do(context.Background(), nil)
@@ -159,9 +159,9 @@ func TestBeforeDoFlowErr(t *testing.T) {
 	call := &caller{}
 	_, manager := NewMockFlowManager(call, nil)
 
-	manager.BeforeDo = func(ctx context.Context, manager *Manager, store refs.Store) error {
+	manager.BeforeDo = func(ctx context.Context, manager *Manager, store refs.Store) (context.Context, error) {
 		counter++
-		return expected
+		return ctx, expected
 	}
 
 	err := manager.Do(context.Background(), nil)
@@ -180,9 +180,9 @@ func TestAfterDoFlowErr(t *testing.T) {
 	call := &caller{}
 	_, manager := NewMockFlowManager(call, nil)
 
-	manager.AfterDo = func(ctx context.Context, manager *Manager, store refs.Store) error {
+	manager.AfterDo = func(ctx context.Context, manager *Manager, store refs.Store) (context.Context, error) {
 		counter++
-		return expected
+		return ctx, expected
 	}
 
 	err := manager.Do(context.Background(), nil)
@@ -200,9 +200,9 @@ func TestAfterDoFlow(t *testing.T) {
 	call := &caller{}
 	_, manager := NewMockFlowManager(call, nil)
 
-	manager.AfterDo = func(ctx context.Context, manager *Manager, store refs.Store) error {
+	manager.AfterDo = func(ctx context.Context, manager *Manager, store refs.Store) (context.Context, error) {
 		counter++
-		return nil
+		return ctx, nil
 	}
 
 	err := manager.Do(context.Background(), nil)
@@ -220,13 +220,13 @@ func TestBeforeRollbackFlow(t *testing.T) {
 	call := &caller{}
 	nodes, manager := NewMockFlowManager(call, nil)
 
-	manager.BeforeRollback = func(ctx context.Context, manager *Manager, store refs.Store) error {
+	manager.BeforeRollback = func(ctx context.Context, manager *Manager, store refs.Store) (context.Context, error) {
 		counter++
-		return nil
+		return ctx, nil
 	}
 
 	manager.wg.Add(1)
-	manager.Revert(NewTracker(len(nodes)), nil)
+	manager.Revert(NewTracker("", len(nodes)), nil)
 
 	if counter != 1 {
 		t.Fatalf("unexpected counter %d, expected before rollback function to be called", counter)
@@ -239,13 +239,13 @@ func TestBeforeRollbackFlowErr(t *testing.T) {
 	call := &caller{}
 	nodes, manager := NewMockFlowManager(call, nil)
 
-	manager.BeforeRollback = func(ctx context.Context, manager *Manager, store refs.Store) error {
+	manager.BeforeRollback = func(ctx context.Context, manager *Manager, store refs.Store) (context.Context, error) {
 		counter++
-		return expected
+		return ctx, expected
 	}
 
 	manager.wg.Add(1)
-	manager.Revert(NewTracker(len(nodes)), nil)
+	manager.Revert(NewTracker("", len(nodes)), nil)
 
 	if counter != 1 {
 		t.Fatalf("unexpected counter %d, expected before rollback function to be called", counter)
@@ -257,13 +257,13 @@ func TestAfterRollbackFlow(t *testing.T) {
 	call := &caller{}
 	nodes, manager := NewMockFlowManager(call, nil)
 
-	manager.AfterRollback = func(ctx context.Context, manager *Manager, store refs.Store) error {
+	manager.AfterRollback = func(ctx context.Context, manager *Manager, store refs.Store) (context.Context, error) {
 		counter++
-		return nil
+		return ctx, nil
 	}
 
 	manager.wg.Add(1)
-	manager.Revert(NewTracker(len(nodes)), nil)
+	manager.Revert(NewTracker("", len(nodes)), nil)
 
 	if counter != 1 {
 		t.Fatalf("unexpected counter %d, expected after rollback function to be called", counter)
@@ -276,13 +276,13 @@ func TestAfterRollbackFlowErr(t *testing.T) {
 	call := &caller{}
 	nodes, manager := NewMockFlowManager(call, nil)
 
-	manager.AfterRollback = func(ctx context.Context, manager *Manager, store refs.Store) error {
+	manager.AfterRollback = func(ctx context.Context, manager *Manager, store refs.Store) (context.Context, error) {
 		counter++
-		return expected
+		return ctx, expected
 	}
 
 	manager.wg.Add(1)
-	manager.Revert(NewTracker(len(nodes)), nil)
+	manager.Revert(NewTracker("", len(nodes)), nil)
 
 	if counter != 1 {
 		t.Fatalf("unexpected counter %d, expected before rollback function to be called", counter)

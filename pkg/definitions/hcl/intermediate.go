@@ -6,17 +6,18 @@ import (
 
 // Manifest intermediate specs
 type Manifest struct {
-	LogLevel        string     `hcl:"log_level,optional"`
-	GraphQL         *GraphQL   `hcl:"graphql,block"`
-	HTTP            *HTTP      `hcl:"http,block"`
-	GRPC            *GRPC      `hcl:"grpc,block"`
-	Protobuffers    []string   `hcl:"protobuffers,optional"`
-	Include         []string   `hcl:"include,optional"`
-	Flows           []Flow     `hcl:"flow,block"`
-	Proxy           []Proxy    `hcl:"proxy,block"`
-	Endpoints       []Endpoint `hcl:"endpoint,block"`
-	Services        []Service  `hcl:"service,block"`
-	ServiceSelector []Services `hcl:"services,block"`
+	LogLevel        string      `hcl:"log_level,optional"`
+	GraphQL         *GraphQL    `hcl:"graphql,block"`
+	HTTP            *HTTP       `hcl:"http,block"`
+	GRPC            *GRPC       `hcl:"grpc,block"`
+	Prometheus      *Prometheus `hcl:"prometheus,block"`
+	Protobuffers    []string    `hcl:"protobuffers,optional"`
+	Include         []string    `hcl:"include,optional"`
+	Flows           []Flow      `hcl:"flow,block"`
+	Proxy           []Proxy     `hcl:"proxy,block"`
+	Endpoints       []Endpoint  `hcl:"endpoint,block"`
+	Services        []Service   `hcl:"service,block"`
+	ServiceSelector []Services  `hcl:"services,block"`
 }
 
 // GraphQL represents the GraphQL option definitions
@@ -31,6 +32,11 @@ type HTTP struct {
 
 // GRPC represent the gRPC option definitions
 type GRPC struct {
+	Address string `hcl:"address"`
+}
+
+// Prometheus represent the prometheus option definitions
+type Prometheus struct {
 	Address string `hcl:"address"`
 }
 

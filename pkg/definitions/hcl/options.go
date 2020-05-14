@@ -7,4 +7,5 @@ type Options struct {
 	GraphQL      *GraphQL
 	HTTP         *HTTP
 	GRPC         *GRPC
+	Prometheus   *Prometheus
 }

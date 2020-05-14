@@ -10,6 +10,7 @@ import (
 	"github.com/jexia/maestro/pkg/definitions/protoc"
 	"github.com/jexia/maestro/pkg/instance"
 	"github.com/jexia/maestro/pkg/logger"
+	"github.com/jexia/maestro/pkg/metrics/prometheus"
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jexia/maestro/pkg/transport/graphql"
 	"github.com/jexia/maestro/pkg/transport/grpc"
@@ -60,6 +61,10 @@ func ConstructArguments(params *Maestro) ([]constructor.Option, error) {
 
 	if params.GRPC.Address != "" {
 		arguments = append(arguments, maestro.WithListener(grpc.NewListener(params.GRPC.Address, specs.Options{})))
+	}
+
+	if params.Prometheus.Address != "" {
+		arguments = append(arguments, maestro.WithMiddleware(prometheus.New(params.Prometheus.Address)))
 	}
 
 	arguments = append([]constructor.Option{maestro.WithLogLevel(logger.Global, params.LogLevel)}, arguments...)

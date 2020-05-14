@@ -13,8 +13,12 @@ import (
 // NewNode constructs a new node for the given call.
 // The service called inside the call endpoint is retrieved from the services collection.
 // The call, codec and rollback are defined inside the node and used while processing requests.
-func NewNode(ctx instance.Context, node *specs.Node, call, rollback Call) *Node {
+func NewNode(ctx instance.Context, node *specs.Node, call, rollback Call, middleware *NodeMiddleware) *Node {
 	references := refs.References{}
+
+	if middleware == nil {
+		middleware = &NodeMiddleware{}
+	}
 
 	if node.Call != nil {
 		references.MergeLeft(refs.ParameterReferences(node.Call.Request))
@@ -35,15 +39,19 @@ func NewNode(ctx instance.Context, node *specs.Node, call, rollback Call) *Node 
 	logger := ctx.Logger(logger.Flow)
 
 	return &Node{
-		ctx:        ctx,
-		logger:     logger,
-		Name:       node.Name,
-		Previous:   []*Node{},
-		Call:       call,
-		Rollback:   rollback,
-		DependsOn:  node.DependsOn,
-		References: references,
-		Next:       []*Node{},
+		BeforeDo:     middleware.BeforeDo,
+		BeforeRevert: middleware.BeforeRollback,
+		ctx:          ctx,
+		logger:       logger,
+		Name:         node.Name,
+		Previous:     []*Node{},
+		Call:         call,
+		Revert:       rollback,
+		DependsOn:    node.DependsOn,
+		References:   references,
+		Next:         []*Node{},
+		AfterDo:      middleware.AfterDo,
+		AfterRevert:  middleware.AfterRollback,
 	}
 }
 
@@ -61,14 +69,22 @@ func (nodes Nodes) Has(name string) bool {
 	return false
 }
 
+// NodeMiddleware holds all the available
+type NodeMiddleware struct {
+	BeforeDo       BeforeNode
+	AfterDo        AfterNode
+	BeforeRollback BeforeNode
+	AfterRollback  AfterNode
+}
+
 // BeforeNode is called before a node is executed
-type BeforeNode func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store refs.Store) error
+type BeforeNode func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store refs.Store) (context.Context, error)
 
 // BeforeNodeHandler wraps the before node function to allow middleware to be chained
 type BeforeNodeHandler func(BeforeNode) BeforeNode
 
 // AfterNode is called after a node is executed
-type AfterNode func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store refs.Store) error
+type AfterNode func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store refs.Store) (context.Context, error)
 
 // AfterNodeHandler wraps the after node function to allow middleware to be chained
 type AfterNodeHandler func(AfterNode) AfterNode
@@ -82,7 +98,7 @@ type Node struct {
 	Name         string
 	Previous     Nodes
 	Call         Call
-	Rollback     Call
+	Revert       Call
 	DependsOn    map[string]*specs.Node
 	References   map[string]*specs.PropertyReference
 	Next         Nodes
@@ -104,8 +120,10 @@ func (node *Node) Do(ctx context.Context, tracker *Tracker, processes *Processes
 		return
 	}
 
+	var err error
+
 	if node.BeforeDo != nil {
-		err := node.BeforeDo(ctx, node, tracker, processes, refs)
+		ctx, err = node.BeforeDo(ctx, node, tracker, processes, refs)
 		if err != nil {
 			node.logger.Error("Node before middleware failed: ", err)
 			processes.Fatal(err)
@@ -114,7 +132,7 @@ func (node *Node) Do(ctx context.Context, tracker *Tracker, processes *Processes
 	}
 
 	if node.Call != nil {
-		err := node.Call.Do(ctx, refs)
+		err = node.Call.Do(ctx, refs)
 		if err != nil {
 			node.logger.Error("Call failed: ", node.Name)
 			processes.Fatal(err)
@@ -137,7 +155,7 @@ func (node *Node) Do(ctx context.Context, tracker *Tracker, processes *Processes
 	}
 
 	if node.AfterDo != nil {
-		err := node.AfterDo(ctx, node, tracker, processes, refs)
+		ctx, err = node.AfterDo(ctx, node, tracker, processes, refs)
 		if err != nil {
 			node.logger.Error("Node after middleware failed: ", err)
 			processes.Fatal(err)
@@ -146,9 +164,9 @@ func (node *Node) Do(ctx context.Context, tracker *Tracker, processes *Processes
 	}
 }
 
-// Revert executes the given node rollback an calls the previous nodes.
+// Rollback executes the given node rollback an calls the previous nodes.
 // If one of the nodes fails is the error marked but execution is not aborted.
-func (node *Node) Revert(ctx context.Context, tracker *Tracker, processes *Processes, refs refs.Store) {
+func (node *Node) Rollback(ctx context.Context, tracker *Tracker, processes *Processes, refs refs.Store) {
 	defer processes.Done()
 	node.logger.Debug("Executing node revert ", node.Name)
 
@@ -160,8 +178,10 @@ func (node *Node) Revert(ctx context.Context, tracker *Tracker, processes *Proce
 		return
 	}
 
+	var err error
+
 	if node.BeforeRevert != nil {
-		err := node.BeforeRevert(ctx, node, tracker, processes, refs)
+		ctx, err = node.BeforeRevert(ctx, node, tracker, processes, refs)
 		if err != nil {
 			node.logger.Error("Node before middleware failed: ", err)
 			processes.Fatal(err)
@@ -173,12 +193,12 @@ func (node *Node) Revert(ctx context.Context, tracker *Tracker, processes *Proce
 		processes.Add(len(node.Previous))
 		for _, node := range node.Previous {
 			tracker.Mark(node)
-			go node.Revert(ctx, tracker, processes, refs)
+			go node.Rollback(ctx, tracker, processes, refs)
 		}
 	}()
 
-	if node.Rollback != nil {
-		err := node.Rollback.Do(ctx, refs)
+	if node.Revert != nil {
+		err = node.Revert.Do(ctx, refs)
 		if err != nil {
 			processes.Fatal(err)
 			return
@@ -189,7 +209,7 @@ func (node *Node) Revert(ctx context.Context, tracker *Tracker, processes *Proce
 	tracker.Mark(node)
 
 	if node.AfterRevert != nil {
-		err := node.AfterRevert(ctx, node, tracker, processes, refs)
+		ctx, err = node.AfterRevert(ctx, node, tracker, processes, refs)
 		if err != nil {
 			node.logger.Error("Node after middleware failed: ", err)
 			processes.Fatal(err)

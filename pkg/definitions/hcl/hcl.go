@@ -118,6 +118,10 @@ func GetOptions(ctx instance.Context, path string) (*Options, error) {
 		if definition.GraphQL != nil {
 			options.GraphQL = definition.GraphQL
 		}
+
+		if definition.Prometheus != nil {
+			options.Prometheus = definition.Prometheus
+		}
 	}
 
 	return options, nil

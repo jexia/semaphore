@@ -22,6 +22,10 @@ http {
     address = "$HTTP_ADDRESS"
 }
 
+prometheus {
+    address = ":5050"
+}
+
 services {
     select "proto.users.*" {
         host = "api.jexia.com"

@@ -20,14 +20,22 @@ type Call interface {
 // NewManager constructs a new manager for the given flow.
 // Branches are constructed for the constructed nodes to optimalise performance.
 // Various variables such as the amount of nodes, references and loose ends are collected to optimalise allocations during runtime.
-func NewManager(ctx instance.Context, name string, nodes []*Node) *Manager {
+func NewManager(ctx instance.Context, name string, nodes []*Node, middleware *ManagerMiddleware) *Manager {
 	ConstructBranches(nodes)
 
+	if middleware == nil {
+		middleware = &ManagerMiddleware{}
+	}
+
 	manager := &Manager{
-		ctx:      ctx,
-		Name:     name,
-		Starting: FetchStarting(nodes),
-		Nodes:    len(nodes),
+		BeforeDo:       middleware.BeforeDo,
+		BeforeRollback: middleware.BeforeRollback,
+		ctx:            ctx,
+		Name:           name,
+		Starting:       FetchStarting(nodes),
+		Nodes:          len(nodes),
+		AfterDo:        middleware.AfterDo,
+		AfterRollback:  middleware.AfterRollback,
 	}
 
 	ends := make(map[string]*Node, len(nodes))
@@ -42,14 +50,22 @@ func NewManager(ctx instance.Context, name string, nodes []*Node) *Manager {
 	return manager
 }
 
+// ManagerMiddleware holds the available middleware options for a flow manager
+type ManagerMiddleware struct {
+	BeforeDo       BeforeManager
+	AfterDo        AfterManager
+	BeforeRollback BeforeManager
+	AfterRollback  AfterManager
+}
+
 // BeforeManager is called before a manager get's calles
-type BeforeManager func(ctx context.Context, manager *Manager, store refs.Store) error
+type BeforeManager func(ctx context.Context, manager *Manager, store refs.Store) (context.Context, error)
 
 // BeforeManagerHandler wraps the before call function to allow middleware to be chained
 type BeforeManagerHandler func(BeforeManager) BeforeManager
 
 // AfterManager is called after a manager is called
-type AfterManager func(ctx context.Context, manager *Manager, store refs.Store) error
+type AfterManager func(ctx context.Context, manager *Manager, store refs.Store) (context.Context, error)
 
 // AfterManagerHandler wraps the after call function to allow middleware to be chained
 type AfterManagerHandler func(AfterManager) AfterManager
@@ -76,9 +92,9 @@ func (manager *Manager) GetName() string {
 
 // Do calls all the nodes inside the manager if a error is returned is a rollback of all the already executed steps triggered.
 // Nodes are executed concurrently to one another.
-func (manager *Manager) Do(ctx context.Context, refs refs.Store) error {
+func (manager *Manager) Do(ctx context.Context, refs refs.Store) (err error) {
 	if manager.BeforeDo != nil {
-		err := manager.BeforeDo(ctx, manager, refs)
+		ctx, err = manager.BeforeDo(ctx, manager, refs)
 		if err != nil {
 			return err
 		}
@@ -90,7 +106,7 @@ func (manager *Manager) Do(ctx context.Context, refs refs.Store) error {
 	manager.ctx.Logger(logger.Flow).WithField("flow", manager.Name).Debug("Executing flow")
 
 	processes := NewProcesses(len(manager.Starting))
-	tracker := NewTracker(manager.Nodes)
+	tracker := NewTracker(manager.Name, manager.Nodes)
 
 	for _, node := range manager.Starting {
 		go node.Do(ctx, tracker, processes, refs)
@@ -114,7 +130,7 @@ func (manager *Manager) Do(ctx context.Context, refs refs.Store) error {
 	manager.ctx.Logger(logger.Flow).WithField("flow", manager.Name).Debug("Flow completed")
 
 	if manager.AfterDo != nil {
-		err := manager.AfterDo(ctx, manager, refs)
+		ctx, err = manager.AfterDo(ctx, manager, refs)
 		if err != nil {
 			return err
 		}
@@ -133,17 +149,18 @@ func (manager *Manager) NewStore() refs.Store {
 func (manager *Manager) Revert(executed *Tracker, refs refs.Store) {
 	defer manager.wg.Done()
 
+	var err error
 	ctx := context.Background()
 
 	if manager.BeforeRollback != nil {
-		err := manager.BeforeRollback(ctx, manager, refs)
+		ctx, err = manager.BeforeRollback(ctx, manager, refs)
 		if err != nil {
 			manager.ctx.Logger(logger.Flow).Error("Revert failed before rollback returned a error: ", err)
 			return
 		}
 	}
 
-	tracker := NewTracker(manager.Nodes)
+	tracker := NewTracker(manager.Name, manager.Nodes)
 	ends := make(map[string]*Node, manager.Ends)
 
 	// Include all nodes to the revert tracker that have not been called
@@ -158,13 +175,13 @@ func (manager *Manager) Revert(executed *Tracker, refs refs.Store) {
 	processes := NewProcesses(len(ends))
 
 	for _, end := range ends {
-		go end.Revert(ctx, tracker, processes, refs)
+		go end.Rollback(ctx, tracker, processes, refs)
 	}
 
 	processes.Wait()
 
 	if manager.AfterRollback != nil {
-		err := manager.AfterRollback(ctx, manager, refs)
+		ctx, err = manager.AfterRollback(ctx, manager, refs)
 		if err != nil {
 			manager.ctx.Logger(logger.Flow).Error("Revert failed after rollback returned a error: ", err)
 			return

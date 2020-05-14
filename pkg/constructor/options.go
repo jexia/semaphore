@@ -3,6 +3,7 @@ package constructor
 import (
 	"github.com/jexia/maestro/pkg/codec"
 	"github.com/jexia/maestro/pkg/definitions"
+	"github.com/jexia/maestro/pkg/flow"
 	"github.com/jexia/maestro/pkg/functions"
 	"github.com/jexia/maestro/pkg/instance"
 	"github.com/jexia/maestro/pkg/transport"
@@ -24,17 +25,29 @@ func NewOptions(ctx instance.Context) Options {
 
 // Options represents all the available options
 type Options struct {
-	Ctx              instance.Context
-	Codec            codec.Constructors
-	Callers          transport.Callers
-	Listeners        transport.Listeners
-	Flows            []definitions.FlowsResolver
-	Endpoints        []definitions.EndpointsResolver
-	Services         []definitions.ServicesResolver
-	Schemas          []definitions.SchemaResolver
-	AfterConstructor AfterConstructor
-	Functions        functions.Custom
+	Ctx                   instance.Context
+	Codec                 codec.Constructors
+	Callers               transport.Callers
+	Listeners             transport.Listeners
+	Flows                 []definitions.FlowsResolver
+	Endpoints             []definitions.EndpointsResolver
+	Services              []definitions.ServicesResolver
+	Schemas               []definitions.SchemaResolver
+	Middleware            []Middleware
+	AfterConstructor      AfterConstructor
+	BeforeManagerDo       flow.BeforeManager
+	BeforeManagerRollback flow.BeforeManager
+	AfterManagerDo        flow.AfterManager
+	AfterManagerRollback  flow.AfterManager
+	BeforeNodeDo          flow.BeforeNode
+	BeforeNodeRollback    flow.BeforeNode
+	AfterNodeDo           flow.AfterNode
+	AfterNodeRollback     flow.AfterNode
+	Functions             functions.Custom
 }
+
+// Middleware is called once the options have been initialised
+type Middleware func(instance.Context) ([]Option, error)
 
 // AfterConstructor is called after the specifications is constructored
 type AfterConstructor func(instance.Context, *Collection) error

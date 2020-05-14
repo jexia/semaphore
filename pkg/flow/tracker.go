@@ -5,8 +5,9 @@ import (
 )
 
 // NewTracker constructs a new tracker
-func NewTracker(nodes int) *Tracker {
+func NewTracker(flow string, nodes int) *Tracker {
 	return &Tracker{
+		Flow:  flow,
 		Nodes: make(map[string]int, nodes),
 		Locks: make(map[*Node]*sync.Mutex, nodes),
 	}
@@ -14,6 +15,7 @@ func NewTracker(nodes int) *Tracker {
 
 // Tracker represents a structure responsible of tracking nodes
 type Tracker struct {
+	Flow  string
 	mutex sync.Mutex
 	Nodes map[string]int
 	Locks map[*Node]*sync.Mutex
