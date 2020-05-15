@@ -93,7 +93,7 @@ flow "Logger" {
     }
 
     resource "log" {
-        request "logger" "Log" {
+        request "com.project.Logger" "Log" {
             message = "{{ input:message }}"
         }
     }
@@ -143,7 +143,7 @@ A call could contain the request headers, request body and rollback.
 ```hcl
 # Calling service alias logger.Log
 resource "log" {
-  request "logger" "Log" {
+  request "com.project.Logger" "Log" {
     message = "{{ input:message }}"
   }
 }
@@ -154,7 +154,7 @@ Marks resources as dependencies. This could be usefull if a resource does not ha
 
 ```hcl
 resource "warehouse" {
-  request "warehouse" "Ship" {
+  request "com.project.Wharehouse" "Ship" {
     product = "{{ input:product }}"
   }
 }
@@ -162,7 +162,7 @@ resource "warehouse" {
 resource "log" {
   depends_on = ["warehouse"]
 
-  request "logger" "Log" {
+  request "com.project.Logger" "Log" {
     message = "{{ input:message }}"
   }
 }
@@ -191,7 +191,7 @@ input "schema.Input" {
 }
 
 resource "log" {
-    request "logger" "Log" {
+    request "com.project" "Log" {
         header {
             Authorization = "{{ input.header:Authorization }}"
         }
@@ -237,7 +237,7 @@ A proxy forward could ideally be used for file uploads or large messages which c
 ```hcl
 proxy "upload" {
     resource "auth" {
-        request "authenticate" "Authenticate" {
+        request "com.project" "Authenticate" {
             header {
                 Authorization = "{{ input.header:Authorization }}"
             }
@@ -245,12 +245,12 @@ proxy "upload" {
     }
 
     resource "logger" {
-        request "logger" "Log" {
+        request "com.project" "Log" {
             message = "{{ auth:claim }}"
         }
     }
 
-    forward "uploader" "File" {
+    forward "com.project.Uploader" {
         header {
             StorageKey = "{{ auth:key }}"
         }
@@ -323,7 +323,7 @@ function(...<arguments>)
 
 ```hcl
 resource "auth" {
-    request "authenticate" "Authenticate" {
+    request "com.project" "Authenticate" {
         header {
             Authorization = "{{ jwt(input.header:Authorization) }}"
         }
