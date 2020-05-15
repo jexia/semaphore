@@ -35,6 +35,15 @@ func DefineManifest(ctx instance.Context, services *specs.ServicesManifest, sche
 func DefineProxy(ctx instance.Context, services *specs.ServicesManifest, schema *specs.SchemaManifest, flows *specs.FlowsManifest, proxy *specs.Proxy) (err error) {
 	ctx.Logger(logger.Core).WithField("proxy", proxy.GetName()).Info("Defining proxy flow types")
 
+	if proxy.Input != nil {
+		input := schema.GetProperty(proxy.Input.Schema)
+		if input == nil {
+			return trace.New(trace.WithMessage("undefined object '%s' in schema collection", proxy.Input.Schema))
+		}
+
+		proxy.Input = ToParameterMap(proxy.Input, "", input)
+	}
+
 	for _, node := range proxy.Nodes {
 		if node.Call != nil {
 			err = DefineCall(ctx, services, schema, flows, node, node.Call, proxy)

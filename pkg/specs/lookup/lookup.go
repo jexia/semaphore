@@ -172,6 +172,10 @@ func HeaderLookup(header specs.Header) PathLookup {
 // PropertyLookup attempts to lookup the given path inside the params collection
 func PropertyLookup(param *specs.Property) PathLookup {
 	return func(path string) *specs.Property {
+		if param == nil {
+			return nil
+		}
+
 		if path == SelfRef {
 			return param
 		}

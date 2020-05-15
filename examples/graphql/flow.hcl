@@ -25,12 +25,6 @@ endpoint "todo" "graphql" {
 	base = "query"
 }
 
-endpoint "sample" "graphql" {
-	path = "sample"
-	name = "Sample"
-	base = "query"
-}
-
 flow "todo" {
 	input "proto.Query" {}
 
@@ -45,14 +39,5 @@ flow "todo" {
 		userId = "{{ query:userId }}"
 		title = "{{ query:title }}"
 		completed = "{{ query:completed }}"
-	}
-}
-
-flow "sample" {
-	input "proto.Query" {}
-
-	output "proto.Item" {
-		title = "sample"
-		completed = true
 	}
 }

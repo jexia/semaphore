@@ -242,6 +242,28 @@ func ParseIntermediateProxy(ctx instance.Context, proxy Proxy) (*specs.Proxy, er
 		Forward: forward,
 	}
 
+	if proxy.Input != nil {
+		input := &specs.ParameterMap{
+			Schema: proxy.Input.Params,
+			Header: make(specs.Header, len(proxy.Input.Header)),
+		}
+
+		if proxy.Input.Options != nil {
+			input.Options = ParseIntermediateSpecOptions(proxy.Input.Options.Body)
+		}
+
+		for _, key := range proxy.Input.Header {
+			input.Header[key] = &specs.Property{
+				Path:  key,
+				Name:  key,
+				Type:  types.String,
+				Label: labels.Optional,
+			}
+		}
+
+		result.Input = input
+	}
+
 	for index, node := range proxy.Nodes {
 		node, err := ParseIntermediateNode(ctx, node)
 		if err != nil {

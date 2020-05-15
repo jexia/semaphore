@@ -185,9 +185,17 @@ type Method struct {
 // Proxy specification
 type Proxy struct {
 	Name      string       `hcl:"name,label"`
+	Input     *ProxyInput  `hcl:"input,block"`
 	Resources []Resources  `hcl:"resources,block"`
 	Nodes     []Node       `hcl:"resource,block"`
 	Forward   ProxyForward `hcl:"forward,block"`
+}
+
+// ProxyInput represents the proxy input block
+type ProxyInput struct {
+	Options *BlockOptions `hcl:"options,block"`
+	Header  []string      `hcl:"header,optional"`
+	Params  string        `hcl:"params,optional"`
 }
 
 // ProxyForward specification

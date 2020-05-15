@@ -109,9 +109,10 @@ func (collection Proxies) Get(name string) *Proxy {
 // Proxies could define calls that are executed before the request body is forwarded.
 // A proxy forward could ideally be used for file uploads or large messages which could not be stored in memory.
 type Proxy struct {
-	Name    string  `json:"name"`
-	Nodes   []*Node `json:"nodes"`
-	Forward *Call   `json:"forward"`
+	Input   *ParameterMap `json:"input"`
+	Name    string        `json:"name"`
+	Nodes   []*Node       `json:"nodes"`
+	Forward *Call         `json:"forward"`
 }
 
 // GetName returns the flow name
@@ -126,7 +127,7 @@ func (proxy *Proxy) GetNodes() []*Node {
 
 // GetInput returns the input of the given flow
 func (proxy *Proxy) GetInput() *ParameterMap {
-	return nil
+	return proxy.Input
 }
 
 // GetOutput returns the output of the given flow
