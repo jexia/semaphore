@@ -155,7 +155,7 @@ func TestCallerReferencesLookup(t *testing.T) {
 	expected := "/" + value
 
 	path := "message"
-	resource := ".request"
+	resource := ".params"
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != expected {
