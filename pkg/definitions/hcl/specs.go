@@ -508,7 +508,7 @@ func ParseIntermediateParameters(options hcl.Body) map[string]*specs.PropertyRef
 			continue
 		}
 
-		result[key] = template.ParsePropertyReference(val.AsString())
+		result[key] = template.ParsePropertyReference(template.GetTemplateContent(val.AsString()))
 	}
 
 	return result
