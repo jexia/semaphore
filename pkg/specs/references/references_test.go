@@ -60,6 +60,14 @@ func TestUnmarshalFile(t *testing.T) {
 				t.Fatalf("expected test to pass but failed instead %s, %v", file.Name(), err)
 			}
 
+			if strings.HasSuffix(clean, fail) && err != nil {
+				if err.Error() != collection.Exception.Message {
+					t.Fatalf("unexpected error message %s, expected %s", err, collection.Exception.Message)
+				}
+
+				return
+			}
+
 			err = compare.ManifestTypes(ctx, services[0], schema[0], flows[0])
 
 			if strings.HasSuffix(clean, pass) && err != nil {
