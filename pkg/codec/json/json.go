@@ -45,6 +45,11 @@ type Manager struct {
 	keys     int
 }
 
+// Name returns the proto codec name
+func (manager *Manager) Name() string {
+	return "json"
+}
+
 // Property returns the manager property which is used to marshal and unmarshal data
 func (manager *Manager) Property() *specs.Property {
 	return manager.specs

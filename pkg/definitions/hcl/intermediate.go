@@ -144,6 +144,7 @@ type Function struct {
 type Call struct {
 	Service    string                 `hcl:"service,label"`
 	Method     string                 `hcl:"method,label"`
+	Parameters *BlockOptions          `hcl:"params,block"`
 	Options    *BlockOptions          `hcl:"options,block"`
 	Header     *Header                `hcl:"header,block"`
 	Nested     []NestedParameterMap   `hcl:"message,block"`

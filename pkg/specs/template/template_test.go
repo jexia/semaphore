@@ -57,7 +57,7 @@ func TestParseReference(t *testing.T) {
 	path := "message"
 
 	tests := map[string]specs.Property{
-		"input:message": specs.Property{
+		"input:message": {
 			Name: name,
 			Path: path,
 			Reference: &specs.PropertyReference{
@@ -65,13 +65,13 @@ func TestParseReference(t *testing.T) {
 				Path:     "message",
 			},
 		},
-		"input:": specs.Property{
+		"input:": {
 			Path: path,
 			Reference: &specs.PropertyReference{
 				Resource: "input",
 			},
 		},
-		"input": specs.Property{
+		"input": {
 			Path: path,
 			Reference: &specs.PropertyReference{
 				Resource: "input",
@@ -94,28 +94,28 @@ func TestParseTemplate(t *testing.T) {
 	name := ""
 
 	tests := map[string]specs.Property{
-		"{{ input:message }}": specs.Property{
+		"{{ input:message }}": {
 			Path: "message",
 			Reference: &specs.PropertyReference{
 				Resource: "input",
 				Path:     "message",
 			},
 		},
-		"{{ input.prop:message }}": specs.Property{
+		"{{ input.prop:message }}": {
 			Path: "message",
 			Reference: &specs.PropertyReference{
 				Resource: "input.prop",
 				Path:     "message",
 			},
 		},
-		"{{ input.prop:message.prop }}": specs.Property{
+		"{{ input.prop:message.prop }}": {
 			Path: "message.prop",
 			Reference: &specs.PropertyReference{
 				Resource: "input.prop",
 				Path:     "message.prop",
 			},
 		},
-		"{{ input:message.prop }}": specs.Property{
+		"{{ input:message.prop }}": {
 			Path: "messsage.prop",
 			Reference: &specs.PropertyReference{
 				Resource: "input",

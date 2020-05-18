@@ -1,6 +1,7 @@
 package http
 
 import (
+	"crypto/tls"
 	"net"
 	"net/http"
 	"net/http/httputil"
@@ -23,6 +24,9 @@ func NewProxy(options *CallerOptions) *httputil.ReverseProxy {
 			IdleConnTimeout:       90 * time.Second,
 			TLSHandshakeTimeout:   10 * time.Second,
 			ExpectContinueTimeout: 1 * time.Second,
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: options.Insecure,
+			},
 		},
 	}
 }

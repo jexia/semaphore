@@ -42,11 +42,13 @@ func ResolveNodeReferences(node *specs.Node) {
 
 	if node.Call != nil {
 		if node.Call.Request != nil {
+			ResolveParamReferences(node.Call.Request.Params, node.DependsOn)
 			ResolveHeaderReferences(node.Call.Request.Header, node.DependsOn)
 			ResolvePropertyReferences(node.Call.Request.Property, node.DependsOn)
 		}
 
 		if node.Call.Response != nil {
+			ResolveParamReferences(node.Call.Response.Params, node.DependsOn)
 			ResolveHeaderReferences(node.Call.Response.Header, node.DependsOn)
 			ResolvePropertyReferences(node.Call.Response.Property, node.DependsOn)
 		}
@@ -54,11 +56,13 @@ func ResolveNodeReferences(node *specs.Node) {
 
 	if node.Rollback != nil {
 		if node.Rollback.Request != nil {
+			ResolveParamReferences(node.Rollback.Request.Params, node.DependsOn)
 			ResolveHeaderReferences(node.Rollback.Request.Header, node.DependsOn)
 			ResolvePropertyReferences(node.Rollback.Request.Property, node.DependsOn)
 		}
 
 		if node.Rollback.Response != nil {
+			ResolveParamReferences(node.Rollback.Response.Params, node.DependsOn)
 			ResolveHeaderReferences(node.Rollback.Response.Header, node.DependsOn)
 			ResolvePropertyReferences(node.Rollback.Response.Property, node.DependsOn)
 		}
@@ -121,17 +125,33 @@ func ResolvePropertyReferences(property *specs.Property, dependencies map[string
 	property.Nested = clone.Nested
 }
 
+// ResolveParamReferences resolves all nested references made inside the given params
+func ResolveParamReferences(params map[string]*specs.PropertyReference, dependencies map[string]*specs.Node) {
+	if params == nil {
+		return
+	}
+
+	for key, param := range params {
+		if param.Property == nil {
+			continue
+		}
+
+		resource, _ := lookup.ParseResource(param.Resource)
+		if resource != template.StackResource && resource != template.InputResource {
+			dependencies[template.SplitPath(param.Resource)[0]] = nil
+		}
+
+		clone := CloneProperty(param.Property, param, key, key)
+		params[key] = clone.Reference
+	}
+}
+
 // CloneProperty clones the given property with the given reference, name and path
 func CloneProperty(source *specs.Property, reference *specs.PropertyReference, name string, path string) *specs.Property {
-	result := &specs.Property{
-		Name:      name,
-		Path:      path,
-		Reference: reference,
-		Default:   source.Default,
-		Type:      source.Type,
-		Label:     source.Label,
-		Expr:      source.Expr,
-	}
+	result := source.Clone()
+	result.Name = name
+	result.Path = path
+	result.Reference = reference
 
 	if source.Reference != nil {
 		result.Reference = &specs.PropertyReference{

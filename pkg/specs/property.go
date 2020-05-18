@@ -35,6 +35,31 @@ type Property struct {
 	Enum      *Enum                `json:"enum"`
 }
 
+// Clone makes a deep clone of the given property
+func (prop *Property) Clone() *Property {
+	result := &Property{
+		Position:  prop.Position,
+		Comment:   prop.Comment,
+		Name:      prop.Name,
+		Path:      prop.Path,
+		Default:   prop.Default,
+		Type:      prop.Type,
+		Label:     prop.Label,
+		Reference: prop.Reference,
+		Expr:      prop.Expr,
+		Raw:       prop.Raw,
+		Options:   prop.Options,
+		Enum:      prop.Enum,
+		Nested:    make(map[string]*Property, len(prop.Nested)),
+	}
+
+	for key, nested := range prop.Nested {
+		result.Nested[key] = nested.Clone()
+	}
+
+	return result
+}
+
 // Enum represents a enum configuration
 type Enum struct {
 	Name        string                `json:"name"`
@@ -52,9 +77,10 @@ type EnumValue struct {
 
 // ParameterMap is the initial map of parameter names (keys) and their (templated) values (values)
 type ParameterMap struct {
-	Schema   string               `json:"schema"`
-	Options  Options              `json:"options"`
-	Header   Header               `json:"header"`
-	Property *Property            `json:"property"`
-	Stack    map[string]*Property `json:"stack"`
+	Schema   string                        `json:"schema"`
+	Params   map[string]*PropertyReference `json:"params"`
+	Options  Options                       `json:"options"`
+	Header   Header                        `json:"header"`
+	Property *Property                     `json:"property"`
+	Stack    map[string]*Property          `json:"stack"`
 }

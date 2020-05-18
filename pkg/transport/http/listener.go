@@ -130,16 +130,19 @@ func NewHandle(logger *logrus.Logger, endpoint *transport.Endpoint, options *End
 		Options:  options,
 	}
 
-	if endpoint.Request != nil && endpoint.Forward == nil {
-		request, err := codec.New(template.InputResource, endpoint.Request)
-		if err != nil {
-			return nil, trace.New(trace.WithMessage("unable to construct a new HTTP codec manager for '%s'", endpoint.Flow))
-		}
-
+	if endpoint.Request != nil {
 		header := metadata.NewManager(template.InputResource, endpoint.Request.Header)
 		handle.Request = &Request{
 			Header: header,
-			Codec:  request,
+		}
+
+		if endpoint.Forward == nil {
+			request, err := codec.New(template.InputResource, endpoint.Request)
+			if err != nil {
+				return nil, trace.New(trace.WithMessage("unable to construct a new HTTP codec manager for '%s'", endpoint.Flow))
+			}
+
+			handle.Request.Codec = request
 		}
 	}
 

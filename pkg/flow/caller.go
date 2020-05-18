@@ -94,6 +94,7 @@ func (caller *Caller) Do(ctx context.Context, store refs.Store) error {
 				return err
 			}
 
+			r.Codec = caller.request.codec.Name()
 			r.Body = body
 		}
 	}

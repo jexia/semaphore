@@ -70,6 +70,11 @@ func (rw *TransportResponseWriter) WriteHeader(status int) {
 	rw.status = status
 }
 
+// Status returns the response writer status
+func (rw *TransportResponseWriter) Status() int {
+	return rw.status
+}
+
 // NewRequest constructs a new transport request of the given http request
 func NewRequest(req *http.Request) *transport.Request {
 	return &transport.Request{

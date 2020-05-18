@@ -118,7 +118,7 @@ func TestCallerUnknownMethod(t *testing.T) {
 func TestCallerReferences(t *testing.T) {
 	expected := ":message"
 	path := "message"
-	resource := ".request"
+	resource := ".params"
 
 	service := NewMockService("http://localhost", "GET", "/"+expected)
 	call, err := NewMockCaller().Dial(service, nil, nil)

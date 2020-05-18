@@ -493,6 +493,27 @@ func ParseIntermediateSpecOptions(options hcl.Body) specs.Options {
 	return result
 }
 
+// ParseIntermediateParameters parses the given intermediate parameters
+func ParseIntermediateParameters(options hcl.Body) map[string]*specs.PropertyReference {
+	if options == nil {
+		return map[string]*specs.PropertyReference{}
+	}
+
+	result := map[string]*specs.PropertyReference{}
+	attrs, _ := options.JustAttributes()
+
+	for key, val := range attrs {
+		val, _ := val.Expr.Value(nil)
+		if val.Type() != cty.String {
+			continue
+		}
+
+		result[key] = template.ParsePropertyReference(val.AsString())
+	}
+
+	return result
+}
+
 // ParseIntermediateNode parses the given intermediate call to a spec call
 func ParseIntermediateNode(ctx instance.Context, node Node) (*specs.Node, error) {
 	call, err := ParseIntermediateCall(ctx, node.Request)
@@ -554,6 +575,10 @@ func ParseIntermediateCallParameterMap(ctx instance.Context, params *Call) (*spe
 			Label:  labels.Optional,
 			Nested: map[string]*specs.Property{},
 		},
+	}
+
+	if params.Parameters != nil {
+		result.Params = ParseIntermediateParameters(params.Parameters.Body)
 	}
 
 	if params.Header != nil {

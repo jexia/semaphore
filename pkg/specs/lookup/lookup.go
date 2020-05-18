@@ -90,6 +90,7 @@ func GetAvailableResources(flow specs.FlowResourceManager, breakpoint string) ma
 					}
 				}
 
+				references[node.Name][template.ResourceParams] = ParamsLookup(node.Call.Request.Params, flow, breakpoint)
 				references[node.Name][template.ResourceRequest] = PropertyLookup(node.Call.Request.Property)
 			}
 		}
@@ -192,6 +193,31 @@ func PropertyLookup(param *specs.Property) PathLookup {
 			lookup := PropertyLookup(param)(path)
 			if lookup != nil {
 				return lookup
+			}
+		}
+
+		return nil
+	}
+}
+
+// ParamsLookup constructs a lookup method able to lookup property references inside the given params map
+func ParamsLookup(params map[string]*specs.PropertyReference, flow specs.FlowResourceManager, breakpoint string) PathLookup {
+	return func(path string) *specs.Property {
+		if params == nil {
+			return nil
+		}
+
+		for key, param := range params {
+			if key == path {
+				references := GetAvailableResources(flow, breakpoint)
+				reference := GetResourceReference(param, references, breakpoint)
+				if reference == nil {
+					return nil
+				}
+
+				result := reference.Clone()
+				result.Reference = param
+				return result
 			}
 		}
 

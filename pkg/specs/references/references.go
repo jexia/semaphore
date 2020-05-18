@@ -169,9 +169,32 @@ func DefineParameterMap(ctx instance.Context, node *specs.Node, params *specs.Pa
 		}
 	}
 
+	err = DefineParams(ctx, node, params.Params, flow)
+	if err != nil {
+		return err
+	}
+
 	err = DefineProperty(ctx, node, params.Property, flow)
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+// DefineParams defines all types inside the given params
+func DefineParams(ctx instance.Context, node *specs.Node, params map[string]*specs.PropertyReference, flow specs.FlowResourceManager) error {
+	if params == nil {
+		return nil
+	}
+
+	for _, param := range params {
+		reference, err := LookupReference(ctx, node, node.Name, param, flow)
+		if err != nil {
+			return err
+		}
+
+		param.Property = reference
 	}
 
 	return nil
@@ -197,7 +220,7 @@ func DefineProperty(ctx instance.Context, node *specs.Node, property *specs.Prop
 	if node != nil {
 		breakpoint = node.Name
 
-		if node.Rollback != nil {
+		if node.Rollback != nil && property != nil {
 			rollback := node.Rollback.Request.Property
 			if InsideProperty(rollback, property) {
 				breakpoint = lookup.GetNextResource(flow, breakpoint)
@@ -205,16 +228,8 @@ func DefineProperty(ctx instance.Context, node *specs.Node, property *specs.Prop
 		}
 	}
 
-	property.Reference.Resource = lookup.ResolveSelfReference(property.Reference.Resource, breakpoint)
-
-	ctx.Logger(logger.Core).WithFields(logrus.Fields{
-		"breakpoint": breakpoint,
-		"reference":  property.Reference,
-	}).Debug("Lookup references until breakpoint")
-
-	references := lookup.GetAvailableResources(flow, breakpoint)
-	reference := lookup.GetResourceReference(property.Reference, references, breakpoint)
-	if reference == nil {
+	reference, err := LookupReference(ctx, node, breakpoint, property.Reference, flow)
+	if err != nil {
 		return trace.New(trace.WithExpression(property.Expr), trace.WithMessage("undefined resource '%s' in '%s.%s.%s'", property.Reference, flow.GetName(), breakpoint, property.Path))
 	}
 
@@ -234,6 +249,29 @@ func DefineProperty(ctx instance.Context, node *specs.Node, property *specs.Prop
 	}
 
 	return nil
+}
+
+// LookupReference looks up the given reference
+func LookupReference(ctx instance.Context, node *specs.Node, breakpoint string, reference *specs.PropertyReference, flow specs.FlowResourceManager) (*specs.Property, error) {
+	reference.Resource = lookup.ResolveSelfReference(reference.Resource, breakpoint)
+
+	ctx.Logger(logger.Core).WithFields(logrus.Fields{
+		"breakpoint": breakpoint,
+		"reference":  reference,
+	}).Debug("Lookup references until breakpoint")
+
+	references := lookup.GetAvailableResources(flow, breakpoint)
+	result := lookup.GetResourceReference(reference, references, breakpoint)
+	if result == nil {
+		return nil, trace.New(trace.WithMessage("undefined resource '%s' in '%s'.'%s'", reference, flow.GetName(), breakpoint))
+	}
+
+	ctx.Logger(logger.Core).WithFields(logrus.Fields{
+		"breakpoint": breakpoint,
+		"reference":  result,
+	}).Debug("Lookup references result")
+
+	return result, nil
 }
 
 // InsideProperty checks whether the given property is insde the source property

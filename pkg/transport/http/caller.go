@@ -171,10 +171,20 @@ func (call *Call) SendMsg(ctx context.Context, rw transport.ResponseWriter, pr *
 	}
 
 	req.Header = CopyMetadataHeader(pr.Header)
+
+	if ContentTypes[pr.Codec] != "" {
+		req.Header.Add("Content-Type", ContentTypes[pr.Codec])
+	}
+
 	res := NewTransportResponseWriter(ctx, rw)
 
 	call.proxy.ServeHTTP(res, req)
 	rw.Header().Append(CopyHTTPHeader(res.Header()))
+
+	// TODO: handle custom errors and return to user
+	if res.Status() < 200 || res.Status() >= 300 {
+		return trace.New(trace.WithMessage("something went wrong when calling the service"))
+	}
 
 	return nil
 }
@@ -217,7 +227,7 @@ func TemplateReferences(value string, functions functions.Custom) ([]*specs.Prop
 		property := &specs.Property{
 			Path: key,
 			Reference: &specs.PropertyReference{
-				Resource: ".request",
+				Resource: ".params",
 				Path:     path,
 			},
 		}

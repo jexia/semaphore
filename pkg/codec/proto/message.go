@@ -58,6 +58,11 @@ type Manager struct {
 	desc     *desc.MessageDescriptor
 }
 
+// Name returns the proto codec name
+func (manager *Manager) Name() string {
+	return "proto"
+}
+
 // Property returns the property used to marshal and unmarshal data
 func (manager *Manager) Property() *specs.Property {
 	return manager.specs

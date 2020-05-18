@@ -32,6 +32,8 @@ const (
 	OutputResource = "output"
 	// StackResource property
 	StackResource = "stack"
+	// ResourceParams property
+	ResourceParams = "params"
 	// ResourceRequest property
 	ResourceRequest = "request"
 	// ResourceHeader property
