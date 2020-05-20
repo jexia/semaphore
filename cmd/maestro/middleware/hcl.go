@@ -16,7 +16,7 @@ import (
 func ServiceSelector(path string) constructor.AfterConstructorHandler {
 	return func(next constructor.AfterConstructor) constructor.AfterConstructor {
 		return func(ctx instance.Context, collection *constructor.Collection) error {
-			definitions, err := hcl.ResolvePath(ctx, path)
+			definitions, err := hcl.ResolvePath(ctx, []string{}, path)
 			if err != nil {
 				return err
 			}

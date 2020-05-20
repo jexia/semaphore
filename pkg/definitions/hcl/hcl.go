@@ -23,7 +23,7 @@ import (
 // Those need to be resolved before the HCL schemas are resolved.
 func ServicesResolver(path string) definitions.ServicesResolver {
 	return func(ctx instance.Context) ([]*specs.ServicesManifest, error) {
-		definitions, err := ResolvePath(ctx, path)
+		definitions, err := ResolvePath(ctx, []string{}, path)
 		if err != nil {
 			return nil, err
 		}
@@ -46,7 +46,7 @@ func ServicesResolver(path string) definitions.ServicesResolver {
 // FlowsResolver constructs a resource resolver for the given path
 func FlowsResolver(path string) definitions.FlowsResolver {
 	return func(ctx instance.Context) ([]*specs.FlowsManifest, error) {
-		definitions, err := ResolvePath(ctx, path)
+		definitions, err := ResolvePath(ctx, []string{}, path)
 		if err != nil {
 			return nil, err
 		}
@@ -69,7 +69,7 @@ func FlowsResolver(path string) definitions.FlowsResolver {
 // EndpointsResolver constructs a resource resolver for the given path
 func EndpointsResolver(path string) definitions.EndpointsResolver {
 	return func(ctx instance.Context) ([]*specs.EndpointsManifest, error) {
-		definitions, err := ResolvePath(ctx, path)
+		definitions, err := ResolvePath(ctx, []string{}, path)
 		if err != nil {
 			return nil, err
 		}
@@ -91,7 +91,7 @@ func EndpointsResolver(path string) definitions.EndpointsResolver {
 
 // GetOptions returns the defined options inside the given path
 func GetOptions(ctx instance.Context, path string) (*Options, error) {
-	definitions, err := ResolvePath(ctx, path)
+	definitions, err := ResolvePath(ctx, []string{}, path)
 	if err != nil {
 		return nil, err
 	}
@@ -136,7 +136,7 @@ type Resolve struct {
 
 // ResolvePath resolves the given path and returns the available manifests.
 // All defined includes are followed and their manifests are included
-func ResolvePath(ctx instance.Context, path string) ([]Manifest, error) {
+func ResolvePath(ctx instance.Context, ignore []string, path string) ([]Manifest, error) {
 	ctx.Logger(logger.Core).WithField("path", path).Info("Resolving HCL path")
 
 	manifests := make([]Manifest, 0)
@@ -144,7 +144,9 @@ func ResolvePath(ctx instance.Context, path string) ([]Manifest, error) {
 		return manifests, nil
 	}
 
-	files, err := definitions.ResolvePath(path)
+	files, err := definitions.ResolvePath(ignore, path)
+	ignore = append(ignore, path)
+
 	if err != nil {
 		return nil, err
 	}
@@ -183,7 +185,7 @@ func ResolvePath(ctx instance.Context, path string) ([]Manifest, error) {
 			path := filepath.Join(filepath.Dir(file.Path), include)
 			ctx.Logger(logger.Core).WithField("path", path).Info("Including HCL file")
 
-			results, err := ResolvePath(ctx, path)
+			results, err := ResolvePath(ctx, ignore, path)
 			if err != nil {
 				return nil, trace.New(trace.WithMessage("unable to read include %s: %s", include, err))
 			}

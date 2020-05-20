@@ -32,7 +32,7 @@ func Collect(paths []string, path string) ([]*desc.FileDescriptor, error) {
 		imports[index] = path
 	}
 
-	files, err := definitions.ResolvePath(path)
+	files, err := definitions.ResolvePath([]string{}, path)
 	if err != nil {
 		return nil, err
 	}

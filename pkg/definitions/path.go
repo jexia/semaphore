@@ -4,7 +4,6 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"strings"
 )
 
 // A FileInfo describes a file
@@ -22,7 +21,16 @@ func CleanPattern(path string) string {
 }
 
 // ResolvePath resolves the given path and returns the matching pattern files.
-func ResolvePath(pattern string) (files []*FileInfo, _ error) {
+func ResolvePath(ignore []string, pattern string) (files []*FileInfo, _ error) {
+	resolved := map[string]struct{}{}
+	for _, path := range ignore {
+		resolved[path] = struct{}{}
+	}
+
+	return walk(resolved, pattern)
+}
+
+func walk(resolved map[string]struct{}, pattern string) (files []*FileInfo, _ error) {
 	dir := filepath.Dir(CleanPattern(pattern))
 	pattern = filepath.Clean(pattern)
 
@@ -31,7 +39,14 @@ func ResolvePath(pattern string) (files []*FileInfo, _ error) {
 			return err
 		}
 
-		if !info.Mode().IsRegular() {
+		_, has := resolved[path]
+		if has {
+			return nil
+		}
+
+		resolved[path] = struct{}{}
+
+		if info.IsDir() {
 			return nil
 		}
 
@@ -44,7 +59,21 @@ func ResolvePath(pattern string) (files []*FileInfo, _ error) {
 			return nil
 		}
 
-		absolute := strings.Replace(path, dir+"/", "", 1)
+		if info.Mode()&os.ModeSymlink == os.ModeSymlink {
+			link, err := os.Readlink(path)
+			if err != nil {
+				return err
+			}
+
+			path = link
+		}
+
+		absolute, err := filepath.Rel(dir, path)
+		if err != nil {
+			return err
+		}
+
+		// absolute := strings.Replace(path, dir+"/", "", 1)
 		files = append(files, &FileInfo{
 			FileInfo:     info,
 			Path:         path,

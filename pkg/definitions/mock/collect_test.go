@@ -20,7 +20,7 @@ func TestUnmarshalFile(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	files, err := definitions.ResolvePath(path)
+	files, err := definitions.ResolvePath([]string{}, path)
 	if err != nil {
 		t.Fatal(err)
 	}
