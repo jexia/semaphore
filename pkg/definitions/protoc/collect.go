@@ -87,15 +87,16 @@ func SchemaResolver(imports []string, path string) definitions.SchemaResolver {
 // UnmarshalFiles attempts to parse the given HCL files to intermediate resources.
 // Files are parsed based from the given import paths
 func UnmarshalFiles(imports []string, files []*definitions.FileInfo) ([]*desc.FileDescriptor, error) {
+	// NOTE: protoparser expects relative paths, we currently resolved this issue by including root as a import path
 	parser := &protoparse.Parser{
-		ImportPaths:           imports,
+		ImportPaths:           append(imports, "/"),
 		IncludeSourceCodeInfo: true,
 	}
 
 	results := []*desc.FileDescriptor{}
 
 	for _, file := range files {
-		descs, err := parser.ParseFiles(file.AbsolutePath)
+		descs, err := parser.ParseFiles(file.Path)
 		if err != nil {
 			return nil, err
 		}

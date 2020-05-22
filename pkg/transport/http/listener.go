@@ -100,8 +100,12 @@ func (listener *Listener) Handle(endpoints []*transport.Endpoint, codecs map[str
 			return err
 		}
 
-		for header := range handle.Request.Header.Params {
-			headers[header] = struct{}{}
+		if handle.Request != nil {
+			if handle.Request.Header != nil {
+				for header := range handle.Request.Header.Params {
+					headers[header] = struct{}{}
+				}
+			}
 		}
 
 		router.Handle(options.Method, options.Endpoint, handle.HTTPFunc)

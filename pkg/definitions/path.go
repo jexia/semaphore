@@ -9,8 +9,7 @@ import (
 // A FileInfo describes a file
 type FileInfo struct {
 	os.FileInfo
-	Path         string
-	AbsolutePath string
+	Path string
 }
 
 var nestedWildcard = regexp.MustCompile(`(?m)\*\*\/.+$`)
@@ -59,16 +58,9 @@ func walk(resolved map[string]struct{}, pattern string) (files []*FileInfo, _ er
 			return nil
 		}
 
-		absolute, err := filepath.Rel(dir, path)
-		if err != nil {
-			return err
-		}
-
-		// absolute := strings.Replace(path, dir+"/", "", 1)
 		files = append(files, &FileInfo{
-			FileInfo:     info,
-			Path:         path,
-			AbsolutePath: absolute,
+			FileInfo: info,
+			Path:     path,
 		})
 
 		return nil
