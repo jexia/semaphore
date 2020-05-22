@@ -175,7 +175,7 @@ func ResolvePath(ctx instance.Context, ignore []string, path string) ([]Manifest
 
 		if definition.Protobuffers != nil {
 			for index, proto := range definition.Protobuffers {
-				definition.Protobuffers[index] = filepath.Join(filepath.Dir(file.Path), proto)
+				definition.Protobuffers[index] = proto
 			}
 		}
 
