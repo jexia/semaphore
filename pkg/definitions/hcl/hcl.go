@@ -144,7 +144,7 @@ func ResolvePath(ctx instance.Context, ignore []string, path string) ([]Manifest
 		return manifests, nil
 	}
 
-	files, err := definitions.ResolvePath(ignore, path)
+	files, err := definitions.ResolvePath(ctx, ignore, path)
 	ignore = append(ignore, path)
 
 	if err != nil {

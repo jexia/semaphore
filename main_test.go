@@ -46,7 +46,8 @@ func TestNewClient(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	files, err := definitions.ResolvePath([]string{}, path)
+	ctx := instance.NewContext()
+	files, err := definitions.ResolvePath(ctx, []string{}, path)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -79,7 +80,8 @@ func TestServe(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	files, err := definitions.ResolvePath([]string{}, path)
+	ctx := instance.NewContext()
+	files, err := definitions.ResolvePath(ctx, []string{}, path)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -122,7 +124,8 @@ func TestErrServe(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	files, err := definitions.ResolvePath([]string{}, path)
+	ctx := instance.NewContext()
+	files, err := definitions.ResolvePath(ctx, []string{}, path)
 	if err != nil {
 		t.Fatal(err)
 	}

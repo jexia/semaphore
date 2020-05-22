@@ -4,6 +4,9 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+
+	"github.com/jexia/maestro/pkg/instance"
+	"github.com/jexia/maestro/pkg/logger"
 )
 
 // A FileInfo describes a file
@@ -20,23 +23,27 @@ func CleanPattern(path string) string {
 }
 
 // ResolvePath resolves the given path and returns the matching pattern files.
-func ResolvePath(ignore []string, pattern string) (files []*FileInfo, _ error) {
+func ResolvePath(ctx instance.Context, ignore []string, pattern string) (files []*FileInfo, _ error) {
 	resolved := map[string]struct{}{}
 	for _, path := range ignore {
 		resolved[path] = struct{}{}
 	}
 
-	return walk(resolved, pattern)
+	return walk(ctx, resolved, pattern)
 }
 
-func walk(resolved map[string]struct{}, pattern string) (files []*FileInfo, _ error) {
+func walk(ctx instance.Context, resolved map[string]struct{}, pattern string) (files []*FileInfo, _ error) {
 	dir := filepath.Dir(CleanPattern(pattern))
 	pattern = filepath.Clean(pattern)
+
+	ctx.Logger(logger.Core).WithField("dir", dir).Debug("Resolve pattern")
 
 	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
+
+		ctx.Logger(logger.Core).WithField("path", path).Debug("Matching path")
 
 		_, has := resolved[path]
 		if has {
@@ -57,6 +64,8 @@ func walk(resolved map[string]struct{}, pattern string) (files []*FileInfo, _ er
 		if !matched {
 			return nil
 		}
+
+		ctx.Logger(logger.Core).WithField("path", path).Debug("File matched pattern")
 
 		files = append(files, &FileInfo{
 			FileInfo: info,

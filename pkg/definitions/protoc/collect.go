@@ -12,7 +12,7 @@ import (
 )
 
 // Collect attempts to collect all the available proto files inside the given path and parses them to resources
-func Collect(paths []string, path string) ([]*desc.FileDescriptor, error) {
+func Collect(ctx instance.Context, paths []string, path string) ([]*desc.FileDescriptor, error) {
 	imports := make([]string, len(paths))
 	for index, path := range paths {
 		imports[index] = path
@@ -32,7 +32,7 @@ func Collect(paths []string, path string) ([]*desc.FileDescriptor, error) {
 		imports[index] = path
 	}
 
-	files, err := definitions.ResolvePath([]string{}, path)
+	files, err := definitions.ResolvePath(ctx, []string{}, path)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +63,7 @@ func Collect(paths []string, path string) ([]*desc.FileDescriptor, error) {
 // ServiceResolver returns a new service(s) resolver for the given protoc collection
 func ServiceResolver(imports []string, path string) definitions.ServicesResolver {
 	return func(ctx instance.Context) ([]*specs.ServicesManifest, error) {
-		files, err := Collect(imports, path)
+		files, err := Collect(ctx, imports, path)
 		if err != nil {
 			return nil, err
 		}
@@ -75,7 +75,7 @@ func ServiceResolver(imports []string, path string) definitions.ServicesResolver
 // SchemaResolver returns a new schema resolver for the given protoc collection
 func SchemaResolver(imports []string, path string) definitions.SchemaResolver {
 	return func(ctx instance.Context) ([]*specs.SchemaManifest, error) {
-		files, err := Collect(imports, path)
+		files, err := Collect(ctx, imports, path)
 		if err != nil {
 			return nil, err
 		}
