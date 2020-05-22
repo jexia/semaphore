@@ -4,7 +4,6 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"strings"
 
 	"github.com/jexia/maestro/pkg/instance"
 	"github.com/jexia/maestro/pkg/logger"
@@ -30,22 +29,21 @@ func ResolvePath(ctx instance.Context, ignore []string, pattern string) (files [
 		resolved[path] = struct{}{}
 	}
 
-	return walk(ctx, "", filepath.Dir(CleanPattern(pattern)), resolved, pattern)
+	dir := filepath.Dir(CleanPattern(pattern))
+	return walk(ctx, dir, dir, resolved, pattern)
 }
 
-func walk(ctx instance.Context, prefix string, root string, resolved map[string]struct{}, pattern string) (files []*FileInfo, _ error) {
+func walk(ctx instance.Context, absolute string, target string, resolved map[string]struct{}, pattern string) (files []*FileInfo, _ error) {
 	pattern = filepath.Clean(pattern)
+	ctx.Logger(logger.Core).WithField("dir", target).Debug("Resolve pattern")
 
-	ctx.Logger(logger.Core).WithField("dir", root).Debug("Resolve pattern")
-
-	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk(target, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
 
-		if prefix != "" {
-			path = strings.TrimPrefix(path, root)
-			path = filepath.Join(prefix, path)
+		if fname, err := filepath.Rel(target, path); err == nil {
+			path = filepath.Join(absolute, fname)
 		}
 
 		ctx.Logger(logger.Core).WithField("path", path).Debug("Matching path")
@@ -55,37 +53,30 @@ func walk(ctx instance.Context, prefix string, root string, resolved map[string]
 			return nil
 		}
 
-		resolved[path] = struct{}{}
+		if info.IsDir() {
+			return nil
+		}
 
 		if info.Mode()&os.ModeSymlink == os.ModeSymlink {
-			target, err := os.Readlink(path)
+			link, err := filepath.EvalSymlinks(path)
 			if err != nil {
 				return err
 			}
 
-			if !filepath.IsAbs(target) {
-				target = filepath.Join(filepath.Dir(path), target)
-			}
-
-			fi, err := os.Lstat(target)
+			info, err := os.Lstat(link)
 			if err != nil {
 				return err
 			}
 
-			if fi.IsDir() {
-				result, err := walk(ctx, path, target, resolved, pattern)
+			if info.IsDir() {
+				result, err := walk(ctx, path, link, resolved, pattern)
 				if err != nil {
 					return err
 				}
 
 				files = append(files, result...)
-
 				return nil
 			}
-		}
-
-		if info.IsDir() {
-			return nil
 		}
 
 		matched, err := filepath.Match(pattern, path)

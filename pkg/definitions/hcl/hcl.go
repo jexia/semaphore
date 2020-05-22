@@ -5,7 +5,6 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	"path/filepath"
 
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/gohcl"
@@ -182,10 +181,8 @@ func ResolvePath(ctx instance.Context, ignore []string, path string) ([]Manifest
 		manifests = append(manifests, definition)
 
 		for _, include := range definition.Include {
-			path := filepath.Join(filepath.Dir(file.Path), include)
-			ctx.Logger(logger.Core).WithField("path", path).Info("Including HCL file")
-
-			results, err := ResolvePath(ctx, ignore, path)
+			ctx.Logger(logger.Core).WithField("path", include).Info("Including HCL file")
+			results, err := ResolvePath(ctx, ignore, include)
 			if err != nil {
 				return nil, trace.New(trace.WithMessage("unable to read include %s: %s", include, err))
 			}
