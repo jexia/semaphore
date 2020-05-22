@@ -59,15 +59,6 @@ func walk(resolved map[string]struct{}, pattern string) (files []*FileInfo, _ er
 			return nil
 		}
 
-		if info.Mode()&os.ModeSymlink == os.ModeSymlink {
-			link, err := os.Readlink(path)
-			if err != nil {
-				return err
-			}
-
-			path = link
-		}
-
 		absolute, err := filepath.Rel(dir, path)
 		if err != nil {
 			return err

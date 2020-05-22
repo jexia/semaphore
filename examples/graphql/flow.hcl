@@ -30,7 +30,9 @@ flow "todo" {
 
 	resource "query" {
 		request "proto.Todo" "Get" {
-			id = "{{ input:id }}"
+			params {
+				id = "{{ input:id }}"
+			}
 		}
 	}
 
