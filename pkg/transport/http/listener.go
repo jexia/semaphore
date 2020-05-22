@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"strings"
 	"sync"
 
 	"github.com/jexia/maestro/pkg/codec"
@@ -47,6 +48,7 @@ type Listener struct {
 	server  *http.Server
 	mutex   sync.RWMutex
 	router  http.Handler
+	headers string
 }
 
 // Name returns the name of the given listener
@@ -58,13 +60,13 @@ func (listener *Listener) Name() string {
 func (listener *Listener) Serve() (err error) {
 	listener.ctx.Logger(logger.Transport).WithField("addr", listener.server.Addr).Info("Serving HTTP listener")
 
-	listener.server.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	listener.server.Handler = listener.HandleCors(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		listener.mutex.RLock()
 		if listener.router != nil {
 			listener.router.ServeHTTP(w, r)
 		}
 		listener.mutex.RUnlock()
-	})
+	}))
 
 	if listener.options.CertFile != "" && listener.options.KeyFile != "" {
 		err = listener.server.ListenAndServeTLS(listener.options.CertFile, listener.options.KeyFile)
@@ -85,6 +87,7 @@ func (listener *Listener) Handle(endpoints []*transport.Endpoint, codecs map[str
 	logger.Info("HTTP listener received new endpoints")
 
 	router := httprouter.New()
+	headers := map[string]struct{}{}
 
 	for _, endpoint := range endpoints {
 		options, err := ParseEndpointOptions(endpoint.Options)
@@ -97,11 +100,21 @@ func (listener *Listener) Handle(endpoints []*transport.Endpoint, codecs map[str
 			return err
 		}
 
+		for header := range handle.Request.Header.Params {
+			headers[header] = struct{}{}
+		}
+
 		router.Handle(options.Method, options.Endpoint, handle.HTTPFunc)
+	}
+
+	list := make([]string, 0, len(headers))
+	for header := range headers {
+		list = append(list, header)
 	}
 
 	listener.mutex.Lock()
 	listener.router = router
+	listener.headers = strings.Join(list, ", ")
 	listener.mutex.Unlock()
 
 	return nil
@@ -111,6 +124,38 @@ func (listener *Listener) Handle(endpoints []*transport.Endpoint, codecs map[str
 func (listener *Listener) Close() error {
 	listener.ctx.Logger(logger.Transport).Info("Closing HTTP listener")
 	return listener.server.Close()
+}
+
+// HandleCors handles the defining of cors headers for the incoming HTTP request
+func (listener *Listener) HandleCors(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodOptions || r.Header.Get("Access-Control-Request-Method") == "" {
+			h.ServeHTTP(w, r)
+			return
+		}
+
+		headers := w.Header()
+		origin := r.Header.Get("Origin")
+		method := r.Header.Get("Access-Control-Request-Method")
+
+		headers.Add("Vary", "Origin")
+		headers.Add("Vary", "Access-Control-Request-Method")
+		headers.Add("Vary", "Access-Control-Request-Headers")
+
+		if origin == "" {
+			listener.ctx.Logger(logger.Transport).Warn("CORS preflight aborted empty origin")
+			return
+		}
+
+		headers.Set("Access-Control-Allow-Origin", "*")
+		headers.Set("Access-Control-Allow-Methods", strings.ToUpper(method))
+
+		listener.mutex.RLock()
+		headers.Set("Access-Control-Allow-Headers", listener.headers)
+		listener.mutex.RUnlock()
+
+		w.WriteHeader(http.StatusOK)
+	})
 }
 
 // NewHandle constructs a new handle function for the given endpoint to the given flow
