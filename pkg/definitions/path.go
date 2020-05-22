@@ -7,6 +7,7 @@ import (
 
 	"github.com/jexia/maestro/pkg/instance"
 	"github.com/jexia/maestro/pkg/logger"
+	"github.com/sirupsen/logrus"
 )
 
 // A FileInfo describes a file
@@ -46,7 +47,10 @@ func walk(ctx instance.Context, absolute string, target string, resolved map[str
 			path = filepath.Join(absolute, fname)
 		}
 
-		ctx.Logger(logger.Core).WithField("path", path).Debug("Matching path")
+		ctx.Logger(logger.Core).WithFields(logrus.Fields{
+			"path":    path,
+			"pattern": pattern,
+		}).Debug("Matching path")
 
 		_, has := resolved[path]
 		if has {
