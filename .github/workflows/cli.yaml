@@ -132,5 +132,5 @@ jobs:
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         file: ${{ matrix.artifact_name }}
-        asset_name: maestro-$VERSION-${{ matrix.artifact_name }}
+        asset_name: maestro-${{ env.VERSION }}-${{ matrix.artifact_name }}
         tag: ${{ github.ref }}          
