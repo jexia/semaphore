@@ -133,23 +133,12 @@ func (listener *Listener) Close() error {
 // HandleCors handles the defining of cors headers for the incoming HTTP request
 func (listener *Listener) HandleCors(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodOptions || r.Header.Get("Access-Control-Request-Method") == "" {
-			h.ServeHTTP(w, r)
-			return
-		}
-
 		headers := w.Header()
-		origin := r.Header.Get("Origin")
 		method := r.Header.Get("Access-Control-Request-Method")
 
 		headers.Add("Vary", "Origin")
 		headers.Add("Vary", "Access-Control-Request-Method")
 		headers.Add("Vary", "Access-Control-Request-Headers")
-
-		if origin == "" {
-			listener.ctx.Logger(logger.Transport).Warn("CORS preflight aborted empty origin")
-			return
-		}
 
 		headers.Set("Access-Control-Allow-Origin", "*")
 		headers.Set("Access-Control-Allow-Methods", strings.ToUpper(method))
@@ -157,6 +146,11 @@ func (listener *Listener) HandleCors(h http.Handler) http.Handler {
 		listener.mutex.RLock()
 		headers.Set("Access-Control-Allow-Headers", listener.headers)
 		listener.mutex.RUnlock()
+
+		if r.Method != http.MethodOptions || r.Header.Get("Access-Control-Request-Method") == "" {
+			h.ServeHTTP(w, r)
+			return
+		}
 
 		w.WriteHeader(http.StatusOK)
 	})
