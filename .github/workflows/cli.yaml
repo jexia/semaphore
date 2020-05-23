@@ -65,27 +65,27 @@ jobs:
       matrix:
         include:
           - os: linux-amd64
-            artifact_name: maestro-amd64
+            artifact_name: linux-amd64
             goos: linux
             arch: amd64
             asset_name: linux-amd64
           - os: linux-i386
-            artifact_name: maestro-i386
+            artifact_name: linux-i386
             goos: linux
             arch: "386"
             asset_name: linux-386
           - os: windows-amd64
-            artifact_name: maestro-amd64.exe
+            artifact_name: windows-amd64.exe
             goos: windows
             arch: amd64
             asset_name: windows-amd64
           - os: windows-i386
-            artifact_name: maestro-i386.exe
+            artifact_name: windows-i386.exe
             goos: windows
             arch: "386"
             asset_name: windows-amd64
           - os: darwin-amd64
-            artifact_name: maestro
+            artifact_name: darwin-amd64
             goos: darwin
             arch: amd64
             asset_name: darwin-amd64
