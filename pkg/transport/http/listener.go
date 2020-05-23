@@ -141,11 +141,8 @@ func (listener *Listener) HandleCors(h http.Handler) http.Handler {
 		headers.Add("Vary", "Access-Control-Request-Headers")
 
 		headers.Set("Access-Control-Allow-Origin", "*")
+		headers.Set("Access-Control-Allow-Headers", "*")
 		headers.Set("Access-Control-Allow-Methods", strings.ToUpper(method))
-
-		listener.mutex.RLock()
-		headers.Set("Access-Control-Allow-Headers", listener.headers)
-		listener.mutex.RUnlock()
 
 		if r.Method != http.MethodOptions || r.Header.Get("Access-Control-Request-Method") == "" {
 			h.ServeHTTP(w, r)
