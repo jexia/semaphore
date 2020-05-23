@@ -125,12 +125,12 @@ jobs:
         echo "::set-env name=VERSION::$VERSION"
 
     - name: Build
-      run: CGO_ENABLED=0 GOOS=${{ matrix.goos }} GOARCH=${{ matrix.arch }} go build -o maestro-$VERSION-${{ matrix.artifact_name }} ./cmd/maestro
+      run: CGO_ENABLED=0 GOOS=${{ matrix.goos }} GOARCH=${{ matrix.arch }} go build -o ${{ matrix.artifact_name }} ./cmd/maestro
 
     - name: Upload binaries to release
       uses: svenstaro/upload-release-action@v1-release
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         file: ${{ matrix.artifact_name }}
-        asset_name: ${{ matrix.asset_name }}
+        asset_name: maestro-$VERSION-${{ matrix.artifact_name }}
         tag: ${{ github.ref }}          
