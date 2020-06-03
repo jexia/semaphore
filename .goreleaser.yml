@@ -18,6 +18,11 @@ builds:
   - windows
   - darwin
   - linux
+  goarch:
+  - 386
+  - amd64
+  - arm
+  - arm64
   ignore:
   - goos: darwin
     goarch: 386
@@ -29,6 +34,16 @@ archives:
     format: zip
   files: [a-workaround-to-include-only-the-binary*]
   wrap_in_directory: false
+
+brews:
+  - github:
+      owner: jexia
+      name: homebrew-cask
+    folder: Formula
+    homepage:  https://github.com/jexia/maestro
+    description: A straightforward service orchestrator
+    test: |
+      system "#{bin}/maestro -v"
 
 checksum:
   name_template: "maestro-{{ .Version }}-checksums.sha256"
