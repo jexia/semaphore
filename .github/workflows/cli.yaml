@@ -92,9 +92,9 @@ jobs:
       - name: Read Homebrew formula
         run: |
           # Strip git ref prefix from version
-          HOMEBREW_FORMULA=$(cat ./dist/maestro.rb)
+          HOMEBREW_FORMULA=$(<./dist/maestro.rb)
 
-          echo HOMEBREW_FORMULA=$HOMEBREW_FORMULA
+          echo $HOMEBREW_FORMULA
           echo "::set-env name=HOMEBREW_FORMULA::$HOMEBREW_FORMULA"
       - name: Discord notification
         env:
