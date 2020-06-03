@@ -39,6 +39,7 @@ brews:
   - github:
       owner: jexia
       name: homebrew-cask
+    skip_upload: true
     folder: Formula
     homepage:  https://github.com/jexia/maestro
     description: A straightforward service orchestrator
