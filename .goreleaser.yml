@@ -1,0 +1,49 @@
+project_name: maestro
+
+builds:
+- main: ./cmd/maestro/main.go
+  env:
+  - CGO_ENABLED=0
+  - GO111MODULE=on
+  flags:
+  - -mod=vendor
+  - -v
+  ldflags:
+  - -X github.com/jexia/maestro.Build={{ .ShortCommit }}
+  - -X github.com/jexia/maestro.Major={{ .Major }}
+  - -X github.com/jexia/maestro.Minor={{ .Minor }}
+  - -X github.com/jexia/maestro.Patch={{ .Patch }}
+  - -X github.com/jexia/maestro.Label=release
+  goos:
+  - windows
+  - darwin
+  - linux
+  ignore:
+  - goos: darwin
+    goarch: 386
+
+archives:
+- name_template: "maestro-{{ .Version }}-{{ .Os }}-{{ .Arch }}"
+  format_overrides:
+  - goos: windows
+    format: zip
+  files: [a-workaround-to-include-only-the-binary*]
+  wrap_in_directory: false
+
+checksum:
+  name_template: "maestro-{{ .Version }}-checksums.sha256"
+
+dockers:
+- dockerfile: Dockerfile.goreleaser
+  image_templates:
+  - "jexia/maestro:latest"
+  - "jexia/maestro:{{ .Major }}-latest"
+  - "jexia/maestro:{{ .Version }}"
+
+release:
+  github:
+    owner: jexia
+    name: maestro
+
+changelog:
+  skip: true
