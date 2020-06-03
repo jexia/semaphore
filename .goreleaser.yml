@@ -33,13 +33,6 @@ archives:
 checksum:
   name_template: "maestro-{{ .Version }}-checksums.sha256"
 
-dockers:
-- dockerfile: Dockerfile.goreleaser
-  image_templates:
-  - "jexia/maestro:latest"
-  - "jexia/maestro:{{ .Major }}-latest"
-  - "jexia/maestro:{{ .Version }}"
-
 release:
   github:
     owner: jexia
