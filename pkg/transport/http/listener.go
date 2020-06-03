@@ -249,6 +249,10 @@ func (handle *Handle) HTTPFunc(w http.ResponseWriter, r *http.Request, ps httpro
 	var err error
 	store := handle.Endpoint.Flow.NewStore()
 
+	for key, value := range r.URL.Query() {
+		store.StoreValue(template.InputResource, key, value)
+	}
+
 	for _, param := range ps {
 		store.StoreValue(template.InputResource, param.Key, param.Value)
 	}
