@@ -83,8 +83,8 @@ func ParseIntermediateFlow(ctx instance.Context, flow Flow) (*specs.Flow, error)
 		return nil, err
 	}
 
-	length := len(flow.Nodes)
-	for _, collection := range flow.Resources {
+	length := len(flow.Resources)
+	for _, collection := range flow.References {
 		attrs, _ := collection.Properties.JustAttributes()
 		length += len(attrs)
 	}
@@ -98,22 +98,22 @@ func ParseIntermediateFlow(ctx instance.Context, flow Flow) (*specs.Flow, error)
 
 	before := map[string]*specs.Node{}
 	if flow.Before != nil {
-		for _, resources := range flow.Before.Resources {
+		for _, resources := range flow.Before.References {
 			attrs, _ := resources.Properties.JustAttributes()
 			for _, attr := range attrs {
 				before[attr.Name] = nil
 			}
 
-			flow.Resources = append([]Resources{resources}, flow.Resources...)
+			flow.References = append([]Resources{resources}, flow.References...)
 		}
 
-		for _, node := range flow.Before.Nodes {
+		for _, node := range flow.Before.Resources {
 			before[node.Name] = nil
-			flow.Nodes = append([]Node{node}, flow.Nodes...)
+			flow.Resources = append([]Resource{node}, flow.Resources...)
 		}
 	}
 
-	for _, resources := range flow.Resources {
+	for _, resources := range flow.References {
 		attrs, _ := resources.Properties.JustAttributes()
 
 		// FIXME: attrs are not always loaded in the same order as they are defined
@@ -137,7 +137,7 @@ func ParseIntermediateFlow(ctx instance.Context, flow Flow) (*specs.Flow, error)
 		}
 	}
 
-	for _, intermediate := range flow.Nodes {
+	for _, intermediate := range flow.Resources {
 		node, err := ParseIntermediateNode(ctx, intermediate)
 		if err != nil {
 			return nil, err
@@ -238,7 +238,7 @@ func ParseIntermediateProxy(ctx instance.Context, proxy Proxy) (*specs.Proxy, er
 
 	result := specs.Proxy{
 		Name:    proxy.Name,
-		Nodes:   make([]*specs.Node, len(proxy.Resources)+len(proxy.Nodes)),
+		Nodes:   make([]*specs.Node, len(proxy.References)+len(proxy.Resources)),
 		Forward: forward,
 	}
 
@@ -264,7 +264,7 @@ func ParseIntermediateProxy(ctx instance.Context, proxy Proxy) (*specs.Proxy, er
 		result.Input = input
 	}
 
-	for index, node := range proxy.Nodes {
+	for index, node := range proxy.Resources {
 		node, err := ParseIntermediateNode(ctx, node)
 		if err != nil {
 			return nil, err
@@ -515,7 +515,7 @@ func ParseIntermediateParameters(options hcl.Body) map[string]*specs.PropertyRef
 }
 
 // ParseIntermediateNode parses the given intermediate call to a spec call
-func ParseIntermediateNode(ctx instance.Context, node Node) (*specs.Node, error) {
+func ParseIntermediateNode(ctx instance.Context, node Resource) (*specs.Node, error) {
 	call, err := ParseIntermediateCall(ctx, node.Request)
 	if err != nil {
 		return nil, err
