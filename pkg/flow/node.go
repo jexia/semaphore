@@ -3,6 +3,7 @@ package flow
 import (
 	"context"
 
+	"github.com/jexia/maestro/pkg/conditions"
 	"github.com/jexia/maestro/pkg/instance"
 	"github.com/jexia/maestro/pkg/logger"
 	"github.com/jexia/maestro/pkg/refs"
@@ -41,6 +42,7 @@ func NewNode(ctx instance.Context, node *specs.Node, call, rollback Call, middle
 	return &Node{
 		BeforeDo:     middleware.BeforeDo,
 		BeforeRevert: middleware.BeforeRollback,
+		Condition:    node.Condition,
 		ctx:          ctx,
 		logger:       logger,
 		Name:         node.Name,
@@ -93,6 +95,7 @@ type AfterNodeHandler func(AfterNode) AfterNode
 type Node struct {
 	BeforeDo     BeforeNode
 	BeforeRevert BeforeNode
+	Condition    *specs.Condition
 	ctx          instance.Context
 	logger       *logrus.Logger
 	Name         string
@@ -121,6 +124,19 @@ func (node *Node) Do(ctx context.Context, tracker *Tracker, processes *Processes
 	}
 
 	var err error
+
+	if node.Condition != nil {
+		node.logger.Debug("Evaluating condition: ", node.Name)
+
+		pass := conditions.Eval(refs, node.Condition)
+		if !pass {
+			node.logger.Debug("Condition prevented node from being executed: ", node.Name)
+			node.Skip(ctx, tracker)
+			return
+		}
+
+		node.logger.Debug("Node condition passed: ", node.Name)
+	}
 
 	if node.BeforeDo != nil {
 		ctx, err = node.BeforeDo(ctx, node, tracker, processes, refs)
@@ -215,6 +231,20 @@ func (node *Node) Rollback(ctx context.Context, tracker *Tracker, processes *Pro
 			processes.Fatal(err)
 			return
 		}
+	}
+}
+
+// Skip skips the given node and all it's dependencies and nested conditions
+func (node *Node) Skip(ctx context.Context, tracker *Tracker) {
+	tracker.Skip(node)
+
+	for _, node := range node.Next {
+		if node.Condition != nil {
+			node.Skip(ctx, tracker)
+			continue
+		}
+
+		tracker.Skip(node)
 	}
 }
 

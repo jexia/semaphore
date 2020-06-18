@@ -2,6 +2,7 @@ package constructor
 
 import (
 	"github.com/jexia/maestro/pkg/codec"
+	"github.com/jexia/maestro/pkg/conditions"
 	"github.com/jexia/maestro/pkg/flow"
 	"github.com/jexia/maestro/pkg/functions"
 	"github.com/jexia/maestro/pkg/instance"
@@ -45,6 +46,12 @@ func Specs(ctx instance.Context, mem functions.Collection, options Options) (*Co
 	}
 
 	dependencies.ResolveReferences(ctx, collection.Flows)
+
+	err = conditions.ResolveExpressions(ctx, collection.Flows)
+	if err != nil {
+		return nil, err
+	}
+
 	err = dependencies.ResolveManifest(ctx, collection.Flows)
 	if err != nil {
 		return nil, err

@@ -7,6 +7,7 @@ import (
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jexia/maestro/pkg/specs/labels"
 	"github.com/jexia/maestro/pkg/specs/template"
+	"github.com/jexia/maestro/pkg/specs/trace"
 	"github.com/jexia/maestro/pkg/specs/types"
 	"github.com/zclconf/go-cty/cty"
 )
@@ -785,10 +786,23 @@ func ParseIntermediateResources(ctx instance.Context, dependencies map[string]*s
 
 // ParseIntermediateCondition parses the given intermediate condition and returns the compiled nodes
 func ParseIntermediateCondition(ctx instance.Context, dependencies map[string]*specs.Node, condition Condition) ([]*specs.Node, error) {
+	property, err := template.Parse(ctx, "", "", condition.Expression)
+	if err != nil {
+		return nil, err
+	}
+
+	if property.Reference == nil {
+		return nil, trace.New(trace.WithMessage("condition dit not include a reference, conditions currently only support references"))
+	}
+
 	expression := &specs.Node{
 		Name: condition.Expression,
+		DependsOn: map[string]*specs.Node{
+			property.Reference.Resource: nil,
+		},
 		Condition: &specs.Condition{
 			RawExpression: condition.Expression,
+			Reference:     property.Reference,
 		},
 	}
 

@@ -15,16 +15,25 @@ func NewTracker(flow string, nodes int) *Tracker {
 
 // Tracker represents a structure responsible of tracking nodes
 type Tracker struct {
-	Flow  string
-	mutex sync.Mutex
-	Nodes map[string]int
-	Locks map[*Node]*sync.Mutex
+	Flow    string
+	mutex   sync.Mutex
+	Nodes   map[string]int
+	Skipped map[string]int
+	Locks   map[*Node]*sync.Mutex
 }
 
 // Mark marks the given node as called
 func (tracker *Tracker) Mark(node *Node) {
 	tracker.mutex.Lock()
 	tracker.Nodes[node.Name]++
+	tracker.mutex.Unlock()
+}
+
+// Skip marks the given node as marked and flag the given node as skipped
+func (tracker *Tracker) Skip(node *Node) {
+	tracker.mutex.Lock()
+	tracker.Nodes[node.Name]++
+	tracker.Skipped[node.Name]++
 	tracker.mutex.Unlock()
 }
 
@@ -44,6 +53,11 @@ func (tracker *Tracker) Met(nodes ...*Node) bool {
 	tracker.mutex.Lock()
 	defer tracker.mutex.Unlock()
 	for _, node := range nodes {
+		_, skipped := tracker.Skipped[node.Name]
+		if skipped {
+			return false
+		}
+
 		value := tracker.Nodes[node.Name]
 		if value == 0 {
 			return false

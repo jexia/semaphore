@@ -164,6 +164,7 @@ type Error struct {
 // Condition represents a condition which could be true or false
 type Condition struct {
 	RawExpression string `json:"raw_expression"`
+	Reference     *PropertyReference
 }
 
 // Node represents a point inside a given flow where a request or rollback could be preformed.
