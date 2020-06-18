@@ -834,7 +834,7 @@ func ParseIntermediateCondition(ctx instance.Context, dependencies map[string]*s
 			return nil, err
 		}
 
-		DependsOn(expression, nodes...)
+		DependsOn(expression, nodes[0])
 		result = append(result, nodes...)
 	}
 

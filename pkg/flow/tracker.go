@@ -7,9 +7,10 @@ import (
 // NewTracker constructs a new tracker
 func NewTracker(flow string, nodes int) *Tracker {
 	return &Tracker{
-		Flow:  flow,
-		Nodes: make(map[string]int, nodes),
-		Locks: make(map[*Node]*sync.Mutex, nodes),
+		Flow:    flow,
+		Nodes:   make(map[string]int, nodes),
+		Skipped: make(map[string]int, nodes),
+		Locks:   make(map[*Node]*sync.Mutex, nodes),
 	}
 }
 
