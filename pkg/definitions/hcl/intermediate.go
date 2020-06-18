@@ -13,6 +13,7 @@ type Manifest struct {
 	Prometheus      *Prometheus `hcl:"prometheus,block"`
 	Protobuffers    []string    `hcl:"protobuffers,optional"`
 	Include         []string    `hcl:"include,optional"`
+	Error           *Error      `hcl:"error,block"`
 	Flows           []Flow      `hcl:"flow,block"`
 	Proxy           []Proxy     `hcl:"proxy,block"`
 	Endpoints       []Endpoint  `hcl:"endpoint,block"`
@@ -42,27 +43,37 @@ type Prometheus struct {
 
 // Before intermediate specification
 type Before struct {
-	Resources []Resources `hcl:"resources,block"`
-	Nodes     []Node      `hcl:"resource,block"`
+	References []Resources `hcl:"resources,block"`
+	Resources  []Resource  `hcl:"resource,block"`
 }
 
 // Condition represents a condition on which the scoped resources should be executed if true
 type Condition struct {
 	Expression string      `hcl:"expression,label"`
 	Conditions []Condition `hcl:"if,block"`
-	Resources  []Resources `hcl:"resources,block"`
-	Nodes      []Node      `hcl:"resource,block"`
+	References []Resources `hcl:"resources,block"`
+	Resources  []Resource  `hcl:"resource,block"`
 }
 
 // Flow intermediate specification
 type Flow struct {
 	Name       string             `hcl:"name,label"`
+	Error      *Error             `hcl:"error,block"`
 	Before     *Before            `hcl:"before,block"`
 	Input      *InputParameterMap `hcl:"input,block"`
-	Resources  []Resources        `hcl:"resources,block"`
-	Nodes      []Node             `hcl:"resource,block"`
+	References []Resources        `hcl:"resources,block"`
+	Resources  []Resource         `hcl:"resource,block"`
 	Conditions []Condition        `hcl:"if,block"`
 	Output     *ParameterMap      `hcl:"output,block"`
+}
+
+// Error intermediate specification
+type Error struct {
+	Schema     string                 `hcl:"schema,label"`
+	Properties hcl.Body               `hcl:",remain"`
+	Header     *Header                `hcl:"header,block"`
+	Nested     []NestedParameterMap   `hcl:"message,block"`
+	Repeated   []RepeatedParameterMap `hcl:"repeated,block"`
 }
 
 // ParameterMap is the initial map of parameter names (keys) and their (templated) values (values)
@@ -132,21 +143,31 @@ type RepeatedParameterMap struct {
 	Properties hcl.Body               `hcl:",remain"`
 }
 
-// Node intermediate specification
-type Node struct {
+// Resource intermediate specification
+type Resource struct {
 	Name      string   `hcl:"name,label"`
 	DependsOn []string `hcl:"depends_on,optional"`
 	Request   *Call    `hcl:"request,block"`
 	Rollback  *Call    `hcl:"rollback,block"`
+	OnError   *OnError `hcl:"on_error,block"`
+	Error     *Error   `hcl:"error,block"`
+}
+
+// OnError intermediate specification
+type OnError struct {
+	Schema  string        `hcl:"schema,optional"`
+	Status  string        `hcl:"status,optional"`
+	Message string        `hcl:"message,optional"`
+	Params  *BlockOptions `hcl:"params,block"`
 }
 
 // Function intermediate specification
 type Function struct {
-	Name      string        `hcl:"name,label"`
-	Input     *ParameterMap `hcl:"input,block"`
-	Resources []Resources   `hcl:"resources,block"`
-	Nodes     []Node        `hcl:"resource,block"`
-	Output    *ParameterMap `hcl:"output,block"`
+	Name       string        `hcl:"name,label"`
+	Input      *ParameterMap `hcl:"input,block"`
+	References []Resources   `hcl:"resources,block"`
+	Resources  []Resource    `hcl:"resource,block"`
+	Output     *ParameterMap `hcl:"output,block"`
 }
 
 // Call intermediate specification
@@ -194,11 +215,12 @@ type Method struct {
 
 // Proxy specification
 type Proxy struct {
-	Name      string       `hcl:"name,label"`
-	Input     *ProxyInput  `hcl:"input,block"`
-	Resources []Resources  `hcl:"resources,block"`
-	Nodes     []Node       `hcl:"resource,block"`
-	Forward   ProxyForward `hcl:"forward,block"`
+	Name       string       `hcl:"name,label"`
+	Input      *ProxyInput  `hcl:"input,block"`
+	Error      *Error       `hcl:"error,block"`
+	References []Resources  `hcl:"resources,block"`
+	Resources  []Resource   `hcl:"resource,block"`
+	Forward    ProxyForward `hcl:"forward,block"`
 }
 
 // ProxyInput represents the proxy input block
