@@ -44,6 +44,15 @@ func DefineProxy(ctx instance.Context, services *specs.ServicesManifest, schema 
 		proxy.Input = ToParameterMap(proxy.Input, "", input)
 	}
 
+	if proxy.Error != nil {
+		prop := schema.GetProperty(proxy.Error.Schema)
+		if prop == nil {
+			return trace.New(trace.WithMessage("undefined error object '%s' in schema collection", proxy.Error.Schema))
+		}
+
+		proxy.Error = ToError(prop, proxy.Error)
+	}
+
 	for _, node := range proxy.Nodes {
 		if node.Call != nil {
 			err = DefineCall(ctx, services, schema, flows, node, node.Call, proxy)
@@ -54,6 +63,13 @@ func DefineProxy(ctx instance.Context, services *specs.ServicesManifest, schema 
 
 		if node.Rollback != nil {
 			err = DefineCall(ctx, services, schema, flows, node, node.Rollback, proxy)
+			if err != nil {
+				return err
+			}
+		}
+
+		if node.OnError != nil {
+			err = DefineError(ctx, services, proxy, node, node.OnError)
 			if err != nil {
 				return err
 			}
@@ -85,6 +101,15 @@ func DefineFlow(ctx instance.Context, services *specs.ServicesManifest, schema *
 		flow.Input = ToParameterMap(flow.Input, "", input)
 	}
 
+	if flow.Error != nil {
+		prop := schema.GetProperty(flow.Error.Schema)
+		if prop == nil {
+			return trace.New(trace.WithMessage("undefined error object '%s' in schema collection", flow.Error.Schema))
+		}
+
+		flow.Error = ToError(prop, flow.Error)
+	}
+
 	for _, node := range flow.Nodes {
 		if node.Call != nil {
 			err = DefineCall(ctx, services, schema, flows, node, node.Call, flow)
@@ -99,6 +124,13 @@ func DefineFlow(ctx instance.Context, services *specs.ServicesManifest, schema *
 				return err
 			}
 		}
+
+		if node.OnError != nil {
+			err = DefineError(ctx, services, flow, node, node.OnError)
+			if err != nil {
+				return err
+			}
+		}
 	}
 
 	if flow.Output != nil {
@@ -106,6 +138,20 @@ func DefineFlow(ctx instance.Context, services *specs.ServicesManifest, schema *
 		if err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+// DefineError defined the types for the given error
+func DefineError(ctx instance.Context, services *specs.ServicesManifest, flow specs.FlowResourceManager, node *specs.Node, onError *specs.OnError) error {
+	for _, param := range onError.Params {
+		reference, err := LookupReference(ctx, node, node.Name, param, flow)
+		if err != nil {
+			return err
+		}
+
+		param.Property = reference
 	}
 
 	return nil

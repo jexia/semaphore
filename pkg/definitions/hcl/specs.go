@@ -96,6 +96,15 @@ func ParseIntermediateFlow(ctx instance.Context, flow Flow) (*specs.Flow, error)
 		Output: output,
 	}
 
+	if flow.Error != nil {
+		spec, err := ParseIntermediateError(ctx, flow.Error)
+		if err != nil {
+			return nil, err
+		}
+
+		result.Error = spec
+	}
+
 	before := map[string]*specs.Node{}
 	if flow.Before != nil {
 		for _, resources := range flow.Before.References {
@@ -262,6 +271,15 @@ func ParseIntermediateProxy(ctx instance.Context, proxy Proxy) (*specs.Proxy, er
 		}
 
 		result.Input = input
+	}
+
+	if proxy.Error != nil {
+		spec, err := ParseIntermediateError(ctx, proxy.Error)
+		if err != nil {
+			return nil, err
+		}
+
+		result.Error = spec
 	}
 
 	for index, node := range proxy.Resources {
@@ -533,6 +551,18 @@ func ParseIntermediateNode(ctx instance.Context, node Resource) (*specs.Node, er
 		Rollback:  rollback,
 	}
 
+	if node.OnError != nil {
+		result.OnError = &specs.OnError{
+			Schema:  node.OnError.Schema,
+			Status:  node.OnError.Status,
+			Message: node.OnError.Message,
+		}
+
+		if node.OnError.Params != nil {
+			result.OnError.Params = ParseIntermediateParameters(node.OnError.Params.Body)
+		}
+	}
+
 	for _, dependency := range node.DependsOn {
 		result.DependsOn[dependency] = nil
 	}
@@ -622,6 +652,24 @@ func ParseIntermediateCallParameterMap(ctx instance.Context, params *Call) (*spe
 	}
 
 	return &result, nil
+}
+
+// ParseIntermediateError parses the given intermediate error to a spec property
+func ParseIntermediateError(ctx instance.Context, err *Error) (*specs.Error, error) {
+	result := &specs.Error{
+		Schema: err.Schema,
+	}
+
+	if err.Header != nil {
+		header, err := ParseIntermediateHeader(ctx, err.Header)
+		if err != nil {
+			return nil, err
+		}
+
+		result.Header = header
+	}
+
+	return result, nil
 }
 
 // ParseIntermediateProperty parses the given intermediate property to a spec property
