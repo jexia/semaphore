@@ -27,6 +27,7 @@ func main() {
 		maestro.WithLogLevel(logger.Global, "debug"),
 		maestro.WithListener(http.NewListener(":8080", specs.Options{})),
 		maestro.WithFlows(hcl.FlowsResolver("./*.hcl")),
+		maestro.WithEndpoints(hcl.EndpointsResolver("./*.hcl")),
 		maestro.WithSchema(protoc.SchemaResolver([]string{"../../../", "./proto"}, "./proto/*.proto")),
 		maestro.WithServices(protoc.ServiceResolver([]string{"../../../", "./proto"}, "./proto/*.proto")),
 		maestro.WithCodec(json.NewConstructor()),

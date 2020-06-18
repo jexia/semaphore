@@ -64,6 +64,8 @@ func Specs(ctx instance.Context, mem functions.Collection, options Options) (*Co
 func FlowManager(ctx instance.Context, mem functions.Collection, services *specs.ServicesManifest, endpoints *specs.EndpointsManifest, flows *specs.FlowsManifest, options Options) ([]*transport.Endpoint, error) {
 	results := make([]*transport.Endpoint, len(endpoints.Endpoints))
 
+	ctx.Logger(logger.Core).WithField("endpoints", endpoints.Endpoints).Debug("constructing endpoints")
+
 	for index, endpoint := range endpoints.Endpoints {
 		manager := flows.GetFlow(endpoint.Flow)
 		if manager == nil {
@@ -253,6 +255,8 @@ func Forward(services *specs.ServicesManifest, flows *specs.FlowsManifest, call 
 func Listeners(endpoints []*transport.Endpoint, options Options) error {
 	collections := make(map[string][]*transport.Endpoint, len(options.Listeners))
 
+	options.Ctx.Logger(logger.Core).WithField("endpoints", endpoints).Debug("constructing listeners")
+
 	for _, endpoint := range endpoints {
 		if endpoint == nil {
 			continue
@@ -276,6 +280,8 @@ func Listeners(endpoints []*transport.Endpoint, options Options) error {
 	}
 
 	for key, collection := range collections {
+		options.Ctx.Logger(logger.Core).WithField("listener", key).Debug("applying listener handles")
+
 		listener := options.Listeners.Get(key)
 		err := listener.Handle(collection, options.Codec)
 		if err != nil {
