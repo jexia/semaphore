@@ -46,14 +46,23 @@ type Before struct {
 	Nodes     []Node      `hcl:"resource,block"`
 }
 
+// Condition represents a condition on which the scoped resources should be executed if true
+type Condition struct {
+	Expression string      `hcl:"expression,label"`
+	Conditions []Condition `hcl:"if,block"`
+	Resources  []Resources `hcl:"resources,block"`
+	Nodes      []Node      `hcl:"resource,block"`
+}
+
 // Flow intermediate specification
 type Flow struct {
-	Name      string             `hcl:"name,label"`
-	Before    *Before            `hcl:"before,block"`
-	Input     *InputParameterMap `hcl:"input,block"`
-	Resources []Resources        `hcl:"resources,block"`
-	Nodes     []Node             `hcl:"resource,block"`
-	Output    *ParameterMap      `hcl:"output,block"`
+	Name       string             `hcl:"name,label"`
+	Before     *Before            `hcl:"before,block"`
+	Input      *InputParameterMap `hcl:"input,block"`
+	Resources  []Resources        `hcl:"resources,block"`
+	Nodes      []Node             `hcl:"resource,block"`
+	Conditions []Condition        `hcl:"if,block"`
+	Output     *ParameterMap      `hcl:"output,block"`
 }
 
 // ParameterMap is the initial map of parameter names (keys) and their (templated) values (values)
