@@ -141,6 +141,7 @@ type Resource struct {
 	Request   *Call    `hcl:"request,block"`
 	Rollback  *Call    `hcl:"rollback,block"`
 	OnError   *OnError `hcl:"on_error,block"`
+	Error     *Error   `hcl:"error,block"`
 }
 
 // OnError intermediate specification

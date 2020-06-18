@@ -2,6 +2,7 @@ package specs
 
 // FlowsManifest holds a collection of definitions and resources
 type FlowsManifest struct {
+	Error *Error  `json:"error"`
 	Flows Flows   `json:"flows"`
 	Proxy Proxies `json:"proxies"`
 }
@@ -171,6 +172,7 @@ type Node struct {
 	Call      *Call            `json:"call"`
 	Rollback  *Call            `json:"rollback"`
 	OnError   *OnError         `json:"on_error"`
+	Error     *Error           `json:"error"`
 }
 
 // Call represents a call which is executed during runtime

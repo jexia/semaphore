@@ -20,6 +20,15 @@ func ParseFlows(ctx instance.Context, manifest Manifest) (*specs.FlowsManifest, 
 		Proxy: make([]*specs.Proxy, len(manifest.Proxy)),
 	}
 
+	if manifest.Error != nil {
+		spec, err := ParseIntermediateError(ctx, manifest.Error)
+		if err != nil {
+			return nil, err
+		}
+
+		result.Error = spec
+	}
+
 	for index, flow := range manifest.Flows {
 		flow, err := ParseIntermediateFlow(ctx, flow)
 		if err != nil {
@@ -561,6 +570,15 @@ func ParseIntermediateNode(ctx instance.Context, node Resource) (*specs.Node, er
 		if node.OnError.Params != nil {
 			result.OnError.Params = ParseIntermediateParameters(node.OnError.Params.Body)
 		}
+	}
+
+	if node.Error != nil {
+		spec, err := ParseIntermediateError(ctx, node.Error)
+		if err != nil {
+			return nil, err
+		}
+
+		result.Error = spec
 	}
 
 	for _, dependency := range node.DependsOn {
