@@ -217,9 +217,11 @@ type Method struct {
 type Proxy struct {
 	Name       string       `hcl:"name,label"`
 	Input      *ProxyInput  `hcl:"input,block"`
+	Before     *Before      `hcl:"before,block"`
 	Error      *Error       `hcl:"error,block"`
 	References []Resources  `hcl:"resources,block"`
 	Resources  []Resource   `hcl:"resource,block"`
+	Conditions []Condition  `hcl:"if,block"`
 	Forward    ProxyForward `hcl:"forward,block"`
 }
 

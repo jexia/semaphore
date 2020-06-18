@@ -99,10 +99,11 @@ func ParseIntermediateFlow(ctx instance.Context, flow Flow) (*specs.Flow, error)
 	}
 
 	result := specs.Flow{
-		Name:   flow.Name,
-		Input:  input,
-		Nodes:  make([]*specs.Node, 0, length),
-		Output: output,
+		Name:       flow.Name,
+		Input:      input,
+		Nodes:      make([]*specs.Node, 0, length),
+		Output:     output,
+		Conditions: make([]*specs.Condition, 0, len(flow.Conditions)),
 	}
 
 	if flow.Error != nil {
@@ -114,59 +115,39 @@ func ParseIntermediateFlow(ctx instance.Context, flow Flow) (*specs.Flow, error)
 		result.Error = spec
 	}
 
-	before := map[string]*specs.Node{}
+	var before map[string]*specs.Node
 	if flow.Before != nil {
-		for _, resources := range flow.Before.References {
-			attrs, _ := resources.Properties.JustAttributes()
-			for _, attr := range attrs {
-				before[attr.Name] = nil
-			}
+		dependencies, references, resources := ParseIntermediateBefore(ctx, flow.Before)
+		before = dependencies
 
-			flow.References = append([]Resources{resources}, flow.References...)
-		}
-
-		for _, node := range flow.Before.Resources {
-			before[node.Name] = nil
-			flow.Resources = append([]Resource{node}, flow.Resources...)
-		}
+		flow.References = append(flow.References, references...)
+		flow.Resources = append(flow.Resources, resources...)
 	}
 
-	for _, resources := range flow.References {
-		attrs, _ := resources.Properties.JustAttributes()
-
-		// FIXME: attrs are not always loaded in the same order as they are defined
-		for _, attr := range attrs {
-			prop, err := ParseIntermediateProperty(ctx, "", attr)
-			if err != nil {
-				return nil, err
-			}
-
-			node := &specs.Node{
-				DependsOn: DependenciesExcept(before, prop.Name),
-				Name:      prop.Name,
-				Call: &specs.Call{
-					Response: &specs.ParameterMap{
-						Property: prop,
-					},
-				},
-			}
-
-			result.Nodes = append(result.Nodes, node)
-		}
-	}
-
-	for _, intermediate := range flow.Resources {
-		node, err := ParseIntermediateNode(ctx, intermediate)
+	for _, references := range flow.References {
+		nodes, err := ParseIntermediateResources(ctx, before, references)
 		if err != nil {
 			return nil, err
 		}
 
-		for key := range DependenciesExcept(before, node.Name) {
-			node.DependsOn[key] = nil
+		result.Nodes = append(result.Nodes, nodes...)
+	}
+
+	for _, intermediate := range flow.Resources {
+		node, err := ParseIntermediateNode(ctx, before, intermediate)
+		if err != nil {
+			return nil, err
 		}
 
 		result.Nodes = append(result.Nodes, node)
 	}
+
+	conditions, err := ParseIntermediateConditions(ctx, before, flow.Conditions)
+	if err != nil {
+		return nil, err
+	}
+
+	result.Conditions = conditions
 
 	return &result, nil
 }
@@ -254,9 +235,15 @@ func ParseIntermediateProxy(ctx instance.Context, proxy Proxy) (*specs.Proxy, er
 		return nil, err
 	}
 
+	length := len(proxy.Resources)
+	for _, collection := range proxy.References {
+		attrs, _ := collection.Properties.JustAttributes()
+		length += len(attrs)
+	}
+
 	result := specs.Proxy{
 		Name:    proxy.Name,
-		Nodes:   make([]*specs.Node, len(proxy.References)+len(proxy.Resources)),
+		Nodes:   make([]*specs.Node, 0, length),
 		Forward: forward,
 	}
 
@@ -291,14 +278,39 @@ func ParseIntermediateProxy(ctx instance.Context, proxy Proxy) (*specs.Proxy, er
 		result.Error = spec
 	}
 
-	for index, node := range proxy.Resources {
-		node, err := ParseIntermediateNode(ctx, node)
+	var before map[string]*specs.Node
+	if proxy.Before != nil {
+		dependencies, references, resources := ParseIntermediateBefore(ctx, proxy.Before)
+		before = dependencies
+
+		proxy.References = append(proxy.References, references...)
+		proxy.Resources = append(proxy.Resources, resources...)
+	}
+
+	for _, references := range proxy.References {
+		nodes, err := ParseIntermediateResources(ctx, before, references)
 		if err != nil {
 			return nil, err
 		}
 
-		result.Nodes[index] = node
+		result.Nodes = append(result.Nodes, nodes...)
 	}
+
+	for _, node := range proxy.Resources {
+		node, err := ParseIntermediateNode(ctx, before, node)
+		if err != nil {
+			return nil, err
+		}
+
+		result.Nodes = append(result.Nodes, node)
+	}
+
+	conditions, err := ParseIntermediateConditions(ctx, before, proxy.Conditions)
+	if err != nil {
+		return nil, err
+	}
+
+	result.Conditions = conditions
 
 	return &result, nil
 }
@@ -542,7 +554,7 @@ func ParseIntermediateParameters(options hcl.Body) map[string]*specs.PropertyRef
 }
 
 // ParseIntermediateNode parses the given intermediate call to a spec call
-func ParseIntermediateNode(ctx instance.Context, node Resource) (*specs.Node, error) {
+func ParseIntermediateNode(ctx instance.Context, dependencies map[string]*specs.Node, node Resource) (*specs.Node, error) {
 	call, err := ParseIntermediateCall(ctx, node.Request)
 	if err != nil {
 		return nil, err
@@ -583,6 +595,10 @@ func ParseIntermediateNode(ctx instance.Context, node Resource) (*specs.Node, er
 
 	for _, dependency := range node.DependsOn {
 		result.DependsOn[dependency] = nil
+	}
+
+	for key := range DependenciesExcept(dependencies, node.Name) {
+		result.DependsOn[key] = nil
 	}
 
 	return &result, nil
@@ -717,5 +733,108 @@ func ParseIntermediateProperty(ctx instance.Context, path string, property *hcl.
 	}
 
 	result.Name = property.Name
+	return result, nil
+}
+
+// ParseIntermediateBefore parses the given before into a collection of dependencies
+func ParseIntermediateBefore(ctx instance.Context, before *Before) (dependencies map[string]*specs.Node, references []Resources, resources []Resource) {
+	result := make(map[string]*specs.Node)
+
+	for _, resources := range before.References {
+		attrs, _ := resources.Properties.JustAttributes()
+		for _, attr := range attrs {
+			result[attr.Name] = nil
+		}
+
+		references = append([]Resources{resources}, references...)
+	}
+
+	for _, node := range before.Resources {
+		result[node.Name] = nil
+		resources = append([]Resource{node}, resources...)
+	}
+
+	return result, references, resources
+}
+
+// ParseIntermediateResources parses the given resources to nodes
+func ParseIntermediateResources(ctx instance.Context, dependencies map[string]*specs.Node, resources Resources) ([]*specs.Node, error) {
+	attrs, _ := resources.Properties.JustAttributes()
+	nodes := make([]*specs.Node, 0, len(attrs))
+
+	// FIXME: attrs are not always loaded in the same order as they are defined
+	for _, attr := range attrs {
+		prop, err := ParseIntermediateProperty(ctx, "", attr)
+		if err != nil {
+			return nil, err
+		}
+
+		node := &specs.Node{
+			DependsOn: DependenciesExcept(dependencies, prop.Name),
+			Name:      prop.Name,
+			Call: &specs.Call{
+				Response: &specs.ParameterMap{
+					Property: prop,
+				},
+			},
+		}
+
+		nodes = append(nodes, node)
+	}
+
+	return nodes, nil
+}
+
+// ParseIntermediateConditions parses the given intermediate conditions and returns them as a specs object
+func ParseIntermediateConditions(ctx instance.Context, dependencies map[string]*specs.Node, conditions []Condition) ([]*specs.Condition, error) {
+	result := make([]*specs.Condition, len(conditions))
+
+	if conditions == nil {
+		return result, nil
+	}
+
+	for index, condition := range conditions {
+		nodesLength := len(condition.Resources)
+		for _, collection := range condition.References {
+			attrs, _ := collection.Properties.JustAttributes()
+			nodesLength += len(attrs)
+		}
+
+		nodes := make([]*specs.Node, 0, nodesLength)
+
+		for _, references := range condition.References {
+			result, err := ParseIntermediateResources(ctx, dependencies, references)
+			if err != nil {
+				return nil, err
+			}
+
+			nodes = append(nodes, result...)
+		}
+
+		for _, intermediate := range condition.Resources {
+			node, err := ParseIntermediateNode(ctx, dependencies, intermediate)
+			if err != nil {
+				return nil, err
+			}
+
+			for key := range DependenciesExcept(nil, node.Name) {
+				node.DependsOn[key] = nil
+			}
+
+			nodes = append(nodes, node)
+		}
+
+		conditions, err := ParseIntermediateConditions(ctx, dependencies, condition.Conditions)
+		if err != nil {
+			return nil, err
+		}
+
+		result[index] = &specs.Condition{
+			Expression: condition.Expression,
+			Nodes:      nodes,
+			Conditions: conditions,
+		}
+	}
+
 	return result, nil
 }
