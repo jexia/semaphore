@@ -35,6 +35,7 @@ type FlowResourceManager interface {
 	GetNodes() []*Node
 	GetInput() *ParameterMap
 	GetOutput() *ParameterMap
+	GetError() *Error
 	GetForward() *Call
 }
 
@@ -64,6 +65,7 @@ type Flow struct {
 	Input  *ParameterMap `json:"input"`
 	Nodes  []*Node       `json:"nodes"`
 	Output *ParameterMap `json:"output"`
+	Error  *Error        `json:"error"`
 }
 
 // GetName returns the flow name
@@ -74,6 +76,11 @@ func (flow *Flow) GetName() string {
 // GetNodes returns the calls of the given flow
 func (flow *Flow) GetNodes() []*Node {
 	return flow.Nodes
+}
+
+// GetError returns the error of the given flow
+func (flow *Flow) GetError() *Error {
+	return flow.Error
 }
 
 // GetInput returns the input of the given flow
@@ -113,6 +120,7 @@ type Proxy struct {
 	Name    string        `json:"name"`
 	Nodes   []*Node       `json:"nodes"`
 	Forward *Call         `json:"forward"`
+	Error   *Error        `json:"error"`
 }
 
 // GetName returns the flow name
@@ -123,6 +131,11 @@ func (proxy *Proxy) GetName() string {
 // GetNodes returns the calls of the given flow
 func (proxy *Proxy) GetNodes() []*Node {
 	return proxy.Nodes
+}
+
+// GetError returns the error of the given flow
+func (proxy *Proxy) GetError() *Error {
+	return proxy.Error
 }
 
 // GetInput returns the input of the given flow
@@ -140,6 +153,13 @@ func (proxy *Proxy) GetForward() *Call {
 	return proxy.Forward
 }
 
+// Error represents a error message returned to the user once a unexpected error is returned
+type Error struct {
+	Schema   string    `json:"schema"`
+	Header   Header    `json:"header"`
+	Property *Property `json:"property"`
+}
+
 // Node represents a point inside a given flow where a request or rollback could be preformed.
 // Nodes could be executed synchronously or asynchronously.
 // All calls are referencing a service method, the service should match the alias defined inside the service.
@@ -150,6 +170,7 @@ type Node struct {
 	DependsOn map[string]*Node `json:"depends_on"`
 	Call      *Call            `json:"call"`
 	Rollback  *Call            `json:"rollback"`
+	OnError   *OnError         `json:"on_error"`
 }
 
 // Call represents a call which is executed during runtime
@@ -159,4 +180,12 @@ type Call struct {
 	Request    *ParameterMap `json:"request"`
 	Response   *ParameterMap `json:"response"`
 	Descriptor *Method       `json:"-"`
+}
+
+// OnError represents the variables that have to be returned if a unexpected error is returned
+type OnError struct {
+	Schema  string
+	Status  string
+	Message string
+	Params  map[string]*PropertyReference
 }
