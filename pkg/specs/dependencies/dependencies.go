@@ -40,7 +40,6 @@ func ResolveNode(manager specs.FlowResourceManager, node *specs.Node, unresolved
 
 	unresolved[node.Name] = node
 
-lookup:
 	for edge := range node.DependsOn {
 		// Remove any self references
 		if edge == node.Name {
@@ -53,20 +52,31 @@ lookup:
 			return trace.New(trace.WithMessage("Circular dependency detected: %s.%s <-> %s.%s", manager.GetName(), node.Name, manager.GetName(), edge))
 		}
 
-		for _, inner := range manager.GetNodes() {
-			if inner.Name == edge {
-				err := ResolveNode(manager, inner, unresolved)
-				if err != nil {
-					return err
-				}
-
-				node.DependsOn[edge] = inner
-				continue lookup
-			}
+		result := FindNode(manager, edge)
+		if result == nil {
+			continue
 		}
+
+		err := ResolveNode(manager, result, unresolved)
+		if err != nil {
+			return err
+		}
+
+		node.DependsOn[edge] = result
 	}
 
 	delete(unresolved, node.Name)
+
+	return nil
+}
+
+// FindNode attempts to find the given node inside the given flow manager
+func FindNode(manager specs.FlowResourceManager, node string) *specs.Node {
+	for _, inner := range manager.GetNodes() {
+		if inner.Name == node {
+			return inner
+		}
+	}
 
 	return nil
 }

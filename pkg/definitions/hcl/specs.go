@@ -92,18 +92,11 @@ func ParseIntermediateFlow(ctx instance.Context, flow Flow) (*specs.Flow, error)
 		return nil, err
 	}
 
-	length := len(flow.Resources)
-	for _, collection := range flow.References {
-		attrs, _ := collection.Properties.JustAttributes()
-		length += len(attrs)
-	}
-
 	result := specs.Flow{
-		Name:       flow.Name,
-		Input:      input,
-		Nodes:      make([]*specs.Node, 0, length),
-		Output:     output,
-		Conditions: make([]*specs.Condition, 0, len(flow.Conditions)),
+		Name:   flow.Name,
+		Input:  input,
+		Nodes:  []*specs.Node{},
+		Output: output,
 	}
 
 	if flow.Error != nil {
@@ -142,12 +135,14 @@ func ParseIntermediateFlow(ctx instance.Context, flow Flow) (*specs.Flow, error)
 		result.Nodes = append(result.Nodes, node)
 	}
 
-	conditions, err := ParseIntermediateConditions(ctx, before, flow.Conditions)
-	if err != nil {
-		return nil, err
-	}
+	for _, condition := range flow.Conditions {
+		nodes, err := ParseIntermediateCondition(ctx, before, condition)
+		if err != nil {
+			return nil, err
+		}
 
-	result.Conditions = conditions
+		result.Nodes = append(result.Nodes, nodes...)
+	}
 
 	return &result, nil
 }
@@ -164,6 +159,13 @@ func DependenciesExcept(dependencies map[string]*specs.Node, resource string) ma
 	}
 
 	return result
+}
+
+// DependsOn sets the given dependency for the given nodes
+func DependsOn(dependency *specs.Node, nodes ...*specs.Node) {
+	for _, node := range nodes {
+		node.DependsOn[dependency.Name] = dependency
+	}
 }
 
 // ParseIntermediateInputParameterMap parses the given input parameter map
@@ -235,15 +237,9 @@ func ParseIntermediateProxy(ctx instance.Context, proxy Proxy) (*specs.Proxy, er
 		return nil, err
 	}
 
-	length := len(proxy.Resources)
-	for _, collection := range proxy.References {
-		attrs, _ := collection.Properties.JustAttributes()
-		length += len(attrs)
-	}
-
 	result := specs.Proxy{
 		Name:    proxy.Name,
-		Nodes:   make([]*specs.Node, 0, length),
+		Nodes:   []*specs.Node{},
 		Forward: forward,
 	}
 
@@ -305,12 +301,14 @@ func ParseIntermediateProxy(ctx instance.Context, proxy Proxy) (*specs.Proxy, er
 		result.Nodes = append(result.Nodes, node)
 	}
 
-	conditions, err := ParseIntermediateConditions(ctx, before, proxy.Conditions)
-	if err != nil {
-		return nil, err
-	}
+	for _, condition := range proxy.Conditions {
+		nodes, err := ParseIntermediateCondition(ctx, before, condition)
+		if err != nil {
+			return nil, err
+		}
 
-	result.Conditions = conditions
+		result.Nodes = append(result.Nodes, nodes...)
+	}
 
 	return &result, nil
 }
@@ -785,55 +783,45 @@ func ParseIntermediateResources(ctx instance.Context, dependencies map[string]*s
 	return nodes, nil
 }
 
-// ParseIntermediateConditions parses the given intermediate conditions and returns them as a specs object
-func ParseIntermediateConditions(ctx instance.Context, dependencies map[string]*specs.Node, conditions []Condition) ([]*specs.Condition, error) {
-	result := make([]*specs.Condition, len(conditions))
-
-	if conditions == nil {
-		return result, nil
+// ParseIntermediateCondition parses the given intermediate condition and returns the compiled nodes
+func ParseIntermediateCondition(ctx instance.Context, dependencies map[string]*specs.Node, condition Condition) ([]*specs.Node, error) {
+	expression := &specs.Node{
+		Name: condition.Expression,
+		Condition: &specs.Condition{
+			RawExpression: condition.Expression,
+		},
 	}
 
-	for index, condition := range conditions {
-		nodesLength := len(condition.Resources)
-		for _, collection := range condition.References {
-			attrs, _ := collection.Properties.JustAttributes()
-			nodesLength += len(attrs)
-		}
+	result := []*specs.Node{expression}
 
-		nodes := make([]*specs.Node, 0, nodesLength)
-
-		for _, references := range condition.References {
-			result, err := ParseIntermediateResources(ctx, dependencies, references)
-			if err != nil {
-				return nil, err
-			}
-
-			nodes = append(nodes, result...)
-		}
-
-		for _, intermediate := range condition.Resources {
-			node, err := ParseIntermediateNode(ctx, dependencies, intermediate)
-			if err != nil {
-				return nil, err
-			}
-
-			for key := range DependenciesExcept(nil, node.Name) {
-				node.DependsOn[key] = nil
-			}
-
-			nodes = append(nodes, node)
-		}
-
-		conditions, err := ParseIntermediateConditions(ctx, dependencies, condition.Conditions)
+	for _, references := range condition.References {
+		nodes, err := ParseIntermediateResources(ctx, dependencies, references)
 		if err != nil {
 			return nil, err
 		}
 
-		result[index] = &specs.Condition{
-			Expression: condition.Expression,
-			Nodes:      nodes,
-			Conditions: conditions,
+		DependsOn(expression, nodes...)
+		result = append(result, result...)
+	}
+
+	for _, intermediate := range condition.Resources {
+		node, err := ParseIntermediateNode(ctx, dependencies, intermediate)
+		if err != nil {
+			return nil, err
 		}
+
+		DependsOn(expression, node)
+		result = append(result, node)
+	}
+
+	for _, condition := range condition.Conditions {
+		nodes, err := ParseIntermediateCondition(ctx, dependencies, condition)
+		if err != nil {
+			return nil, err
+		}
+
+		DependsOn(expression, nodes...)
+		result = append(result, nodes...)
 	}
 
 	return result, nil

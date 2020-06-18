@@ -34,7 +34,6 @@ func MergeFlowsManifest(left *FlowsManifest, incoming ...*FlowsManifest) {
 type FlowResourceManager interface {
 	GetName() string
 	GetNodes() []*Node
-	GetConditions() []*Condition
 	GetInput() *ParameterMap
 	GetOutput() *ParameterMap
 	GetError() *Error
@@ -63,12 +62,11 @@ func (collection Flows) Get(name string) *Flow {
 // Calls are nested inside of flows and contain two labels, a unique name within the flow and the service and method to be called.
 // A dependency reference structure is generated within the flow which allows Maestro to figure out which calls could be called parallel to improve performance.
 type Flow struct {
-	Name       string        `json:"name"`
-	Input      *ParameterMap `json:"input"`
-	Nodes      []*Node       `json:"nodes"`
-	Conditions []*Condition  `json:"conditions"`
-	Output     *ParameterMap `json:"output"`
-	Error      *Error        `json:"error"`
+	Name   string        `json:"name"`
+	Input  *ParameterMap `json:"input"`
+	Nodes  []*Node       `json:"nodes"`
+	Output *ParameterMap `json:"output"`
+	Error  *Error        `json:"error"`
 }
 
 // GetName returns the flow name
@@ -79,11 +77,6 @@ func (flow *Flow) GetName() string {
 // GetNodes returns the calls of the given flow
 func (flow *Flow) GetNodes() []*Node {
 	return flow.Nodes
-}
-
-// GetConditions returns the conditions of the given flow
-func (flow *Flow) GetConditions() []*Condition {
-	return flow.Conditions
 }
 
 // GetError returns the error of the given flow
@@ -124,12 +117,11 @@ func (collection Proxies) Get(name string) *Proxy {
 // Proxies could define calls that are executed before the request body is forwarded.
 // A proxy forward could ideally be used for file uploads or large messages which could not be stored in memory.
 type Proxy struct {
-	Input      *ParameterMap `json:"input"`
-	Name       string        `json:"name"`
-	Nodes      []*Node       `json:"nodes"`
-	Conditions []*Condition  `json:"conditions"`
-	Forward    *Call         `json:"forward"`
-	Error      *Error        `json:"error"`
+	Input   *ParameterMap `json:"input"`
+	Name    string        `json:"name"`
+	Nodes   []*Node       `json:"nodes"`
+	Forward *Call         `json:"forward"`
+	Error   *Error        `json:"error"`
 }
 
 // GetName returns the flow name
@@ -140,11 +132,6 @@ func (proxy *Proxy) GetName() string {
 // GetNodes returns the calls of the given flow
 func (proxy *Proxy) GetNodes() []*Node {
 	return proxy.Nodes
-}
-
-// GetConditions returns the conditions of the given flow
-func (proxy *Proxy) GetConditions() []*Condition {
-	return proxy.Conditions
 }
 
 // GetError returns the error of the given flow
@@ -174,11 +161,9 @@ type Error struct {
 	Property *Property `json:"property"`
 }
 
-// Condition represents a expression which has to be true for the scoped nodes to be executed
+// Condition represents a condition which could be true or false
 type Condition struct {
-	Expression string       `json:"expression"`
-	Nodes      []*Node      `json:"nodes"`
-	Conditions []*Condition `json:"conditions"`
+	RawExpression string `json:"raw_expression"`
 }
 
 // Node represents a point inside a given flow where a request or rollback could be preformed.
@@ -188,6 +173,7 @@ type Condition struct {
 // A call could contain the request headers, request body, rollback, and the execution type.
 type Node struct {
 	Name      string           `json:"name"`
+	Condition *Condition       `json:"condition"`
 	DependsOn map[string]*Node `json:"depends_on"`
 	Call      *Call            `json:"call"`
 	Rollback  *Call            `json:"rollback"`
