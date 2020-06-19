@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+import "maestro/api/annotations.proto";
+
+package proto;
+
+message Checkout {
+    repeated Item items = 1;
+    Shipping shipping = 2;
+}
+
+message Item {
+    int64 id = 1;
+    string name = 2;
+    repeated string labels = 3;
+}
+
+message Shipping {
+    Address address = 1;
+    int64 time = 2;
+}
+
+message Address {
+    string street = 1;
+    string city = 2;
+}
