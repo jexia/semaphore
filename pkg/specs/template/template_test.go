@@ -37,11 +37,13 @@ func CompareProperties(t *testing.T, left specs.Property, right specs.Property) 
 
 func TestGetTemplateContent(t *testing.T) {
 	tests := map[string]string{
-		"{{ input:message }}":      "input:message",
-		"{{input:message }}":       "input:message",
-		"{{ input:message}}":       "input:message",
-		"{{input:message}}":        "input:message",
-		"{{ add(input:message) }}": "add(input:message)",
+		"{{ input:message }}":            "input:message",
+		"{{input:message }}":             "input:message",
+		"{{ input:message}}":             "input:message",
+		"{{input:message}}":              "input:message",
+		"{{input.header:Authorization}}": "input.header:Authorization",
+		"{{ add(input:message) }}":       "add(input:message)",
+		"{{ add(input:user-id) }}":       "add(input:user-id)",
 	}
 
 	for input, expected := range tests {
@@ -65,10 +67,40 @@ func TestParseReference(t *testing.T) {
 				Path:     "message",
 			},
 		},
+		"input:user-id": {
+			Name: name,
+			Path: path,
+			Reference: &specs.PropertyReference{
+				Resource: "input",
+				Path:     "user-id",
+			},
+		},
+		"input.header:Authorization": {
+			Name: name,
+			Path: path,
+			Reference: &specs.PropertyReference{
+				Resource: "input.header",
+				Path:     "authorization",
+			},
+		},
+		"input.header:User-Id": {
+			Name: name,
+			Path: path,
+			Reference: &specs.PropertyReference{
+				Resource: "input.header",
+				Path:     "user-id",
+			},
+		},
 		"input:": {
 			Path: path,
 			Reference: &specs.PropertyReference{
 				Resource: "input",
+			},
+		},
+		"input.header:": {
+			Path: path,
+			Reference: &specs.PropertyReference{
+				Resource: "input.header",
 			},
 		},
 		"input": {
@@ -80,13 +112,15 @@ func TestParseReference(t *testing.T) {
 	}
 
 	for input, expected := range tests {
-		property := ParseReference(path, name, input)
+		t.Run(input, func(t *testing.T) {
+			property := ParseReference(path, name, input)
 
-		if property.Path != expected.Path {
-			t.Errorf("unexpected path '%s', expected '%s'", property.Path, expected.Path)
-		}
+			if property.Path != expected.Path {
+				t.Errorf("unexpected path '%s', expected '%s'", property.Path, expected.Path)
+			}
 
-		CompareProperties(t, *property, expected)
+			CompareProperties(t, *property, expected)
+		})
 	}
 }
 
@@ -106,6 +140,20 @@ func TestParseTemplate(t *testing.T) {
 			Reference: &specs.PropertyReference{
 				Resource: "input.prop",
 				Path:     "message",
+			},
+		},
+		"{{ input.prop:user-id }}": {
+			Path: "message",
+			Reference: &specs.PropertyReference{
+				Resource: "input.prop",
+				Path:     "user-id",
+			},
+		},
+		"{{ input:user-id }}": {
+			Path: "message",
+			Reference: &specs.PropertyReference{
+				Resource: "input",
+				Path:     "user-id",
 			},
 		},
 		"{{ input.prop:message.prop }}": {

@@ -12,7 +12,7 @@ import (
 
 var (
 	// ReferencePattern is the matching pattern for references
-	ReferencePattern = regexp.MustCompile(`^[a-zA-Z0-9_\.]*:[a-zA-Z0-9_\.]*$`)
+	ReferencePattern = regexp.MustCompile(`^[a-zA-Z0-9_\-\.]*:[a-zA-Z0-9_\-\.]*$`)
 )
 
 const (
@@ -63,15 +63,31 @@ func GetTemplateContent(value string) string {
 // ParsePropertyReference parses the given value to a property reference
 func ParsePropertyReference(value string) *specs.PropertyReference {
 	rv := strings.Split(value, ReferenceDelimiter)
+
+	resource := rv[0]
+
+	resources := SplitPath(resource)
+	var prop string
+
+	if len(resources) > 1 {
+		prop = JoinPath(resources[1:]...)
+	}
+
 	reference := &specs.PropertyReference{
-		Resource: rv[0],
+		Resource: resource,
 	}
 
 	if len(rv) == 1 {
 		return reference
 	}
 
-	reference.Path = rv[1]
+	path := rv[1]
+
+	if prop == ResourceHeader {
+		path = strings.ToLower(path)
+	}
+
+	reference.Path = path
 	return reference
 }
 

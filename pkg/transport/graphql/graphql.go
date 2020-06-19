@@ -79,7 +79,7 @@ func (listener *Listener) Serve() error {
 }
 
 // Handle parses the given endpoints and constructs route handlers
-func (listener *Listener) Handle(endpoints []*transport.Endpoint, constructors map[string]codec.Constructor) error {
+func (listener *Listener) Handle(ctx instance.Context, endpoints []*transport.Endpoint, constructors map[string]codec.Constructor) error {
 	objects := NewObjects()
 	fields := map[string]graphql.Fields{
 		QueryObject:    {},

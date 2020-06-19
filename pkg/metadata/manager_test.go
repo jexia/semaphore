@@ -3,6 +3,7 @@ package metadata
 import (
 	"testing"
 
+	"github.com/jexia/maestro/pkg/instance"
 	"github.com/jexia/maestro/pkg/refs"
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jexia/maestro/pkg/specs/labels"
@@ -20,7 +21,8 @@ func TestNewManager(t *testing.T) {
 		},
 	}
 
-	manager := NewManager(resource, params)
+	ctx := instance.NewContext()
+	manager := NewManager(ctx, resource, params)
 	if manager == nil {
 		t.Fatal("undefined manager")
 	}
@@ -54,7 +56,8 @@ func TestManagerMarshal(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			header, store, expected := test()
-			manager := NewManager(resource, header)
+			ctx := instance.NewContext()
+			manager := NewManager(ctx, resource, header)
 
 			result := manager.Marshal(store)
 
@@ -97,7 +100,8 @@ func TestManagerUnmarshal(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			header, input := test()
-			manager := NewManager(resource, header)
+			ctx := instance.NewContext()
+			manager := NewManager(ctx, resource, header)
 
 			store := refs.NewReferenceStore(len(input))
 			manager.Unmarshal(input, store)
