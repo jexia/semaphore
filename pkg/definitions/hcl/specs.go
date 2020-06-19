@@ -6,6 +6,7 @@ import (
 	"github.com/jexia/maestro/pkg/logger"
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jexia/maestro/pkg/specs/labels"
+	"github.com/jexia/maestro/pkg/specs/lookup"
 	"github.com/jexia/maestro/pkg/specs/template"
 	"github.com/jexia/maestro/pkg/specs/trace"
 	"github.com/jexia/maestro/pkg/specs/types"
@@ -795,10 +796,11 @@ func ParseIntermediateCondition(ctx instance.Context, dependencies map[string]*s
 		return nil, trace.New(trace.WithMessage("condition dit not include a reference, conditions currently only support references"))
 	}
 
+	target, _ := lookup.ParseResource(property.Reference.Resource)
 	expression := &specs.Node{
 		Name: condition.Expression,
 		DependsOn: map[string]*specs.Node{
-			property.Reference.Resource: nil,
+			target: nil,
 		},
 		Condition: &specs.Condition{
 			RawExpression: condition.Expression,
