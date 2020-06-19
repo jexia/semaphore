@@ -1,6 +1,8 @@
 package metadata
 
 import (
+	"strings"
+
 	"github.com/jexia/maestro/pkg/instance"
 	"github.com/jexia/maestro/pkg/logger"
 	"github.com/jexia/maestro/pkg/refs"
@@ -8,7 +10,7 @@ import (
 	"github.com/jexia/maestro/pkg/specs/template"
 )
 
-// NewManager constructs a new metadata manager for the given resource
+// NewManager constructs a new metadata manager for the given resource.
 func NewManager(ctx instance.Context, resource string, params specs.Header) *Manager {
 	return &Manager{
 		Context:  ctx,
@@ -57,7 +59,7 @@ func (manager *Manager) Marshal(store refs.Store) MD {
 // Unmarshal unmarshals the given transport metadata into the given reference store
 func (manager *Manager) Unmarshal(metadata MD, store refs.Store) {
 	for key, value := range metadata {
-		ref := refs.NewReference(key)
+		ref := refs.NewReference(strings.ToLower(key))
 		ref.Value = value
 
 		manager.Context.Logger(logger.Flow).WithField("key", key).Debug("Unmarshalling header property")

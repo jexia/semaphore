@@ -1,6 +1,8 @@
 package lookup
 
 import (
+	"strings"
+
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jexia/maestro/pkg/specs/template"
 	"github.com/jexia/maestro/pkg/specs/types"
@@ -159,9 +161,13 @@ func VariableHeaderLookup(header specs.Header) PathLookup {
 
 // HeaderLookup attempts to lookup the given path inside the header
 func HeaderLookup(header specs.Header) PathLookup {
+	for key := range header {
+		header[key].Path = strings.ToLower(header[key].Path)
+	}
+
 	return func(path string) *specs.Property {
 		for key, header := range header {
-			if key == path {
+			if strings.ToLower(key) == strings.ToLower(path) {
 				return header
 			}
 		}

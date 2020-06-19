@@ -284,6 +284,11 @@ func (handle *Handle) HTTPFunc(w http.ResponseWriter, r *http.Request, ps httpro
 		}
 
 		if handle.Response.Codec != nil {
+			ct, has := ContentTypes[handle.Response.Codec.Name()]
+			if has {
+				w.Header().Set(ContentTypeHeaderKey, ct)
+			}
+
 			reader, err := handle.Response.Codec.Marshal(store)
 			if err != nil {
 				w.WriteHeader(http.StatusInternalServerError)
