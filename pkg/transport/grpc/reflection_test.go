@@ -43,7 +43,7 @@ func NewMockServer(t *testing.T, endpoints []*transport.Endpoint) (*grpc.ClientC
 	ctx := instance.NewContext()
 	constructor := NewListener(addr, nil)
 	listener := constructor(ctx).(*Listener)
-	err = listener.Handle(endpoints, nil)
+	err = listener.Handle(ctx, endpoints, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

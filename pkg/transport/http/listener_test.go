@@ -42,7 +42,7 @@ func NewMockListener(t *testing.T, nodes flow.Nodes) (transport.Listener, int) {
 		},
 	}
 
-	listener.Handle(endpoints, constructors)
+	listener.Handle(ctx, endpoints, constructors)
 	return listener, port
 }
 
@@ -156,7 +156,7 @@ func TestPathReferences(t *testing.T) {
 		},
 	}
 
-	listener.Handle(endpoints, nil)
+	listener.Handle(ctx, endpoints, nil)
 	go listener.Serve()
 
 	// Some CI pipelines take a little while before the listener is active

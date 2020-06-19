@@ -82,7 +82,7 @@ func (listener *Listener) Serve() (err error) {
 }
 
 // Handle parses the given endpoints and constructs route handlers
-func (listener *Listener) Handle(endpoints []*transport.Endpoint, codecs map[string]codec.Constructor) error {
+func (listener *Listener) Handle(ctx instance.Context, endpoints []*transport.Endpoint, codecs map[string]codec.Constructor) error {
 	logger := listener.ctx.Logger(logger.Transport)
 	logger.Info("HTTP listener received new endpoints")
 
@@ -95,7 +95,7 @@ func (listener *Listener) Handle(endpoints []*transport.Endpoint, codecs map[str
 			return fmt.Errorf("endpoint %s: %s", endpoint.Flow, err)
 		}
 
-		handle, err := NewHandle(logger, endpoint, options, codecs)
+		handle, err := NewHandle(ctx, logger, endpoint, options, codecs)
 		if err != nil {
 			return err
 		}
@@ -154,7 +154,7 @@ func (listener *Listener) HandleCors(h http.Handler) http.Handler {
 }
 
 // NewHandle constructs a new handle function for the given endpoint to the given flow
-func NewHandle(logger *logrus.Logger, endpoint *transport.Endpoint, options *EndpointOptions, constructors map[string]codec.Constructor) (*Handle, error) {
+func NewHandle(ctx instance.Context, logger *logrus.Logger, endpoint *transport.Endpoint, options *EndpointOptions, constructors map[string]codec.Constructor) (*Handle, error) {
 	if constructors == nil {
 		constructors = make(map[string]codec.Constructor)
 	}
@@ -171,7 +171,7 @@ func NewHandle(logger *logrus.Logger, endpoint *transport.Endpoint, options *End
 	}
 
 	if endpoint.Request != nil {
-		header := metadata.NewManager(template.InputResource, endpoint.Request.Header)
+		header := metadata.NewManager(ctx, template.InputResource, endpoint.Request.Header)
 		handle.Request = &Request{
 			Header: header,
 		}
@@ -192,7 +192,7 @@ func NewHandle(logger *logrus.Logger, endpoint *transport.Endpoint, options *End
 			return nil, trace.New(trace.WithMessage("unable to construct a new HTTP codec manager for '%s'", endpoint.Flow))
 		}
 
-		header := metadata.NewManager(template.OutputResource, endpoint.Response.Header)
+		header := metadata.NewManager(ctx, template.OutputResource, endpoint.Response.Header)
 		handle.Response = &Request{
 			Header: header,
 			Codec:  response,
@@ -205,7 +205,7 @@ func NewHandle(logger *logrus.Logger, endpoint *transport.Endpoint, options *End
 			return nil, trace.New(trace.WithMessage("unable to parse the proxy forward host '%s'", endpoint.Forward.Service.Host))
 		}
 
-		header := metadata.NewManager(template.OutputResource, endpoint.Forward.Header)
+		header := metadata.NewManager(ctx, template.OutputResource, endpoint.Forward.Header)
 		handle.Proxy = &Proxy{
 			Header: header,
 			Handle: httputil.NewSingleHostReverseProxy(url),

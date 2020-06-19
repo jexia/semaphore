@@ -134,12 +134,12 @@ func Call(ctx instance.Context, mem functions.Collection, services *specs.Servic
 		return NewServiceCall(ctx, mem, services, flows, node, call, options, manager)
 	}
 
-	request, err := Request(node, mem, nil, call.Request)
+	request, err := Request(ctx, node, mem, nil, call.Request)
 	if err != nil {
 		return nil, err
 	}
 
-	response, err := Request(node, mem, nil, call.Response)
+	response, err := Request(ctx, node, mem, nil, call.Response)
 	if err != nil {
 		return nil, err
 	}
@@ -188,12 +188,12 @@ func NewServiceCall(ctx instance.Context, mem functions.Collection, services *sp
 		return nil, trace.New(trace.WithMessage("codec not found '%s'", service.Codec))
 	}
 
-	request, err := Request(node, mem, codec, call.Request)
+	request, err := Request(ctx, node, mem, codec, call.Request)
 	if err != nil {
 		return nil, err
 	}
 
-	response, err := Request(node, mem, codec, call.Response)
+	response, err := Request(ctx, node, mem, codec, call.Response)
 	if err != nil {
 		return nil, err
 	}
@@ -209,7 +209,7 @@ func NewServiceCall(ctx instance.Context, mem functions.Collection, services *sp
 }
 
 // Request constructs a new request from the given parameter map and codec
-func Request(node *specs.Node, mem functions.Collection, constructor codec.Constructor, params *specs.ParameterMap) (*flow.Request, error) {
+func Request(ctx instance.Context, node *specs.Node, mem functions.Collection, constructor codec.Constructor, params *specs.ParameterMap) (*flow.Request, error) {
 	if params == nil {
 		return nil, nil
 	}
@@ -225,7 +225,7 @@ func Request(node *specs.Node, mem functions.Collection, constructor codec.Const
 	}
 
 	stack := mem[params]
-	metadata := metadata.NewManager(node.Name, params.Header)
+	metadata := metadata.NewManager(ctx, node.Name, params.Header)
 	return flow.NewRequest(stack, codec, metadata), nil
 }
 
@@ -283,7 +283,7 @@ func Listeners(endpoints []*transport.Endpoint, options Options) error {
 		options.Ctx.Logger(logger.Core).WithField("listener", key).Debug("applying listener handles")
 
 		listener := options.Listeners.Get(key)
-		err := listener.Handle(collection, options.Codec)
+		err := listener.Handle(options.Ctx, collection, options.Codec)
 		if err != nil {
 			options.Ctx.Logger(logger.Core).WithFields(logrus.Fields{
 				"listener": listener.Name(),

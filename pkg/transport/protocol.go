@@ -109,5 +109,5 @@ type Listener interface {
 	Name() string
 	Serve() error
 	Close() error
-	Handle([]*Endpoint, map[string]codec.Constructor) error
+	Handle(instance.Context, []*Endpoint, map[string]codec.Constructor) error
 }

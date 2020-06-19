@@ -71,7 +71,7 @@ func (listener *Listener) Serve() error {
 }
 
 // Handle parses the given endpoints and constructs route handlers
-func (listener *Listener) Handle(endpoints []*transport.Endpoint, codecs map[string]codec.Constructor) error {
+func (listener *Listener) Handle(ctx instance.Context, endpoints []*transport.Endpoint, codecs map[string]codec.Constructor) error {
 	logger := listener.ctx.Logger(logger.Transport)
 	logger.Info("gRPC listener received new endpoints")
 
@@ -100,7 +100,7 @@ func (listener *Listener) Handle(endpoints []*transport.Endpoint, codecs map[str
 				return err
 			}
 
-			header := metadata.NewManager(template.InputResource, endpoint.Request.Header)
+			header := metadata.NewManager(ctx, template.InputResource, endpoint.Request.Header)
 
 			method.req = &Request{
 				param:  endpoint.Request,
@@ -115,7 +115,7 @@ func (listener *Listener) Handle(endpoints []*transport.Endpoint, codecs map[str
 				return err
 			}
 
-			header := metadata.NewManager(template.InputResource, endpoint.Response.Header)
+			header := metadata.NewManager(ctx, template.InputResource, endpoint.Response.Header)
 
 			method.res = &Request{
 				param:  endpoint.Response,

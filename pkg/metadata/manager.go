@@ -1,14 +1,17 @@
 package metadata
 
 import (
+	"github.com/jexia/maestro/pkg/instance"
+	"github.com/jexia/maestro/pkg/logger"
 	"github.com/jexia/maestro/pkg/refs"
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jexia/maestro/pkg/specs/template"
 )
 
 // NewManager constructs a new metadata manager for the given resource
-func NewManager(resource string, params specs.Header) *Manager {
+func NewManager(ctx instance.Context, resource string, params specs.Header) *Manager {
 	return &Manager{
+		Context:  ctx,
 		Resource: template.JoinPath(resource, template.ResourceHeader),
 		Params:   params,
 	}
@@ -16,6 +19,7 @@ func NewManager(resource string, params specs.Header) *Manager {
 
 // Manager represents a metadata manager for a given resource
 type Manager struct {
+	Context  instance.Context
 	Resource string
 	Params   specs.Header
 }
@@ -37,7 +41,10 @@ func (manager *Manager) Marshal(store refs.Store) MD {
 			}
 		}
 
+		manager.Context.Logger(logger.Flow).WithField("key", key).Debug("Marshalling header property")
+
 		if value == nil {
+			manager.Context.Logger(logger.Flow).WithField("key", key).Debug("Header property is empty")
 			continue
 		}
 
@@ -52,6 +59,9 @@ func (manager *Manager) Unmarshal(metadata MD, store refs.Store) {
 	for key, value := range metadata {
 		ref := refs.NewReference(key)
 		ref.Value = value
+
+		manager.Context.Logger(logger.Flow).WithField("key", key).Debug("Unmarshalling header property")
+
 		store.StoreReference(manager.Resource, ref)
 	}
 }

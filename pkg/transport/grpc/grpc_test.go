@@ -53,7 +53,7 @@ func NewMockListener(t *testing.T, nodes flow.Nodes) (transport.Listener, int) {
 		},
 	}
 
-	listener.Handle(endpoints, constructors)
+	listener.Handle(ctx, endpoints, constructors)
 	return listener, port
 }
 
