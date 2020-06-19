@@ -13,6 +13,6 @@ func TestTrackerMark(t *testing.T) {
 	tracker.Mark(node)
 
 	if !tracker.Met(node) {
-		t.Errorf("unexpected result, tracker dit not met node after marked")
+		t.Errorf("unexpected result, tracker did not met node after marked")
 	}
 }

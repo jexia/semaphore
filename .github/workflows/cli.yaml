@@ -92,8 +92,7 @@ jobs:
       - name: Read Homebrew formula
         run: |
           # Strip git ref prefix from version
-          HOMEBREW_FORMULA=$(<./dist/maestro.rb)
-          HOMEBREW_FORMULA=$(echo $HOMEBREF_FORMULA | base64)
+          HOMEBREW_FORMULA=$(cat ./dist/maestro.rb | base64)
 
           echo $HOMEBREW_FORMULA
           echo "::set-env name=HOMEBREW_FORMULA::$HOMEBREW_FORMULA"
