@@ -14,6 +14,11 @@ $ maestro daemon -f config.hcl
 You are able to download a prebuild artifact from the [latest release](https://github.com/jexia/maestro/releases).
 Feel free to open a new PR if you require a specific build for your CPU architecture.
 
+```sh
+$ brew tap jexia/cask
+$ brew install maestro
+```
+
 ### Docker images
 
 Official docker images are available on Github. These images contain the Maestro CLI.
