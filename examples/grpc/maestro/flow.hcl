@@ -21,5 +21,6 @@ flow "greeter" {
 
 	output "maestro.greeter.Response" {
 		msg = "{{ user:msg }}"
+		meta = "{{ user:meta }}"
 	}
 }

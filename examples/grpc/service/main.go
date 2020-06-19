@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net"
+	"time"
 
 	"github.com/jexia/maestro/examples/grpc/proto"
 	"google.golang.org/grpc"
@@ -15,8 +16,12 @@ type Say struct{}
 // Hello returns a message
 func (s *Say) Hello(ctx context.Context, req *proto.Request) (*proto.Response, error) {
 	log.Print("Received Say.Hello request")
+
 	res := new(proto.Response)
 	res.Msg = "Hello " + req.Name
+	res.Meta = &proto.Meta{
+		Session: time.Now().Unix(),
+	}
 
 	return res, nil
 }
