@@ -92,13 +92,14 @@ jobs:
       - name: Read Homebrew formula
         run: |
           # Strip git ref prefix from version
-          HOMEBREW_FORMULA=$(cat ./dist/maestro.rb | base64)
+          HOMEBREW_FORMULA=$(cat ./dist/maestro.rb)
 
           echo $HOMEBREW_FORMULA
           echo "::set-env name=HOMEBREW_FORMULA::$HOMEBREW_FORMULA"
       - name: Discord notification
-        env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-        uses: Ilshidur/action-discord@master
+        uses: appleboy/discord-action@master
         with:
-          args: 'A new Homebrew formula is available for version v{{ VERSION }} (the formula is base64 encoded): ```{{ HOMEBREW_FORMULA }}```'
+          webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
+          webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
+          file: "./dist/maestro.rb"
+          message: 'A new Homebrew formula is available for version v{{ VERSION }}'
