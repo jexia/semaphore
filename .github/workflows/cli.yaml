@@ -93,6 +93,7 @@ jobs:
         run: |
           # Strip git ref prefix from version
           HOMEBREW_FORMULA=$(<./dist/maestro.rb)
+          HOMEBREW_FORMULA=$(echo $HOMEBREF_FORMULA | base64)
 
           echo $HOMEBREW_FORMULA
           echo "::set-env name=HOMEBREW_FORMULA::$HOMEBREW_FORMULA"
@@ -101,4 +102,4 @@ jobs:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         uses: Ilshidur/action-discord@master
         with:
-          args: 'A new Homebrew formula is available for version v{{ VERSION }}: ```{{ HOMEBREW_FORMULA }}```'
+          args: 'A new Homebrew formula is available for version v{{ VERSION }} (the formula is base64 encoded): ```{{ HOMEBREW_FORMULA }}```'
