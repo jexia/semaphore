@@ -793,7 +793,7 @@ func ParseIntermediateCondition(ctx instance.Context, dependencies map[string]*s
 	}
 
 	if property.Reference == nil {
-		return nil, trace.New(trace.WithMessage("condition dit not include a reference, conditions currently only support references"))
+		return nil, trace.New(trace.WithMessage("condition did not include a reference, conditions currently only support references"))
 	}
 
 	target, _ := lookup.ParseResource(property.Reference.Resource)
