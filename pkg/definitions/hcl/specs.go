@@ -796,16 +796,18 @@ func ParseIntermediateCondition(ctx instance.Context, dependencies map[string]*s
 		return nil, trace.New(trace.WithMessage("condition did not include a reference, conditions currently only support references"))
 	}
 
-	target, _ := lookup.ParseResource(property.Reference.Resource)
 	expression := &specs.Node{
-		Name: condition.Expression,
-		DependsOn: map[string]*specs.Node{
-			target: nil,
-		},
+		Name:      condition.Expression,
+		DependsOn: map[string]*specs.Node{},
 		Condition: &specs.Condition{
 			RawExpression: condition.Expression,
 			Reference:     property.Reference,
 		},
+	}
+
+	target, _ := lookup.ParseResource(property.Reference.Resource)
+	if target != template.InputResource {
+		expression.DependsOn[target] = nil
 	}
 
 	result := []*specs.Node{expression}
