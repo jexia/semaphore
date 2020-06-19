@@ -42,6 +42,7 @@ func TestGetTemplateContent(t *testing.T) {
 		"{{ input:message}}":       "input:message",
 		"{{input:message}}":        "input:message",
 		"{{ add(input:message) }}": "add(input:message)",
+		"{{ add(input:user-id) }}": "add(input:user-id)",
 	}
 
 	for input, expected := range tests {
@@ -63,6 +64,14 @@ func TestParseReference(t *testing.T) {
 			Reference: &specs.PropertyReference{
 				Resource: "input",
 				Path:     "message",
+			},
+		},
+		"input:user-id": {
+			Name: name,
+			Path: path,
+			Reference: &specs.PropertyReference{
+				Resource: "input",
+				Path:     "user-id",
 			},
 		},
 		"input:": {
@@ -106,6 +115,20 @@ func TestParseTemplate(t *testing.T) {
 			Reference: &specs.PropertyReference{
 				Resource: "input.prop",
 				Path:     "message",
+			},
+		},
+		"{{ input.prop:user-id }}": {
+			Path: "message",
+			Reference: &specs.PropertyReference{
+				Resource: "input.prop",
+				Path:     "user-id",
+			},
+		},
+		"{{ input:user-id }}": {
+			Path: "message",
+			Reference: &specs.PropertyReference{
+				Resource: "input",
+				Path:     "user-id",
 			},
 		},
 		"{{ input.prop:message.prop }}": {
