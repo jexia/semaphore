@@ -14,6 +14,11 @@ $ maestro daemon -f config.hcl
 You are able to download a prebuild artifact from the [latest release](https://github.com/jexia/maestro/releases).
 Feel free to open a new PR if you require a specific build for your CPU architecture.
 
+```sh
+$ brew tap jexia/cask
+$ brew install maestro
+```
+
 ### Docker images
 
 Official docker images are available on Github. These images contain the Maestro CLI.
@@ -33,9 +38,10 @@ configured, you can install the development version of `maestro` from
 the command line.
 
 ```
-go install github.com/jexia/maestro/cmd/maestro
+go build -o maestro ./*.go
 ```
 
+This will build a binary for the machines CPU architecture and environment.
 While the development version is a good way to take a peek at
 `maestro`'s latest features before they get released, be aware that it
 may have bugs. Officially released versions will generally be more
