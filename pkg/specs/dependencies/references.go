@@ -138,7 +138,8 @@ func ResolveParamReferences(params map[string]*specs.PropertyReference, dependen
 
 		resource, _ := lookup.ParseResource(param.Resource)
 		if resource != template.StackResource && resource != template.InputResource {
-			dependencies[template.SplitPath(param.Resource)[0]] = nil
+			dependency := template.SplitPath(param.Resource)[0]
+			dependencies[dependency] = nil
 		}
 
 		clone := CloneProperty(param.Property, param, key, key)

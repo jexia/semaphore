@@ -89,17 +89,10 @@ jobs:
           args: release --rm-dist
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Read Homebrew formula
-        run: |
-          # Strip git ref prefix from version
-          HOMEBREW_FORMULA=$(cat ./dist/maestro.rb)
-
-          echo $HOMEBREW_FORMULA
-          echo "::set-env name=HOMEBREW_FORMULA::$HOMEBREW_FORMULA"
       - name: Discord notification
         uses: appleboy/discord-action@master
         with:
           webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
           webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
           file: "./dist/maestro.rb"
-          message: 'A new Homebrew formula is available for version v{{ VERSION }}'
+          message: 'A new Homebrew formula is available for version v${{ env.VERSION }}'

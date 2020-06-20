@@ -20,7 +20,10 @@ func DefineCaller(ctx instance.Context, node *specs.Node, manifest *specs.FlowsM
 		}
 
 		dependencies.ResolvePropertyReferences(prop, node.DependsOn)
-		dependencies.ResolveNode(manager, node, node.DependsOn)
+		err = dependencies.ResolveNode(manager, node, make(map[string]*specs.Node))
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
