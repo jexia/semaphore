@@ -45,6 +45,7 @@ lookup:
 		// Remove any self references
 		if edge == node.Name {
 			delete(unresolved, edge)
+			delete(node.DependsOn, edge)
 			continue
 		}
 

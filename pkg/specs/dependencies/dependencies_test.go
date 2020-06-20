@@ -233,3 +233,37 @@ func TestCallCircularDependenciesDetection(t *testing.T) {
 		}
 	}
 }
+
+func TestSelfDependencyDetection(t *testing.T) {
+	flow := &specs.Flow{
+		Nodes: []*specs.Node{
+			{
+				Name: "first",
+				DependsOn: map[string]*specs.Node{
+					"first": nil,
+				},
+			},
+			{
+				Name: "second",
+				DependsOn: map[string]*specs.Node{
+					"second": nil,
+				},
+			},
+		},
+	}
+
+	tests := []*specs.Node{
+		flow.Nodes[0],
+	}
+
+	for _, input := range tests {
+		err := ResolveNode(flow, input, make(map[string]*specs.Node))
+		if err != nil {
+			t.Fatalf("unexpected error %s", err)
+		}
+
+		if len(input.DependsOn) > 0 {
+			t.Fatalf("unexpted remaining dependencies, expected dependencies to be empty: %+v", input.DependsOn)
+		}
+	}
+}
