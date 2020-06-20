@@ -102,4 +102,4 @@ jobs:
           webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
           webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
           file: "./dist/maestro.rb"
-          message: 'A new Homebrew formula is available for version v{{ VERSION }}'
+          message: 'A new Homebrew formula is available for version v${{ env.VERSION }}'
