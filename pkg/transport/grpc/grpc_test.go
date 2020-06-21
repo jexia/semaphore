@@ -43,7 +43,7 @@ func NewMockListener(t *testing.T, nodes flow.Nodes) (transport.Listener, int) {
 	endpoints := []*transport.Endpoint{
 		{
 			Request: NewSimpleMockSpecs(),
-			Flow:    flow.NewManager(ctx, "test", nodes, nil),
+			Flow:    flow.NewManager(ctx, "test", nodes, nil, nil),
 			Options: specs.Options{
 				ServiceOption: "mock",
 				MethodOption:  "simple",

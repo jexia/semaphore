@@ -112,8 +112,9 @@ func FlowManager(ctx instance.Context, mem functions.Collection, services *specs
 			return nil, err
 		}
 
+		stack := mem[manager.GetOutput()]
 		result.Forward = forward
-		result.Flow = flow.NewManager(ctx, manager.GetName(), nodes, &flow.ManagerMiddleware{
+		result.Flow = flow.NewManager(ctx, manager.GetName(), nodes, stack, &flow.ManagerMiddleware{
 			BeforeDo:       options.BeforeManagerDo,
 			AfterDo:        options.AfterManagerDo,
 			BeforeRollback: options.BeforeManagerRollback,
