@@ -23,13 +23,16 @@ type Condition struct {
 func (condition *Condition) Eval(ctx instance.Context, store refs.Store) (bool, error) {
 	parameters := make(map[string]interface{}, len(condition.condition.Params.Params))
 	for key, param := range condition.condition.Params.Params {
-		ref := store.Load(param.Reference.Resource, param.Reference.Path)
-		if ref == nil {
-			parameters[key] = nil
-			continue
+		value := param.Default
+
+		if param.Reference != nil {
+			ref := store.Load(param.Reference.Resource, param.Reference.Path)
+			if ref != nil {
+				value = ref.Value
+			}
 		}
 
-		parameters[key] = ref.Value
+		parameters[key] = value
 	}
 
 	ctx.Logger(logger.Flow).WithField("parameters", parameters).Debug("Evaluating comparison")
