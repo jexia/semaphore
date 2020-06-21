@@ -46,7 +46,7 @@ Allow users to implement your product with their tools of choice. We are excited
 You could download the daemon from source or most commonly used package managers. Or pull one of the available [docker images](https://hub.docker.com/r/jexiacom/maestro).
 
 ```bash
-docker pull jexiacom/maestro
+docker run jexiacom/maestro
 ```
 
 ---
