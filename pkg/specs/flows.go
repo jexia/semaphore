@@ -1,5 +1,7 @@
 package specs
 
+import "github.com/Knetic/govaluate"
+
 // FlowsManifest holds a collection of definitions and resources
 type FlowsManifest struct {
 	Error *Error  `json:"error"`
@@ -163,8 +165,9 @@ type Error struct {
 
 // Condition represents a condition which could be true or false
 type Condition struct {
-	RawExpression string `json:"raw_expression"`
-	Reference     *PropertyReference
+	RawExpression string                         `json:"raw_expression"`
+	Expression    *govaluate.EvaluableExpression `json:"-"`
+	Params        *ParameterMap                  `json:"-"`
 }
 
 // Node represents a point inside a given flow where a request or rollback could be preformed.
@@ -196,5 +199,5 @@ type OnError struct {
 	Schema  string
 	Status  string
 	Message string
-	Params  map[string]*PropertyReference
+	Params  map[string]*Property
 }

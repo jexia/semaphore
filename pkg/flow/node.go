@@ -3,7 +3,6 @@ package flow
 import (
 	"context"
 
-	"github.com/jexia/maestro/pkg/conditions"
 	"github.com/jexia/maestro/pkg/instance"
 	"github.com/jexia/maestro/pkg/logger"
 	"github.com/jexia/maestro/pkg/refs"
@@ -14,7 +13,7 @@ import (
 // NewNode constructs a new node for the given call.
 // The service called inside the call endpoint is retrieved from the services collection.
 // The call, codec and rollback are defined inside the node and used while processing requests.
-func NewNode(ctx instance.Context, node *specs.Node, call, rollback Call, middleware *NodeMiddleware) *Node {
+func NewNode(ctx instance.Context, node *specs.Node, condition *Condition, call, rollback Call, middleware *NodeMiddleware) *Node {
 	references := refs.References{}
 
 	if middleware == nil {
@@ -42,7 +41,7 @@ func NewNode(ctx instance.Context, node *specs.Node, call, rollback Call, middle
 	return &Node{
 		BeforeDo:     middleware.BeforeDo,
 		BeforeRevert: middleware.BeforeRollback,
-		Condition:    node.Condition,
+		Condition:    condition,
 		ctx:          ctx,
 		logger:       logger,
 		Name:         node.Name,
@@ -95,7 +94,7 @@ type AfterNodeHandler func(AfterNode) AfterNode
 type Node struct {
 	BeforeDo     BeforeNode
 	BeforeRevert BeforeNode
-	Condition    *specs.Condition
+	Condition    *Condition
 	ctx          instance.Context
 	logger       *logrus.Logger
 	Name         string
@@ -128,7 +127,13 @@ func (node *Node) Do(ctx context.Context, tracker *Tracker, processes *Processes
 	if node.Condition != nil {
 		node.logger.Debug("Evaluating condition: ", node.Name)
 
-		pass := conditions.Eval(refs, node.Condition)
+		pass, err := node.Condition.Eval(node.ctx, refs)
+		if err != nil {
+			node.logger.Debug("Condition evaluation failed: ", err)
+			processes.Fatal(err)
+			return
+		}
+
 		if !pass {
 			node.logger.Debug("Condition prevented node from being executed: ", node.Name)
 			node.Skip(ctx, tracker)

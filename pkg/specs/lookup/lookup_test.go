@@ -375,6 +375,27 @@ func NewMockCall(name string) *specs.Node {
 						Label:   labels.Optional,
 					},
 				},
+				Params: map[string]*specs.Property{
+					"message": {
+						Path:    "message",
+						Default: "hello world",
+						Type:    types.String,
+						Label:   labels.Optional,
+					},
+					"name": {
+						Path:    "message",
+						Default: "hello world",
+						Type:    types.String,
+						Label:   labels.Optional,
+					},
+					"reference": {
+						Path: "reference",
+						Reference: &specs.PropertyReference{
+							Resource: name,
+							Path:     "message",
+						},
+					},
+				},
 				Property: NewInputMockProperty(),
 			},
 			Response: &specs.ParameterMap{
@@ -560,6 +581,9 @@ func TestGetResourceReference(t *testing.T) {
 		NewPropertyReference("first.request", "nested.repeated.message"):   flow.Nodes[0].Call.Request.Property.Nested["nested"].Nested["repeated"].Nested["message"],
 		NewPropertyReference("first.request", "nested.nested.message"):     flow.Nodes[0].Call.Request.Property.Nested["nested"].Nested["nested"].Nested["message"],
 		NewPropertyReference("first.request", "nested.repeated.message"):   flow.Nodes[0].Call.Request.Property.Nested["nested"].Nested["repeated"].Nested["message"],
+		NewPropertyReference("first.params", "message"):                    flow.Nodes[0].Call.Request.Params["message"],
+		NewPropertyReference("first.params", "name"):                       flow.Nodes[0].Call.Request.Params["name"],
+		NewPropertyReference("first.params", "reference"):                  flow.Nodes[0].Call.Request.Property.Nested["message"],
 	}
 
 	for input, expected := range tests {

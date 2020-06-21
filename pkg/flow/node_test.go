@@ -370,7 +370,7 @@ func TestConstructingNode(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			ctx := instance.NewContext()
-			result := NewNode(ctx, test.Node, test.Call, test.Rollback, nil)
+			result := NewNode(ctx, test.Node, nil, test.Call, test.Rollback, nil)
 
 			if len(result.References) != test.Expected {
 				t.Fatalf("unexpected amount of references %d, expected %d", len(result.References), test.Expected)
@@ -388,7 +388,7 @@ func TestConstructingNodeReferences(t *testing.T) {
 		Name: "mock",
 	}
 
-	result := NewNode(ctx, node, call, rollback, nil)
+	result := NewNode(ctx, node, nil, call, rollback, nil)
 	if result == nil {
 		t.Fatal("nil node returned")
 	}

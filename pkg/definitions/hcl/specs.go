@@ -2,13 +2,12 @@ package hcl
 
 import (
 	"github.com/hashicorp/hcl/v2"
+	"github.com/jexia/maestro/pkg/conditions"
 	"github.com/jexia/maestro/pkg/instance"
 	"github.com/jexia/maestro/pkg/logger"
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jexia/maestro/pkg/specs/labels"
-	"github.com/jexia/maestro/pkg/specs/lookup"
 	"github.com/jexia/maestro/pkg/specs/template"
-	"github.com/jexia/maestro/pkg/specs/trace"
 	"github.com/jexia/maestro/pkg/specs/types"
 	"github.com/zclconf/go-cty/cty"
 )
@@ -533,24 +532,24 @@ func ParseIntermediateSpecOptions(options hcl.Body) specs.Options {
 }
 
 // ParseIntermediateParameters parses the given intermediate parameters
-func ParseIntermediateParameters(options hcl.Body) map[string]*specs.PropertyReference {
+func ParseIntermediateParameters(ctx instance.Context, options hcl.Body) (map[string]*specs.Property, error) {
 	if options == nil {
-		return map[string]*specs.PropertyReference{}
+		return map[string]*specs.Property{}, nil
 	}
 
-	result := map[string]*specs.PropertyReference{}
+	result := map[string]*specs.Property{}
 	attrs, _ := options.JustAttributes()
 
 	for key, val := range attrs {
-		val, _ := val.Expr.Value(nil)
-		if val.Type() != cty.String {
-			continue
+		property, err := ParseIntermediateProperty(ctx, key, val)
+		if err != nil {
+			return nil, err
 		}
 
-		result[key] = template.ParsePropertyReference(template.GetTemplateContent(val.AsString()))
+		result[key] = property
 	}
 
-	return result
+	return result, nil
 }
 
 // ParseIntermediateNode parses the given intermediate call to a spec call
@@ -580,7 +579,12 @@ func ParseIntermediateNode(ctx instance.Context, dependencies map[string]*specs.
 		}
 
 		if node.OnError.Params != nil {
-			result.OnError.Params = ParseIntermediateParameters(node.OnError.Params.Body)
+			params, err := ParseIntermediateParameters(ctx, node.OnError.Params.Body)
+			if err != nil {
+				return nil, err
+			}
+
+			result.OnError.Params = params
 		}
 	}
 
@@ -642,7 +646,12 @@ func ParseIntermediateCallParameterMap(ctx instance.Context, params *Call) (*spe
 	}
 
 	if params.Parameters != nil {
-		result.Params = ParseIntermediateParameters(params.Parameters.Body)
+		params, err := ParseIntermediateParameters(ctx, params.Parameters.Body)
+		if err != nil {
+			return nil, err
+		}
+
+		result.Params = params
 	}
 
 	if params.Header != nil {
@@ -787,27 +796,15 @@ func ParseIntermediateResources(ctx instance.Context, dependencies map[string]*s
 
 // ParseIntermediateCondition parses the given intermediate condition and returns the compiled nodes
 func ParseIntermediateCondition(ctx instance.Context, dependencies map[string]*specs.Node, condition Condition) ([]*specs.Node, error) {
-	property, err := template.Parse(ctx, "", "", condition.Expression)
+	evaluableExpression, err := conditions.NewEvaluableExpression(ctx, condition.Expression)
 	if err != nil {
 		return nil, err
-	}
-
-	if property.Reference == nil {
-		return nil, trace.New(trace.WithMessage("condition did not include a reference, conditions currently only support references"))
 	}
 
 	expression := &specs.Node{
 		Name:      condition.Expression,
 		DependsOn: map[string]*specs.Node{},
-		Condition: &specs.Condition{
-			RawExpression: condition.Expression,
-			Reference:     property.Reference,
-		},
-	}
-
-	target, _ := lookup.ParseResource(property.Reference.Resource)
-	if target != template.InputResource {
-		expression.DependsOn[target] = nil
+		Condition: evaluableExpression,
 	}
 
 	result := []*specs.Node{expression}

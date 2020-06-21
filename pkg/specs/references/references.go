@@ -54,25 +54,9 @@ func DefineProxy(ctx instance.Context, services *specs.ServicesManifest, schema 
 	}
 
 	for _, node := range proxy.Nodes {
-		if node.Call != nil {
-			err = DefineCall(ctx, services, schema, flows, node, node.Call, proxy)
-			if err != nil {
-				return err
-			}
-		}
-
-		if node.Rollback != nil {
-			err = DefineCall(ctx, services, schema, flows, node, node.Rollback, proxy)
-			if err != nil {
-				return err
-			}
-		}
-
-		if node.OnError != nil {
-			err = DefineError(ctx, services, proxy, node, node.OnError)
-			if err != nil {
-				return err
-			}
+		err = DefineNode(ctx, services, schema, flows, node, proxy)
+		if err != nil {
+			return err
 		}
 	}
 
@@ -111,25 +95,9 @@ func DefineFlow(ctx instance.Context, services *specs.ServicesManifest, schema *
 	}
 
 	for _, node := range flow.Nodes {
-		if node.Call != nil {
-			err = DefineCall(ctx, services, schema, flows, node, node.Call, flow)
-			if err != nil {
-				return err
-			}
-		}
-
-		if node.Rollback != nil {
-			err = DefineCall(ctx, services, schema, flows, node, node.Rollback, flow)
-			if err != nil {
-				return err
-			}
-		}
-
-		if node.OnError != nil {
-			err = DefineError(ctx, services, flow, node, node.OnError)
-			if err != nil {
-				return err
-			}
+		err = DefineNode(ctx, services, schema, flows, node, flow)
+		if err != nil {
+			return err
 		}
 	}
 
@@ -143,15 +111,52 @@ func DefineFlow(ctx instance.Context, services *specs.ServicesManifest, schema *
 	return nil
 }
 
+// DefineNode defines all the references inside the given node
+func DefineNode(ctx instance.Context, services *specs.ServicesManifest, schema *specs.SchemaManifest, flows *specs.FlowsManifest, node *specs.Node, flow specs.FlowResourceManager) (err error) {
+	if node.Condition != nil {
+		err = DefineParameterMap(ctx, node, node.Condition.Params, flow)
+		if err != nil {
+			return err
+		}
+	}
+
+	if node.Call != nil {
+		err = DefineCall(ctx, services, schema, flows, node, node.Call, flow)
+		if err != nil {
+			return err
+		}
+	}
+
+	if node.Rollback != nil {
+		err = DefineCall(ctx, services, schema, flows, node, node.Rollback, flow)
+		if err != nil {
+			return err
+		}
+	}
+
+	if node.OnError != nil {
+		err = DefineError(ctx, services, flow, node, node.OnError)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // DefineError defined the types for the given error
 func DefineError(ctx instance.Context, services *specs.ServicesManifest, flow specs.FlowResourceManager, node *specs.Node, onError *specs.OnError) error {
 	for _, param := range onError.Params {
-		reference, err := LookupReference(ctx, node, node.Name, param, flow)
+		if param.Reference == nil {
+			continue
+		}
+
+		reference, err := LookupReference(ctx, node, node.Name, param.Reference, flow)
 		if err != nil {
 			return err
 		}
 
-		param.Property = reference
+		param.Reference.Property = reference
 	}
 
 	return nil
@@ -204,10 +209,6 @@ func DefineCall(ctx instance.Context, services *specs.ServicesManifest, schema *
 
 // DefineParameterMap defines the types for the given parameter map
 func DefineParameterMap(ctx instance.Context, node *specs.Node, params *specs.ParameterMap, flow specs.FlowResourceManager) (err error) {
-	if params.Property == nil {
-		return nil
-	}
-
 	for _, header := range params.Header {
 		err = DefineProperty(ctx, node, header, flow)
 		if err != nil {
@@ -215,32 +216,34 @@ func DefineParameterMap(ctx instance.Context, node *specs.Node, params *specs.Pa
 		}
 	}
 
-	err = DefineParams(ctx, node, params.Params, flow)
-	if err != nil {
-		return err
+	if params.Params != nil {
+		err = DefineParams(ctx, node, params.Params, flow)
+		if err != nil {
+			return err
+		}
 	}
 
-	err = DefineProperty(ctx, node, params.Property, flow)
-	if err != nil {
-		return err
+	if params.Property != nil {
+		err = DefineProperty(ctx, node, params.Property, flow)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
 // DefineParams defines all types inside the given params
-func DefineParams(ctx instance.Context, node *specs.Node, params map[string]*specs.PropertyReference, flow specs.FlowResourceManager) error {
-	if params == nil {
-		return nil
-	}
-
+func DefineParams(ctx instance.Context, node *specs.Node, params map[string]*specs.Property, flow specs.FlowResourceManager) error {
 	for _, param := range params {
-		reference, err := LookupReference(ctx, node, node.Name, param, flow)
+		if param.Reference == nil {
+			continue
+		}
+
+		err := DefineProperty(ctx, node, param, flow)
 		if err != nil {
 			return err
 		}
-
-		param.Property = reference
 	}
 
 	return nil

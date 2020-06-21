@@ -55,7 +55,7 @@ func TestListener(t *testing.T) {
 	})
 
 	nodes := flow.Nodes{
-		flow.NewNode(ctx, node, call, nil, nil),
+		flow.NewNode(ctx, node, nil, call, nil, nil),
 	}
 
 	listener, port := NewMockListener(t, nodes)

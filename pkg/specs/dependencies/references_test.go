@@ -77,6 +77,42 @@ func TestResolveReferences(t *testing.T) {
 
 			return manifest, target, expected
 		},
+		"params": func() (*specs.FlowsManifest, *specs.Property, *specs.Property) {
+			expected := &specs.Property{
+				Reference: &specs.PropertyReference{
+					Resource: "expected",
+					Path:     "expected",
+				},
+			}
+
+			target := &specs.Property{
+				Reference: &specs.PropertyReference{
+					Resource: "mock",
+					Path:     "",
+					Property: expected,
+				},
+			}
+
+			manifest := &specs.FlowsManifest{
+				Flows: specs.Flows{
+					{
+						Nodes: []*specs.Node{
+							{
+								Call: &specs.Call{
+									Request: &specs.ParameterMap{
+										Params: map[string]*specs.Property{
+											"mock": target,
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			}
+
+			return manifest, target, expected
+		},
 	}
 
 	for name, test := range tests {

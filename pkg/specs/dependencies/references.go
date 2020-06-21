@@ -40,6 +40,10 @@ func ResolveNodeReferences(node *specs.Node) {
 		node.DependsOn = map[string]*specs.Node{}
 	}
 
+	if node.Condition != nil {
+		ResolveParamReferences(node.Condition.Params.Params, node.DependsOn)
+	}
+
 	if node.Call != nil {
 		if node.Call.Request != nil {
 			ResolveParamReferences(node.Call.Request.Params, node.DependsOn)
@@ -126,24 +130,25 @@ func ResolvePropertyReferences(property *specs.Property, dependencies map[string
 }
 
 // ResolveParamReferences resolves all nested references made inside the given params
-func ResolveParamReferences(params map[string]*specs.PropertyReference, dependencies map[string]*specs.Node) {
+func ResolveParamReferences(params map[string]*specs.Property, dependencies map[string]*specs.Node) {
 	if params == nil {
 		return
 	}
 
-	for key, param := range params {
-		if param.Property == nil {
+	for key, property := range params {
+		if property.Reference == nil {
 			continue
 		}
 
-		resource, _ := lookup.ParseResource(param.Resource)
+		resource, _ := lookup.ParseResource(property.Reference.Resource)
 		if resource != template.StackResource && resource != template.InputResource {
-			dependency := template.SplitPath(param.Resource)[0]
+			dependency := template.SplitPath(property.Reference.Resource)[0]
 			dependencies[dependency] = nil
 		}
 
-		clone := CloneProperty(param.Property, param, key, key)
-		params[key] = clone.Reference
+		clone := CloneProperty(property.Reference.Property, property.Reference, property.Name, property.Path)
+		params[key].Reference = clone.Reference
+		params[key].Nested = clone.Nested
 	}
 }
 
@@ -154,23 +159,25 @@ func CloneProperty(source *specs.Property, reference *specs.PropertyReference, n
 	result.Path = path
 	result.Reference = reference
 
-	if source.Reference != nil {
-		result.Reference = &specs.PropertyReference{
-			Resource: source.Reference.Resource,
-			Path:     source.Reference.Path,
-		}
-	}
-
-	if len(source.Nested) != 0 {
-		result.Nested = make(map[string]*specs.Property, len(source.Nested))
-
-		for key, nested := range source.Nested {
-			ref := &specs.PropertyReference{
-				Resource: result.Reference.Resource,
-				Path:     template.JoinPath(result.Path, key),
+	if source != nil {
+		if source.Reference != nil {
+			result.Reference = &specs.PropertyReference{
+				Resource: source.Reference.Resource,
+				Path:     source.Reference.Path,
 			}
+		}
 
-			result.Nested[key] = CloneProperty(nested, ref, key, template.JoinPath(path, key))
+		if len(source.Nested) != 0 {
+			result.Nested = make(map[string]*specs.Property, len(source.Nested))
+
+			for key, nested := range source.Nested {
+				ref := &specs.PropertyReference{
+					Resource: result.Reference.Resource,
+					Path:     template.JoinPath(result.Path, key),
+				}
+
+				result.Nested[key] = CloneProperty(nested, ref, key, template.JoinPath(path, key))
+			}
 		}
 	}
 

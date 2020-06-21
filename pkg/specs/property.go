@@ -37,6 +37,10 @@ type Property struct {
 
 // Clone makes a deep clone of the given property
 func (prop *Property) Clone() *Property {
+	if prop == nil {
+		return &Property{}
+	}
+
 	result := &Property{
 		Position:  prop.Position,
 		Comment:   prop.Comment,
@@ -77,10 +81,10 @@ type EnumValue struct {
 
 // ParameterMap is the initial map of parameter names (keys) and their (templated) values (values)
 type ParameterMap struct {
-	Schema   string                        `json:"schema"`
-	Params   map[string]*PropertyReference `json:"params"`
-	Options  Options                       `json:"options"`
-	Header   Header                        `json:"header"`
-	Property *Property                     `json:"property"`
-	Stack    map[string]*Property          `json:"stack"`
+	Schema   string               `json:"schema"`
+	Params   map[string]*Property `json:"params"`
+	Options  Options              `json:"options"`
+	Header   Header               `json:"header"`
+	Property *Property            `json:"property"`
+	Stack    map[string]*Property `json:"stack"`
 }

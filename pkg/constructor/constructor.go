@@ -2,7 +2,6 @@ package constructor
 
 import (
 	"github.com/jexia/maestro/pkg/codec"
-	"github.com/jexia/maestro/pkg/conditions"
 	"github.com/jexia/maestro/pkg/flow"
 	"github.com/jexia/maestro/pkg/functions"
 	"github.com/jexia/maestro/pkg/instance"
@@ -47,11 +46,6 @@ func Specs(ctx instance.Context, mem functions.Collection, options Options) (*Co
 
 	dependencies.ResolveReferences(ctx, collection.Flows)
 
-	err = conditions.ResolveExpressions(ctx, collection.Flows)
-	if err != nil {
-		return nil, err
-	}
-
 	err = dependencies.ResolveManifest(ctx, collection.Flows)
 	if err != nil {
 		return nil, err
@@ -89,6 +83,8 @@ func FlowManager(ctx instance.Context, mem functions.Collection, services *specs
 		}
 
 		for index, node := range manager.GetNodes() {
+			condition := Condition(ctx, mem, node.Condition)
+
 			caller, err := Call(ctx, mem, services, flows, node, node.Call, options, manager)
 			if err != nil {
 				return nil, err
@@ -99,7 +95,7 @@ func FlowManager(ctx instance.Context, mem functions.Collection, services *specs
 				return nil, err
 			}
 
-			nodes[index] = flow.NewNode(ctx, node, caller, rollback, &flow.NodeMiddleware{
+			nodes[index] = flow.NewNode(ctx, node, condition, caller, rollback, &flow.NodeMiddleware{
 				BeforeDo:       options.BeforeNodeDo,
 				AfterDo:        options.AfterNodeDo,
 				BeforeRollback: options.BeforeNodeRollback,
@@ -130,6 +126,16 @@ func FlowManager(ctx instance.Context, mem functions.Collection, services *specs
 	}
 
 	return results, nil
+}
+
+// Condition constructs a new flow condition of the given specs
+func Condition(ctx instance.Context, mem functions.Collection, condition *specs.Condition) *flow.Condition {
+	if condition == nil {
+		return nil
+	}
+
+	stack := mem[condition.Params]
+	return flow.NewCondition(stack, condition)
 }
 
 // Call constructs a flow caller for the given node call.

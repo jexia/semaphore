@@ -64,7 +64,7 @@ const (
 
 // PrepareManifestFunctions prepares all function definitions inside the given manifest
 func PrepareManifestFunctions(ctx instance.Context, mem Collection, functions Custom, manifest *specs.FlowsManifest) (err error) {
-	ctx.Logger(logger.Core).Info("Comparing manifest types")
+	ctx.Logger(logger.Core).Info("Preparing manifest functions")
 
 	for _, flow := range manifest.Flows {
 		err := PrepareFlowFunctions(ctx, mem, functions, manifest, flow)
@@ -88,18 +88,9 @@ func PrepareProxyFunctions(ctx instance.Context, mem Collection, functions Custo
 	ctx.Logger(logger.Core).WithField("proxy", proxy.GetName()).Info("Prepare proxy functions")
 
 	for _, node := range proxy.Nodes {
-		if node.Call != nil {
-			err = PrepareCallFunctions(ctx, node, proxy, mem, functions, node.Call)
-			if err != nil {
-				return err
-			}
-		}
-
-		if node.Rollback != nil {
-			err = PrepareCallFunctions(ctx, node, proxy, mem, functions, node.Rollback)
-			if err != nil {
-				return err
-			}
+		err = PrepareNodeFunctions(ctx, mem, functions, proxy, node)
+		if err != nil {
+			return err
 		}
 	}
 
@@ -123,24 +114,42 @@ func PrepareFlowFunctions(ctx instance.Context, mem Collection, functions Custom
 	ctx.Logger(logger.Core).WithField("flow", flow.GetName()).Info("Comparing flow functions")
 
 	for _, node := range flow.Nodes {
-		if node.Call != nil {
-			err = PrepareCallFunctions(ctx, node, flow, mem, functions, node.Call)
-			if err != nil {
-				return err
-			}
-		}
-
-		if node.Rollback != nil {
-			err = PrepareCallFunctions(ctx, node, flow, mem, functions, node.Rollback)
-			if err != nil {
-				return err
-			}
+		err = PrepareNodeFunctions(ctx, mem, functions, flow, node)
+		if err != nil {
+			return err
 		}
 	}
 
 	if flow.Output != nil {
 		stack := mem.Reserve(flow.Output)
 		err := PrepareParameterMapFunctions(ctx, nil, flow, stack, flow.Output, functions)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// PrepareNodeFunctions prepares the available functions within the given node
+func PrepareNodeFunctions(ctx instance.Context, mem Collection, functions Custom, flow specs.FlowResourceManager, node *specs.Node) (err error) {
+	if node.Condition != nil {
+		stack := mem.Reserve(node.Condition.Params)
+		err = PrepareParameterMapFunctions(ctx, node, flow, stack, node.Condition.Params, functions)
+		if err != nil {
+			return err
+		}
+	}
+
+	if node.Call != nil {
+		err = PrepareCallFunctions(ctx, node, flow, mem, functions, node.Call)
+		if err != nil {
+			return err
+		}
+	}
+
+	if node.Rollback != nil {
+		err = PrepareCallFunctions(ctx, node, flow, mem, functions, node.Rollback)
 		if err != nil {
 			return err
 		}
@@ -179,6 +188,13 @@ func PrepareParameterMapFunctions(ctx instance.Context, node *specs.Node, flow s
 		}
 	}
 
+	if params.Params != nil {
+		err := PrepareParamsFunctions(ctx, node, flow, stack, params.Params, functions)
+		if err != nil {
+			return err
+		}
+	}
+
 	if params.Property != nil {
 		err := PreparePropertyFunctions(ctx, node, flow, stack, params.Property, functions)
 		if err != nil {
@@ -193,6 +209,22 @@ func PrepareParameterMapFunctions(ctx instance.Context, node *specs.Node, flow s
 func PrepareHeaderFunctions(ctx instance.Context, flow specs.FlowResourceManager, stack Stack, header specs.Header, functions Custom) error {
 	for _, prop := range header {
 		err := PrepareFunction(ctx, nil, flow, prop, stack, functions)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// PrepareParamsFunctions prepares the function definitions inside the given property
+func PrepareParamsFunctions(ctx instance.Context, node *specs.Node, flow specs.FlowResourceManager, stack Stack, params map[string]*specs.Property, functions Custom) error {
+	if params == nil {
+		return nil
+	}
+
+	for _, param := range params {
+		err := PrepareFunction(ctx, node, flow, param, stack, functions)
 		if err != nil {
 			return err
 		}

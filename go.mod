@@ -3,6 +3,7 @@ module github.com/jexia/maestro
 go 1.14
 
 require (
+	github.com/Knetic/govaluate v3.0.0+incompatible
 	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/francoispqt/gojay v1.2.13
 	github.com/go-log/log v0.2.0 // indirect
