@@ -7,6 +7,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/jexia/maestro/pkg/functions"
 	"github.com/jexia/maestro/pkg/instance"
 	"github.com/jexia/maestro/pkg/refs"
 	"github.com/jexia/maestro/pkg/specs"
@@ -84,7 +85,7 @@ func TestNewManager(t *testing.T) {
 	for name, nodes := range tests {
 		t.Run(name, func(t *testing.T) {
 			ctx := instance.NewContext()
-			manager := NewManager(ctx, name, nodes, nil)
+			manager := NewManager(ctx, name, nodes, nil, nil)
 			if manager == nil {
 				t.Fatal("unexpected result, expected a manager to be returned")
 			}
@@ -286,5 +287,142 @@ func TestAfterRollbackFlowErr(t *testing.T) {
 
 	if counter != 1 {
 		t.Fatalf("unexpected counter %d, expected before rollback function to be called", counter)
+	}
+}
+
+func TestAfterManagerFunctions(t *testing.T) {
+	type test struct {
+		expected int
+		stack    functions.Stack
+	}
+
+	current := 0
+	counter := func(store refs.Store) error {
+		current++
+		return nil
+	}
+
+	tests := map[string]test{
+		"single": {
+			expected: 1,
+			stack: functions.Stack{
+				"first": &functions.Function{
+					Arguments: []*specs.Property{},
+					Fn:        counter,
+					Returns:   &specs.Property{},
+				},
+			},
+		},
+		"multiple": {
+			expected: 3,
+			stack: functions.Stack{
+				"first": &functions.Function{
+					Arguments: []*specs.Property{},
+					Fn:        counter,
+					Returns:   &specs.Property{},
+				},
+				"second": &functions.Function{
+					Arguments: []*specs.Property{},
+					Fn:        counter,
+					Returns:   &specs.Property{},
+				},
+				"third": &functions.Function{
+					Arguments: []*specs.Property{},
+					Fn:        counter,
+					Returns:   &specs.Property{},
+				},
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			current = 0
+			ctx := instance.NewContext()
+			manager := NewManager(ctx, name, []*Node{}, test.stack, nil)
+			if manager == nil {
+				t.Fatal("unexpected result, expected a manager to be returned")
+			}
+
+			store := refs.NewReferenceStore(1)
+			err := manager.Do(context.Background(), store)
+			if err != nil {
+				t.Fatalf("unexpected error, %s", err)
+			}
+
+			if current != test.expected {
+				t.Fatalf("unexpected count value %d, expected %d", current, test.expected)
+			}
+		})
+	}
+}
+
+func TestAfterManagerFunctionsError(t *testing.T) {
+	type test struct {
+		expected int
+		stack    functions.Stack
+	}
+
+	expected := errors.New("unexpected error")
+
+	pass := func(store refs.Store) error {
+		return nil
+	}
+
+	fail := func(store refs.Store) error {
+		return expected
+	}
+
+	tests := map[string]test{
+		"single": {
+			expected: 1,
+			stack: functions.Stack{
+				"first": &functions.Function{
+					Arguments: []*specs.Property{},
+					Fn:        fail,
+					Returns:   &specs.Property{},
+				},
+			},
+		},
+		"multiple": {
+			expected: 3,
+			stack: functions.Stack{
+				"first": &functions.Function{
+					Arguments: []*specs.Property{},
+					Fn:        pass,
+					Returns:   &specs.Property{},
+				},
+				"second": &functions.Function{
+					Arguments: []*specs.Property{},
+					Fn:        pass,
+					Returns:   &specs.Property{},
+				},
+				"third": &functions.Function{
+					Arguments: []*specs.Property{},
+					Fn:        fail,
+					Returns:   &specs.Property{},
+				},
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			ctx := instance.NewContext()
+			manager := NewManager(ctx, name, []*Node{}, test.stack, nil)
+			if manager == nil {
+				t.Fatal("unexpected result, expected a manager to be returned")
+			}
+
+			store := refs.NewReferenceStore(1)
+			err := manager.Do(context.Background(), store)
+			if err == nil {
+				t.Fatal("unexpected pass expected a error to be returned")
+			}
+
+			if err != expected {
+				t.Fatalf("unexpected err '%s', expected the expected error to be returned '%s'", err, expected)
+			}
+		})
 	}
 }

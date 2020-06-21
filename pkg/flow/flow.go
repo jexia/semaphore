@@ -4,6 +4,7 @@ import (
 	"context"
 	"sync"
 
+	"github.com/jexia/maestro/pkg/functions"
 	"github.com/jexia/maestro/pkg/instance"
 	"github.com/jexia/maestro/pkg/logger"
 	"github.com/jexia/maestro/pkg/refs"
@@ -20,7 +21,7 @@ type Call interface {
 // NewManager constructs a new manager for the given flow.
 // Branches are constructed for the constructed nodes to optimalise performance.
 // Various variables such as the amount of nodes, references and loose ends are collected to optimalise allocations during runtime.
-func NewManager(ctx instance.Context, name string, nodes []*Node, middleware *ManagerMiddleware) *Manager {
+func NewManager(ctx instance.Context, name string, nodes []*Node, after functions.Stack, middleware *ManagerMiddleware) *Manager {
 	ConstructBranches(nodes)
 
 	if middleware == nil {
@@ -34,6 +35,7 @@ func NewManager(ctx instance.Context, name string, nodes []*Node, middleware *Ma
 		Name:           name,
 		Starting:       FetchStarting(nodes),
 		Nodes:          len(nodes),
+		AfterFunctions: after,
 		AfterDo:        middleware.AfterDo,
 		AfterRollback:  middleware.AfterRollback,
 	}
@@ -81,6 +83,7 @@ type Manager struct {
 	Nodes          int
 	Ends           int
 	wg             sync.WaitGroup
+	AfterFunctions functions.Stack
 	AfterDo        AfterManager
 	AfterRollback  AfterManager
 }
@@ -115,6 +118,13 @@ func (manager *Manager) Do(ctx context.Context, refs refs.Store) (err error) {
 	processes.Wait()
 
 	manager.ctx.Logger(logger.Flow).WithField("flow", manager.Name).Debug("Processes completed")
+
+	if manager.AfterFunctions != nil && processes.Err() == nil {
+		err = ExecuteFunctions(manager.AfterFunctions, refs)
+		if err != nil {
+			processes.Fatal(err)
+		}
+	}
 
 	if processes.Err() != nil {
 		manager.ctx.Logger(logger.Flow).WithFields(logrus.Fields{
