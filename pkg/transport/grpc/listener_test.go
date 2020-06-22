@@ -91,7 +91,7 @@ func TestListener(t *testing.T) {
 
 	defer dial.Close()
 
-	rw := transport.NewResponseWriter(bytes.NewBuffer([]byte{}))
+	rw := transport.NewResponseWriter(&DiscardWriter{})
 	rq := &transport.Request{
 		Header: metadata.MD{},
 		Method: dial.GetMethod("simple"),

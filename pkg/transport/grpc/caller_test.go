@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io/ioutil"
 	"testing"
 	"time"
 
@@ -14,6 +15,17 @@ import (
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jexia/maestro/pkg/transport"
 )
+
+type DiscardWriter struct {
+}
+
+func (d *DiscardWriter) Write(b []byte) (int, error) {
+	return ioutil.Discard.Write(b)
+}
+
+func (d *DiscardWriter) Close() error {
+	return nil
+}
 
 func TestCaller(t *testing.T) {
 	ctx := instance.NewContext()
@@ -68,7 +80,7 @@ func TestCaller(t *testing.T) {
 		t.Errorf("unexpected methods %+v", dial.GetMethods())
 	}
 
-	rw := transport.NewResponseWriter(bytes.NewBuffer([]byte{}))
+	rw := transport.NewResponseWriter(&DiscardWriter{})
 	rq := &transport.Request{
 		Header: metadata.MD{},
 		Method: dial.GetMethod("simple"),

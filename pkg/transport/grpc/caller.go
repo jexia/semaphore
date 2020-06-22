@@ -172,6 +172,7 @@ func (call *Call) SendMsg(ctx context.Context, rw transport.ResponseWriter, pr *
 
 	rw.Header().Append(CopyRPCMD(md))
 
+	// TODO: handle and set header status code
 	res := &frame{}
 	err = stream.RecvMsg(res)
 	if err != nil {

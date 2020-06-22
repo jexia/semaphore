@@ -2,6 +2,7 @@ package flow
 
 import (
 	"context"
+	"errors"
 	"io"
 
 	"github.com/jexia/maestro/pkg/codec"
@@ -16,6 +17,9 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// ErrAbortFlow represents the error thrown when a flow has to be aborted
+var ErrAbortFlow = errors.New("abort flow")
+
 // NewRequest constructs a new request for the given codec and header manager
 func NewRequest(functions functions.Stack, codec codec.Manager, metadata *metadata.Manager) *Request {
 	return &Request{
@@ -27,25 +31,35 @@ func NewRequest(functions functions.Stack, codec codec.Manager, metadata *metada
 
 // CallOptions represents the available options that could be used to construct a new flow caller
 type CallOptions struct {
-	Transport transport.Call
-	Method    transport.Method
-	Request   *Request
-	Response  *Request
+	Transport      transport.Call
+	Method         transport.Method
+	Request        *Request
+	Response       *Request
+	Err            *OnError
+	ExpectedStatus int
 }
 
 // NewCall constructs a new flow caller from the given transport caller and
 func NewCall(ctx instance.Context, node *specs.Node, options *CallOptions) Call {
-	return &Caller{
-		ctx:       ctx,
-		node:      node,
-		transport: options.Transport,
-		method:    options.Method,
-		request:   options.Request,
-		response:  options.Response,
+	result := &Caller{
+		ctx:            ctx,
+		node:           node,
+		transport:      options.Transport,
+		method:         options.Method,
+		request:        options.Request,
+		response:       options.Response,
+		ExpectedStatus: options.ExpectedStatus,
+		err:            options.Err,
 	}
+
+	if result.ExpectedStatus == 0 {
+		result.ExpectedStatus = transport.StatusOK
+	}
+
+	return result
 }
 
-// Request represents a codec and header manager
+// Request represents a codec and metadata manager
 type Request struct {
 	functions functions.Stack
 	codec     codec.Manager
@@ -54,13 +68,15 @@ type Request struct {
 
 // Caller represents a flow transport caller
 type Caller struct {
-	ctx        instance.Context
-	node       *specs.Node
-	method     transport.Method
-	transport  transport.Call
-	references []*specs.Property
-	request    *Request
-	response   *Request
+	ctx            instance.Context
+	node           *specs.Node
+	method         transport.Method
+	transport      transport.Call
+	references     []*specs.Property
+	request        *Request
+	response       *Request
+	err            *OnError
+	ExpectedStatus int
 }
 
 // References returns the references inside the configured transport caller
@@ -99,19 +115,51 @@ func (caller *Caller) Do(ctx context.Context, store refs.Store) error {
 		}
 	}
 
-	result := make(chan error, 1)
-	defer close(result)
+	if caller.transport != nil {
+		err := caller.transport.SendMsg(ctx, w, r, store)
+		if err != nil {
+			caller.ctx.Logger(logger.Flow).WithFields(logrus.Fields{
+				"node": caller.node.Name,
+				"err":  err,
+			}).Error("Transport returned a unexpected error")
 
-	go func() {
-		defer writer.Close()
+			return err
+		}
+	} else {
+		err := writer.Close()
+		if err != nil {
+			return err
+		}
+	}
 
-		if caller.transport == nil {
-			result <- nil
-			return
+	if w.Status() > 0 && w.Status() != caller.ExpectedStatus {
+		caller.ctx.Logger(logger.Flow).WithFields(logrus.Fields{
+			"node":   caller.node.Name,
+			"status": w.Status(),
+		}).Error("Service returned a unexpected status, aborting flow")
+
+		if caller.err != nil {
+			if caller.err.codec != nil {
+				err := caller.err.codec.Unmarshal(reader, store)
+				if err != nil {
+					return err
+				}
+			}
+
+			if caller.err.functions != nil {
+				err := ExecuteFunctions(caller.err.functions, store)
+				if err != nil {
+					return err
+				}
+			}
+
+			if caller.err.metadata != nil {
+				caller.response.metadata.Unmarshal(w.Header(), store)
+			}
 		}
 
-		result <- caller.transport.SendMsg(ctx, w, r, store)
-	}()
+		return ErrAbortFlow
+	}
 
 	if caller.response != nil {
 		if caller.response.codec != nil {
@@ -120,19 +168,7 @@ func (caller *Caller) Do(ctx context.Context, store refs.Store) error {
 				return err
 			}
 		}
-	}
 
-	err := <-result
-	if err != nil {
-		caller.ctx.Logger(logger.Flow).WithFields(logrus.Fields{
-			"node": caller.node.Name,
-			"err":  err,
-		}).Error("Service error")
-
-		return err
-	}
-
-	if caller.response != nil {
 		if caller.response.functions != nil {
 			err := ExecuteFunctions(caller.response.functions, store)
 			if err != nil {

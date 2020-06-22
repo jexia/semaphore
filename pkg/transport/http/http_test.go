@@ -63,7 +63,7 @@ func NewMockService(host string, method string, endpoint string) *specs.Service 
 
 type MockResponseWriter struct {
 	header metadata.MD
-	writer io.Writer
+	writer io.WriteCloser
 	status int
 }
 
@@ -75,8 +75,12 @@ func (rw *MockResponseWriter) Write(bb []byte) (int, error) {
 	return rw.writer.Write(bb)
 }
 
-func (rw *MockResponseWriter) WriteHeader(status int) {
+func (rw *MockResponseWriter) HeaderStatus(status int) {
 	rw.status = status
+}
+
+func (rw *MockResponseWriter) Close() error {
+	return rw.writer.Close()
 }
 
 func AvailablePort(t *testing.T) int {

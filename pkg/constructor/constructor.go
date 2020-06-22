@@ -148,6 +148,12 @@ func Call(ctx instance.Context, mem functions.Collection, services *specs.Servic
 		return NewServiceCall(ctx, mem, services, flows, node, call, options, manager)
 	}
 
+	if node.OnError != nil {
+	}
+
+	if node.Error != nil {
+	}
+
 	request, err := Request(ctx, node, mem, nil, call.Request)
 	if err != nil {
 		return nil, err

@@ -119,7 +119,7 @@ func TestFailFlowManager(t *testing.T) {
 	nodes[2].Call = &caller{Err: expected}
 
 	err := manager.Do(context.Background(), nil)
-	if err != expected {
+	if !errors.Is(err, expected) {
 		t.Errorf("unexpected result %s, expected %s", err, expected)
 	}
 
@@ -166,7 +166,7 @@ func TestBeforeDoFlowErr(t *testing.T) {
 	}
 
 	err := manager.Do(context.Background(), nil)
-	if err != expected {
+	if !errors.Is(err, expected) {
 		t.Errorf("unexpected err '%s', expected '%s' to be thrown", err, expected)
 	}
 
@@ -187,7 +187,7 @@ func TestAfterDoFlowErr(t *testing.T) {
 	}
 
 	err := manager.Do(context.Background(), nil)
-	if err != expected {
+	if !errors.Is(err, expected) {
 		t.Errorf("unexpected err '%s', expected '%s' to be thrown", err, expected)
 	}
 
@@ -420,7 +420,7 @@ func TestAfterManagerFunctionsError(t *testing.T) {
 				t.Fatal("unexpected pass expected a error to be returned")
 			}
 
-			if err != expected {
+			if !errors.Is(err, expected) {
 				t.Fatalf("unexpected err '%s', expected the expected error to be returned '%s'", err, expected)
 			}
 		})

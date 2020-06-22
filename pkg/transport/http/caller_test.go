@@ -17,6 +17,17 @@ import (
 	"github.com/jexia/maestro/pkg/transport"
 )
 
+type DiscardWriter struct {
+}
+
+func (d *DiscardWriter) Write(b []byte) (int, error) {
+	return ioutil.Discard.Write(b)
+}
+
+func (d *DiscardWriter) Close() error {
+	return nil
+}
+
 func NewMockCaller() *Caller {
 	ctx := instance.NewContext()
 	caller := &Caller{
@@ -191,7 +202,7 @@ func TestCallerReferencesLookup(t *testing.T) {
 
 	rw := &MockResponseWriter{
 		header: metadata.MD{},
-		writer: ioutil.Discard,
+		writer: &DiscardWriter{},
 	}
 
 	err = caller.SendMsg(ctx, rw, &req, store)

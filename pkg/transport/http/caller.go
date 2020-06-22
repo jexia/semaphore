@@ -179,12 +179,9 @@ func (call *Call) SendMsg(ctx context.Context, rw transport.ResponseWriter, pr *
 	res := NewTransportResponseWriter(ctx, rw)
 
 	call.proxy.ServeHTTP(res, req)
-	rw.Header().Append(CopyHTTPHeader(res.Header()))
 
-	// TODO: handle custom errors and return to user
-	if res.Status() < 200 || res.Status() >= 300 {
-		return trace.New(trace.WithMessage("something went wrong when calling the service"))
-	}
+	rw.Header().Append(CopyHTTPHeader(res.Header()))
+	rw.HeaderStatus(res.Status())
 
 	return nil
 }

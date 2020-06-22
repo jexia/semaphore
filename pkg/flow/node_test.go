@@ -583,7 +583,7 @@ func TestBeforeDoNodeErr(t *testing.T) {
 
 	processes := NewProcesses(1)
 	node.Do(context.Background(), NewTracker("", 1), processes, nil)
-	if processes.Err() != expected {
+	if !errors.Is(processes.Err(), expected) {
 		t.Errorf("unexpected err '%s', expected '%s' to be thrown", processes.Err(), expected)
 	}
 
@@ -626,7 +626,7 @@ func TestAfterDoNodeErr(t *testing.T) {
 
 	processes := NewProcesses(1)
 	node.Do(context.Background(), NewTracker("", 1), processes, nil)
-	if processes.Err() != expected {
+	if !errors.Is(processes.Err(), expected) {
 		t.Errorf("unexpected err '%s', expected '%s' to be thrown", processes.Err(), expected)
 	}
 
@@ -669,7 +669,7 @@ func TestBeforeRevertNodeErr(t *testing.T) {
 
 	processes := NewProcesses(1)
 	node.Rollback(context.Background(), NewTracker("", 1), processes, nil)
-	if processes.Err() != expected {
+	if !errors.Is(processes.Err(), expected) {
 		t.Errorf("unexpected err '%s', expected '%s' to be thrown", processes.Err(), expected)
 	}
 
@@ -712,7 +712,7 @@ func TestAfterRevertNodeErr(t *testing.T) {
 
 	processes := NewProcesses(1)
 	node.Rollback(context.Background(), NewTracker("", 1), processes, nil)
-	if processes.Err() != expected {
+	if !errors.Is(processes.Err(), expected) {
 		t.Errorf("unexpected err '%s', expected '%s' to be thrown", processes.Err(), expected)
 	}
 

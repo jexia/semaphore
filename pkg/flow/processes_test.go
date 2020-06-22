@@ -3,15 +3,17 @@ package flow
 import (
 	"errors"
 	"testing"
+
+	"github.com/jexia/maestro/pkg/transport"
 )
 
 func TestProcesses(t *testing.T) {
 	expected := errors.New("expected")
 	processes := NewProcesses(0)
 
-	processes.Fatal(expected)
+	processes.Fatal(transport.WrapError(expected, nil))
 	result := processes.Err()
-	if result != expected {
+	if !errors.Is(result, expected) {
 		t.Errorf("unexpected result %s, expected %s", result, expected)
 	}
 
@@ -34,11 +36,11 @@ func TestProcessesAlreadyThrownErr(t *testing.T) {
 	expected := errors.New("expected")
 	unexpected := errors.New("unexpected")
 
-	processes.Fatal(expected)
-	processes.Fatal(unexpected)
+	processes.Fatal(transport.WrapError(expected, nil))
+	processes.Fatal(transport.WrapError(unexpected, nil))
 
 	result := processes.Err()
-	if result != expected {
+	if !errors.Is(result, expected) {
 		t.Errorf("unexpected result %s, expected %s", result, expected)
 	}
 }

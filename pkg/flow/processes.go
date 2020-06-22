@@ -2,6 +2,8 @@ package flow
 
 import (
 	"sync"
+
+	"github.com/jexia/maestro/pkg/transport"
 )
 
 // NewProcesses constructs a new processes tracker.
@@ -15,7 +17,7 @@ func NewProcesses(delta int) *Processes {
 
 // Processes tracks processes
 type Processes struct {
-	err   error
+	err   transport.Error
 	wg    sync.WaitGroup
 	mutex sync.Mutex
 }
@@ -38,14 +40,14 @@ func (processes *Processes) Wait() {
 }
 
 // Err returns the thrown error if thrown
-func (processes *Processes) Err() error {
+func (processes *Processes) Err() transport.Error {
 	processes.mutex.Lock()
 	defer processes.mutex.Unlock()
 	return processes.err
 }
 
 // Fatal marks the given error and is returned on Err()
-func (processes *Processes) Fatal(err error) {
+func (processes *Processes) Fatal(err transport.Error) {
 	if err == nil {
 		return
 	}

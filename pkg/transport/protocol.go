@@ -14,8 +14,9 @@ import (
 
 // ResponseWriter specifies the response writer implementation which could be used to both proxy forward a request or used to call a service
 type ResponseWriter interface {
+	io.WriteCloser
 	Header() metadata.MD
-	Write([]byte) (int, error)
+	HeaderStatus(int)
 }
 
 // Request represents the request object given to a caller implementation used to make calls
@@ -77,11 +78,50 @@ func (collection Listeners) Get(name string) Listener {
 	return nil
 }
 
+// WrapError wraps the given error as a on error object
+func WrapError(err error, spec *specs.Error) Error {
+	return &wrapper{
+		err:  err,
+		spec: spec,
+	}
+}
+
+// Error represents a wrapped error and error specs
+type Error interface {
+	String() string
+	Spec() *specs.Error
+	Error() string
+	Unwrap() error
+}
+
+type wrapper struct {
+	err  error
+	spec *specs.Error
+}
+
+func (w *wrapper) String() string {
+	return w.err.Error()
+}
+
+// Spec returns the error specs
+func (w *wrapper) Spec() *specs.Error {
+	return w.spec
+}
+
+func (w *wrapper) Error() string {
+	return w.err.Error()
+}
+
+// Unwrap unwraps the given error and returns the wrapped error
+func (w *wrapper) Unwrap() error {
+	return w.err
+}
+
 // Flow represents a flow which could be called by a transport
 type Flow interface {
 	NewStore() refs.Store
 	GetName() string
-	Do(ctx context.Context, refs refs.Store) error
+	Do(ctx context.Context, refs refs.Store) Error
 	Wait()
 }
 

@@ -7,6 +7,7 @@ import (
 	"github.com/jexia/maestro/pkg/logger"
 	"github.com/jexia/maestro/pkg/refs"
 	"github.com/jexia/maestro/pkg/specs"
+	"github.com/jexia/maestro/pkg/transport"
 	"github.com/sirupsen/logrus"
 )
 
@@ -104,6 +105,7 @@ type Node struct {
 	DependsOn    map[string]*specs.Node
 	References   map[string]*specs.PropertyReference
 	Next         Nodes
+	Error        *specs.Error
 	AfterDo      AfterNode
 	AfterRevert  AfterNode
 }
@@ -130,7 +132,7 @@ func (node *Node) Do(ctx context.Context, tracker *Tracker, processes *Processes
 		pass, err := node.Condition.Eval(node.ctx, refs)
 		if err != nil {
 			node.logger.Debug("Condition evaluation failed: ", err)
-			processes.Fatal(err)
+			processes.Fatal(transport.WrapError(err, node.Error))
 			return
 		}
 
@@ -147,7 +149,7 @@ func (node *Node) Do(ctx context.Context, tracker *Tracker, processes *Processes
 		ctx, err = node.BeforeDo(ctx, node, tracker, processes, refs)
 		if err != nil {
 			node.logger.Error("Node before middleware failed: ", err)
-			processes.Fatal(err)
+			processes.Fatal(transport.WrapError(err, node.Error))
 			return
 		}
 	}
@@ -156,7 +158,7 @@ func (node *Node) Do(ctx context.Context, tracker *Tracker, processes *Processes
 		err = node.Call.Do(ctx, refs)
 		if err != nil {
 			node.logger.Error("Call failed: ", node.Name)
-			processes.Fatal(err)
+			processes.Fatal(transport.WrapError(err, node.Error))
 			return
 		}
 	}
@@ -179,7 +181,7 @@ func (node *Node) Do(ctx context.Context, tracker *Tracker, processes *Processes
 		ctx, err = node.AfterDo(ctx, node, tracker, processes, refs)
 		if err != nil {
 			node.logger.Error("Node after middleware failed: ", err)
-			processes.Fatal(err)
+			processes.Fatal(transport.WrapError(err, node.Error))
 			return
 		}
 	}
@@ -205,7 +207,7 @@ func (node *Node) Rollback(ctx context.Context, tracker *Tracker, processes *Pro
 		ctx, err = node.BeforeRevert(ctx, node, tracker, processes, refs)
 		if err != nil {
 			node.logger.Error("Node before middleware failed: ", err)
-			processes.Fatal(err)
+			processes.Fatal(transport.WrapError(err, node.Error))
 			return
 		}
 	}
@@ -221,8 +223,7 @@ func (node *Node) Rollback(ctx context.Context, tracker *Tracker, processes *Pro
 	if node.Revert != nil {
 		err = node.Revert.Do(ctx, refs)
 		if err != nil {
-			processes.Fatal(err)
-			return
+			node.logger.Error("Node revert failed: ", err)
 		}
 	}
 
@@ -233,7 +234,7 @@ func (node *Node) Rollback(ctx context.Context, tracker *Tracker, processes *Pro
 		ctx, err = node.AfterRevert(ctx, node, tracker, processes, refs)
 		if err != nil {
 			node.logger.Error("Node after middleware failed: ", err)
-			processes.Fatal(err)
+			processes.Fatal(transport.WrapError(err, node.Error))
 			return
 		}
 	}

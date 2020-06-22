@@ -9,6 +9,7 @@ import (
 	"github.com/jexia/maestro/pkg/logger"
 	"github.com/jexia/maestro/pkg/refs"
 	"github.com/jexia/maestro/pkg/specs"
+	"github.com/jexia/maestro/pkg/transport"
 	"github.com/sirupsen/logrus"
 )
 
@@ -82,6 +83,7 @@ type Manager struct {
 	References     int
 	Nodes          int
 	Ends           int
+	Error          *specs.Error
 	wg             sync.WaitGroup
 	AfterFunctions functions.Stack
 	AfterDo        AfterManager
@@ -95,12 +97,14 @@ func (manager *Manager) GetName() string {
 
 // Do calls all the nodes inside the manager if a error is returned is a rollback of all the already executed steps triggered.
 // Nodes are executed concurrently to one another.
-func (manager *Manager) Do(ctx context.Context, refs refs.Store) (err error) {
+func (manager *Manager) Do(ctx context.Context, refs refs.Store) transport.Error {
 	if manager.BeforeDo != nil {
-		ctx, err = manager.BeforeDo(ctx, manager, refs)
+		patched, err := manager.BeforeDo(ctx, manager, refs)
 		if err != nil {
-			return err
+			return transport.WrapError(err, manager.Error)
 		}
+
+		ctx = patched
 	}
 
 	manager.wg.Add(1)
@@ -120,9 +124,9 @@ func (manager *Manager) Do(ctx context.Context, refs refs.Store) (err error) {
 	manager.ctx.Logger(logger.Flow).WithField("flow", manager.Name).Debug("Processes completed")
 
 	if manager.AfterFunctions != nil && processes.Err() == nil {
-		err = ExecuteFunctions(manager.AfterFunctions, refs)
+		err := ExecuteFunctions(manager.AfterFunctions, refs)
 		if err != nil {
-			processes.Fatal(err)
+			processes.Fatal(transport.WrapError(err, manager.Error))
 		}
 	}
 
@@ -140,10 +144,12 @@ func (manager *Manager) Do(ctx context.Context, refs refs.Store) (err error) {
 	manager.ctx.Logger(logger.Flow).WithField("flow", manager.Name).Debug("Flow completed")
 
 	if manager.AfterDo != nil {
-		ctx, err = manager.AfterDo(ctx, manager, refs)
+		patched, err := manager.AfterDo(ctx, manager, refs)
 		if err != nil {
-			return err
+			return transport.WrapError(err, manager.Error)
 		}
+
+		ctx = patched
 	}
 
 	return nil
