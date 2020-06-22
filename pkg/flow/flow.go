@@ -35,7 +35,7 @@ func NewManager(ctx instance.Context, name string, nodes []*Node, after function
 		ctx:            ctx,
 		Name:           name,
 		Starting:       FetchStarting(nodes),
-		Nodes:          len(nodes),
+		Nodes:          nodes,
 		AfterFunctions: after,
 		AfterDo:        middleware.AfterDo,
 		AfterRollback:  middleware.AfterRollback,
@@ -81,7 +81,7 @@ type Manager struct {
 	Name           string
 	Starting       []*Node
 	References     int
-	Nodes          int
+	Nodes          []*Node
 	Ends           int
 	Error          *specs.Error
 	wg             sync.WaitGroup
@@ -93,6 +93,28 @@ type Manager struct {
 // GetName returns the name of the given flow manager
 func (manager *Manager) GetName() string {
 	return manager.Name
+}
+
+// Errors returns the available error objects within the given flow
+func (manager *Manager) Errors() []transport.Error {
+	result := make([]transport.Error, 0, len(manager.Nodes))
+
+	if manager.Error != nil {
+		result = append(result, transport.WrapError(nil, manager.Error))
+	}
+
+	for _, node := range manager.Nodes {
+		if node.Error != nil {
+			result = append(result, transport.WrapError(nil, node.Error))
+		}
+	}
+
+	return result
+}
+
+// NewStore constructs a new reference store for the given manager
+func (manager *Manager) NewStore() refs.Store {
+	return refs.NewReferenceStore(manager.References)
 }
 
 // Do calls all the nodes inside the manager if a error is returned is a rollback of all the already executed steps triggered.
@@ -113,7 +135,7 @@ func (manager *Manager) Do(ctx context.Context, refs refs.Store) transport.Error
 	manager.ctx.Logger(logger.Flow).WithField("flow", manager.Name).Debug("Executing flow")
 
 	processes := NewProcesses(len(manager.Starting))
-	tracker := NewTracker(manager.Name, manager.Nodes)
+	tracker := NewTracker(manager.Name, len(manager.Nodes))
 
 	for _, node := range manager.Starting {
 		go node.Do(ctx, tracker, processes, refs)
@@ -155,11 +177,6 @@ func (manager *Manager) Do(ctx context.Context, refs refs.Store) transport.Error
 	return nil
 }
 
-// NewStore constructs a new reference store for the given manager
-func (manager *Manager) NewStore() refs.Store {
-	return refs.NewReferenceStore(manager.References)
-}
-
 // Revert reverts the executed nodes found inside the given tracker.
 // All nodes that have not been executed will be ignored.
 func (manager *Manager) Revert(executed *Tracker, refs refs.Store) {
@@ -176,7 +193,7 @@ func (manager *Manager) Revert(executed *Tracker, refs refs.Store) {
 		}
 	}
 
-	tracker := NewTracker(manager.Name, manager.Nodes)
+	tracker := NewTracker(manager.Name, len(manager.Nodes))
 	ends := make(map[string]*Node, manager.Ends)
 
 	// Include all nodes to the revert tracker that have not been called

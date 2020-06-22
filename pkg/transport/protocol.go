@@ -121,6 +121,7 @@ func (w *wrapper) Unwrap() error {
 type Flow interface {
 	NewStore() refs.Store
 	GetName() string
+	Errors() []Error
 	Do(ctx context.Context, refs refs.Store) Error
 	Wait()
 }

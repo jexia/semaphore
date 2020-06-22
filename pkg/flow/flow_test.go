@@ -65,7 +65,7 @@ func NewMockFlowManager(caller Call, revert Call) ([]*Node, *Manager) {
 		ctx:        ctx,
 		Starting:   []*Node{nodes[0]},
 		References: 0,
-		Nodes:      len(nodes),
+		Nodes:      nodes,
 		Ends:       1,
 	}
 }
