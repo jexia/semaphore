@@ -82,7 +82,7 @@ func TestResolveInclude(t *testing.T) {
 
 func TestResolveIncludeNoFiles(t *testing.T) {
 	tests := map[string]string{
-		"include": "./tests/unkown.hcl",
+		"include": "./tests/unknown.hcl",
 	}
 
 	for name, path := range tests {

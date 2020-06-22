@@ -10,7 +10,7 @@ service mock {
 }
 
 enum Status {
-    UNKOWN = 0;
+    UNKNOWN = 0;
     PENDING = 1;
 }
 

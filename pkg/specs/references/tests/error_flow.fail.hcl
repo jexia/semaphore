@@ -1,4 +1,4 @@
 flow "echo" {
-	error "com.unkown" {
+	error "com.unknown" {
     }
 }

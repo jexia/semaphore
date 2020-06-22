@@ -102,9 +102,9 @@ func TestGetNextResource(t *testing.T) {
 				},
 			},
 		},
-		"unkown": {
-			breakpoint: "unkown",
-			expected:   "unkown",
+		"unknown": {
+			breakpoint: "unknown",
+			expected:   "unknown",
 			manager: &specs.Flow{
 				Nodes: []*specs.Node{
 					{
@@ -600,13 +600,13 @@ func TestGetResourceReference(t *testing.T) {
 	}
 }
 
-func TestGetUnkownResourceReference(t *testing.T) {
+func TestGetUnknownResourceReference(t *testing.T) {
 	flow := NewMockFlow("first")
 	references := GetAvailableResources(flow, "output")
 	breakpoint := "first"
 
 	tests := map[string]*specs.PropertyReference{
-		"unkown": NewPropertyReference("unkown", "unkown"),
+		"unknown": NewPropertyReference("unknown", "unknown"),
 	}
 
 	for name, test := range tests {
@@ -647,7 +647,7 @@ func TestHeaderLookup(t *testing.T) {
 	}
 }
 
-func TestUnkownHeaderLookup(t *testing.T) {
+func TestUnknownHeaderLookup(t *testing.T) {
 	type test struct {
 		path   string
 		header specs.Header
@@ -763,7 +763,7 @@ func TestGetReference(t *testing.T) {
 	}
 }
 
-func TestUnkownReference(t *testing.T) {
+func TestUnknownReference(t *testing.T) {
 	path := "key"
 	prop := "input.request"
 
@@ -771,7 +771,7 @@ func TestUnkownReference(t *testing.T) {
 		prop: PropertyLookup(&specs.Property{Path: path}),
 	}
 
-	result := GetReference(path, "unkown", references)
+	result := GetReference(path, "unknown", references)
 	if result != nil {
 		t.Fatal("unexpected result")
 	}

@@ -3,9 +3,9 @@ properties:
         type: "enum"
         label: "optional"
         enum:
-            UNKOWN:
+            UNKNOWN:
                 position: 1
-                description: "unkown status"
+                description: "unknown status"
             PENDING:
                 position: 2
                 description: "pending status"

@@ -442,7 +442,7 @@ func TestMarshal(t *testing.T) {
 		"repeating_enum": {
 			"nested": map[string]interface{}{},
 			"repeating_enum": []interface{}{
-				"UNKOWN",
+				"UNKNOWN",
 				"PENDING",
 			},
 		},
@@ -556,7 +556,7 @@ func TestUnmarshal(t *testing.T) {
 		},
 		"repeating_enum": {
 			"repeating_enum": []interface{}{
-				"UNKOWN",
+				"UNKNOWN",
 				"PENDING",
 			},
 		},

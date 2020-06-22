@@ -94,7 +94,7 @@ func TestWithLogLevel(t *testing.T) {
 }
 
 func TestWithInvalidLogLevel(t *testing.T) {
-	_, err := New(WithLogLevel(logger.Core, "unkown"))
+	_, err := New(WithLogLevel(logger.Core, "unknown"))
 	if err != nil {
 		t.Fatal(err)
 	}

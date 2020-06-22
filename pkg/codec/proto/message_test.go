@@ -429,7 +429,7 @@ func TestMarshal(t *testing.T) {
 			"nested": map[string]interface{}{},
 			"repeating_status": []interface{}{
 				refs.Enum("PENDING", 1),
-				refs.Enum("UNKOWN", 0),
+				refs.Enum("UNKNOWN", 0),
 			},
 		},
 		"repeating_values": {
@@ -543,7 +543,7 @@ func TestUnmarshal(t *testing.T) {
 			"nested": map[string]interface{}{},
 			"repeating_status": []interface{}{
 				refs.Enum("PENDING", 1),
-				refs.Enum("UNKOWN", 0),
+				refs.Enum("UNKNOWN", 0),
 			},
 		},
 		"complex": {

@@ -271,7 +271,7 @@ func TestStoreRepeatingEnum(t *testing.T) {
 	key := "enum"
 	expected := []interface{}{
 		Enum("PENDING", 1),
-		Enum("UNKOWN", 0),
+		Enum("UNKNOWN", 0),
 	}
 
 	resource := "input"
