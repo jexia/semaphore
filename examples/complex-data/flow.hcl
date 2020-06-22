@@ -9,19 +9,19 @@ flow "ComplexDataStructure" {
 
 	output "proto.Checkout" {
 		repeated "items" "input:items" {
-            id = "{{ input:items.id }}"
-            name = "{{ input:items.name }}"
+        		id = "{{ input:items.id }}"
+       			name = "{{ input:items.name }}"
 
-            repeated "labels" "input:items.labels" {}
-        }
+       			repeated "labels" "input:items.labels" {}
+        	}
 
-        message "shipping" {
-            time = "{{ input:shipping.time }}"
+        	message "shipping" {
+            		time = "{{ input:shipping.time }}"
 
-            message "address" {
-                street = "{{ input:shipping.address.street }}"
-                city = "{{ input:shipping.address.city }}"
-            }
-        }
+            		message "address" {
+                		street = "{{ input:shipping.address.street }}"
+                		city = "{{ input:shipping.address.city }}"
+            		}
+        	}
 	}
 }
