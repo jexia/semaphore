@@ -45,10 +45,10 @@ func ParseResource(resource string) (string, string) {
 // GetDefaultProp returns the default resource for the given resource
 func GetDefaultProp(resource string) string {
 	if resource == template.InputResource {
-		return template.ResourceRequest
+		return template.RequestResource
 	}
 
-	return template.ResourceResponse
+	return template.ResponseResource
 }
 
 // GetNextResource returns the resource after the given breakpoint
@@ -77,8 +77,8 @@ func GetAvailableResources(flow specs.FlowResourceManager, breakpoint string) ma
 
 	if flow.GetInput() != nil {
 		references[template.InputResource] = ReferenceMap{
-			template.ResourceRequest: PropertyLookup(flow.GetInput().Property),
-			template.ResourceHeader:  HeaderLookup(flow.GetInput().Header),
+			template.RequestResource: PropertyLookup(flow.GetInput().Property),
+			template.HeaderResource:  HeaderLookup(flow.GetInput().Header),
 		}
 	}
 
@@ -92,8 +92,8 @@ func GetAvailableResources(flow specs.FlowResourceManager, breakpoint string) ma
 					}
 				}
 
-				references[node.Name][template.ResourceParams] = ParamsLookup(node.Call.Request.Params, flow, breakpoint)
-				references[node.Name][template.ResourceRequest] = PropertyLookup(node.Call.Request.Property)
+				references[node.Name][template.ParamsResource] = ParamsLookup(node.Call.Request.Params, flow, breakpoint)
+				references[node.Name][template.RequestResource] = PropertyLookup(node.Call.Request.Property)
 			}
 		}
 
@@ -109,8 +109,8 @@ func GetAvailableResources(flow specs.FlowResourceManager, breakpoint string) ma
 					}
 				}
 
-				references[node.Name][template.ResourceResponse] = PropertyLookup(node.Call.Response.Property)
-				references[node.Name][template.ResourceHeader] = VariableHeaderLookup(node.Call.Response.Header)
+				references[node.Name][template.ResponseResource] = PropertyLookup(node.Call.Response.Property)
+				references[node.Name][template.HeaderResource] = VariableHeaderLookup(node.Call.Response.Header)
 			}
 		}
 	}

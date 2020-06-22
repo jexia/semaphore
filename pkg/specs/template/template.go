@@ -32,19 +32,21 @@ const (
 	OutputResource = "output"
 	// StackResource property
 	StackResource = "stack"
-	// ResourceParams property
-	ResourceParams = "params"
-	// ResourceRequest property
-	ResourceRequest = "request"
-	// ResourceHeader property
-	ResourceHeader = "header"
-	// ResourceResponse property
-	ResourceResponse = "response"
+	// ParamsResource property
+	ParamsResource = "params"
+	// RequestResource property
+	RequestResource = "request"
+	// HeaderResource property
+	HeaderResource = "header"
+	// ResponseResource property
+	ResponseResource = "response"
+	// ErrorResource property
+	ErrorResource = "error"
 
-	// DefaultInputProperty represents the default input property on resource select
-	DefaultInputProperty = ResourceRequest
-	// DefaultCallProperty represents the default call property on resource select
-	DefaultCallProperty = ResourceResponse
+	// DefaultInputResource represents the default input property on resource select
+	DefaultInputResource = RequestResource
+	// DefaultCallResource represents the default call property on resource select
+	DefaultCallResource = ResponseResource
 )
 
 // Is checks whether the given value is a template
@@ -83,7 +85,7 @@ func ParsePropertyReference(value string) *specs.PropertyReference {
 
 	path := rv[1]
 
-	if prop == ResourceHeader {
+	if prop == HeaderResource {
 		path = strings.ToLower(path)
 	}
 

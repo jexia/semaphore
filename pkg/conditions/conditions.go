@@ -22,7 +22,7 @@ func NewEvaluableExpression(ctx instance.Context, raw string) (*specs.Condition,
 	}
 
 	params := &specs.ParameterMap{
-		Params: make(map[string]*specs.Property),
+		Params: map[string]*specs.Property{},
 	}
 
 	for _, ref := range expression.Vars() {

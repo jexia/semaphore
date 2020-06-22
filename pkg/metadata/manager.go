@@ -14,7 +14,7 @@ import (
 func NewManager(ctx instance.Context, resource string, params specs.Header) *Manager {
 	return &Manager{
 		Context:  ctx,
-		Resource: template.JoinPath(resource, template.ResourceHeader),
+		Resource: template.JoinPath(resource, template.HeaderResource),
 		Params:   params,
 	}
 }

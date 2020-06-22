@@ -37,8 +37,8 @@ func TestGetFlow(t *testing.T) {
 
 func TestGetDefaultProp(t *testing.T) {
 	tests := map[string]string{
-		template.InputResource: template.ResourceRequest,
-		"unknown":              template.ResourceResponse,
+		template.InputResource: template.RequestResource,
+		"unknown":              template.ResponseResource,
 	}
 
 	for input, expected := range tests {
@@ -509,11 +509,11 @@ func TestSkipMissingParameters(t *testing.T) {
 		},
 		{
 			name:  "first",
-			empty: []string{template.ResourceRequest, template.ResourceHeader},
+			empty: []string{template.RequestResource, template.HeaderResource},
 		},
 		{
 			name:  "second",
-			empty: []string{template.ResourceRequest, template.ResourceHeader},
+			empty: []string{template.RequestResource, template.HeaderResource},
 		},
 		{
 			name: "third",
