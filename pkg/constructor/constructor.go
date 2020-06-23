@@ -51,6 +51,8 @@ func Specs(ctx instance.Context, mem functions.Collection, options Options) (*Co
 		return nil, err
 	}
 
+	ConstructErrorHandle(collection.Flows)
+
 	if options.AfterConstructor != nil {
 		err = options.AfterConstructor(ctx, collection)
 		if err != nil {
@@ -309,4 +311,39 @@ func Listeners(endpoints []*transport.Endpoint, options Options) error {
 	}
 
 	return nil
+}
+
+// ConstructErrorHandle clones any previously defined error objects or error handles
+func ConstructErrorHandle(manifest *specs.FlowsManifest) {
+	for _, flow := range manifest.Flows {
+		if flow.Error == nil {
+			flow.Error = manifest.Error
+		}
+
+		for _, node := range flow.Nodes {
+			if node.Error == nil {
+				node.Error = flow.Error
+			}
+
+			if node.OnError == nil {
+				node.OnError = flow.OnError
+			}
+		}
+	}
+
+	for _, proxy := range manifest.Proxy {
+		if proxy.Error == nil {
+			proxy.Error = manifest.Error
+		}
+
+		for _, node := range proxy.Nodes {
+			if node.Error == nil {
+				node.Error = proxy.Error
+			}
+
+			if node.OnError == nil {
+				node.OnError = proxy.OnError
+			}
+		}
+	}
 }

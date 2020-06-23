@@ -14,23 +14,14 @@ flow "FetchLatestProject" {
         header = ["Authorization"]
     }
 
-	error "placeholder.Error" {
-		header {
-			X-Request = "{{ error.params:id }}"
-		}
-
-		value = "{{ error:message }}"
+	error "placeholder.Unauthorized" {
+		message = "{{ error:message }}"
 		status = "{{ error:status }}"
 	}
 
 	on_error {
-		schema = "placeholder.Error"
-		status = 500
+		status = 401
 		message = "on error message"
-
-		params {
-			id = "abc"
-		}
 	}
 
     before {
@@ -46,25 +37,6 @@ flow "FetchLatestProject" {
 
 	resource "user" {
 		request "placeholder.Service" "GetUser" {
-		}
-
-		error "placeholder.Error" {
-			header {
-				X-Request = "{{ error.params:id }}"
-			}
-
-			value = "{{ error:message }}"
-			status = "{{ error:status }}"
-		}
-
-		on_error {
-			schema = "placeholder.Error"
-			status = 500
-			message = "on  blablaerror message"
-
-			params {
-				id = "abc"
-			}
 		}
 	}
 
