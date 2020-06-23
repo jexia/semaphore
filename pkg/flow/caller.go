@@ -126,10 +126,7 @@ func (caller *Caller) Do(ctx context.Context, store refs.Store) error {
 			return err
 		}
 	} else {
-		err := writer.Close()
-		if err != nil {
-			return err
-		}
+		writer.Close()
 	}
 
 	if w.Status() > 0 && w.Status() != caller.ExpectedStatus {
@@ -156,6 +153,16 @@ func (caller *Caller) Do(ctx context.Context, store refs.Store) error {
 			if caller.err.metadata != nil {
 				caller.response.metadata.Unmarshal(w.Header(), store)
 			}
+
+			if caller.err.status != nil {
+
+			}
+
+			if caller.err.message != nil {
+
+			}
+		} else {
+			// default error object
 		}
 
 		return ErrAbortFlow

@@ -52,6 +52,7 @@ func NewNode(ctx instance.Context, node *specs.Node, condition *Condition, call,
 		DependsOn:    node.DependsOn,
 		References:   references,
 		Next:         []*Node{},
+		Error:        node,
 		AfterDo:      middleware.AfterDo,
 		AfterRevert:  middleware.AfterRollback,
 	}
@@ -105,7 +106,7 @@ type Node struct {
 	DependsOn    map[string]*specs.Node
 	References   map[string]*specs.PropertyReference
 	Next         Nodes
-	Error        *specs.Error
+	Error        specs.ErrorHandle
 	AfterDo      AfterNode
 	AfterRevert  AfterNode
 }

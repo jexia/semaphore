@@ -4,6 +4,7 @@ import (
 	"github.com/jexia/maestro/pkg/codec"
 	"github.com/jexia/maestro/pkg/functions"
 	"github.com/jexia/maestro/pkg/metadata"
+	"github.com/jexia/maestro/pkg/specs"
 )
 
 // NewOnError constructs a new error for the given codec and header manager
@@ -20,4 +21,6 @@ type OnError struct {
 	functions functions.Stack
 	codec     codec.Manager
 	metadata  *metadata.Manager
+	status    *specs.Property
+	message   *specs.Property
 }

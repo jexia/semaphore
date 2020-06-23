@@ -6,19 +6,19 @@ import (
 
 // Manifest intermediate specs
 type Manifest struct {
-	LogLevel        string      `hcl:"log_level,optional"`
-	GraphQL         *GraphQL    `hcl:"graphql,block"`
-	HTTP            *HTTP       `hcl:"http,block"`
-	GRPC            *GRPC       `hcl:"grpc,block"`
-	Prometheus      *Prometheus `hcl:"prometheus,block"`
-	Protobuffers    []string    `hcl:"protobuffers,optional"`
-	Include         []string    `hcl:"include,optional"`
-	Error           *Error      `hcl:"error,block"`
-	Flows           []Flow      `hcl:"flow,block"`
-	Proxy           []Proxy     `hcl:"proxy,block"`
-	Endpoints       []Endpoint  `hcl:"endpoint,block"`
-	Services        []Service   `hcl:"service,block"`
-	ServiceSelector []Services  `hcl:"services,block"`
+	LogLevel        string        `hcl:"log_level,optional"`
+	GraphQL         *GraphQL      `hcl:"graphql,block"`
+	HTTP            *HTTP         `hcl:"http,block"`
+	GRPC            *GRPC         `hcl:"grpc,block"`
+	Prometheus      *Prometheus   `hcl:"prometheus,block"`
+	Protobuffers    []string      `hcl:"protobuffers,optional"`
+	Include         []string      `hcl:"include,optional"`
+	Error           *ParameterMap `hcl:"error,block"`
+	Flows           []Flow        `hcl:"flow,block"`
+	Proxy           []Proxy       `hcl:"proxy,block"`
+	Endpoints       []Endpoint    `hcl:"endpoint,block"`
+	Services        []Service     `hcl:"service,block"`
+	ServiceSelector []Services    `hcl:"services,block"`
 }
 
 // GraphQL represents the GraphQL option definitions
@@ -58,22 +58,14 @@ type Condition struct {
 // Flow intermediate specification
 type Flow struct {
 	Name       string             `hcl:"name,label"`
-	Error      *Error             `hcl:"error,block"`
+	Error      *ParameterMap      `hcl:"error,block"`
+	OnError    *OnError           `hcl:"on_error,block"`
 	Before     *Before            `hcl:"before,block"`
 	Input      *InputParameterMap `hcl:"input,block"`
 	References []Resources        `hcl:"resources,block"`
 	Resources  []Resource         `hcl:"resource,block"`
 	Conditions []Condition        `hcl:"if,block"`
 	Output     *ParameterMap      `hcl:"output,block"`
-}
-
-// Error intermediate specification
-type Error struct {
-	Schema     string                 `hcl:"schema,label"`
-	Properties hcl.Body               `hcl:",remain"`
-	Header     *Header                `hcl:"header,block"`
-	Nested     []NestedParameterMap   `hcl:"message,block"`
-	Repeated   []RepeatedParameterMap `hcl:"repeated,block"`
 }
 
 // ParameterMap is the initial map of parameter names (keys) and their (templated) values (values)
@@ -145,20 +137,19 @@ type RepeatedParameterMap struct {
 
 // Resource intermediate specification
 type Resource struct {
-	Name      string   `hcl:"name,label"`
-	DependsOn []string `hcl:"depends_on,optional"`
-	Request   *Call    `hcl:"request,block"`
-	Rollback  *Call    `hcl:"rollback,block"`
-	OnError   *OnError `hcl:"on_error,block"`
-	Error     *Error   `hcl:"error,block"`
+	Name      string        `hcl:"name,label"`
+	DependsOn []string      `hcl:"depends_on,optional"`
+	Request   *Call         `hcl:"request,block"`
+	Rollback  *Call         `hcl:"rollback,block"`
+	OnError   *OnError      `hcl:"on_error,block"`
+	Error     *ParameterMap `hcl:"error,block"`
 }
 
 // OnError intermediate specification
 type OnError struct {
-	Schema  string        `hcl:"schema,optional"`
-	Status  string        `hcl:"status,optional"`
-	Message string        `hcl:"message,optional"`
-	Params  *BlockOptions `hcl:"params,block"`
+	Schema string        `hcl:"schema,optional"`
+	Params *BlockOptions `hcl:"params,block"`
+	Body   hcl.Body      `hcl:",remain"`
 }
 
 // Function intermediate specification
@@ -215,14 +206,15 @@ type Method struct {
 
 // Proxy specification
 type Proxy struct {
-	Name       string       `hcl:"name,label"`
-	Input      *ProxyInput  `hcl:"input,block"`
-	Before     *Before      `hcl:"before,block"`
-	Error      *Error       `hcl:"error,block"`
-	References []Resources  `hcl:"resources,block"`
-	Resources  []Resource   `hcl:"resource,block"`
-	Conditions []Condition  `hcl:"if,block"`
-	Forward    ProxyForward `hcl:"forward,block"`
+	Name       string        `hcl:"name,label"`
+	Input      *ProxyInput   `hcl:"input,block"`
+	OnError    *OnError      `hcl:"on_error,block"`
+	Before     *Before       `hcl:"before,block"`
+	Error      *ParameterMap `hcl:"error,block"`
+	References []Resources   `hcl:"resources,block"`
+	Resources  []Resource    `hcl:"resource,block"`
+	Conditions []Condition   `hcl:"if,block"`
+	Forward    ProxyForward  `hcl:"forward,block"`
 }
 
 // ProxyInput represents the proxy input block

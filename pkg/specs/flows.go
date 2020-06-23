@@ -4,9 +4,9 @@ import "github.com/Knetic/govaluate"
 
 // FlowsManifest holds a collection of definitions and resources
 type FlowsManifest struct {
-	Error *Error  `json:"error"`
-	Flows Flows   `json:"flows"`
-	Proxy Proxies `json:"proxies"`
+	Error *ParameterMap `json:"error"`
+	Flows Flows         `json:"flows"`
+	Proxy Proxies       `json:"proxies"`
 }
 
 // GetFlow attempts to find a flow or proxy matching the given name
@@ -38,7 +38,8 @@ type FlowResourceManager interface {
 	GetNodes() []*Node
 	GetInput() *ParameterMap
 	GetOutput() *ParameterMap
-	GetError() *Error
+	GetError() *ParameterMap
+	GetOnError() *OnError
 	GetForward() *Call
 }
 
@@ -64,11 +65,12 @@ func (collection Flows) Get(name string) *Flow {
 // Calls are nested inside of flows and contain two labels, a unique name within the flow and the service and method to be called.
 // A dependency reference structure is generated within the flow which allows Maestro to figure out which calls could be called parallel to improve performance.
 type Flow struct {
-	Name   string        `json:"name"`
-	Input  *ParameterMap `json:"input"`
-	Nodes  []*Node       `json:"nodes"`
-	Output *ParameterMap `json:"output"`
-	Error  *Error        `json:"error"`
+	Name    string        `json:"name"`
+	Input   *ParameterMap `json:"input"`
+	Nodes   []*Node       `json:"nodes"`
+	Output  *ParameterMap `json:"output"`
+	Error   *ParameterMap `json:"error"`
+	OnError *OnError      `json:"on_error"`
 }
 
 // GetName returns the flow name
@@ -82,8 +84,13 @@ func (flow *Flow) GetNodes() []*Node {
 }
 
 // GetError returns the error of the given flow
-func (flow *Flow) GetError() *Error {
+func (flow *Flow) GetError() *ParameterMap {
 	return flow.Error
+}
+
+// GetOnError returns the error handling of the given flow
+func (flow *Flow) GetOnError() *OnError {
+	return flow.OnError
 }
 
 // GetInput returns the input of the given flow
@@ -123,7 +130,8 @@ type Proxy struct {
 	Name    string        `json:"name"`
 	Nodes   []*Node       `json:"nodes"`
 	Forward *Call         `json:"forward"`
-	Error   *Error        `json:"error"`
+	Error   *ParameterMap `json:"error"`
+	OnError *OnError      `json:"on_error"`
 }
 
 // GetName returns the flow name
@@ -137,8 +145,13 @@ func (proxy *Proxy) GetNodes() []*Node {
 }
 
 // GetError returns the error of the given flow
-func (proxy *Proxy) GetError() *Error {
+func (proxy *Proxy) GetError() *ParameterMap {
 	return proxy.Error
+}
+
+// GetOnError returns the error handling of the given flow
+func (proxy *Proxy) GetOnError() *OnError {
+	return proxy.OnError
 }
 
 // GetInput returns the input of the given flow
@@ -154,13 +167,6 @@ func (proxy *Proxy) GetOutput() *ParameterMap {
 // GetForward returns the proxy forward of the given flow
 func (proxy *Proxy) GetForward() *Call {
 	return proxy.Forward
-}
-
-// Error represents a error message returned to the user once a unexpected error is returned
-type Error struct {
-	Schema   string    `json:"schema"`
-	Header   Header    `json:"header"`
-	Property *Property `json:"property"`
 }
 
 // Condition represents a condition which could be true or false
@@ -181,8 +187,18 @@ type Node struct {
 	DependsOn map[string]*Node `json:"depends_on"`
 	Call      *Call            `json:"call"`
 	Rollback  *Call            `json:"rollback"`
+	Error     *ParameterMap    `json:"error"`
 	OnError   *OnError         `json:"on_error"`
-	Error     *Error           `json:"error"`
+}
+
+// GetError returns the error object for the given node
+func (node *Node) GetError() *ParameterMap {
+	return node.Error
+}
+
+// GetOnError returns the error handling for the given node
+func (node *Node) GetOnError() *OnError {
+	return node.OnError
 }
 
 // Call represents a call which is executed during runtime
@@ -197,7 +213,7 @@ type Call struct {
 // OnError represents the variables that have to be returned if a unexpected error is returned
 type OnError struct {
 	Schema  string
-	Status  string
-	Message string
+	Status  *Property
+	Message *Property
 	Params  map[string]*Property
 }

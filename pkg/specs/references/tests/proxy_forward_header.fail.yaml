@@ -1,5 +1,5 @@
 exception:
-    message: undefined resource 'input:unknown' in 'echo.output.Authorization'
+    message: undefined reference 'input:unknown' in 'echo.output.Authorization'
 properties:
     com.input:
         type: "message"

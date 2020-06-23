@@ -20,8 +20,14 @@ func ResolveReferences(ctx instance.Context, manifest *specs.FlowsManifest) {
 			ResolveNodeReferences(node)
 		}
 
+		// Error and output dependencies could safely be ignored
+		empty := map[string]*specs.Node{}
+
+		if flow.Error != nil {
+			ResolveParameterMap(flow.Error, empty)
+		}
+
 		if flow.Output != nil {
-			empty := map[string]*specs.Node{} // The output dependencies could safely be ignored
 			ResolveHeaderReferences(flow.Output.Header, empty)
 			ResolvePropertyReferences(flow.Output.Property, empty)
 		}
@@ -40,37 +46,34 @@ func ResolveNodeReferences(node *specs.Node) {
 		node.DependsOn = map[string]*specs.Node{}
 	}
 
+	if node.Error != nil {
+		ResolveParameterMap(node.Error, node.DependsOn)
+	}
+
 	if node.Condition != nil {
 		ResolveParamReferences(node.Condition.Params.Params, node.DependsOn)
 	}
 
 	if node.Call != nil {
-		if node.Call.Request != nil {
-			ResolveParamReferences(node.Call.Request.Params, node.DependsOn)
-			ResolveHeaderReferences(node.Call.Request.Header, node.DependsOn)
-			ResolvePropertyReferences(node.Call.Request.Property, node.DependsOn)
-		}
-
-		if node.Call.Response != nil {
-			ResolveParamReferences(node.Call.Response.Params, node.DependsOn)
-			ResolveHeaderReferences(node.Call.Response.Header, node.DependsOn)
-			ResolvePropertyReferences(node.Call.Response.Property, node.DependsOn)
-		}
+		ResolveParameterMap(node.Call.Request, node.DependsOn)
+		ResolveParameterMap(node.Call.Response, node.DependsOn)
 	}
 
 	if node.Rollback != nil {
-		if node.Rollback.Request != nil {
-			ResolveParamReferences(node.Rollback.Request.Params, node.DependsOn)
-			ResolveHeaderReferences(node.Rollback.Request.Header, node.DependsOn)
-			ResolvePropertyReferences(node.Rollback.Request.Property, node.DependsOn)
-		}
-
-		if node.Rollback.Response != nil {
-			ResolveParamReferences(node.Rollback.Response.Params, node.DependsOn)
-			ResolveHeaderReferences(node.Rollback.Response.Header, node.DependsOn)
-			ResolvePropertyReferences(node.Rollback.Response.Property, node.DependsOn)
-		}
+		ResolveParameterMap(node.Rollback.Request, node.DependsOn)
+		ResolveParameterMap(node.Rollback.Response, node.DependsOn)
 	}
+}
+
+// ResolveParameterMap resolves the params inside the given parameter map
+func ResolveParameterMap(parameters *specs.ParameterMap, dependencies map[string]*specs.Node) {
+	if parameters == nil {
+		return
+	}
+
+	ResolveParamReferences(parameters.Params, dependencies)
+	ResolveHeaderReferences(parameters.Header, dependencies)
+	ResolvePropertyReferences(parameters.Property, dependencies)
 }
 
 // ResolveFunctionsReferences resolves all references made inside the given function arguments and return value
@@ -120,7 +123,7 @@ func ResolvePropertyReferences(property *specs.Property, dependencies map[string
 	}
 
 	resource, _ := lookup.ParseResource(property.Reference.Resource)
-	if resource != template.StackResource && resource != template.InputResource {
+	if resource != template.StackResource && (resource != template.InputResource && resource != template.ErrorResource) {
 		dependencies[template.SplitPath(property.Reference.Resource)[0]] = nil
 	}
 

@@ -1,5 +1,5 @@
 exception:
-    message: undefined object 'unexpected' in schema collection
+    message: object 'unexpected', is unavailable inside the schema collection
 properties:
     com.input:
         type: "message"

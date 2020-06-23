@@ -1,5 +1,5 @@
 exception:
-    message: cannot use (string) type (int32) in 'message'
+    message: cannot use type (string) for 'message', expected (int32)
 properties:
     com.output:
         type: "message"

@@ -159,15 +159,21 @@ func NewHandle(ctx instance.Context, logger *logrus.Logger, endpoint *transport.
 		constructors = make(map[string]codec.Constructor)
 	}
 
-	codec := constructors[options.Codec]
-	if codec == nil {
+	constructor := constructors[options.Codec]
+	if constructor == nil {
 		return nil, trace.New(trace.WithMessage("codec not found '%s'", options.Codec))
 	}
 
+	collection, err := transport.NewErrCodecCollection(constructor, endpoint.Flow.Errors())
+	if err != nil {
+		return nil, err
+	}
+
 	handle := &Handle{
-		logger:   logger,
-		Endpoint: endpoint,
-		Options:  options,
+		logger:     logger,
+		Endpoint:   endpoint,
+		Options:    options,
+		Collection: collection,
 	}
 
 	if endpoint.Request != nil {
@@ -177,7 +183,7 @@ func NewHandle(ctx instance.Context, logger *logrus.Logger, endpoint *transport.
 		}
 
 		if endpoint.Forward == nil {
-			request, err := codec.New(template.InputResource, endpoint.Request)
+			request, err := constructor.New(template.InputResource, endpoint.Request)
 			if err != nil {
 				return nil, trace.New(trace.WithMessage("unable to construct a new HTTP codec manager for '%s'", endpoint.Flow))
 			}
@@ -187,7 +193,7 @@ func NewHandle(ctx instance.Context, logger *logrus.Logger, endpoint *transport.
 	}
 
 	if endpoint.Response != nil {
-		response, err := codec.New(template.OutputResource, endpoint.Response)
+		response, err := constructor.New(template.OutputResource, endpoint.Response)
 		if err != nil {
 			return nil, trace.New(trace.WithMessage("unable to construct a new HTTP codec manager for '%s'", endpoint.Flow))
 		}
@@ -229,12 +235,13 @@ type Request struct {
 
 // Handle holds a endpoint its options and a optional request and response
 type Handle struct {
-	logger   *logrus.Logger
-	Endpoint *transport.Endpoint
-	Options  *EndpointOptions
-	Request  *Request
-	Response *Request
-	Proxy    *Proxy
+	logger     *logrus.Logger
+	Endpoint   *transport.Endpoint
+	Options    *EndpointOptions
+	Request    *Request
+	Response   *Request
+	Proxy      *Proxy
+	Collection *transport.CodecCollection
 }
 
 // HTTPFunc represents a HTTP function which could be used inside a HTTP router
@@ -246,7 +253,6 @@ func (handle *Handle) HTTPFunc(w http.ResponseWriter, r *http.Request, ps httpro
 	handle.logger.Debug("New incoming HTTP request")
 
 	defer r.Body.Close()
-	var err error
 	store := handle.Endpoint.Flow.NewStore()
 
 	for key, value := range r.URL.Query() {
@@ -263,7 +269,7 @@ func (handle *Handle) HTTPFunc(w http.ResponseWriter, r *http.Request, ps httpro
 		}
 
 		if handle.Request.Codec != nil {
-			err = handle.Request.Codec.Unmarshal(r.Body, store)
+			err := handle.Request.Codec.Unmarshal(r.Body, store)
 			if err != nil {
 				handle.logger.Error(err)
 				w.WriteHeader(http.StatusBadRequest)
@@ -272,9 +278,18 @@ func (handle *Handle) HTTPFunc(w http.ResponseWriter, r *http.Request, ps httpro
 		}
 	}
 
-	err = handle.Endpoint.Flow.Do(r.Context(), store)
+	err := handle.Endpoint.Flow.Do(r.Context(), store)
 	if err != nil {
-		w.WriteHeader(http.StatusServiceUnavailable)
+		codec := handle.Collection.Get(err.Handle().GetError())
+		reader, e := codec.Marshal(store)
+		if e != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		status := err.Handle().GetOnError().Status.Default.(int64)
+		w.WriteHeader(int(status))
+		io.Copy(w, reader)
 		return
 	}
 

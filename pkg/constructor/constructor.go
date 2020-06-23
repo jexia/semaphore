@@ -39,12 +39,12 @@ func Specs(ctx instance.Context, mem functions.Collection, options Options) (*Co
 		return nil, err
 	}
 
+	dependencies.ResolveReferences(ctx, collection.Flows)
+
 	err = compare.ManifestTypes(ctx, collection.Services, collection.Schema, collection.Flows)
 	if err != nil {
 		return nil, err
 	}
-
-	dependencies.ResolveReferences(ctx, collection.Flows)
 
 	err = dependencies.ResolveManifest(ctx, collection.Flows)
 	if err != nil {
@@ -110,7 +110,7 @@ func FlowManager(ctx instance.Context, mem functions.Collection, services *specs
 
 		stack := mem[manager.GetOutput()]
 		result.Forward = forward
-		result.Flow = flow.NewManager(ctx, manager.GetName(), nodes, stack, &flow.ManagerMiddleware{
+		result.Flow = flow.NewManager(ctx, manager.GetName(), nodes, manager, stack, &flow.ManagerMiddleware{
 			BeforeDo:       options.BeforeManagerDo,
 			AfterDo:        options.AfterManagerDo,
 			BeforeRollback: options.BeforeManagerRollback,
@@ -146,12 +146,6 @@ func Call(ctx instance.Context, mem functions.Collection, services *specs.Servic
 
 	if call.Service != "" {
 		return NewServiceCall(ctx, mem, services, flows, node, call, options, manager)
-	}
-
-	if node.OnError != nil {
-	}
-
-	if node.Error != nil {
 	}
 
 	request, err := Request(ctx, node, mem, nil, call.Request)

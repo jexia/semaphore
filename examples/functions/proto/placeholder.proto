@@ -29,6 +29,11 @@ service Service {
 message Query {
 }
 
+message Error {
+    string value = 1;
+    int64 status = 2;
+}
+
 message Item {
     int32 userId = 1;
     int32 id = 2;
@@ -37,7 +42,7 @@ message Item {
 }
 
 message User {
-    int32 id = 1;
+    string id = 1;
     string name = 2;
     string username = 3;
     string email = 4;

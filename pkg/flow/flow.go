@@ -22,7 +22,7 @@ type Call interface {
 // NewManager constructs a new manager for the given flow.
 // Branches are constructed for the constructed nodes to optimalise performance.
 // Various variables such as the amount of nodes, references and loose ends are collected to optimalise allocations during runtime.
-func NewManager(ctx instance.Context, name string, nodes []*Node, after functions.Stack, middleware *ManagerMiddleware) *Manager {
+func NewManager(ctx instance.Context, name string, nodes []*Node, err specs.ErrorHandle, after functions.Stack, middleware *ManagerMiddleware) *Manager {
 	ConstructBranches(nodes)
 
 	if middleware == nil {
@@ -36,6 +36,7 @@ func NewManager(ctx instance.Context, name string, nodes []*Node, after function
 		Name:           name,
 		Starting:       FetchStarting(nodes),
 		Nodes:          nodes,
+		Error:          err,
 		AfterFunctions: after,
 		AfterDo:        middleware.AfterDo,
 		AfterRollback:  middleware.AfterRollback,
@@ -83,7 +84,7 @@ type Manager struct {
 	References     int
 	Nodes          []*Node
 	Ends           int
-	Error          *specs.Error
+	Error          specs.ErrorHandle
 	wg             sync.WaitGroup
 	AfterFunctions functions.Stack
 	AfterDo        AfterManager

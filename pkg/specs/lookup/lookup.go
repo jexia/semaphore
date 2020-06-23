@@ -82,6 +82,13 @@ func GetAvailableResources(flow specs.FlowResourceManager, breakpoint string) ma
 		}
 	}
 
+	if flow.GetOnError() != nil && breakpoint == template.OutputResource {
+		references[template.ErrorResource] = ReferenceMap{
+			template.ResponseResource: OnErrLookup(flow.GetOnError()),
+			template.ParamsResource:   ParamsLookup(flow.GetOnError().Params, flow, ""),
+		}
+	}
+
 	for _, node := range flow.GetNodes() {
 		references[node.Name] = ReferenceMap{}
 		if node.Call != nil {
@@ -98,6 +105,13 @@ func GetAvailableResources(flow specs.FlowResourceManager, breakpoint string) ma
 		}
 
 		if node.Name == breakpoint {
+			if node.GetOnError() != nil {
+				references[template.ErrorResource] = ReferenceMap{
+					template.ResponseResource: OnErrLookup(node.GetOnError()),
+					template.ParamsResource:   ParamsLookup(node.GetOnError().Params, flow, ""),
+				}
+			}
+
 			break
 		}
 
@@ -233,6 +247,21 @@ func ParamsLookup(params map[string]*specs.Property, flow specs.FlowResourceMana
 				result.Reference = param.Reference
 				return result
 			}
+		}
+
+		return nil
+	}
+}
+
+// OnErrLookup constructs a lookup method able to lookup error references
+func OnErrLookup(spec *specs.OnError) PathLookup {
+	return func(path string) *specs.Property {
+		if path == "message" {
+			return spec.Message
+		}
+
+		if path == "status" {
+			return spec.Status
 		}
 
 		return nil

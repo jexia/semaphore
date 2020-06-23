@@ -84,10 +84,7 @@ func TestCaller(t *testing.T) {
 		Method: caller.GetMethod("mock"),
 	}
 
-	go func() {
-		caller.SendMsg(ctx, rw, &req, refs)
-		w.Close()
-	}()
+	caller.SendMsg(ctx, rw, &req, refs)
 
 	err = codec.Unmarshal(r, refs)
 	if err != nil {

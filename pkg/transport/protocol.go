@@ -10,6 +10,7 @@ import (
 	"github.com/jexia/maestro/pkg/metadata"
 	"github.com/jexia/maestro/pkg/refs"
 	"github.com/jexia/maestro/pkg/specs"
+	"github.com/jexia/maestro/pkg/specs/template"
 )
 
 // ResponseWriter specifies the response writer implementation which could be used to both proxy forward a request or used to call a service
@@ -79,36 +80,44 @@ func (collection Listeners) Get(name string) Listener {
 }
 
 // WrapError wraps the given error as a on error object
-func WrapError(err error, spec *specs.Error) Error {
+func WrapError(err error, handle specs.ErrorHandle) Error {
 	return &wrapper{
-		err:  err,
-		spec: spec,
+		err:    err,
+		handle: handle,
 	}
 }
 
 // Error represents a wrapped error and error specs
 type Error interface {
 	String() string
-	Spec() *specs.Error
 	Error() string
 	Unwrap() error
+	Handle() specs.ErrorHandle
 }
 
 type wrapper struct {
-	err  error
-	spec *specs.Error
+	err    error
+	handle specs.ErrorHandle
 }
 
 func (w *wrapper) String() string {
+	if w.err == nil {
+		return ""
+	}
+
 	return w.err.Error()
 }
 
-// Spec returns the error specs
-func (w *wrapper) Spec() *specs.Error {
-	return w.spec
+// ParameterMap returns the error parameter map
+func (w *wrapper) Handle() specs.ErrorHandle {
+	return w.handle
 }
 
 func (w *wrapper) Error() string {
+	if w.err == nil {
+		return ""
+	}
+
 	return w.err.Error()
 }
 
@@ -151,4 +160,36 @@ type Listener interface {
 	Serve() error
 	Close() error
 	Handle(instance.Context, []*Endpoint, map[string]codec.Constructor) error
+}
+
+// NewErrCodecCollection constructs a new codec collection for the given error objects
+func NewErrCodecCollection(constructor codec.Constructor, collection []Error) (*CodecCollection, error) {
+	result := &CodecCollection{
+		collection: make(map[*specs.ParameterMap]codec.Manager, len(collection)),
+	}
+
+	for _, handle := range collection {
+		if handle.Handle().GetError() == nil {
+			continue
+		}
+
+		codec, err := constructor.New(template.ErrorResource, handle.Handle().GetError())
+		if err != nil {
+			return nil, err
+		}
+
+		result.collection[handle.Handle().GetError()] = codec
+	}
+
+	return result, nil
+}
+
+// CodecCollection represents a collection of parameter maps and their representing codec manager
+type CodecCollection struct {
+	collection map[*specs.ParameterMap]codec.Manager
+}
+
+// Get attempts to return a codec manager for the given parameter map
+func (collection *CodecCollection) Get(hash *specs.ParameterMap) codec.Manager {
+	return collection.collection[hash]
 }

@@ -32,7 +32,7 @@ func NewMockListener(t *testing.T, nodes flow.Nodes) (transport.Listener, int) {
 	endpoints := []*transport.Endpoint{
 		{
 			Request: NewSimpleMockSpecs(),
-			Flow:    flow.NewManager(ctx, "test", nodes, nil, nil),
+			Flow:    flow.NewManager(ctx, "test", nodes, nil, nil, nil),
 			Options: specs.Options{
 				EndpointOption: "/",
 				MethodOption:   http.MethodPost,
@@ -148,7 +148,7 @@ func TestPathReferences(t *testing.T) {
 	ctx := instance.NewContext()
 	endpoints := []*transport.Endpoint{
 		{
-			Flow: flow.NewManager(ctx, "test", nodes, nil, nil),
+			Flow: flow.NewManager(ctx, "test", nodes, nil, nil, nil),
 			Options: specs.Options{
 				"endpoint": "/:message",
 				"method":   "GET",

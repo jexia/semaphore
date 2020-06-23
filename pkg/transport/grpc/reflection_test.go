@@ -66,14 +66,14 @@ func TestListServices(t *testing.T) {
 				PackageOption: "com.mock",
 				ServiceOption: "first",
 			},
-			Flow: flow.NewManager(ctx, "Get", []*flow.Node{}, nil, nil),
+			Flow: flow.NewManager(ctx, "Get", []*flow.Node{}, nil, nil, nil),
 		},
 		{
 			Options: specs.Options{
 				PackageOption: "com.mock",
 				ServiceOption: "second",
 			},
-			Flow: flow.NewManager(ctx, "Get", []*flow.Node{}, nil, nil),
+			Flow: flow.NewManager(ctx, "Get", []*flow.Node{}, nil, nil, nil),
 		},
 	}
 
@@ -133,14 +133,14 @@ func TestFileContainingSymbol(t *testing.T) {
 				PackageOption: "com.mock",
 				ServiceOption: "first",
 			},
-			Flow: flow.NewManager(ctx, "Get", []*flow.Node{}, nil, nil),
+			Flow: flow.NewManager(ctx, "Get", []*flow.Node{}, nil, nil, nil),
 		},
 		{
 			Options: specs.Options{
 				PackageOption: "com.mock",
 				ServiceOption: "second",
 			},
-			Flow: flow.NewManager(ctx, "Get", []*flow.Node{}, nil, nil),
+			Flow: flow.NewManager(ctx, "Get", []*flow.Node{}, nil, nil, nil),
 		},
 	}
 

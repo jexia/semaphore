@@ -34,24 +34,30 @@ func ManifestTypes(ctx instance.Context, services *specs.ServicesManifest, schem
 func ProxyTypes(ctx instance.Context, services *specs.ServicesManifest, schema *specs.SchemaManifest, flows *specs.FlowsManifest, proxy *specs.Proxy) (err error) {
 	ctx.Logger(logger.Core).WithField("proxy", proxy.GetName()).Info("Compare proxy flow types")
 
+	err = CheckParameterMapTypes(ctx, proxy.Error, schema, proxy)
+	if err != nil {
+		return err
+	}
+
+	err = CheckParameterMapTypes(ctx, proxy.Error, schema, proxy)
+	if err != nil {
+		return err
+	}
+
 	for _, node := range proxy.Nodes {
-		if node.Call != nil {
-			err = CallTypes(ctx, services, schema, flows, node, node.Call, proxy)
-			if err != nil {
-				return err
-			}
+		err = CallTypes(ctx, services, schema, flows, node, node.Call, proxy)
+		if err != nil {
+			return err
 		}
 
-		if node.Rollback != nil {
-			err = CallTypes(ctx, services, schema, flows, node, node.Rollback, proxy)
-			if err != nil {
-				return err
-			}
+		err = CallTypes(ctx, services, schema, flows, node, node.Rollback, proxy)
+		if err != nil {
+			return err
 		}
 	}
 
 	if proxy.Forward.Request.Header != nil {
-		err = Header(proxy.Forward.Request.Header, proxy)
+		err = CheckHeader(proxy.Forward.Request.Header, proxy)
 		if err != nil {
 			return err
 		}
@@ -64,31 +70,25 @@ func ProxyTypes(ctx instance.Context, services *specs.ServicesManifest, schema *
 func FlowTypes(ctx instance.Context, services *specs.ServicesManifest, schema *specs.SchemaManifest, flows *specs.FlowsManifest, flow *specs.Flow) (err error) {
 	ctx.Logger(logger.Core).WithField("flow", flow.GetName()).Info("Comparing flow types")
 
-	if flow.Input != nil {
-		message := schema.GetProperty(flow.Input.Schema)
-		if message == nil {
-			return trace.New(trace.WithMessage("undefined flow input object '%s' in '%s'", flow.Input.Schema, flow.Name))
-		}
+	err = CheckParameterMapTypes(ctx, flow.Input, schema, flow)
+	if err != nil {
+		return err
+	}
 
-		err = CheckTypes(flow.Input.Property, message, flow)
-		if err != nil {
-			return err
-		}
+	err = CheckParameterMapTypes(ctx, flow.Error, schema, flow)
+	if err != nil {
+		return err
 	}
 
 	for _, node := range flow.Nodes {
-		if node.Call != nil {
-			err = CallTypes(ctx, services, schema, flows, node, node.Call, flow)
-			if err != nil {
-				return err
-			}
+		err = CallTypes(ctx, services, schema, flows, node, node.Call, flow)
+		if err != nil {
+			return err
 		}
 
-		if node.Rollback != nil {
-			err = CallTypes(ctx, services, schema, flows, node, node.Rollback, flow)
-			if err != nil {
-				return err
-			}
+		err = CallTypes(ctx, services, schema, flows, node, node.Rollback, flow)
+		if err != nil {
+			return err
 		}
 	}
 
@@ -98,16 +98,9 @@ func FlowTypes(ctx instance.Context, services *specs.ServicesManifest, schema *s
 			return trace.New(trace.WithMessage("undefined flow output object '%s' in '%s'", flow.Output.Schema, flow.Name))
 		}
 
-		err = CheckTypes(flow.Output.Property, message, flow)
+		err = CheckParameterMapTypes(ctx, flow.Output, schema, flow)
 		if err != nil {
 			return err
-		}
-
-		if flow.Output.Header != nil {
-			err = Header(flow.Output.Header, flow)
-			if err != nil {
-				return err
-			}
 		}
 	}
 
@@ -116,66 +109,81 @@ func FlowTypes(ctx instance.Context, services *specs.ServicesManifest, schema *s
 
 // CallTypes compares the given call types against the configured schema types
 func CallTypes(ctx instance.Context, services *specs.ServicesManifest, schema *specs.SchemaManifest, flows *specs.FlowsManifest, node *specs.Node, call *specs.Call, flow specs.FlowResourceManager) (err error) {
-	if call.Method != "" {
-		ctx.Logger(logger.Core).WithFields(logrus.Fields{
-			"call":    node.Name,
-			"method":  call.Method,
-			"service": call.Service,
-		}).Info("Comparing call types")
-
-		service := services.GetService(call.Service)
-		if service == nil {
-			return trace.New(trace.WithMessage("undefined service '%s' in flow '%s'", call.Service, flow.GetName()))
-		}
-
-		method := service.GetMethod(call.Method)
-		if method == nil {
-			return trace.New(trace.WithMessage("undefined method '%s' in flow '%s'", call.Method, flow.GetName()))
-		}
-
-		if call.Request != nil {
-			if call.Request.Header != nil {
-				err = Header(call.Request.Header, flow)
-				if err != nil {
-					return err
-				}
-			}
-
-			err = CheckTypes(call.Request.Property, schema.GetProperty(method.Input), flow)
-			if err != nil {
-				return err
-			}
-		}
-
-		if call.Response != nil {
-			if call.Response.Header != nil {
-				err = Header(call.Request.Header, flow)
-				if err != nil {
-					return err
-				}
-			}
-
-			err = CheckTypes(call.Response.Property, schema.GetProperty(method.Output), flow)
-			if err != nil {
-				return err
-			}
-		}
+	if call == nil {
+		return nil
 	}
+
+	if call.Method == "" {
+		return nil
+	}
+
+	ctx.Logger(logger.Core).WithFields(logrus.Fields{
+		"call":    node.Name,
+		"method":  call.Method,
+		"service": call.Service,
+	}).Info("Comparing call types")
+
+	service := services.GetService(call.Service)
+	if service == nil {
+		return trace.New(trace.WithMessage("undefined service '%s' in flow '%s'", call.Service, flow.GetName()))
+	}
+
+	method := service.GetMethod(call.Method)
+	if method == nil {
+		return trace.New(trace.WithMessage("undefined method '%s' in flow '%s'", call.Method, flow.GetName()))
+	}
+
+	err = CheckParameterMapTypes(ctx, call.Request, schema, flow)
+	if err != nil {
+		return err
+	}
+
+	err = CheckParameterMapTypes(ctx, call.Response, schema, flow)
+	if err != nil {
+		return err
+	}
+
+	err = CheckParameterMapTypes(ctx, node.Error, schema, flow)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
-// CheckTypes checks the given schema against the given schema method types
-func CheckTypes(property *specs.Property, schema *specs.Property, flow specs.FlowResourceManager) (err error) {
+// CheckParameterMapTypes checks the given parameter map agains the configured schema property
+func CheckParameterMapTypes(ctx instance.Context, parameters *specs.ParameterMap, schema *specs.SchemaManifest, flow specs.FlowResourceManager) error {
+	if parameters == nil {
+		return nil
+	}
+
+	if parameters.Header != nil {
+		err := CheckHeader(parameters.Header, flow)
+		if err != nil {
+			return err
+		}
+	}
+
+	err := CheckPropertyTypes(parameters.Property, schema.GetProperty(parameters.Schema), flow)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// CheckPropertyTypes checks the given schema against the given schema method types
+func CheckPropertyTypes(property *specs.Property, schema *specs.Property, flow specs.FlowResourceManager) (err error) {
 	if schema == nil {
 		return trace.New(trace.WithExpression(property.Expr), trace.WithMessage("unable to check types for '%s' no schema given", property.Path))
 	}
 
 	if property.Type != schema.Type {
-		return trace.New(trace.WithExpression(property.Expr), trace.WithMessage("cannot use (%s) type (%s) in '%s'", property.Type, schema.Type, property.Path))
+		return trace.New(trace.WithExpression(property.Expr), trace.WithMessage("cannot use type (%s) for '%s', expected (%s)", property.Type, property.Path, schema.Type))
 	}
 
 	if property.Label != schema.Label {
-		return trace.New(trace.WithExpression(property.Expr), trace.WithMessage("cannot use (%s) label (%s) in '%s'", property.Label, schema.Label, property.Path))
+		return trace.New(trace.WithExpression(property.Expr), trace.WithMessage("cannot use label (%s) for '%s', expected (%s)", property.Label, property.Path, schema.Label))
 	}
 
 	if len(property.Nested) > 0 {
@@ -189,7 +197,7 @@ func CheckTypes(property *specs.Property, schema *specs.Property, flow specs.Flo
 				return trace.New(trace.WithExpression(nested.Expr), trace.WithMessage("undefined schema nested message property '%s' in flow '%s'", nested.Path, flow.GetName()))
 			}
 
-			err := CheckTypes(nested, object, flow)
+			err := CheckPropertyTypes(nested, object, flow)
 			if err != nil {
 				return err
 			}
@@ -212,8 +220,8 @@ func CheckTypes(property *specs.Property, schema *specs.Property, flow specs.Flo
 	return nil
 }
 
-// Header compares the given header types
-func Header(header specs.Header, flow specs.FlowResourceManager) error {
+// CheckHeader compares the given header types
+func CheckHeader(header specs.Header, flow specs.FlowResourceManager) error {
 	for _, header := range header {
 		if header.Type != types.String {
 			return trace.New(trace.WithMessage("cannot use type (%s) for 'header.%s' in flow '%s', expected (%s)", header.Type, header.Path, flow.GetName(), types.String))

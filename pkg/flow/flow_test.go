@@ -85,7 +85,7 @@ func TestNewManager(t *testing.T) {
 	for name, nodes := range tests {
 		t.Run(name, func(t *testing.T) {
 			ctx := instance.NewContext()
-			manager := NewManager(ctx, name, nodes, nil, nil)
+			manager := NewManager(ctx, name, nodes, nil, nil, nil)
 			if manager == nil {
 				t.Fatal("unexpected result, expected a manager to be returned")
 			}
@@ -339,7 +339,7 @@ func TestAfterManagerFunctions(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			current = 0
 			ctx := instance.NewContext()
-			manager := NewManager(ctx, name, []*Node{}, test.stack, nil)
+			manager := NewManager(ctx, name, []*Node{}, nil, test.stack, nil)
 			if manager == nil {
 				t.Fatal("unexpected result, expected a manager to be returned")
 			}
@@ -409,7 +409,7 @@ func TestAfterManagerFunctionsError(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			ctx := instance.NewContext()
-			manager := NewManager(ctx, name, []*Node{}, test.stack, nil)
+			manager := NewManager(ctx, name, []*Node{}, nil, test.stack, nil)
 			if manager == nil {
 				t.Fatal("unexpected result, expected a manager to be returned")
 			}
