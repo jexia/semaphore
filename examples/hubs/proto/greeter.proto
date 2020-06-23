@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package proto;
 
-import "maestro/api/annotations.proto";
+import "api/annotations.proto";
 
 service Users {
     option (maestro.api.service) = {

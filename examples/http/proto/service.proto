@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-import "maestro/api/annotations.proto";
+import "api/annotations.proto";
 
 package com.maestro;
 

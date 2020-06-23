@@ -2,7 +2,7 @@ syntax = "proto3";
 
 import "maestro/api/annotations.proto";
 
-package placeholder;
+package proto;
 
 service Service {
     option (maestro.api.service) = {
@@ -42,7 +42,7 @@ message Item {
 }
 
 message User {
-    string id = 1;
+    int32 id = 1;
     string name = 2;
     string username = 3;
     string email = 4;

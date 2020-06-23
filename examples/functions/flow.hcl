@@ -4,17 +4,17 @@ endpoint "FetchLatestProject" "http" {
 	codec = "json"
 }
 
-error "placeholder.Error" {
+error "proto.Error" {
 	value = "some message"
 	status = 400
 }
 
 flow "FetchLatestProject" {
-	input "placeholder.Query" {
+	input "proto.Query" {
         header = ["Authorization"]
     }
 
-	error "placeholder.Unauthorized" {
+	error "proto.Unauthorized" {
 		message = "{{ error:message }}"
 		status = "{{ error:status }}"
 	}
@@ -31,16 +31,16 @@ flow "FetchLatestProject" {
     }
 
 	resource "query" {
-		request "placeholder.Service" "GetTodo" {
+		request "proto.Service" "GetTodo" {
 		}
 	}
 
 	resource "user" {
-		request "placeholder.Service" "GetUser" {
+		request "proto.Service" "GetUser" {
 		}
 	}
 
-	output "placeholder.Item" {
+	output "proto.Item" {
 		header {
 			Username = "{{ user:username }}"
 		}

@@ -16,6 +16,7 @@ import (
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jexia/maestro/pkg/specs/template"
 	"github.com/jexia/maestro/pkg/specs/trace"
+	"github.com/jexia/maestro/pkg/specs/types"
 	"github.com/jexia/maestro/pkg/transport"
 	"github.com/julienschmidt/httprouter"
 	"github.com/sirupsen/logrus"
@@ -164,7 +165,7 @@ func NewHandle(ctx instance.Context, logger *logrus.Logger, endpoint *transport.
 		return nil, trace.New(trace.WithMessage("codec not found '%s'", options.Codec))
 	}
 
-	collection, err := transport.NewErrCodecCollection(constructor, endpoint.Flow.Errors())
+	collection, err := transport.NewErrCodecCollection(ctx, constructor, endpoint.Flow.Errors())
 	if err != nil {
 		return nil, err
 	}
@@ -280,15 +281,29 @@ func (handle *Handle) HTTPFunc(w http.ResponseWriter, r *http.Request, ps httpro
 
 	err := handle.Endpoint.Flow.Do(r.Context(), store)
 	if err != nil {
-		codec := handle.Collection.Get(err.Handle().GetError())
-		reader, e := codec.Marshal(store)
+		manager := handle.Collection.Get(err.Handle().GetError())
+		reader, e := manager.Codec.Marshal(store)
 		if e != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 
-		status := err.Handle().GetOnError().Status.Default.(int64)
-		w.WriteHeader(int(status))
+		if manager.Header != nil {
+			SetHTTPHeader(w.Header(), manager.Header.Marshal(store))
+		}
+
+		if err.Handle().GetOnError().Status.Type == types.Int64 {
+			tmp := err.Handle().GetOnError().Status
+			status := tmp.Default
+			if tmp.Reference != nil {
+				ref := store.Load(tmp.Reference.Resource, tmp.Reference.Path)
+				if ref != nil {
+					status = ref.Value
+				}
+			}
+
+			w.WriteHeader(int(status.(int64)))
+		}
 		io.Copy(w, reader)
 		return
 	}

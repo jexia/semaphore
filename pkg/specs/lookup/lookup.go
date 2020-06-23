@@ -48,6 +48,10 @@ func GetDefaultProp(resource string) string {
 		return template.RequestResource
 	}
 
+	if resource == template.ErrorResource {
+		return template.ResponseResource
+	}
+
 	return template.ResponseResource
 }
 

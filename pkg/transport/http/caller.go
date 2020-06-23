@@ -181,9 +181,9 @@ func (call *Call) SendMsg(ctx context.Context, rw transport.ResponseWriter, pr *
 	go func() {
 		defer rw.Close()
 		call.proxy.ServeHTTP(res, req)
-		rw.Header().Append(CopyHTTPHeader(res.Header()))
-		rw.HeaderStatus(res.Status())
 	}()
+
+	res.AwaitStatus()
 
 	return nil
 }

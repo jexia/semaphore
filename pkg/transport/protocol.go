@@ -162,10 +162,11 @@ type Listener interface {
 	Handle(instance.Context, []*Endpoint, map[string]codec.Constructor) error
 }
 
+// TODO: refactor me!
 // NewErrCodecCollection constructs a new codec collection for the given error objects
-func NewErrCodecCollection(constructor codec.Constructor, collection []Error) (*CodecCollection, error) {
+func NewErrCodecCollection(ctx instance.Context, constructor codec.Constructor, collection []Error) (*CodecCollection, error) {
 	result := &CodecCollection{
-		collection: make(map[*specs.ParameterMap]codec.Manager, len(collection)),
+		collection: make(map[*specs.ParameterMap]*CodecManager, len(collection)),
 	}
 
 	for _, handle := range collection {
@@ -178,18 +179,32 @@ func NewErrCodecCollection(constructor codec.Constructor, collection []Error) (*
 			return nil, err
 		}
 
-		result.collection[handle.Handle().GetError()] = codec
+		manager := &CodecManager{
+			Codec: codec,
+		}
+
+		if handle.Handle().GetError().Header != nil {
+			header := metadata.NewManager(ctx, template.ErrorResource, handle.Handle().GetError().Header)
+			manager.Header = header
+		}
+
+		result.collection[handle.Handle().GetError()] = manager
 	}
 
 	return result, nil
 }
 
+type CodecManager struct {
+	Header *metadata.Manager
+	Codec  codec.Manager
+}
+
 // CodecCollection represents a collection of parameter maps and their representing codec manager
 type CodecCollection struct {
-	collection map[*specs.ParameterMap]codec.Manager
+	collection map[*specs.ParameterMap]*CodecManager
 }
 
 // Get attempts to return a codec manager for the given parameter map
-func (collection *CodecCollection) Get(hash *specs.ParameterMap) codec.Manager {
+func (collection *CodecCollection) Get(hash *specs.ParameterMap) *CodecManager {
 	return collection.collection[hash]
 }

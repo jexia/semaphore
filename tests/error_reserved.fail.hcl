@@ -1,0 +1,4 @@
+flow "echo" {
+	resource "error" {
+	}
+}

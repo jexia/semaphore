@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"strings"
+	"sync"
 
 	"github.com/jexia/maestro/pkg/metadata"
 	"github.com/jexia/maestro/pkg/transport"
@@ -38,10 +39,13 @@ func CopyMetadataHeader(header metadata.MD) http.Header {
 
 // NewTransportResponseWriter constructs a new HTTP response writer of the given transport response writer
 func NewTransportResponseWriter(ctx context.Context, rw transport.ResponseWriter) *TransportResponseWriter {
-	return &TransportResponseWriter{
+	result := &TransportResponseWriter{
 		header:    http.Header{},
 		transport: rw,
 	}
+
+	result.mutex.Lock()
+	return result
 }
 
 // A TransportResponseWriter interface is used by an HTTP handler to
@@ -50,6 +54,8 @@ type TransportResponseWriter struct {
 	header    http.Header
 	transport transport.ResponseWriter
 	status    int
+	once      sync.Once
+	mutex     sync.RWMutex
 }
 
 // Header returns the header map that will be sent by
@@ -67,12 +73,15 @@ func (rw *TransportResponseWriter) Write(bb []byte) (int, error) {
 // WriteHeader sends an HTTP response header with the provided
 // status code.
 func (rw *TransportResponseWriter) WriteHeader(status int) {
-	rw.status = status
+	rw.once.Do(func() {
+		rw.transport.HeaderStatus(status)
+		rw.mutex.Unlock()
+	})
 }
 
-// Status returns the response writer status
-func (rw *TransportResponseWriter) Status() int {
-	return rw.status
+// AwaitStatus awaits till the response header status code has been written
+func (rw *TransportResponseWriter) AwaitStatus() {
+	rw.mutex.RLock()
 }
 
 // NewRequest constructs a new transport request of the given http request

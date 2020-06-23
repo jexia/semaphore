@@ -24,12 +24,12 @@ func Specs(ctx instance.Context, mem functions.Collection, options Options) (*Co
 		return nil, err
 	}
 
-	err = references.DefineManifest(ctx, collection.Services, collection.Schema, collection.Flows)
+	err = checks.ManifestDuplicates(ctx, collection.Flows)
 	if err != nil {
 		return nil, err
 	}
 
-	err = checks.ManifestDuplicates(ctx, collection.Flows)
+	err = references.DefineManifest(ctx, collection.Services, collection.Schema, collection.Flows)
 	if err != nil {
 		return nil, err
 	}

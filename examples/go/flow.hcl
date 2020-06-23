@@ -5,19 +5,19 @@ endpoint "FetchLatestProject" "http" {
 }
 
 flow "FetchLatestProject" {
-	input "placeholder.Query" {}
+	input "proto.Query" {}
 
 	resource "query" {
-		request "placeholder.Service" "GetTodo" {
+		request "proto.Service" "GetTodo" {
 		}
 	}
 
 	resource "user" {
-		request "placeholder.Service" "GetUser" {
+		request "proto.Service" "GetUser" {
 		}
 	}
 
-	output "placeholder.Item" {
+	output "proto.Item" {
 		header {
 			Username = "{{ user:username }}"
 		}

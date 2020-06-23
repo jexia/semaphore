@@ -2,7 +2,6 @@ package transport
 
 import (
 	"io"
-	"sync"
 
 	"github.com/jexia/maestro/pkg/metadata"
 )
@@ -25,7 +24,6 @@ type Writer struct {
 	writer io.WriteCloser
 	header metadata.MD
 	status int
-	mutex  sync.Mutex
 }
 
 // Header returns the response header
@@ -35,9 +33,7 @@ func (rw *Writer) Header() metadata.MD {
 
 // HeaderStatus sets the header status
 func (rw *Writer) HeaderStatus(status int) {
-	rw.mutex.Lock()
 	rw.status = status
-	rw.mutex.Unlock()
 }
 
 // Status returns the header status

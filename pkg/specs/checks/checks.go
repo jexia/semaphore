@@ -6,6 +6,7 @@ import (
 	"github.com/jexia/maestro/pkg/instance"
 	"github.com/jexia/maestro/pkg/logger"
 	"github.com/jexia/maestro/pkg/specs"
+	"github.com/jexia/maestro/pkg/specs/template"
 	"github.com/jexia/maestro/pkg/specs/trace"
 )
 
@@ -52,6 +53,10 @@ func NodeDuplicates(ctx instance.Context, flow string, nodes []*specs.Node) erro
 		_, duplicate := calls.LoadOrStore(node.Name, node)
 		if duplicate {
 			return trace.New(trace.WithMessage("duplicate resource '%s' in flow '%s'", node.Name, flow))
+		}
+
+		if node.Name == template.InputResource || node.Name == template.ErrorResource {
+			return trace.New(trace.WithMessage("flow with the name '%s' is a reserved keyword", node.Name))
 		}
 	}
 
