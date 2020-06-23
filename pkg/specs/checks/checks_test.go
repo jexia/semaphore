@@ -76,6 +76,45 @@ func TestDuplicateManifests(t *testing.T) {
 	}
 }
 
+func TestReservedKeywordsManifests(t *testing.T) {
+	tests := map[string]*specs.FlowsManifest{
+		"error": {
+			Flows: []*specs.Flow{
+				{
+					Name: "first",
+					Nodes: []*specs.Node{
+						{
+							Name: "error",
+						},
+					},
+				},
+			},
+		},
+		"input": {
+			Flows: []*specs.Flow{
+				{
+					Name: "first",
+					Nodes: []*specs.Node{
+						{
+							Name: "input",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	for name, input := range tests {
+		t.Run(name, func(t *testing.T) {
+			ctx := instance.NewContext()
+			err := ManifestDuplicates(ctx, input)
+			if err == nil {
+				t.Fatal("unexpected pass", input)
+			}
+		})
+	}
+}
+
 func TestDuplicateNodes(t *testing.T) {
 	tests := map[string]*specs.Flow{
 		"simple": {
