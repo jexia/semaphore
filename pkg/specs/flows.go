@@ -27,6 +27,10 @@ func (manifest *FlowsManifest) GetFlow(name string) FlowResourceManager {
 // MergeFlowsManifest merges the incoming manifest to the existing (left) manifest
 func MergeFlowsManifest(left *FlowsManifest, incoming ...*FlowsManifest) {
 	for _, manifest := range incoming {
+		if manifest.Error != nil {
+			left.Error = manifest.Error
+		}
+
 		left.Flows = append(left.Flows, manifest.Flows...)
 		left.Proxy = append(left.Proxy, manifest.Proxy...)
 	}
