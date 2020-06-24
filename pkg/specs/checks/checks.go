@@ -10,6 +10,13 @@ import (
 	"github.com/jexia/maestro/pkg/specs/trace"
 )
 
+// ReservedKeywords represents a list with reserved keywords
+var ReservedKeywords = []string{
+	template.InputResource,
+	template.ErrorResource,
+	template.StackResource,
+}
+
 // ManifestDuplicates checks for duplicate definitions
 func ManifestDuplicates(ctx instance.Context, manifest *specs.FlowsManifest) error {
 	ctx.Logger(logger.Core).Info("Checking manifest duplicates")
@@ -55,7 +62,11 @@ func NodeDuplicates(ctx instance.Context, flow string, nodes []*specs.Node) erro
 			return trace.New(trace.WithMessage("duplicate resource '%s' in flow '%s'", node.Name, flow))
 		}
 
-		if node.Name == template.InputResource || node.Name == template.ErrorResource {
+		for _, key := range ReservedKeywords {
+			if key != node.Name {
+				continue
+			}
+
 			return trace.New(trace.WithMessage("flow with the name '%s' is a reserved keyword", node.Name))
 		}
 	}

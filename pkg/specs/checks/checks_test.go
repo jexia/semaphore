@@ -102,6 +102,18 @@ func TestReservedKeywordsManifests(t *testing.T) {
 				},
 			},
 		},
+		"stack": {
+			Flows: []*specs.Flow{
+				{
+					Name: "first",
+					Nodes: []*specs.Node{
+						{
+							Name: "stack",
+						},
+					},
+				},
+			},
+		},
 	}
 
 	for name, input := range tests {
