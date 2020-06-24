@@ -448,14 +448,14 @@ func TestGetAvailableResources(t *testing.T) {
 		},
 		"output": func() ([]string, map[string]ReferenceMap) {
 			flow := NewMockFlow("first")
-			expected := []string{template.StackResource, "input", "first", "second", "third"}
+			expected := []string{template.StackResource, template.ErrorResource, "input", "first", "second", "third"}
 
 			result := GetAvailableResources(flow, "output")
 			return expected, result
 		},
 		"stack lookup": func() ([]string, map[string]ReferenceMap) {
 			flow := NewMockFlow("first")
-			expected := []string{template.StackResource, "input", "first", "second", "third"}
+			expected := []string{template.StackResource, template.ErrorResource, "input", "first", "second", "third"}
 
 			flow.Nodes[0].Call.Request.Stack = map[string]*specs.Property{
 				"ref": {
@@ -504,6 +504,9 @@ func TestSkipMissingParameters(t *testing.T) {
 	}
 
 	tests := []test{
+		{
+			name: template.ErrorResource,
+		},
 		{
 			name: template.StackResource,
 		},
