@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/jexia/maestro/pkg/specs"
+	"github.com/jexia/maestro/pkg/specs/labels"
 	"github.com/jexia/maestro/pkg/specs/template"
 	"github.com/jexia/maestro/pkg/specs/types"
 )
@@ -86,10 +87,13 @@ func GetAvailableResources(flow specs.FlowResourceManager, breakpoint string) ma
 		}
 	}
 
-	if flow.GetOnError() != nil && breakpoint == template.OutputResource {
+	if breakpoint == template.OutputResource {
 		references[template.ErrorResource] = ReferenceMap{
 			template.ResponseResource: OnErrLookup(flow.GetOnError()),
-			template.ParamsResource:   ParamsLookup(flow.GetOnError().Params, flow, ""),
+		}
+
+		if flow.GetOnError() != nil {
+			references[template.ErrorResource][template.ParamsResource] = ParamsLookup(flow.GetOnError().Params, flow, "")
 		}
 	}
 
@@ -259,7 +263,26 @@ func ParamsLookup(params map[string]*specs.Property, flow specs.FlowResourceMana
 
 // OnErrLookup constructs a lookup method able to lookup error references
 func OnErrLookup(spec *specs.OnError) PathLookup {
+	if spec == nil {
+		spec = &specs.OnError{}
+	}
+
+	if spec.Message == nil {
+		spec.Message = &specs.Property{
+			Type:  types.String,
+			Label: labels.Optional,
+		}
+	}
+
+	if spec.Status == nil {
+		spec.Status = &specs.Property{
+			Type:  types.Int64,
+			Label: labels.Optional,
+		}
+	}
+
 	return func(path string) *specs.Property {
+		// The references {{ error:message }} and {{ error:status }} are always available and set by the flow manager on error
 		if path == "message" {
 			return spec.Message
 		}

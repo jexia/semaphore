@@ -5,9 +5,9 @@ endpoint "GlobalHandleError" "http" {
 }
 
 error "proto.Error" {
-		message = "{{ error:message }}"
-		status = "{{ error:status }}"
-	}
+	message = "{{ error:message }}"
+	status = "{{ error:status }}"
+}
 
 flow "GlobalHandleError" {
 	input "proto.Empty" {}
@@ -65,15 +65,15 @@ flow "NodeHandleError" {
 		request "proto.Service" "ThrowError" {
 		}
 
-        error "proto.Error" {
-            message = "{{ error:message }}"
-            status = "{{ error:status }}"
-        }
+		error "proto.Error" {
+			message = "{{ error:message }}"
+			status = "{{ error:status }}"
+		}
 
-        on_error {
-            status = 401
-            message = "node error message"
-        }
+		on_error {
+			status = 401
+			message = "node error message"
+		}
 	}
 
 	output "proto.Empty" {}

@@ -161,8 +161,6 @@ func (caller *Caller) Do(ctx context.Context, store refs.Store) error {
 			if caller.err.message != nil {
 
 			}
-		} else {
-			// default error object
 		}
 
 		return ErrAbortFlow

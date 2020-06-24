@@ -10,13 +10,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-const (
-	// DNone flag default value
-	DNone = 1 << iota
-	// DIgnoreUndefined disables the undefined reference check
-	DIgnoreUndefined
-)
-
 // DefineManifest checks and defines the types for the given manifest
 func DefineManifest(ctx instance.Context, services *specs.ServicesManifest, schema *specs.SchemaManifest, flows *specs.FlowsManifest) (err error) {
 	ctx.Logger(logger.Core).Info("Defining manifest types")
@@ -295,7 +288,8 @@ func DefineProperty(ctx instance.Context, node *specs.Node, property *specs.Prop
 		}
 	}
 
-	if property.Reference == nil {
+	// ensure property references to be looked up once
+	if property.Reference == nil || property.Reference.Property != nil {
 		return nil
 	}
 
@@ -313,6 +307,7 @@ func DefineProperty(ctx instance.Context, node *specs.Node, property *specs.Prop
 
 	reference, err := LookupReference(ctx, node, breakpoint, property.Reference, flow)
 	if err != nil {
+		ctx.Logger(logger.Core).WithField("err", err).Debug("Unable to lookup reference")
 		return trace.New(trace.WithExpression(property.Expr), trace.WithMessage("undefined reference '%s' in '%s.%s.%s'", property.Reference, flow.GetName(), breakpoint, property.Path))
 	}
 

@@ -11,10 +11,8 @@ import (
 	"github.com/jexia/maestro/pkg/specs/checks"
 	"github.com/jexia/maestro/pkg/specs/compare"
 	"github.com/jexia/maestro/pkg/specs/dependencies"
-	"github.com/jexia/maestro/pkg/specs/labels"
 	"github.com/jexia/maestro/pkg/specs/references"
 	"github.com/jexia/maestro/pkg/specs/trace"
-	"github.com/jexia/maestro/pkg/specs/types"
 	"github.com/jexia/maestro/pkg/transport"
 	"github.com/sirupsen/logrus"
 )
@@ -322,19 +320,6 @@ func ConstructErrorHandle(manifest *specs.FlowsManifest) {
 			flow.Error = manifest.Error
 		}
 
-		if flow.OnError == nil {
-			flow.OnError = &specs.OnError{
-				Status: &specs.Property{
-					Type:  types.Int64,
-					Label: labels.Optional,
-				},
-				Message: &specs.Property{
-					Type:  types.String,
-					Label: labels.Optional,
-				},
-			}
-		}
-
 		for _, node := range flow.Nodes {
 			if node.Error == nil {
 				node.Error = flow.Error
@@ -349,19 +334,6 @@ func ConstructErrorHandle(manifest *specs.FlowsManifest) {
 	for _, proxy := range manifest.Proxy {
 		if proxy.Error == nil {
 			proxy.Error = manifest.Error
-		}
-
-		if proxy.OnError == nil {
-			proxy.OnError = &specs.OnError{
-				Status: &specs.Property{
-					Type:  types.Int64,
-					Label: labels.Optional,
-				},
-				Message: &specs.Property{
-					Type:  types.String,
-					Label: labels.Optional,
-				},
-			}
 		}
 
 		for _, node := range proxy.Nodes {
