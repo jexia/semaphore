@@ -186,13 +186,14 @@ type Condition struct {
 // The request and response proto messages are used for type definitions.
 // A call could contain the request headers, request body, rollback, and the execution type.
 type Node struct {
-	Name      string           `json:"name"`
-	Condition *Condition       `json:"condition"`
-	DependsOn map[string]*Node `json:"depends_on"`
-	Call      *Call            `json:"call"`
-	Rollback  *Call            `json:"rollback"`
-	Error     *ParameterMap    `json:"error"`
-	OnError   *OnError         `json:"on_error"`
+	Name         string           `json:"name"`
+	Condition    *Condition       `json:"condition"`
+	DependsOn    map[string]*Node `json:"depends_on"`
+	Call         *Call            `json:"call"`
+	Rollback     *Call            `json:"rollback"`
+	ExpectStatus int              `json:"expect_status"`
+	Error        *ParameterMap    `json:"error"`
+	OnError      *OnError         `json:"on_error"`
 }
 
 // GetError returns the error object for the given node
@@ -216,8 +217,8 @@ type Call struct {
 
 // OnError represents the variables that have to be returned if a unexpected error is returned
 type OnError struct {
-	Schema  string
-	Status  *Property
-	Message *Property
-	Params  map[string]*Property
+	Response *ParameterMap
+	Status   *Property
+	Message  *Property
+	Params   map[string]*Property
 }

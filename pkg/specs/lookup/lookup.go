@@ -116,7 +116,11 @@ func GetAvailableResources(flow specs.FlowResourceManager, breakpoint string) ma
 			if node.GetOnError() != nil {
 				references[template.ErrorResource] = ReferenceMap{
 					template.ResponseResource: OnErrLookup(node.GetOnError()),
-					template.ParamsResource:   ParamsLookup(node.GetOnError().Params, flow, ""),
+					template.ParamsResource:   ParamsLookup(node.GetOnError().Params, flow, breakpoint),
+				}
+
+				if node.GetOnError().Response != nil {
+					references[node.Name][template.ErrorResource] = PropertyLookup(node.GetOnError().Response.Property)
 				}
 			}
 

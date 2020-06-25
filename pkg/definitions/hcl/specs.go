@@ -583,10 +583,11 @@ func ParseIntermediateNode(ctx instance.Context, dependencies map[string]*specs.
 	}
 
 	result := specs.Node{
-		DependsOn: make(map[string]*specs.Node, len(node.DependsOn)),
-		Name:      node.Name,
-		Call:      call,
-		Rollback:  rollback,
+		DependsOn:    make(map[string]*specs.Node, len(node.DependsOn)),
+		Name:         node.Name,
+		Call:         call,
+		ExpectStatus: node.ExpectStatus,
+		Rollback:     rollback,
 	}
 
 	if node.OnError != nil {
@@ -842,9 +843,14 @@ func ParseIntermediateOnError(ctx instance.Context, onError *OnError) (*specs.On
 	}
 
 	result := &specs.OnError{
-		Schema:  onError.Schema,
 		Status:  properties["status"],
 		Message: properties["message"],
+	}
+
+	if onError.Schema != "" {
+		result.Response = &specs.ParameterMap{
+			Schema: onError.Schema,
+		}
 	}
 
 	if onError.Params != nil {

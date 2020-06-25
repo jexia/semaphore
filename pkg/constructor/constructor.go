@@ -13,6 +13,7 @@ import (
 	"github.com/jexia/maestro/pkg/specs/dependencies"
 	"github.com/jexia/maestro/pkg/specs/labels"
 	"github.com/jexia/maestro/pkg/specs/references"
+	"github.com/jexia/maestro/pkg/specs/template"
 	"github.com/jexia/maestro/pkg/specs/trace"
 	"github.com/jexia/maestro/pkg/specs/types"
 	"github.com/jexia/maestro/pkg/transport"
@@ -206,6 +207,11 @@ func NewServiceCall(ctx instance.Context, mem functions.Collection, services *sp
 		return nil, trace.New(trace.WithMessage("codec not found '%s'", service.Codec))
 	}
 
+	unexpected, err := Error(ctx, node, mem, codec, node.OnError)
+	if err != nil {
+		return nil, err
+	}
+
 	request, err := Request(ctx, node, mem, codec, call.Request)
 	if err != nil {
 		return nil, err
@@ -217,10 +223,12 @@ func NewServiceCall(ctx instance.Context, mem functions.Collection, services *sp
 	}
 
 	caller := flow.NewCall(ctx, node, &flow.CallOptions{
-		Transport: dialer,
-		Method:    dialer.GetMethod(call.Method),
-		Request:   request,
-		Response:  response,
+		ExpectedStatus: node.ExpectStatus,
+		Transport:      dialer,
+		Method:         dialer.GetMethod(call.Method),
+		Err:            unexpected,
+		Request:        request,
+		Response:       response,
 	})
 
 	return caller, nil
@@ -245,6 +253,33 @@ func Request(ctx instance.Context, node *specs.Node, mem functions.Collection, c
 	stack := mem[params]
 	metadata := metadata.NewManager(ctx, node.Name, params.Header)
 	return flow.NewRequest(stack, codec, metadata), nil
+}
+
+// Error constructs a new error object from the given parameter map and codec
+func Error(ctx instance.Context, node *specs.Node, mem functions.Collection, constructor codec.Constructor, err *specs.OnError) (*flow.OnError, error) {
+	if err == nil {
+		return nil, nil
+	}
+
+	params := err.Response
+	if params == nil {
+		return nil, nil
+	}
+
+	var codec codec.Manager
+	if constructor != nil {
+		// TODO: check if I would like props to be defined like this
+		manager, err := constructor.New(template.JoinPath(node.Name, template.ErrorResource), params)
+		if err != nil {
+			return nil, err
+		}
+
+		codec = manager
+	}
+
+	stack := mem[params]
+	metadata := metadata.NewManager(ctx, node.Name, params.Header)
+	return flow.NewOnError(stack, codec, metadata), nil
 }
 
 // Forward constructs a flow caller for the given call.

@@ -137,12 +137,13 @@ type RepeatedParameterMap struct {
 
 // Resource intermediate specification
 type Resource struct {
-	Name      string        `hcl:"name,label"`
-	DependsOn []string      `hcl:"depends_on,optional"`
-	Request   *Call         `hcl:"request,block"`
-	Rollback  *Call         `hcl:"rollback,block"`
-	OnError   *OnError      `hcl:"on_error,block"`
-	Error     *ParameterMap `hcl:"error,block"`
+	Name         string        `hcl:"name,label"`
+	DependsOn    []string      `hcl:"depends_on,optional"`
+	Request      *Call         `hcl:"request,block"`
+	Rollback     *Call         `hcl:"rollback,block"`
+	OnError      *OnError      `hcl:"on_error,block"`
+	ExpectStatus int           `hcl:"expect_status,optional"`
+	Error        *ParameterMap `hcl:"error,block"`
 }
 
 // OnError intermediate specification

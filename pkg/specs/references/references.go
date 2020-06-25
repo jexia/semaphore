@@ -45,7 +45,7 @@ func DefineProxy(ctx instance.Context, services *specs.ServicesManifest, schema 
 	}
 
 	if proxy.OnError != nil {
-		err = DefineOnError(ctx, nil, proxy.OnError, proxy)
+		err = DefineOnError(ctx, schema, nil, proxy.OnError, proxy)
 		if err != nil {
 			return err
 		}
@@ -91,7 +91,7 @@ func DefineFlow(ctx instance.Context, services *specs.ServicesManifest, schema *
 	}
 
 	if flow.OnError != nil {
-		err = DefineOnError(ctx, nil, flow.OnError, flow)
+		err = DefineOnError(ctx, schema, nil, flow.OnError, flow)
 		if err != nil {
 			return err
 		}
@@ -145,7 +145,7 @@ func DefineNode(ctx instance.Context, services *specs.ServicesManifest, schema *
 	}
 
 	if node.OnError != nil {
-		err = DefineError(ctx, services, flow, node, node.OnError)
+		err = DefineOnError(ctx, schema, node, node.OnError, flow)
 		if err != nil {
 			return err
 		}
@@ -156,24 +156,6 @@ func DefineNode(ctx instance.Context, services *specs.ServicesManifest, schema *
 		if err != nil {
 			return err
 		}
-	}
-
-	return nil
-}
-
-// DefineError defined the types for the given error
-func DefineError(ctx instance.Context, services *specs.ServicesManifest, flow specs.FlowResourceManager, node *specs.Node, onError *specs.OnError) error {
-	for _, param := range onError.Params {
-		if param.Reference == nil {
-			continue
-		}
-
-		reference, err := LookupReference(ctx, node, node.Name, param.Reference, flow)
-		if err != nil {
-			return err
-		}
-
-		param.Reference.Property = reference
 	}
 
 	return nil
@@ -371,7 +353,16 @@ func InsideProperty(source *specs.Property, target *specs.Property) bool {
 }
 
 // DefineOnError defines references made inside the given on error specs
-func DefineOnError(ctx instance.Context, node *specs.Node, params *specs.OnError, flow specs.FlowResourceManager) (err error) {
+func DefineOnError(ctx instance.Context, schema *specs.SchemaManifest, node *specs.Node, params *specs.OnError, flow specs.FlowResourceManager) (err error) {
+	if params.Response != nil {
+		input := schema.GetProperty(params.Response.Schema)
+		if input == nil {
+			return trace.New(trace.WithMessage("object '%s', is unavailable inside the schema collection", params.Response.Schema))
+		}
+
+		params.Response = ToParameterMap(params.Response, "", input)
+	}
+
 	err = DefineProperty(ctx, node, params.Message, flow)
 	if err != nil {
 		return err
