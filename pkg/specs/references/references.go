@@ -1,8 +1,6 @@
 package references
 
 import (
-	"log"
-
 	"github.com/jexia/maestro/pkg/instance"
 	"github.com/jexia/maestro/pkg/logger"
 	"github.com/jexia/maestro/pkg/specs"
@@ -105,8 +103,6 @@ func DefineFlow(ctx instance.Context, services *specs.ServicesManifest, schema *
 			return err
 		}
 	}
-
-	log.Println("--", flow.Error, flow.Error.Property.Nested["status"])
 
 	for _, node := range flow.Nodes {
 		err = DefineNode(ctx, services, schema, flows, node, flow)
@@ -241,7 +237,6 @@ func DefineParameterMap(ctx instance.Context, schema *specs.SchemaManifest, node
 		if err != nil {
 			return err
 		}
-		log.Println("++", flow.GetName(), node, params.Property.Nested["status"])
 	}
 
 	return nil
@@ -327,8 +322,6 @@ func LookupReference(ctx instance.Context, node *specs.Node, breakpoint string, 
 
 	references := lookup.GetAvailableResources(flow, breakpoint)
 	result := lookup.GetResourceReference(reference, references, breakpoint)
-	log.Println(breakpoint, reference, result.Type)
-	log.Println("---------")
 	if result == nil {
 		return nil, trace.New(trace.WithMessage("undefined resource '%s' in '%s'.'%s'", reference, flow.GetName(), breakpoint))
 	}

@@ -1,7 +1,6 @@
 package lookup
 
 import (
-	"log"
 	"strings"
 
 	"github.com/jexia/maestro/pkg/specs"
@@ -287,7 +286,6 @@ func OnErrLookup(node string, spec *specs.OnError) PathLookup {
 	}
 
 	return func(path string) *specs.Property {
-		log.Println(node, path, spec.Status)
 		// The references {{ error:message }} and {{ error:status }} are always available and set by the flow manager on error
 		if path == "message" {
 			return spec.Message

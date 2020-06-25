@@ -135,28 +135,9 @@ func (caller *Caller) Do(ctx context.Context, store refs.Store) error {
 			"status": w.Status(),
 		}).Error("Service returned a unexpected status, aborting flow")
 
-		// TODO: evaluate if status and message should be set like this
-		store.StoreValue(template.ErrorResource, "status", int64(w.Status()))
-		store.StoreValue(template.ErrorResource, "message", w.Message())
-
-		if caller.err != nil {
-			if caller.err.codec != nil {
-				err := caller.err.codec.Unmarshal(reader, store)
-				if err != nil {
-					return err
-				}
-			}
-
-			if caller.err.functions != nil {
-				err := ExecuteFunctions(caller.err.functions, store)
-				if err != nil {
-					return err
-				}
-			}
-
-			if caller.err.metadata != nil {
-				caller.response.metadata.Unmarshal(w.Header(), store)
-			}
+		err := caller.HandleErr(w, reader, store)
+		if err != nil {
+			return err
 		}
 
 		return ErrAbortFlow
@@ -181,6 +162,63 @@ func (caller *Caller) Do(ctx context.Context, store refs.Store) error {
 			caller.response.metadata.Unmarshal(w.Header(), store)
 		}
 	}
+
+	return nil
+}
+
+// HandleErr handles a thrown service error. If a error response is defined is it decoded
+func (caller *Caller) HandleErr(w *transport.Writer, reader io.Reader, store refs.Store) error {
+	var status interface{}
+	var message interface{}
+
+	if caller.err != nil {
+		if caller.err.message != nil {
+			message = caller.err.message.Default
+
+			if caller.err.message.Reference != nil {
+				ref := store.Load(caller.err.message.Reference.Resource, caller.err.message.Reference.Path)
+				message = ref.Value
+			}
+		}
+
+		if caller.err.message != nil {
+			status = caller.err.status.Default
+
+			if caller.err.status.Reference != nil {
+				ref := store.Load(caller.err.status.Reference.Resource, caller.err.status.Reference.Path)
+				status = ref.Value
+			}
+		}
+
+		if caller.err.codec != nil {
+			err := caller.err.codec.Unmarshal(reader, store)
+			if err != nil {
+				return err
+			}
+		}
+
+		if caller.err.functions != nil {
+			err := ExecuteFunctions(caller.err.functions, store)
+			if err != nil {
+				return err
+			}
+		}
+
+		if caller.err.metadata != nil {
+			caller.response.metadata.Unmarshal(w.Header(), store)
+		}
+	}
+
+	if status == nil {
+		status = int64(w.Status())
+	}
+
+	if message == nil {
+		message = w.Message()
+	}
+
+	store.StoreValue(template.ErrorResource, "status", status)
+	store.StoreValue(template.ErrorResource, "message", message)
 
 	return nil
 }

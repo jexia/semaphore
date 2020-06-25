@@ -8,11 +8,13 @@ import (
 )
 
 // NewOnError constructs a new error for the given codec and header manager
-func NewOnError(functions functions.Stack, codec codec.Manager, metadata *metadata.Manager) *OnError {
+func NewOnError(functions functions.Stack, codec codec.Manager, metadata *metadata.Manager, status, message *specs.Property) *OnError {
 	return &OnError{
 		functions: functions,
 		codec:     codec,
 		metadata:  metadata,
+		status:    status,
+		message:   message,
 	}
 }
 

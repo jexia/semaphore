@@ -1,8 +1,6 @@
 package constructor
 
 import (
-	"log"
-
 	"github.com/jexia/maestro/pkg/codec"
 	"github.com/jexia/maestro/pkg/flow"
 	"github.com/jexia/maestro/pkg/functions"
@@ -36,14 +34,10 @@ func Specs(ctx instance.Context, mem functions.Collection, options Options) (*Co
 		return nil, err
 	}
 
-	log.Println("<-", collection.Flows.Flows.Get("GlobalHandleError").Nodes[0].Error.Property.Nested["message"].Default)
-
 	err = references.DefineManifest(ctx, collection.Services, collection.Schema, collection.Flows)
 	if err != nil {
 		return nil, err
 	}
-
-	log.Println("->", collection.Flows.Flows.Get("GlobalHandleError").Nodes[0].Error.Property.Nested["status"].Type)
 
 	err = functions.PrepareManifestFunctions(ctx, mem, options.Functions, collection.Flows)
 	if err != nil {
@@ -267,13 +261,13 @@ func Error(ctx instance.Context, node *specs.Node, mem functions.Collection, con
 		return nil, nil
 	}
 
-	params := err.Response
-	if params == nil {
-		return nil, nil
-	}
-
 	var codec codec.Manager
-	if constructor != nil {
+	var meta *metadata.Manager
+	var stack functions.Stack
+
+	if err.Response != nil && constructor != nil {
+		params := err.Response
+
 		// TODO: check if I would like props to be defined like this
 		manager, err := constructor.New(template.JoinPath(node.Name, template.ErrorResource), params)
 		if err != nil {
@@ -281,11 +275,11 @@ func Error(ctx instance.Context, node *specs.Node, mem functions.Collection, con
 		}
 
 		codec = manager
+		stack = mem[params]
+		meta = metadata.NewManager(ctx, node.Name, params.Header)
 	}
 
-	stack := mem[params]
-	metadata := metadata.NewManager(ctx, node.Name, params.Header)
-	return flow.NewOnError(stack, codec, metadata), nil
+	return flow.NewOnError(stack, codec, meta, err.Status, err.Message), nil
 }
 
 // Forward constructs a flow caller for the given call.

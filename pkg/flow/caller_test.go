@@ -416,7 +416,7 @@ func TestTransportErrorSchemaDecoding(t *testing.T) {
 				options: &CallOptions{
 					ExpectedStatus: transport.StatusOK,
 					Transport:      NewMockTransport(nil, 500, []byte(message)),
-					Err:            NewOnError(nil, codec, nil),
+					Err:            NewOnError(nil, codec, nil, nil, nil),
 				},
 				store:     refs.NewReferenceStore(1),
 				reference: "message",
@@ -456,7 +456,7 @@ func TestTransportErrorSchemaDecoding(t *testing.T) {
 				options: &CallOptions{
 					ExpectedStatus: transport.StatusOK,
 					Transport:      NewMockTransport(nil, 500, []byte(message)),
-					Err:            NewOnError(nil, codec, nil),
+					Err:            NewOnError(nil, codec, nil, nil, nil),
 				},
 				store:     refs.NewReferenceStore(1),
 				reference: "meta.message",
