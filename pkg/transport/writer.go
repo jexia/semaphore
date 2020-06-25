@@ -21,9 +21,10 @@ func NewResponseWriter(writer io.WriteCloser) *Writer {
 
 // Writer represents a response writer
 type Writer struct {
-	writer io.WriteCloser
-	header metadata.MD
-	status int
+	writer  io.WriteCloser
+	header  metadata.MD
+	status  int
+	message string
 }
 
 // Header returns the response header
@@ -36,9 +37,19 @@ func (rw *Writer) HeaderStatus(status int) {
 	rw.status = status
 }
 
+// HeaderMessage sets the header message
+func (rw *Writer) HeaderMessage(message string) {
+	rw.message = message
+}
+
 // Status returns the header status
 func (rw *Writer) Status() int {
 	return rw.status
+}
+
+// Message returns the header status message
+func (rw *Writer) Message() string {
+	return rw.message
 }
 
 // Write writes the given byte buffer to the underlaying io Writer

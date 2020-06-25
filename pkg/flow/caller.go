@@ -129,11 +129,15 @@ func (caller *Caller) Do(ctx context.Context, store refs.Store) error {
 		writer.Close()
 	}
 
-	if w.Status() > 0 && w.Status() != caller.ExpectedStatus {
+	if caller.transport != nil && w.Status() != caller.ExpectedStatus {
 		caller.ctx.Logger(logger.Flow).WithFields(logrus.Fields{
 			"node":   caller.node.Name,
 			"status": w.Status(),
 		}).Error("Service returned a unexpected status, aborting flow")
+
+		// TODO: evaluate if status and message should be set like this
+		store.StoreValue(template.ErrorResource, "status", int64(w.Status()))
+		store.StoreValue(template.ErrorResource, "message", w.Message())
 
 		if caller.err != nil {
 			if caller.err.codec != nil {
@@ -152,14 +156,6 @@ func (caller *Caller) Do(ctx context.Context, store refs.Store) error {
 
 			if caller.err.metadata != nil {
 				caller.response.metadata.Unmarshal(w.Header(), store)
-			}
-
-			if caller.err.status != nil {
-
-			}
-
-			if caller.err.message != nil {
-
 			}
 		}
 

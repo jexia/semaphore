@@ -75,6 +75,7 @@ func (rw *TransportResponseWriter) Write(bb []byte) (int, error) {
 func (rw *TransportResponseWriter) WriteHeader(status int) {
 	rw.once.Do(func() {
 		rw.transport.HeaderStatus(status)
+		rw.transport.HeaderMessage(http.StatusText(status))
 		rw.mutex.Unlock()
 	})
 }

@@ -14,5 +14,5 @@ $ maestro daemon
 You could execute the `FetchLatestProject` flow by executing a `GET` request on port `8080`.
 
 ```bash
-$ curl 127.0.0.1:8080'
+$ curl 127.0.0.1:8080
 ```

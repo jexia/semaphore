@@ -18,6 +18,7 @@ type ResponseWriter interface {
 	io.WriteCloser
 	Header() metadata.MD
 	HeaderStatus(int)
+	HeaderMessage(string)
 }
 
 // Request represents the request object given to a caller implementation used to make calls

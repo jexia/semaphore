@@ -11,8 +11,10 @@ import (
 	"github.com/jexia/maestro/pkg/specs/checks"
 	"github.com/jexia/maestro/pkg/specs/compare"
 	"github.com/jexia/maestro/pkg/specs/dependencies"
+	"github.com/jexia/maestro/pkg/specs/labels"
 	"github.com/jexia/maestro/pkg/specs/references"
 	"github.com/jexia/maestro/pkg/specs/trace"
+	"github.com/jexia/maestro/pkg/specs/types"
 	"github.com/jexia/maestro/pkg/transport"
 	"github.com/sirupsen/logrus"
 )
@@ -313,11 +315,37 @@ func Listeners(endpoints []*transport.Endpoint, options Options) error {
 	return nil
 }
 
+// TODO: check how errors are referenced...
+func DefaultOnError() *specs.OnError {
+	return &specs.OnError{
+		Status: &specs.Property{
+			Type:  types.Int64,
+			Label: labels.Optional,
+			Reference: &specs.PropertyReference{
+				Resource: "error",
+				Path:     "status",
+			},
+		},
+		Message: &specs.Property{
+			Type:  types.String,
+			Label: labels.Optional,
+			Reference: &specs.PropertyReference{
+				Resource: "error",
+				Path:     "message",
+			},
+		},
+	}
+}
+
 // ConstructErrorHandle clones any previously defined error objects or error handles
 func ConstructErrorHandle(manifest *specs.FlowsManifest) {
 	for _, flow := range manifest.Flows {
 		if flow.Error == nil {
 			flow.Error = manifest.Error
+		}
+
+		if flow.OnError == nil {
+			flow.OnError = DefaultOnError()
 		}
 
 		for _, node := range flow.Nodes {
@@ -334,6 +362,10 @@ func ConstructErrorHandle(manifest *specs.FlowsManifest) {
 	for _, proxy := range manifest.Proxy {
 		if proxy.Error == nil {
 			proxy.Error = manifest.Error
+		}
+
+		if proxy.OnError == nil {
+			proxy.OnError = DefaultOnError()
 		}
 
 		for _, node := range proxy.Nodes {
