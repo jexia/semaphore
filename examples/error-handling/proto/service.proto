@@ -17,13 +17,6 @@ service Service {
             method: "GET"
         };
     };
-    
-    rpc FetchUser(Empty) returns (Empty) {
-        option (maestro.api.http) = {
-            endpoint: "/users/1"
-            method: "GET"
-        };
-    };
 }
 
 message Empty {
@@ -32,11 +25,4 @@ message Empty {
 message Error {
     string message = 1;
     int64 status = 2;
-}
-
-message User {
-    int32 id = 1;
-    string name = 2;
-    string username = 3;
-    string email = 4;
 }

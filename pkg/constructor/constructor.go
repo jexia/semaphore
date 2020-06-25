@@ -1,6 +1,8 @@
 package constructor
 
 import (
+	"log"
+
 	"github.com/jexia/maestro/pkg/codec"
 	"github.com/jexia/maestro/pkg/flow"
 	"github.com/jexia/maestro/pkg/functions"
@@ -34,10 +36,14 @@ func Specs(ctx instance.Context, mem functions.Collection, options Options) (*Co
 		return nil, err
 	}
 
+	log.Println("<-", collection.Flows.Flows.Get("GlobalHandleError").Nodes[0].Error.Property.Nested["message"].Default)
+
 	err = references.DefineManifest(ctx, collection.Services, collection.Schema, collection.Flows)
 	if err != nil {
 		return nil, err
 	}
+
+	log.Println("->", collection.Flows.Flows.Get("GlobalHandleError").Nodes[0].Error.Property.Nested["status"].Type)
 
 	err = functions.PrepareManifestFunctions(ctx, mem, options.Functions, collection.Flows)
 	if err != nil {
@@ -375,8 +381,8 @@ func DefaultOnError() *specs.OnError {
 // ConstructErrorHandle clones any previously defined error objects or error handles
 func ConstructErrorHandle(manifest *specs.FlowsManifest) {
 	for _, flow := range manifest.Flows {
-		if flow.Error == nil {
-			flow.Error = manifest.Error
+		if flow.Error == nil && manifest.Error != nil {
+			flow.Error = manifest.Error.Clone()
 		}
 
 		if flow.OnError == nil {
@@ -384,8 +390,8 @@ func ConstructErrorHandle(manifest *specs.FlowsManifest) {
 		}
 
 		for _, node := range flow.Nodes {
-			if node.Error == nil {
-				node.Error = flow.Error
+			if node.Error == nil && flow.Error != nil {
+				node.Error = flow.Error.Clone()
 			}
 
 			if node.OnError == nil {
@@ -395,8 +401,8 @@ func ConstructErrorHandle(manifest *specs.FlowsManifest) {
 	}
 
 	for _, proxy := range manifest.Proxy {
-		if proxy.Error == nil {
-			proxy.Error = manifest.Error
+		if proxy.Error == nil && manifest.Error != nil {
+			proxy.Error = manifest.Error.Clone()
 		}
 
 		if proxy.OnError == nil {
@@ -404,8 +410,8 @@ func ConstructErrorHandle(manifest *specs.FlowsManifest) {
 		}
 
 		for _, node := range proxy.Nodes {
-			if node.Error == nil {
-				node.Error = proxy.Error
+			if node.Error == nil && proxy.Error != nil {
+				node.Error = proxy.Error.Clone()
 			}
 
 			if node.OnError == nil {

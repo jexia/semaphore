@@ -12,29 +12,13 @@ error "proto.Error" {
 flow "GlobalHandleError" {
 	input "proto.Empty" {}
 
-	on_error {
-		status = 501
-		message = "Service unavailable"
-	}
-
 	resource "query" {
-		request "proto.Service" "FetchUser" {
-		}
-
-		expect_status = 404
-
-		error "proto.Error" {
-			message = "{{ query.error:name }}"
-			status = "{{ error:status }}"
+		request "proto.Service" "ThrowError" {
 		}
 
 		on_error {
-			schema = "proto.User"
-			message = "Unauthorized"
-
-			params {
-				reason = "{{ error:message }}"
-			}
+			status = 401
+			message = "global error message"
 		}
 	}
 
