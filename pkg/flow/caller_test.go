@@ -504,6 +504,7 @@ func TestErrFunctionsExecution(t *testing.T) {
 				fn:       counter,
 				expected: 1,
 				node:     &specs.Node{},
+				store:    refs.NewReferenceStore(0),
 				options: &CallOptions{
 					Transport: NewMockTransport(nil, 500, nil),
 					Err: &OnError{
@@ -523,6 +524,7 @@ func TestErrFunctionsExecution(t *testing.T) {
 				fn:       counter,
 				expected: 3,
 				node:     &specs.Node{},
+				store:    refs.NewReferenceStore(0),
 				options: &CallOptions{
 					Transport: NewMockTransport(nil, 500, nil),
 					Err: &OnError{
