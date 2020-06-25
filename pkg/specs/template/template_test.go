@@ -113,7 +113,10 @@ func TestParseReference(t *testing.T) {
 
 	for input, expected := range tests {
 		t.Run(input, func(t *testing.T) {
-			property := ParseReference(path, name, input)
+			property, err := ParseReference(path, name, input)
+			if err != nil {
+				t.Fatal(err)
+			}
 
 			if property.Path != expected.Path {
 				t.Errorf("unexpected path '%s', expected '%s'", property.Path, expected.Path)

@@ -7,6 +7,7 @@ import (
 	"github.com/jexia/maestro/pkg/instance"
 	"github.com/jexia/maestro/pkg/logger"
 	"github.com/jexia/maestro/pkg/specs"
+	"github.com/jexia/maestro/pkg/specs/trace"
 	"github.com/sirupsen/logrus"
 )
 
@@ -94,7 +95,12 @@ func ParsePropertyReference(value string) *specs.PropertyReference {
 }
 
 // ParseReference parses the given value as a template reference
-func ParseReference(path string, name string, value string) *specs.Property {
+func ParseReference(path string, name string, value string) (*specs.Property, error) {
+	// TODO: check values
+	if strings.Count(value, "..") > 0 {
+		return nil, trace.New(trace.WithMessage("invalid path, path cannot contain two dots"))
+	}
+
 	prop := &specs.Property{
 		Name:      name,
 		Path:      JoinPath(path, name),
@@ -102,13 +108,13 @@ func ParseReference(path string, name string, value string) *specs.Property {
 		Raw:       value,
 	}
 
-	return prop
+	return prop, nil
 }
 
 // ParseContent parses the given template function
 func ParseContent(path string, name string, content string) (*specs.Property, error) {
 	if ReferencePattern.MatchString(content) {
-		return ParseReference(path, name, content), nil
+		return ParseReference(path, name, content)
 	}
 
 	return &specs.Property{
