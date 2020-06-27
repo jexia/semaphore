@@ -30,7 +30,7 @@ Allow users to implement your product with their tools of choice. We are excited
 
 * **Gateway**: Maestro redefines the gateway. Expose a single flow through multiple protocols without changing any of your services.
 
-* **Scalable**: You can scale Maestro up to your needs. All calls within a flow are executed in the most optimal path possible. Branches are created to execute calls [concurrently](https://github.com/jexia/maestro/tree/master/pkg/flow) from one another when possible.
+* **Scalable**: You can scale Maestro up to your needs. All calls within a flow are executed in the most optimal path possible. Branches are created to execute calls [concurrently](https://github.com/jexia/maestro/tree/master/internal/flow) from one another when possible.
 
 * **SAGA patterns**: Define rollbacks inside your flows in the case of failure. Rollbacks are automatically executed if a request fails. Rollbacks could reference data received from other services.
 
@@ -50,7 +50,7 @@ docker run jexiacom/maestro
 
 ---
 
-Data streams inside Maestro are defined inside flows.
+Data streams inside Maestro are defined as flows.
 A flow could manipulate, deconstruct and forwarded data in between calls and services.
 Flows are exposed through endpoints. Flows are generic and could handle different protocols and codecs within a single flow.
 All flows are strictly typed through schema definitions. These schemas define the contracts provided and accepted by services.
