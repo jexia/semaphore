@@ -228,10 +228,18 @@ func (err *OnError) Clone() *OnError {
 
 // GetResponse returns the error response
 func (err *OnError) GetResponse() *ParameterMap {
+	if err == nil {
+		return nil
+	}
+
 	return err.Response
 }
 
 // GetStatusCode returns the status code property
 func (err *OnError) GetStatusCode() *Property {
+	if err == nil {
+		return nil
+	}
+
 	return err.Status
 }
