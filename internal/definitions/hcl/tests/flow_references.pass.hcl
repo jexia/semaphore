@@ -1,0 +1,5 @@
+flow "references" {
+    resources {
+        prop = ""
+    }
+}

@@ -97,12 +97,9 @@ type Header struct {
 
 // InputParameterMap is the initial map of parameter names (keys) and their (templated) values (values)
 type InputParameterMap struct {
-	Schema     string                      `hcl:"schema,label"`
-	Options    *BlockOptions               `hcl:"options,block"`
-	Header     []string                    `hcl:"header,optional"`
-	Nested     []NestedParameterMap        `hcl:"message,block"`
-	Repeated   []InputRepeatedParameterMap `hcl:"repeated,block"`
-	Properties hcl.Body                    `hcl:",remain"`
+	Schema  string        `hcl:"schema,label"`
+	Options *BlockOptions `hcl:"options,block"`
+	Header  []string      `hcl:"header,optional"`
 }
 
 // BlockOptions holds the raw options

@@ -2,7 +2,7 @@ package hcl
 
 import (
 	"github.com/hashicorp/hcl/v2"
-	"github.com/jexia/maestro/internal/conditions"
+	"github.com/jexia/maestro/pkg/conditions"
 	"github.com/jexia/maestro/pkg/core/instance"
 	"github.com/jexia/maestro/pkg/core/logger"
 	"github.com/jexia/maestro/pkg/specs"
@@ -185,16 +185,10 @@ func ParseIntermediateInputParameterMap(ctx instance.Context, params *InputParam
 		return nil, nil
 	}
 
-	properties, _ := params.Properties.JustAttributes()
 	result := &specs.ParameterMap{
 		Schema:  params.Schema,
 		Options: make(specs.Options),
 		Header:  make(specs.Header, len(params.Header)),
-		Property: &specs.Property{
-			Type:   types.Message,
-			Label:  labels.Optional,
-			Nested: map[string]*specs.Property{},
-		},
 	}
 
 	for _, key := range params.Header {
@@ -208,34 +202,6 @@ func ParseIntermediateInputParameterMap(ctx instance.Context, params *InputParam
 
 	if params.Options != nil {
 		result.Options = ParseIntermediateSpecOptions(params.Options.Body)
-	}
-
-	for _, attr := range properties {
-		results, err := ParseIntermediateProperty(ctx, attr.Name, attr)
-		if err != nil {
-			return nil, err
-		}
-
-		result.Property.Nested[attr.Name] = results
-	}
-
-	for _, nested := range params.Nested {
-		results, err := ParseIntermediateNestedParameterMap(ctx, nested, nested.Name)
-		if err != nil {
-			return nil, err
-		}
-
-		result.Property.Nested[nested.Name] = results
-	}
-
-	for _, intermediate := range params.Repeated {
-		repeated := ParseIntermediateInputRepeatedParameterMap(intermediate)
-		results, err := ParseIntermediateRepeatedParameterMap(ctx, repeated, repeated.Name)
-		if err != nil {
-			return nil, err
-		}
-
-		result.Property.Nested[repeated.Name] = results
 	}
 
 	return result, nil
@@ -351,22 +317,6 @@ func ParseIntermediateProxyForward(ctx instance.Context, proxy ProxyForward) (*s
 	}
 
 	return &result, nil
-}
-
-// ParseIntermediateInputRepeatedParameterMap parses the given input repeated parameter map
-func ParseIntermediateInputRepeatedParameterMap(repeated InputRepeatedParameterMap) RepeatedParameterMap {
-	result := RepeatedParameterMap{
-		Name:       repeated.Name,
-		Nested:     repeated.Nested,
-		Repeated:   make([]RepeatedParameterMap, len(repeated.Repeated)),
-		Properties: repeated.Properties,
-	}
-
-	for index, repeated := range repeated.Repeated {
-		result.Repeated[index] = ParseIntermediateInputRepeatedParameterMap(repeated)
-	}
-
-	return result
 }
 
 // ParseIntermediateParameterMap parses the given intermediate parameter map to a spec parameter map
