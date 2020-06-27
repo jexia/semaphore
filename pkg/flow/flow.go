@@ -105,8 +105,8 @@ func (manager *Manager) Errors() []transport.Error {
 	}
 
 	for _, node := range manager.Nodes {
-		if node.Error != nil {
-			result = append(result, transport.WrapError(nil, node.Error))
+		if node.OnError != nil {
+			result = append(result, transport.WrapError(nil, node.OnError))
 		}
 	}
 

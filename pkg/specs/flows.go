@@ -1,6 +1,8 @@
 package specs
 
-import "github.com/Knetic/govaluate"
+import (
+	"github.com/Knetic/govaluate"
+)
 
 // FlowsManifest holds a collection of definitions and resources
 type FlowsManifest struct {
@@ -42,7 +44,6 @@ type FlowResourceManager interface {
 	GetNodes() []*Node
 	GetInput() *ParameterMap
 	GetOutput() *ParameterMap
-	GetError() *ParameterMap
 	GetOnError() *OnError
 	GetForward() *Call
 }
@@ -73,7 +74,6 @@ type Flow struct {
 	Input   *ParameterMap `json:"input"`
 	Nodes   []*Node       `json:"nodes"`
 	Output  *ParameterMap `json:"output"`
-	Error   *ParameterMap `json:"error"`
 	OnError *OnError      `json:"on_error"`
 }
 
@@ -85,11 +85,6 @@ func (flow *Flow) GetName() string {
 // GetNodes returns the calls of the given flow
 func (flow *Flow) GetNodes() []*Node {
 	return flow.Nodes
-}
-
-// GetError returns the error of the given flow
-func (flow *Flow) GetError() *ParameterMap {
-	return flow.Error
 }
 
 // GetOnError returns the error handling of the given flow
@@ -134,7 +129,6 @@ type Proxy struct {
 	Name    string        `json:"name"`
 	Nodes   []*Node       `json:"nodes"`
 	Forward *Call         `json:"forward"`
-	Error   *ParameterMap `json:"error"`
 	OnError *OnError      `json:"on_error"`
 }
 
@@ -146,11 +140,6 @@ func (proxy *Proxy) GetName() string {
 // GetNodes returns the calls of the given flow
 func (proxy *Proxy) GetNodes() []*Node {
 	return proxy.Nodes
-}
-
-// GetError returns the error of the given flow
-func (proxy *Proxy) GetError() *ParameterMap {
-	return proxy.Error
 }
 
 // GetOnError returns the error handling of the given flow
@@ -192,13 +181,7 @@ type Node struct {
 	Call         *Call            `json:"call"`
 	Rollback     *Call            `json:"rollback"`
 	ExpectStatus int              `json:"expect_status"`
-	Error        *ParameterMap    `json:"error"`
 	OnError      *OnError         `json:"on_error"`
-}
-
-// GetError returns the error object for the given node
-func (node *Node) GetError() *ParameterMap {
-	return node.Error
 }
 
 // GetOnError returns the error handling for the given node
@@ -221,4 +204,34 @@ type OnError struct {
 	Status   *Property
 	Message  *Property
 	Params   map[string]*Property
+}
+
+// Clone clones the given error
+func (err *OnError) Clone() *OnError {
+	if err == nil {
+		return nil
+	}
+
+	result := &OnError{
+		Response: err.Response.Clone(),
+		Status:   err.Status.Clone(),
+		Message:  err.Message.Clone(),
+		Params:   make(map[string]*Property, len(err.Params)),
+	}
+
+	for key, param := range err.Params {
+		result.Params[key] = param.Clone()
+	}
+
+	return result
+}
+
+// GetResponse returns the error response
+func (err *OnError) GetResponse() *ParameterMap {
+	return err.Response
+}
+
+// GetStatusCode returns the status code property
+func (err *OnError) GetStatusCode() *Property {
+	return err.Status
 }

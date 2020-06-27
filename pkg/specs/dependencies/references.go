@@ -23,8 +23,8 @@ func ResolveReferences(ctx instance.Context, manifest *specs.FlowsManifest) {
 		// Error and output dependencies could safely be ignored
 		empty := map[string]*specs.Node{}
 
-		if flow.Error != nil {
-			ResolveParameterMap(flow.Error, empty)
+		if flow.OnError != nil {
+			ResolveOnError(flow.OnError, empty)
 		}
 
 		if flow.Output != nil {
@@ -46,8 +46,8 @@ func ResolveNodeReferences(node *specs.Node) {
 		node.DependsOn = map[string]*specs.Node{}
 	}
 
-	if node.Error != nil {
-		ResolveParameterMap(node.Error, node.DependsOn)
+	if node.OnError != nil {
+		ResolveParameterMap(node.OnError.Response, node.DependsOn)
 	}
 
 	if node.Condition != nil {
@@ -74,6 +74,19 @@ func ResolveParameterMap(parameters *specs.ParameterMap, dependencies map[string
 	ResolveParamReferences(parameters.Params, dependencies)
 	ResolveHeaderReferences(parameters.Header, dependencies)
 	ResolvePropertyReferences(parameters.Property, dependencies)
+}
+
+// ResolveOnError resolves the params inside the given parameter map
+func ResolveOnError(parameters *specs.OnError, dependencies map[string]*specs.Node) {
+	if parameters == nil {
+		return
+	}
+
+	if parameters.Response != nil {
+		ResolveParamReferences(parameters.Response.Params, dependencies)
+		ResolveHeaderReferences(parameters.Response.Header, dependencies)
+		ResolvePropertyReferences(parameters.Response.Property, dependencies)
+	}
 }
 
 // ResolveFunctionsReferences resolves all references made inside the given function arguments and return value

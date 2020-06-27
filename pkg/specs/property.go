@@ -103,6 +103,10 @@ type ParameterMap struct {
 
 // Clone clones the given parameter map
 func (parameters *ParameterMap) Clone() *ParameterMap {
+	if parameters == nil {
+		return nil
+	}
+
 	result := &ParameterMap{
 		Schema:   parameters.Schema,
 		Params:   make(map[string]*Property, len(parameters.Params)),
@@ -121,7 +125,7 @@ func (parameters *ParameterMap) Clone() *ParameterMap {
 	}
 
 	for key, value := range parameters.Header {
-		result.Header[key] = value
+		result.Header[key] = value.Clone()
 	}
 
 	for key, prop := range parameters.Stack {

@@ -34,14 +34,11 @@ func ManifestTypes(ctx instance.Context, services *specs.ServicesManifest, schem
 func ProxyTypes(ctx instance.Context, services *specs.ServicesManifest, schema *specs.SchemaManifest, flows *specs.FlowsManifest, proxy *specs.Proxy) (err error) {
 	ctx.Logger(logger.Core).WithField("proxy", proxy.GetName()).Info("Compare proxy flow types")
 
-	err = CheckParameterMapTypes(ctx, proxy.Error, schema, proxy)
-	if err != nil {
-		return err
-	}
-
-	err = CheckParameterMapTypes(ctx, proxy.Error, schema, proxy)
-	if err != nil {
-		return err
+	if proxy.OnError != nil {
+		err = CheckParameterMapTypes(ctx, proxy.OnError.Response, schema, proxy)
+		if err != nil {
+			return err
+		}
 	}
 
 	for _, node := range proxy.Nodes {
@@ -75,9 +72,11 @@ func FlowTypes(ctx instance.Context, services *specs.ServicesManifest, schema *s
 		return err
 	}
 
-	err = CheckParameterMapTypes(ctx, flow.Error, schema, flow)
-	if err != nil {
-		return err
+	if flow.OnError != nil {
+		err = CheckParameterMapTypes(ctx, flow.OnError.Response, schema, flow)
+		if err != nil {
+			return err
+		}
 	}
 
 	for _, node := range flow.Nodes {
@@ -143,9 +142,11 @@ func CallTypes(ctx instance.Context, services *specs.ServicesManifest, schema *s
 		return err
 	}
 
-	err = CheckParameterMapTypes(ctx, node.Error, schema, flow)
-	if err != nil {
-		return err
+	if node.OnError != nil {
+		err = CheckParameterMapTypes(ctx, node.OnError.Response, schema, flow)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

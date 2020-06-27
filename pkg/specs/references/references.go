@@ -51,13 +51,6 @@ func DefineProxy(ctx instance.Context, services *specs.ServicesManifest, schema 
 		}
 	}
 
-	if proxy.Error != nil {
-		err = DefineParameterMap(ctx, schema, nil, proxy.Error, proxy)
-		if err != nil {
-			return err
-		}
-	}
-
 	for _, node := range proxy.Nodes {
 		err = DefineNode(ctx, services, schema, flows, node, proxy)
 		if err != nil {
@@ -92,13 +85,6 @@ func DefineFlow(ctx instance.Context, services *specs.ServicesManifest, schema *
 
 	if flow.OnError != nil {
 		err = DefineOnError(ctx, schema, nil, flow.OnError, flow)
-		if err != nil {
-			return err
-		}
-	}
-
-	if flow.Error != nil {
-		err = DefineParameterMap(ctx, schema, nil, flow.Error, flow)
 		if err != nil {
 			return err
 		}
@@ -146,13 +132,6 @@ func DefineNode(ctx instance.Context, services *specs.ServicesManifest, schema *
 
 	if node.OnError != nil {
 		err = DefineOnError(ctx, schema, node, node.OnError, flow)
-		if err != nil {
-			return err
-		}
-	}
-
-	if node.Error != nil {
-		err = DefineParameterMap(ctx, schema, node, node.Error, flow)
 		if err != nil {
 			return err
 		}
@@ -261,6 +240,10 @@ func DefineParams(ctx instance.Context, node *specs.Node, params map[string]*spe
 // DefineProperty defines the given property type.
 // If any object is references it has to be fixed afterwards and moved into the correct dataset
 func DefineProperty(ctx instance.Context, node *specs.Node, property *specs.Property, flow specs.FlowResourceManager) error {
+	if property == nil {
+		return nil
+	}
+
 	if len(property.Nested) > 0 {
 		for _, nested := range property.Nested {
 			err := DefineProperty(ctx, node, nested, flow)
@@ -355,12 +338,10 @@ func InsideProperty(source *specs.Property, target *specs.Property) bool {
 // DefineOnError defines references made inside the given on error specs
 func DefineOnError(ctx instance.Context, schema *specs.SchemaManifest, node *specs.Node, params *specs.OnError, flow specs.FlowResourceManager) (err error) {
 	if params.Response != nil {
-		input := schema.GetProperty(params.Response.Schema)
-		if input == nil {
-			return trace.New(trace.WithMessage("object '%s', is unavailable inside the schema collection", params.Response.Schema))
+		err = DefineParameterMap(ctx, schema, node, params.Response, flow)
+		if err != nil {
+			return err
 		}
-
-		params.Response = ToParameterMap(params.Response, "", input)
 	}
 
 	err = DefineProperty(ctx, node, params.Message, flow)

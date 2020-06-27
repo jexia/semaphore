@@ -94,19 +94,11 @@ func ParseIntermediateFlow(ctx instance.Context, flow Flow) (*specs.Flow, error)
 	}
 
 	result := specs.Flow{
-		Name:   flow.Name,
-		Input:  input,
-		Nodes:  []*specs.Node{},
-		Output: output,
-	}
-
-	if flow.Error != nil {
-		spec, err := ParseIntermediateParameterMap(ctx, flow.Error)
-		if err != nil {
-			return nil, err
-		}
-
-		result.Error = spec
+		Name:    flow.Name,
+		Input:   input,
+		Nodes:   []*specs.Node{},
+		Output:  output,
+		OnError: &specs.OnError{},
 	}
 
 	if flow.OnError != nil {
@@ -116,6 +108,15 @@ func ParseIntermediateFlow(ctx instance.Context, flow Flow) (*specs.Flow, error)
 		}
 
 		result.OnError = spec
+	}
+
+	if flow.Error != nil {
+		spec, err := ParseIntermediateParameterMap(ctx, flow.Error)
+		if err != nil {
+			return nil, err
+		}
+
+		result.OnError.Response = spec
 	}
 
 	var before map[string]*specs.Node
@@ -251,6 +252,7 @@ func ParseIntermediateProxy(ctx instance.Context, proxy Proxy) (*specs.Proxy, er
 		Name:    proxy.Name,
 		Nodes:   []*specs.Node{},
 		Forward: forward,
+		OnError: &specs.OnError{},
 	}
 
 	if proxy.Input != nil {
@@ -275,15 +277,6 @@ func ParseIntermediateProxy(ctx instance.Context, proxy Proxy) (*specs.Proxy, er
 		result.Input = input
 	}
 
-	if proxy.Error != nil {
-		spec, err := ParseIntermediateParameterMap(ctx, proxy.Error)
-		if err != nil {
-			return nil, err
-		}
-
-		result.Error = spec
-	}
-
 	if proxy.OnError != nil {
 		spec, err := ParseIntermediateOnError(ctx, proxy.OnError)
 		if err != nil {
@@ -291,6 +284,15 @@ func ParseIntermediateProxy(ctx instance.Context, proxy Proxy) (*specs.Proxy, er
 		}
 
 		result.OnError = spec
+	}
+
+	if proxy.Error != nil {
+		spec, err := ParseIntermediateParameterMap(ctx, proxy.Error)
+		if err != nil {
+			return nil, err
+		}
+
+		result.OnError.Response = spec
 	}
 
 	var before map[string]*specs.Node
@@ -588,6 +590,7 @@ func ParseIntermediateNode(ctx instance.Context, dependencies map[string]*specs.
 		Call:         call,
 		ExpectStatus: node.ExpectStatus,
 		Rollback:     rollback,
+		OnError:      &specs.OnError{},
 	}
 
 	if node.OnError != nil {
@@ -605,7 +608,7 @@ func ParseIntermediateNode(ctx instance.Context, dependencies map[string]*specs.
 			return nil, err
 		}
 
-		result.Error = spec
+		result.OnError.Response = spec
 	}
 
 	for _, dependency := range node.DependsOn {

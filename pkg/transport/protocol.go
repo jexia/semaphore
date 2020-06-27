@@ -83,22 +83,21 @@ func (collection Listeners) Get(name string) Listener {
 // WrapError wraps the given error as a on error object
 func WrapError(err error, handle specs.ErrorHandle) Error {
 	return &wrapper{
-		err:    err,
-		handle: handle,
+		err:         err,
+		ErrorHandle: handle,
 	}
 }
 
 // Error represents a wrapped error and error specs
 type Error interface {
+	specs.ErrorHandle
 	String() string
 	Error() string
-	Unwrap() error
-	Handle() specs.ErrorHandle
 }
 
 type wrapper struct {
-	err    error
-	handle specs.ErrorHandle
+	specs.ErrorHandle
+	err error
 }
 
 func (w *wrapper) String() string {
@@ -109,11 +108,7 @@ func (w *wrapper) String() string {
 	return w.err.Error()
 }
 
-// ParameterMap returns the error parameter map
-func (w *wrapper) Handle() specs.ErrorHandle {
-	return w.handle
-}
-
+// Error returns the underlaying error as a string
 func (w *wrapper) Error() string {
 	if w.err == nil {
 		return ""
@@ -163,7 +158,6 @@ type Listener interface {
 	Handle(instance.Context, []*Endpoint, map[string]codec.Constructor) error
 }
 
-// TODO: refactor me!
 // NewErrCodecCollection constructs a new codec collection for the given error objects
 func NewErrCodecCollection(ctx instance.Context, constructor codec.Constructor, collection []Error) (*CodecCollection, error) {
 	result := &CodecCollection{
@@ -171,11 +165,11 @@ func NewErrCodecCollection(ctx instance.Context, constructor codec.Constructor, 
 	}
 
 	for _, handle := range collection {
-		if handle.Handle().GetError() == nil {
+		if handle.GetResponse() == nil {
 			continue
 		}
 
-		codec, err := constructor.New(template.ErrorResource, handle.Handle().GetError())
+		codec, err := constructor.New(template.ErrorResource, handle.GetResponse())
 		if err != nil {
 			return nil, err
 		}
@@ -184,17 +178,18 @@ func NewErrCodecCollection(ctx instance.Context, constructor codec.Constructor, 
 			Codec: codec,
 		}
 
-		if handle.Handle().GetError().Header != nil {
-			header := metadata.NewManager(ctx, template.ErrorResource, handle.Handle().GetError().Header)
+		if handle.GetResponse().Header != nil {
+			header := metadata.NewManager(ctx, template.ErrorResource, handle.GetResponse().Header)
 			manager.Header = header
 		}
 
-		result.collection[handle.Handle().GetError()] = manager
+		result.collection[handle.GetResponse()] = manager
 	}
 
 	return result, nil
 }
 
+// CodecManager holds a optional metadata and codec manager
 type CodecManager struct {
 	Header *metadata.Manager
 	Codec  codec.Manager
@@ -205,7 +200,7 @@ type CodecCollection struct {
 	collection map[*specs.ParameterMap]*CodecManager
 }
 
-// Get attempts to return a codec manager for the given parameter map
-func (collection *CodecCollection) Get(hash *specs.ParameterMap) *CodecManager {
-	return collection.collection[hash]
+// Lookup attempts to return a codec manager for the given parameter map
+func (collection *CodecCollection) Lookup(err Error) *CodecManager {
+	return collection.collection[err.GetResponse()]
 }

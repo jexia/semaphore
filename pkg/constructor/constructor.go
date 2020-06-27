@@ -115,7 +115,7 @@ func FlowManager(ctx instance.Context, mem functions.Collection, services *specs
 
 		stack := mem[manager.GetOutput()]
 		result.Forward = forward
-		result.Flow = flow.NewManager(ctx, manager.GetName(), nodes, manager, stack, &flow.ManagerMiddleware{
+		result.Flow = flow.NewManager(ctx, manager.GetName(), nodes, manager.GetOnError(), stack, &flow.ManagerMiddleware{
 			BeforeDo:       options.BeforeManagerDo,
 			AfterDo:        options.AfterManagerDo,
 			BeforeRollback: options.BeforeManagerRollback,
@@ -350,67 +350,81 @@ func Listeners(endpoints []*transport.Endpoint, options Options) error {
 	return nil
 }
 
-// TODO: check how errors are referenced...
-func DefaultOnError() *specs.OnError {
-	return &specs.OnError{
-		Status: &specs.Property{
+// DefaultOnError sets the default values for not defined properties
+func DefaultOnError(err *specs.OnError) {
+	if err == nil {
+		err = &specs.OnError{}
+	}
+
+	if err.Status == nil {
+		err.Status = &specs.Property{
 			Type:  types.Int64,
 			Label: labels.Optional,
 			Reference: &specs.PropertyReference{
 				Resource: "error",
 				Path:     "status",
 			},
-		},
-		Message: &specs.Property{
+		}
+	}
+
+	if err.Message == nil {
+		err.Message = &specs.Property{
 			Type:  types.String,
 			Label: labels.Optional,
 			Reference: &specs.PropertyReference{
 				Resource: "error",
 				Path:     "message",
 			},
-		},
+		}
+	}
+}
+
+// MergeOnError merges the right on error specs into the left on error
+func MergeOnError(left *specs.OnError, right *specs.OnError) {
+	if left.Message == nil {
+		left.Message = right.Message.Clone()
+	}
+
+	if left.Status == nil {
+		left.Status = right.Status.Clone()
+	}
+
+	if len(left.Params) == 0 {
+		left.Params = make(map[string]*specs.Property, len(right.Params))
+
+		for key, param := range right.Params {
+			left.Params[key] = param.Clone()
+		}
+	}
+
+	if left.Response == nil {
+		left.Response = right.Response.Clone()
 	}
 }
 
 // ConstructErrorHandle clones any previously defined error objects or error handles
 func ConstructErrorHandle(manifest *specs.FlowsManifest) {
 	for _, flow := range manifest.Flows {
-		if flow.Error == nil && manifest.Error != nil {
-			flow.Error = manifest.Error.Clone()
-		}
+		DefaultOnError(flow.OnError)
 
-		if flow.OnError == nil {
-			flow.OnError = DefaultOnError()
+		if flow.OnError.Response == nil {
+			flow.OnError.Response = manifest.Error.Clone()
 		}
 
 		for _, node := range flow.Nodes {
-			if node.Error == nil && flow.Error != nil {
-				node.Error = flow.Error.Clone()
-			}
-
-			if node.OnError == nil {
-				node.OnError = flow.OnError
-			}
+			MergeOnError(node.OnError, flow.OnError)
 		}
 	}
 
 	for _, proxy := range manifest.Proxy {
-		if proxy.Error == nil && manifest.Error != nil {
-			proxy.Error = manifest.Error.Clone()
-		}
+		DefaultOnError(proxy.OnError)
 
-		if proxy.OnError == nil {
-			proxy.OnError = DefaultOnError()
+		if proxy.OnError.Response == nil {
+			proxy.OnError.Response = manifest.Error.Clone()
 		}
 
 		for _, node := range proxy.Nodes {
-			if node.Error == nil && proxy.Error != nil {
-				node.Error = proxy.Error.Clone()
-			}
-
-			if node.OnError == nil {
-				node.OnError = proxy.OnError
-			}
+			MergeOnError(node.OnError, proxy.OnError)
 		}
 	}
 }
