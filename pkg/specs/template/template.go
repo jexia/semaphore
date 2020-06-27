@@ -4,10 +4,10 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/jexia/maestro/pkg/instance"
-	"github.com/jexia/maestro/pkg/logger"
+	"github.com/jexia/maestro/pkg/core/instance"
+	"github.com/jexia/maestro/pkg/core/logger"
+	"github.com/jexia/maestro/pkg/core/trace"
 	"github.com/jexia/maestro/pkg/specs"
-	"github.com/jexia/maestro/pkg/specs/trace"
 	"github.com/sirupsen/logrus"
 )
 

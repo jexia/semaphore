@@ -3,7 +3,7 @@ package template
 import (
 	"testing"
 
-	"github.com/jexia/maestro/pkg/instance"
+	"github.com/jexia/maestro/pkg/core/instance"
 	"github.com/jexia/maestro/pkg/specs"
 )
 

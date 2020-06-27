@@ -3,8 +3,8 @@ package metadata
 import (
 	"strings"
 
-	"github.com/jexia/maestro/pkg/instance"
-	"github.com/jexia/maestro/pkg/logger"
+	"github.com/jexia/maestro/pkg/core/instance"
+	"github.com/jexia/maestro/pkg/core/logger"
 	"github.com/jexia/maestro/pkg/refs"
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jexia/maestro/pkg/specs/template"

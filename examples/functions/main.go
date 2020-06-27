@@ -5,12 +5,11 @@ import (
 	"fmt"
 
 	"github.com/jexia/maestro"
-	"github.com/jexia/maestro/pkg/codec/json"
-	"github.com/jexia/maestro/pkg/codec/proto"
+	"github.com/jexia/maestro/pkg/codec"
+	"github.com/jexia/maestro/pkg/core/logger"
 	"github.com/jexia/maestro/pkg/definitions/hcl"
-	"github.com/jexia/maestro/pkg/definitions/protoc"
+	"github.com/jexia/maestro/pkg/definitions/proto"
 	"github.com/jexia/maestro/pkg/functions"
-	"github.com/jexia/maestro/pkg/logger"
 	"github.com/jexia/maestro/pkg/refs"
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jexia/maestro/pkg/specs/labels"
@@ -28,10 +27,10 @@ func main() {
 		maestro.WithListener(http.NewListener(":8080", specs.Options{})),
 		maestro.WithFlows(hcl.FlowsResolver("./*.hcl")),
 		maestro.WithEndpoints(hcl.EndpointsResolver("./*.hcl")),
-		maestro.WithSchema(protoc.SchemaResolver([]string{"../../../", "./proto"}, "./proto/*.proto")),
-		maestro.WithServices(protoc.ServiceResolver([]string{"../../../", "./proto"}, "./proto/*.proto")),
-		maestro.WithCodec(json.NewConstructor()),
-		maestro.WithCodec(proto.NewConstructor()),
+		maestro.WithSchema(proto.SchemaResolver([]string{"../../../", "./proto"}, "./proto/*.proto")),
+		maestro.WithServices(proto.ServiceResolver([]string{"../../../", "./proto"}, "./proto/*.proto")),
+		maestro.WithCodec(codec.JSON()),
+		maestro.WithCodec(codec.Proto()),
 		maestro.WithCaller(http.NewCaller()),
 		maestro.WithFunctions(functions),
 	)

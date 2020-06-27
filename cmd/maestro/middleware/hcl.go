@@ -3,19 +3,19 @@ package middleware
 import (
 	"path/filepath"
 
-	"github.com/jexia/maestro/pkg/constructor"
-	"github.com/jexia/maestro/pkg/definitions/hcl"
-	"github.com/jexia/maestro/pkg/instance"
-	"github.com/jexia/maestro/pkg/logger"
+	"github.com/jexia/maestro/internal/definitions/hcl"
+	"github.com/jexia/maestro/pkg/core/api"
+	"github.com/jexia/maestro/pkg/core/instance"
+	"github.com/jexia/maestro/pkg/core/logger"
 	"github.com/jexia/maestro/pkg/specs/template"
 	"github.com/sirupsen/logrus"
 	"github.com/zclconf/go-cty/cty"
 )
 
 // ServiceSelector parses the HCL definition on the given path and manipulates the collected services after constructed
-func ServiceSelector(path string) constructor.AfterConstructorHandler {
-	return func(next constructor.AfterConstructor) constructor.AfterConstructor {
-		return func(ctx instance.Context, collection *constructor.Collection) error {
+func ServiceSelector(path string) api.AfterConstructorHandler {
+	return func(next api.AfterConstructor) api.AfterConstructor {
+		return func(ctx instance.Context, collection *api.Collection) error {
 			definitions, err := hcl.ResolvePath(ctx, []string{}, path)
 			if err != nil {
 				return err

@@ -6,13 +6,13 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/jexia/maestro/pkg/instance"
-	"github.com/jexia/maestro/pkg/logger"
+	"github.com/jexia/maestro/internal/references"
+	"github.com/jexia/maestro/pkg/core/instance"
+	"github.com/jexia/maestro/pkg/core/logger"
+	"github.com/jexia/maestro/pkg/core/trace"
 	"github.com/jexia/maestro/pkg/refs"
 	"github.com/jexia/maestro/pkg/specs"
-	"github.com/jexia/maestro/pkg/specs/references"
 	"github.com/jexia/maestro/pkg/specs/template"
-	"github.com/jexia/maestro/pkg/specs/trace"
 )
 
 // Custom represents a collection of custom defined functions that could be called inside a template

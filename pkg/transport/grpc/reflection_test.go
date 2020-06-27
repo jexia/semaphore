@@ -8,8 +8,8 @@ import (
 
 	"github.com/golang/protobuf/proto"
 	dpb "github.com/golang/protobuf/protoc-gen-go/descriptor"
-	"github.com/jexia/maestro/pkg/flow"
-	"github.com/jexia/maestro/pkg/instance"
+	"github.com/jexia/maestro/internal/flow"
+	"github.com/jexia/maestro/pkg/core/instance"
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jexia/maestro/pkg/transport"
 	"google.golang.org/grpc"

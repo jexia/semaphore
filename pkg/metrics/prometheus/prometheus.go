@@ -6,18 +6,18 @@ import (
 	"time"
 
 	"github.com/jexia/maestro"
-	"github.com/jexia/maestro/pkg/constructor"
-	"github.com/jexia/maestro/pkg/flow"
-	"github.com/jexia/maestro/pkg/instance"
-	"github.com/jexia/maestro/pkg/logger"
+	"github.com/jexia/maestro/internal/flow"
+	"github.com/jexia/maestro/pkg/core/api"
+	"github.com/jexia/maestro/pkg/core/instance"
+	"github.com/jexia/maestro/pkg/core/logger"
 	"github.com/jexia/maestro/pkg/refs"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 // New constructs a new prometheus middleware instance
-func New(addr string) constructor.Middleware {
-	return func(ctx instance.Context) ([]constructor.Option, error) {
+func New(addr string) api.Middleware {
+	return func(ctx instance.Context) ([]api.Option, error) {
 		ctx.Logger(logger.Core).WithField("addr", addr).Info("Setting up prometheus")
 
 		collector, err := NewCollector()

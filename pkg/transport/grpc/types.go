@@ -2,7 +2,7 @@ package grpc
 
 import (
 	"github.com/golang/protobuf/protoc-gen-go/descriptor"
-	"github.com/jexia/maestro/pkg/codec"
+	"github.com/jexia/maestro/internal/codec"
 	"github.com/jexia/maestro/pkg/metadata"
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jexia/maestro/pkg/transport"

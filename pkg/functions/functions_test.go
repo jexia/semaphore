@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/jexia/maestro/pkg/instance"
+	"github.com/jexia/maestro/pkg/core/instance"
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jexia/maestro/pkg/specs/labels"
 	"github.com/jexia/maestro/pkg/specs/types"

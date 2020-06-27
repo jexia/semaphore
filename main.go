@@ -3,12 +3,13 @@ package maestro
 import (
 	"sync"
 
-	"github.com/jexia/maestro/pkg/constructor"
+	"github.com/jexia/maestro/internal/constructor"
+	"github.com/jexia/maestro/pkg/core/api"
+	"github.com/jexia/maestro/pkg/core/instance"
+	"github.com/jexia/maestro/pkg/core/logger"
+	"github.com/jexia/maestro/pkg/core/trace"
 	"github.com/jexia/maestro/pkg/functions"
-	"github.com/jexia/maestro/pkg/instance"
-	"github.com/jexia/maestro/pkg/logger"
 	"github.com/jexia/maestro/pkg/specs"
-	"github.com/jexia/maestro/pkg/specs/trace"
 	"github.com/jexia/maestro/pkg/transport"
 )
 
@@ -21,7 +22,7 @@ type Client struct {
 	Schema       *specs.SchemaManifest
 	Endpoints    *specs.EndpointsManifest
 	Listeners    []transport.Listener
-	Options      constructor.Options
+	Options      api.Options
 }
 
 // Serve opens all listeners inside the given maestro client
@@ -65,7 +66,7 @@ func (client *Client) Close() {
 }
 
 // New constructs a new Maestro instance
-func New(opts ...constructor.Option) (*Client, error) {
+func New(opts ...api.Option) (*Client, error) {
 	ctx := instance.NewContext()
 	options, err := NewOptions(ctx, opts...)
 	if err != nil {

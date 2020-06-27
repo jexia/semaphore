@@ -3,13 +3,12 @@ package config
 import (
 	"github.com/jexia/maestro"
 	"github.com/jexia/maestro/cmd/maestro/middleware"
-	"github.com/jexia/maestro/pkg/codec/json"
-	"github.com/jexia/maestro/pkg/codec/proto"
-	"github.com/jexia/maestro/pkg/constructor"
+	"github.com/jexia/maestro/pkg/codec"
+	"github.com/jexia/maestro/pkg/core/api"
+	"github.com/jexia/maestro/pkg/core/instance"
+	"github.com/jexia/maestro/pkg/core/logger"
 	"github.com/jexia/maestro/pkg/definitions/hcl"
-	"github.com/jexia/maestro/pkg/definitions/protoc"
-	"github.com/jexia/maestro/pkg/instance"
-	"github.com/jexia/maestro/pkg/logger"
+	"github.com/jexia/maestro/pkg/definitions/proto"
 	"github.com/jexia/maestro/pkg/metrics/prometheus"
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jexia/maestro/pkg/transport/graphql"
@@ -20,11 +19,11 @@ import (
 )
 
 // ConstructArguments constructs the option arguments from the given parameters
-func ConstructArguments(params *Maestro) ([]constructor.Option, error) {
-	arguments := []constructor.Option{
-		maestro.WithCodec(json.NewConstructor()),
-		maestro.WithCodec(proto.NewConstructor()),
-		maestro.WithCaller(micro.New("micro-grpc", microGRPC.NewService())),
+func ConstructArguments(params *Maestro) ([]api.Option, error) {
+	arguments := []api.Option{
+		maestro.WithCodec(codec.JSON()),
+		maestro.WithCodec(codec.Proto()),
+		maestro.WithCaller(micro.NewCaller("micro-grpc", microGRPC.NewService())),
 		maestro.WithCaller(grpc.NewCaller()),
 		maestro.WithCaller(http.NewCaller()),
 	}
@@ -47,8 +46,8 @@ func ConstructArguments(params *Maestro) ([]constructor.Option, error) {
 	}
 
 	for _, path := range params.Protobuffers {
-		arguments = append(arguments, maestro.WithSchema(protoc.SchemaResolver(params.Protobuffers, path)))
-		arguments = append(arguments, maestro.WithServices(protoc.ServiceResolver(params.Protobuffers, path)))
+		arguments = append(arguments, maestro.WithSchema(proto.SchemaResolver(params.Protobuffers, path)))
+		arguments = append(arguments, maestro.WithServices(proto.ServiceResolver(params.Protobuffers, path)))
 	}
 
 	if params.HTTP.Address != "" {
@@ -67,7 +66,7 @@ func ConstructArguments(params *Maestro) ([]constructor.Option, error) {
 		arguments = append(arguments, maestro.WithMiddleware(prometheus.New(params.Prometheus.Address)))
 	}
 
-	arguments = append([]constructor.Option{maestro.WithLogLevel(logger.Global, params.LogLevel)}, arguments...)
+	arguments = append([]api.Option{maestro.WithLogLevel(logger.Global, params.LogLevel)}, arguments...)
 
 	return arguments, nil
 }

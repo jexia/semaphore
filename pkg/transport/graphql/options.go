@@ -1,7 +1,7 @@
 package graphql
 
 import (
-	"github.com/jexia/maestro/pkg/specs/trace"
+	"github.com/jexia/maestro/pkg/core/trace"
 	"github.com/jexia/maestro/pkg/transport"
 )
 

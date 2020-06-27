@@ -1,11 +1,11 @@
 package transport
 
 import (
-	"github.com/jexia/maestro/pkg/instance"
-	"github.com/jexia/maestro/pkg/logger"
+	"github.com/jexia/maestro/internal/dependencies"
+	"github.com/jexia/maestro/internal/references"
+	"github.com/jexia/maestro/pkg/core/instance"
+	"github.com/jexia/maestro/pkg/core/logger"
 	"github.com/jexia/maestro/pkg/specs"
-	"github.com/jexia/maestro/pkg/specs/dependencies"
-	"github.com/jexia/maestro/pkg/specs/references"
 )
 
 // DefineCaller defineds the types for the given transport caller

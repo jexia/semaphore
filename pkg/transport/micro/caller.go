@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"io/ioutil"
 
+	"github.com/jexia/maestro/pkg/core/instance"
+	"github.com/jexia/maestro/pkg/core/logger"
+	"github.com/jexia/maestro/pkg/core/trace"
 	"github.com/jexia/maestro/pkg/functions"
-	"github.com/jexia/maestro/pkg/instance"
-	"github.com/jexia/maestro/pkg/logger"
 	"github.com/jexia/maestro/pkg/refs"
 	"github.com/jexia/maestro/pkg/specs"
-	"github.com/jexia/maestro/pkg/specs/trace"
 	"github.com/jexia/maestro/pkg/transport"
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/codec/bytes"
@@ -29,8 +29,8 @@ type Service interface {
 	String() string
 }
 
-// New constructs a new go micro transport wrapper
-func New(name string, service Service) transport.NewCaller {
+// NewCaller constructs a new go micro transport wrapper
+func NewCaller(name string, service Service) transport.NewCaller {
 	return func(ctx instance.Context) transport.Caller {
 		return &Caller{
 			name:    name,

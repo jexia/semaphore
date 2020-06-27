@@ -4,9 +4,9 @@ import (
 	"errors"
 
 	"github.com/graphql-go/graphql"
+	"github.com/jexia/maestro/pkg/core/trace"
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jexia/maestro/pkg/specs/labels"
-	"github.com/jexia/maestro/pkg/specs/trace"
 	"github.com/jexia/maestro/pkg/specs/types"
 )
 

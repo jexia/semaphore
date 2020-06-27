@@ -1,18 +1,18 @@
 package maestro
 
 import (
-	"github.com/jexia/maestro/pkg/codec"
-	"github.com/jexia/maestro/pkg/constructor"
-	"github.com/jexia/maestro/pkg/definitions"
+	"github.com/jexia/maestro/internal/codec"
+	"github.com/jexia/maestro/internal/definitions"
+	"github.com/jexia/maestro/pkg/core/api"
+	"github.com/jexia/maestro/pkg/core/instance"
+	"github.com/jexia/maestro/pkg/core/logger"
 	"github.com/jexia/maestro/pkg/functions"
-	"github.com/jexia/maestro/pkg/instance"
-	"github.com/jexia/maestro/pkg/logger"
 	"github.com/jexia/maestro/pkg/transport"
 )
 
-// NewOptions constructs a constructor.Options object from the given constructor.Option constructors
-func NewOptions(ctx instance.Context, options ...constructor.Option) (constructor.Options, error) {
-	result := constructor.NewOptions(ctx)
+// NewOptions constructs a api.Options object from the given api.Option constructors
+func NewOptions(ctx instance.Context, options ...api.Option) (api.Options, error) {
+	result := api.NewOptions(ctx)
 
 	for _, option := range options {
 		option(&result)
@@ -33,62 +33,62 @@ func NewOptions(ctx instance.Context, options ...constructor.Option) (constructo
 }
 
 // NewCollection constructs a new options collection
-func NewCollection(options ...constructor.Option) []constructor.Option {
+func NewCollection(options ...api.Option) []api.Option {
 	return options
 }
 
 // WithFlows appends the given flows resolver to the available flow resolvers
-func WithFlows(definition definitions.FlowsResolver) constructor.Option {
-	return func(options *constructor.Options) {
+func WithFlows(definition definitions.FlowsResolver) api.Option {
+	return func(options *api.Options) {
 		options.Flows = append(options.Flows, definition)
 	}
 }
 
 // WithServices appends the given service resolver to the available service resolvers
-func WithServices(definition definitions.ServicesResolver) constructor.Option {
-	return func(options *constructor.Options) {
+func WithServices(definition definitions.ServicesResolver) api.Option {
+	return func(options *api.Options) {
 		options.Services = append(options.Services, definition)
 	}
 }
 
 // WithEndpoints appends the given endpoint resolver to the available endpoint resolvers
-func WithEndpoints(definition definitions.EndpointsResolver) constructor.Option {
-	return func(options *constructor.Options) {
+func WithEndpoints(definition definitions.EndpointsResolver) api.Option {
+	return func(options *api.Options) {
 		options.Endpoints = append(options.Endpoints, definition)
 	}
 }
 
 // WithSchema appends the schema collection to the schema store
-func WithSchema(resolver definitions.SchemaResolver) constructor.Option {
-	return func(options *constructor.Options) {
+func WithSchema(resolver definitions.SchemaResolver) api.Option {
+	return func(options *api.Options) {
 		options.Schemas = append(options.Schemas, resolver)
 	}
 }
 
 // WithCodec appends the given codec to the collection of available codecs
-func WithCodec(codec codec.Constructor) constructor.Option {
-	return func(options *constructor.Options) {
+func WithCodec(codec codec.Constructor) api.Option {
+	return func(options *api.Options) {
 		options.Codec[codec.Name()] = codec
 	}
 }
 
 // WithCaller appends the given caller to the collection of available callers
-func WithCaller(caller transport.NewCaller) constructor.Option {
-	return func(options *constructor.Options) {
+func WithCaller(caller transport.NewCaller) api.Option {
+	return func(options *api.Options) {
 		options.Callers = append(options.Callers, caller(options.Ctx))
 	}
 }
 
 // WithListener appends the given listener to the collection of available listeners
-func WithListener(listener transport.NewListener) constructor.Option {
-	return func(options *constructor.Options) {
+func WithListener(listener transport.NewListener) api.Option {
+	return func(options *api.Options) {
 		options.Listeners = append(options.Listeners, listener(options.Ctx))
 	}
 }
 
 // WithFunctions defines the custom defined functions to be used
-func WithFunctions(custom functions.Custom) constructor.Option {
-	return func(options *constructor.Options) {
+func WithFunctions(custom functions.Custom) api.Option {
+	return func(options *api.Options) {
 		if options.Functions == nil {
 			options.Functions = functions.Custom{}
 		}
@@ -100,8 +100,8 @@ func WithFunctions(custom functions.Custom) constructor.Option {
 }
 
 // WithLogLevel sets the log level for the given module
-func WithLogLevel(module logger.Module, level string) constructor.Option {
-	return func(options *constructor.Options) {
+func WithLogLevel(module logger.Module, level string) api.Option {
+	return func(options *api.Options) {
 		err := options.Ctx.SetLevel(module, level)
 		if err != nil {
 			options.Ctx.Logger(logger.Core).Warnf("unable to set the logging level, %s", err)

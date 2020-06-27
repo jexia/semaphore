@@ -7,14 +7,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jexia/maestro/pkg/codec/json"
-	"github.com/jexia/maestro/pkg/constructor"
-	"github.com/jexia/maestro/pkg/definitions"
-	"github.com/jexia/maestro/pkg/definitions/hcl"
-	"github.com/jexia/maestro/pkg/definitions/mock"
+	"github.com/jexia/maestro/internal/codec/json"
+	"github.com/jexia/maestro/internal/definitions"
+	"github.com/jexia/maestro/internal/definitions/hcl"
+	"github.com/jexia/maestro/internal/definitions/mock"
+	"github.com/jexia/maestro/pkg/core/api"
+	"github.com/jexia/maestro/pkg/core/instance"
+	"github.com/jexia/maestro/pkg/core/logger"
 	"github.com/jexia/maestro/pkg/functions"
-	"github.com/jexia/maestro/pkg/instance"
-	"github.com/jexia/maestro/pkg/logger"
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jexia/maestro/pkg/transport/http"
 )
@@ -24,7 +24,7 @@ func TestNewOptions(t *testing.T) {
 		"cdf": nil,
 	}
 
-	tests := [][]constructor.Option{
+	tests := [][]api.Option{
 		{WithFlows(nil), WithSchema(nil)},
 		{WithFlows(nil)},
 		{WithSchema(nil)},

@@ -1,9 +1,9 @@
 package functions
 
 import (
-	"github.com/jexia/maestro/pkg/instance"
+	"github.com/jexia/maestro/internal/references"
+	"github.com/jexia/maestro/pkg/core/instance"
 	"github.com/jexia/maestro/pkg/specs"
-	"github.com/jexia/maestro/pkg/specs/references"
 )
 
 // DefineFunctions defined all properties within the given functions
