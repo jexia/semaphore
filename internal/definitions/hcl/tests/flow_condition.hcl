@@ -1,7 +1,0 @@
-flow "" {
-    if "" {
-        if "" {
-            resource "" {}
-        }
-    }
-}

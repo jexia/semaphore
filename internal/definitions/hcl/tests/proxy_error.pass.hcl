@@ -15,6 +15,7 @@ proxy "" {
     }
 
     on_error {
+        schema = "com.Schema"
         status = 401
         message = "node error message"
     }

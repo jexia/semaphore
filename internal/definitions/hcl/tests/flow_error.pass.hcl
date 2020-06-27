@@ -15,7 +15,7 @@ flow "" {
 	}
 
 	on_error {
-        schema = ""
+        schema = "com.Schema"
 		status = 401
 		message = "flow error message"
 
