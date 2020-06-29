@@ -385,6 +385,10 @@ func DefaultOnError(err *specs.OnError) {
 
 // MergeOnError merges the right on error specs into the left on error
 func MergeOnError(left *specs.OnError, right *specs.OnError) {
+	if left == nil || right == nil {
+		return
+	}
+
 	if left.Message == nil {
 		left.Message = right.Message.Clone()
 	}
@@ -416,6 +420,11 @@ func ConstructErrorHandle(manifest *specs.FlowsManifest) {
 		}
 
 		for _, node := range flow.Nodes {
+			if node.OnError == nil {
+				node.OnError = flow.OnError.Clone()
+				continue
+			}
+
 			MergeOnError(node.OnError, flow.OnError)
 		}
 	}
@@ -428,6 +437,11 @@ func ConstructErrorHandle(manifest *specs.FlowsManifest) {
 		}
 
 		for _, node := range proxy.Nodes {
+			if node.OnError == nil {
+				node.OnError = proxy.OnError.Clone()
+				continue
+			}
+
 			MergeOnError(node.OnError, proxy.OnError)
 		}
 	}

@@ -157,7 +157,11 @@ func (call *Call) SendMsg(ctx context.Context, rw transport.ResponseWriter, pr *
 		return err
 	}
 
+	rw.HeaderStatus(transport.StatusOK)
+	rw.HeaderMessage(transport.StatusMessage(transport.StatusOK))
+
 	go func() {
+		defer rw.Close()
 		_, err = rw.Write(res.Data)
 		if err != nil {
 			call.ctx.Logger(logger.Transport).Error(err)

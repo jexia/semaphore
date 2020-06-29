@@ -179,16 +179,20 @@ func (caller *Caller) HandleErr(w *transport.Writer, reader io.Reader, store ref
 
 			if caller.err.message.Reference != nil {
 				ref := store.Load(caller.err.message.Reference.Resource, caller.err.message.Reference.Path)
-				message = ref.Value
+				if ref != nil {
+					message = ref.Value
+				}
 			}
 		}
 
-		if caller.err.message != nil {
+		if caller.err.status != nil {
 			status = caller.err.status.Default
 
 			if caller.err.status.Reference != nil {
 				ref := store.Load(caller.err.status.Reference.Resource, caller.err.status.Reference.Path)
-				status = ref.Value
+				if ref != nil {
+					status = ref.Value
+				}
 			}
 		}
 
