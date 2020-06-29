@@ -16,6 +16,7 @@ Messages are strictly typed and are type-checked. Payloads such as protobuf and 
   * [Flow](#flow)
     + [Input](#input-1)
     + [Output](#output)
+  * [Conditions](#conditions)
   * [Resource](#resource)
     + [Depends on](#depends-on)
     + [Options](#options)
@@ -25,6 +26,7 @@ Messages are strictly typed and are type-checked. Payloads such as protobuf and 
   * [Proxy](#proxy)
   * [Service](#service)
     + [Options](#options)
+  * [Error Handling](#error-handling)
   * [Endpoint](#endpoint)
 - [Functions](#functions)
 
@@ -133,6 +135,24 @@ output "schema.Object" {
   }
 
   status = "{{ log:status }}"
+}
+```
+
+### Conditions
+Conditions could be wrapped around resources. The wrapped resources are executed if the condition results in a boolean which is true.
+Conditions could be nested and resources inside a condition block could be referenced inside other resources and the output.
+
+```hcl
+flow "condition" {
+  input "schema.Object" {}
+
+  if "{{ input:kind }} == 'INSERT'" {
+    resource "insert" {}
+
+    if "{{ insert:upgrade }} == true" {
+      resource "upgrade" {}
+    }
+  }
 }
 ```
 
@@ -281,6 +301,65 @@ Options could be consumed by implementations. The defined key/values are impleme
 ```hcl
 options {
     port = 8080
+}
+```
+
+### Error Handling
+Custom error messages, status codes and response objects could be defined inside your flows.
+These objects could reference properties and be overriden with constant values.
+Error handling consists out of two blocks. `error` which defines the custom response object.
+These objects are returned to the user if the protocol allows for dynamic error objects (such as HTTP).
+`on_error` allows for the definitions of parameters (`params`) and to override the `message` and `status` properties.
+Optionally could a `schema` be defined. This schema is used to decode the received message.
+The default error properties (message and status), error params and other resources could be referenced inside the `on_error` and `error` blocks.
+
+```hcl
+flow "greeter" {
+    on_error {
+        message = "unexpected error"
+        status = 500
+    }
+
+    resource "echo" {
+        error "com.Schema" {
+            message "meta" {
+                status = "{{ error:status }}"
+                trace = "{{ error.params:trace }}"
+            }
+
+            message = "{{ error:message }}"
+        }
+
+        on_error {
+            schema = "com.Schema"
+            message = "{{ echo.error:message }}"
+            status = 401
+
+            params {
+                trace = "{{ echo.error:trace }}"
+            }
+        }
+    }
+}
+```
+
+If no error object is defined is the parent error object copied.
+
+```hcl
+error "com.Schema" {
+    message "meta" {
+        status = "{{ error:status }}"
+    }
+
+    message = "{{ error:message }}"
+}
+
+flow "greeter" {
+    # copies the global error object if not set
+
+    resource "echo" {
+        # copies the flow error object if not set
+    }
 }
 ```
 
