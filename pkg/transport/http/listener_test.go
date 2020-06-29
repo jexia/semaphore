@@ -1,9 +1,10 @@
 package http
 
 import (
+	"bytes"
 	"context"
+	ejson "encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -16,10 +17,12 @@ import (
 	"github.com/jexia/maestro/pkg/core/instance"
 	"github.com/jexia/maestro/pkg/refs"
 	"github.com/jexia/maestro/pkg/specs"
+	"github.com/jexia/maestro/pkg/specs/labels"
+	"github.com/jexia/maestro/pkg/specs/types"
 	"github.com/jexia/maestro/pkg/transport"
 )
 
-func NewMockListener(t *testing.T, nodes flow.Nodes) (transport.Listener, string) {
+func NewMockListener(t *testing.T, nodes flow.Nodes, errs transport.Errs) (transport.Listener, string) {
 	port := AvailablePort(t)
 	addr := fmt.Sprintf(":%d", port)
 
@@ -35,6 +38,7 @@ func NewMockListener(t *testing.T, nodes flow.Nodes) (transport.Listener, string
 		{
 			Request: transport.NewObject(NewSimpleMockSpecs(), nil),
 			Flow:    flow.NewManager(ctx, "test", nodes, nil, nil, nil),
+			Errs:    errs,
 			Options: specs.Options{
 				EndpointOption: "/",
 				MethodOption:   http.MethodPost,
@@ -70,7 +74,7 @@ func TestListener(t *testing.T) {
 		flow.NewNode(ctx, node, nil, call, nil, nil),
 	}
 
-	listener, endpoint := NewMockListener(t, nodes)
+	listener, endpoint := NewMockListener(t, nodes, nil)
 	defer listener.Close()
 
 	result, err := http.Post(endpoint, "application/json", strings.NewReader(`{"message":"hello"}`))
@@ -101,7 +105,7 @@ func TestListenerBadRequest(t *testing.T) {
 		},
 	}
 
-	listener, endpoint := NewMockListener(t, nodes)
+	listener, endpoint := NewMockListener(t, nodes, nil)
 	defer listener.Close()
 
 	result, err := http.Post(endpoint, "application/json", strings.NewReader(`{"message":}`))
@@ -140,7 +144,7 @@ func TestPathReferences(t *testing.T) {
 		},
 	}
 
-	listener, port := NewMockListener(t, nodes)
+	listener, port := NewMockListener(t, nodes, nil)
 	defer listener.Close()
 
 	ctx := instance.NewContext()
@@ -192,7 +196,7 @@ func TestStoringParams(t *testing.T) {
 		flow.NewNode(ctx, node, nil, call, nil, nil),
 	}
 
-	listener, endpoint := NewMockListener(t, nodes)
+	listener, endpoint := NewMockListener(t, nodes, nil)
 	defer listener.Close()
 
 	uri, err := url.Parse(endpoint)
@@ -229,7 +233,6 @@ func TestListenerForwarding(t *testing.T) {
 	forwarded := 0
 
 	go http.ListenAndServe(forward, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Println("forwarder")
 		// set-up a simple forward server which always returns a 200
 		forwarded++
 		return
@@ -277,5 +280,322 @@ func TestListenerForwarding(t *testing.T) {
 
 	if forwarded != 1 {
 		t.Fatalf("unexpected counter result %d, expected service request counter to be 1", forwarded)
+	}
+}
+
+func TestListenerErrorHandling(t *testing.T) {
+	type test struct {
+		input    map[string]string
+		caller   func(refs.Store)
+		params   *specs.ParameterMap
+		status   *specs.Property
+		message  *specs.Property
+		expected int
+		response map[string]interface{}
+	}
+
+	tests := map[string]test{
+		"default": {
+			input: map[string]string{
+				"message": "value",
+			},
+			caller: func(store refs.Store) {
+				store.StoreValue("error", "message", "value")
+				store.StoreValue("error", "status", int64(500))
+			},
+			params: &specs.ParameterMap{
+				Property: &specs.Property{
+					Type:  types.Message,
+					Label: labels.Optional,
+					Nested: map[string]*specs.Property{
+						"status": {
+							Name:  "status",
+							Path:  "status",
+							Type:  types.Int64,
+							Label: labels.Optional,
+							Reference: &specs.PropertyReference{
+								Resource: "error",
+								Path:     "status",
+							},
+						},
+						"message": {
+							Name:  "message",
+							Path:  "message",
+							Type:  types.String,
+							Label: labels.Optional,
+							Reference: &specs.PropertyReference{
+								Resource: "error",
+								Path:     "message",
+							},
+						},
+					},
+				},
+			},
+			status: &specs.Property{
+				Type:    types.Int64,
+				Label:   labels.Optional,
+				Default: int64(500),
+			},
+			message: &specs.Property{
+				Type:    types.String,
+				Label:   labels.Optional,
+				Default: "value",
+			},
+			expected: 500,
+			response: map[string]interface{}{
+				"status":  500,
+				"message": "value",
+			},
+		},
+		"reference": {
+			input: map[string]string{
+				"message": "value",
+			},
+			caller: func(store refs.Store) {
+				store.StoreValue("error", "message", "value")
+				store.StoreValue("error", "status", int64(500))
+				store.StoreValue("input", "status", int64(401))
+			},
+			params: &specs.ParameterMap{
+				Property: &specs.Property{
+					Type:  types.Message,
+					Label: labels.Optional,
+					Nested: map[string]*specs.Property{
+						"status": {
+							Name:  "status",
+							Path:  "status",
+							Type:  types.Int64,
+							Label: labels.Optional,
+							Reference: &specs.PropertyReference{
+								Resource: "input",
+								Path:     "status",
+							},
+						},
+						"message": {
+							Name:  "message",
+							Path:  "message",
+							Type:  types.String,
+							Label: labels.Optional,
+							Reference: &specs.PropertyReference{
+								Resource: "error",
+								Path:     "message",
+							},
+						},
+					},
+				},
+			},
+			status: &specs.Property{
+				Type:    types.Int64,
+				Label:   labels.Optional,
+				Default: int64(401),
+			},
+			message: &specs.Property{
+				Type:    types.String,
+				Label:   labels.Optional,
+				Default: "value",
+			},
+			expected: 401,
+			response: map[string]interface{}{
+				"status":  401,
+				"message": "value",
+			},
+		},
+		"not_found": {
+			input: map[string]string{
+				"message": "value",
+			},
+			caller: func(store refs.Store) {
+				store.StoreValue("error", "message", "value")
+				store.StoreValue("error", "status", int64(404))
+			},
+			params: &specs.ParameterMap{
+				Property: &specs.Property{
+					Type:  types.Message,
+					Label: labels.Optional,
+					Nested: map[string]*specs.Property{
+						"status": {
+							Name:  "status",
+							Path:  "status",
+							Type:  types.Int64,
+							Label: labels.Optional,
+							Reference: &specs.PropertyReference{
+								Resource: "error",
+								Path:     "status",
+							},
+						},
+						"message": {
+							Name:  "message",
+							Path:  "message",
+							Type:  types.String,
+							Label: labels.Optional,
+							Reference: &specs.PropertyReference{
+								Resource: "error",
+								Path:     "message",
+							},
+						},
+					},
+				},
+			},
+			status: &specs.Property{
+				Type:    types.Int64,
+				Label:   labels.Optional,
+				Default: int64(404),
+			},
+			message: &specs.Property{
+				Type:    types.String,
+				Label:   labels.Optional,
+				Default: "value",
+			},
+			expected: 404,
+			response: map[string]interface{}{
+				"status":  404,
+				"message": "value",
+			},
+		},
+		"complex": {
+			input: map[string]string{
+				"message": "value",
+			},
+			caller: func(store refs.Store) {
+				store.StoreValue("error", "message", "value")
+				store.StoreValue("error", "status", int64(404))
+			},
+			params: &specs.ParameterMap{
+				Property: &specs.Property{
+					Type:  types.Message,
+					Label: labels.Optional,
+					Nested: map[string]*specs.Property{
+						"meta": {
+							Name:  "meta",
+							Path:  "meta",
+							Type:  types.Message,
+							Label: labels.Optional,
+							Nested: map[string]*specs.Property{
+								"status": {
+									Name:  "status",
+									Path:  "meta.status",
+									Type:  types.Int64,
+									Label: labels.Optional,
+									Reference: &specs.PropertyReference{
+										Resource: "error",
+										Path:     "status",
+									},
+								},
+								"message": {
+									Name:  "message",
+									Path:  "meta.message",
+									Type:  types.String,
+									Label: labels.Optional,
+									Reference: &specs.PropertyReference{
+										Resource: "error",
+										Path:     "message",
+									},
+								},
+							},
+						},
+						"const": {
+							Name:    "const",
+							Path:    "const",
+							Type:    types.String,
+							Label:   labels.Optional,
+							Default: "custom message",
+						},
+					},
+				},
+			},
+			status: &specs.Property{
+				Type:    types.Int64,
+				Label:   labels.Optional,
+				Default: int64(404),
+			},
+			message: &specs.Property{
+				Type:    types.String,
+				Label:   labels.Optional,
+				Default: "value",
+			},
+			expected: 404,
+			response: map[string]interface{}{
+				"meta": map[string]interface{}{
+					"status":  404,
+					"message": "value",
+				},
+				"const": "custom message",
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			ctx := instance.NewContext()
+			node := &specs.Node{
+				Name: "first",
+				OnError: &specs.OnError{
+					Message:  test.message,
+					Status:   test.status,
+					Response: test.params,
+				},
+			}
+
+			called := 0
+			call := NewCallerFunc(func(ctx context.Context, refs refs.Store) error {
+				called++
+				test.caller(refs)
+				return flow.ErrAbortFlow
+			})
+
+			nodes := flow.Nodes{
+				flow.NewNode(ctx, node, nil, call, nil, nil),
+			}
+			obj := transport.NewObject(test.params, test.status)
+
+			errs := transport.Errs{
+				test.params: obj,
+			}
+
+			listener, endpoint := NewMockListener(t, nodes, errs)
+			defer listener.Close()
+
+			uri, err := url.Parse(endpoint)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			query := uri.Query()
+
+			for key, val := range test.input {
+				query.Add(key, val)
+			}
+
+			uri.RawQuery = query.Encode()
+
+			t.Log(uri.String())
+
+			res, err := http.Post(uri.String(), "", nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if res.StatusCode != test.expected {
+				t.Fatalf("unexpected status code %d, expected %d", res.StatusCode, test.expected)
+			}
+
+			if called != 1 {
+				t.Fatalf("unexpected counter result %d, expected service request counter to be 1", called)
+			}
+
+			expected, err := ejson.Marshal(test.response)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			equal, left, right, err := JSONEqual(res.Body, bytes.NewBuffer(expected))
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if !equal {
+				t.Fatalf("unexpected response %+v, expected %+v", left, right)
+			}
+		})
 	}
 }

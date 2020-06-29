@@ -124,86 +124,225 @@ func TestCallerUnknownMethod(t *testing.T) {
 }
 
 func TestCallerReferences(t *testing.T) {
-	expected := ":message"
-	path := "message"
-	resource := ".params"
-
-	service := NewMockService("http://localhost", "GET", "/"+expected)
-	call, err := NewMockCaller().Dial(service, nil, nil)
-	if err != nil {
-		t.Fatal(err)
+	type reference struct {
+		raw      string
+		path     string
+		resource string
 	}
 
-	method := call.GetMethod("mock")
-	references := method.References()
-	if len(references) != 1 {
-		t.Fatalf("unexpected references %+v", references)
+	type test struct {
+		endpoint   string
+		references []reference
 	}
 
-	if len(call.GetMethods()) != 1 {
-		t.Fatalf("unexpected methods %+v, expected a single method to be defined", call.GetMethods())
+	tests := map[string]test{
+		"message": {
+			endpoint: "/:message",
+			references: []reference{
+				{
+					raw:      ":message",
+					path:     "message",
+					resource: ".params",
+				},
+			},
+		},
+		"multiple": {
+			endpoint: "/:message/:name",
+			references: []reference{
+				{
+					raw:      ":message",
+					path:     "message",
+					resource: ".params",
+				},
+				{
+					raw:      ":name",
+					path:     "name",
+					resource: ".params",
+				},
+			},
+		},
+		"nested": {
+			endpoint: "/:message/:nested.name",
+			references: []reference{
+				{
+					raw:      ":message",
+					path:     "message",
+					resource: ".params",
+				},
+				{
+					raw:      ":nested.name",
+					path:     "nested.name",
+					resource: ".params",
+				},
+			},
+		},
+		"staticsuffix": {
+			endpoint: "/:message/suffix",
+			references: []reference{
+				{
+					raw:      ":message",
+					path:     "message",
+					resource: ".params",
+				},
+			},
+		},
+		"staticprefix": {
+			endpoint: "/prefix/:message",
+			references: []reference{
+				{
+					raw:      ":message",
+					path:     "message",
+					resource: ".params",
+				},
+			},
+		},
+		"static": {
+			endpoint: "/prefix/:message/suffix",
+			references: []reference{
+				{
+					raw:      ":message",
+					path:     "message",
+					resource: ".params",
+				},
+			},
+		},
+		"number": {
+			endpoint: "/:message1",
+			references: []reference{
+				{
+					raw:      ":message1",
+					path:     "message1",
+					resource: ".params",
+				},
+			},
+		},
+		"underscore": {
+			endpoint: "/:message_one",
+			references: []reference{
+				{
+					raw:      ":message_one",
+					path:     "message_one",
+					resource: ".params",
+				},
+			},
+		},
+		"hyphen": {
+			endpoint: "/:message-one",
+			references: []reference{
+				{
+					raw:      ":message-one",
+					path:     "message-one",
+					resource: ".params",
+				},
+			},
+		},
 	}
 
-	reference := references[0]
-	if reference.Path != expected {
-		t.Fatalf("unexpected path %s, expected %s", reference.Path, expected)
-	}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			service := NewMockService("http://localhost", "GET", test.endpoint)
+			call, err := NewMockCaller().Dial(service, nil, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-	if reference.Reference.Resource != resource {
-		t.Fatalf("unexpected reference resource %s, expected %s", reference.Reference.Resource, resource)
-	}
+			method := call.GetMethod("mock")
+			references := method.References()
+			if len(call.GetMethods()) != 1 {
+				t.Fatalf("unexpected methods %+v, expected a single method to be defined", call.GetMethods())
+			}
 
-	if reference.Reference.Path != path {
-		t.Fatalf("unexpected reference path %s, expected %s", reference.Reference.Path, path)
+			if len(references) != len(test.references) {
+				t.Fatalf("unexpected references '%+v', expected '%+v'", references, test.references)
+			}
+
+			for index, test := range test.references {
+				reference := references[index]
+				if reference.Path != test.raw {
+					t.Fatalf("unexpected path %s, expected %s", reference.Path, test.raw)
+				}
+
+				if reference.Reference.Resource != test.resource {
+					t.Fatalf("unexpected reference resource %s, expected %s", reference.Reference.Resource, test.resource)
+				}
+
+				if reference.Reference.Path != test.path {
+					t.Fatalf("unexpected reference path %s, expected %s", reference.Reference.Path, test.path)
+				}
+			}
+		})
 	}
 }
 
 func TestCallerReferencesLookup(t *testing.T) {
-	value := "1"
-	expected := "/" + value
-
-	path := "message"
-	resource := ".params"
-
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != expected {
-			t.Log("unexpected url", r.URL, " expected", expected)
-			w.WriteHeader(http.StatusBadRequest)
-		}
-	}))
-
-	defer server.Close()
-
-	service := NewMockService(server.URL, "GET", "/:message")
-	caller, err := NewMockCaller().Dial(service, nil, nil)
-	if err != nil {
-		t.Fatal(err)
+	type test struct {
+		endpoint string
+		value    string
+		call     string
+		path     string
+		resource string
 	}
 
-	method := caller.GetMethod("mock")
-	references := method.References()
-	if len(references) != 1 {
-		t.Fatalf("unexpected references %+v", references)
+	tests := map[string]test{
+		"message": {
+			endpoint: "/:message",
+			value:    "1",
+			call:     "/1",
+			path:     "message",
+			resource: ".params",
+		},
+		"nested": {
+			endpoint: "/:nested.message",
+			value:    "value",
+			call:     "/value",
+			path:     "nested.message",
+			resource: ".params",
+		},
 	}
 
-	references[0].Type = types.String
-	references[0].Label = labels.Optional
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if r.URL.Path != test.call {
+					t.Log("unexpected url", r.URL, " expected", test.call)
+					w.WriteHeader(http.StatusBadRequest)
+				}
+			}))
 
-	store := refs.NewReferenceStore(1)
-	ctx := context.Background()
-	req := transport.Request{
-		Method: method,
-	}
+			defer server.Close()
 
-	store.StoreValue(resource, path, value)
+			service := NewMockService(server.URL, "GET", test.endpoint)
+			caller, err := NewMockCaller().Dial(service, nil, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-	rw := &MockResponseWriter{
-		header: metadata.MD{},
-		writer: &DiscardWriter{},
-	}
+			method := caller.GetMethod("mock")
+			references := method.References()
+			if len(references) != 1 {
+				t.Fatalf("unexpected references %+v", references)
+			}
 
-	err = caller.SendMsg(ctx, rw, &req, store)
-	if err != nil {
-		t.Fatal(err)
+			references[0].Type = types.String
+			references[0].Label = labels.Optional
+
+			store := refs.NewReferenceStore(1)
+			ctx := context.Background()
+			req := transport.Request{
+				Method: method,
+			}
+
+			store.StoreValue(test.resource, test.path, test.value)
+
+			rw := &MockResponseWriter{
+				header: metadata.MD{},
+				writer: &DiscardWriter{},
+			}
+
+			err = caller.SendMsg(ctx, rw, &req, store)
+			if err != nil {
+				t.Fatal(err)
+			}
+		})
 	}
 }

@@ -2,8 +2,10 @@ package http
 
 import (
 	"context"
+	"encoding/json"
 	"io"
 	"net"
+	"reflect"
 	"testing"
 
 	"github.com/jexia/maestro/internal/flow"
@@ -13,6 +15,20 @@ import (
 	"github.com/jexia/maestro/pkg/specs/labels"
 	"github.com/jexia/maestro/pkg/specs/types"
 )
+
+// JSONEqual compares the JSON from two Readers.
+func JSONEqual(a, b io.Reader) (bool, interface{}, interface{}, error) {
+	var j, j2 interface{}
+	d := json.NewDecoder(a)
+	if err := d.Decode(&j); err != nil {
+		return false, j, j2, err
+	}
+	d = json.NewDecoder(b)
+	if err := d.Decode(&j2); err != nil {
+		return false, j, j2, err
+	}
+	return reflect.DeepEqual(j2, j), j, j2, nil
+}
 
 type caller struct {
 	fn func(context.Context, refs.Store) error
