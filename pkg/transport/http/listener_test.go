@@ -3,7 +3,9 @@ package http
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
+	"net/url"
 	"strings"
 	"testing"
 	"time"
@@ -17,7 +19,7 @@ import (
 	"github.com/jexia/maestro/pkg/transport"
 )
 
-func NewMockListener(t *testing.T, nodes flow.Nodes) (transport.Listener, int) {
+func NewMockListener(t *testing.T, nodes flow.Nodes) (transport.Listener, string) {
 	port := AvailablePort(t)
 	addr := fmt.Sprintf(":%d", port)
 
@@ -43,7 +45,13 @@ func NewMockListener(t *testing.T, nodes flow.Nodes) (transport.Listener, int) {
 	}
 
 	listener.Handle(ctx, endpoints, constructors)
-	return listener, port
+	go listener.Serve()
+
+	// Some CI pipelines take a little while before the listener is active
+	time.Sleep(100 * time.Millisecond)
+
+	endpoint := fmt.Sprintf("http://127.0.0.1:%d/", port)
+	return listener, endpoint
 }
 
 func TestListener(t *testing.T) {
@@ -62,14 +70,9 @@ func TestListener(t *testing.T) {
 		flow.NewNode(ctx, node, nil, call, nil, nil),
 	}
 
-	listener, port := NewMockListener(t, nodes)
+	listener, endpoint := NewMockListener(t, nodes)
 	defer listener.Close()
-	go listener.Serve()
 
-	// Some CI pipelines take a little while before the listener is active
-	time.Sleep(100 * time.Millisecond)
-
-	endpoint := fmt.Sprintf("http://127.0.0.1:%d/", port)
 	result, err := http.Post(endpoint, "application/json", strings.NewReader(`{"message":"hello"}`))
 	if err != nil {
 		t.Fatal(err)
@@ -98,14 +101,9 @@ func TestListenerBadRequest(t *testing.T) {
 		},
 	}
 
-	listener, port := NewMockListener(t, nodes)
+	listener, endpoint := NewMockListener(t, nodes)
 	defer listener.Close()
-	go listener.Serve()
 
-	// Some CI pipelines take a little while before the listener is active
-	time.Sleep(100 * time.Millisecond)
-
-	endpoint := fmt.Sprintf("http://127.0.0.1:%d/", port)
 	result, err := http.Post(endpoint, "application/json", strings.NewReader(`{"message":}`))
 	if err != nil {
 		t.Fatal(err)
@@ -157,64 +155,127 @@ func TestPathReferences(t *testing.T) {
 	}
 
 	listener.Handle(ctx, endpoints, nil)
-	go listener.Serve()
-
-	// Some CI pipelines take a little while before the listener is active
-	time.Sleep(100 * time.Millisecond)
 
 	endpoint := fmt.Sprintf("http://127.0.0.1:%d/"+message, port)
 	http.Get(endpoint)
 }
 
-// func TestListenerForwarding(t *testing.T) {
-// 	ctx := instance.NewContext()
+func TestStoringParams(t *testing.T) {
+	ctx := instance.NewContext()
+	node := &specs.Node{
+		Name: "first",
+	}
 
-// 	mock := fmt.Sprintf(":%d", AvailablePort(t))
-// 	forward := fmt.Sprintf(":%d", AvailablePort(t))
+	path := "message"
+	expected := "sample"
+	called := 0
 
-// 	forwarded := 0
+	call := NewCallerFunc(func(ctx context.Context, refs refs.Store) error {
+		ref := refs.Load("input", path)
+		if ref == nil {
+			t.Fatal("reference not set")
+		}
 
-// 	go http.ListenAndServe(forward, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-// 		log.Println("forwarder")
-// 		// set-up a simple forward server which always returns a 200
-// 		forwarded++
-// 		return
-// 	}))
+		if ref.Value == nil {
+			t.Fatal("reference value not set")
+		}
 
-// 	listener := NewListener(mock, nil)(ctx)
+		if ref.Value != expected {
+			t.Fatalf("unexpected value '%+v', expected '%s'", ref.Value, expected)
+		}
 
-// 	json := json.NewConstructor()
-// 	constructors := map[string]codec.Constructor{
-// 		json.Name(): json,
-// 	}
+		called++
+		return nil
+	})
 
-// 	endpoints := []*transport.Endpoint{
-// 		{
-// 			Flow: flow.NewManager(ctx, "test", nil, nil, nil, nil),
-// 			Options: specs.Options{
-// 				EndpointOption: "/",
-// 				MethodOption:   http.MethodPost,
-// 				CodecOption:    json.Name(),
-// 			},
-// 			Forward: &transport.Forward{
-// 				Service: &specs.Service{
-// 					Host: fmt.Sprintf("http://127.0.0.1%s", forward),
-// 				},
-// 			},
-// 		},
-// 	}
+	nodes := flow.Nodes{
+		flow.NewNode(ctx, node, nil, call, nil, nil),
+	}
 
-// 	listener.Handle(ctx, endpoints, constructors)
-// 	defer listener.Close()
-// 	go listener.Serve()
+	listener, endpoint := NewMockListener(t, nodes)
+	defer listener.Close()
 
-// 	// Some CI pipelines take a little while before the listener is active
-// 	time.Sleep(100 * time.Millisecond)
+	uri, err := url.Parse(endpoint)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-// 	endpoint := fmt.Sprintf("http://127.0.0.1%s/", mock)
-// 	http.Get(endpoint)
+	query := uri.Query()
+	query.Add(path, expected)
+	uri.RawQuery = query.Encode()
 
-// 	if forwarded != 1 {
-// 		t.Fatalf("unexpected counter result %d, expected service request counter to be 1", forwarded)
-// 	}
-// }
+	t.Log(uri.String())
+
+	res, err := http.Post(uri.String(), "", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if res.StatusCode != http.StatusOK {
+		t.Fatalf("unexpected status code %d, expected %d", res.StatusCode, http.StatusOK)
+	}
+
+	if called != 1 {
+		t.Fatalf("unexpected counter result %d, expected service request counter to be 1", called)
+	}
+}
+
+func TestListenerForwarding(t *testing.T) {
+	ctx := instance.NewContext()
+
+	mock := fmt.Sprintf(":%d", AvailablePort(t))
+	forward := fmt.Sprintf(":%d", AvailablePort(t))
+
+	forwarded := 0
+
+	go http.ListenAndServe(forward, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Println("forwarder")
+		// set-up a simple forward server which always returns a 200
+		forwarded++
+		return
+	}))
+
+	listener := NewListener(mock, nil)(ctx)
+
+	json := json.NewConstructor()
+	constructors := map[string]codec.Constructor{
+		json.Name(): json,
+	}
+
+	endpoints := []*transport.Endpoint{
+		{
+			Flow: flow.NewManager(ctx, "test", nil, nil, nil, nil),
+			Options: specs.Options{
+				EndpointOption: "/",
+				MethodOption:   http.MethodGet,
+				CodecOption:    json.Name(),
+			},
+			Forward: &transport.Forward{
+				Service: &specs.Service{
+					Host: fmt.Sprintf("http://127.0.0.1%s", forward),
+				},
+			},
+		},
+	}
+
+	listener.Handle(ctx, endpoints, constructors)
+	defer listener.Close()
+	go listener.Serve()
+
+	// Some CI pipelines take a little while before the listener is active
+	time.Sleep(100 * time.Millisecond)
+
+	endpoint := fmt.Sprintf("http://127.0.0.1%s/", mock)
+	res, err := http.Get(endpoint)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if res.StatusCode != http.StatusOK {
+		t.Fatalf("unexpected status code %d, expected %d", res.StatusCode, http.StatusOK)
+	}
+
+	if forwarded != 1 {
+		t.Fatalf("unexpected counter result %d, expected service request counter to be 1", forwarded)
+	}
+}

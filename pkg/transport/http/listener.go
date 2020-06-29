@@ -220,7 +220,7 @@ func (handle *Handle) HTTPFunc(w http.ResponseWriter, r *http.Request, ps httpro
 	store := handle.Endpoint.Flow.NewStore()
 
 	for key, value := range r.URL.Query() {
-		store.StoreValue(template.InputResource, key, value)
+		store.StoreValue(template.InputResource, key, strings.Join(value, ""))
 	}
 
 	for _, param := range ps {
