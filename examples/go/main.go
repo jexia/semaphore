@@ -4,8 +4,8 @@ import (
 	"github.com/jexia/maestro"
 	"github.com/jexia/maestro/pkg/codec"
 	"github.com/jexia/maestro/pkg/core/logger"
-	"github.com/jexia/maestro/pkg/definitions/hcl"
-	"github.com/jexia/maestro/pkg/definitions/proto"
+	"github.com/jexia/maestro/pkg/providers/hcl"
+	"github.com/jexia/maestro/pkg/providers/proto"
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jexia/maestro/pkg/transport/http"
 )

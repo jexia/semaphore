@@ -87,7 +87,7 @@ func (listener *Listener) Handle(ctx instance.Context, endpoints []*transport.En
 	}
 
 	for _, endpoint := range endpoints {
-		req, err := NewArgs(endpoint.Request)
+		req, err := NewArgs(endpoint.Request.Schema)
 		if err != nil {
 			return err
 		}
@@ -109,7 +109,7 @@ func (listener *Listener) Handle(ctx instance.Context, endpoints []*transport.En
 					return nil, err
 				}
 
-				result, err := ResponseValue(endpoint.Response.Property, store)
+				result, err := ResponseValue(endpoint.Response.Schema.Property, store)
 				if err != nil {
 					return nil, err
 				}
@@ -118,7 +118,7 @@ func (listener *Listener) Handle(ctx instance.Context, endpoints []*transport.En
 			}
 		}(endpoint)
 
-		res, err := NewSchemaObject(objects, options.Name, endpoint.Response)
+		res, err := NewSchemaObject(objects, options.Name, endpoint.Response.Schema)
 		if err != nil {
 			return err
 		}
@@ -131,7 +131,7 @@ func (listener *Listener) Handle(ctx instance.Context, endpoints []*transport.En
 		}
 
 		if endpoint.Request != nil {
-			field.Description = endpoint.Request.Property.Comment
+			field.Description = endpoint.Request.Schema.Property.Comment
 		}
 
 		err = SetField(path, fields[options.Base], field)

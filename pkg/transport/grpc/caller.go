@@ -6,10 +6,10 @@ import (
 	"io/ioutil"
 	"sync"
 
+	"github.com/jexia/maestro/internal/functions"
 	"github.com/jexia/maestro/pkg/core/instance"
 	"github.com/jexia/maestro/pkg/core/logger"
 	"github.com/jexia/maestro/pkg/core/trace"
-	"github.com/jexia/maestro/pkg/functions"
 	"github.com/jexia/maestro/pkg/refs"
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jexia/maestro/pkg/transport"
@@ -179,10 +179,12 @@ func (call *Call) SendMsg(ctx context.Context, rw transport.ResponseWriter, pr *
 		return err
 	}
 
-	_, err = rw.Write(res.payload)
-	if err != nil {
-		return err
-	}
+	go func() {
+		_, err = rw.Write(res.payload)
+		if err != nil {
+			call.ctx.Logger(logger.Core).Error(err)
+		}
+	}()
 
 	return nil
 }

@@ -17,11 +17,10 @@ type Request struct {
 
 // Method represents a gRPC endpoint
 type Method struct {
+	*transport.Endpoint
 	fqn        string
 	name       string
 	flow       transport.Flow
-	req        *Request
-	res        *Request
 	descriptor []byte
 }
 
@@ -37,20 +36,20 @@ func (method *Method) References() []*specs.Property {
 
 // GetRequest returns the request input parameter map
 func (method *Method) GetRequest() map[string]*specs.Property {
-	if method.req == nil {
+	if method.Request == nil {
 		return make(map[string]*specs.Property, 0)
 	}
 
-	return method.req.param.Property.Nested
+	return method.Request.Schema.Property.Nested
 }
 
 // GetResponse returns the request output parameter map
 func (method *Method) GetResponse() map[string]*specs.Property {
-	if method.res == nil {
+	if method.Response == nil {
 		return make(map[string]*specs.Property, 0)
 	}
 
-	return method.res.param.Property.Nested
+	return method.Response.Schema.Property.Nested
 }
 
 // Service represents a gRPC service

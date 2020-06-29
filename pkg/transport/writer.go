@@ -9,6 +9,8 @@ import (
 const (
 	// StatusOK represents a 200 header status code
 	StatusOK = 200
+	// StatusInternalErr represents a 500 header status code
+	StatusInternalErr = 500
 )
 
 // NewResponseWriter constructs a new response writer for the given io writer

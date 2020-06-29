@@ -6,12 +6,12 @@ import (
 	"github.com/jexia/maestro/internal/compare"
 	"github.com/jexia/maestro/internal/dependencies"
 	"github.com/jexia/maestro/internal/flow"
+	"github.com/jexia/maestro/internal/functions"
 	"github.com/jexia/maestro/internal/references"
 	"github.com/jexia/maestro/pkg/core/api"
 	"github.com/jexia/maestro/pkg/core/instance"
 	"github.com/jexia/maestro/pkg/core/logger"
 	"github.com/jexia/maestro/pkg/core/trace"
-	"github.com/jexia/maestro/pkg/functions"
 	"github.com/jexia/maestro/pkg/metadata"
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jexia/maestro/pkg/specs/labels"
@@ -81,13 +81,6 @@ func FlowManager(ctx instance.Context, mem functions.Collection, services *specs
 
 		nodes := make([]*flow.Node, len(manager.GetNodes()))
 
-		result := &transport.Endpoint{
-			Listener: endpoint.Listener,
-			Options:  endpoint.Options,
-			Request:  manager.GetInput(),
-			Response: manager.GetOutput(),
-		}
-
 		for index, node := range manager.GetNodes() {
 			condition := Condition(ctx, mem, node.Condition)
 
@@ -115,15 +108,14 @@ func FlowManager(ctx instance.Context, mem functions.Collection, services *specs
 		}
 
 		stack := mem[manager.GetOutput()]
-		result.Forward = forward
-		result.Flow = flow.NewManager(ctx, manager.GetName(), nodes, manager.GetOnError(), stack, &flow.ManagerMiddleware{
+		flow := flow.NewManager(ctx, manager.GetName(), nodes, manager.GetOnError(), stack, &flow.ManagerMiddleware{
 			BeforeDo:       options.BeforeManagerDo,
 			AfterDo:        options.AfterManagerDo,
 			BeforeRollback: options.BeforeManagerRollback,
 			AfterRollback:  options.AfterManagerRollback,
 		})
 
-		results[index] = result
+		results[index] = transport.NewEndpoint(endpoint.Listener, flow, forward, endpoint.Options, manager.GetInput(), manager.GetOutput())
 	}
 
 	err := Listeners(results, options)
@@ -198,9 +190,20 @@ func NewServiceCall(ctx instance.Context, mem functions.Collection, services *sp
 		return nil, err
 	}
 
-	err = transport.DefineCaller(ctx, node, flows, dialer, manager)
-	if err != nil {
-		return nil, err
+	method := dialer.GetMethod(node.Call.Method)
+	if method != nil {
+		for _, reference := range method.References() {
+			err := references.DefineProperty(ctx, node, reference, manager)
+			if err != nil {
+				return nil, err
+			}
+
+			dependencies.ResolvePropertyReferences(reference, node.DependsOn)
+			err = dependencies.ResolveNode(manager, node, make(map[string]*specs.Node))
+			if err != nil {
+				return nil, err
+			}
+		}
 	}
 
 	codec := options.Codec.Get(service.Codec)
@@ -299,7 +302,7 @@ func Forward(services *specs.ServicesManifest, flows *specs.FlowsManifest, call 
 	}
 
 	if call.Request != nil {
-		result.Header = call.Request.Header
+		result.Schema = call.Request.Header
 	}
 
 	return result, nil

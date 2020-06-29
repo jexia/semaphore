@@ -6,9 +6,9 @@ import (
 	"io"
 
 	"github.com/jexia/maestro/internal/codec"
+	"github.com/jexia/maestro/internal/functions"
 	"github.com/jexia/maestro/pkg/core/instance"
 	"github.com/jexia/maestro/pkg/core/logger"
-	"github.com/jexia/maestro/pkg/functions"
 	"github.com/jexia/maestro/pkg/metadata"
 	"github.com/jexia/maestro/pkg/refs"
 	"github.com/jexia/maestro/pkg/specs"
@@ -116,6 +116,8 @@ func (caller *Caller) Do(ctx context.Context, store refs.Store) error {
 	}
 
 	if caller.transport != nil {
+		// SendMsg should not be called inside a seperate go routine.
+		// A seperate go routine could be created inside the transporter to stream the returned message to the io reader
 		err := caller.transport.SendMsg(ctx, w, r, store)
 		if err != nil {
 			caller.ctx.Logger(logger.Flow).WithFields(logrus.Fields{

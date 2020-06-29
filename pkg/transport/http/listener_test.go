@@ -31,14 +31,14 @@ func NewMockListener(t *testing.T, nodes flow.Nodes) (transport.Listener, int) {
 
 	endpoints := []*transport.Endpoint{
 		{
-			Request: NewSimpleMockSpecs(),
+			Request: transport.NewObject(NewSimpleMockSpecs(), nil),
 			Flow:    flow.NewManager(ctx, "test", nodes, nil, nil, nil),
 			Options: specs.Options{
 				EndpointOption: "/",
 				MethodOption:   http.MethodPost,
 				CodecOption:    json.Name(),
 			},
-			Response: NewSimpleMockSpecs(),
+			Response: transport.NewObject(NewSimpleMockSpecs(), nil),
 		},
 	}
 
@@ -165,3 +165,56 @@ func TestPathReferences(t *testing.T) {
 	endpoint := fmt.Sprintf("http://127.0.0.1:%d/"+message, port)
 	http.Get(endpoint)
 }
+
+// func TestListenerForwarding(t *testing.T) {
+// 	ctx := instance.NewContext()
+
+// 	mock := fmt.Sprintf(":%d", AvailablePort(t))
+// 	forward := fmt.Sprintf(":%d", AvailablePort(t))
+
+// 	forwarded := 0
+
+// 	go http.ListenAndServe(forward, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+// 		log.Println("forwarder")
+// 		// set-up a simple forward server which always returns a 200
+// 		forwarded++
+// 		return
+// 	}))
+
+// 	listener := NewListener(mock, nil)(ctx)
+
+// 	json := json.NewConstructor()
+// 	constructors := map[string]codec.Constructor{
+// 		json.Name(): json,
+// 	}
+
+// 	endpoints := []*transport.Endpoint{
+// 		{
+// 			Flow: flow.NewManager(ctx, "test", nil, nil, nil, nil),
+// 			Options: specs.Options{
+// 				EndpointOption: "/",
+// 				MethodOption:   http.MethodPost,
+// 				CodecOption:    json.Name(),
+// 			},
+// 			Forward: &transport.Forward{
+// 				Service: &specs.Service{
+// 					Host: fmt.Sprintf("http://127.0.0.1%s", forward),
+// 				},
+// 			},
+// 		},
+// 	}
+
+// 	listener.Handle(ctx, endpoints, constructors)
+// 	defer listener.Close()
+// 	go listener.Serve()
+
+// 	// Some CI pipelines take a little while before the listener is active
+// 	time.Sleep(100 * time.Millisecond)
+
+// 	endpoint := fmt.Sprintf("http://127.0.0.1%s/", mock)
+// 	http.Get(endpoint)
+
+// 	if forwarded != 1 {
+// 		t.Fatalf("unexpected counter result %d, expected service request counter to be 1", forwarded)
+// 	}
+// }

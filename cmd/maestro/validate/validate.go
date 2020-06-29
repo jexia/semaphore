@@ -4,8 +4,8 @@ import (
 	"github.com/jexia/maestro"
 	"github.com/jexia/maestro/cmd/maestro/config"
 	"github.com/jexia/maestro/internal/constructor"
+	"github.com/jexia/maestro/internal/functions"
 	"github.com/jexia/maestro/pkg/core/instance"
-	"github.com/jexia/maestro/pkg/functions"
 	"github.com/spf13/cobra"
 )
 

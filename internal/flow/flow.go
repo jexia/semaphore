@@ -4,9 +4,9 @@ import (
 	"context"
 	"sync"
 
+	"github.com/jexia/maestro/internal/functions"
 	"github.com/jexia/maestro/pkg/core/instance"
 	"github.com/jexia/maestro/pkg/core/logger"
-	"github.com/jexia/maestro/pkg/functions"
 	"github.com/jexia/maestro/pkg/refs"
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jexia/maestro/pkg/transport"
@@ -120,7 +120,7 @@ func (manager *Manager) NewStore() refs.Store {
 
 // Do calls all the nodes inside the manager if a error is returned is a rollback of all the already executed steps triggered.
 // Nodes are executed concurrently to one another.
-func (manager *Manager) Do(ctx context.Context, refs refs.Store) transport.Error {
+func (manager *Manager) Do(ctx context.Context, refs refs.Store) error {
 	if manager.BeforeDo != nil {
 		patched, err := manager.BeforeDo(ctx, manager, refs)
 		if err != nil {

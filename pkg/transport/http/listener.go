@@ -14,13 +14,10 @@ import (
 	"github.com/jexia/maestro/pkg/core/logger"
 	"github.com/jexia/maestro/pkg/core/trace"
 	"github.com/jexia/maestro/pkg/metadata"
-	"github.com/jexia/maestro/pkg/refs"
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jexia/maestro/pkg/specs/template"
-	"github.com/jexia/maestro/pkg/specs/types"
 	"github.com/jexia/maestro/pkg/transport"
 	"github.com/julienschmidt/httprouter"
-	"github.com/sirupsen/logrus"
 )
 
 // NewListener constructs a new listener for the given addr
@@ -85,8 +82,7 @@ func (listener *Listener) Serve() (err error) {
 
 // Handle parses the given endpoints and constructs route handlers
 func (listener *Listener) Handle(ctx instance.Context, endpoints []*transport.Endpoint, codecs map[string]codec.Constructor) error {
-	logger := listener.ctx.Logger(logger.Transport)
-	logger.Info("HTTP listener received new endpoints")
+	listener.ctx.Logger(logger.Transport).Info("HTTP listener received new endpoints")
 
 	router := httprouter.New()
 	headers := map[string]struct{}{}
@@ -97,14 +93,14 @@ func (listener *Listener) Handle(ctx instance.Context, endpoints []*transport.En
 			return fmt.Errorf("endpoint %s: %s", endpoint.Flow, err)
 		}
 
-		handle, err := NewHandle(ctx, logger, endpoint, options, codecs)
+		handle, err := NewHandle(ctx, endpoint, options, codecs)
 		if err != nil {
 			return err
 		}
 
 		if handle.Request != nil {
-			if handle.Request.Header != nil {
-				for header := range handle.Request.Header.Params {
+			if handle.Request.Meta != nil {
+				for header := range handle.Request.Meta.Params {
 					headers[header] = struct{}{}
 				}
 			}
@@ -156,7 +152,7 @@ func (listener *Listener) HandleCors(h http.Handler) http.Handler {
 }
 
 // NewHandle constructs a new handle function for the given endpoint to the given flow
-func NewHandle(ctx instance.Context, logger *logrus.Logger, endpoint *transport.Endpoint, options *EndpointOptions, constructors map[string]codec.Constructor) (*Handle, error) {
+func NewHandle(ctx instance.Context, endpoint *transport.Endpoint, options *EndpointOptions, constructors map[string]codec.Constructor) (*Handle, error) {
 	if constructors == nil {
 		constructors = make(map[string]codec.Constructor)
 	}
@@ -166,45 +162,15 @@ func NewHandle(ctx instance.Context, logger *logrus.Logger, endpoint *transport.
 		return nil, trace.New(trace.WithMessage("codec not found '%s'", options.Codec))
 	}
 
-	collection, err := transport.NewErrCodecCollection(ctx, constructor, endpoint.Flow.Errors())
+	err := endpoint.NewCodec(ctx, constructor)
 	if err != nil {
 		return nil, err
 	}
 
 	handle := &Handle{
-		logger:   logger,
+		ctx:      ctx,
 		Endpoint: endpoint,
 		Options:  options,
-		Errs:     collection,
-	}
-
-	if endpoint.Request != nil {
-		header := metadata.NewManager(ctx, template.InputResource, endpoint.Request.Header)
-		handle.Request = &Request{
-			Header: header,
-		}
-
-		if endpoint.Forward == nil {
-			request, err := constructor.New(template.InputResource, endpoint.Request)
-			if err != nil {
-				return nil, trace.New(trace.WithMessage("unable to construct a new HTTP codec manager for '%s'", endpoint.Flow))
-			}
-
-			handle.Request.Codec = request
-		}
-	}
-
-	if endpoint.Response != nil {
-		response, err := constructor.New(template.OutputResource, endpoint.Response)
-		if err != nil {
-			return nil, trace.New(trace.WithMessage("unable to construct a new HTTP codec manager for '%s'", endpoint.Flow))
-		}
-
-		header := metadata.NewManager(ctx, template.OutputResource, endpoint.Response.Header)
-		handle.Response = &Request{
-			Header: header,
-			Codec:  response,
-		}
 	}
 
 	if endpoint.Forward != nil {
@@ -213,9 +179,8 @@ func NewHandle(ctx instance.Context, logger *logrus.Logger, endpoint *transport.
 			return nil, trace.New(trace.WithMessage("unable to parse the proxy forward host '%s'", endpoint.Forward.Service.Host))
 		}
 
-		header := metadata.NewManager(ctx, template.OutputResource, endpoint.Forward.Header)
 		handle.Proxy = &Proxy{
-			Header: header,
+			Header: endpoint.Forward.Meta,
 			Handle: httputil.NewSingleHostReverseProxy(url),
 		}
 	}
@@ -237,13 +202,10 @@ type Request struct {
 
 // Handle holds a endpoint its options and a optional request and response
 type Handle struct {
-	logger   *logrus.Logger
-	Endpoint *transport.Endpoint
-	Options  *EndpointOptions
-	Request  *Request
-	Response *Request
-	Proxy    *Proxy
-	Errs     *transport.CodecCollection
+	*transport.Endpoint
+	ctx     instance.Context
+	Options *EndpointOptions
+	Proxy   *Proxy
 }
 
 // HTTPFunc represents a HTTP function which could be used inside a HTTP router
@@ -252,7 +214,7 @@ func (handle *Handle) HTTPFunc(w http.ResponseWriter, r *http.Request, ps httpro
 		return
 	}
 
-	handle.logger.Debug("New incoming HTTP request")
+	handle.ctx.Logger(logger.Transport).Debug("New incoming HTTP request")
 
 	defer r.Body.Close()
 	store := handle.Endpoint.Flow.NewStore()
@@ -266,29 +228,52 @@ func (handle *Handle) HTTPFunc(w http.ResponseWriter, r *http.Request, ps httpro
 	}
 
 	if handle.Request != nil {
-		if handle.Request.Header != nil {
-			handle.Request.Header.Unmarshal(CopyHTTPHeader(r.Header), store)
+		if handle.Request.Meta != nil {
+			handle.Request.Meta.Unmarshal(CopyHTTPHeader(r.Header), store)
 		}
 
 		if handle.Request.Codec != nil {
 			err := handle.Request.Codec.Unmarshal(r.Body, store)
 			if err != nil {
-				handle.logger.Error(err)
+				handle.ctx.Logger(logger.Transport).Error(err)
 				w.WriteHeader(http.StatusBadRequest)
 				return
 			}
 		}
 	}
 
-	result := handle.Endpoint.Flow.Do(r.Context(), store)
-	if result != nil {
-		handle.ServeError(w, store, result)
+	err := handle.Endpoint.Flow.Do(r.Context(), store)
+	if err != nil {
+		object := handle.Endpoint.Errs.Get(transport.Unwrap(err))
+		if object == nil {
+			handle.ctx.Logger(logger.Transport).Error("Unable to lookup error manager")
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		reader, err := object.Codec.Marshal(store)
+		if err != nil {
+			handle.ctx.Logger(logger.Transport).Error(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(object.ResolveStatusCode(handle.ctx, store))
+		if object.Meta != nil {
+			SetHTTPHeader(w.Header(), object.Meta.Marshal(store))
+		}
+
+		_, err = io.Copy(w, reader)
+		if err != nil {
+			handle.ctx.Logger(logger.Transport).Error(err)
+		}
+
 		return
 	}
 
 	if handle.Response != nil {
-		if handle.Response.Header != nil {
-			SetHTTPHeader(w.Header(), handle.Response.Header.Marshal(store))
+		if handle.Response.Meta != nil {
+			SetHTTPHeader(w.Header(), handle.Response.Meta.Marshal(store))
 		}
 
 		if handle.Response.Codec != nil {
@@ -305,7 +290,7 @@ func (handle *Handle) HTTPFunc(w http.ResponseWriter, r *http.Request, ps httpro
 
 			_, err = io.Copy(w, reader)
 			if err != nil {
-				handle.logger.Error(err)
+				handle.ctx.Logger(logger.Transport).Error(err)
 				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
@@ -318,45 +303,4 @@ func (handle *Handle) HTTPFunc(w http.ResponseWriter, r *http.Request, ps httpro
 		SetHTTPHeader(r.Header, handle.Proxy.Header.Marshal(store))
 		handle.Proxy.Handle.ServeHTTP(w, r)
 	}
-}
-
-// ServeError handles the given transport error for the given http response writer
-func (handle *Handle) ServeError(w http.ResponseWriter, store refs.Store, result transport.Error) {
-	manager := handle.Errs.Lookup(result)
-	if manager == nil {
-		handle.logger.Error("Unable to lookup error manager")
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	statusCode := http.StatusInternalServerError
-	if result.GetStatusCode() != nil && result.GetStatusCode().Type == types.Int64 {
-		status := result.GetStatusCode()
-		value := status.Default
-		if status.Reference != nil {
-			ref := store.Load(status.Reference.Resource, status.Reference.Path)
-			if ref != nil {
-				value = ref.Value
-			}
-		}
-
-		if value != nil {
-			statusCode = int(value.(int64))
-		}
-	}
-
-	reader, err := manager.Codec.Marshal(store)
-	if err != nil {
-		handle.logger.Error(err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(statusCode)
-
-	if manager.Header != nil {
-		SetHTTPHeader(w.Header(), manager.Header.Marshal(store))
-	}
-
-	io.Copy(w, reader)
 }

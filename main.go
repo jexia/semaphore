@@ -4,11 +4,11 @@ import (
 	"sync"
 
 	"github.com/jexia/maestro/internal/constructor"
+	"github.com/jexia/maestro/internal/functions"
 	"github.com/jexia/maestro/pkg/core/api"
 	"github.com/jexia/maestro/pkg/core/instance"
 	"github.com/jexia/maestro/pkg/core/logger"
 	"github.com/jexia/maestro/pkg/core/trace"
-	"github.com/jexia/maestro/pkg/functions"
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jexia/maestro/pkg/transport"
 )

@@ -11,9 +11,7 @@ import (
 	"github.com/jexia/maestro/internal/codec/proto"
 	"github.com/jexia/maestro/pkg/core/instance"
 	"github.com/jexia/maestro/pkg/core/logger"
-	"github.com/jexia/maestro/pkg/metadata"
 	"github.com/jexia/maestro/pkg/specs"
-	"github.com/jexia/maestro/pkg/specs/template"
 	"github.com/jexia/maestro/pkg/transport"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -89,39 +87,15 @@ func (listener *Listener) Handle(ctx instance.Context, endpoints []*transport.En
 		name := fmt.Sprintf("%s/%s", service, options.Method)
 
 		method := &Method{
-			fqn:  name,
-			name: options.Method,
-			flow: endpoint.Flow,
+			Endpoint: endpoint,
+			fqn:      name,
+			name:     options.Method,
+			flow:     endpoint.Flow,
 		}
 
-		if endpoint.Request != nil {
-			codec, err := constructor.New(template.InputResource, endpoint.Request)
-			if err != nil {
-				return err
-			}
-
-			header := metadata.NewManager(ctx, template.InputResource, endpoint.Request.Header)
-
-			method.req = &Request{
-				param:  endpoint.Request,
-				codec:  codec,
-				header: header,
-			}
-		}
-
-		if endpoint.Response != nil {
-			codec, err := constructor.New(template.OutputResource, endpoint.Response)
-			if err != nil {
-				return err
-			}
-
-			header := metadata.NewManager(ctx, template.InputResource, endpoint.Response.Header)
-
-			method.res = &Request{
-				param:  endpoint.Response,
-				codec:  codec,
-				header: header,
-			}
+		err = method.NewCodec(ctx, constructor)
+		if err != nil {
+			return err
 		}
 
 		methods[name] = method
@@ -190,13 +164,13 @@ func (listener *Listener) handler(srv interface{}, stream grpc.ServerStream) err
 
 	store := method.flow.NewStore()
 
-	if method.req != nil {
+	if method.Request != nil {
 		header, ok := rpcMeta.FromIncomingContext(stream.Context())
 		if ok {
-			method.req.header.Unmarshal(CopyRPCMD(header), store)
+			method.Request.Meta.Unmarshal(CopyRPCMD(header), store)
 		}
 
-		err = method.req.codec.Unmarshal(bytes.NewBuffer(req.payload), store)
+		err = method.Request.Codec.Unmarshal(bytes.NewBuffer(req.payload), store)
 		if err != nil {
 			return grpc.Errorf(codes.ResourceExhausted, "invalid message body: %s", err)
 		}
@@ -207,9 +181,9 @@ func (listener *Listener) handler(srv interface{}, stream grpc.ServerStream) err
 		return grpc.Errorf(codes.Internal, "unknown error: %s", err)
 	}
 
-	if method.res != nil {
-		header := method.req.header.Marshal(store)
-		reader, err := method.res.codec.Marshal(store)
+	if method.Response != nil {
+		header := method.Response.Meta.Marshal(store)
+		reader, err := method.Response.Codec.Marshal(store)
 		if err != nil {
 			return grpc.Errorf(codes.ResourceExhausted, "invalid response body: %s", err)
 		}

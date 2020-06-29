@@ -4,8 +4,8 @@ import (
 	"github.com/jexia/maestro/internal/codec"
 	"github.com/jexia/maestro/internal/definitions"
 	"github.com/jexia/maestro/internal/flow"
+	"github.com/jexia/maestro/internal/functions"
 	"github.com/jexia/maestro/pkg/core/instance"
-	"github.com/jexia/maestro/pkg/functions"
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jexia/maestro/pkg/transport"
 )
