@@ -3,6 +3,7 @@ package graphql
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"sync"
 
@@ -87,12 +88,12 @@ func (listener *Listener) Handle(ctx instance.Context, endpoints []*transport.En
 	}
 
 	for _, endpoint := range endpoints {
-		req, err := NewArgs(endpoint.Request.Schema)
+		options, err := ParseEndpointOptions(endpoint)
 		if err != nil {
 			return err
 		}
 
-		options, err := ParseEndpointOptions(endpoint)
+		err = endpoint.NewCodec(ctx, nil)
 		if err != nil {
 			return err
 		}
@@ -106,7 +107,18 @@ func (listener *Listener) Handle(ctx instance.Context, endpoints []*transport.En
 
 				err = endpoint.Flow.Do(ctx, store)
 				if err != nil {
-					return nil, err
+					object := endpoint.Errs.Get(transport.Unwrap(err))
+					if object == nil {
+						listener.ctx.Logger(logger.Transport).Error("Unable to lookup error manager")
+						return nil, err
+					}
+
+					message := object.ResolveMessage(store)
+					return nil, errors.New(message)
+				}
+
+				if endpoint.Response == nil || endpoint.Response.Schema == nil {
+					return make(map[string]interface{}), nil
 				}
 
 				result, err := ResponseValue(endpoint.Response.Schema.Property, store)
@@ -118,20 +130,33 @@ func (listener *Listener) Handle(ctx instance.Context, endpoints []*transport.En
 			}
 		}(endpoint)
 
-		res, err := NewSchemaObject(objects, options.Name, endpoint.Response.Schema)
+		res, err := NewSchemaObject(objects, options.Name, endpoint.Response)
 		if err != nil {
 			return err
 		}
 
 		path := options.Path
 		field := &graphql.Field{
-			Args:    req,
-			Type:    res,
+			Args:    graphql.FieldConfigArgument{},
 			Resolve: resolve,
+			Type:    res,
 		}
 
 		if endpoint.Request != nil {
-			field.Description = endpoint.Request.Schema.Property.Comment
+			req, err := NewArgs(endpoint.Request.Schema)
+			if err != nil {
+				return err
+			}
+
+			field.Args = req
+
+			if endpoint.Request.Schema != nil && endpoint.Request.Schema.Property != nil {
+				field.Description = endpoint.Request.Schema.Property.Comment
+			}
+		}
+
+		if options.Base == QueryObject && field.Type == nil {
+			options.Base = MutationObject
 		}
 
 		err = SetField(path, fields[options.Base], field)

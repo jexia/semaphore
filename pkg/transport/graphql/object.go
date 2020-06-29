@@ -8,6 +8,7 @@ import (
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jexia/maestro/pkg/specs/labels"
 	"github.com/jexia/maestro/pkg/specs/types"
+	"github.com/jexia/maestro/pkg/transport"
 )
 
 // ErrInvalidObject is thrown when the given property is not of type message
@@ -98,9 +99,14 @@ type Objects struct {
 
 // NewSchemaObject constructs a new object for the given property with the given name.
 // If a object with the same name already exists is it used instead.
-func NewSchemaObject(objects *Objects, name string, params *specs.ParameterMap) (*graphql.Object, error) {
+func NewSchemaObject(objects *Objects, name string, object *transport.Object) (*graphql.Object, error) {
+	if object == nil {
+		return NewEmptyObject(objects, name), nil
+	}
+
+	params := object.Schema
 	if params == nil {
-		return &graphql.Object{}, nil
+		return NewEmptyObject(objects, name), nil
 	}
 
 	property := params.Property
@@ -113,13 +119,41 @@ func NewSchemaObject(objects *Objects, name string, params *specs.ParameterMap) 
 		return objects.collection[name], nil
 	}
 
-	object, err := NewObject(name, property)
+	obj, err := NewObject(name, property)
 	if err != nil {
 		return nil, err
 	}
 
-	objects.collection[name] = object
+	if len(obj.Fields()) == 0 {
+		return NewEmptyObject(objects, name), nil
+	}
+
+	objects.collection[name] = obj
 	objects.properties[name] = property
 
-	return object, nil
+	return obj, nil
+}
+
+// NewEmptyObject constructs a new empty object with the given name and stores it inside the objects collection.
+// The object is claimed inside the object properties as nil. If the name is already claimed is the configured graphql object returned.
+func NewEmptyObject(objects *Objects, name string) *graphql.Object {
+	_, has := objects.properties[name]
+	if has {
+		return objects.collection[name]
+	}
+
+	result := graphql.NewObject(graphql.ObjectConfig{
+		Name:        name,
+		Description: "empty object",
+		Fields: graphql.Fields{
+			"_empty": &graphql.Field{
+				Type: graphql.Boolean,
+			},
+		},
+	})
+
+	objects.collection[name] = result
+	objects.properties[name] = nil
+
+	return result
 }

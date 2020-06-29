@@ -243,3 +243,12 @@ func (err *OnError) GetStatusCode() *Property {
 
 	return err.Status
 }
+
+// GetMessage returns the message property
+func (err *OnError) GetMessage() *Property {
+	if err == nil {
+		return nil
+	}
+
+	return err.Message
+}

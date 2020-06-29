@@ -178,7 +178,16 @@ func (listener *Listener) handler(srv interface{}, stream grpc.ServerStream) err
 
 	err = method.flow.Do(stream.Context(), store)
 	if err != nil {
-		return grpc.Errorf(codes.Internal, "unknown error: %s", err)
+		object := method.Endpoint.Errs.Get(transport.Unwrap(err))
+		if object == nil {
+			listener.ctx.Logger(logger.Transport).Error("Unable to lookup error manager")
+			return grpc.Errorf(codes.Internal, err.Error())
+		}
+
+		message := object.ResolveMessage(store)
+		status := object.ResolveStatusCode(store)
+
+		return grpc.Errorf(CodeFromStatus(status), message)
 	}
 
 	if method.Response != nil {

@@ -1,3 +1,15 @@
+endpoint "GlobalHandleError" "graphql" {
+	path = "greeter.global"
+	name = "GlobalError"
+	base = "query"
+}
+
+endpoint "GlobalHandleError" "grpc" {
+	package = "maestro.greeter"
+	service = "Error"
+	method = "Global"
+}
+
 endpoint "GlobalHandleError" "http" {
 	endpoint = "/"
 	method = "GET"

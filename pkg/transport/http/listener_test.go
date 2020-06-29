@@ -36,7 +36,7 @@ func NewMockListener(t *testing.T, nodes flow.Nodes, errs transport.Errs) (trans
 
 	endpoints := []*transport.Endpoint{
 		{
-			Request: transport.NewObject(NewSimpleMockSpecs(), nil),
+			Request: transport.NewObject(NewSimpleMockSpecs(), nil, nil),
 			Flow:    flow.NewManager(ctx, "test", nodes, nil, nil, nil),
 			Errs:    errs,
 			Options: specs.Options{
@@ -44,7 +44,7 @@ func NewMockListener(t *testing.T, nodes flow.Nodes, errs transport.Errs) (trans
 				MethodOption:   http.MethodPost,
 				CodecOption:    json.Name(),
 			},
-			Response: transport.NewObject(NewSimpleMockSpecs(), nil),
+			Response: transport.NewObject(NewSimpleMockSpecs(), nil, nil),
 		},
 	}
 
@@ -546,7 +546,7 @@ func TestListenerErrorHandling(t *testing.T) {
 			nodes := flow.Nodes{
 				flow.NewNode(ctx, node, nil, call, nil, nil),
 			}
-			obj := transport.NewObject(test.params, test.status)
+			obj := transport.NewObject(test.params, test.status, nil)
 
 			errs := transport.Errs{
 				test.params: obj,

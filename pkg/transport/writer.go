@@ -13,6 +13,17 @@ const (
 	StatusInternalErr = 500
 )
 
+var codes = map[int]string{
+	StatusOK:          "OK",
+	StatusInternalErr: "Internal Server Error",
+}
+
+// StatusMessage attempts to lookup the message for the given status code.
+// If no message has been found fot the given status code is a empty string returned.
+func StatusMessage(status int) string {
+	return codes[status]
+}
+
 // NewResponseWriter constructs a new response writer for the given io writer
 func NewResponseWriter(writer io.WriteCloser) *Writer {
 	return &Writer{

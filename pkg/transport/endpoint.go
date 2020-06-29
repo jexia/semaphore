@@ -3,12 +3,10 @@ package transport
 import (
 	"github.com/jexia/maestro/internal/codec"
 	"github.com/jexia/maestro/pkg/core/instance"
-	"github.com/jexia/maestro/pkg/core/logger"
 	"github.com/jexia/maestro/pkg/metadata"
 	"github.com/jexia/maestro/pkg/refs"
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jexia/maestro/pkg/specs/template"
-	"github.com/jexia/maestro/pkg/specs/types"
 )
 
 // NewEndpoint constructs a new transport endpoint.
@@ -18,15 +16,15 @@ func NewEndpoint(listener string, flow Flow, forward *Forward, options specs.Opt
 		Flow:     flow,
 		Forward:  forward,
 		Options:  options,
-		Request:  NewObject(request, nil),
-		Response: NewObject(response, nil),
+		Request:  NewObject(request, nil, nil),
+		Response: NewObject(response, nil, nil),
 	}
 
 	return result
 }
 
 // NewObject constructs a new data object
-func NewObject(schema *specs.ParameterMap, status *specs.Property) *Object {
+func NewObject(schema *specs.ParameterMap, status *specs.Property, message *specs.Property) *Object {
 	if schema == nil {
 		return nil
 	}
@@ -34,6 +32,7 @@ func NewObject(schema *specs.ParameterMap, status *specs.Property) *Object {
 	return &Object{
 		Schema:     schema,
 		StatusCode: status,
+		Message:    message,
 	}
 }
 
@@ -41,6 +40,7 @@ func NewObject(schema *specs.ParameterMap, status *specs.Property) *Object {
 type Object struct {
 	Schema     *specs.ParameterMap
 	StatusCode *specs.Property
+	Message    *specs.Property
 	Codec      codec.Manager
 	Meta       *metadata.Manager
 }
@@ -48,13 +48,8 @@ type Object struct {
 // ResolveStatusCode attempts to resolve the defined status code.
 // If no status code property has been defined or the property is not a int64.
 // Is a internal server error status returned.
-func (object *Object) ResolveStatusCode(ctx instance.Context, store refs.Store) int {
+func (object *Object) ResolveStatusCode(store refs.Store) int {
 	if object.StatusCode == nil {
-		return StatusInternalErr
-	}
-
-	if object.StatusCode.Type != types.Int64 {
-		ctx.Logger(logger.Transport).Error("unexpected status code type '%s', status code has to be a int64", object.StatusCode.Type)
 		return StatusInternalErr
 	}
 
@@ -73,6 +68,29 @@ func (object *Object) ResolveStatusCode(ctx instance.Context, store refs.Store) 
 	return int(result.(int64))
 }
 
+// ResolveMessage attempts to resolve the defined message.
+// If no message property has been defined or the property is not a string.
+// Is a internal server error message returned.
+func (object *Object) ResolveMessage(store refs.Store) string {
+	if object.Message == nil {
+		return StatusMessage(StatusInternalErr)
+	}
+
+	result := object.Message.Default
+	if object.Message.Reference != nil {
+		ref := store.Load(object.StatusCode.Reference.Resource, object.StatusCode.Reference.Path)
+		if ref != nil {
+			result = ref.Value
+		}
+	}
+
+	if result == nil {
+		return StatusMessage(StatusInternalErr)
+	}
+
+	return result.(string)
+}
+
 // NewMeta updates the current object metadata manager
 func (object *Object) NewMeta(ctx instance.Context, resource string) {
 	if object == nil || object.Schema == nil {
@@ -85,7 +103,7 @@ func (object *Object) NewMeta(ctx instance.Context, resource string) {
 // NewCodec updates the given object to use the given codec.
 // Errors returned while constructing a new codec manager are returned.
 func (object *Object) NewCodec(ctx instance.Context, resource string, codec codec.Constructor) error {
-	if object == nil || object.Schema == nil {
+	if object == nil || object.Schema == nil || codec == nil {
 		return nil
 	}
 
@@ -120,7 +138,7 @@ type Errs Collection
 
 // Set appends the given object to the object collection
 func (collection Errs) Set(object *Object) {
-	if collection == nil {
+	if collection == nil || object == nil {
 		return
 	}
 
@@ -129,6 +147,10 @@ func (collection Errs) Set(object *Object) {
 
 // Get attempts to retrieve the requested object from the errs collection
 func (collection Errs) Get(key Error) *Object {
+	if collection == nil || key == nil {
+		return nil
+	}
+
 	return collection[key.GetResponse()]
 }
 
@@ -171,8 +193,12 @@ func (endpoint *Endpoint) NewCodec(ctx instance.Context, codec codec.Constructor
 		}
 	}
 
+	if endpoint.Errs == nil {
+		endpoint.Errs = Errs{}
+	}
+
 	for _, handle := range endpoint.Flow.Errors() {
-		object := NewObject(handle.GetResponse(), handle.GetStatusCode())
+		object := NewObject(handle.GetResponse(), handle.GetStatusCode(), handle.GetMessage())
 
 		object.NewMeta(ctx, template.ErrorResource)
 		err = object.NewCodec(ctx, template.ErrorResource, codec)

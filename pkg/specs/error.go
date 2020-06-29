@@ -4,4 +4,5 @@ package specs
 type ErrorHandle interface {
 	GetResponse() *ParameterMap
 	GetStatusCode() *Property
+	GetMessage() *Property
 }

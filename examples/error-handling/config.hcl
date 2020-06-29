@@ -6,3 +6,11 @@ include = ["flow.hcl"]
 http {
     address = ":8080"
 }
+
+graphql {
+    address = ":9090"
+}
+
+grpc {
+    address = ":50051"
+}

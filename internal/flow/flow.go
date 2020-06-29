@@ -98,7 +98,7 @@ func (manager *Manager) GetName() string {
 
 // Errors returns the available error objects within the given flow
 func (manager *Manager) Errors() []transport.Error {
-	result := make([]transport.Error, 0, len(manager.Nodes))
+	result := []transport.Error{}
 
 	if manager.Error != nil {
 		result = append(result, transport.WrapError(nil, manager.Error))

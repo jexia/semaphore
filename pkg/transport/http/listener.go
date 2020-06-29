@@ -258,7 +258,7 @@ func (handle *Handle) HTTPFunc(w http.ResponseWriter, r *http.Request, ps httpro
 			return
 		}
 
-		w.WriteHeader(object.ResolveStatusCode(handle.ctx, store))
+		w.WriteHeader(object.ResolveStatusCode(store))
 		if object.Meta != nil {
 			SetHTTPHeader(w.Header(), object.Meta.Marshal(store))
 		}
