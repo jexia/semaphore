@@ -32,7 +32,7 @@ func NewCallerFunc(fn func(context.Context, refs.Store) error) flow.Call {
 	return &caller{fn: fn}
 }
 
-func NewMockListener(t *testing.T, nodes flow.Nodes) (transport.Listener, int) {
+func NewMockListener(t *testing.T, nodes flow.Nodes, errs transport.Errs) (transport.Listener, int) {
 	port := AvailablePort(t)
 	addr := fmt.Sprintf(":%d", port)
 
@@ -49,11 +49,14 @@ func NewMockListener(t *testing.T, nodes flow.Nodes) (transport.Listener, int) {
 				MethodOption:  "simple",
 				PackageOption: "pkg",
 			},
+			Errs:     errs,
 			Response: transport.NewObject(NewSimpleMockSpecs(), nil, nil),
 		},
 	}
 
 	listener.Handle(ctx, endpoints, constructors)
+	go listener.Serve()
+
 	return listener, port
 }
 

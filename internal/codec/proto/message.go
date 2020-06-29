@@ -35,6 +35,10 @@ func (constructor *Constructor) New(resource string, specs *specs.ParameterMap) 
 	}
 
 	prop := specs.Property
+	if prop == nil {
+		return nil, nil
+	}
+
 	if prop.Type != types.Message {
 		return nil, trace.New(trace.WithMessage("a proto message always requires a root message"))
 	}

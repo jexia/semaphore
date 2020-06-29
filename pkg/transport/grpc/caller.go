@@ -16,6 +16,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 )
 
 var proxy = &grpc.StreamDesc{
@@ -176,8 +177,14 @@ func (call *Call) SendMsg(ctx context.Context, rw transport.ResponseWriter, pr *
 	res := &frame{}
 	err = stream.RecvMsg(res)
 	if err != nil {
+		status := status.Convert(err)
+		rw.HeaderStatus(StatusFromCode(status.Code()))
+		rw.HeaderMessage(status.Message())
 		return err
 	}
+
+	rw.HeaderStatus(transport.StatusOK)
+	rw.HeaderMessage(transport.StatusMessage(transport.StatusOK))
 
 	go func() {
 		_, err = rw.Write(res.payload)

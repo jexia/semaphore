@@ -295,7 +295,7 @@ func TestListenerErrorHandling(t *testing.T) {
 	}
 
 	tests := map[string]test{
-		"default": {
+		"simple": {
 			input: map[string]string{
 				"message": "value",
 			},
@@ -539,15 +539,19 @@ func TestListenerErrorHandling(t *testing.T) {
 			called := 0
 			call := NewCallerFunc(func(ctx context.Context, refs refs.Store) error {
 				called++
-				test.caller(refs)
+
+				if test.caller != nil {
+					test.caller(refs)
+				}
+
 				return flow.ErrAbortFlow
 			})
 
 			nodes := flow.Nodes{
 				flow.NewNode(ctx, node, nil, call, nil, nil),
 			}
-			obj := transport.NewObject(test.params, test.status, nil)
 
+			obj := transport.NewObject(test.params, test.status, nil)
 			errs := transport.Errs{
 				test.params: obj,
 			}

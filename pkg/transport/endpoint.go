@@ -78,7 +78,7 @@ func (object *Object) ResolveMessage(store refs.Store) string {
 
 	result := object.Message.Default
 	if object.Message.Reference != nil {
-		ref := store.Load(object.StatusCode.Reference.Resource, object.StatusCode.Reference.Path)
+		ref := store.Load(object.Message.Reference.Resource, object.Message.Reference.Path)
 		if ref != nil {
 			result = ref.Value
 		}

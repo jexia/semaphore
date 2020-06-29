@@ -12,6 +12,8 @@ import (
 	"github.com/jexia/maestro/pkg/metadata"
 	"github.com/jexia/maestro/pkg/refs"
 	"github.com/jexia/maestro/pkg/specs"
+	"github.com/jexia/maestro/pkg/specs/labels"
+	"github.com/jexia/maestro/pkg/specs/types"
 	"github.com/jexia/maestro/pkg/transport"
 )
 
@@ -58,10 +60,8 @@ func TestListener(t *testing.T) {
 		flow.NewNode(ctx, node, nil, call, nil, nil),
 	}
 
-	listener, port := NewMockListener(t, nodes)
-
+	listener, port := NewMockListener(t, nodes, nil)
 	defer listener.Close()
-	go listener.Serve()
 
 	// Some CI pipelines take a little while before the listener is active
 	time.Sleep(100 * time.Millisecond)
@@ -105,5 +105,169 @@ func TestListener(t *testing.T) {
 
 	if called != 1 {
 		t.Errorf("unexpected called %d, expected %d", called, len(nodes))
+	}
+}
+
+func TestErrorHandlingListener(t *testing.T) {
+	type test struct {
+		caller   func(refs.Store)
+		status   *specs.Property
+		message  *specs.Property
+		expected int
+		result   string
+	}
+
+	tests := map[string]test{
+		"simple": {
+			status: &specs.Property{
+				Type:    types.Int64,
+				Label:   labels.Optional,
+				Default: int64(500),
+			},
+			message: &specs.Property{
+				Type:    types.String,
+				Label:   labels.Optional,
+				Default: "database broken",
+			},
+			expected: 500,
+			result:   "database broken",
+		},
+		"reference": {
+			caller: func(store refs.Store) {
+				store.StoreValue("error", "status", int64(429))
+				store.StoreValue("error", "message", "reference value")
+			},
+			status: &specs.Property{
+				Type:  types.Int64,
+				Label: labels.Optional,
+				Reference: &specs.PropertyReference{
+					Resource: "error",
+					Path:     "status",
+				},
+			},
+			message: &specs.Property{
+				Type:  types.String,
+				Label: labels.Optional,
+				Reference: &specs.PropertyReference{
+					Resource: "error",
+					Path:     "message",
+				},
+			},
+			expected: 429,
+			result:   "reference value",
+		},
+		"input": {
+			caller: func(store refs.Store) {
+				store.StoreValue("error", "status", int64(429))
+				store.StoreValue("input", "message", "reference value")
+			},
+			status: &specs.Property{
+				Type:  types.Int64,
+				Label: labels.Optional,
+				Reference: &specs.PropertyReference{
+					Resource: "error",
+					Path:     "status",
+				},
+			},
+			message: &specs.Property{
+				Type:  types.String,
+				Label: labels.Optional,
+				Reference: &specs.PropertyReference{
+					Resource: "input",
+					Path:     "message",
+				},
+			},
+			expected: 429,
+			result:   "reference value",
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			ctx := instance.NewContext()
+			node := &specs.Node{
+				Name: "first",
+				OnError: &specs.OnError{
+					Message:  test.message,
+					Status:   test.status,
+					Response: &specs.ParameterMap{},
+				},
+			}
+
+			called := 0
+			call := NewCallerFunc(func(ctx context.Context, refs refs.Store) error {
+				called++
+
+				if test.caller != nil {
+					test.caller(refs)
+				}
+
+				return flow.ErrAbortFlow
+			})
+
+			nodes := flow.Nodes{
+				flow.NewNode(ctx, node, nil, call, nil, nil),
+			}
+
+			obj := transport.NewObject(node.OnError.Response, test.status, test.message)
+			errs := transport.Errs{
+				node.OnError.Response: obj,
+			}
+
+			listener, port := NewMockListener(t, nodes, errs)
+			defer listener.Close()
+
+			// Some CI pipelines take a little while before the listener is active
+			time.Sleep(100 * time.Millisecond)
+
+			constructor := NewCaller()
+			caller := constructor(ctx)
+
+			service := &specs.Service{
+				Name:      "mock",
+				Package:   "pkg",
+				Host:      fmt.Sprintf("127.0.0.1:%d", port),
+				Transport: "grpc",
+				Codec:     "proto",
+				Methods: []*specs.Method{
+					{
+						Name:    "simple",
+						Options: specs.Options{},
+					},
+				},
+				Options: specs.Options{},
+			}
+
+			dial, err := caller.Dial(service, nil, specs.Options{})
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			defer dial.Close()
+
+			rw := transport.NewResponseWriter(&DiscardWriter{})
+			rq := &transport.Request{
+				Header: metadata.MD{},
+				Method: dial.GetMethod("simple"),
+				Body:   bytes.NewBuffer([]byte{}),
+			}
+
+			err = dial.SendMsg(context.Background(), rw, rq, refs.NewReferenceStore(0))
+			if err == nil {
+				t.Fatal("unexpected pass")
+			}
+
+			if called != 1 {
+				t.Errorf("unexpected called %d, expected %d", called, len(nodes))
+			}
+
+			if rw.Status() != test.expected {
+				t.Fatalf("unexpected status %d, expected %d", rw.Status(), test.expected)
+			}
+
+			if rw.Message() != test.result {
+				t.Fatalf("unexpected message %s, expected %s", rw.Message(), test.result)
+			}
+		})
 	}
 }

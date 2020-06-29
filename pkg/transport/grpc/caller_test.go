@@ -43,10 +43,8 @@ func TestCaller(t *testing.T) {
 		flow.NewNode(ctx, node, nil, call, nil, nil),
 	}
 
-	listener, port := NewMockListener(t, nodes)
-
+	listener, port := NewMockListener(t, nodes, nil)
 	defer listener.Close()
-	go listener.Serve()
 
 	// Some CI pipelines take a little while before the listener is active
 	time.Sleep(100 * time.Millisecond)
