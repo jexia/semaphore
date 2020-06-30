@@ -13,7 +13,7 @@ Maestro is a feature-rich service orchestrator. Create advanced data flows and e
 Have full control over your exposed endpoints, expose single flows for multiple protocols such as gRPC and GraphQL.
 Maestro adapts to your environment. Create custom extensions or use the availability of custom functions and protocol implementations.
 
-[![asciicast](https://asciinema.org/a/kZne2YmmegpGsQlAr5tcqCQOg.svg)](https://asciinema.org/a/kZne2YmmegpGsQlAr5tcqCQOg)
+[![asciicast](https://asciinema.org/a/344280.svg)](https://asciinema.org/a/344280)
 
 ## Adapts to your environment
 
