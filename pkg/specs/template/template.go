@@ -13,7 +13,7 @@ import (
 
 var (
 	// ReferencePattern is the matching pattern for references
-	ReferencePattern = regexp.MustCompile(`^[a-zA-Z0-9_\-\.]*:[a-zA-Z0-9@_\-\.]*$`)
+	ReferencePattern = regexp.MustCompile(`^[a-zA-Z0-9_\-\.]*:[a-zA-Z0-9\^\&\%\$@_\-\.]*$`)
 )
 
 const (
