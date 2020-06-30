@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/jexia/maestro/cmd/maestro/daemon"
@@ -8,9 +9,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var version string
+var build string
+
 var cmd = &cobra.Command{
 	Use:     "maestro",
-	Version: "2.0.0",
+	Version: fmt.Sprintf("%s, build: %s", version, build),
 	Short:   "A straightforward micro-service conductor",
 	Long: `Maestro is a feature-rich service orchestrator.
 Create advanced data flows and expose them through endpoints. Have full control over your exposed endpoints,

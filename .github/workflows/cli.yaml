@@ -11,9 +11,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Build image
-        run: docker build . --file Dockerfile --tag image
-
       - name: Format version
         run: |
           # Strip git ref prefix from version
@@ -28,6 +25,9 @@ jobs:
           echo VERSION=$VERSION
           echo "::set-env name=VERSION::$VERSION"
 
+      - name: Build image
+        run: docker build --file Dockerfile --build-arg version=v${VERSION} --tag maestro .
+
       - name: Log into Docker hub
         run: echo "${{ secrets.DOCKER_HUB_TOKEN }}" | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
       
@@ -37,8 +37,8 @@ jobs:
 
           echo IMAGE_ID=$IMAGE_ID:$VERSION
 
-          docker tag image $IMAGE_ID:$VERSION
-          docker tag image $IMAGE_ID:latest
+          docker tag maestro $IMAGE_ID:$VERSION
+          docker tag maestro $IMAGE_ID:latest
 
           docker push $IMAGE_ID:$VERSION
           docker push $IMAGE_ID:latest
@@ -52,8 +52,8 @@ jobs:
 
           echo IMAGE_ID=$IMAGE_ID:$VERSION
 
-          docker tag image $IMAGE_ID:$VERSION
-          docker tag image $IMAGE_ID:latest
+          docker tag maestro $IMAGE_ID:$VERSION
+          docker tag maestro $IMAGE_ID:latest
 
           docker push $IMAGE_ID:$VERSION
           docker push $IMAGE_ID:latest
