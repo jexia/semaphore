@@ -17,7 +17,7 @@ Maestro adapts to your environment. Create custom extensions or use the availabi
 
 ## Adapts to your environment
 
-Maestro integrates with your existing system(s). Define flows through simple and strict typed definitions. Use your already existing schema definitions such as Protobuffers. Or extend Maestro with custom modules and proprietary software. Integrate services through flow definitions and reate a great experience for your customers and your teams.
+Maestro integrates with your existing system(s). Define flows through simple and strict typed definitions. Use your already existing schema definitions such as Protobuffers. Or extend Maestro with custom modules and proprietary software. Integrate services through flow definitions and create a great experience for your customers and your teams.
 
 ## Table of contents
 
