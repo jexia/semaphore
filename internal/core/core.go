@@ -1,4 +1,4 @@
-package constructor
+package core
 
 import (
 	"github.com/jexia/maestro/internal/checks"
@@ -6,12 +6,12 @@ import (
 	"github.com/jexia/maestro/internal/compare"
 	"github.com/jexia/maestro/internal/dependencies"
 	"github.com/jexia/maestro/internal/flow"
-	"github.com/jexia/maestro/internal/functions"
 	"github.com/jexia/maestro/internal/references"
 	"github.com/jexia/maestro/pkg/core/api"
 	"github.com/jexia/maestro/pkg/core/instance"
 	"github.com/jexia/maestro/pkg/core/logger"
 	"github.com/jexia/maestro/pkg/core/trace"
+	"github.com/jexia/maestro/pkg/functions"
 	"github.com/jexia/maestro/pkg/metadata"
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jexia/maestro/pkg/specs/labels"

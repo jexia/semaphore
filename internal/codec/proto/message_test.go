@@ -8,8 +8,8 @@ import (
 	"testing"
 
 	"github.com/jexia/maestro"
-	"github.com/jexia/maestro/internal/definitions/hcl"
-	"github.com/jexia/maestro/internal/definitions/proto"
+	"github.com/jexia/maestro/pkg/providers/hcl"
+	"github.com/jexia/maestro/pkg/providers/proto"
 	"github.com/jexia/maestro/pkg/refs"
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jexia/maestro/pkg/specs/template"

@@ -3,9 +3,9 @@ package validate
 import (
 	"github.com/jexia/maestro"
 	"github.com/jexia/maestro/cmd/maestro/config"
-	"github.com/jexia/maestro/internal/constructor"
-	"github.com/jexia/maestro/internal/functions"
+	"github.com/jexia/maestro/pkg/core"
 	"github.com/jexia/maestro/pkg/core/instance"
+	"github.com/jexia/maestro/pkg/functions"
 	"github.com/spf13/cobra"
 )
 
@@ -37,7 +37,7 @@ func run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	_, err = constructor.Specs(ctx, functions.Collection{}, options)
+	_, err = core.Specs(ctx, functions.Collection{}, options)
 	if err != nil {
 		return err
 	}

@@ -2,10 +2,10 @@ package api
 
 import (
 	"github.com/jexia/maestro/internal/codec"
-	"github.com/jexia/maestro/internal/definitions"
 	"github.com/jexia/maestro/internal/flow"
-	"github.com/jexia/maestro/internal/functions"
 	"github.com/jexia/maestro/pkg/core/instance"
+	"github.com/jexia/maestro/pkg/functions"
+	"github.com/jexia/maestro/pkg/providers"
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jexia/maestro/pkg/transport"
 )
@@ -25,9 +25,9 @@ type Option func(*Options)
 func NewOptions(ctx instance.Context) Options {
 	return Options{
 		Ctx:      ctx,
-		Services: make([]definitions.ServicesResolver, 0),
-		Flows:    make([]definitions.FlowsResolver, 0),
-		Schemas:  make([]definitions.SchemaResolver, 0),
+		Services: make([]providers.ServicesResolver, 0),
+		Flows:    make([]providers.FlowsResolver, 0),
+		Schemas:  make([]providers.SchemaResolver, 0),
 		Codec:    make(map[string]codec.Constructor),
 	}
 }
@@ -38,10 +38,10 @@ type Options struct {
 	Codec                 codec.Constructors
 	Callers               transport.Callers
 	Listeners             transport.Listeners
-	Flows                 []definitions.FlowsResolver
-	Endpoints             []definitions.EndpointsResolver
-	Services              []definitions.ServicesResolver
-	Schemas               []definitions.SchemaResolver
+	Flows                 []providers.FlowsResolver
+	Endpoints             []providers.EndpointsResolver
+	Services              []providers.ServicesResolver
+	Schemas               []providers.SchemaResolver
 	Middleware            []Middleware
 	AfterConstructor      AfterConstructor
 	BeforeManagerDo       flow.BeforeManager

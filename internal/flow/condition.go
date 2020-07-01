@@ -1,9 +1,9 @@
 package flow
 
 import (
-	"github.com/jexia/maestro/internal/functions"
 	"github.com/jexia/maestro/pkg/core/instance"
 	"github.com/jexia/maestro/pkg/core/logger"
+	"github.com/jexia/maestro/pkg/functions"
 	"github.com/jexia/maestro/pkg/refs"
 	"github.com/jexia/maestro/pkg/specs"
 )

@@ -6,10 +6,10 @@ import (
 	"testing"
 
 	"github.com/jexia/maestro/internal/compare"
-	"github.com/jexia/maestro/internal/definitions"
-	"github.com/jexia/maestro/internal/definitions/hcl"
-	"github.com/jexia/maestro/internal/definitions/mock"
 	"github.com/jexia/maestro/pkg/core/instance"
+	"github.com/jexia/maestro/pkg/providers"
+	"github.com/jexia/maestro/pkg/providers/hcl"
+	"github.com/jexia/maestro/pkg/providers/mock"
 )
 
 const (
@@ -24,7 +24,7 @@ func TestUnmarshalFile(t *testing.T) {
 	}
 
 	ctx := instance.NewContext()
-	files, err := definitions.ResolvePath(ctx, []string{}, path)
+	files, err := providers.ResolvePath(ctx, []string{}, path)
 	if err != nil {
 		t.Fatal(err)
 	}

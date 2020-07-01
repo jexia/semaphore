@@ -1,4 +1,4 @@
-package constructor
+package core
 
 import (
 	"github.com/jexia/maestro/pkg/core/api"

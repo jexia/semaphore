@@ -5,8 +5,8 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/jexia/maestro/internal/definitions"
 	"github.com/jexia/maestro/pkg/core/instance"
+	"github.com/jexia/maestro/pkg/providers"
 	"github.com/jexia/maestro/pkg/specs"
 	"gopkg.in/yaml.v2"
 )
@@ -27,7 +27,7 @@ func CollectionResolver(path string) (*Collection, error) {
 }
 
 // SchemaResolver returns a new schema resolver for the given mock collection
-func SchemaResolver(path string) definitions.SchemaResolver {
+func SchemaResolver(path string) providers.SchemaResolver {
 	return func(ctx instance.Context) ([]*specs.SchemaManifest, error) {
 		reader, err := os.Open(path)
 		if err != nil {
@@ -44,7 +44,7 @@ func SchemaResolver(path string) definitions.SchemaResolver {
 }
 
 // ServicesResolver returns a new service(s) resolver for the given mock collection
-func ServicesResolver(path string) definitions.ServicesResolver {
+func ServicesResolver(path string) providers.ServicesResolver {
 	return func(ctx instance.Context) ([]*specs.ServicesManifest, error) {
 		reader, err := os.Open(path)
 		if err != nil {

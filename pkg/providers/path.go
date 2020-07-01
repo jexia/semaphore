@@ -1,4 +1,4 @@
-package definitions
+package providers
 
 import (
 	"os"

@@ -4,8 +4,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/jexia/maestro/internal/definitions"
 	"github.com/jexia/maestro/pkg/core/instance"
+	"github.com/jexia/maestro/pkg/providers"
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/desc/protoparse"
@@ -32,7 +32,7 @@ func Collect(ctx instance.Context, paths []string, path string) ([]*desc.FileDes
 		imports[index] = path
 	}
 
-	files, err := definitions.ResolvePath(ctx, []string{}, path)
+	files, err := providers.ResolvePath(ctx, []string{}, path)
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +61,7 @@ func Collect(ctx instance.Context, paths []string, path string) ([]*desc.FileDes
 }
 
 // ServiceResolver returns a new service(s) resolver for the given protoc collection
-func ServiceResolver(imports []string, path string) definitions.ServicesResolver {
+func ServiceResolver(imports []string, path string) providers.ServicesResolver {
 	return func(ctx instance.Context) ([]*specs.ServicesManifest, error) {
 		files, err := Collect(ctx, imports, path)
 		if err != nil {
@@ -73,7 +73,7 @@ func ServiceResolver(imports []string, path string) definitions.ServicesResolver
 }
 
 // SchemaResolver returns a new schema resolver for the given protoc collection
-func SchemaResolver(imports []string, path string) definitions.SchemaResolver {
+func SchemaResolver(imports []string, path string) providers.SchemaResolver {
 	return func(ctx instance.Context) ([]*specs.SchemaManifest, error) {
 		files, err := Collect(ctx, imports, path)
 		if err != nil {
@@ -86,7 +86,7 @@ func SchemaResolver(imports []string, path string) definitions.SchemaResolver {
 
 // UnmarshalFiles attempts to parse the given HCL files to intermediate resources.
 // Files are parsed based from the given import paths
-func UnmarshalFiles(imports []string, files []*definitions.FileInfo) ([]*desc.FileDescriptor, error) {
+func UnmarshalFiles(imports []string, files []*providers.FileInfo) ([]*desc.FileDescriptor, error) {
 	// NOTE: protoparser expects relative paths, we currently resolved this issue by including root as a import path
 	parser := &protoparse.Parser{
 		ImportPaths:           append(imports, "/"),

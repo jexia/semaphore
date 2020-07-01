@@ -1,7 +1,7 @@
 package proto
 
 import (
-	"github.com/jexia/maestro/internal/definitions/proto"
+	"github.com/jexia/maestro/pkg/providers/proto"
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jexia/maestro/pkg/specs/types"
 	"github.com/jhump/protoreflect/desc"

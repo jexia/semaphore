@@ -3,12 +3,12 @@ package maestro
 import (
 	"sync"
 
-	"github.com/jexia/maestro/internal/constructor"
-	"github.com/jexia/maestro/internal/functions"
+	"github.com/jexia/maestro/internal/core"
 	"github.com/jexia/maestro/pkg/core/api"
 	"github.com/jexia/maestro/pkg/core/instance"
 	"github.com/jexia/maestro/pkg/core/logger"
 	"github.com/jexia/maestro/pkg/core/trace"
+	"github.com/jexia/maestro/pkg/functions"
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jexia/maestro/pkg/transport"
 )
@@ -74,12 +74,12 @@ func New(opts ...api.Option) (*Client, error) {
 	}
 
 	mem := functions.Collection{}
-	collection, err := constructor.Specs(ctx, mem, options)
+	collection, err := core.Specs(ctx, mem, options)
 	if err != nil {
 		return nil, err
 	}
 
-	managers, err := constructor.FlowManager(ctx, mem, collection.Services, collection.Endpoints, collection.Flows, options)
+	managers, err := core.FlowManager(ctx, mem, collection.Services, collection.Endpoints, collection.Flows, options)
 	if err != nil {
 		return nil, err
 	}

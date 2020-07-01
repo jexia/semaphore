@@ -1,4 +1,4 @@
-package definitions
+package providers
 
 import (
 	"github.com/jexia/maestro/pkg/core/instance"

@@ -5,9 +5,9 @@ import (
 	"fmt"
 
 	"github.com/jexia/maestro"
-	"github.com/jexia/maestro/internal/functions"
 	"github.com/jexia/maestro/pkg/codec"
 	"github.com/jexia/maestro/pkg/core/logger"
+	"github.com/jexia/maestro/pkg/functions"
 	"github.com/jexia/maestro/pkg/providers/hcl"
 	"github.com/jexia/maestro/pkg/providers/proto"
 	"github.com/jexia/maestro/pkg/refs"

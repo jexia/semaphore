@@ -2,11 +2,11 @@ package maestro
 
 import (
 	"github.com/jexia/maestro/internal/codec"
-	"github.com/jexia/maestro/internal/definitions"
-	"github.com/jexia/maestro/internal/functions"
 	"github.com/jexia/maestro/pkg/core/api"
 	"github.com/jexia/maestro/pkg/core/instance"
 	"github.com/jexia/maestro/pkg/core/logger"
+	"github.com/jexia/maestro/pkg/functions"
+	"github.com/jexia/maestro/pkg/providers"
 	"github.com/jexia/maestro/pkg/transport"
 )
 
@@ -38,28 +38,28 @@ func NewCollection(options ...api.Option) []api.Option {
 }
 
 // WithFlows appends the given flows resolver to the available flow resolvers
-func WithFlows(definition definitions.FlowsResolver) api.Option {
+func WithFlows(definition providers.FlowsResolver) api.Option {
 	return func(options *api.Options) {
 		options.Flows = append(options.Flows, definition)
 	}
 }
 
 // WithServices appends the given service resolver to the available service resolvers
-func WithServices(definition definitions.ServicesResolver) api.Option {
+func WithServices(definition providers.ServicesResolver) api.Option {
 	return func(options *api.Options) {
 		options.Services = append(options.Services, definition)
 	}
 }
 
 // WithEndpoints appends the given endpoint resolver to the available endpoint resolvers
-func WithEndpoints(definition definitions.EndpointsResolver) api.Option {
+func WithEndpoints(definition providers.EndpointsResolver) api.Option {
 	return func(options *api.Options) {
 		options.Endpoints = append(options.Endpoints, definition)
 	}
 }
 
 // WithSchema appends the schema collection to the schema store
-func WithSchema(resolver definitions.SchemaResolver) api.Option {
+func WithSchema(resolver providers.SchemaResolver) api.Option {
 	return func(options *api.Options) {
 		options.Schemas = append(options.Schemas, resolver)
 	}

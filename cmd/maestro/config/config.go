@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/jexia/maestro/internal/definitions/hcl"
+	"github.com/jexia/maestro/pkg/providers/hcl"
 )
 
 // New constructs a new global config

@@ -9,8 +9,8 @@ import (
 	"testing"
 
 	"github.com/jexia/maestro"
-	"github.com/jexia/maestro/internal/definitions/hcl"
-	"github.com/jexia/maestro/internal/definitions/mock"
+	"github.com/jexia/maestro/pkg/providers/hcl"
+	"github.com/jexia/maestro/pkg/providers/mock"
 	"github.com/jexia/maestro/pkg/refs"
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jexia/maestro/pkg/specs/template"

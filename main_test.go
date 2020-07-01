@@ -8,13 +8,13 @@ import (
 	"time"
 
 	"github.com/jexia/maestro/internal/codec/json"
-	"github.com/jexia/maestro/internal/definitions"
-	"github.com/jexia/maestro/internal/definitions/hcl"
-	"github.com/jexia/maestro/internal/definitions/mock"
-	"github.com/jexia/maestro/internal/functions"
 	"github.com/jexia/maestro/pkg/core/api"
 	"github.com/jexia/maestro/pkg/core/instance"
 	"github.com/jexia/maestro/pkg/core/logger"
+	"github.com/jexia/maestro/pkg/functions"
+	"github.com/jexia/maestro/pkg/providers"
+	"github.com/jexia/maestro/pkg/providers/hcl"
+	"github.com/jexia/maestro/pkg/providers/mock"
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jexia/maestro/pkg/transport/http"
 )
@@ -47,7 +47,7 @@ func TestNewClient(t *testing.T) {
 	}
 
 	ctx := instance.NewContext()
-	files, err := definitions.ResolvePath(ctx, []string{}, path)
+	files, err := providers.ResolvePath(ctx, []string{}, path)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -81,7 +81,7 @@ func TestServe(t *testing.T) {
 	}
 
 	ctx := instance.NewContext()
-	files, err := definitions.ResolvePath(ctx, []string{}, path)
+	files, err := providers.ResolvePath(ctx, []string{}, path)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -125,7 +125,7 @@ func TestErrServe(t *testing.T) {
 	}
 
 	ctx := instance.NewContext()
-	files, err := definitions.ResolvePath(ctx, []string{}, path)
+	files, err := providers.ResolvePath(ctx, []string{}, path)
 	if err != nil {
 		t.Fatal(err)
 	}
