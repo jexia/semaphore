@@ -10,7 +10,9 @@ import (
 	"github.com/jexia/maestro/pkg/transport"
 )
 
-// Collection represents a collection of manifests and functions
+// Collection represents a collection of flow, endpoint, services and schema manifests.
+// This collection is used to define the flow managers and function definitions.
+// The references and types defined within this collection are not type checked.
 type Collection struct {
 	Flows     *specs.FlowsManifest     `json:"flows"`
 	Endpoints *specs.EndpointsManifest `json:"endpoints"`
