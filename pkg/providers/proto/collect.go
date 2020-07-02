@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 
 	"github.com/jexia/maestro/pkg/core/instance"
+	"github.com/jexia/maestro/pkg/core/logger"
 	"github.com/jexia/maestro/pkg/providers"
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jhump/protoreflect/desc"
@@ -18,10 +19,15 @@ func Collect(ctx instance.Context, paths []string, path string) ([]*desc.FileDes
 		imports[index] = path
 	}
 
+	ctx.Logger(logger.Core).WithField("path", path).Debug("Collect available proto")
+	ctx.Logger(logger.Core).WithField("imports", paths).Debug("Collect available proto with imports")
+
 	path, err := filepath.Abs(path)
 	if err != nil {
 		return nil, err
 	}
+
+	ctx.Logger(logger.Core).WithField("path", path).Debug("Absolute proto path")
 
 	for index, path := range imports {
 		path, err := filepath.Abs(path)
@@ -31,6 +37,8 @@ func Collect(ctx instance.Context, paths []string, path string) ([]*desc.FileDes
 
 		imports[index] = path
 	}
+
+	ctx.Logger(logger.Core).WithField("imports", paths).Debug("Absolute proto imports")
 
 	files, err := providers.ResolvePath(ctx, []string{}, path)
 	if err != nil {
@@ -63,6 +71,8 @@ func Collect(ctx instance.Context, paths []string, path string) ([]*desc.FileDes
 // ServiceResolver returns a new service(s) resolver for the given protoc collection
 func ServiceResolver(imports []string, path string) providers.ServicesResolver {
 	return func(ctx instance.Context) ([]*specs.ServicesManifest, error) {
+		ctx.Logger(logger.Core).WithField("path", path).Debug("Resolving proto services")
+
 		files, err := Collect(ctx, imports, path)
 		if err != nil {
 			return nil, err
@@ -75,6 +85,8 @@ func ServiceResolver(imports []string, path string) providers.ServicesResolver {
 // SchemaResolver returns a new schema resolver for the given protoc collection
 func SchemaResolver(imports []string, path string) providers.SchemaResolver {
 	return func(ctx instance.Context) ([]*specs.SchemaManifest, error) {
+		ctx.Logger(logger.Core).WithField("path", path).Debug("Resolving proto schemas")
+
 		files, err := Collect(ctx, imports, path)
 		if err != nil {
 			return nil, err

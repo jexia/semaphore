@@ -1,1 +1,1 @@
-protobuffers = ["sample.proto", "*.proto"]
+protobuffers = ["sample.proto", "*.proto", "../sample.proto"]

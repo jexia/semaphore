@@ -23,6 +23,8 @@ import (
 // Those need to be resolved before the HCL schemas are resolved.
 func ServicesResolver(path string) providers.ServicesResolver {
 	return func(ctx instance.Context) ([]*specs.ServicesManifest, error) {
+		ctx.Logger(logger.Core).WithField("path", path).Debug("Resolving HCL services")
+
 		definitions, err := ResolvePath(ctx, []string{}, path)
 		if err != nil {
 			return nil, err
@@ -46,6 +48,8 @@ func ServicesResolver(path string) providers.ServicesResolver {
 // FlowsResolver constructs a resource resolver for the given path
 func FlowsResolver(path string) providers.FlowsResolver {
 	return func(ctx instance.Context) ([]*specs.FlowsManifest, error) {
+		ctx.Logger(logger.Core).WithField("path", path).Debug("Resolving HCL flows")
+
 		definitions, err := ResolvePath(ctx, []string{}, path)
 		if err != nil {
 			return nil, err
@@ -69,6 +73,8 @@ func FlowsResolver(path string) providers.FlowsResolver {
 // EndpointsResolver constructs a resource resolver for the given path
 func EndpointsResolver(path string) providers.EndpointsResolver {
 	return func(ctx instance.Context) ([]*specs.EndpointsManifest, error) {
+		ctx.Logger(logger.Core).WithField("path", path).Debug("Resolving HCL endpoints")
+
 		definitions, err := ResolvePath(ctx, []string{}, path)
 		if err != nil {
 			return nil, err
@@ -175,6 +181,10 @@ func ResolvePath(ctx instance.Context, ignore []string, path string) ([]Manifest
 
 		if definition.Protobuffers != nil {
 			for index, proto := range definition.Protobuffers {
+				if !filepath.IsAbs(proto) {
+					proto = filepath.Join(filepath.Dir(file.Path), proto)
+				}
+
 				definition.Protobuffers[index] = proto
 			}
 		}
