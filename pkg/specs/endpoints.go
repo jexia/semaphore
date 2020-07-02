@@ -2,7 +2,7 @@ package specs
 
 // EndpointsManifest holds a collection of flow endpoints
 type EndpointsManifest struct {
-	Endpoints Endpoints `json:"endpoints"`
+	Endpoints Endpoints `json:"endpoints,omitempty"`
 }
 
 // MergeEndpointsManifest merges the incoming manifest to the existing (left) manifest
@@ -30,7 +30,7 @@ func (collection Endpoints) Get(flow string) []*Endpoint {
 // Endpoint exposes a flow. Endpoints are not parsed by Maestro and have custom implementations in each caller.
 // The name of the endpoint represents the flow which should be executed.
 type Endpoint struct {
-	Flow     string  `json:"flow"`
-	Listener string  `json:"listener"`
-	Options  Options `json:"options"`
+	Flow     string  `json:"flow,omitempty"`
+	Listener string  `json:"listener,omitempty"`
+	Options  Options `json:"options,omitempty"`
 }

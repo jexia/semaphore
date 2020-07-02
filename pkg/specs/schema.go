@@ -2,7 +2,7 @@ package specs
 
 // SchemaManifest represents a collection of messages which are used for type checks
 type SchemaManifest struct {
-	Properties map[string]*Property
+	Properties map[string]*Property `json:"properties"`
 }
 
 // MergeSchemaManifest merges the incoming schema into the given schema manifest

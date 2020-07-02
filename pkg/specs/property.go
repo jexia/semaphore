@@ -8,9 +8,9 @@ import (
 
 // PropertyReference represents a mustach template reference
 type PropertyReference struct {
-	Resource string `json:"resource'"`
-	Path     string `json:"path"`
-	Property *Property
+	Resource string    `json:"resource,omitempty"`
+	Path     string    `json:"path,omitempty"`
+	Property *Property `json:"-"`
 }
 
 // Clone clones the given property reference
@@ -29,19 +29,19 @@ func (reference *PropertyReference) String() string {
 // Property represents a value property.
 // A value property could contain a constant value or a value reference.
 type Property struct {
-	Position  int32                `json:"position"`
-	Comment   string               `json:"comment"`
-	Name      string               `json:"name"`
-	Path      string               `json:"path"`
-	Default   interface{}          `json:"default"`
-	Type      types.Type           `json:"type"`
-	Label     labels.Label         `json:"label"`
-	Reference *PropertyReference   `json:"reference"`
-	Nested    map[string]*Property `json:"nested"`
-	Expr      hcl.Expression       `json:"expr"` // TODO: replace this with a custom solution
-	Raw       string               `json:"raw"`
-	Options   Options              `json:"options"`
-	Enum      *Enum                `json:"enum"`
+	Position  int32                `json:"position,omitempty"`
+	Comment   string               `json:"comment,omitempty"`
+	Name      string               `json:"name,omitempty"`
+	Path      string               `json:"path,omitempty"`
+	Default   interface{}          `json:"default,omitempty"`
+	Type      types.Type           `json:"type,omitempty"`
+	Label     labels.Label         `json:"label,omitempty"`
+	Reference *PropertyReference   `json:"reference,omitempty"`
+	Nested    map[string]*Property `json:"nested,omitempty"`
+	Expr      hcl.Expression       `json:"expr,omitempty"` // TODO: replace this with a custom solution
+	Raw       string               `json:"raw,omitempty"`
+	Options   Options              `json:"options,omitempty"`
+	Enum      *Enum                `json:"enum,omitempty"`
 }
 
 // Clone makes a deep clone of the given property
@@ -78,27 +78,27 @@ func (prop *Property) Clone() *Property {
 
 // Enum represents a enum configuration
 type Enum struct {
-	Name        string                `json:"name"`
-	Keys        map[string]*EnumValue `json:"keys"`
-	Positions   map[int32]*EnumValue  `json:"positions"`
-	Description string                `json:"description"`
+	Name        string                `json:"name,omitempty"`
+	Keys        map[string]*EnumValue `json:"keys,omitempty"`
+	Positions   map[int32]*EnumValue  `json:"positions,omitempty"`
+	Description string                `json:"description,omitempty"`
 }
 
 // EnumValue represents a enum configuration
 type EnumValue struct {
-	Key         string `json:"key"`
-	Position    int32  `json:"position"`
-	Description string `json:"description"`
+	Key         string `json:"key,omitempty"`
+	Position    int32  `json:"position,omitempty"`
+	Description string `json:"description,omitempty"`
 }
 
 // ParameterMap is the initial map of parameter names (keys) and their (templated) values (values)
 type ParameterMap struct {
-	Schema   string               `json:"schema"`
-	Params   map[string]*Property `json:"params"`
-	Options  Options              `json:"options"`
-	Header   Header               `json:"header"`
-	Property *Property            `json:"property"`
-	Stack    map[string]*Property `json:"stack"`
+	Schema   string               `json:"schema,omitempty"`
+	Params   map[string]*Property `json:"params,omitempty"`
+	Options  Options              `json:"options,omitempty"`
+	Header   Header               `json:"header,omitempty"`
+	Property *Property            `json:"property,omitempty"`
+	Stack    map[string]*Property `json:"stack,omitempty"`
 }
 
 // Clone clones the given parameter map

@@ -2,7 +2,7 @@ package specs
 
 // ServicesManifest holds a collection of services
 type ServicesManifest struct {
-	Services []*Service `json:"services"`
+	Services []*Service `json:"services,omitempty"`
 }
 
 // MergeServiceManifest merges the incoming services into the given service manifest
@@ -25,15 +25,15 @@ func (services *ServicesManifest) GetService(name string) *Service {
 
 // Service represents a service which exposes a set of methods
 type Service struct {
-	Comment            string    `json:"comment"`
-	Package            string    `json:"package"`
-	FullyQualifiedName string    `json:"fully_qualified_name"`
-	Name               string    `json:"name"`
-	Transport          string    `json:"transport"`
-	Codec              string    `json:"codec"`
-	Host               string    `json:"host"`
-	Methods            []*Method `json:"methods"`
-	Options            Options   `json:"options"`
+	Comment            string    `json:"comment,omitempty"`
+	Package            string    `json:"package,omitempty"`
+	FullyQualifiedName string    `json:"fully_qualified_name,omitempty"`
+	Name               string    `json:"name,omitempty"`
+	Transport          string    `json:"transport,omitempty"`
+	Codec              string    `json:"codec,omitempty"`
+	Host               string    `json:"host,omitempty"`
+	Methods            []*Method `json:"methods,omitempty"`
+	Options            Options   `json:"options,omitempty"`
 }
 
 // GetMethod attempts to find and return a method matching the given name
@@ -49,9 +49,9 @@ func (service *Service) GetMethod(name string) *Method {
 
 // Method represents a service method
 type Method struct {
-	Comment string  `json:"comment"`
-	Name    string  `json:"name"`
-	Input   string  `json:"input"`
-	Output  string  `json:"output"`
-	Options Options `json:"options"`
+	Comment string  `json:"comment,omitempty"`
+	Name    string  `json:"name,omitempty"`
+	Input   string  `json:"input,omitempty"`
+	Output  string  `json:"output,omitempty"`
+	Options Options `json:"options,omitempty"`
 }
