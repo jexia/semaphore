@@ -12,9 +12,9 @@ import (
 	"github.com/jexia/maestro/pkg/refs"
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jexia/maestro/pkg/transport"
-	"github.com/micro/go-micro/client"
-	"github.com/micro/go-micro/codec/bytes"
-	micrometa "github.com/micro/go-micro/metadata"
+	"github.com/micro/go-micro/v2/client"
+	"github.com/micro/go-micro/v2/codec/bytes"
+	micrometa "github.com/micro/go-micro/v2/metadata"
 )
 
 // Service is an interface that wraps the lower level libraries

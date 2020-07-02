@@ -2,7 +2,7 @@ package micro
 
 import (
 	"github.com/jexia/maestro/pkg/metadata"
-	micrometa "github.com/micro/go-micro/metadata"
+	micrometa "github.com/micro/go-micro/v2/metadata"
 )
 
 // CopyMetadataHeader copies the given metadata header to go micro metadata

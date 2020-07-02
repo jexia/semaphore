@@ -15,7 +15,7 @@ import (
 	"github.com/jexia/maestro/pkg/transport/grpc"
 	"github.com/jexia/maestro/pkg/transport/http"
 	"github.com/jexia/maestro/pkg/transport/micro"
-	microGRPC "github.com/micro/go-micro/service/grpc"
+	microGRPC "github.com/micro/go-micro/v2/service/grpc"
 )
 
 // ConstructArguments constructs the option arguments from the given parameters
