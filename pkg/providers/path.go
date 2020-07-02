@@ -30,6 +30,8 @@ func ResolvePath(ctx instance.Context, ignore []string, pattern string) (files [
 		resolved[path] = struct{}{}
 	}
 
+	ctx.Logger(logger.Core).WithField("dir", pattern).Debug("Resolve path")
+
 	dir := filepath.Dir(CleanPattern(pattern))
 	return walk(ctx, dir, dir, resolved, pattern)
 }

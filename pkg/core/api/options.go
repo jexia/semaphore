@@ -12,10 +12,10 @@ import (
 
 // Collection represents a collection of manifests and functions
 type Collection struct {
-	Flows     *specs.FlowsManifest
-	Endpoints *specs.EndpointsManifest
-	Services  *specs.ServicesManifest
-	Schema    *specs.SchemaManifest
+	Flows     *specs.FlowsManifest     `json:"flows"`
+	Endpoints *specs.EndpointsManifest `json:"endpoints"`
+	Services  *specs.ServicesManifest  `json:"services"`
+	Schema    *specs.SchemaManifest    `json:"schema"`
 }
 
 // Option represents a constructor func which sets a given option
