@@ -152,7 +152,7 @@ func CallTypes(ctx instance.Context, services *specs.ServicesManifest, schema *s
 	return nil
 }
 
-// CheckParameterMapTypes checks the given parameter map agains the configured schema property
+// CheckParameterMapTypes checks the given parameter map against the configured schema property
 func CheckParameterMapTypes(ctx instance.Context, parameters *specs.ParameterMap, schema *specs.SchemaManifest, flow specs.FlowResourceManager) error {
 	if parameters == nil {
 		return nil
