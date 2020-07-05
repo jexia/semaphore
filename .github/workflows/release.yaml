@@ -1,4 +1,4 @@
-name: Build Maestro CLI
+name: Release Maestro
 on:
   push:
     tags:
