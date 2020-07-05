@@ -179,7 +179,7 @@ func (node *Node) Do(ctx context.Context, tracker *Tracker, processes *Processes
 	}
 
 	if node.AfterDo != nil {
-		ctx, err = node.AfterDo(ctx, node, tracker, processes, refs)
+		_, err = node.AfterDo(ctx, node, tracker, processes, refs)
 		if err != nil {
 			node.logger.Error("Node after middleware failed: ", err)
 			processes.Fatal(transport.WrapError(err, node.OnError))

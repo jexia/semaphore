@@ -167,12 +167,10 @@ func (manager *Manager) Do(ctx context.Context, refs refs.Store) error {
 	manager.ctx.Logger(logger.Flow).WithField("flow", manager.Name).Debug("Flow completed")
 
 	if manager.AfterDo != nil {
-		patched, err := manager.AfterDo(ctx, manager, refs)
+		_, err := manager.AfterDo(ctx, manager, refs)
 		if err != nil {
 			return transport.WrapError(err, manager.Error)
 		}
-
-		ctx = patched
 	}
 
 	return nil
@@ -215,7 +213,7 @@ func (manager *Manager) Revert(executed *Tracker, refs refs.Store) {
 	processes.Wait()
 
 	if manager.AfterRollback != nil {
-		ctx, err = manager.AfterRollback(ctx, manager, refs)
+		_, err = manager.AfterRollback(ctx, manager, refs)
 		if err != nil {
 			manager.ctx.Logger(logger.Flow).Error("Revert failed after rollback returned a error: ", err)
 			return
