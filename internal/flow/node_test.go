@@ -25,8 +25,48 @@ func NewMockNode(name string, caller Call, rollback Call) *Node {
 		Name:       name,
 		Call:       caller,
 		Revert:     rollback,
+		OnError:    NewMockOnError(),
 		DependsOn:  map[string]*specs.Node{},
 		References: map[string]*specs.PropertyReference{},
+	}
+}
+
+func NewMockOnError() *specs.OnError {
+	return &specs.OnError{
+		Response: &specs.ParameterMap{
+			Property: &specs.Property{
+				Type:  types.Message,
+				Label: labels.Optional,
+				Nested: map[string]*specs.Property{
+					"status": {
+						Type:  types.Int64,
+						Label: labels.Optional,
+						Reference: &specs.PropertyReference{
+							Resource: "error",
+							Path:     "status",
+						},
+					},
+					"message": {
+						Type:  types.String,
+						Label: labels.Optional,
+						Reference: &specs.PropertyReference{
+							Resource: "error",
+							Path:     "message",
+						},
+					},
+				},
+			},
+		},
+		Status: &specs.Property{
+			Type:    types.Int64,
+			Label:   labels.Optional,
+			Default: 500,
+		},
+		Message: &specs.Property{
+			Type:    types.String,
+			Label:   labels.Optional,
+			Default: "mock error message",
+		},
 	}
 }
 

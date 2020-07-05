@@ -62,10 +62,12 @@ func NewMockFlowManager(caller Call, revert Call) ([]*Node, *Manager) {
 	nodes[3].Previous = []*Node{nodes[1], nodes[2]}
 
 	return nodes, &Manager{
+		Name:       "mock",
 		ctx:        ctx,
 		Starting:   []*Node{nodes[0]},
 		References: 0,
 		Nodes:      nodes,
+		Error:      NewMockOnError(),
 		Ends:       1,
 	}
 }
@@ -424,5 +426,27 @@ func TestAfterManagerFunctionsError(t *testing.T) {
 				t.Fatalf("unexpected err '%s', expected the expected error to be returned '%s'", err, expected)
 			}
 		})
+	}
+}
+
+func TestErrorHandlers(t *testing.T) {
+	caller := &caller{}
+	nodes, manager := NewMockFlowManager(caller, nil)
+
+	expected := len(nodes) + 1 // expect nodes and flow error handler
+	handlers := manager.Errors()
+	if len(handlers) != expected {
+		t.Fatalf("unexpected amount of handlers returned %d, expected %d", len(handlers), expected)
+	}
+}
+
+func TestManagerName(t *testing.T) {
+	caller := &caller{}
+	_, manager := NewMockFlowManager(caller, nil)
+
+	expected := "mock"
+	result := manager.GetName()
+	if result != expected {
+		t.Fatalf("unexpected manager name %s, expected %s", result, expected)
 	}
 }
