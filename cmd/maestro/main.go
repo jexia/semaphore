@@ -11,6 +11,7 @@ import (
 
 var version string
 var build string
+var label string
 
 var cmd = &cobra.Command{
 	Use:     "maestro",

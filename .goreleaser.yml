@@ -9,11 +9,9 @@ builds:
   - -mod=vendor
   - -v
   ldflags:
-  - -X github.com/jexia/maestro.Build={{ .ShortCommit }}
-  - -X github.com/jexia/maestro.Major={{ .Major }}
-  - -X github.com/jexia/maestro.Minor={{ .Minor }}
-  - -X github.com/jexia/maestro.Patch={{ .Patch }}
-  - -X github.com/jexia/maestro.Label=release
+  - -X main.version=v{{ .Version }}
+  - -X main.build={{ .ShortCommit }}
+  - -X main.label=release
   goos:
   - windows
   - darwin
