@@ -116,8 +116,8 @@ func (caller *Caller) Do(ctx context.Context, store refs.Store) error {
 	}
 
 	if caller.transport != nil {
-		// SendMsg should not be called inside a seperate go routine.
-		// A seperate go routine could be created inside the transporter to stream the returned message to the io reader
+		// SendMsg should not be called inside a separate go routine.
+		// A separate go routine could be created inside the transporter to stream the returned message to the io reader
 		err := caller.transport.SendMsg(ctx, w, r, store)
 		if err != nil {
 			caller.ctx.Logger(logger.Flow).WithFields(logrus.Fields{
