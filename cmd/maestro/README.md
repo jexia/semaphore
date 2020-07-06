@@ -25,14 +25,14 @@ $ brew install maestro
 ### Unix
 
 A installer script is available.
-By default the latest binaries for your operating system will be pulled and stored in `./bin`.
+By default the latest binaries for your operating system will be pulled and stored in `/usr/local/bin`.
 Arguments could be given to pull a specific version and/or store the binary inside a specific directory.
 
 ```sh
 $ # pull latest version
 $ curl https://raw.githubusercontent.com/jexia/maestro/master/install.sh | sh
-$ # pull version v2.0.0 and store it in /usr/local/bin
-$ curl https://raw.githubusercontent.com/jexia/maestro/master/install.sh | sh -s -- -b /usr/local/bin v2.0.0
+$ # pull version v2.0.0 and store it in ./bin
+$ curl https://raw.githubusercontent.com/jexia/maestro/master/install.sh | sh -s -- -b ./bin v2.0.0
 ```
 
 ### Docker images
