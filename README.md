@@ -45,10 +45,12 @@ Allow users to implement your product with their tools of choice. We are excited
 1. [🚀 Examples](https://github.com/jexia/maestro/tree/master/examples)
 1. [📚 Documentation](https://jexia.gitbook.io/maestro/)
 
-You could download the daemon from source or most commonly used package managers. Or pull one of the available [docker images](https://hub.docker.com/r/jexiacom/maestro).
+### Install
 
-```bash
-docker run jexiacom/maestro
+There are variouse install methods available. You could download and install the daemon from source or most commonly used package managers. For more information and install methods please check out the [CLI](https://github.com/jexia/maestro/tree/master/cmd/maestro#installing).
+
+```sh
+$ curl https://raw.githubusercontent.com/jexia/maestro/master/install.sh | sh
 ```
 
 ---
