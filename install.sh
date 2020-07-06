@@ -9,7 +9,7 @@ usage() {
 $this: download go binaries for jexia/maestro
 
 Usage: $this [-b] bindir [-d] [tag]
-  -b sets bindir or installation directory, Defaults to ./bin
+  -b sets bindir or installation directory, Defaults to /usr/local/bin
   -d turns on debug logging
    [tag] is a tag from
    https://github.com/jexia/maestro/releases
