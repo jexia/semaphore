@@ -15,6 +15,10 @@ func NewOptions(ctx instance.Context, options ...api.Option) (api.Options, error
 	result := api.NewOptions(ctx)
 
 	for _, option := range options {
+		if option == nil {
+			continue
+		}
+
 		option(&result)
 	}
 
