@@ -184,9 +184,11 @@ type Service struct {
 
 // ServiceSelector targets any service matchine the given service selector
 type ServiceSelector struct {
-	Pattern string   `hcl:"pattern,label"`
-	Host    string   `hcl:"host,optional"`
-	Options hcl.Body `hcl:",remain"`
+	Pattern   string   `hcl:"pattern,label"`
+	Host      string   `hcl:"host,optional"`
+	Transport string   `hcl:"transport,optional"`
+	Codec     string   `hcl:"codec,optional"`
+	Options   hcl.Body `hcl:",remain"`
 }
 
 // Services specification

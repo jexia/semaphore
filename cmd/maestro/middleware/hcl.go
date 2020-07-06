@@ -42,13 +42,24 @@ func ServiceSelector(path string) api.AfterConstructorHandler {
 							}
 
 							ctx.Logger(logger.Core).WithFields(logrus.Fields{
-								"original": service.Host,
-								"new":      selector.Host,
-								"selector": selector.Pattern,
-								"service":  name,
+								"host":      selector.Host,
+								"selector":  selector.Pattern,
+								"codec":     selector.Codec,
+								"transport": selector.Transport,
+								"service":   name,
 							}).Info("overriding service configuration")
 
-							service.Host = selector.Host
+							if selector.Host != "" {
+								service.Host = selector.Host
+							}
+
+							if selector.Transport != "" {
+								service.Transport = selector.Transport
+							}
+
+							if selector.Codec != "" {
+								service.Codec = selector.Codec
+							}
 
 							attrs, _ := selector.Options.JustAttributes()
 							for _, attr := range attrs {
