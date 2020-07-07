@@ -52,7 +52,7 @@ func (object *Object) ResolveStatusCode(store refs.Store) int {
 	result := object.StatusCode.Default
 	if object.StatusCode.Reference != nil {
 		ref := store.Load(object.StatusCode.Reference.Resource, object.StatusCode.Reference.Path)
-		if ref != nil {
+		if ref != nil && ref.Value != nil {
 			result = ref.Value
 		}
 	}
@@ -75,7 +75,7 @@ func (object *Object) ResolveMessage(store refs.Store) string {
 	result := object.Message.Default
 	if object.Message.Reference != nil {
 		ref := store.Load(object.Message.Reference.Resource, object.Message.Reference.Path)
-		if ref != nil {
+		if ref != nil && ref.Value != nil {
 			result = ref.Value
 		}
 	}
