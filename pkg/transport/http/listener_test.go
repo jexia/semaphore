@@ -5,6 +5,7 @@ import (
 	"context"
 	ejson "encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -531,6 +532,31 @@ func TestListenerErrorHandling(t *testing.T) {
 				"const": "custom message",
 			},
 		},
+		"empty": {
+			input: map[string]string{
+				"message": "value",
+			},
+			caller: func(store refs.Store) {
+				store.StoreValue("error", "message", "value")
+				store.StoreValue("error", "status", int64(404))
+			},
+			err: &specs.OnError{
+				Response: nil,
+				Status: &specs.Property{
+					Type:    types.Int64,
+					Label:   labels.Optional,
+					Default: int64(404),
+				},
+				Message: &specs.Property{
+					Type:    types.String,
+					Label:   labels.Optional,
+					Default: "value",
+				},
+			},
+
+			expected: 404,
+			response: nil,
+		},
 	}
 
 	for name, test := range tests {
@@ -598,6 +624,10 @@ func TestListenerErrorHandling(t *testing.T) {
 			}
 
 			equal, left, right, err := JSONEqual(res.Body, bytes.NewBuffer(expected))
+			if err == io.EOF && test.response == nil {
+				return
+			}
+
 			if err != nil {
 				t.Fatal(err)
 			}
