@@ -310,7 +310,7 @@ func TestTransportStatusCodeHandling(t *testing.T) {
 				node: &specs.Node{},
 				options: &CallOptions{
 					Transport:      NewMockTransport(nil, transport.StatusOK, nil),
-					ExpectedStatus: transport.StatusOK,
+					ExpectedStatus: []int{transport.StatusOK},
 				},
 				store: refs.NewReferenceStore(0),
 				err:   nil,
@@ -321,7 +321,7 @@ func TestTransportStatusCodeHandling(t *testing.T) {
 				node: &specs.Node{},
 				options: &CallOptions{
 					Transport:      NewMockTransport(nil, 201, nil),
-					ExpectedStatus: 201,
+					ExpectedStatus: []int{201},
 				},
 				store: refs.NewReferenceStore(0),
 				err:   nil,
@@ -332,7 +332,7 @@ func TestTransportStatusCodeHandling(t *testing.T) {
 				node: &specs.Node{},
 				options: &CallOptions{
 					Transport:      NewMockTransport(nil, 300, nil),
-					ExpectedStatus: 300,
+					ExpectedStatus: []int{300},
 				},
 				store: refs.NewReferenceStore(0),
 				err:   nil,
@@ -343,7 +343,7 @@ func TestTransportStatusCodeHandling(t *testing.T) {
 				node: &specs.Node{},
 				options: &CallOptions{
 					Transport:      NewMockTransport(nil, 500, nil),
-					ExpectedStatus: transport.StatusOK,
+					ExpectedStatus: []int{transport.StatusOK},
 				},
 				store: refs.NewReferenceStore(0),
 				err:   ErrAbortFlow,
@@ -354,7 +354,7 @@ func TestTransportStatusCodeHandling(t *testing.T) {
 				node: &specs.Node{},
 				options: &CallOptions{
 					Transport:      NewMockTransport(nil, 401, nil),
-					ExpectedStatus: transport.StatusOK,
+					ExpectedStatus: []int{transport.StatusOK},
 				},
 				store: refs.NewReferenceStore(0),
 				err:   ErrAbortFlow,
@@ -414,7 +414,7 @@ func TestTransportErrorSchemaDecoding(t *testing.T) {
 			return &test{
 				node: &specs.Node{},
 				options: &CallOptions{
-					ExpectedStatus: transport.StatusOK,
+					ExpectedStatus: []int{transport.StatusOK},
 					Transport:      NewMockTransport(nil, 500, []byte(message)),
 					Err:            NewOnError(nil, codec, nil, nil, nil),
 				},
@@ -454,7 +454,7 @@ func TestTransportErrorSchemaDecoding(t *testing.T) {
 			return &test{
 				node: &specs.Node{},
 				options: &CallOptions{
-					ExpectedStatus: transport.StatusOK,
+					ExpectedStatus: []int{transport.StatusOK},
 					Transport:      NewMockTransport(nil, 500, []byte(message)),
 					Err:            NewOnError(nil, codec, nil, nil, nil),
 				},

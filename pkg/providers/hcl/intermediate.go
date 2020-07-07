@@ -139,7 +139,7 @@ type Resource struct {
 	Request      *Call         `hcl:"request,block"`
 	Rollback     *Call         `hcl:"rollback,block"`
 	OnError      *OnError      `hcl:"on_error,block"`
-	ExpectStatus int           `hcl:"expect_status,optional"`
+	ExpectStatus []int         `hcl:"expect_status,optional"`
 	Error        *ParameterMap `hcl:"error,block"`
 }
 

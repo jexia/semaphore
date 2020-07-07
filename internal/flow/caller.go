@@ -36,7 +36,7 @@ type CallOptions struct {
 	Request        *Request
 	Response       *Request
 	Err            *OnError
-	ExpectedStatus int
+	ExpectedStatus []int
 }
 
 // NewCall constructs a new flow caller from the given transport caller and
@@ -48,12 +48,16 @@ func NewCall(ctx instance.Context, node *specs.Node, options *CallOptions) Call 
 		method:         options.Method,
 		request:        options.Request,
 		response:       options.Response,
-		ExpectedStatus: options.ExpectedStatus,
+		ExpectedStatus: make(map[int]struct{}, len(options.ExpectedStatus)),
 		err:            options.Err,
 	}
 
-	if result.ExpectedStatus == 0 {
-		result.ExpectedStatus = transport.StatusOK
+	for _, status := range options.ExpectedStatus {
+		result.ExpectedStatus[status] = struct{}{}
+	}
+
+	if len(result.ExpectedStatus) == 0 {
+		result.ExpectedStatus = map[int]struct{}{transport.StatusOK: {}}
 	}
 
 	return result
@@ -76,7 +80,7 @@ type Caller struct {
 	request        *Request
 	response       *Request
 	err            *OnError
-	ExpectedStatus int
+	ExpectedStatus map[int]struct{}
 }
 
 // References returns the references inside the configured transport caller
@@ -131,7 +135,8 @@ func (caller *Caller) Do(ctx context.Context, store refs.Store) error {
 		writer.Close()
 	}
 
-	if caller.transport != nil && w.Status() != caller.ExpectedStatus {
+	_, expected := caller.ExpectedStatus[w.Status()]
+	if caller.transport != nil && !expected {
 		caller.ctx.Logger(logger.Flow).WithFields(logrus.Fields{
 			"node":   caller.node.Name,
 			"status": w.Status(),

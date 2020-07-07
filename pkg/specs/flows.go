@@ -180,7 +180,7 @@ type Node struct {
 	DependsOn    map[string]*Node `json:"depends_on,omitempty"`
 	Call         *Call            `json:"call,omitempty"`
 	Rollback     *Call            `json:"rollback,omitempty"`
-	ExpectStatus int              `json:"expect_status,omitempty"`
+	ExpectStatus []int            `json:"expect_status,omitempty"`
 	OnError      *OnError         `json:"on_error,omitempty"`
 }
 
