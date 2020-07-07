@@ -254,8 +254,8 @@ func TestErrorHandlingListener(t *testing.T) {
 			}
 
 			err = dial.SendMsg(context.Background(), rw, rq, refs.NewReferenceStore(0))
-			if err == nil {
-				t.Fatal("unexpected pass")
+			if err != nil {
+				t.Fatalf("unrecoverable err returned '%s'", err)
 			}
 
 			if called != 1 {
