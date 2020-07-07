@@ -179,6 +179,7 @@ func (call *Call) SendMsg(ctx context.Context, rw transport.ResponseWriter, pr *
 		status := status.Convert(err)
 		rw.HeaderStatus(StatusFromCode(status.Code()))
 		rw.HeaderMessage(status.Message())
+		rw.Close()
 		return nil
 	}
 
