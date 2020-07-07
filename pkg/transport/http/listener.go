@@ -251,21 +251,23 @@ func (handle *Handle) HTTPFunc(w http.ResponseWriter, r *http.Request, ps httpro
 			return
 		}
 
-		reader, err := object.Codec.Marshal(store)
-		if err != nil {
-			handle.ctx.Logger(logger.Transport).Error(err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-
 		w.WriteHeader(object.ResolveStatusCode(store))
 		if object.Meta != nil {
 			SetHTTPHeader(w.Header(), object.Meta.Marshal(store))
 		}
 
-		_, err = io.Copy(w, reader)
-		if err != nil {
-			handle.ctx.Logger(logger.Transport).Error(err)
+		if object.Codec != nil {
+			reader, err := object.Codec.Marshal(store)
+			if err != nil {
+				handle.ctx.Logger(logger.Transport).Error(err)
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+
+			_, err = io.Copy(w, reader)
+			if err != nil {
+				handle.ctx.Logger(logger.Transport).Error(err)
+			}
 		}
 
 		return
