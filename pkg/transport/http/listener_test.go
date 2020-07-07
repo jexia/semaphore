@@ -287,9 +287,7 @@ func TestListenerErrorHandling(t *testing.T) {
 	type test struct {
 		input    map[string]string
 		caller   func(refs.Store)
-		params   *specs.ParameterMap
-		status   *specs.Property
-		message  *specs.Property
+		err      *specs.OnError
 		expected int
 		response map[string]interface{}
 	}
@@ -303,43 +301,45 @@ func TestListenerErrorHandling(t *testing.T) {
 				store.StoreValue("error", "message", "value")
 				store.StoreValue("error", "status", int64(500))
 			},
-			params: &specs.ParameterMap{
-				Property: &specs.Property{
-					Type:  types.Message,
-					Label: labels.Optional,
-					Nested: map[string]*specs.Property{
-						"status": {
-							Name:  "status",
-							Path:  "status",
-							Type:  types.Int64,
-							Label: labels.Optional,
-							Reference: &specs.PropertyReference{
-								Resource: "error",
-								Path:     "status",
+			err: &specs.OnError{
+				Response: &specs.ParameterMap{
+					Property: &specs.Property{
+						Type:  types.Message,
+						Label: labels.Optional,
+						Nested: map[string]*specs.Property{
+							"status": {
+								Name:  "status",
+								Path:  "status",
+								Type:  types.Int64,
+								Label: labels.Optional,
+								Reference: &specs.PropertyReference{
+									Resource: "error",
+									Path:     "status",
+								},
 							},
-						},
-						"message": {
-							Name:  "message",
-							Path:  "message",
-							Type:  types.String,
-							Label: labels.Optional,
-							Reference: &specs.PropertyReference{
-								Resource: "error",
-								Path:     "message",
+							"message": {
+								Name:  "message",
+								Path:  "message",
+								Type:  types.String,
+								Label: labels.Optional,
+								Reference: &specs.PropertyReference{
+									Resource: "error",
+									Path:     "message",
+								},
 							},
 						},
 					},
 				},
-			},
-			status: &specs.Property{
-				Type:    types.Int64,
-				Label:   labels.Optional,
-				Default: int64(500),
-			},
-			message: &specs.Property{
-				Type:    types.String,
-				Label:   labels.Optional,
-				Default: "value",
+				Status: &specs.Property{
+					Type:    types.Int64,
+					Label:   labels.Optional,
+					Default: int64(500),
+				},
+				Message: &specs.Property{
+					Type:    types.String,
+					Label:   labels.Optional,
+					Default: "value",
+				},
 			},
 			expected: 500,
 			response: map[string]interface{}{
@@ -356,44 +356,47 @@ func TestListenerErrorHandling(t *testing.T) {
 				store.StoreValue("error", "status", int64(500))
 				store.StoreValue("input", "status", int64(401))
 			},
-			params: &specs.ParameterMap{
-				Property: &specs.Property{
-					Type:  types.Message,
-					Label: labels.Optional,
-					Nested: map[string]*specs.Property{
-						"status": {
-							Name:  "status",
-							Path:  "status",
-							Type:  types.Int64,
-							Label: labels.Optional,
-							Reference: &specs.PropertyReference{
-								Resource: "input",
-								Path:     "status",
+			err: &specs.OnError{
+				Response: &specs.ParameterMap{
+					Property: &specs.Property{
+						Type:  types.Message,
+						Label: labels.Optional,
+						Nested: map[string]*specs.Property{
+							"status": {
+								Name:  "status",
+								Path:  "status",
+								Type:  types.Int64,
+								Label: labels.Optional,
+								Reference: &specs.PropertyReference{
+									Resource: "input",
+									Path:     "status",
+								},
 							},
-						},
-						"message": {
-							Name:  "message",
-							Path:  "message",
-							Type:  types.String,
-							Label: labels.Optional,
-							Reference: &specs.PropertyReference{
-								Resource: "error",
-								Path:     "message",
+							"message": {
+								Name:  "message",
+								Path:  "message",
+								Type:  types.String,
+								Label: labels.Optional,
+								Reference: &specs.PropertyReference{
+									Resource: "error",
+									Path:     "message",
+								},
 							},
 						},
 					},
 				},
+				Status: &specs.Property{
+					Type:    types.Int64,
+					Label:   labels.Optional,
+					Default: int64(401),
+				},
+				Message: &specs.Property{
+					Type:    types.String,
+					Label:   labels.Optional,
+					Default: "value",
+				},
 			},
-			status: &specs.Property{
-				Type:    types.Int64,
-				Label:   labels.Optional,
-				Default: int64(401),
-			},
-			message: &specs.Property{
-				Type:    types.String,
-				Label:   labels.Optional,
-				Default: "value",
-			},
+
 			expected: 401,
 			response: map[string]interface{}{
 				"status":  401,
@@ -408,44 +411,47 @@ func TestListenerErrorHandling(t *testing.T) {
 				store.StoreValue("error", "message", "value")
 				store.StoreValue("error", "status", int64(404))
 			},
-			params: &specs.ParameterMap{
-				Property: &specs.Property{
-					Type:  types.Message,
-					Label: labels.Optional,
-					Nested: map[string]*specs.Property{
-						"status": {
-							Name:  "status",
-							Path:  "status",
-							Type:  types.Int64,
-							Label: labels.Optional,
-							Reference: &specs.PropertyReference{
-								Resource: "error",
-								Path:     "status",
+			err: &specs.OnError{
+				Response: &specs.ParameterMap{
+					Property: &specs.Property{
+						Type:  types.Message,
+						Label: labels.Optional,
+						Nested: map[string]*specs.Property{
+							"status": {
+								Name:  "status",
+								Path:  "status",
+								Type:  types.Int64,
+								Label: labels.Optional,
+								Reference: &specs.PropertyReference{
+									Resource: "error",
+									Path:     "status",
+								},
 							},
-						},
-						"message": {
-							Name:  "message",
-							Path:  "message",
-							Type:  types.String,
-							Label: labels.Optional,
-							Reference: &specs.PropertyReference{
-								Resource: "error",
-								Path:     "message",
+							"message": {
+								Name:  "message",
+								Path:  "message",
+								Type:  types.String,
+								Label: labels.Optional,
+								Reference: &specs.PropertyReference{
+									Resource: "error",
+									Path:     "message",
+								},
 							},
 						},
 					},
 				},
+				Status: &specs.Property{
+					Type:    types.Int64,
+					Label:   labels.Optional,
+					Default: int64(404),
+				},
+				Message: &specs.Property{
+					Type:    types.String,
+					Label:   labels.Optional,
+					Default: "value",
+				},
 			},
-			status: &specs.Property{
-				Type:    types.Int64,
-				Label:   labels.Optional,
-				Default: int64(404),
-			},
-			message: &specs.Property{
-				Type:    types.String,
-				Label:   labels.Optional,
-				Default: "value",
-			},
+
 			expected: 404,
 			response: map[string]interface{}{
 				"status":  404,
@@ -460,59 +466,62 @@ func TestListenerErrorHandling(t *testing.T) {
 				store.StoreValue("error", "message", "value")
 				store.StoreValue("error", "status", int64(404))
 			},
-			params: &specs.ParameterMap{
-				Property: &specs.Property{
-					Type:  types.Message,
-					Label: labels.Optional,
-					Nested: map[string]*specs.Property{
-						"meta": {
-							Name:  "meta",
-							Path:  "meta",
-							Type:  types.Message,
-							Label: labels.Optional,
-							Nested: map[string]*specs.Property{
-								"status": {
-									Name:  "status",
-									Path:  "meta.status",
-									Type:  types.Int64,
-									Label: labels.Optional,
-									Reference: &specs.PropertyReference{
-										Resource: "error",
-										Path:     "status",
+			err: &specs.OnError{
+				Response: &specs.ParameterMap{
+					Property: &specs.Property{
+						Type:  types.Message,
+						Label: labels.Optional,
+						Nested: map[string]*specs.Property{
+							"meta": {
+								Name:  "meta",
+								Path:  "meta",
+								Type:  types.Message,
+								Label: labels.Optional,
+								Nested: map[string]*specs.Property{
+									"status": {
+										Name:  "status",
+										Path:  "meta.status",
+										Type:  types.Int64,
+										Label: labels.Optional,
+										Reference: &specs.PropertyReference{
+											Resource: "error",
+											Path:     "status",
+										},
 									},
-								},
-								"message": {
-									Name:  "message",
-									Path:  "meta.message",
-									Type:  types.String,
-									Label: labels.Optional,
-									Reference: &specs.PropertyReference{
-										Resource: "error",
-										Path:     "message",
+									"message": {
+										Name:  "message",
+										Path:  "meta.message",
+										Type:  types.String,
+										Label: labels.Optional,
+										Reference: &specs.PropertyReference{
+											Resource: "error",
+											Path:     "message",
+										},
 									},
 								},
 							},
-						},
-						"const": {
-							Name:    "const",
-							Path:    "const",
-							Type:    types.String,
-							Label:   labels.Optional,
-							Default: "custom message",
+							"const": {
+								Name:    "const",
+								Path:    "const",
+								Type:    types.String,
+								Label:   labels.Optional,
+								Default: "custom message",
+							},
 						},
 					},
 				},
+				Status: &specs.Property{
+					Type:    types.Int64,
+					Label:   labels.Optional,
+					Default: int64(404),
+				},
+				Message: &specs.Property{
+					Type:    types.String,
+					Label:   labels.Optional,
+					Default: "value",
+				},
 			},
-			status: &specs.Property{
-				Type:    types.Int64,
-				Label:   labels.Optional,
-				Default: int64(404),
-			},
-			message: &specs.Property{
-				Type:    types.String,
-				Label:   labels.Optional,
-				Default: "value",
-			},
+
 			expected: 404,
 			response: map[string]interface{}{
 				"meta": map[string]interface{}{
@@ -528,12 +537,8 @@ func TestListenerErrorHandling(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			ctx := instance.NewContext()
 			node := &specs.Node{
-				Name: "first",
-				OnError: &specs.OnError{
-					Message:  test.message,
-					Status:   test.status,
-					Response: test.params,
-				},
+				Name:    "first",
+				OnError: test.err,
 			}
 
 			called := 0
@@ -551,9 +556,9 @@ func TestListenerErrorHandling(t *testing.T) {
 				flow.NewNode(ctx, node, nil, call, nil, nil),
 			}
 
-			obj := transport.NewObject(test.params, test.status, nil)
+			obj := transport.NewObject(node.OnError.Response, node.OnError.Status, nil)
 			errs := transport.Errs{
-				test.params: obj,
+				node.OnError: obj,
 			}
 
 			listener, endpoint := NewMockListener(t, nodes, errs)

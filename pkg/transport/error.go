@@ -29,6 +29,7 @@ type Error interface {
 	specs.ErrorHandle
 	String() string
 	Error() string
+	Ptr() specs.ErrorHandle
 }
 
 type wrapper struct {
@@ -56,4 +57,9 @@ func (w *wrapper) Error() string {
 // Unwrap unwraps the given error and returns the wrapped error
 func (w *wrapper) Unwrap() error {
 	return w.err
+}
+
+// Ptr returns the pointer to the specific error handler
+func (w *wrapper) Ptr() specs.ErrorHandle {
+	return w.ErrorHandle
 }

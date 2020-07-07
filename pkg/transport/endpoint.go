@@ -25,10 +25,6 @@ func NewEndpoint(listener string, flow Flow, forward *Forward, options specs.Opt
 
 // NewObject constructs a new data object
 func NewObject(schema *specs.ParameterMap, status *specs.Property, message *specs.Property) *Object {
-	if schema == nil {
-		return nil
-	}
-
 	return &Object{
 		Schema:     schema,
 		StatusCode: status,
@@ -116,33 +112,16 @@ func (object *Object) NewCodec(ctx instance.Context, resource string, codec code
 	return nil
 }
 
-// Collection represents a collection of requests
-type Collection map[*specs.ParameterMap]*Object
-
-// Set appends the given object to the object collection
-func (collection Collection) Set(object *Object) {
-	if collection == nil {
-		return
-	}
-
-	collection[object.Schema] = object
-}
-
-// Get attempts to retrieve the requested object from the object collection
-func (collection Collection) Get(key *specs.ParameterMap) *Object {
-	return collection[key]
-}
-
 // Errs represents a err object collection
-type Errs Collection
+type Errs map[specs.ErrorHandle]*Object
 
 // Set appends the given object to the object collection
-func (collection Errs) Set(object *Object) {
+func (collection Errs) Set(err Error, object *Object) {
 	if collection == nil || object == nil {
 		return
 	}
 
-	collection[object.Schema] = object
+	collection[err.Ptr()] = object
 }
 
 // Get attempts to retrieve the requested object from the errs collection
@@ -151,7 +130,7 @@ func (collection Errs) Get(key Error) *Object {
 		return nil
 	}
 
-	return collection[key.GetResponse()]
+	return collection[key.Ptr()]
 }
 
 // Forward represents the forward specifications
@@ -206,7 +185,7 @@ func (endpoint *Endpoint) NewCodec(ctx instance.Context, codec codec.Constructor
 			return err
 		}
 
-		endpoint.Errs.Set(object)
+		endpoint.Errs.Set(handle, object)
 	}
 
 	endpoint.Response.NewMeta(ctx, template.OutputResource)

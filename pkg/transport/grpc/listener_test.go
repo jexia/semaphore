@@ -111,23 +111,24 @@ func TestListener(t *testing.T) {
 func TestErrorHandlingListener(t *testing.T) {
 	type test struct {
 		caller   func(refs.Store)
-		status   *specs.Property
-		message  *specs.Property
+		err      *specs.OnError
 		expected int
 		result   string
 	}
 
 	tests := map[string]test{
 		"simple": {
-			status: &specs.Property{
-				Type:    types.Int64,
-				Label:   labels.Optional,
-				Default: int64(500),
-			},
-			message: &specs.Property{
-				Type:    types.String,
-				Label:   labels.Optional,
-				Default: "database broken",
+			err: &specs.OnError{
+				Status: &specs.Property{
+					Type:    types.Int64,
+					Label:   labels.Optional,
+					Default: int64(500),
+				},
+				Message: &specs.Property{
+					Type:    types.String,
+					Label:   labels.Optional,
+					Default: "database broken",
+				},
 			},
 			expected: 500,
 			result:   "database broken",
@@ -137,20 +138,22 @@ func TestErrorHandlingListener(t *testing.T) {
 				store.StoreValue("error", "status", int64(429))
 				store.StoreValue("error", "message", "reference value")
 			},
-			status: &specs.Property{
-				Type:  types.Int64,
-				Label: labels.Optional,
-				Reference: &specs.PropertyReference{
-					Resource: "error",
-					Path:     "status",
+			err: &specs.OnError{
+				Status: &specs.Property{
+					Type:  types.Int64,
+					Label: labels.Optional,
+					Reference: &specs.PropertyReference{
+						Resource: "error",
+						Path:     "status",
+					},
 				},
-			},
-			message: &specs.Property{
-				Type:  types.String,
-				Label: labels.Optional,
-				Reference: &specs.PropertyReference{
-					Resource: "error",
-					Path:     "message",
+				Message: &specs.Property{
+					Type:  types.String,
+					Label: labels.Optional,
+					Reference: &specs.PropertyReference{
+						Resource: "error",
+						Path:     "message",
+					},
 				},
 			},
 			expected: 429,
@@ -161,20 +164,22 @@ func TestErrorHandlingListener(t *testing.T) {
 				store.StoreValue("error", "status", int64(429))
 				store.StoreValue("input", "message", "reference value")
 			},
-			status: &specs.Property{
-				Type:  types.Int64,
-				Label: labels.Optional,
-				Reference: &specs.PropertyReference{
-					Resource: "error",
-					Path:     "status",
+			err: &specs.OnError{
+				Status: &specs.Property{
+					Type:  types.Int64,
+					Label: labels.Optional,
+					Reference: &specs.PropertyReference{
+						Resource: "error",
+						Path:     "status",
+					},
 				},
-			},
-			message: &specs.Property{
-				Type:  types.String,
-				Label: labels.Optional,
-				Reference: &specs.PropertyReference{
-					Resource: "input",
-					Path:     "message",
+				Message: &specs.Property{
+					Type:  types.String,
+					Label: labels.Optional,
+					Reference: &specs.PropertyReference{
+						Resource: "input",
+						Path:     "message",
+					},
 				},
 			},
 			expected: 429,
@@ -186,12 +191,8 @@ func TestErrorHandlingListener(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			ctx := instance.NewContext()
 			node := &specs.Node{
-				Name: "first",
-				OnError: &specs.OnError{
-					Message:  test.message,
-					Status:   test.status,
-					Response: &specs.ParameterMap{},
-				},
+				Name:    "first",
+				OnError: test.err,
 			}
 
 			called := 0
@@ -209,9 +210,9 @@ func TestErrorHandlingListener(t *testing.T) {
 				flow.NewNode(ctx, node, nil, call, nil, nil),
 			}
 
-			obj := transport.NewObject(node.OnError.Response, test.status, test.message)
+			obj := transport.NewObject(node.OnError.Response, node.OnError.Status, node.OnError.Message)
 			errs := transport.Errs{
-				node.OnError.Response: obj,
+				node.OnError: obj,
 			}
 
 			listener, port := NewMockListener(t, nodes, errs)
