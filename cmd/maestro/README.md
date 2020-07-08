@@ -37,7 +37,7 @@ $ curl https://raw.githubusercontent.com/jexia/maestro/master/install.sh | sh -s
 
 ### Docker images
 
-Official docker images are available on Github. These images contain the Maestro CLI.
+Official docker images are available on Github and Docker hub. These images contain the Maestro CLI.
 
 ```sh
 $ docker pull jexiacom/maestro-cli
