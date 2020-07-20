@@ -1,10 +1,10 @@
 package hcl
 
 import (
-	"github.com/jexia/maestro/pkg/core/instance"
-	"github.com/jexia/maestro/pkg/core/logger"
-	"github.com/jexia/maestro/pkg/specs"
-	"github.com/jexia/maestro/pkg/specs/template"
+	"github.com/jexia/semaphore/pkg/core/instance"
+	"github.com/jexia/semaphore/pkg/core/logger"
+	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/pkg/specs/template"
 	"github.com/sirupsen/logrus"
 	"github.com/zclconf/go-cty/cty"
 )

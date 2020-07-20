@@ -1,9 +1,9 @@
 package core
 
 import (
-	"github.com/jexia/maestro/pkg/core/api"
-	"github.com/jexia/maestro/pkg/core/instance"
-	"github.com/jexia/maestro/pkg/specs"
+	"github.com/jexia/semaphore/pkg/core/api"
+	"github.com/jexia/semaphore/pkg/core/instance"
+	"github.com/jexia/semaphore/pkg/specs"
 )
 
 // CollectSpecs calls all defined resolvers and returns a specs collection

@@ -1,13 +1,13 @@
-package maestro
+package semaphore
 
 import (
 	"context"
 	"testing"
 
-	"github.com/jexia/maestro/pkg/core/api"
-	"github.com/jexia/maestro/pkg/core/instance"
-	"github.com/jexia/maestro/pkg/flow"
-	"github.com/jexia/maestro/pkg/refs"
+	"github.com/jexia/semaphore/pkg/core/api"
+	"github.com/jexia/semaphore/pkg/core/instance"
+	"github.com/jexia/semaphore/pkg/flow"
+	"github.com/jexia/semaphore/pkg/refs"
 )
 
 func TestWithMiddleware(t *testing.T) {

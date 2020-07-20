@@ -5,21 +5,21 @@ endpoint "greeter" "http" {
 }
 
 endpoint "greeter" "grpc" {
-	package = "maestro.greeter"
+	package = "semaphore.greeter"
 	service = "Say"
 	method = "Hello"
 }
 
 flow "greeter" {
-	input "maestro.greeter.Request" {}
+	input "semaphore.greeter.Request" {}
 
 	resource "user" {
-		request "maestro.greeter.Say" "Hello" {
+		request "semaphore.greeter.Say" "Hello" {
 			name = "{{ input:name }}"
 		}
 	}
 
-	output "maestro.greeter.Response" {
+	output "semaphore.greeter.Response" {
 		msg = "{{ user:msg }}"
 		meta = "{{ user:meta }}"
 	}

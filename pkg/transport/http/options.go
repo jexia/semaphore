@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/jexia/maestro/pkg/specs"
+	"github.com/jexia/semaphore/pkg/specs"
 )
 
 const (

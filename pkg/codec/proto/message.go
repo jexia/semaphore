@@ -5,11 +5,11 @@ import (
 	"io"
 	"io/ioutil"
 
-	"github.com/jexia/maestro/pkg/codec"
-	"github.com/jexia/maestro/pkg/core/trace"
-	"github.com/jexia/maestro/pkg/refs"
-	"github.com/jexia/maestro/pkg/specs"
-	"github.com/jexia/maestro/pkg/specs/types"
+	"github.com/jexia/semaphore/pkg/codec"
+	"github.com/jexia/semaphore/pkg/core/trace"
+	"github.com/jexia/semaphore/pkg/refs"
+	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/pkg/specs/types"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/dynamic"
 )

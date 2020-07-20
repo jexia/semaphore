@@ -4,7 +4,7 @@ Provides gRPC client and server implementations.
 
 ```hcl
 endpoint "mock" "grpc" {
-    package = "maestro.greeter"
+    package = "semaphore.greeter"
 	service = "Say"
     method = "Hello"
 }

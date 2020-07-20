@@ -4,12 +4,12 @@ import (
 	"context"
 	"io"
 
-	"github.com/jexia/maestro/pkg/codec"
-	"github.com/jexia/maestro/pkg/core/instance"
-	"github.com/jexia/maestro/pkg/functions"
-	"github.com/jexia/maestro/pkg/metadata"
-	"github.com/jexia/maestro/pkg/refs"
-	"github.com/jexia/maestro/pkg/specs"
+	"github.com/jexia/semaphore/pkg/codec"
+	"github.com/jexia/semaphore/pkg/core/instance"
+	"github.com/jexia/semaphore/pkg/functions"
+	"github.com/jexia/semaphore/pkg/metadata"
+	"github.com/jexia/semaphore/pkg/refs"
+	"github.com/jexia/semaphore/pkg/specs"
 )
 
 // ResponseWriter specifies the response writer implementation which could be used to both proxy forward a request or used to call a service

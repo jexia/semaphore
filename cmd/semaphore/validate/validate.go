@@ -1,17 +1,17 @@
 package validate
 
 import (
-	"github.com/jexia/maestro"
-	"github.com/jexia/maestro/cmd/maestro/config"
-	"github.com/jexia/maestro/pkg/core"
-	"github.com/jexia/maestro/pkg/core/instance"
-	"github.com/jexia/maestro/pkg/functions"
+	"github.com/jexia/semaphore"
+	"github.com/jexia/semaphore/cmd/semaphore/config"
+	"github.com/jexia/semaphore/pkg/core"
+	"github.com/jexia/semaphore/pkg/core/instance"
+	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/spf13/cobra"
 )
 
 var params = config.New()
 
-// Command represents the maestro validate command
+// Command represents the semaphore validate command
 var Command = &cobra.Command{
 	Use:          "validate",
 	Short:        "Validate the flow definitions with the configured schema format(s)",
@@ -32,7 +32,7 @@ func run(cmd *cobra.Command, args []string) error {
 	}
 
 	ctx := instance.NewContext()
-	options, err := maestro.NewOptions(ctx, arguments...)
+	options, err := semaphore.NewOptions(ctx, arguments...)
 	if err != nil {
 		return err
 	}

@@ -1,12 +1,12 @@
 package config
 
 import (
-	"github.com/jexia/maestro/pkg/providers/hcl"
+	"github.com/jexia/semaphore/pkg/providers/hcl"
 )
 
 // New constructs a new global config
-func New() *Maestro {
-	return &Maestro{
+func New() *Semaphore {
+	return &Semaphore{
 		HTTP:         HTTP{},
 		GraphQL:      GraphQL{},
 		GRPC:         GRPC{},
@@ -16,7 +16,7 @@ func New() *Maestro {
 }
 
 // Parse parses the given HCL options definition
-func Parse(options *hcl.Options, target *Maestro) {
+func Parse(options *hcl.Options, target *Semaphore) {
 	if target.LogLevel == "" && options.LogLevel != "" {
 		target.LogLevel = options.LogLevel
 	}
@@ -50,8 +50,8 @@ func Parse(options *hcl.Options, target *Maestro) {
 	}
 }
 
-// Maestro configurations
-type Maestro struct {
+// Semaphore configurations
+type Semaphore struct {
 	LogLevel     string
 	HTTP         HTTP
 	GraphQL      GraphQL

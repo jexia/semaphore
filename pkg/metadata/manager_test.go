@@ -3,11 +3,11 @@ package metadata
 import (
 	"testing"
 
-	"github.com/jexia/maestro/pkg/core/instance"
-	"github.com/jexia/maestro/pkg/refs"
-	"github.com/jexia/maestro/pkg/specs"
-	"github.com/jexia/maestro/pkg/specs/labels"
-	"github.com/jexia/maestro/pkg/specs/types"
+	"github.com/jexia/semaphore/pkg/core/instance"
+	"github.com/jexia/semaphore/pkg/refs"
+	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/pkg/specs/labels"
+	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
 func TestNewManager(t *testing.T) {

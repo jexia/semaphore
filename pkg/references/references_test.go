@@ -5,11 +5,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/jexia/maestro/pkg/compare"
-	"github.com/jexia/maestro/pkg/core/instance"
-	"github.com/jexia/maestro/pkg/providers"
-	"github.com/jexia/maestro/pkg/providers/hcl"
-	"github.com/jexia/maestro/pkg/providers/mock"
+	"github.com/jexia/semaphore/pkg/compare"
+	"github.com/jexia/semaphore/pkg/core/instance"
+	"github.com/jexia/semaphore/pkg/providers"
+	"github.com/jexia/semaphore/pkg/providers/hcl"
+	"github.com/jexia/semaphore/pkg/providers/mock"
 )
 
 const (

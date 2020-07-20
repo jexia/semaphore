@@ -4,7 +4,7 @@ import (
 	"encoding/base64"
 
 	"github.com/francoispqt/gojay"
-	"github.com/jexia/maestro/pkg/specs/types"
+	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
 // AddTypeKey encodes the given value into the given encoder

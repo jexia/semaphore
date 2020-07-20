@@ -1,13 +1,13 @@
 # Complex data structures
 
-This example shows how complex data structures could be implemented inside Maestro.
+This example shows how complex data structures could be implemented inside Semaphore.
 
 ## Getting started
 
-To run this example you need to have the Maestro daemon installed on your machine.
+To run this example you need to have the Semaphore daemon installed on your machine.
 
 ```bash
-$ maestro daemon
+$ semaphore daemon
 ```
 
 You could execute the `ComplexDataStructure` flow by executing a `POST` request on port `8080`.

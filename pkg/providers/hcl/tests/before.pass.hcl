@@ -1,7 +1,7 @@
 flow "mock" {
     before {
         resource "check" {
-            request "com.maestro" "Fetch" {
+            request "com.semaphore" "Fetch" {
                 key = "value"
             }
         }
@@ -15,7 +15,7 @@ flow "mock" {
 proxy "mock" {
     before {
         resource "check" {
-            request "com.maestro" "Fetch" {
+            request "com.semaphore" "Fetch" {
                 key = "value"
             }
         }

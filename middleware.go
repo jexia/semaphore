@@ -1,12 +1,12 @@
-package maestro
+package semaphore
 
 import (
 	"context"
 
-	"github.com/jexia/maestro/pkg/core/api"
-	"github.com/jexia/maestro/pkg/core/instance"
-	"github.com/jexia/maestro/pkg/flow"
-	"github.com/jexia/maestro/pkg/refs"
+	"github.com/jexia/semaphore/pkg/core/api"
+	"github.com/jexia/semaphore/pkg/core/instance"
+	"github.com/jexia/semaphore/pkg/flow"
+	"github.com/jexia/semaphore/pkg/refs"
 )
 
 // WithMiddleware initialises the given middleware and defines all options

@@ -6,7 +6,7 @@ package proto
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import _ "github.com/jexia/maestro/api"
+import _ "github.com/jexia/semaphore/api"
 
 import (
 	context "golang.org/x/net/context"
@@ -147,9 +147,9 @@ func (m *Meta) GetSession() int64 {
 }
 
 func init() {
-	proto.RegisterType((*Request)(nil), "maestro.greeter.Request")
-	proto.RegisterType((*Response)(nil), "maestro.greeter.Response")
-	proto.RegisterType((*Meta)(nil), "maestro.greeter.Meta")
+	proto.RegisterType((*Request)(nil), "semaphore.greeter.Request")
+	proto.RegisterType((*Response)(nil), "semaphore.greeter.Response")
+	proto.RegisterType((*Meta)(nil), "semaphore.greeter.Meta")
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -177,7 +177,7 @@ func NewSayClient(cc *grpc.ClientConn) SayClient {
 
 func (c *sayClient) Hello(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error) {
 	out := new(Response)
-	err := c.cc.Invoke(ctx, "/maestro.greeter.Say/Hello", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/semaphore.greeter.Say/Hello", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -203,7 +203,7 @@ func _Say_Hello_Handler(srv interface{}, ctx context.Context, dec func(interface
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/maestro.greeter.Say/Hello",
+		FullMethod: "/semaphore.greeter.Say/Hello",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(SayServer).Hello(ctx, req.(*Request))
@@ -212,7 +212,7 @@ func _Say_Hello_Handler(srv interface{}, ctx context.Context, dec func(interface
 }
 
 var _Say_serviceDesc = grpc.ServiceDesc{
-	ServiceName: "maestro.greeter.Say",
+	ServiceName: "semaphore.greeter.Say",
 	HandlerType: (*SayServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

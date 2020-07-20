@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/jexia/maestro/pkg/core/instance"
-	"github.com/jexia/maestro/pkg/providers"
+	"github.com/jexia/semaphore/pkg/core/instance"
+	"github.com/jexia/semaphore/pkg/providers"
 )
 
 const (

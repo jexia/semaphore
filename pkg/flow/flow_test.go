@@ -7,10 +7,10 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/jexia/maestro/pkg/core/instance"
-	"github.com/jexia/maestro/pkg/functions"
-	"github.com/jexia/maestro/pkg/refs"
-	"github.com/jexia/maestro/pkg/specs"
+	"github.com/jexia/semaphore/pkg/core/instance"
+	"github.com/jexia/semaphore/pkg/functions"
+	"github.com/jexia/semaphore/pkg/refs"
+	"github.com/jexia/semaphore/pkg/specs"
 )
 
 type MockCodec struct{}

@@ -1,10 +1,10 @@
 syntax = "proto3";
 
-package maestro.api;
+package semaphore.api;
 
 import "google/protobuf/descriptor.proto";
 
-option go_package = "github.com/jexia/maestro/api/annotations;annotations";
+option go_package = "github.com/jexia/semaphore/api/annotations;annotations";
 
 extend google.protobuf.ServiceOptions {
   Service service = 50012;

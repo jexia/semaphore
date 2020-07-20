@@ -7,7 +7,7 @@ import "api/annotations.proto";
 option go_package = "proto";
 
 service Say {
-	option (maestro.api.service) = {
+	option (semaphore.api.service) = {
         transport: "micro-grpc"
         codec: "proto"
 	};

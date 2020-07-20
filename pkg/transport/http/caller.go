@@ -7,14 +7,14 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/jexia/maestro/pkg/core/instance"
-	"github.com/jexia/maestro/pkg/core/logger"
-	"github.com/jexia/maestro/pkg/core/trace"
-	"github.com/jexia/maestro/pkg/functions"
-	"github.com/jexia/maestro/pkg/refs"
-	"github.com/jexia/maestro/pkg/specs"
-	"github.com/jexia/maestro/pkg/specs/types"
-	"github.com/jexia/maestro/pkg/transport"
+	"github.com/jexia/semaphore/pkg/core/instance"
+	"github.com/jexia/semaphore/pkg/core/logger"
+	"github.com/jexia/semaphore/pkg/core/trace"
+	"github.com/jexia/semaphore/pkg/functions"
+	"github.com/jexia/semaphore/pkg/refs"
+	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/pkg/specs/types"
+	"github.com/jexia/semaphore/pkg/transport"
 	"github.com/sirupsen/logrus"
 )
 

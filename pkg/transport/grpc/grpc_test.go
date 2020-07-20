@@ -6,14 +6,14 @@ import (
 	"net"
 	"testing"
 
-	"github.com/jexia/maestro/pkg/codec"
-	"github.com/jexia/maestro/pkg/core/instance"
-	"github.com/jexia/maestro/pkg/flow"
-	"github.com/jexia/maestro/pkg/refs"
-	"github.com/jexia/maestro/pkg/specs"
-	"github.com/jexia/maestro/pkg/specs/labels"
-	"github.com/jexia/maestro/pkg/specs/types"
-	"github.com/jexia/maestro/pkg/transport"
+	"github.com/jexia/semaphore/pkg/codec"
+	"github.com/jexia/semaphore/pkg/core/instance"
+	"github.com/jexia/semaphore/pkg/flow"
+	"github.com/jexia/semaphore/pkg/refs"
+	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/pkg/specs/labels"
+	"github.com/jexia/semaphore/pkg/specs/types"
+	"github.com/jexia/semaphore/pkg/transport"
 )
 
 type caller struct {

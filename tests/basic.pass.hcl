@@ -1,4 +1,4 @@
-service "com.maestro" "caller" {
+service "com.semaphore" "caller" {
 	transport = "http"
 	codec = "json"
 	host = ""
@@ -20,7 +20,7 @@ flow "echo" {
 	}
 
 	resource "opening" {
-		request "com.maestro.caller" "Open" {
+		request "com.semaphore.caller" "Open" {
 			message = "{{ input:message }}"
 		}
 	}

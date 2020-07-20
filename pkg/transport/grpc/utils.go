@@ -3,11 +3,11 @@ package grpc
 import (
 	"strings"
 
-	"github.com/jexia/maestro/pkg/metadata"
+	"github.com/jexia/semaphore/pkg/metadata"
 	rpcMeta "google.golang.org/grpc/metadata"
 )
 
-// CopyRPCMD copies the given grpc metadata into a maestro metadata
+// CopyRPCMD copies the given grpc metadata into a semaphore metadata
 func CopyRPCMD(source rpcMeta.MD) metadata.MD {
 	result := metadata.MD{}
 	for key, vals := range source {
@@ -17,7 +17,7 @@ func CopyRPCMD(source rpcMeta.MD) metadata.MD {
 	return result
 }
 
-// CopyMD copies the given maestro metadata into a grpc metadata
+// CopyMD copies the given semaphore metadata into a grpc metadata
 func CopyMD(source metadata.MD) rpcMeta.MD {
 	result := rpcMeta.MD{}
 	for key, vals := range source {

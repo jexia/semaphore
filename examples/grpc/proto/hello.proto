@@ -1,13 +1,13 @@
 syntax = "proto3";
 
-package maestro.greeter;
+package semaphore.greeter;
 
 import "api/annotations.proto";
 
 option go_package = "proto";
 
 service Say {
-	option (maestro.api.service) = {
+	option (semaphore.api.service) = {
 		host: "127.0.0.1:5050"
         transport: "grpc"
         codec: "proto"

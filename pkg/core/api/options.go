@@ -1,13 +1,13 @@
 package api
 
 import (
-	"github.com/jexia/maestro/pkg/codec"
-	"github.com/jexia/maestro/pkg/core/instance"
-	"github.com/jexia/maestro/pkg/flow"
-	"github.com/jexia/maestro/pkg/functions"
-	"github.com/jexia/maestro/pkg/providers"
-	"github.com/jexia/maestro/pkg/specs"
-	"github.com/jexia/maestro/pkg/transport"
+	"github.com/jexia/semaphore/pkg/codec"
+	"github.com/jexia/semaphore/pkg/core/instance"
+	"github.com/jexia/semaphore/pkg/flow"
+	"github.com/jexia/semaphore/pkg/functions"
+	"github.com/jexia/semaphore/pkg/providers"
+	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/pkg/transport"
 )
 
 // Collection represents a collection of flow, endpoint, services and schema manifests.

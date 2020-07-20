@@ -1,7 +1,7 @@
-# Maestro
-Maestro is a tool to orchestrate your microservices by providing a powerful toolset for manipulating, forwarding and returning properties from and to multiple services.
+# Semaphore
+Semaphore is a tool to orchestrate your microservices by providing a powerful toolset for manipulating, forwarding and returning properties from and to multiple services.
 
-Maestro is built on top of schema definitions and flows.
+Semaphore is built on top of schema definitions and flows.
 Messages are strictly typed and are type-checked. Payloads such as protobuf and JSON could be generated from the same definitions.
 
 ## Table of contents
@@ -85,7 +85,7 @@ repeated "address" "input:address" {
 A flow defines a set of calls that should be called chronologically and produces an output message. Calls could reference other resources when constructing messages. All references are strictly typed. Properties are fetched from the given schema or inputs.
 
 All flows should contain a unique name. Calls are nested inside of flows and contain two labels, a unique name within the flow and the service and method to be called.
-A dependency reference structure is generated within the flow which allows Maestro to figure out which calls could be called parallel to improve performance.
+A dependency reference structure is generated within the flow which allows Semaphore to figure out which calls could be called parallel to improve performance.
 
 An optional schema could be defined which defines the request/response messages.
 
@@ -364,7 +364,7 @@ flow "greeter" {
 ```
 
 ### Endpoint
-An endpoint exposes a flow. Endpoints are not parsed by Maestro and have custom implementations in each caller. The name of the endpoint represents the flow which should be executed.
+An endpoint exposes a flow. Endpoints are not parsed by Semaphore and have custom implementations in each caller. The name of the endpoint represents the flow which should be executed.
 
 All servers should define their own request/response message formats.
 
@@ -390,7 +390,7 @@ endpoint "users" "http" {
 
 ## Functions
 
-Custom defined functions could be configured and passed to Maestro. Functions could be called inside templates and could accept arguments and return a property as a response.
+Custom defined functions could be configured and passed to Semaphore. Functions could be called inside templates and could accept arguments and return a property as a response.
 Functions could be used to preform computation on properties during runtime. Functions have read access to the entire reference store but could only write to their own stack.
 A unique resource is created for each function call where all references stored during runtime are located. This resource is created during compile time and references made to the given function are automatically adjusted.
 

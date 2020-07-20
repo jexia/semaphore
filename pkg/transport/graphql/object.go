@@ -4,11 +4,11 @@ import (
 	"errors"
 
 	"github.com/graphql-go/graphql"
-	"github.com/jexia/maestro/pkg/core/trace"
-	"github.com/jexia/maestro/pkg/specs"
-	"github.com/jexia/maestro/pkg/specs/labels"
-	"github.com/jexia/maestro/pkg/specs/types"
-	"github.com/jexia/maestro/pkg/transport"
+	"github.com/jexia/semaphore/pkg/core/trace"
+	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/pkg/specs/labels"
+	"github.com/jexia/semaphore/pkg/specs/types"
+	"github.com/jexia/semaphore/pkg/transport"
 )
 
 // ErrInvalidObject is thrown when the given property is not of type message

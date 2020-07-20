@@ -6,10 +6,10 @@ import (
 	"io/ioutil"
 
 	"github.com/francoispqt/gojay"
-	"github.com/jexia/maestro/pkg/codec"
-	"github.com/jexia/maestro/pkg/core/trace"
-	"github.com/jexia/maestro/pkg/refs"
-	"github.com/jexia/maestro/pkg/specs"
+	"github.com/jexia/semaphore/pkg/codec"
+	"github.com/jexia/semaphore/pkg/core/trace"
+	"github.com/jexia/semaphore/pkg/refs"
+	"github.com/jexia/semaphore/pkg/specs"
 )
 
 // NewConstructor constructs a new JSON constructor

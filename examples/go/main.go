@@ -1,27 +1,27 @@
 package main
 
 import (
-	"github.com/jexia/maestro"
-	"github.com/jexia/maestro/pkg/codec/json"
-	"github.com/jexia/maestro/pkg/codec/proto"
-	"github.com/jexia/maestro/pkg/core/logger"
-	"github.com/jexia/maestro/pkg/providers/hcl"
-	"github.com/jexia/maestro/pkg/providers/protobuffers"
-	"github.com/jexia/maestro/pkg/specs"
-	"github.com/jexia/maestro/pkg/transport/http"
+	"github.com/jexia/semaphore"
+	"github.com/jexia/semaphore/pkg/codec/json"
+	"github.com/jexia/semaphore/pkg/codec/proto"
+	"github.com/jexia/semaphore/pkg/core/logger"
+	"github.com/jexia/semaphore/pkg/providers/hcl"
+	"github.com/jexia/semaphore/pkg/providers/protobuffers"
+	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/pkg/transport/http"
 )
 
 func main() {
-	client, err := maestro.New(
-		maestro.WithLogLevel(logger.Global, "debug"),
-		maestro.WithListener(http.NewListener(":8080", specs.Options{})),
-		maestro.WithFlows(hcl.FlowsResolver("./*.hcl")),
-		maestro.WithEndpoints(hcl.EndpointsResolver("./*.hcl")),
-		maestro.WithSchema(protobuffers.SchemaResolver([]string{"../../", "./proto"}, "./proto/*.proto")),
-		maestro.WithServices(protobuffers.ServiceResolver([]string{"../../", "./proto"}, "./proto/*.proto")),
-		maestro.WithCodec(json.NewConstructor()),
-		maestro.WithCodec(proto.NewConstructor()),
-		maestro.WithCaller(http.NewCaller()),
+	client, err := semaphore.New(
+		semaphore.WithLogLevel(logger.Global, "debug"),
+		semaphore.WithListener(http.NewListener(":8080", specs.Options{})),
+		semaphore.WithFlows(hcl.FlowsResolver("./*.hcl")),
+		semaphore.WithEndpoints(hcl.EndpointsResolver("./*.hcl")),
+		semaphore.WithSchema(protobuffers.SchemaResolver([]string{"../../", "./proto"}, "./proto/*.proto")),
+		semaphore.WithServices(protobuffers.ServiceResolver([]string{"../../", "./proto"}, "./proto/*.proto")),
+		semaphore.WithCodec(json.NewConstructor()),
+		semaphore.WithCodec(proto.NewConstructor()),
+		semaphore.WithCaller(http.NewCaller()),
 	)
 
 	if err != nil {

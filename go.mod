@@ -1,4 +1,4 @@
-module github.com/jexia/maestro
+module github.com/jexia/semaphore
 
 go 1.14
 

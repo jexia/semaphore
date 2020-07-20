@@ -27,7 +27,7 @@ func (collection Endpoints) Get(flow string) []*Endpoint {
 	return result
 }
 
-// Endpoint exposes a flow. Endpoints are not parsed by Maestro and have custom implementations in each caller.
+// Endpoint exposes a flow. Endpoints are not parsed by Semaphore and have custom implementations in each caller.
 // The name of the endpoint represents the flow which should be executed.
 type Endpoint struct {
 	Flow     string  `json:"flow,omitempty"`

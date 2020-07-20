@@ -1,13 +1,13 @@
-service "com.maestro" "auth" {
+service "com.semaphore" "auth" {
     transport = "http"
     codec = "json"
     host = "https://auth.com"
 }
 
-service "com.maestro" "auth" {
+service "com.semaphore" "auth" {
 }
 
-service "com.maestro" "users" {
+service "com.semaphore" "users" {
     transport = "http"
     codec = "proto"
     host = "https://users.com"

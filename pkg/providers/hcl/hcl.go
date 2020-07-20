@@ -10,11 +10,11 @@ import (
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/gohcl"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
-	"github.com/jexia/maestro/pkg/core/instance"
-	"github.com/jexia/maestro/pkg/core/logger"
-	"github.com/jexia/maestro/pkg/core/trace"
-	"github.com/jexia/maestro/pkg/providers"
-	"github.com/jexia/maestro/pkg/specs"
+	"github.com/jexia/semaphore/pkg/core/instance"
+	"github.com/jexia/semaphore/pkg/core/logger"
+	"github.com/jexia/semaphore/pkg/core/trace"
+	"github.com/jexia/semaphore/pkg/providers"
+	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/sirupsen/logrus"
 )
 

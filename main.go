@@ -1,18 +1,18 @@
-package maestro
+package semaphore
 
 import (
 	"sync"
 
-	"github.com/jexia/maestro/pkg/core"
-	"github.com/jexia/maestro/pkg/core/api"
-	"github.com/jexia/maestro/pkg/core/instance"
-	"github.com/jexia/maestro/pkg/core/logger"
-	"github.com/jexia/maestro/pkg/core/trace"
-	"github.com/jexia/maestro/pkg/functions"
-	"github.com/jexia/maestro/pkg/transport"
+	"github.com/jexia/semaphore/pkg/core"
+	"github.com/jexia/semaphore/pkg/core/api"
+	"github.com/jexia/semaphore/pkg/core/instance"
+	"github.com/jexia/semaphore/pkg/core/logger"
+	"github.com/jexia/semaphore/pkg/core/trace"
+	"github.com/jexia/semaphore/pkg/functions"
+	"github.com/jexia/semaphore/pkg/transport"
 )
 
-// Client represents a maestro instance
+// Client represents a semaphore instance
 type Client struct {
 	Ctx          instance.Context
 	transporters []*transport.Endpoint
@@ -22,7 +22,7 @@ type Client struct {
 	mutex        sync.RWMutex
 }
 
-// Serve opens all listeners inside the given maestro client
+// Serve opens all listeners inside the given semaphore client
 func (client *Client) Serve() (result error) {
 	if len(client.listeners) == 0 {
 		return trace.New(trace.WithMessage("no listeners configured to serve"))
@@ -91,7 +91,7 @@ func (client *Client) Close() {
 	}
 }
 
-// New constructs a new Maestro instance
+// New constructs a new Semaphore instance
 func New(opts ...api.Option) (*Client, error) {
 	ctx := instance.NewContext()
 	options, err := NewOptions(ctx, opts...)

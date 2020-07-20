@@ -1,7 +1,7 @@
 package references
 
 import (
-	"github.com/jexia/maestro/pkg/specs"
+	"github.com/jexia/semaphore/pkg/specs"
 )
 
 // ToParameterMap maps the given schema object to a parameter map

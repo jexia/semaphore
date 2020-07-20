@@ -2,8 +2,8 @@ package specs
 
 import (
 	"github.com/hashicorp/hcl/v2"
-	"github.com/jexia/maestro/pkg/specs/labels"
-	"github.com/jexia/maestro/pkg/specs/types"
+	"github.com/jexia/semaphore/pkg/specs/labels"
+	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
 // PropertyReference represents a mustach template reference

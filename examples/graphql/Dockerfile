@@ -1,4 +1,4 @@
-FROM jexiacom/maestro:latest
+FROM jexiacom/semaphore:latest
 
 WORKDIR /app
 
@@ -8,4 +8,4 @@ COPY *.hcl ./
 COPY proto/ ./proto/
 COPY annotations/ ./annotations/
 
-ENTRYPOINT ["maestro", "daemon", "-f", "config.hcl"]
+ENTRYPOINT ["semaphore", "daemon", "-f", "config.hcl"]

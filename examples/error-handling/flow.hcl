@@ -5,7 +5,7 @@ endpoint "GlobalHandleError" "graphql" {
 }
 
 endpoint "GlobalHandleError" "grpc" {
-	package = "maestro.greeter"
+	package = "semaphore.greeter"
 	service = "Error"
 	method = "Global"
 }

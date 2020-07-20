@@ -7,8 +7,8 @@ The configured transporter and registry are used inside the flow manager.
 // gRPC service constructor
 service := grpc.NewService()
 
-client, err := maestro.New(
-        maestro.WithCodec(json.NewConstructor()),
-        maestro.WithCaller(micro.New("micro-grpc", service)),
+client, err := semaphore.New(
+        semaphore.WithCodec(json.NewConstructor()),
+        semaphore.WithCaller(micro.New("micro-grpc", service)),
 )
 ```

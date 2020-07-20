@@ -2,7 +2,7 @@ package graphql
 
 import (
 	"github.com/graphql-go/graphql"
-	"github.com/jexia/maestro/pkg/specs/types"
+	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
 var gtypes = map[types.Type]graphql.Output{

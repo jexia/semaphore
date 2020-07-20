@@ -1,13 +1,13 @@
 # Getting started
 
-1. [⚡ CLI](https://github.com/jexia/maestro/tree/master/cmd/daemon)
-1. [📚 Documentation](https://jexia.gitbook.io/maestro/)
-1. [📚 Maestro Go Doc](https://godoc.org/github.com/jexia/maestro)
+1. [⚡ CLI](https://github.com/jexia/semaphore/tree/master/cmd/daemon)
+1. [📚 Documentation](https://jexia.gitbook.io/semaphore/)
+1. [📚 Semaphore Go Doc](https://godoc.org/github.com/jexia/semaphore)
 
-All examples could be executed with the [Maestro CLI](https://github.com/jexia/maestro/tree/master/cmd/daemon) or by executing the provided Go scripts.
+All examples could be executed with the [Semaphore CLI](https://github.com/jexia/semaphore/tree/master/cmd/daemon) or by executing the provided Go scripts.
 
 ```bash
-$ maestro daemon -f config.hcl
+$ semaphore daemon -f config.hcl
 ```
 
 ```bash

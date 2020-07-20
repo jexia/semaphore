@@ -10,7 +10,7 @@ When wanting to propose or discuss a change feel free to open a new issue. When 
 ## Reporting issues ##
 
 Bugs, feature requests, and development-related questions should be directed to
-our [GitHub issue tracker](https://github.com/jexia/maestro/issues).  If
+our [GitHub issue tracker](https://github.com/jexia/semaphore/issues).  If
 reporting a bug, please try and provide as much context as possible such as
 your operating system, Go version, and anything else that might be relevant to
 the bug.  For feature requests, please explain what you're trying to do, and

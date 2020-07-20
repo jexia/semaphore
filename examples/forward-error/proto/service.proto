@@ -5,14 +5,14 @@ import "api/annotations.proto";
 package proto;
 
 service Service {
-    option (maestro.api.service) = {
+    option (semaphore.api.service) = {
         host: "https://jsonplaceholder.typicode.com/"
         transport: "http"
         codec: "json"
     };
 
     rpc ThrowError(Empty) returns (Empty) {
-        option (maestro.api.http) = {
+        option (semaphore.api.http) = {
             endpoint: "/404"
             method: "GET"
         };

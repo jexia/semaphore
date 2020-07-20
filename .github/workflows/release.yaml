@@ -1,4 +1,4 @@
-name: Release Maestro
+name: Release Semaphore
 on:
   push:
     tags:
@@ -26,19 +26,19 @@ jobs:
           echo "::set-env name=VERSION::$VERSION"
 
       - name: Build image
-        run: docker build --file Dockerfile --build-arg version=v${VERSION} --build-arg build=$(git rev-parse --short HEAD) --build-arg label=release --tag maestro .
+        run: docker build --file Dockerfile --build-arg version=v${VERSION} --build-arg build=$(git rev-parse --short HEAD) --build-arg label=release --tag semaphore .
 
       - name: Log into Docker hub
         run: echo "${{ secrets.DOCKER_HUB_TOKEN }}" | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
       
       - name: Push image Docker hub
         run: |
-          IMAGE_ID=jexiacom/maestro
+          IMAGE_ID=jexiacom/semaphore
 
           echo IMAGE_ID=$IMAGE_ID:$VERSION
 
-          docker tag maestro $IMAGE_ID:$VERSION
-          docker tag maestro $IMAGE_ID:latest
+          docker tag semaphore $IMAGE_ID:$VERSION
+          docker tag semaphore $IMAGE_ID:latest
 
           docker push $IMAGE_ID:$VERSION
           docker push $IMAGE_ID:latest
@@ -52,8 +52,8 @@ jobs:
 
           echo IMAGE_ID=$IMAGE_ID:$VERSION
 
-          docker tag maestro $IMAGE_ID:$VERSION
-          docker tag maestro $IMAGE_ID:latest
+          docker tag semaphore $IMAGE_ID:$VERSION
+          docker tag semaphore $IMAGE_ID:latest
 
           docker push $IMAGE_ID:$VERSION
           docker push $IMAGE_ID:latest
@@ -94,5 +94,5 @@ jobs:
         with:
           webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
           webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
-          file: "./dist/maestro.rb"
+          file: "./dist/semaphore.rb"
           message: 'A new Homebrew formula is available for version v${{ env.VERSION }}'

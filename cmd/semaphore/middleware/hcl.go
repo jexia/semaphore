@@ -3,11 +3,11 @@ package middleware
 import (
 	"path/filepath"
 
-	"github.com/jexia/maestro/pkg/core/api"
-	"github.com/jexia/maestro/pkg/core/instance"
-	"github.com/jexia/maestro/pkg/core/logger"
-	"github.com/jexia/maestro/pkg/providers/hcl"
-	"github.com/jexia/maestro/pkg/specs/template"
+	"github.com/jexia/semaphore/pkg/core/api"
+	"github.com/jexia/semaphore/pkg/core/instance"
+	"github.com/jexia/semaphore/pkg/core/logger"
+	"github.com/jexia/semaphore/pkg/providers/hcl"
+	"github.com/jexia/semaphore/pkg/specs/template"
 	"github.com/sirupsen/logrus"
 	"github.com/zclconf/go-cty/cty"
 )

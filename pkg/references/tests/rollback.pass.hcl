@@ -1,4 +1,4 @@
-service "com.maestro" "caller" {
+service "com.semaphore" "caller" {
 	transport = "http"
 	codec = "json"
 	host = ""

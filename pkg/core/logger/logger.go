@@ -1,7 +1,7 @@
 package logger
 
 import (
-	"github.com/jexia/maestro/pkg/core/trace"
+	"github.com/jexia/semaphore/pkg/core/trace"
 	"github.com/sirupsen/logrus"
 )
 
@@ -11,9 +11,9 @@ type Module string
 var (
 	// Global represents all modules
 	Global Module = "all"
-	// Core represent the internal Maestro implementations
+	// Core represent the internal Semaphore implementations
 	Core Module = "core"
-	// Flow represent Maestro flow manager
+	// Flow represent Semaphore flow manager
 	Flow Module = "flow"
 	// Transport represents the transport implementations
 	Transport Module = "transport"

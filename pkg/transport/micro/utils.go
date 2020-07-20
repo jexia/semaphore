@@ -1,7 +1,7 @@
 package micro
 
 import (
-	"github.com/jexia/maestro/pkg/metadata"
+	"github.com/jexia/semaphore/pkg/metadata"
 	micrometa "github.com/micro/go-micro/v2/metadata"
 )
 

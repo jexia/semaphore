@@ -4,8 +4,8 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/jexia/maestro/pkg/specs"
-	"github.com/jexia/maestro/pkg/specs/template"
+	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/pkg/specs/template"
 )
 
 // Store represents the reference store interface

@@ -2,7 +2,7 @@ package protobuffers
 
 import (
 	"github.com/golang/protobuf/protoc-gen-go/descriptor"
-	"github.com/jexia/maestro/pkg/specs/labels"
+	"github.com/jexia/semaphore/pkg/specs/labels"
 )
 
 // ProtoLabels is a lookup table for field label types

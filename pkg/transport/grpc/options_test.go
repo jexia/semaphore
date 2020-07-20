@@ -3,7 +3,7 @@ package grpc
 import (
 	"testing"
 
-	"github.com/jexia/maestro/pkg/specs"
+	"github.com/jexia/semaphore/pkg/specs"
 )
 
 func TestListenerOptions(t *testing.T) {

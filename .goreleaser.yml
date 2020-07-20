@@ -1,7 +1,7 @@
-project_name: maestro
+project_name: semaphore
 
 builds:
-- main: ./cmd/maestro/main.go
+- main: ./cmd/semaphore/main.go
   env:
   - CGO_ENABLED=0
   - GO111MODULE=on
@@ -26,7 +26,7 @@ builds:
     goarch: 386
 
 archives:
-- name_template: "maestro-{{ .Version }}-{{ .Os }}-{{ .Arch }}"
+- name_template: "semaphore-{{ .Version }}-{{ .Os }}-{{ .Arch }}"
   format_overrides:
   - goos: windows
     format: zip
@@ -39,18 +39,18 @@ brews:
       name: homebrew-cask
     skip_upload: true
     folder: Formula
-    homepage:  https://github.com/jexia/maestro
+    homepage:  https://github.com/jexia/semaphore
     description: A straightforward service orchestrator
     test: |
-      system "#{bin}/maestro -v"
+      system "#{bin}/semaphore -v"
 
 checksum:
-  name_template: "maestro-{{ .Version }}-checksums.sha256"
+  name_template: "semaphore-{{ .Version }}-checksums.sha256"
 
 release:
   github:
     owner: jexia
-    name: maestro
+    name: semaphore
 
 changelog:
   skip: true

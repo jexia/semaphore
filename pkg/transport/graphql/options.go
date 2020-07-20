@@ -1,8 +1,8 @@
 package graphql
 
 import (
-	"github.com/jexia/maestro/pkg/core/trace"
-	"github.com/jexia/maestro/pkg/transport"
+	"github.com/jexia/semaphore/pkg/core/trace"
+	"github.com/jexia/semaphore/pkg/transport"
 )
 
 const (

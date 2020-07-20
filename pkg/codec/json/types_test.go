@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/francoispqt/gojay"
-	"github.com/jexia/maestro/pkg/specs/types"
+	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
 type mockObject struct {

@@ -1,4 +1,4 @@
-service "com.maestro" "users" {
+service "com.semaphore" "users" {
     transport = "http"
     codec = "proto"
     host = "https://users.com"
@@ -20,7 +20,7 @@ service "com.maestro" "users" {
 
 flow "mock" {
     resource "add" {
-        request "com.maestro.users" "Add" {
+        request "com.semaphore.users" "Add" {
             repeated "repeated" "input:repeated" {
                 key = "input:repeated.value"
             }

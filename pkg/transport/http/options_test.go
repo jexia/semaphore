@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jexia/maestro/pkg/specs"
+	"github.com/jexia/semaphore/pkg/specs"
 )
 
 func TestParseListenerOptions(t *testing.T) {

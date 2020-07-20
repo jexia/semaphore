@@ -1,4 +1,4 @@
-package maestro
+package semaphore
 
 import (
 	"context"
@@ -8,19 +8,19 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jexia/maestro/pkg/codec/json"
-	"github.com/jexia/maestro/pkg/core/api"
-	"github.com/jexia/maestro/pkg/core/instance"
-	"github.com/jexia/maestro/pkg/core/logger"
-	"github.com/jexia/maestro/pkg/flow"
-	"github.com/jexia/maestro/pkg/functions"
-	"github.com/jexia/maestro/pkg/providers"
-	"github.com/jexia/maestro/pkg/providers/hcl"
-	"github.com/jexia/maestro/pkg/providers/mock"
-	"github.com/jexia/maestro/pkg/refs"
-	"github.com/jexia/maestro/pkg/specs"
-	"github.com/jexia/maestro/pkg/transport"
-	"github.com/jexia/maestro/pkg/transport/http"
+	"github.com/jexia/semaphore/pkg/codec/json"
+	"github.com/jexia/semaphore/pkg/core/api"
+	"github.com/jexia/semaphore/pkg/core/instance"
+	"github.com/jexia/semaphore/pkg/core/logger"
+	"github.com/jexia/semaphore/pkg/flow"
+	"github.com/jexia/semaphore/pkg/functions"
+	"github.com/jexia/semaphore/pkg/providers"
+	"github.com/jexia/semaphore/pkg/providers/hcl"
+	"github.com/jexia/semaphore/pkg/providers/mock"
+	"github.com/jexia/semaphore/pkg/refs"
+	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/pkg/transport"
+	"github.com/jexia/semaphore/pkg/transport/http"
 )
 
 func TestNewOptions(t *testing.T) {
@@ -85,12 +85,12 @@ func TestNewClient(t *testing.T) {
 func TestNewClientNilOptions(t *testing.T) {
 	t.Parallel()
 
-	maestro, err := New(nil)
+	semaphore, err := New(nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if maestro == nil {
+	if semaphore == nil {
 		t.Fatal("nil client returned")
 	}
 }

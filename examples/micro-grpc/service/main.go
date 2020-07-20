@@ -4,7 +4,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/jexia/maestro/examples/micro-grpc/proto"
+	"github.com/jexia/semaphore/examples/micro-grpc/proto"
 	"github.com/micro/go-micro/v2/service"
 	"github.com/micro/go-micro/v2/service/grpc"
 

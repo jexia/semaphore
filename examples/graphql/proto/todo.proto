@@ -1,24 +1,24 @@
 syntax = "proto3";
 
-import "maestro/api/annotations.proto";
+import "semaphore/api/annotations.proto";
 
 package proto;
 
 service Todo {
-    option (maestro.api.service) = {
+    option (semaphore.api.service) = {
         transport: "http"
         codec: "json"
     };
 
     rpc First(Empty) returns (Item) {
-        option (maestro.api.http) = {
+        option (semaphore.api.http) = {
             endpoint: "/todos/1"
             method: "GET"
         };
     };
 
     rpc Get(Query) returns (Item) {
-        option (maestro.api.http) = {
+        option (semaphore.api.http) = {
             endpoint: "/todos/:id"
             method: "GET"
         };

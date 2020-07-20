@@ -8,12 +8,12 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/jexia/maestro"
-	"github.com/jexia/maestro/pkg/providers/hcl"
-	"github.com/jexia/maestro/pkg/providers/mock"
-	"github.com/jexia/maestro/pkg/refs"
-	"github.com/jexia/maestro/pkg/specs"
-	"github.com/jexia/maestro/pkg/specs/template"
+	"github.com/jexia/semaphore"
+	"github.com/jexia/semaphore/pkg/providers/hcl"
+	"github.com/jexia/semaphore/pkg/providers/mock"
+	"github.com/jexia/semaphore/pkg/refs"
+	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/pkg/specs/template"
 )
 
 func FindFlow(manifest *specs.FlowsManifest, name string) *specs.Flow {
@@ -42,10 +42,10 @@ func NewMock() (*specs.FlowsManifest, error) {
 		return nil, err
 	}
 
-	client, err := maestro.New(
-		maestro.WithFlows(hcl.FlowsResolver("./tests/*.hcl")),
-		maestro.WithSchema(mock.SchemaResolver(path)),
-		maestro.WithServices(mock.ServicesResolver(path)),
+	client, err := semaphore.New(
+		semaphore.WithFlows(hcl.FlowsResolver("./tests/*.hcl")),
+		semaphore.WithSchema(mock.SchemaResolver(path)),
+		semaphore.WithServices(mock.ServicesResolver(path)),
 	)
 
 	if err != nil {

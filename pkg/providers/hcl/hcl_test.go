@@ -3,7 +3,7 @@ package hcl
 import (
 	"testing"
 
-	"github.com/jexia/maestro/pkg/core/instance"
+	"github.com/jexia/semaphore/pkg/core/instance"
 )
 
 func TestResolveService(t *testing.T) {

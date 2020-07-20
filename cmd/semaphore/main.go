@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/jexia/maestro/cmd/maestro/daemon"
-	"github.com/jexia/maestro/cmd/maestro/validate"
+	"github.com/jexia/semaphore/cmd/semaphore/daemon"
+	"github.com/jexia/semaphore/cmd/semaphore/validate"
 	"github.com/spf13/cobra"
 )
 
@@ -14,12 +14,12 @@ var build string
 var label string
 
 var cmd = &cobra.Command{
-	Use:     "maestro",
+	Use:     "semaphore",
 	Version: fmt.Sprintf("%s, build: %s", version, build),
 	Short:   "A straightforward micro-service conductor",
-	Long: `Maestro is a feature-rich service orchestrator.
+	Long: `Semaphore is a feature-rich service orchestrator.
 Create advanced data flows and expose them through endpoints. Have full control over your exposed endpoints,
-expose single flows for multiple protocols such as gRPC and GraphQL. Maestro adapts to your environment.
+expose single flows for multiple protocols such as gRPC and GraphQL. Semaphore adapts to your environment.
 Create custom extensions or use the availability of custom functions and protocol implementations.`,
 }
 

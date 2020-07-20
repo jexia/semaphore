@@ -1,8 +1,8 @@
 package grpc
 
 import (
-	"github.com/jexia/maestro/pkg/specs"
-	"github.com/jexia/maestro/pkg/transport"
+	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/pkg/transport"
 )
 
 const (
@@ -35,7 +35,7 @@ type EndpointOptions struct {
 // ParseEndpointOptions parses the given specs options into HTTP options
 func ParseEndpointOptions(endpoint *transport.Endpoint) (*EndpointOptions, error) {
 	result := &EndpointOptions{
-		Package: "maestro",
+		Package: "semaphore",
 		Service: "service",
 		Method:  endpoint.Flow.GetName(),
 	}

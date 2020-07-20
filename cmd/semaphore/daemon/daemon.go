@@ -5,17 +5,17 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/jexia/maestro"
-	"github.com/jexia/maestro/cmd/maestro/config"
+	"github.com/jexia/semaphore"
+	"github.com/jexia/semaphore/cmd/semaphore/config"
 	"github.com/spf13/cobra"
 )
 
 var params = config.New()
 
-// Command represents the maestro daemon command
+// Command represents the semaphore daemon command
 var Command = &cobra.Command{
 	Use:   "daemon",
-	Short: "Starts the Maestro daemon, it will execute with the passed definitions and expose the configured endpoints",
+	Short: "Starts the Semaphore daemon, it will execute with the passed definitions and expose the configured endpoints",
 	RunE:  run,
 }
 
@@ -34,7 +34,7 @@ func run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	client, err := maestro.New(arguments...)
+	client, err := semaphore.New(arguments...)
 	if err != nil {
 		return err
 	}
@@ -49,7 +49,7 @@ func run(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func sigterm(client *maestro.Client) {
+func sigterm(client *semaphore.Client) {
 	term := make(chan os.Signal, 1)
 	signal.Notify(term, syscall.SIGINT, syscall.SIGTERM)
 	<-term

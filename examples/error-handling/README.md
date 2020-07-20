@@ -1,14 +1,14 @@
 # Error handling
 
-This example holds a simple Maestro error handling implementation.
+This example holds a simple Semaphore error handling implementation.
 
 ## Getting started
 
-To run this example you need to have the Maestro daemon installed on your machine.
-First start the service by simply starting the Maestro daemon.
+To run this example you need to have the Semaphore daemon installed on your machine.
+First start the service by simply starting the Semaphore daemon.
 
 ```bash
-$ maestro daemon
+$ semaphore daemon
 ```
 
 You could execute one of the flows by sending a `GET` request on port `8080`.

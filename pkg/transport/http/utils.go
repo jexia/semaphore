@@ -6,8 +6,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/jexia/maestro/pkg/metadata"
-	"github.com/jexia/maestro/pkg/transport"
+	"github.com/jexia/semaphore/pkg/metadata"
+	"github.com/jexia/semaphore/pkg/transport"
 )
 
 // CopyHTTPHeader copies the given HTTP header into a transport header

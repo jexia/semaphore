@@ -5,21 +5,21 @@ import "api/annotations.proto";
 package proto;
 
 service Service {
-    option (maestro.api.service) = {
+    option (semaphore.api.service) = {
         transport: "http"
         codec: "json"
         host: "https://jsonplaceholder.typicode.com/"
     };
 
     rpc GetTodo(Query) returns (Item) {
-        option (maestro.api.http) = {
+        option (semaphore.api.http) = {
             endpoint: "/todos/1"
             method: "GET"
         };
     };
 
     rpc GetUser(Query) returns (User) {
-        option (maestro.api.http) = {
+        option (semaphore.api.http) = {
             endpoint: "/users/1"
             method: "GET"
         };

@@ -1,8 +1,8 @@
 package providers
 
 import (
-	"github.com/jexia/maestro/pkg/core/instance"
-	"github.com/jexia/maestro/pkg/specs"
+	"github.com/jexia/semaphore/pkg/core/instance"
+	"github.com/jexia/semaphore/pkg/specs"
 )
 
 // FlowsResolver when called collects the available flow(s) with the configured configuration

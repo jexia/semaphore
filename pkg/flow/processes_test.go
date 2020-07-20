@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/jexia/maestro/pkg/transport"
+	"github.com/jexia/semaphore/pkg/transport"
 )
 
 func TestProcesses(t *testing.T) {

@@ -3,7 +3,7 @@ package flow
 import (
 	"testing"
 
-	"github.com/jexia/maestro/pkg/specs"
+	"github.com/jexia/semaphore/pkg/specs"
 )
 
 func NewMockNodes() []*Node {

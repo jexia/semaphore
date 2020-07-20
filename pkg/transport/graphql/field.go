@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"github.com/graphql-go/graphql"
-	"github.com/jexia/maestro/pkg/core/trace"
+	"github.com/jexia/semaphore/pkg/core/trace"
 )
 
 // SetField sets the given field inside the given fields on the given path

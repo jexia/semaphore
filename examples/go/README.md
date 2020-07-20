@@ -1,6 +1,6 @@
 # HTTP
 
-This example holds a simple Maestro HTTP implementation and shows the usage of the Maestro Go API.
+This example holds a simple Semaphore HTTP implementation and shows the usage of the Semaphore Go API.
 
 ## Getting started
 

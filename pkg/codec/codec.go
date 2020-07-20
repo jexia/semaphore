@@ -3,8 +3,8 @@ package codec
 import (
 	"io"
 
-	"github.com/jexia/maestro/pkg/refs"
-	"github.com/jexia/maestro/pkg/specs"
+	"github.com/jexia/semaphore/pkg/refs"
+	"github.com/jexia/semaphore/pkg/specs"
 )
 
 // Constructors represent a collection of codec constructors

@@ -7,20 +7,20 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/jexia/maestro"
-	"github.com/jexia/maestro/pkg/providers/hcl"
-	"github.com/jexia/maestro/pkg/providers/protobuffers"
-	"github.com/jexia/maestro/pkg/refs"
-	"github.com/jexia/maestro/pkg/specs"
-	"github.com/jexia/maestro/pkg/specs/template"
+	"github.com/jexia/semaphore"
+	"github.com/jexia/semaphore/pkg/providers/hcl"
+	"github.com/jexia/semaphore/pkg/providers/protobuffers"
+	"github.com/jexia/semaphore/pkg/refs"
+	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/pkg/specs/template"
 	"github.com/jhump/protoreflect/dynamic"
 )
 
 func NewMock() (*specs.FlowsManifest, error) {
-	client, err := maestro.New(
-		maestro.WithFlows(hcl.FlowsResolver("./tests/*.hcl")),
-		maestro.WithServices(protobuffers.ServiceResolver([]string{"./tests"}, "./tests/*.proto")),
-		maestro.WithSchema(protobuffers.SchemaResolver([]string{"./tests"}, "./tests/*.proto")),
+	client, err := semaphore.New(
+		semaphore.WithFlows(hcl.FlowsResolver("./tests/*.hcl")),
+		semaphore.WithServices(protobuffers.ServiceResolver([]string{"./tests"}, "./tests/*.proto")),
+		semaphore.WithSchema(protobuffers.SchemaResolver([]string{"./tests"}, "./tests/*.proto")),
 	)
 
 	if err != nil {

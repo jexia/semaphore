@@ -3,7 +3,7 @@ endpoint "default" "http" {
 }
 
 flow "default" {
-	output "maestro.Welcome" {
-		message = "Welcome to Maestro"
+	output "semaphore.Welcome" {
+		message = "Welcome to Semaphore"
 	}
 }

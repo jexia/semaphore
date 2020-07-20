@@ -26,7 +26,7 @@ proxy "ping" {
 
 proxy "ping" {
     input {
-        params = "com.maestro.Message"
+        params = "com.semaphore.Message"
     }
 
     forward "" {}

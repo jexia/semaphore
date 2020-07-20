@@ -5,12 +5,12 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/jexia/maestro"
-	"github.com/jexia/maestro/pkg/core/api"
-	"github.com/jexia/maestro/pkg/core/instance"
-	"github.com/jexia/maestro/pkg/core/logger"
-	"github.com/jexia/maestro/pkg/flow"
-	"github.com/jexia/maestro/pkg/refs"
+	"github.com/jexia/semaphore"
+	"github.com/jexia/semaphore/pkg/core/api"
+	"github.com/jexia/semaphore/pkg/core/instance"
+	"github.com/jexia/semaphore/pkg/core/logger"
+	"github.com/jexia/semaphore/pkg/flow"
+	"github.com/jexia/semaphore/pkg/refs"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
@@ -32,15 +32,15 @@ func New(addr string) api.Middleware {
 
 		go server.ListenAndServe()
 
-		handles := maestro.NewCollection(
-			maestro.BeforeManagerDo(collector.BeforeDo),
-			maestro.AfterManagerDo(collector.AfterDo),
-			maestro.BeforeNodeDo(collector.BeforeNode),
-			maestro.BeforeNodeRollback(collector.BeforeNode),
-			maestro.AfterNodeDo(collector.AfterNode),
-			maestro.AfterNodeRollback(collector.AfterNode),
-			maestro.BeforeManagerRollback(collector.BeforeRollback),
-			maestro.AfterManagerRollback(collector.AfterRollback),
+		handles := semaphore.NewCollection(
+			semaphore.BeforeManagerDo(collector.BeforeDo),
+			semaphore.AfterManagerDo(collector.AfterDo),
+			semaphore.BeforeNodeDo(collector.BeforeNode),
+			semaphore.BeforeNodeRollback(collector.BeforeNode),
+			semaphore.AfterNodeDo(collector.AfterNode),
+			semaphore.AfterNodeRollback(collector.AfterNode),
+			semaphore.BeforeManagerRollback(collector.BeforeRollback),
+			semaphore.AfterManagerRollback(collector.AfterRollback),
 		)
 
 		promhttp.HandlerFor(

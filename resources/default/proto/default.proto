@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package maestro;
+package semaphore;
 
 message Welcome {
     string message = 1;

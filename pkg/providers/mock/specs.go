@@ -1,8 +1,8 @@
 package mock
 
 import (
-	"github.com/jexia/maestro/pkg/specs"
-	"github.com/jexia/maestro/pkg/specs/template"
+	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/pkg/specs/template"
 )
 
 // SchemaManifest formats the given mock collection to a specs schema manifest

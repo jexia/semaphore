@@ -31,7 +31,7 @@ Or in schema definitions such as proto.
 
 ```proto
 rpc Mock(Empty) returns (Empty) {
-	option (maestro.http) = {
+	option (semaphore.http) = {
 		endpoint: "/endpoint"
 		method: "GET"
 	};
@@ -42,7 +42,7 @@ Object properties available inside the request object could be referenced inside
 
 ```proto
 rpc Mock(Empty) returns (Empty) {
-	option (maestro.http) = {
+	option (semaphore.http) = {
 		endpoint: "/endpoint/:id"
 		method: "GET"
 	};

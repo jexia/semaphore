@@ -3,8 +3,8 @@ package template
 import (
 	"testing"
 
-	"github.com/jexia/maestro/pkg/core/instance"
-	"github.com/jexia/maestro/pkg/specs"
+	"github.com/jexia/semaphore/pkg/core/instance"
+	"github.com/jexia/semaphore/pkg/specs"
 )
 
 func CompareProperties(t *testing.T, left specs.Property, right specs.Property) {

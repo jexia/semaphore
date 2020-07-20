@@ -1,7 +1,7 @@
 package transport
 
 import (
-	"github.com/jexia/maestro/pkg/specs"
+	"github.com/jexia/semaphore/pkg/specs"
 )
 
 // Unwrap returns the result of calling the Unwrap method on err, if err's

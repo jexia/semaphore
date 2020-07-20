@@ -2,7 +2,7 @@ package protobuffers
 
 import (
 	"github.com/golang/protobuf/protoc-gen-go/descriptor"
-	"github.com/jexia/maestro/pkg/specs/types"
+	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
 // ProtoTypes is a lookup table for field descriptor types

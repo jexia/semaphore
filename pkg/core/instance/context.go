@@ -1,11 +1,11 @@
 package instance
 
 import (
-	"github.com/jexia/maestro/pkg/core/logger"
+	"github.com/jexia/semaphore/pkg/core/logger"
 	"github.com/sirupsen/logrus"
 )
 
-// Context represents the Maestro context passed in between modules to
+// Context represents the Semaphore context passed in between modules to
 type Context interface {
 	Logger(logger.Module) *logrus.Logger
 	SetLevel(logger.Module, string) error

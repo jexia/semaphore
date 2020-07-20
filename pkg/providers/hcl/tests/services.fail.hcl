@@ -1,3 +1,3 @@
 // No resourceer defined
-service "com.maestro" {
+service "com.semaphore" {
 }
