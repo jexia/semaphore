@@ -21,8 +21,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// Specs construct a specs manifest from the given options
-func Specs(ctx instance.Context, mem functions.Collection, options api.Options) (*api.Collection, error) {
+// NewSpecs construct a specs manifest from the given options
+func NewSpecs(ctx instance.Context, mem functions.Collection, options api.Options) (*api.Collection, error) {
 	collection, err := ResolveProviders(ctx, options)
 	if err != nil {
 		return nil, err
@@ -82,14 +82,14 @@ func FlowManager(ctx instance.Context, mem functions.Collection, services *specs
 		nodes := make([]*flow.Node, len(manager.GetNodes()))
 
 		for index, node := range manager.GetNodes() {
-			condition := Condition(ctx, mem, node.Condition)
+			condition := NewCondition(ctx, mem, node.Condition)
 
-			caller, err := Call(ctx, mem, services, flows, node, node.Call, options, manager)
+			caller, err := NewCall(ctx, mem, services, flows, node, node.Call, options, manager)
 			if err != nil {
 				return nil, err
 			}
 
-			rollback, err := Call(ctx, mem, services, flows, node, node.Rollback, options, manager)
+			rollback, err := NewCall(ctx, mem, services, flows, node, node.Rollback, options, manager)
 			if err != nil {
 				return nil, err
 			}
@@ -102,7 +102,7 @@ func FlowManager(ctx instance.Context, mem functions.Collection, services *specs
 			})
 		}
 
-		forward, err := Forward(services, flows, manager.GetForward(), options)
+		forward, err := NewForward(services, flows, manager.GetForward(), options)
 		if err != nil {
 			return nil, err
 		}
@@ -118,7 +118,7 @@ func FlowManager(ctx instance.Context, mem functions.Collection, services *specs
 		results[index] = transport.NewEndpoint(endpoint.Listener, flow, forward, endpoint.Options, manager.GetInput(), manager.GetOutput())
 	}
 
-	err := Listeners(results, options)
+	err := NewListeners(results, options)
 	if err != nil {
 		return nil, err
 	}
@@ -126,8 +126,8 @@ func FlowManager(ctx instance.Context, mem functions.Collection, services *specs
 	return results, nil
 }
 
-// Condition constructs a new flow condition of the given specs
-func Condition(ctx instance.Context, mem functions.Collection, condition *specs.Condition) *flow.Condition {
+// NewCondition constructs a new flow condition of the given specs
+func NewCondition(ctx instance.Context, mem functions.Collection, condition *specs.Condition) *flow.Condition {
 	if condition == nil {
 		return nil
 	}
@@ -136,8 +136,8 @@ func Condition(ctx instance.Context, mem functions.Collection, condition *specs.
 	return flow.NewCondition(stack, condition)
 }
 
-// Call constructs a flow caller for the given node call.
-func Call(ctx instance.Context, mem functions.Collection, services *specs.ServicesManifest, flows *specs.FlowsManifest, node *specs.Node, call *specs.Call, options api.Options, manager specs.FlowResourceManager) (flow.Call, error) {
+// NewCall constructs a flow caller for the given node call.
+func NewCall(ctx instance.Context, mem functions.Collection, services *specs.ServicesManifest, flows *specs.FlowsManifest, node *specs.Node, call *specs.Call, options api.Options, manager specs.FlowResourceManager) (flow.Call, error) {
 	if call == nil {
 		return nil, nil
 	}
@@ -211,7 +211,7 @@ func NewServiceCall(ctx instance.Context, mem functions.Collection, services *sp
 		return nil, trace.New(trace.WithMessage("codec not found '%s'", service.Codec))
 	}
 
-	unexpected, err := Error(ctx, node, mem, codec, node.OnError)
+	unexpected, err := NewError(ctx, node, mem, codec, node.OnError)
 	if err != nil {
 		return nil, err
 	}
@@ -259,8 +259,8 @@ func Request(ctx instance.Context, node *specs.Node, mem functions.Collection, c
 	return flow.NewRequest(stack, codec, metadata), nil
 }
 
-// Error constructs a new error object from the given parameter map and codec
-func Error(ctx instance.Context, node *specs.Node, mem functions.Collection, constructor codec.Constructor, err *specs.OnError) (*flow.OnError, error) {
+// NewError constructs a new error object from the given parameter map and codec
+func NewError(ctx instance.Context, node *specs.Node, mem functions.Collection, constructor codec.Constructor, err *specs.OnError) (*flow.OnError, error) {
 	if err == nil {
 		return nil, nil
 	}
@@ -286,8 +286,8 @@ func Error(ctx instance.Context, node *specs.Node, mem functions.Collection, con
 	return flow.NewOnError(stack, codec, meta, err.Status, err.Message), nil
 }
 
-// Forward constructs a flow caller for the given call.
-func Forward(services *specs.ServicesManifest, flows *specs.FlowsManifest, call *specs.Call, options api.Options) (*transport.Forward, error) {
+// NewForward constructs a flow caller for the given call.
+func NewForward(services *specs.ServicesManifest, flows *specs.FlowsManifest, call *specs.Call, options api.Options) (*transport.Forward, error) {
 	if call == nil {
 		return nil, nil
 	}
@@ -308,8 +308,8 @@ func Forward(services *specs.ServicesManifest, flows *specs.FlowsManifest, call 
 	return result, nil
 }
 
-// Listeners constructs the listeners from the given collection of endpoints
-func Listeners(endpoints []*transport.Endpoint, options api.Options) error {
+// NewListeners constructs the listeners from the given collection of endpoints
+func NewListeners(endpoints []*transport.Endpoint, options api.Options) error {
 	collections := make(map[string][]*transport.Endpoint, len(options.Listeners))
 
 	options.Ctx.Logger(logger.Core).WithField("endpoints", endpoints).Debug("constructing listeners")
