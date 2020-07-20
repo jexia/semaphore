@@ -38,7 +38,7 @@ type Property struct {
 	Label     labels.Label         `json:"label,omitempty"`
 	Reference *PropertyReference   `json:"reference,omitempty"`
 	Nested    map[string]*Property `json:"nested,omitempty"`
-	Expr      hcl.Expression       `json:"expr,omitempty"` // TODO: replace this with a custom solution
+	Expr      hcl.Expression       `json:"-"` // TODO: replace this with a custom solution
 	Raw       string               `json:"raw,omitempty"`
 	Options   Options              `json:"options,omitempty"`
 	Enum      *Enum                `json:"enum,omitempty"`
