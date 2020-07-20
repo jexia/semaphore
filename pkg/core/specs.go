@@ -6,8 +6,8 @@ import (
 	"github.com/jexia/semaphore/pkg/specs"
 )
 
-// CollectSpecs calls all defined resolvers and returns a specs collection
-func CollectSpecs(ctx instance.Context, options api.Options) (*api.Collection, error) {
+// ResolveProviders calls all defined resolvers and returns a specs collection
+func ResolveProviders(ctx instance.Context, options api.Options) (*api.Collection, error) {
 	result := &api.Collection{
 		Flows:     &specs.FlowsManifest{},
 		Endpoints: &specs.EndpointsManifest{},

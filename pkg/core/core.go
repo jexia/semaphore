@@ -23,7 +23,7 @@ import (
 
 // Specs construct a specs manifest from the given options
 func Specs(ctx instance.Context, mem functions.Collection, options api.Options) (*api.Collection, error) {
-	collection, err := CollectSpecs(ctx, options)
+	collection, err := ResolveProviders(ctx, options)
 	if err != nil {
 		return nil, err
 	}
