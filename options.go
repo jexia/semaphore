@@ -1,7 +1,7 @@
 package maestro
 
 import (
-	"github.com/jexia/maestro/internal/codec"
+	"github.com/jexia/maestro/pkg/codec"
 	"github.com/jexia/maestro/pkg/core/api"
 	"github.com/jexia/maestro/pkg/core/instance"
 	"github.com/jexia/maestro/pkg/core/logger"

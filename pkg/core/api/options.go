@@ -1,9 +1,9 @@
 package api
 
 import (
-	"github.com/jexia/maestro/internal/codec"
-	"github.com/jexia/maestro/internal/flow"
+	"github.com/jexia/maestro/pkg/codec"
 	"github.com/jexia/maestro/pkg/core/instance"
+	"github.com/jexia/maestro/pkg/flow"
 	"github.com/jexia/maestro/pkg/functions"
 	"github.com/jexia/maestro/pkg/providers"
 	"github.com/jexia/maestro/pkg/specs"

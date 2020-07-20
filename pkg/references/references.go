@@ -1,10 +1,10 @@
 package references
 
 import (
-	"github.com/jexia/maestro/internal/lookup"
 	"github.com/jexia/maestro/pkg/core/instance"
 	"github.com/jexia/maestro/pkg/core/logger"
 	"github.com/jexia/maestro/pkg/core/trace"
+	"github.com/jexia/maestro/pkg/lookup"
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jexia/maestro/pkg/specs/template"
 	"github.com/sirupsen/logrus"

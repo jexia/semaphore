@@ -9,7 +9,7 @@ import (
 
 	"github.com/jexia/maestro"
 	"github.com/jexia/maestro/pkg/providers/hcl"
-	"github.com/jexia/maestro/pkg/providers/proto"
+	"github.com/jexia/maestro/pkg/providers/protobuffers"
 	"github.com/jexia/maestro/pkg/refs"
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jexia/maestro/pkg/specs/template"
@@ -19,8 +19,8 @@ import (
 func NewMock() (*specs.FlowsManifest, error) {
 	client, err := maestro.New(
 		maestro.WithFlows(hcl.FlowsResolver("./tests/*.hcl")),
-		maestro.WithServices(proto.ServiceResolver([]string{"./tests"}, "./tests/*.proto")),
-		maestro.WithSchema(proto.SchemaResolver([]string{"./tests"}, "./tests/*.proto")),
+		maestro.WithServices(protobuffers.ServiceResolver([]string{"./tests"}, "./tests/*.proto")),
+		maestro.WithSchema(protobuffers.SchemaResolver([]string{"./tests"}, "./tests/*.proto")),
 	)
 
 	if err != nil {

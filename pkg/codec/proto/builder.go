@@ -1,7 +1,7 @@
 package proto
 
 import (
-	"github.com/jexia/maestro/pkg/providers/proto"
+	"github.com/jexia/maestro/pkg/providers/protobuffers"
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jexia/maestro/pkg/specs/types"
 	"github.com/jhump/protoreflect/desc"
@@ -33,7 +33,7 @@ func ConstructMessage(msg *builder.MessageBuilder, specs map[string]*specs.Prope
 			message := builder.FieldTypeMessage(nested)
 			field := builder.NewField(key, message)
 			field.SetJsonName(key)
-			field.SetLabel(proto.ProtoLabels[prop.Label])
+			field.SetLabel(protobuffers.ProtoLabels[prop.Label])
 			field.SetComments(builder.Comments{
 				LeadingComment: prop.Comment,
 			})
@@ -76,12 +76,12 @@ func ConstructMessage(msg *builder.MessageBuilder, specs map[string]*specs.Prope
 		}
 
 		if typ == nil {
-			typ = builder.FieldTypeScalar(proto.ProtoTypes[prop.Type])
+			typ = builder.FieldTypeScalar(protobuffers.ProtoTypes[prop.Type])
 		}
 
 		field := builder.NewField(key, typ)
 		field.SetJsonName(key)
-		field.SetLabel(proto.ProtoLabels[prop.Label])
+		field.SetLabel(protobuffers.ProtoLabels[prop.Label])
 		field.SetComments(builder.Comments{
 			LeadingComment: prop.Comment,
 		})

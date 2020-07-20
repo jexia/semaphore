@@ -1,4 +1,4 @@
-package proto
+package protobuffers
 
 import (
 	"github.com/golang/protobuf/protoc-gen-go/descriptor"

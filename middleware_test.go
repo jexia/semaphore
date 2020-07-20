@@ -4,9 +4,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/jexia/maestro/internal/flow"
 	"github.com/jexia/maestro/pkg/core/api"
 	"github.com/jexia/maestro/pkg/core/instance"
+	"github.com/jexia/maestro/pkg/flow"
 	"github.com/jexia/maestro/pkg/refs"
 )
 

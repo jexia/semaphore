@@ -5,7 +5,7 @@ import (
 	"io"
 	"io/ioutil"
 
-	"github.com/jexia/maestro/internal/codec"
+	"github.com/jexia/maestro/pkg/codec"
 	"github.com/jexia/maestro/pkg/core/trace"
 	"github.com/jexia/maestro/pkg/refs"
 	"github.com/jexia/maestro/pkg/specs"
@@ -14,7 +14,7 @@ import (
 	"github.com/jhump/protoreflect/dynamic"
 )
 
-// NewConstructor constructs a new JSON constructor
+// NewConstructor constructs a new Proto constructor
 func NewConstructor() *Constructor {
 	return &Constructor{}
 }

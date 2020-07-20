@@ -8,11 +8,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jexia/maestro/internal/codec/json"
-	"github.com/jexia/maestro/internal/flow"
+	"github.com/jexia/maestro/pkg/codec/json"
 	"github.com/jexia/maestro/pkg/core/api"
 	"github.com/jexia/maestro/pkg/core/instance"
 	"github.com/jexia/maestro/pkg/core/logger"
+	"github.com/jexia/maestro/pkg/flow"
 	"github.com/jexia/maestro/pkg/functions"
 	"github.com/jexia/maestro/pkg/providers"
 	"github.com/jexia/maestro/pkg/providers/hcl"

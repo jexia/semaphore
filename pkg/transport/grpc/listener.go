@@ -7,8 +7,8 @@ import (
 	"net"
 	"sync"
 
-	"github.com/jexia/maestro/internal/codec"
-	"github.com/jexia/maestro/internal/codec/proto"
+	"github.com/jexia/maestro/pkg/codec"
+	"github.com/jexia/maestro/pkg/codec/proto"
 	"github.com/jexia/maestro/pkg/core/instance"
 	"github.com/jexia/maestro/pkg/core/logger"
 	"github.com/jexia/maestro/pkg/specs"

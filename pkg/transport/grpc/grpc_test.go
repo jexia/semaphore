@@ -6,9 +6,9 @@ import (
 	"net"
 	"testing"
 
-	"github.com/jexia/maestro/internal/codec"
-	"github.com/jexia/maestro/internal/flow"
+	"github.com/jexia/maestro/pkg/codec"
 	"github.com/jexia/maestro/pkg/core/instance"
+	"github.com/jexia/maestro/pkg/flow"
 	"github.com/jexia/maestro/pkg/refs"
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jexia/maestro/pkg/specs/labels"

@@ -8,7 +8,7 @@ import (
 	"sync"
 
 	"github.com/graphql-go/graphql"
-	"github.com/jexia/maestro/internal/codec"
+	"github.com/jexia/maestro/pkg/codec"
 	"github.com/jexia/maestro/pkg/core/instance"
 	"github.com/jexia/maestro/pkg/core/logger"
 	"github.com/jexia/maestro/pkg/specs"

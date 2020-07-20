@@ -6,10 +6,10 @@ import (
 	"time"
 
 	"github.com/jexia/maestro"
-	"github.com/jexia/maestro/internal/flow"
 	"github.com/jexia/maestro/pkg/core/api"
 	"github.com/jexia/maestro/pkg/core/instance"
 	"github.com/jexia/maestro/pkg/core/logger"
+	"github.com/jexia/maestro/pkg/flow"
 	"github.com/jexia/maestro/pkg/refs"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"

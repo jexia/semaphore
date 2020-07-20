@@ -598,8 +598,6 @@ func ParseIntermediateCallParameterMap(ctx instance.Context, params *Call) (*spe
 		return nil, nil
 	}
 
-	properties, _ := params.Properties.JustAttributes()
-
 	result := specs.ParameterMap{
 		Options: make(specs.Options),
 		Property: &specs.Property{
@@ -618,6 +616,12 @@ func ParseIntermediateCallParameterMap(ctx instance.Context, params *Call) (*spe
 		result.Params = params
 	}
 
+	if params.Options != nil {
+		result.Options = ParseIntermediateSpecOptions(params.Options.Body)
+	}
+
+	properties, _ := params.Properties.JustAttributes()
+
 	if params.Header != nil {
 		header, err := ParseIntermediateHeader(ctx, params.Header)
 		if err != nil {
@@ -625,10 +629,6 @@ func ParseIntermediateCallParameterMap(ctx instance.Context, params *Call) (*spe
 		}
 
 		result.Header = header
-	}
-
-	if params.Options != nil {
-		result.Options = ParseIntermediateSpecOptions(params.Options.Body)
 	}
 
 	for _, attr := range properties {
@@ -717,7 +717,6 @@ func ParseIntermediateResources(ctx instance.Context, dependencies map[string]*s
 	attrs, _ := resources.Properties.JustAttributes()
 	nodes := make([]*specs.Node, 0, len(attrs))
 
-	// FIXME: attrs are not always loaded in the same order as they are defined
 	for _, attr := range attrs {
 		prop, err := ParseIntermediateProperty(ctx, "", attr)
 		if err != nil {

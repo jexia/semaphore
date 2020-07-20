@@ -1,7 +1,7 @@
 package transport
 
 import (
-	"github.com/jexia/maestro/internal/codec"
+	"github.com/jexia/maestro/pkg/codec"
 	"github.com/jexia/maestro/pkg/core/instance"
 	"github.com/jexia/maestro/pkg/metadata"
 	"github.com/jexia/maestro/pkg/refs"

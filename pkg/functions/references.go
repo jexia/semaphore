@@ -1,8 +1,8 @@
 package functions
 
 import (
-	"github.com/jexia/maestro/internal/references"
 	"github.com/jexia/maestro/pkg/core/instance"
+	"github.com/jexia/maestro/pkg/references"
 	"github.com/jexia/maestro/pkg/specs"
 )
 

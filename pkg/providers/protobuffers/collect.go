@@ -1,4 +1,4 @@
-package proto
+package protobuffers
 
 import (
 	"os"

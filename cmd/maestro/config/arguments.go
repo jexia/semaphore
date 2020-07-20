@@ -3,13 +3,14 @@ package config
 import (
 	"github.com/jexia/maestro"
 	"github.com/jexia/maestro/cmd/maestro/middleware"
-	"github.com/jexia/maestro/pkg/codec"
+	"github.com/jexia/maestro/pkg/codec/json"
+	"github.com/jexia/maestro/pkg/codec/proto"
 	"github.com/jexia/maestro/pkg/core/api"
 	"github.com/jexia/maestro/pkg/core/instance"
 	"github.com/jexia/maestro/pkg/core/logger"
 	"github.com/jexia/maestro/pkg/metrics/prometheus"
 	"github.com/jexia/maestro/pkg/providers/hcl"
-	"github.com/jexia/maestro/pkg/providers/proto"
+	"github.com/jexia/maestro/pkg/providers/protobuffers"
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jexia/maestro/pkg/transport/graphql"
 	"github.com/jexia/maestro/pkg/transport/grpc"
@@ -21,8 +22,8 @@ import (
 // ConstructArguments constructs the option arguments from the given parameters
 func ConstructArguments(params *Maestro) ([]api.Option, error) {
 	arguments := []api.Option{
-		maestro.WithCodec(codec.JSON()),
-		maestro.WithCodec(codec.Proto()),
+		maestro.WithCodec(json.NewConstructor()),
+		maestro.WithCodec(proto.NewConstructor()),
 		maestro.WithCaller(micro.NewCaller("micro-grpc", microGRPC.NewService())),
 		maestro.WithCaller(grpc.NewCaller()),
 		maestro.WithCaller(http.NewCaller()),
@@ -46,8 +47,8 @@ func ConstructArguments(params *Maestro) ([]api.Option, error) {
 	}
 
 	for _, path := range params.Protobuffers {
-		arguments = append(arguments, maestro.WithSchema(proto.SchemaResolver(params.Protobuffers, path)))
-		arguments = append(arguments, maestro.WithServices(proto.ServiceResolver(params.Protobuffers, path)))
+		arguments = append(arguments, maestro.WithSchema(protobuffers.SchemaResolver(params.Protobuffers, path)))
+		arguments = append(arguments, maestro.WithServices(protobuffers.ServiceResolver(params.Protobuffers, path)))
 	}
 
 	if params.HTTP.Address != "" {

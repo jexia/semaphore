@@ -1,7 +1,7 @@
 package flow
 
 import (
-	"github.com/jexia/maestro/internal/codec"
+	"github.com/jexia/maestro/pkg/codec"
 	"github.com/jexia/maestro/pkg/functions"
 	"github.com/jexia/maestro/pkg/metadata"
 	"github.com/jexia/maestro/pkg/specs"

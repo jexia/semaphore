@@ -1,7 +1,7 @@
 package flow
 
 import (
-	"github.com/jexia/maestro/internal/lookup"
+	"github.com/jexia/maestro/pkg/lookup"
 )
 
 // ConstructBranches constructs the node branches based on the made references

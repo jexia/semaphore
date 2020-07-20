@@ -6,7 +6,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/jexia/maestro/internal/codec/json"
+	"github.com/jexia/maestro/pkg/codec/json"
 	"github.com/jexia/maestro/pkg/core/instance"
 	"github.com/jexia/maestro/pkg/functions"
 	"github.com/jexia/maestro/pkg/refs"

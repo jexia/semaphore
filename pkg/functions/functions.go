@@ -6,10 +6,10 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/jexia/maestro/internal/references"
 	"github.com/jexia/maestro/pkg/core/instance"
 	"github.com/jexia/maestro/pkg/core/logger"
 	"github.com/jexia/maestro/pkg/core/trace"
+	"github.com/jexia/maestro/pkg/references"
 	"github.com/jexia/maestro/pkg/refs"
 	"github.com/jexia/maestro/pkg/specs"
 	"github.com/jexia/maestro/pkg/specs/template"

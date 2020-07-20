@@ -3,7 +3,7 @@ package maestro
 import (
 	"sync"
 
-	"github.com/jexia/maestro/internal/core"
+	"github.com/jexia/maestro/pkg/core"
 	"github.com/jexia/maestro/pkg/core/api"
 	"github.com/jexia/maestro/pkg/core/instance"
 	"github.com/jexia/maestro/pkg/core/logger"

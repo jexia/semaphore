@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 
 	"github.com/francoispqt/gojay"
-	"github.com/jexia/maestro/internal/codec"
+	"github.com/jexia/maestro/pkg/codec"
 	"github.com/jexia/maestro/pkg/core/trace"
 	"github.com/jexia/maestro/pkg/refs"
 	"github.com/jexia/maestro/pkg/specs"

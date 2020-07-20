@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/jexia/maestro/internal/compare"
+	"github.com/jexia/maestro/pkg/compare"
 	"github.com/jexia/maestro/pkg/core/instance"
 	"github.com/jexia/maestro/pkg/providers"
 	"github.com/jexia/maestro/pkg/providers/hcl"
