@@ -146,12 +146,12 @@ func NewCall(ctx instance.Context, mem functions.Collection, services *specs.Ser
 		return NewServiceCall(ctx, mem, services, flows, node, call, options, manager)
 	}
 
-	request, err := Request(ctx, node, mem, nil, call.Request)
+	request, err := NewRequest(ctx, node, mem, nil, call.Request)
 	if err != nil {
 		return nil, err
 	}
 
-	response, err := Request(ctx, node, mem, nil, call.Response)
+	response, err := NewRequest(ctx, node, mem, nil, call.Response)
 	if err != nil {
 		return nil, err
 	}
@@ -216,12 +216,12 @@ func NewServiceCall(ctx instance.Context, mem functions.Collection, services *sp
 		return nil, err
 	}
 
-	request, err := Request(ctx, node, mem, codec, call.Request)
+	request, err := NewRequest(ctx, node, mem, codec, call.Request)
 	if err != nil {
 		return nil, err
 	}
 
-	response, err := Request(ctx, node, mem, codec, call.Response)
+	response, err := NewRequest(ctx, node, mem, codec, call.Response)
 	if err != nil {
 		return nil, err
 	}
@@ -238,8 +238,8 @@ func NewServiceCall(ctx instance.Context, mem functions.Collection, services *sp
 	return caller, nil
 }
 
-// Request constructs a new request from the given parameter map and codec
-func Request(ctx instance.Context, node *specs.Node, mem functions.Collection, constructor codec.Constructor, params *specs.ParameterMap) (*flow.Request, error) {
+// NewRequest constructs a new request from the given parameter map and codec
+func NewRequest(ctx instance.Context, node *specs.Node, mem functions.Collection, constructor codec.Constructor, params *specs.ParameterMap) (*flow.Request, error) {
 	if params == nil {
 		return nil, nil
 	}
