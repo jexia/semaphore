@@ -8,6 +8,7 @@ import (
 	"github.com/jexia/semaphore/pkg/core/instance"
 	"github.com/jexia/semaphore/pkg/flow"
 	"github.com/jexia/semaphore/pkg/refs"
+	"github.com/jexia/semaphore/pkg/specs"
 )
 
 func TestWithMiddleware(t *testing.T) {
@@ -32,7 +33,7 @@ func TestWithMiddleware(t *testing.T) {
 func TestAfterConstructorOption(t *testing.T) {
 	fn := func(i *int) api.AfterConstructorHandler {
 		return func(next api.AfterConstructor) api.AfterConstructor {
-			return func(ctx instance.Context, flow *api.Collection) error {
+			return func(ctx instance.Context, flow *specs.Collection) error {
 				*i++
 				return next(ctx, flow)
 			}

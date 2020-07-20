@@ -9,6 +9,7 @@ import (
 	"github.com/jexia/semaphore/pkg/core/logger"
 	"github.com/jexia/semaphore/pkg/core/trace"
 	"github.com/jexia/semaphore/pkg/functions"
+	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/transport"
 )
 
@@ -17,7 +18,7 @@ type Client struct {
 	Ctx          instance.Context
 	transporters []*transport.Endpoint
 	listeners    []transport.Listener
-	collection   *api.Collection
+	collection   *specs.Collection
 	Options      api.Options
 	mutex        sync.RWMutex
 }
@@ -60,7 +61,7 @@ func (client *Client) Handle(ctx instance.Context, options api.Options) error {
 	}
 
 	client.collection = collection
-	managers, err := core.FlowManager(ctx, mem, collection.Services, collection.Endpoints, collection.Flows, options)
+	managers, err := core.FlowManager(ctx, mem, collection.ServicesManifest, collection.EndpointsManifest, collection.FlowsManifest, options)
 	if err != nil {
 		return err
 	}
@@ -70,7 +71,7 @@ func (client *Client) Handle(ctx instance.Context, options api.Options) error {
 }
 
 // Collection returns the currently defined specs collection
-func (client *Client) Collection() *api.Collection {
+func (client *Client) Collection() *specs.Collection {
 	client.mutex.RLock()
 	defer client.mutex.RUnlock()
 	return client.collection

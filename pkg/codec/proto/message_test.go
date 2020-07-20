@@ -27,7 +27,7 @@ func NewMock() (*specs.FlowsManifest, error) {
 		return nil, err
 	}
 
-	return client.Collection().Flows, nil
+	return client.Collection().FlowsManifest, nil
 }
 
 func FindFlow(manifest *specs.FlowsManifest, name string) *specs.Flow {

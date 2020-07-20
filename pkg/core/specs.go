@@ -7,12 +7,12 @@ import (
 )
 
 // ResolveProviders calls all defined resolvers and returns a specs collection
-func ResolveProviders(ctx instance.Context, options api.Options) (*api.Collection, error) {
-	result := &api.Collection{
-		Flows:     &specs.FlowsManifest{},
-		Endpoints: &specs.EndpointsManifest{},
-		Services:  &specs.ServicesManifest{},
-		Schema:    &specs.SchemaManifest{},
+func ResolveProviders(ctx instance.Context, options api.Options) (*specs.Collection, error) {
+	result := &specs.Collection{
+		FlowsManifest:     &specs.FlowsManifest{},
+		EndpointsManifest: &specs.EndpointsManifest{},
+		ServicesManifest:  &specs.ServicesManifest{},
+		SchemaManifest:    &specs.SchemaManifest{},
 	}
 
 	for _, resolver := range options.Flows {
@@ -25,7 +25,7 @@ func ResolveProviders(ctx instance.Context, options api.Options) (*api.Collectio
 			return nil, err
 		}
 
-		specs.MergeFlowsManifest(result.Flows, manifests...)
+		specs.MergeFlowsManifest(result.FlowsManifest, manifests...)
 	}
 
 	for _, resolver := range options.Endpoints {
@@ -38,7 +38,7 @@ func ResolveProviders(ctx instance.Context, options api.Options) (*api.Collectio
 			return nil, err
 		}
 
-		specs.MergeEndpointsManifest(result.Endpoints, manifests...)
+		specs.MergeEndpointsManifest(result.EndpointsManifest, manifests...)
 	}
 
 	for _, resolver := range options.Services {
@@ -51,7 +51,7 @@ func ResolveProviders(ctx instance.Context, options api.Options) (*api.Collectio
 			return nil, err
 		}
 
-		specs.MergeServiceManifest(result.Services, manifests...)
+		specs.MergeServiceManifest(result.ServicesManifest, manifests...)
 	}
 
 	for _, resolver := range options.Schemas {
@@ -64,7 +64,7 @@ func ResolveProviders(ctx instance.Context, options api.Options) (*api.Collectio
 			return nil, err
 		}
 
-		specs.MergeSchemaManifest(result.Schema, manifests...)
+		specs.MergeSchemaManifest(result.SchemaManifest, manifests...)
 	}
 
 	return result, nil

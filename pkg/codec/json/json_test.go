@@ -52,7 +52,7 @@ func NewMock() (*specs.FlowsManifest, error) {
 		return nil, err
 	}
 
-	return client.Collection().Flows, nil
+	return client.Collection().FlowsManifest, nil
 }
 
 func ValidateStore(t *testing.T, prop *specs.Property, resource string, origin string, input map[string]interface{}, store refs.Store) {

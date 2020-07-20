@@ -8,40 +8,41 @@ import (
 	"github.com/jexia/semaphore/pkg/dependencies"
 	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/references"
+	"github.com/jexia/semaphore/pkg/specs"
 )
 
 // NewSpecs construct a specs manifest from the given options
-func NewSpecs(ctx instance.Context, mem functions.Collection, options api.Options) (*api.Collection, error) {
+func NewSpecs(ctx instance.Context, mem functions.Collection, options api.Options) (*specs.Collection, error) {
 	collection, err := ResolveProviders(ctx, options)
 	if err != nil {
 		return nil, err
 	}
 
-	ConstructErrorHandle(collection.Flows)
+	ConstructErrorHandle(collection.FlowsManifest)
 
-	err = checks.ManifestDuplicates(ctx, collection.Flows)
+	err = checks.ManifestDuplicates(ctx, collection.FlowsManifest)
 	if err != nil {
 		return nil, err
 	}
 
-	err = references.DefineManifest(ctx, collection.Services, collection.Schema, collection.Flows)
+	err = references.DefineManifest(ctx, collection.ServicesManifest, collection.SchemaManifest, collection.FlowsManifest)
 	if err != nil {
 		return nil, err
 	}
 
-	err = functions.PrepareManifestFunctions(ctx, mem, options.Functions, collection.Flows)
+	err = functions.PrepareManifestFunctions(ctx, mem, options.Functions, collection.FlowsManifest)
 	if err != nil {
 		return nil, err
 	}
 
-	dependencies.ResolveReferences(ctx, collection.Flows)
+	dependencies.ResolveReferences(ctx, collection.FlowsManifest)
 
-	err = compare.ManifestTypes(ctx, collection.Services, collection.Schema, collection.Flows)
+	err = compare.ManifestTypes(ctx, collection.ServicesManifest, collection.SchemaManifest, collection.FlowsManifest)
 	if err != nil {
 		return nil, err
 	}
 
-	err = dependencies.ResolveManifest(ctx, collection.Flows)
+	err = dependencies.ResolveManifest(ctx, collection.FlowsManifest)
 	if err != nil {
 		return nil, err
 	}
