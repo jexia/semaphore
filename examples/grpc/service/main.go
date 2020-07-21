@@ -11,7 +11,9 @@ import (
 )
 
 // Say represents a simple gRPC service
-type Say struct{}
+type Say struct {
+	proto.UnimplementedSayServer
+}
 
 // Hello returns a message
 func (s *Say) Hello(ctx context.Context, req *proto.Request) (*proto.Response, error) {
