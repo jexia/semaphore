@@ -11,12 +11,12 @@ import (
 )
 
 // FlowManager constructs the flow managers from the given specs manifest
-func FlowManager(ctx instance.Context, mem functions.Collection, services *specs.ServicesManifest, endpoints *specs.EndpointsManifest, flows *specs.FlowsManifest, options api.Options) ([]*transport.Endpoint, error) {
-	results := make([]*transport.Endpoint, len(endpoints.Endpoints))
+func FlowManager(ctx instance.Context, mem functions.Collection, services *specs.ServicesManifest, manifest *specs.EndpointsManifest, flows *specs.FlowsManifest, options api.Options) ([]*transport.Endpoint, error) {
+	results := make([]*transport.Endpoint, len(manifest.Endpoints))
 
-	ctx.Logger(logger.Core).WithField("endpoints", endpoints.Endpoints).Debug("constructing endpoints")
+	ctx.Logger(logger.Core).WithField("endpoints", manifest.Endpoints).Debug("constructing endpoints")
 
-	for index, endpoint := range endpoints.Endpoints {
+	for index, endpoint := range manifest.Endpoints {
 		manager := flows.GetFlow(endpoint.Flow)
 		if manager == nil {
 			continue
