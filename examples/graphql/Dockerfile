@@ -1,4 +1,4 @@
-FROM jexiacom/semaphore:latest
+FROM jxapp/semaphore:latest
 
 WORKDIR /app
 
