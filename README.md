@@ -53,6 +53,8 @@ There are variouse install methods available. You could download and install the
 $ curl https://raw.githubusercontent.com/jexia/semaphore/master/install.sh | sh
 ```
 
+![Install Semaphore](https://user-images.githubusercontent.com/3440116/88094275-9b0a5c80-cb93-11ea-9a7e-d044f61dcb1c.gif)
+
 ---
 
 Data streams inside Semaphore are defined as flows.
