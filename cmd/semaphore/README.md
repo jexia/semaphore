@@ -40,7 +40,7 @@ $ curl https://raw.githubusercontent.com/jexia/semaphore/master/install.sh | sh 
 Official docker images are available on Github and Docker hub. These images contain the Semaphore CLI.
 
 ```sh
-$ docker pull jexiacom/semaphore-cli
+$ docker pull jxapp/semaphore-cli
 ```
 
 ### Building the Development Version from Source
