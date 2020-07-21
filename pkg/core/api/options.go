@@ -10,6 +10,9 @@ import (
 	"github.com/jexia/semaphore/pkg/transport"
 )
 
+// Constructor represents a specs constructor that could be used to construct specifications
+type Constructor func(ctx instance.Context, mem functions.Collection, options Options) (*specs.Collection, error)
+
 // Option represents a constructor func which sets a given option
 type Option func(*Options)
 
@@ -27,6 +30,7 @@ func NewOptions(ctx instance.Context) Options {
 // Options represents all the available options
 type Options struct {
 	Ctx                   instance.Context
+	Constructor           Constructor
 	Codec                 codec.Constructors
 	Callers               transport.Callers
 	Listeners             transport.Listeners

@@ -3,7 +3,6 @@ package semaphore
 import (
 	"sync"
 
-	"github.com/jexia/semaphore/pkg/core"
 	"github.com/jexia/semaphore/pkg/core/api"
 	"github.com/jexia/semaphore/pkg/core/flows"
 	"github.com/jexia/semaphore/pkg/core/instance"
@@ -56,7 +55,7 @@ func (client *Client) Handle(ctx instance.Context, options api.Options) error {
 	defer client.mutex.Unlock()
 
 	mem := functions.Collection{}
-	collection, err := core.ConstructSpecs(ctx, mem, options)
+	collection, err := options.Constructor(ctx, mem, options)
 	if err != nil {
 		return err
 	}

@@ -2,6 +2,7 @@ package semaphore
 
 import (
 	"github.com/jexia/semaphore/pkg/codec"
+	"github.com/jexia/semaphore/pkg/core"
 	"github.com/jexia/semaphore/pkg/core/api"
 	"github.com/jexia/semaphore/pkg/core/instance"
 	"github.com/jexia/semaphore/pkg/core/logger"
@@ -10,9 +11,15 @@ import (
 	"github.com/jexia/semaphore/pkg/transport"
 )
 
+// DefaultOptions sets the default options for the given options object
+func DefaultOptions(options *api.Options) {
+	options.Constructor = core.Construct
+}
+
 // NewOptions constructs a api.Options object from the given api.Option constructors
 func NewOptions(ctx instance.Context, options ...api.Option) (api.Options, error) {
 	result := api.NewOptions(ctx)
+	DefaultOptions(&result)
 
 	if options == nil {
 		return result, nil
@@ -43,6 +50,13 @@ func NewOptions(ctx instance.Context, options ...api.Option) (api.Options, error
 // NewCollection constructs a new options collection
 func NewCollection(options ...api.Option) []api.Option {
 	return options
+}
+
+// WithConstructor appends the given flows resolver to the available flow resolvers
+func WithConstructor(constructor api.Constructor) api.Option {
+	return func(options *api.Options) {
+		options.Constructor = constructor
+	}
 }
 
 // WithFlows appends the given flows resolver to the available flow resolvers
