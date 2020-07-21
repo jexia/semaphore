@@ -56,7 +56,7 @@ func (client *Client) Handle(ctx instance.Context, options api.Options) error {
 	defer client.mutex.Unlock()
 
 	mem := functions.Collection{}
-	collection, err := core.NewSpecs(ctx, mem, options)
+	collection, err := core.ConstructSpecs(ctx, mem, options)
 	if err != nil {
 		return err
 	}

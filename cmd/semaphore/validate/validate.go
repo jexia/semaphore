@@ -37,7 +37,7 @@ func run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	_, err = core.NewSpecs(ctx, functions.Collection{}, options)
+	_, err = core.ConstructSpecs(ctx, functions.Collection{}, options)
 	if err != nil {
 		return err
 	}
