@@ -175,7 +175,7 @@ func DependenciesExcept(dependencies map[string]*specs.Node, resource string) ma
 // DependsOn sets the given dependency for the given nodes
 func DependsOn(dependency *specs.Node, nodes ...*specs.Node) {
 	for _, node := range nodes {
-		node.DependsOn[dependency.Name] = dependency
+		node.DependsOn[dependency.ID] = dependency
 	}
 }
 
@@ -536,6 +536,7 @@ func ParseIntermediateNode(ctx instance.Context, dependencies map[string]*specs.
 
 	result := specs.Node{
 		DependsOn:    make(map[string]*specs.Node, len(node.DependsOn)),
+		ID:           node.Name,
 		Name:         node.Name,
 		Call:         call,
 		ExpectStatus: node.ExpectStatus,
@@ -725,7 +726,7 @@ func ParseIntermediateResources(ctx instance.Context, dependencies map[string]*s
 
 		node := &specs.Node{
 			DependsOn: DependenciesExcept(dependencies, prop.Name),
-			Name:      prop.Name,
+			ID:        prop.Name,
 			Call: &specs.Call{
 				Response: &specs.ParameterMap{
 					Property: prop,
@@ -741,15 +742,16 @@ func ParseIntermediateResources(ctx instance.Context, dependencies map[string]*s
 
 // ParseIntermediateCondition parses the given intermediate condition and returns the compiled nodes
 func ParseIntermediateCondition(ctx instance.Context, dependencies map[string]*specs.Node, condition Condition) ([]*specs.Node, error) {
-	evaluableExpression, err := conditions.NewEvaluableExpression(ctx, condition.Expression)
+	expr, err := conditions.NewEvaluableExpression(ctx, condition.Expression)
 	if err != nil {
 		return nil, err
 	}
 
 	expression := &specs.Node{
-		Name:      condition.Expression,
+		ID:        condition.Expression,
+		Name:      "condition",
 		DependsOn: map[string]*specs.Node{},
-		Condition: evaluableExpression,
+		Condition: expr,
 	}
 
 	result := []*specs.Node{expression}

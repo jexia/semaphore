@@ -28,7 +28,7 @@ func FindFlow(manifest *specs.FlowsManifest, name string) *specs.Flow {
 
 func FindNode(flow *specs.Flow, name string) *specs.Node {
 	for _, node := range flow.GetNodes() {
-		if node.Name == name {
+		if node.ID == name {
 			return node
 		}
 	}

@@ -425,7 +425,7 @@ func TestConstructingNodeReferences(t *testing.T) {
 	rollback := &caller{}
 
 	node := &specs.Node{
-		Name: "mock",
+		ID: "mock",
 	}
 
 	result := NewNode(ctx, node, nil, call, rollback, nil)

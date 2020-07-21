@@ -175,6 +175,7 @@ type Condition struct {
 // The request and response proto messages are used for type definitions.
 // A call could contain the request headers, request body, rollback, and the execution type.
 type Node struct {
+	ID           string           `json:"id,omitempty"`
 	Name         string           `json:"name,omitempty"`
 	Condition    *Condition       `json:"condition,omitempty"`
 	DependsOn    map[string]*Node `json:"depends_on,omitempty"`

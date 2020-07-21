@@ -30,7 +30,7 @@ func (d *DiscardWriter) Close() error {
 func TestCaller(t *testing.T) {
 	ctx := instance.NewContext()
 	node := &specs.Node{
-		Name: "first",
+		ID: "first",
 	}
 
 	called := 0

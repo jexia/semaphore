@@ -112,12 +112,12 @@ func NewServiceCall(ctx instance.Context, mem functions.Collection, services *sp
 	}
 
 	if call.Service == "" {
-		return nil, trace.New(trace.WithMessage("invalid service name, no service name configured in '%s'", node.Name))
+		return nil, trace.New(trace.WithMessage("invalid service name, no service name configured in '%s'", node.ID))
 	}
 
 	service := services.GetService(call.Service)
 	if service == nil {
-		return nil, trace.New(trace.WithMessage("the service for '%s' was not found in '%s'", call.Service, node.Name))
+		return nil, trace.New(trace.WithMessage("the service for '%s' was not found in '%s'", call.Service, node.ID))
 	}
 
 	constructor := options.Callers.Get(service.Transport)
@@ -187,7 +187,7 @@ func NewRequest(ctx instance.Context, node *specs.Node, mem functions.Collection
 
 	var codec codec.Manager
 	if constructor != nil {
-		manager, err := constructor.New(node.Name, params)
+		manager, err := constructor.New(node.ID, params)
 		if err != nil {
 			return nil, err
 		}
@@ -196,7 +196,7 @@ func NewRequest(ctx instance.Context, node *specs.Node, mem functions.Collection
 	}
 
 	stack := mem[params]
-	metadata := metadata.NewManager(ctx, node.Name, params.Header)
+	metadata := metadata.NewManager(ctx, node.ID, params.Header)
 	return flow.NewRequest(stack, codec, metadata), nil
 }
 
@@ -236,14 +236,14 @@ func NewError(ctx instance.Context, node *specs.Node, mem functions.Collection, 
 		params := err.Response
 
 		// TODO: check if I would like props to be defined like this
-		manager, err := constructor.New(template.JoinPath(node.Name, template.ErrorResource), params)
+		manager, err := constructor.New(template.JoinPath(node.ID, template.ErrorResource), params)
 		if err != nil {
 			return nil, err
 		}
 
 		codec = manager
 		stack = mem[params]
-		meta = metadata.NewManager(ctx, node.Name, params.Header)
+		meta = metadata.NewManager(ctx, node.ID, params.Header)
 	}
 
 	return flow.NewOnError(stack, codec, meta, err.Status, err.Message), nil

@@ -38,10 +38,10 @@ func TestDuplicateManifests(t *testing.T) {
 					Name: "first",
 					Nodes: []*specs.Node{
 						{
-							Name: "dup",
+							ID: "dup",
 						},
 						{
-							Name: "dup",
+							ID: "dup",
 						},
 					},
 				},
@@ -54,10 +54,10 @@ func TestDuplicateManifests(t *testing.T) {
 					Name: "first",
 					Nodes: []*specs.Node{
 						{
-							Name: "dup",
+							ID: "dup",
 						},
 						{
-							Name: "dup",
+							ID: "dup",
 						},
 					},
 				},
@@ -84,7 +84,7 @@ func TestReservedKeywordsManifests(t *testing.T) {
 					Name: "first",
 					Nodes: []*specs.Node{
 						{
-							Name: "error",
+							ID: "error",
 						},
 					},
 				},
@@ -96,7 +96,7 @@ func TestReservedKeywordsManifests(t *testing.T) {
 					Name: "first",
 					Nodes: []*specs.Node{
 						{
-							Name: "input",
+							ID: "input",
 						},
 					},
 				},
@@ -108,7 +108,7 @@ func TestReservedKeywordsManifests(t *testing.T) {
 					Name: "first",
 					Nodes: []*specs.Node{
 						{
-							Name: "stack",
+							ID: "stack",
 						},
 					},
 				},
@@ -133,10 +133,10 @@ func TestDuplicateNodes(t *testing.T) {
 			Name: "first",
 			Nodes: []*specs.Node{
 				{
-					Name: "dup",
+					ID: "dup",
 				},
 				{
-					Name: "dup",
+					ID: "dup",
 				},
 			},
 		},

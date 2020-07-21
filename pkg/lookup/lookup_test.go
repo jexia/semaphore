@@ -63,10 +63,10 @@ func TestGetNextResource(t *testing.T) {
 			manager: &specs.Flow{
 				Nodes: []*specs.Node{
 					{
-						Name: "first",
+						ID: "first",
 					},
 					{
-						Name: "second",
+						ID: "second",
 					},
 				},
 			},
@@ -77,13 +77,13 @@ func TestGetNextResource(t *testing.T) {
 			manager: &specs.Flow{
 				Nodes: []*specs.Node{
 					{
-						Name: "first",
+						ID: "first",
 					},
 					{
-						Name: "second",
+						ID: "second",
 					},
 					{
-						Name: "third",
+						ID: "third",
 					},
 				},
 			},
@@ -94,10 +94,10 @@ func TestGetNextResource(t *testing.T) {
 			manager: &specs.Flow{
 				Nodes: []*specs.Node{
 					{
-						Name: "first",
+						ID: "first",
 					},
 					{
-						Name: "last",
+						ID: "last",
 					},
 				},
 			},
@@ -108,10 +108,10 @@ func TestGetNextResource(t *testing.T) {
 			manager: &specs.Flow{
 				Nodes: []*specs.Node{
 					{
-						Name: "first",
+						ID: "first",
 					},
 					{
-						Name: "second",
+						ID: "second",
 					},
 				},
 			},
@@ -364,7 +364,7 @@ func NewResultMockProperty() *specs.Property {
 
 func NewMockCall(name string) *specs.Node {
 	return &specs.Node{
-		Name: name,
+		ID: name,
 		Call: &specs.Call{
 			Request: &specs.ParameterMap{
 				Header: specs.Header{

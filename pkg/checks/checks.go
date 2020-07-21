@@ -57,17 +57,17 @@ func NodeDuplicates(ctx instance.Context, flow string, nodes []*specs.Node) erro
 	calls := sync.Map{}
 
 	for _, node := range nodes {
-		_, duplicate := calls.LoadOrStore(node.Name, node)
+		_, duplicate := calls.LoadOrStore(node.ID, node)
 		if duplicate {
-			return trace.New(trace.WithMessage("duplicate resource '%s' in flow '%s'", node.Name, flow))
+			return trace.New(trace.WithMessage("duplicate resource '%s' in flow '%s'", node.ID, flow))
 		}
 
 		for _, key := range ReservedKeywords {
-			if key != node.Name {
+			if key != node.ID {
 				continue
 			}
 
-			return trace.New(trace.WithMessage("flow with the name '%s' is a reserved keyword", node.Name))
+			return trace.New(trace.WithMessage("flow with the name '%s' is a reserved keyword", node.ID))
 		}
 	}
 

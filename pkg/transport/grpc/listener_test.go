@@ -47,7 +47,7 @@ func TestNewListener(t *testing.T) {
 func TestListener(t *testing.T) {
 	ctx := instance.NewContext()
 	node := &specs.Node{
-		Name: "first",
+		ID: "first",
 	}
 
 	called := 0
@@ -191,7 +191,7 @@ func TestErrorHandlingListener(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			ctx := instance.NewContext()
 			node := &specs.Node{
-				Name:    "first",
+				ID:      "first",
 				OnError: test.err,
 			}
 

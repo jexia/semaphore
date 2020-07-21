@@ -34,12 +34,12 @@ func TestDefineFunction(t *testing.T) {
 				},
 			},
 			node: &specs.Node{
-				Name: "second",
+				ID: "second",
 			},
 			flow: &specs.Flow{
 				Nodes: []*specs.Node{
 					{
-						Name: "first",
+						ID: "first",
 						Call: &specs.Call{
 							Response: &specs.ParameterMap{
 								Property: &specs.Property{
@@ -58,7 +58,7 @@ func TestDefineFunction(t *testing.T) {
 						},
 					},
 					{
-						Name: "second",
+						ID: "second",
 					},
 				},
 			},
@@ -75,12 +75,12 @@ func TestDefineFunction(t *testing.T) {
 				},
 			},
 			node: &specs.Node{
-				Name: "second",
+				ID: "second",
 			},
 			flow: &specs.Flow{
 				Nodes: []*specs.Node{
 					{
-						Name: "first",
+						ID: "first",
 						Call: &specs.Call{
 							Response: &specs.ParameterMap{
 								Property: &specs.Property{
@@ -99,7 +99,7 @@ func TestDefineFunction(t *testing.T) {
 						},
 					},
 					{
-						Name: "second",
+						ID: "second",
 					},
 				},
 			},

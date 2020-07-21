@@ -62,7 +62,7 @@ func NewMockListener(t *testing.T, nodes flow.Nodes, errs transport.Errs) (trans
 func TestListener(t *testing.T) {
 	ctx := instance.NewContext()
 	node := &specs.Node{
-		Name: "first",
+		ID: "first",
 	}
 
 	called := 0
@@ -168,7 +168,7 @@ func TestPathReferences(t *testing.T) {
 func TestStoringParams(t *testing.T) {
 	ctx := instance.NewContext()
 	node := &specs.Node{
-		Name: "first",
+		ID: "first",
 	}
 
 	path := "message"
@@ -563,7 +563,7 @@ func TestListenerErrorHandling(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			ctx := instance.NewContext()
 			node := &specs.Node{
-				Name:    "first",
+				ID:      "first",
 				OnError: test.err,
 			}
 

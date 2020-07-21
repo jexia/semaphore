@@ -117,7 +117,7 @@ func CallTypes(ctx instance.Context, services *specs.ServicesManifest, schema *s
 	}
 
 	ctx.Logger(logger.Core).WithFields(logrus.Fields{
-		"call":    node.Name,
+		"call":    node.ID,
 		"method":  call.Method,
 		"service": call.Service,
 	}).Info("Comparing call types")

@@ -14,16 +14,16 @@ func TestResolveManifestDependencies(t *testing.T) {
 				Name: "first",
 				Nodes: []*specs.Node{
 					{
-						Name: "first",
+						ID: "first",
 					},
 					{
-						Name: "second",
+						ID: "second",
 						DependsOn: map[string]*specs.Node{
 							"first": nil,
 						},
 					},
 					{
-						Name: "third",
+						ID: "third",
 						DependsOn: map[string]*specs.Node{
 							"first":  nil,
 							"second": nil,
@@ -35,16 +35,16 @@ func TestResolveManifestDependencies(t *testing.T) {
 				Name: "second",
 				Nodes: []*specs.Node{
 					{
-						Name: "first",
+						ID: "first",
 					},
 					{
-						Name: "second",
+						ID: "second",
 						DependsOn: map[string]*specs.Node{
 							"first": nil,
 						},
 					},
 					{
-						Name: "third",
+						ID: "third",
 						DependsOn: map[string]*specs.Node{
 							"first":  nil,
 							"second": nil,
@@ -56,16 +56,16 @@ func TestResolveManifestDependencies(t *testing.T) {
 				Name: "third",
 				Nodes: []*specs.Node{
 					{
-						Name: "first",
+						ID: "first",
 					},
 					{
-						Name: "second",
+						ID: "second",
 						DependsOn: map[string]*specs.Node{
 							"first": nil,
 						},
 					},
 					{
-						Name: "third",
+						ID: "third",
 						DependsOn: map[string]*specs.Node{
 							"first":  nil,
 							"second": nil,
@@ -79,16 +79,16 @@ func TestResolveManifestDependencies(t *testing.T) {
 				Name: "first",
 				Nodes: []*specs.Node{
 					{
-						Name: "first",
+						ID: "first",
 					},
 					{
-						Name: "second",
+						ID: "second",
 						DependsOn: map[string]*specs.Node{
 							"first": nil,
 						},
 					},
 					{
-						Name: "third",
+						ID: "third",
 						DependsOn: map[string]*specs.Node{
 							"first":  nil,
 							"second": nil,
@@ -100,16 +100,16 @@ func TestResolveManifestDependencies(t *testing.T) {
 				Name: "second",
 				Nodes: []*specs.Node{
 					{
-						Name: "first",
+						ID: "first",
 					},
 					{
-						Name: "second",
+						ID: "second",
 						DependsOn: map[string]*specs.Node{
 							"first": nil,
 						},
 					},
 					{
-						Name: "third",
+						ID: "third",
 						DependsOn: map[string]*specs.Node{
 							"first":  nil,
 							"second": nil,
@@ -121,16 +121,16 @@ func TestResolveManifestDependencies(t *testing.T) {
 				Name: "third",
 				Nodes: []*specs.Node{
 					{
-						Name: "first",
+						ID: "first",
 					},
 					{
-						Name: "second",
+						ID: "second",
 						DependsOn: map[string]*specs.Node{
 							"first": nil,
 						},
 					},
 					{
-						Name: "third",
+						ID: "third",
 						DependsOn: map[string]*specs.Node{
 							"first":  nil,
 							"second": nil,
@@ -155,7 +155,7 @@ func TestResolveManifestDependencies(t *testing.T) {
 
 			for key, val := range call.DependsOn {
 				if val == nil {
-					t.Fatalf("call dependency not resolved %s.%s", call.Name, key)
+					t.Fatalf("call dependency not resolved %s.%s", call.ID, key)
 				}
 			}
 		}
@@ -166,16 +166,16 @@ func TestResolveCallDependencies(t *testing.T) {
 	flow := &specs.Flow{
 		Nodes: []*specs.Node{
 			{
-				Name: "first",
+				ID: "first",
 			},
 			{
-				Name: "second",
+				ID: "second",
 				DependsOn: map[string]*specs.Node{
 					"first": nil,
 				},
 			},
 			{
-				Name: "third",
+				ID: "third",
 				DependsOn: map[string]*specs.Node{
 					"first":  nil,
 					"second": nil,
@@ -197,7 +197,7 @@ func TestResolveCallDependencies(t *testing.T) {
 
 		for key, val := range input.DependsOn {
 			if val == nil {
-				t.Fatalf("dependency not resolved %s.%s", input.Name, key)
+				t.Fatalf("dependency not resolved %s.%s", input.ID, key)
 			}
 		}
 	}
@@ -207,13 +207,13 @@ func TestCallCircularDependenciesDetection(t *testing.T) {
 	flow := &specs.Flow{
 		Nodes: []*specs.Node{
 			{
-				Name: "first",
+				ID: "first",
 				DependsOn: map[string]*specs.Node{
 					"second": nil,
 				},
 			},
 			{
-				Name: "second",
+				ID: "second",
 				DependsOn: map[string]*specs.Node{
 					"first": nil,
 				},
@@ -229,7 +229,7 @@ func TestCallCircularDependenciesDetection(t *testing.T) {
 	for _, input := range tests {
 		err := ResolveNode(flow, input, make(map[string]*specs.Node))
 		if err == nil {
-			t.Fatalf("unexpected pass %s", input.Name)
+			t.Fatalf("unexpected pass %s", input.ID)
 		}
 	}
 }
@@ -238,13 +238,13 @@ func TestSelfDependencyDetection(t *testing.T) {
 	flow := &specs.Flow{
 		Nodes: []*specs.Node{
 			{
-				Name: "first",
+				ID: "first",
 				DependsOn: map[string]*specs.Node{
 					"first": nil,
 				},
 			},
 			{
-				Name: "second",
+				ID: "second",
 				DependsOn: map[string]*specs.Node{
 					"second": nil,
 				},

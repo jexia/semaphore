@@ -125,7 +125,7 @@ func (caller *Caller) Do(ctx context.Context, store refs.Store) error {
 		err := caller.transport.SendMsg(ctx, w, r, store)
 		if err != nil {
 			caller.ctx.Logger(logger.Flow).WithFields(logrus.Fields{
-				"node": caller.node.Name,
+				"node": caller.node.ID,
 				"err":  err,
 			}).Error("Transport returned a unexpected error")
 
@@ -138,7 +138,7 @@ func (caller *Caller) Do(ctx context.Context, store refs.Store) error {
 	_, expected := caller.ExpectedStatus[w.Status()]
 	if caller.transport != nil && !expected {
 		caller.ctx.Logger(logger.Flow).WithFields(logrus.Fields{
-			"node":   caller.node.Name,
+			"node":   caller.node.ID,
 			"status": w.Status(),
 		}).Error("Service returned a unexpected status, aborting flow")
 

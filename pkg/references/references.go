@@ -151,7 +151,7 @@ func DefineCall(ctx instance.Context, services *specs.ServicesManifest, schema *
 
 	if call.Method != "" {
 		ctx.Logger(logger.Core).WithFields(logrus.Fields{
-			"call":    node.Name,
+			"call":    node.ID,
 			"method":  call.Method,
 			"service": call.Service,
 		}).Info("Defining call types")
@@ -260,7 +260,7 @@ func DefineProperty(ctx instance.Context, node *specs.Node, property *specs.Prop
 
 	breakpoint := template.OutputResource
 	if node != nil {
-		breakpoint = node.Name
+		breakpoint = node.ID
 
 		if node.Rollback != nil && property != nil {
 			rollback := node.Rollback.Request.Property
