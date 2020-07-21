@@ -102,7 +102,7 @@ flow "checkout" {
 }
 ```
 
-![API interaction](https://user-images.githubusercontent.com/3440116/88102796-7072d080-cba0-11ea-85a5-2b96c5c967b0.gif)
+![API interaction](https://user-images.githubusercontent.com/3440116/88104603-f7c14380-cba2-11ea-9425-7086d5b84ee8.gif)
 
 ## Contributing
 
