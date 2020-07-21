@@ -64,37 +64,45 @@ All flows are strictly typed through schema definitions. These schemas define th
 
 ```hcl
 endpoint "checkout" "http" {
-    method = "POST"
-    endpoint = "/checkout"
-    codec = "json"
-}
-
-endpoint "checkout" "graphql" {
-    path = "payment"
-    base = "mutation"
+	method = "POST"
+	endpoint = "/checkout"
+	codec = "json"
 }
 
 endpoint "checkout" "grpc" {
-    package = "webshop.cart"
-    service = "Payment"
-    method = "Checkout"
+	package = "webshop.cart"
+	service = "Payment"
+	method = "Checkout"
 }
 
 flow "checkout" {
-    input "schema.Object" {
-    }
+	input "services.Order" {}
 
-    resource "shipping" {
-        request "package.warehouse" "Send" {
-            user = "{{ input:id }}"
-        }
-    }
+	resource "product" {
+		request "services.Warehouse" "GetProduct" {
+			product = "{{ input:product }}"
+		}
+	}
 
-    output "schema.Object" {
-        status = "{{ shipping:status }}"
-    }
+	resource "shipping" {
+		request "services.Warehouse" "Send" {
+			user = "{{ input:user }}"
+		}
+	}
+
+	output "services.OrderResult" {
+		status = "{{ shipping:status }}"
+
+		message "product" {
+			id = "{{ product:id }}"
+			name = "{{ product:name }}"
+			price = "{{ product:price }}"
+		}
+	}
 }
 ```
+
+![API interaction](https://user-images.githubusercontent.com/3440116/88102796-7072d080-cba0-11ea-85a5-2b96c5c967b0.gif)
 
 ## Contributing
 
