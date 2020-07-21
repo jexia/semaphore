@@ -3,7 +3,6 @@ package validate
 import (
 	"github.com/jexia/semaphore"
 	"github.com/jexia/semaphore/cmd/semaphore/config"
-	"github.com/jexia/semaphore/pkg/core"
 	"github.com/jexia/semaphore/pkg/core/instance"
 	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/spf13/cobra"
@@ -37,7 +36,7 @@ func run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	_, err = core.Construct(ctx, functions.Collection{}, options)
+	_, err = options.Constructor(ctx, functions.Collection{}, options)
 	if err != nil {
 		return err
 	}
