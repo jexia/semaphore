@@ -5,6 +5,7 @@ import (
 
 	"github.com/jexia/semaphore/pkg/core"
 	"github.com/jexia/semaphore/pkg/core/api"
+	"github.com/jexia/semaphore/pkg/core/flows"
 	"github.com/jexia/semaphore/pkg/core/instance"
 	"github.com/jexia/semaphore/pkg/core/logger"
 	"github.com/jexia/semaphore/pkg/core/trace"
@@ -61,7 +62,7 @@ func (client *Client) Handle(ctx instance.Context, options api.Options) error {
 	}
 
 	client.collection = collection
-	managers, err := core.FlowManager(ctx, mem, collection.ServicesManifest, collection.EndpointsManifest, collection.FlowsManifest, options)
+	managers, err := flows.Apply(ctx, mem, collection.ServicesManifest, collection.EndpointsManifest, collection.FlowsManifest, options)
 	if err != nil {
 		return err
 	}

@@ -1,71 +1,67 @@
 package core
 
 import (
+	"github.com/jexia/semaphore/pkg/checks"
+	"github.com/jexia/semaphore/pkg/compare"
 	"github.com/jexia/semaphore/pkg/core/api"
+	"github.com/jexia/semaphore/pkg/core/errors"
 	"github.com/jexia/semaphore/pkg/core/instance"
+	"github.com/jexia/semaphore/pkg/core/providers"
+	"github.com/jexia/semaphore/pkg/dependencies"
+	"github.com/jexia/semaphore/pkg/functions"
+	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 )
 
-// ResolveProviders calls all defined resolvers and returns a specs collection
-func ResolveProviders(ctx instance.Context, options api.Options) (*specs.Collection, error) {
-	result := &specs.Collection{
-		FlowsManifest:     &specs.FlowsManifest{},
-		EndpointsManifest: &specs.EndpointsManifest{},
-		ServicesManifest:  &specs.ServicesManifest{},
-		SchemaManifest:    &specs.SchemaManifest{},
-	}
-
-	for _, resolver := range options.Flows {
-		if resolver == nil {
-			continue
-		}
-
-		manifests, err := resolver(ctx)
+// NewSpecs construct a specs manifest from the given options
+func NewSpecs(ctx instance.Context, mem functions.Collection, options api.Options) (*specs.Collection, error) {
+	if options.BeforeConstructor != nil {
+		err := options.BeforeConstructor(ctx, mem, options)
 		if err != nil {
 			return nil, err
 		}
-
-		specs.MergeFlowsManifest(result.FlowsManifest, manifests...)
 	}
 
-	for _, resolver := range options.Endpoints {
-		if resolver == nil {
-			continue
-		}
+	collection, err := providers.Resolve(ctx, options)
+	if err != nil {
+		return nil, err
+	}
 
-		manifests, err := resolver(ctx)
+	errors.Resolve(collection.FlowsManifest)
+
+	err = checks.ManifestDuplicates(ctx, collection.FlowsManifest)
+	if err != nil {
+		return nil, err
+	}
+
+	err = references.DefineManifest(ctx, collection.ServicesManifest, collection.SchemaManifest, collection.FlowsManifest)
+	if err != nil {
+		return nil, err
+	}
+
+	err = functions.PrepareManifestFunctions(ctx, mem, options.Functions, collection.FlowsManifest)
+	if err != nil {
+		return nil, err
+	}
+
+	dependencies.ResolveReferences(ctx, collection.FlowsManifest)
+
+	err = compare.ManifestTypes(ctx, collection.ServicesManifest, collection.SchemaManifest, collection.FlowsManifest)
+	if err != nil {
+		return nil, err
+	}
+
+	err = dependencies.ResolveManifest(ctx, collection.FlowsManifest)
+	if err != nil {
+		return nil, err
+	}
+
+	if options.AfterConstructor != nil {
+		err = options.AfterConstructor(ctx, collection)
 		if err != nil {
 			return nil, err
 		}
-
-		specs.MergeEndpointsManifest(result.EndpointsManifest, manifests...)
 	}
 
-	for _, resolver := range options.Services {
-		if resolver == nil {
-			continue
-		}
-
-		manifests, err := resolver(ctx)
-		if err != nil {
-			return nil, err
-		}
-
-		specs.MergeServiceManifest(result.ServicesManifest, manifests...)
-	}
-
-	for _, resolver := range options.Schemas {
-		if resolver == nil {
-			continue
-		}
-
-		manifests, err := resolver(ctx)
-		if err != nil {
-			return nil, err
-		}
-
-		specs.MergeSchemaManifest(result.SchemaManifest, manifests...)
-	}
-
-	return result, nil
+	return collection, nil
 }

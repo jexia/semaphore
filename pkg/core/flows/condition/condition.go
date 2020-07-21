@@ -1,4 +1,4 @@
-package core
+package condition
 
 import (
 	"github.com/jexia/semaphore/pkg/core/instance"
@@ -7,8 +7,8 @@ import (
 	"github.com/jexia/semaphore/pkg/specs"
 )
 
-// NewCondition constructs a new flow condition of the given specs
-func NewCondition(ctx instance.Context, mem functions.Collection, condition *specs.Condition) *flow.Condition {
+// New constructs a new flow condition of the given specs
+func New(ctx instance.Context, mem functions.Collection, condition *specs.Condition) *flow.Condition {
 	if condition == nil {
 		return nil
 	}

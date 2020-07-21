@@ -6,6 +6,7 @@ import (
 	"github.com/jexia/semaphore/pkg/core/api"
 	"github.com/jexia/semaphore/pkg/core/instance"
 	"github.com/jexia/semaphore/pkg/flow"
+	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/refs"
 	"github.com/jexia/semaphore/pkg/specs"
 )
@@ -14,6 +15,18 @@ import (
 func WithMiddleware(middleware api.Middleware) api.Option {
 	return func(options *api.Options) {
 		options.Middleware = append(options.Middleware, middleware)
+	}
+}
+
+// BeforeConstructor the passed function gets called before new specifications are constructed
+func BeforeConstructor(wrapper api.BeforeConstructorHandler) api.Option {
+	return func(options *api.Options) {
+		if options.BeforeConstructor == nil {
+			options.BeforeConstructor = wrapper(func(instance.Context, functions.Collection, api.Options) error { return nil })
+			return
+		}
+
+		options.BeforeConstructor = wrapper(options.BeforeConstructor)
 	}
 }
 

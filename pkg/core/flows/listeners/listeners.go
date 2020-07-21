@@ -1,4 +1,4 @@
-package core
+package listeners
 
 import (
 	"github.com/jexia/semaphore/pkg/core/api"
@@ -8,8 +8,9 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// NewListeners constructs the listeners from the given collection of endpoints
-func NewListeners(endpoints []*transport.Endpoint, options api.Options) error {
+// Apply collects the given endpoints and applies them to the configured listeners.
+// A error is returned if a listener is not found or a listener returned a error.
+func Apply(endpoints []*transport.Endpoint, options api.Options) error {
 	collections := make(map[string][]*transport.Endpoint, len(options.Listeners))
 
 	options.Ctx.Logger(logger.Core).WithField("endpoints", endpoints).Debug("constructing listeners")

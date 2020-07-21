@@ -35,6 +35,7 @@ type Options struct {
 	Services              []providers.ServicesResolver
 	Schemas               []providers.SchemaResolver
 	Middleware            []Middleware
+	BeforeConstructor     BeforeConstructor
 	AfterConstructor      AfterConstructor
 	BeforeManagerDo       flow.BeforeManager
 	BeforeManagerRollback flow.BeforeManager
@@ -55,3 +56,9 @@ type AfterConstructor func(instance.Context, *specs.Collection) error
 
 // AfterConstructorHandler wraps the after constructed function to allow middleware to be chained
 type AfterConstructorHandler func(AfterConstructor) AfterConstructor
+
+// BeforeConstructor is called before the specifications is constructored
+type BeforeConstructor func(instance.Context, functions.Collection, Options) error
+
+// BeforeConstructorHandler wraps the before constructed function to allow middleware to be chained
+type BeforeConstructorHandler func(BeforeConstructor) BeforeConstructor

@@ -1,9 +1,12 @@
-package core
+package flows
 
 import (
 	"github.com/jexia/semaphore/pkg/codec"
 	"github.com/jexia/semaphore/pkg/core/api"
+	"github.com/jexia/semaphore/pkg/core/flows/condition"
+	"github.com/jexia/semaphore/pkg/core/flows/listeners"
 	"github.com/jexia/semaphore/pkg/core/instance"
+	"github.com/jexia/semaphore/pkg/core/logger"
 	"github.com/jexia/semaphore/pkg/core/trace"
 	"github.com/jexia/semaphore/pkg/dependencies"
 	"github.com/jexia/semaphore/pkg/flow"
@@ -11,8 +14,96 @@ import (
 	"github.com/jexia/semaphore/pkg/metadata"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/pkg/specs/template"
 	"github.com/jexia/semaphore/pkg/transport"
 )
+
+// Apply constructs the flow managers from the given specs manifest
+func Apply(ctx instance.Context, mem functions.Collection, services *specs.ServicesManifest, manifest *specs.EndpointsManifest, flows *specs.FlowsManifest, options api.Options) ([]*transport.Endpoint, error) {
+	results := make([]*transport.Endpoint, len(manifest.Endpoints))
+
+	ctx.Logger(logger.Core).WithField("endpoints", manifest.Endpoints).Debug("constructing endpoints")
+
+	for index, endpoint := range manifest.Endpoints {
+		manager := flows.GetFlow(endpoint.Flow)
+		if manager == nil {
+			continue
+		}
+
+		nodes := make([]*flow.Node, len(manager.GetNodes()))
+
+		for index, node := range manager.GetNodes() {
+			condition := condition.New(ctx, mem, node.Condition)
+
+			caller, err := NewNodeCall(ctx, mem, services, flows, node, node.Call, options, manager)
+			if err != nil {
+				return nil, err
+			}
+
+			rollback, err := NewNodeCall(ctx, mem, services, flows, node, node.Rollback, options, manager)
+			if err != nil {
+				return nil, err
+			}
+
+			nodes[index] = flow.NewNode(ctx, node, condition, caller, rollback, &flow.NodeMiddleware{
+				BeforeDo:       options.BeforeNodeDo,
+				AfterDo:        options.AfterNodeDo,
+				BeforeRollback: options.BeforeNodeRollback,
+				AfterRollback:  options.AfterNodeRollback,
+			})
+		}
+
+		forward, err := NewForward(services, flows, manager.GetForward(), options)
+		if err != nil {
+			return nil, err
+		}
+
+		stack := mem[manager.GetOutput()]
+		flow := flow.NewManager(ctx, manager.GetName(), nodes, manager.GetOnError(), stack, &flow.ManagerMiddleware{
+			BeforeDo:       options.BeforeManagerDo,
+			AfterDo:        options.AfterManagerDo,
+			BeforeRollback: options.BeforeManagerRollback,
+			AfterRollback:  options.AfterManagerRollback,
+		})
+
+		results[index] = transport.NewEndpoint(endpoint.Listener, flow, forward, endpoint.Options, manager.GetInput(), manager.GetOutput())
+	}
+
+	err := listeners.Apply(results, options)
+	if err != nil {
+		return nil, err
+	}
+
+	return results, nil
+}
+
+// NewNodeCall constructs a flow caller for the given node call.
+func NewNodeCall(ctx instance.Context, mem functions.Collection, services *specs.ServicesManifest, flows *specs.FlowsManifest, node *specs.Node, call *specs.Call, options api.Options, manager specs.FlowResourceManager) (flow.Call, error) {
+	if call == nil {
+		return nil, nil
+	}
+
+	if call.Service != "" {
+		return NewServiceCall(ctx, mem, services, flows, node, call, options, manager)
+	}
+
+	request, err := NewRequest(ctx, node, mem, nil, call.Request)
+	if err != nil {
+		return nil, err
+	}
+
+	response, err := NewRequest(ctx, node, mem, nil, call.Response)
+	if err != nil {
+		return nil, err
+	}
+
+	caller := flow.NewCall(ctx, node, &flow.CallOptions{
+		Request:  request,
+		Response: response,
+	})
+
+	return caller, nil
+}
 
 // NewServiceCall constructs a new flow caller for the given service
 func NewServiceCall(ctx instance.Context, mem functions.Collection, services *specs.ServicesManifest, flows *specs.FlowsManifest, node *specs.Node, call *specs.Call, options api.Options, manager specs.FlowResourceManager) (flow.Call, error) {
@@ -129,4 +220,31 @@ func NewForward(services *specs.ServicesManifest, flows *specs.FlowsManifest, ca
 	}
 
 	return result, nil
+}
+
+// NewError constructs a new error object from the given parameter map and codec
+func NewError(ctx instance.Context, node *specs.Node, mem functions.Collection, constructor codec.Constructor, err *specs.OnError) (*flow.OnError, error) {
+	if err == nil {
+		return nil, nil
+	}
+
+	var codec codec.Manager
+	var meta *metadata.Manager
+	var stack functions.Stack
+
+	if err.Response != nil && constructor != nil {
+		params := err.Response
+
+		// TODO: check if I would like props to be defined like this
+		manager, err := constructor.New(template.JoinPath(node.Name, template.ErrorResource), params)
+		if err != nil {
+			return nil, err
+		}
+
+		codec = manager
+		stack = mem[params]
+		meta = metadata.NewManager(ctx, node.Name, params.Header)
+	}
+
+	return flow.NewOnError(stack, codec, meta, err.Status, err.Message), nil
 }

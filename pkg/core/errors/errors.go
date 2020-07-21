@@ -1,14 +1,8 @@
-package core
+package errors
 
 import (
-	"github.com/jexia/semaphore/pkg/codec"
-	"github.com/jexia/semaphore/pkg/core/instance"
-	"github.com/jexia/semaphore/pkg/flow"
-	"github.com/jexia/semaphore/pkg/functions"
-	"github.com/jexia/semaphore/pkg/metadata"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/labels"
-	"github.com/jexia/semaphore/pkg/specs/template"
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
@@ -68,8 +62,8 @@ func MergeOnError(left *specs.OnError, right *specs.OnError) {
 	}
 }
 
-// ConstructErrorHandle clones any previously defined error objects or error handles
-func ConstructErrorHandle(manifest *specs.FlowsManifest) {
+// Resolve clones any previously defined error objects or error handles
+func Resolve(manifest *specs.FlowsManifest) {
 	for _, flow := range manifest.Flows {
 		DefaultOnError(flow.OnError)
 
@@ -103,31 +97,4 @@ func ConstructErrorHandle(manifest *specs.FlowsManifest) {
 			MergeOnError(node.OnError, proxy.OnError)
 		}
 	}
-}
-
-// NewError constructs a new error object from the given parameter map and codec
-func NewError(ctx instance.Context, node *specs.Node, mem functions.Collection, constructor codec.Constructor, err *specs.OnError) (*flow.OnError, error) {
-	if err == nil {
-		return nil, nil
-	}
-
-	var codec codec.Manager
-	var meta *metadata.Manager
-	var stack functions.Stack
-
-	if err.Response != nil && constructor != nil {
-		params := err.Response
-
-		// TODO: check if I would like props to be defined like this
-		manager, err := constructor.New(template.JoinPath(node.Name, template.ErrorResource), params)
-		if err != nil {
-			return nil, err
-		}
-
-		codec = manager
-		stack = mem[params]
-		meta = metadata.NewManager(ctx, node.Name, params.Header)
-	}
-
-	return flow.NewOnError(stack, codec, meta, err.Status, err.Message), nil
 }
