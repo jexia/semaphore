@@ -33,7 +33,7 @@ jobs:
       
       - name: Push image Docker hub
         run: |
-          IMAGE_ID=jexiacom/semaphore
+          IMAGE_ID=jxapp/semaphore
 
           echo IMAGE_ID=$IMAGE_ID:$VERSION
 
