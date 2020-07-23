@@ -132,7 +132,7 @@ func PrepareFlowFunctions(ctx instance.Context, mem Collection, functions Custom
 }
 
 // PrepareNodeFunctions prepares the available functions within the given node
-func PrepareNodeFunctions(ctx instance.Context, mem Collection, functions Custom, flow specs.FlowResourceManager, node *specs.Node) (err error) {
+func PrepareNodeFunctions(ctx instance.Context, mem Collection, functions Custom, flow specs.FlowsInterface, node *specs.Node) (err error) {
 	if node.Condition != nil {
 		stack := mem.Reserve(node.Condition.Params)
 		err = PrepareParameterMapFunctions(ctx, node, flow, stack, node.Condition.Params, functions)
@@ -159,7 +159,7 @@ func PrepareNodeFunctions(ctx instance.Context, mem Collection, functions Custom
 }
 
 // PrepareCallFunctions prepares the function definitions inside the given flow
-func PrepareCallFunctions(ctx instance.Context, node *specs.Node, flow specs.FlowResourceManager, mem Collection, functions Custom, call *specs.Call) error {
+func PrepareCallFunctions(ctx instance.Context, node *specs.Node, flow specs.FlowsInterface, mem Collection, functions Custom, call *specs.Call) error {
 	if call.Request != nil {
 		stack := mem.Reserve(call.Request)
 		err := PrepareParameterMapFunctions(ctx, node, flow, stack, call.Request, functions)
@@ -180,7 +180,7 @@ func PrepareCallFunctions(ctx instance.Context, node *specs.Node, flow specs.Flo
 }
 
 // PrepareParameterMapFunctions prepares the function definitions inside the given parameter map
-func PrepareParameterMapFunctions(ctx instance.Context, node *specs.Node, flow specs.FlowResourceManager, stack Stack, params *specs.ParameterMap, functions Custom) error {
+func PrepareParameterMapFunctions(ctx instance.Context, node *specs.Node, flow specs.FlowsInterface, stack Stack, params *specs.ParameterMap, functions Custom) error {
 	if params.Header != nil {
 		err := PrepareHeaderFunctions(ctx, flow, stack, params.Header, functions)
 		if err != nil {
@@ -206,7 +206,7 @@ func PrepareParameterMapFunctions(ctx instance.Context, node *specs.Node, flow s
 }
 
 // PrepareHeaderFunctions prepares the function definitions inside the given header
-func PrepareHeaderFunctions(ctx instance.Context, flow specs.FlowResourceManager, stack Stack, header specs.Header, functions Custom) error {
+func PrepareHeaderFunctions(ctx instance.Context, flow specs.FlowsInterface, stack Stack, header specs.Header, functions Custom) error {
 	for _, prop := range header {
 		err := PrepareFunction(ctx, nil, flow, prop, stack, functions)
 		if err != nil {
@@ -218,7 +218,7 @@ func PrepareHeaderFunctions(ctx instance.Context, flow specs.FlowResourceManager
 }
 
 // PrepareParamsFunctions prepares the function definitions inside the given property
-func PrepareParamsFunctions(ctx instance.Context, node *specs.Node, flow specs.FlowResourceManager, stack Stack, params map[string]*specs.Property, functions Custom) error {
+func PrepareParamsFunctions(ctx instance.Context, node *specs.Node, flow specs.FlowsInterface, stack Stack, params map[string]*specs.Property, functions Custom) error {
 	if params == nil {
 		return nil
 	}
@@ -234,7 +234,7 @@ func PrepareParamsFunctions(ctx instance.Context, node *specs.Node, flow specs.F
 }
 
 // PreparePropertyFunctions prepares the function definitions inside the given property
-func PreparePropertyFunctions(ctx instance.Context, node *specs.Node, flow specs.FlowResourceManager, stack Stack, prop *specs.Property, functions Custom) error {
+func PreparePropertyFunctions(ctx instance.Context, node *specs.Node, flow specs.FlowsInterface, stack Stack, prop *specs.Property, functions Custom) error {
 	if prop == nil {
 		return nil
 	}
@@ -257,7 +257,7 @@ func PreparePropertyFunctions(ctx instance.Context, node *specs.Node, flow specs
 }
 
 // PrepareFunction attempts to parses the given function
-func PrepareFunction(ctx instance.Context, node *specs.Node, flow specs.FlowResourceManager, property *specs.Property, stack Stack, methods Custom) error {
+func PrepareFunction(ctx instance.Context, node *specs.Node, flow specs.FlowsInterface, property *specs.Property, stack Stack, methods Custom) error {
 	if property == nil {
 		return nil
 	}

@@ -107,7 +107,7 @@ func FlowTypes(ctx instance.Context, services *specs.ServicesManifest, schema *s
 }
 
 // CallTypes compares the given call types against the configured schema types
-func CallTypes(ctx instance.Context, services *specs.ServicesManifest, schema *specs.SchemaManifest, flows *specs.FlowsManifest, node *specs.Node, call *specs.Call, flow specs.FlowResourceManager) (err error) {
+func CallTypes(ctx instance.Context, services *specs.ServicesManifest, schema *specs.SchemaManifest, flows *specs.FlowsManifest, node *specs.Node, call *specs.Call, flow specs.FlowsInterface) (err error) {
 	if call == nil {
 		return nil
 	}
@@ -153,7 +153,7 @@ func CallTypes(ctx instance.Context, services *specs.ServicesManifest, schema *s
 }
 
 // CheckParameterMapTypes checks the given parameter map against the configured schema property
-func CheckParameterMapTypes(ctx instance.Context, parameters *specs.ParameterMap, schema *specs.SchemaManifest, flow specs.FlowResourceManager) error {
+func CheckParameterMapTypes(ctx instance.Context, parameters *specs.ParameterMap, schema *specs.SchemaManifest, flow specs.FlowsInterface) error {
 	if parameters == nil {
 		return nil
 	}
@@ -174,7 +174,7 @@ func CheckParameterMapTypes(ctx instance.Context, parameters *specs.ParameterMap
 }
 
 // CheckPropertyTypes checks the given schema against the given schema method types
-func CheckPropertyTypes(property *specs.Property, schema *specs.Property, flow specs.FlowResourceManager) (err error) {
+func CheckPropertyTypes(property *specs.Property, schema *specs.Property, flow specs.FlowsInterface) (err error) {
 	if schema == nil {
 		return trace.New(trace.WithExpression(property.Expr), trace.WithMessage("unable to check types for '%s' no schema given", property.Path))
 	}
@@ -222,7 +222,7 @@ func CheckPropertyTypes(property *specs.Property, schema *specs.Property, flow s
 }
 
 // CheckHeader compares the given header types
-func CheckHeader(header specs.Header, flow specs.FlowResourceManager) error {
+func CheckHeader(header specs.Header, flow specs.FlowsInterface) error {
 	for _, header := range header {
 		if header.Type != types.String {
 			return trace.New(trace.WithMessage("cannot use type (%s) for 'header.%s' in flow '%s', expected (%s)", header.Type, header.Path, flow.GetName(), types.String))

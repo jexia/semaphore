@@ -15,7 +15,7 @@ func TestDefineFunction(t *testing.T) {
 	type test struct {
 		stack Stack
 		node  *specs.Node
-		flow  specs.FlowResourceManager
+		flow  specs.FlowsInterface
 	}
 
 	tests := map[string]*test{

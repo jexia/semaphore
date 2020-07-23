@@ -57,7 +57,7 @@ func GetDefaultProp(resource string) string {
 }
 
 // GetNextResource returns the resource after the given breakpoint
-func GetNextResource(flow specs.FlowResourceManager, breakpoint string) string {
+func GetNextResource(flow specs.FlowsInterface, breakpoint string) string {
 	for index, node := range flow.GetNodes() {
 		if node.ID == breakpoint {
 			nodes := flow.GetNodes()
@@ -75,7 +75,7 @@ func GetNextResource(flow specs.FlowResourceManager, breakpoint string) string {
 
 // GetAvailableResources fetches the available resources able to be referenced
 // until the given breakpoint (call.Name) has been reached.
-func GetAvailableResources(flow specs.FlowResourceManager, breakpoint string) map[string]ReferenceMap {
+func GetAvailableResources(flow specs.FlowsInterface, breakpoint string) map[string]ReferenceMap {
 	length := len(flow.GetNodes()) + 2
 	references := make(map[string]ReferenceMap, length)
 	references[template.StackResource] = ReferenceMap{}
@@ -237,7 +237,7 @@ func PropertyLookup(param *specs.Property) PathLookup {
 }
 
 // ParamsLookup constructs a lookup method able to lookup property references inside the given params map
-func ParamsLookup(params map[string]*specs.Property, flow specs.FlowResourceManager, breakpoint string) PathLookup {
+func ParamsLookup(params map[string]*specs.Property, flow specs.FlowsInterface, breakpoint string) PathLookup {
 	return func(path string) *specs.Property {
 		if params == nil {
 			return nil

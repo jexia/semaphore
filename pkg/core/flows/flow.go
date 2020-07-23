@@ -78,7 +78,7 @@ func Apply(ctx instance.Context, mem functions.Collection, services *specs.Servi
 }
 
 // NewNodeCall constructs a flow caller for the given node call.
-func NewNodeCall(ctx instance.Context, mem functions.Collection, services *specs.ServicesManifest, flows *specs.FlowsManifest, node *specs.Node, call *specs.Call, options api.Options, manager specs.FlowResourceManager) (flow.Call, error) {
+func NewNodeCall(ctx instance.Context, mem functions.Collection, services *specs.ServicesManifest, flows *specs.FlowsManifest, node *specs.Node, call *specs.Call, options api.Options, manager specs.FlowsInterface) (flow.Call, error) {
 	if call == nil {
 		return nil, nil
 	}
@@ -106,7 +106,7 @@ func NewNodeCall(ctx instance.Context, mem functions.Collection, services *specs
 }
 
 // NewServiceCall constructs a new flow caller for the given service
-func NewServiceCall(ctx instance.Context, mem functions.Collection, services *specs.ServicesManifest, flows *specs.FlowsManifest, node *specs.Node, call *specs.Call, options api.Options, manager specs.FlowResourceManager) (flow.Call, error) {
+func NewServiceCall(ctx instance.Context, mem functions.Collection, services *specs.ServicesManifest, flows *specs.FlowsManifest, node *specs.Node, call *specs.Call, options api.Options, manager specs.FlowsInterface) (flow.Call, error) {
 	if call == nil {
 		return nil, nil
 	}

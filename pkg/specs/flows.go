@@ -12,7 +12,7 @@ type FlowsManifest struct {
 }
 
 // GetFlow attempts to find a flow or proxy matching the given name
-func (manifest *FlowsManifest) GetFlow(name string) FlowResourceManager {
+func (manifest *FlowsManifest) GetFlow(name string) FlowsInterface {
 	flow := manifest.Flows.Get(name)
 	if flow != nil {
 		return flow
@@ -42,8 +42,8 @@ func (manifest *FlowsManifest) Append(incoming ...*FlowsManifest) {
 	}
 }
 
-// FlowResourceManager represents a proxy or flow manager.
-type FlowResourceManager interface {
+// FlowsInterface represents a proxy or flow manager.
+type FlowsInterface interface {
 	GetName() string
 	GetNodes() NodeList
 	GetInput() *ParameterMap
