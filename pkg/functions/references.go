@@ -7,7 +7,7 @@ import (
 )
 
 // DefineFunctions defined all properties within the given functions
-func DefineFunctions(ctx instance.Context, functions Stack, node *specs.Node, flow specs.FlowsInterface) error {
+func DefineFunctions(ctx instance.Context, functions Stack, node *specs.Node, flow specs.FlowInterface) error {
 	if functions == nil {
 		return nil
 	}
