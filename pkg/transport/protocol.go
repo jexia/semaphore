@@ -5,9 +5,9 @@ import (
 	"io"
 
 	"github.com/jexia/semaphore/pkg/codec"
+	"github.com/jexia/semaphore/pkg/codec/metadata"
 	"github.com/jexia/semaphore/pkg/core/instance"
 	"github.com/jexia/semaphore/pkg/functions"
-	"github.com/jexia/semaphore/pkg/metadata"
 	"github.com/jexia/semaphore/pkg/refs"
 	"github.com/jexia/semaphore/pkg/specs"
 )

@@ -2,6 +2,7 @@ package flows
 
 import (
 	"github.com/jexia/semaphore/pkg/codec"
+	"github.com/jexia/semaphore/pkg/codec/metadata"
 	"github.com/jexia/semaphore/pkg/core/api"
 	"github.com/jexia/semaphore/pkg/core/flows/condition"
 	"github.com/jexia/semaphore/pkg/core/flows/listeners"
@@ -11,7 +12,6 @@ import (
 	"github.com/jexia/semaphore/pkg/dependencies"
 	"github.com/jexia/semaphore/pkg/flow"
 	"github.com/jexia/semaphore/pkg/functions"
-	"github.com/jexia/semaphore/pkg/metadata"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/template"

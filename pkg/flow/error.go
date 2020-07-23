@@ -2,8 +2,8 @@ package flow
 
 import (
 	"github.com/jexia/semaphore/pkg/codec"
+	"github.com/jexia/semaphore/pkg/codec/metadata"
 	"github.com/jexia/semaphore/pkg/functions"
-	"github.com/jexia/semaphore/pkg/metadata"
 	"github.com/jexia/semaphore/pkg/specs"
 )
 

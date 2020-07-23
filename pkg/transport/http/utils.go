@@ -6,7 +6,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/jexia/semaphore/pkg/metadata"
+	"github.com/jexia/semaphore/pkg/codec/metadata"
 	"github.com/jexia/semaphore/pkg/transport"
 )
 
