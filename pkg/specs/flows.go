@@ -53,7 +53,7 @@ type FlowInterface interface {
 }
 
 // FlowListInterface represents a collection of flow interfaces
-type FlowListInterface []*FlowInterface
+type FlowListInterface []FlowInterface
 
 // FlowList represents a collection of flows
 type FlowList []*Flow

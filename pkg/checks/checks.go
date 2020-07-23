@@ -17,31 +17,19 @@ var ReservedKeywords = []string{
 	template.StackResource,
 }
 
-// ManifestDuplicates checks for duplicate definitions
-func ManifestDuplicates(ctx instance.Context, manifest *specs.FlowsManifest) error {
+// FlowDuplicates checks for duplicate definitions
+func FlowDuplicates(ctx instance.Context, flows specs.FlowListInterface) error {
 	ctx.Logger(logger.Core).Info("Checking manifest duplicates")
 
 	tracker := sync.Map{}
 
-	for _, flow := range manifest.Flows {
-		_, duplicate := tracker.LoadOrStore(flow.Name, flow)
+	for _, flow := range flows {
+		_, duplicate := tracker.LoadOrStore(flow.GetName(), flow)
 		if duplicate {
-			return trace.New(trace.WithMessage("duplicate flow '%s'", flow.Name))
+			return trace.New(trace.WithMessage("duplicate flow '%s'", flow.GetName()))
 		}
 
-		err := NodeDuplicates(ctx, flow.Name, flow.Nodes)
-		if err != nil {
-			return err
-		}
-	}
-
-	for _, proxy := range manifest.Proxy {
-		_, duplicate := tracker.LoadOrStore(proxy.Name, proxy)
-		if duplicate {
-			return trace.New(trace.WithMessage("duplicate flow '%s'", proxy.Name))
-		}
-
-		err := NodeDuplicates(ctx, proxy.Name, proxy.Nodes)
+		err := NodeDuplicates(ctx, flow.GetName(), flow.GetNodes())
 		if err != nil {
 			return err
 		}

@@ -31,7 +31,18 @@ func Construct(ctx instance.Context, mem functions.Collection, options api.Optio
 
 	errors.Resolve(collection.FlowsManifest)
 
-	err = checks.ManifestDuplicates(ctx, collection.FlowsManifest)
+	// TODO: refactor me
+	flows := make(specs.FlowListInterface, len(collection.FlowsManifest.Flows)+len(collection.FlowsManifest.Proxy))
+
+	for _, flow := range collection.FlowsManifest.Flows {
+		flows = append(flows, flow)
+	}
+
+	for _, flow := range collection.FlowsManifest.Proxy {
+		flows = append(flows, flow)
+	}
+
+	err = checks.FlowDuplicates(ctx, flows)
 	if err != nil {
 		return nil, err
 	}
