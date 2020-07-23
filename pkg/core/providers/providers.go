@@ -8,12 +8,10 @@ import (
 
 // Resolve calls all defined resolvers and returns a specs collection
 func Resolve(ctx instance.Context, options api.Options) (*specs.Collection, error) {
-	result := &specs.Collection{
-		FlowsManifest:     &specs.FlowsManifest{},
-		EndpointsManifest: &specs.EndpointsManifest{},
-		ServicesManifest:  &specs.ServicesManifest{},
-		SchemaManifest:    &specs.SchemaManifest{},
-	}
+	flows := &specs.FlowsManifest{}
+	endpoints := &specs.EndpointsManifest{}
+	services := &specs.ServicesManifest{}
+	schemas := &specs.SchemaManifest{}
 
 	for _, resolver := range options.Flows {
 		if resolver == nil {
@@ -25,7 +23,7 @@ func Resolve(ctx instance.Context, options api.Options) (*specs.Collection, erro
 			return nil, err
 		}
 
-		specs.MergeFlowsManifest(result.FlowsManifest, manifests...)
+		flows.Append(manifests...)
 	}
 
 	for _, resolver := range options.Endpoints {
@@ -38,7 +36,7 @@ func Resolve(ctx instance.Context, options api.Options) (*specs.Collection, erro
 			return nil, err
 		}
 
-		specs.MergeEndpointsManifest(result.EndpointsManifest, manifests...)
+		endpoints.Append(manifests...)
 	}
 
 	for _, resolver := range options.Services {
@@ -51,7 +49,7 @@ func Resolve(ctx instance.Context, options api.Options) (*specs.Collection, erro
 			return nil, err
 		}
 
-		specs.MergeServiceManifest(result.ServicesManifest, manifests...)
+		services.Append(manifests...)
 	}
 
 	for _, resolver := range options.Schemas {
@@ -64,7 +62,14 @@ func Resolve(ctx instance.Context, options api.Options) (*specs.Collection, erro
 			return nil, err
 		}
 
-		specs.MergeSchemaManifest(result.SchemaManifest, manifests...)
+		schemas.Append(manifests...)
+	}
+
+	result := &specs.Collection{
+		FlowsManifest:     flows,
+		EndpointsManifest: endpoints,
+		ServicesManifest:  services,
+		SchemaManifest:    schemas,
 	}
 
 	return result, nil

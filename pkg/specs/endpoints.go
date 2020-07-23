@@ -5,10 +5,14 @@ type EndpointsManifest struct {
 	Endpoints Endpoints `json:"endpoints,omitempty"`
 }
 
-// MergeEndpointsManifest merges the incoming manifest to the existing (left) manifest
-func MergeEndpointsManifest(left *EndpointsManifest, incoming ...*EndpointsManifest) {
-	for _, manifest := range incoming {
-		left.Endpoints = append(left.Endpoints, manifest.Endpoints...)
+// Append merges the incoming manifest to the existing (left) manifest
+func (manifest *EndpointsManifest) Append(incoming ...*EndpointsManifest) {
+	if manifest == nil {
+		return
+	}
+
+	for _, right := range incoming {
+		manifest.Endpoints = append(manifest.Endpoints, right.Endpoints...)
 	}
 }
 

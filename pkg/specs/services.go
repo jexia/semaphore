@@ -5,16 +5,20 @@ type ServicesManifest struct {
 	Services []*Service `json:"services,omitempty"`
 }
 
-// MergeServiceManifest merges the incoming services into the given service manifest
-func MergeServiceManifest(left *ServicesManifest, incoming ...*ServicesManifest) {
-	for _, manifest := range incoming {
-		left.Services = append(left.Services, manifest.Services...)
+// Append merges the incoming services into the given service manifest
+func (manifest *ServicesManifest) Append(incoming ...*ServicesManifest) {
+	if manifest == nil {
+		return
+	}
+
+	for _, right := range incoming {
+		manifest.Services = append(manifest.Services, right.Services...)
 	}
 }
 
 // GetService attempts to find and return a flow with the given name
-func (services *ServicesManifest) GetService(name string) *Service {
-	for _, service := range services.Services {
+func (manifest *ServicesManifest) GetService(name string) *Service {
+	for _, service := range manifest.Services {
 		if service.FullyQualifiedName == name {
 			return service
 		}
