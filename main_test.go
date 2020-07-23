@@ -249,7 +249,7 @@ func TestServeNoListeners(t *testing.T) {
 func TestNewServiceErr(t *testing.T) {
 	t.Parallel()
 
-	resolver := func(instance.Context) ([]*specs.ServicesManifest, error) { return nil, errors.New("unexpected") }
+	resolver := func(instance.Context) (specs.ServiceList, error) { return nil, errors.New("unexpected") }
 	_, err := New(
 		WithServices(resolver),
 	)

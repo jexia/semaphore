@@ -10,12 +10,10 @@ import (
 )
 
 // ParseServices parses the given intermediate manifest to a schema
-func ParseServices(ctx instance.Context, manifest Manifest) (*specs.ServicesManifest, error) {
+func ParseServices(ctx instance.Context, manifest Manifest) (specs.ServiceList, error) {
 	ctx.Logger(logger.Core).Info("Parsing intermediate manifest to schema")
 
-	result := &specs.ServicesManifest{
-		Services: make([]*specs.Service, len(manifest.Services)),
-	}
+	result := make(specs.ServiceList, len(manifest.Services))
 
 	for index, intermediate := range manifest.Services {
 		service, err := ParseIntermediateService(ctx, intermediate)
@@ -23,7 +21,7 @@ func ParseServices(ctx instance.Context, manifest Manifest) (*specs.ServicesMani
 			return nil, err
 		}
 
-		result.Services[index] = service
+		result[index] = service
 	}
 
 	return result, nil

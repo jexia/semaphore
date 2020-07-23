@@ -70,7 +70,7 @@ func Collect(ctx instance.Context, paths []string, path string) ([]*desc.FileDes
 
 // ServiceResolver returns a new service(s) resolver for the given protoc collection
 func ServiceResolver(imports []string, path string) providers.ServicesResolver {
-	return func(ctx instance.Context) ([]*specs.ServicesManifest, error) {
+	return func(ctx instance.Context) (specs.ServiceList, error) {
 		ctx.Logger(logger.Core).WithField("path", path).Debug("Resolving proto services")
 
 		files, err := Collect(ctx, imports, path)

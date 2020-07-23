@@ -10,7 +10,7 @@ import (
 )
 
 // ManifestTypes compares the types defined insde the schema definitions against the configured specification
-func ManifestTypes(ctx instance.Context, services *specs.ServicesManifest, objects specs.Objects, flows *specs.FlowsManifest) (err error) {
+func ManifestTypes(ctx instance.Context, services specs.ServiceList, objects specs.Objects, flows *specs.FlowsManifest) (err error) {
 	ctx.Logger(logger.Core).Info("Comparing manifest types")
 
 	for _, flow := range flows.Flows {
@@ -31,7 +31,7 @@ func ManifestTypes(ctx instance.Context, services *specs.ServicesManifest, objec
 }
 
 // ProxyTypes compares the given proxy against the configured schema types
-func ProxyTypes(ctx instance.Context, services *specs.ServicesManifest, objects specs.Objects, flows *specs.FlowsManifest, proxy *specs.Proxy) (err error) {
+func ProxyTypes(ctx instance.Context, services specs.ServiceList, objects specs.Objects, flows *specs.FlowsManifest, proxy *specs.Proxy) (err error) {
 	ctx.Logger(logger.Core).WithField("proxy", proxy.GetName()).Info("Compare proxy flow types")
 
 	if proxy.OnError != nil {
@@ -64,7 +64,7 @@ func ProxyTypes(ctx instance.Context, services *specs.ServicesManifest, objects 
 }
 
 // FlowTypes compares the flow types against the configured schema types
-func FlowTypes(ctx instance.Context, services *specs.ServicesManifest, objects specs.Objects, flows *specs.FlowsManifest, flow *specs.Flow) (err error) {
+func FlowTypes(ctx instance.Context, services specs.ServiceList, objects specs.Objects, flows *specs.FlowsManifest, flow *specs.Flow) (err error) {
 	ctx.Logger(logger.Core).WithField("flow", flow.GetName()).Info("Comparing flow types")
 
 	err = CheckParameterMapTypes(ctx, flow.Input, objects, flow)
@@ -107,7 +107,7 @@ func FlowTypes(ctx instance.Context, services *specs.ServicesManifest, objects s
 }
 
 // CallTypes compares the given call types against the configured schema types
-func CallTypes(ctx instance.Context, services *specs.ServicesManifest, objects specs.Objects, flows *specs.FlowsManifest, node *specs.Node, call *specs.Call, flow specs.FlowInterface) (err error) {
+func CallTypes(ctx instance.Context, services specs.ServiceList, objects specs.Objects, flows *specs.FlowsManifest, node *specs.Node, call *specs.Call, flow specs.FlowInterface) (err error) {
 	if call == nil {
 		return nil
 	}
@@ -122,7 +122,7 @@ func CallTypes(ctx instance.Context, services *specs.ServicesManifest, objects s
 		"service": call.Service,
 	}).Info("Comparing call types")
 
-	service := services.GetService(call.Service)
+	service := services.Get(call.Service)
 	if service == nil {
 		return trace.New(trace.WithMessage("undefined service '%s' in flow '%s'", call.Service, flow.GetName()))
 	}

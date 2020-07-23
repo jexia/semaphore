@@ -55,13 +55,14 @@ func (client *Client) Handle(ctx instance.Context, options api.Options) error {
 	defer client.mutex.Unlock()
 
 	mem := functions.Collection{}
-	collection, err := options.Constructor(ctx, mem, options)
+	specifications, err := options.Constructor(ctx, mem, options)
 	if err != nil {
 		return err
 	}
 
-	client.collection = collection
-	managers, err := flows.Apply(ctx, mem, collection.ServicesManifest, collection.EndpointsManifest, collection.FlowsManifest, options)
+	// TODO: refactor me and set values
+	// client.collection = collection
+	managers, err := flows.Apply(ctx, mem, specifications.Services, nil, nil, options)
 	if err != nil {
 		return err
 	}

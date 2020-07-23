@@ -10,8 +10,14 @@ import (
 	"github.com/jexia/semaphore/pkg/transport"
 )
 
+// Specifications represents the available specifications
+type Specifications struct {
+	Services specs.ServiceList `json:"specifications,omitempty"`
+	Schemas  specs.Objects     `json:"schemas,omitempty"`
+}
+
 // Constructor represents a specs constructor that could be used to construct specifications
-type Constructor func(ctx instance.Context, mem functions.Collection, options Options) (*specs.Collection, error)
+type Constructor func(ctx instance.Context, mem functions.Collection, options Options) (Specifications, error)
 
 // Option represents a constructor func which sets a given option
 type Option func(*Options)
@@ -36,7 +42,7 @@ type Options struct {
 	Listeners             transport.Listeners
 	FlowResolvers         []providers.FlowsResolver
 	EndpointResolvers     []providers.EndpointsResolver
-	ServiceResolvers      []providers.ServicesResolver
+	ServiceResolvers      providers.ServiceResolvers
 	SchemaResolvers       providers.SchemaResolvers
 	Middleware            []Middleware
 	BeforeConstructor     BeforeConstructor
@@ -56,7 +62,7 @@ type Options struct {
 type Middleware func(instance.Context) ([]Option, error)
 
 // AfterConstructor is called after the specifications is constructored
-type AfterConstructor func(instance.Context, *specs.Collection) error
+type AfterConstructor func(instance.Context, Specifications) error
 
 // AfterConstructorHandler wraps the after constructed function to allow middleware to be chained
 type AfterConstructorHandler func(AfterConstructor) AfterConstructor

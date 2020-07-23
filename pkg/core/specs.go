@@ -16,22 +16,27 @@ import (
 // Construct construct a specs manifest from the given options.
 // The specifications are received from the providers. The property types are defined and functions are prepared.
 // Once done is a specs collection returned that could be used to update the listeners.
-func Construct(ctx instance.Context, mem functions.Collection, options api.Options) (*specs.Collection, error) {
+func Construct(ctx instance.Context, mem functions.Collection, options api.Options) (result api.Specifications, err error) {
 	if options.BeforeConstructor != nil {
 		err := options.BeforeConstructor(ctx, mem, options)
 		if err != nil {
-			return nil, err
+			return result, err
 		}
 	}
 
 	schemas, err := options.SchemaResolvers.Resolve(ctx)
 	if err != nil {
-		return nil, err
+		return result, err
+	}
+
+	services, err := options.ServiceResolvers.Resolve(ctx)
+	if err != nil {
+		return result, err
 	}
 
 	collection, err := providers.Resolve(ctx, options)
 	if err != nil {
-		return nil, err
+		return result, err
 	}
 
 	errors.Resolve(collection.FlowsManifest)
@@ -49,37 +54,37 @@ func Construct(ctx instance.Context, mem functions.Collection, options api.Optio
 
 	err = checks.FlowDuplicates(ctx, flows)
 	if err != nil {
-		return nil, err
+		return result, err
 	}
 
-	err = references.DefineManifest(ctx, collection.ServicesManifest, schemas, collection.FlowsManifest)
+	err = references.DefineManifest(ctx, services, schemas, collection.FlowsManifest)
 	if err != nil {
-		return nil, err
+		return result, err
 	}
 
 	err = functions.PrepareManifestFunctions(ctx, mem, options.Functions, collection.FlowsManifest)
 	if err != nil {
-		return nil, err
+		return result, err
 	}
 
 	dependencies.ResolveReferences(ctx, collection.FlowsManifest)
 
-	err = compare.ManifestTypes(ctx, collection.ServicesManifest, schemas, collection.FlowsManifest)
+	err = compare.ManifestTypes(ctx, services, schemas, collection.FlowsManifest)
 	if err != nil {
-		return nil, err
+		return result, err
 	}
 
 	err = dependencies.ResolveManifest(ctx, collection.FlowsManifest)
 	if err != nil {
-		return nil, err
+		return result, err
 	}
 
 	if options.AfterConstructor != nil {
-		err = options.AfterConstructor(ctx, collection)
+		err = options.AfterConstructor(ctx, result)
 		if err != nil {
-			return nil, err
+			return result, err
 		}
 	}
 
-	return collection, nil
+	return result, nil
 }

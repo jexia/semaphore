@@ -60,16 +60,14 @@ func SpecsProperty(path string, property *Property) *specs.Property {
 }
 
 // ServiceManifest formats the given mock collection to a specs service(s) manifest
-func ServiceManifest(collection *Collection) []*specs.ServicesManifest {
-	result := &specs.ServicesManifest{
-		Services: make([]*specs.Service, len(collection.GetServices())),
-	}
+func ServiceManifest(collection *Collection) specs.ServiceList {
+	result := make(specs.ServiceList, len(collection.GetServices()))
 
 	for index, service := range collection.GetServices() {
-		result.Services[index] = SpecsService(service)
+		result[index] = SpecsService(service)
 	}
 
-	return []*specs.ServicesManifest{result}
+	return result
 }
 
 // SpecsService formats the given mock service to a specs service

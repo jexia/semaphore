@@ -22,7 +22,7 @@ import (
 // The HCL schema resolver relies on other schema registries.
 // Those need to be resolved before the HCL schemas are resolved.
 func ServicesResolver(path string) providers.ServicesResolver {
-	return func(ctx instance.Context) ([]*specs.ServicesManifest, error) {
+	return func(ctx instance.Context) (specs.ServiceList, error) {
 		ctx.Logger(logger.Core).WithField("path", path).Debug("Resolving HCL services")
 
 		definitions, err := ResolvePath(ctx, []string{}, path)
@@ -30,15 +30,15 @@ func ServicesResolver(path string) providers.ServicesResolver {
 			return nil, err
 		}
 
-		services := make([]*specs.ServicesManifest, len(definitions))
+		services := make(specs.ServiceList, 0)
 
-		for index, definition := range definitions {
-			manifest, err := ParseServices(ctx, definition)
+		for _, definition := range definitions {
+			result, err := ParseServices(ctx, definition)
 			if err != nil {
 				return nil, err
 			}
 
-			services[index] = manifest
+			services.Append(result)
 		}
 
 		return services, nil

@@ -19,7 +19,7 @@ import (
 )
 
 // Apply constructs the flow managers from the given specs manifest
-func Apply(ctx instance.Context, mem functions.Collection, services *specs.ServicesManifest, manifest *specs.EndpointsManifest, flows *specs.FlowsManifest, options api.Options) ([]*transport.Endpoint, error) {
+func Apply(ctx instance.Context, mem functions.Collection, services specs.ServiceList, manifest *specs.EndpointsManifest, flows *specs.FlowsManifest, options api.Options) ([]*transport.Endpoint, error) {
 	results := make([]*transport.Endpoint, len(manifest.Endpoints))
 
 	ctx.Logger(logger.Core).WithField("endpoints", manifest.Endpoints).Debug("constructing endpoints")
@@ -78,7 +78,7 @@ func Apply(ctx instance.Context, mem functions.Collection, services *specs.Servi
 }
 
 // NewNodeCall constructs a flow caller for the given node call.
-func NewNodeCall(ctx instance.Context, mem functions.Collection, services *specs.ServicesManifest, flows *specs.FlowsManifest, node *specs.Node, call *specs.Call, options api.Options, manager specs.FlowInterface) (flow.Call, error) {
+func NewNodeCall(ctx instance.Context, mem functions.Collection, services specs.ServiceList, flows *specs.FlowsManifest, node *specs.Node, call *specs.Call, options api.Options, manager specs.FlowInterface) (flow.Call, error) {
 	if call == nil {
 		return nil, nil
 	}
@@ -106,7 +106,7 @@ func NewNodeCall(ctx instance.Context, mem functions.Collection, services *specs
 }
 
 // NewServiceCall constructs a new flow caller for the given service
-func NewServiceCall(ctx instance.Context, mem functions.Collection, services *specs.ServicesManifest, flows *specs.FlowsManifest, node *specs.Node, call *specs.Call, options api.Options, manager specs.FlowInterface) (flow.Call, error) {
+func NewServiceCall(ctx instance.Context, mem functions.Collection, services specs.ServiceList, flows *specs.FlowsManifest, node *specs.Node, call *specs.Call, options api.Options, manager specs.FlowInterface) (flow.Call, error) {
 	if call == nil {
 		return nil, nil
 	}
@@ -115,7 +115,7 @@ func NewServiceCall(ctx instance.Context, mem functions.Collection, services *sp
 		return nil, trace.New(trace.WithMessage("invalid service name, no service name configured in '%s'", node.ID))
 	}
 
-	service := services.GetService(call.Service)
+	service := services.Get(call.Service)
 	if service == nil {
 		return nil, trace.New(trace.WithMessage("the service for '%s' was not found in '%s'", call.Service, node.ID))
 	}
@@ -201,12 +201,12 @@ func NewRequest(ctx instance.Context, node *specs.Node, mem functions.Collection
 }
 
 // NewForward constructs a flow caller for the given call.
-func NewForward(services *specs.ServicesManifest, flows *specs.FlowsManifest, call *specs.Call, options api.Options) (*transport.Forward, error) {
+func NewForward(services specs.ServiceList, flows *specs.FlowsManifest, call *specs.Call, options api.Options) (*transport.Forward, error) {
 	if call == nil {
 		return nil, nil
 	}
 
-	service := services.GetService(call.Service)
+	service := services.Get(call.Service)
 	if service == nil {
 		return nil, trace.New(trace.WithMessage("the service for '%s' was not found", call.Method))
 	}

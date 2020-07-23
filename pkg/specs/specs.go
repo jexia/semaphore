@@ -12,5 +12,4 @@ type Header map[string]*Property
 type Collection struct {
 	*FlowsManifest
 	*EndpointsManifest
-	*ServicesManifest
 }

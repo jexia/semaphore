@@ -8,7 +8,6 @@ import (
 	"github.com/jexia/semaphore/pkg/flow"
 	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/refs"
-	"github.com/jexia/semaphore/pkg/specs"
 )
 
 // WithMiddleware initialises the given middleware and defines all options
@@ -34,7 +33,7 @@ func BeforeConstructor(wrapper api.BeforeConstructorHandler) api.Option {
 func AfterConstructor(wrapper api.AfterConstructorHandler) api.Option {
 	return func(options *api.Options) {
 		if options.AfterConstructor == nil {
-			options.AfterConstructor = wrapper(func(instance.Context, *specs.Collection) error { return nil })
+			options.AfterConstructor = wrapper(func(instance.Context, api.Specifications) error { return nil })
 			return
 		}
 

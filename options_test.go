@@ -35,7 +35,7 @@ func TestWithMultipleFlowsOption(t *testing.T) {
 }
 
 func TestWithServicesOption(t *testing.T) {
-	resolver := func(instance.Context) ([]*specs.ServicesManifest, error) { return nil, nil }
+	resolver := func(instance.Context) (specs.ServiceList, error) { return nil, nil }
 
 	result, err := New(WithServices(resolver))
 	if err != nil {
@@ -48,7 +48,7 @@ func TestWithServicesOption(t *testing.T) {
 }
 
 func TestWithMultipleServicesOption(t *testing.T) {
-	resolver := func(instance.Context) ([]*specs.ServicesManifest, error) { return nil, nil }
+	resolver := func(instance.Context) (specs.ServiceList, error) { return nil, nil }
 
 	result, err := New(WithServices(resolver), WithServices(resolver))
 	if err != nil {

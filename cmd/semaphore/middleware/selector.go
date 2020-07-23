@@ -7,7 +7,6 @@ import (
 	"github.com/jexia/semaphore/pkg/core/instance"
 	"github.com/jexia/semaphore/pkg/core/logger"
 	"github.com/jexia/semaphore/pkg/providers/hcl"
-	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/template"
 	"github.com/sirupsen/logrus"
 	"github.com/zclconf/go-cty/cty"
@@ -16,7 +15,7 @@ import (
 // ServiceSelector parses the HCL definition on the given path and manipulates the collected services after constructed
 func ServiceSelector(path string) api.AfterConstructorHandler {
 	return func(next api.AfterConstructor) api.AfterConstructor {
-		return func(ctx instance.Context, collection *specs.Collection) error {
+		return func(ctx instance.Context, collection api.Specifications) error {
 			definitions, err := hcl.ResolvePath(ctx, []string{}, path)
 			if err != nil {
 				return err
@@ -25,7 +24,7 @@ func ServiceSelector(path string) api.AfterConstructorHandler {
 			for _, definition := range definitions {
 				for _, services := range definition.ServiceSelector {
 					for _, selector := range services.Selectors {
-						for _, service := range collection.ServicesManifest.Services {
+						for _, service := range collection.Services {
 							name := template.JoinPath(service.Package, service.Name)
 							matched, err := filepath.Match(selector.Pattern, name)
 							if err != nil {
