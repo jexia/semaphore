@@ -7,8 +7,8 @@ import (
 // FlowsManifest holds a collection of definitions and resources
 type FlowsManifest struct {
 	Error *ParameterMap `json:"error,omitempty"`
-	Flows Flows         `json:"flows,omitempty"`
-	Proxy Proxies       `json:"proxies,omitempty"`
+	Flows FlowList      `json:"flows,omitempty"`
+	Proxy ProxyList     `json:"proxies,omitempty"`
 }
 
 // GetFlow attempts to find a flow or proxy matching the given name
@@ -45,18 +45,18 @@ func (manifest *FlowsManifest) Append(incoming ...*FlowsManifest) {
 // FlowResourceManager represents a proxy or flow manager.
 type FlowResourceManager interface {
 	GetName() string
-	GetNodes() []*Node
+	GetNodes() NodeList
 	GetInput() *ParameterMap
 	GetOutput() *ParameterMap
 	GetOnError() *OnError
 	GetForward() *Call
 }
 
-// Flows represents a collection of flows
-type Flows []*Flow
+// FlowList represents a collection of flows
+type FlowList []*Flow
 
 // Get attempts to find a flow matching the given name
-func (collection Flows) Get(name string) *Flow {
+func (collection FlowList) Get(name string) *Flow {
 	for _, flow := range collection {
 		if flow.Name == name {
 			return flow
@@ -76,7 +76,7 @@ func (collection Flows) Get(name string) *Flow {
 type Flow struct {
 	Name    string        `json:"name,omitempty"`
 	Input   *ParameterMap `json:"input,omitempty"`
-	Nodes   []*Node       `json:"nodes,omitempty"`
+	Nodes   NodeList      `json:"nodes,omitempty"`
 	Output  *ParameterMap `json:"output,omitempty"`
 	OnError *OnError      `json:"on_error,omitempty"`
 }
@@ -87,7 +87,7 @@ func (flow *Flow) GetName() string {
 }
 
 // GetNodes returns the calls of the given flow
-func (flow *Flow) GetNodes() []*Node {
+func (flow *Flow) GetNodes() NodeList {
 	return flow.Nodes
 }
 
@@ -111,11 +111,11 @@ func (flow *Flow) GetForward() *Call {
 	return nil
 }
 
-// Proxies represents a collection of proxies
-type Proxies []*Proxy
+// ProxyList represents a collection of proxies
+type ProxyList []*Proxy
 
 // Get attempts to find a proxy matching the given name
-func (collection Proxies) Get(name string) *Proxy {
+func (collection ProxyList) Get(name string) *Proxy {
 	for _, proxy := range collection {
 		if proxy.Name == name {
 			return proxy
@@ -131,7 +131,7 @@ func (collection Proxies) Get(name string) *Proxy {
 type Proxy struct {
 	Input   *ParameterMap `json:"input,omitempty"`
 	Name    string        `json:"name,omitempty"`
-	Nodes   []*Node       `json:"nodes,omitempty"`
+	Nodes   NodeList      `json:"nodes,omitempty"`
 	Forward *Call         `json:"forward,omitempty"`
 	OnError *OnError      `json:"on_error,omitempty"`
 }
@@ -142,7 +142,7 @@ func (proxy *Proxy) GetName() string {
 }
 
 // GetNodes returns the calls of the given flow
-func (proxy *Proxy) GetNodes() []*Node {
+func (proxy *Proxy) GetNodes() NodeList {
 	return proxy.Nodes
 }
 
@@ -172,6 +172,9 @@ type Condition struct {
 	Expression    *govaluate.EvaluableExpression `json:"-"`
 	Params        *ParameterMap                  `json:"-"`
 }
+
+// NodeList represents a collection of nodes
+type NodeList []*Node
 
 // Node represents a point inside a given flow where a request or rollback could be preformed.
 // Nodes could be executed synchronously or asynchronously.

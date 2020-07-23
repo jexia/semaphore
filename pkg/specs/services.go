@@ -2,7 +2,7 @@ package specs
 
 // ServicesManifest holds a collection of services
 type ServicesManifest struct {
-	Services []*Service `json:"services,omitempty"`
+	Services ServiceList `json:"services,omitempty"`
 }
 
 // Append merges the incoming services into the given service manifest
@@ -26,6 +26,9 @@ func (manifest *ServicesManifest) GetService(name string) *Service {
 
 	return nil
 }
+
+// ServiceList represents a collection of services
+type ServiceList []*Service
 
 // Service represents a service which exposes a set of methods
 type Service struct {

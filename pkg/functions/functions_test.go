@@ -130,7 +130,7 @@ func TestPrepareManifestFunctions(t *testing.T) {
 			expected:    3,
 			collections: 3,
 			manifest: &specs.FlowsManifest{
-				Flows: specs.Flows{
+				Flows: specs.FlowList{
 					&specs.Flow{
 						Nodes: []*specs.Node{
 							{
@@ -185,7 +185,7 @@ func TestPrepareManifestFunctions(t *testing.T) {
 			expected:    6,
 			collections: 2,
 			manifest: &specs.FlowsManifest{
-				Flows: specs.Flows{
+				Flows: specs.FlowList{
 					&specs.Flow{
 						Nodes: []*specs.Node{
 							{
@@ -241,7 +241,7 @@ func TestPrepareManifestFunctions(t *testing.T) {
 			expected:    4,
 			collections: 2,
 			manifest: &specs.FlowsManifest{
-				Flows: specs.Flows{
+				Flows: specs.FlowList{
 					&specs.Flow{
 						Nodes: []*specs.Node{
 							{
@@ -275,7 +275,7 @@ func TestPrepareManifestFunctions(t *testing.T) {
 			expected:    2,
 			collections: 2,
 			manifest: &specs.FlowsManifest{
-				Proxy: specs.Proxies{
+				Proxy: specs.ProxyList{
 					&specs.Proxy{
 						Nodes: []*specs.Node{
 							{
@@ -317,7 +317,7 @@ func TestPrepareManifestFunctions(t *testing.T) {
 			expected:    6,
 			collections: 2,
 			manifest: &specs.FlowsManifest{
-				Proxy: specs.Proxies{
+				Proxy: specs.ProxyList{
 					&specs.Proxy{
 						Nodes: []*specs.Node{
 							{
@@ -373,7 +373,7 @@ func TestPrepareManifestFunctions(t *testing.T) {
 			expected:    4,
 			collections: 2,
 			manifest: &specs.FlowsManifest{
-				Proxy: specs.Proxies{
+				Proxy: specs.ProxyList{
 					&specs.Proxy{
 						Nodes: []*specs.Node{
 							{
@@ -409,7 +409,7 @@ func TestPrepareManifestFunctions(t *testing.T) {
 			expected:    0,
 			collections: 1,
 			manifest: &specs.FlowsManifest{
-				Proxy: specs.Proxies{
+				Proxy: specs.ProxyList{
 					&specs.Proxy{
 						Nodes: []*specs.Node{
 							{
@@ -430,7 +430,7 @@ func TestPrepareManifestFunctions(t *testing.T) {
 			expected:    0,
 			collections: 1,
 			manifest: &specs.FlowsManifest{
-				Proxy: specs.Proxies{
+				Proxy: specs.ProxyList{
 					&specs.Proxy{
 						Nodes: []*specs.Node{
 							{
@@ -451,7 +451,7 @@ func TestPrepareManifestFunctions(t *testing.T) {
 			expected:    0,
 			collections: 1,
 			manifest: &specs.FlowsManifest{
-				Proxy: specs.Proxies{
+				Proxy: specs.ProxyList{
 					&specs.Proxy{
 						Nodes: []*specs.Node{
 							{
@@ -470,7 +470,7 @@ func TestPrepareManifestFunctions(t *testing.T) {
 			expected:    0,
 			collections: 1,
 			manifest: &specs.FlowsManifest{
-				Proxy: specs.Proxies{
+				Proxy: specs.ProxyList{
 					&specs.Proxy{
 						Nodes: []*specs.Node{
 							{
@@ -525,7 +525,7 @@ func TestPrepareManifestFunctionsErr(t *testing.T) {
 			expected:    3,
 			collections: 3,
 			manifest: &specs.FlowsManifest{
-				Flows: specs.Flows{
+				Flows: specs.FlowList{
 					&specs.Flow{
 						Nodes: []*specs.Node{
 							{
@@ -580,7 +580,7 @@ func TestPrepareManifestFunctionsErr(t *testing.T) {
 			expected:    6,
 			collections: 2,
 			manifest: &specs.FlowsManifest{
-				Flows: specs.Flows{
+				Flows: specs.FlowList{
 					&specs.Flow{
 						Nodes: []*specs.Node{
 							{
@@ -636,7 +636,7 @@ func TestPrepareManifestFunctionsErr(t *testing.T) {
 			expected:    4,
 			collections: 2,
 			manifest: &specs.FlowsManifest{
-				Flows: specs.Flows{
+				Flows: specs.FlowList{
 					&specs.Flow{
 						Nodes: []*specs.Node{
 							{
@@ -670,7 +670,7 @@ func TestPrepareManifestFunctionsErr(t *testing.T) {
 			expected:    2,
 			collections: 2,
 			manifest: &specs.FlowsManifest{
-				Proxy: specs.Proxies{
+				Proxy: specs.ProxyList{
 					&specs.Proxy{
 						Nodes: []*specs.Node{
 							{
@@ -712,7 +712,7 @@ func TestPrepareManifestFunctionsErr(t *testing.T) {
 			expected:    6,
 			collections: 2,
 			manifest: &specs.FlowsManifest{
-				Proxy: specs.Proxies{
+				Proxy: specs.ProxyList{
 					&specs.Proxy{
 						Nodes: []*specs.Node{
 							{
@@ -768,7 +768,7 @@ func TestPrepareManifestFunctionsErr(t *testing.T) {
 			expected:    4,
 			collections: 2,
 			manifest: &specs.FlowsManifest{
-				Proxy: specs.Proxies{
+				Proxy: specs.ProxyList{
 					&specs.Proxy{
 						Nodes: []*specs.Node{
 							{

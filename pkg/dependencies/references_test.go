@@ -26,7 +26,7 @@ func TestResolveReferences(t *testing.T) {
 			}
 
 			manifest := &specs.FlowsManifest{
-				Flows: specs.Flows{
+				Flows: specs.FlowList{
 					{
 						Nodes: []*specs.Node{
 							{
@@ -60,7 +60,7 @@ func TestResolveReferences(t *testing.T) {
 			}
 
 			manifest := &specs.FlowsManifest{
-				Proxy: specs.Proxies{
+				Proxy: specs.ProxyList{
 					{
 						Nodes: []*specs.Node{
 							{
@@ -94,7 +94,7 @@ func TestResolveReferences(t *testing.T) {
 			}
 
 			manifest := &specs.FlowsManifest{
-				Flows: specs.Flows{
+				Flows: specs.FlowList{
 					{
 						Nodes: []*specs.Node{
 							{

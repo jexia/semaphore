@@ -26,6 +26,9 @@ func (reference *PropertyReference) String() string {
 	return reference.Resource + ":" + reference.Path
 }
 
+// Properties represents a map string collection of properties
+type Properties map[string]*Property
+
 // Property represents a value property.
 // A value property could contain a constant value or a value reference.
 type Property struct {
