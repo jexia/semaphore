@@ -13,5 +13,4 @@ type Collection struct {
 	*FlowsManifest
 	*EndpointsManifest
 	*ServicesManifest
-	*SchemaManifest
 }

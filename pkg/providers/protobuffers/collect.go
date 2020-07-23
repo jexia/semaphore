@@ -84,7 +84,7 @@ func ServiceResolver(imports []string, path string) providers.ServicesResolver {
 
 // SchemaResolver returns a new schema resolver for the given protoc collection
 func SchemaResolver(imports []string, path string) providers.SchemaResolver {
-	return func(ctx instance.Context) ([]*specs.SchemaManifest, error) {
+	return func(ctx instance.Context) (specs.Objects, error) {
 		ctx.Logger(logger.Core).WithField("path", path).Debug("Resolving proto schemas")
 
 		files, err := Collect(ctx, imports, path)

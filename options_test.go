@@ -16,7 +16,7 @@ func TestWithFlowsOption(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if len(result.Options.Flows) != 1 {
+	if len(result.Options.FlowResolvers) != 1 {
 		t.Fatal("unexpected result expected flow resolver to be set")
 	}
 }
@@ -29,7 +29,7 @@ func TestWithMultipleFlowsOption(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if len(result.Options.Flows) != 2 {
+	if len(result.Options.FlowResolvers) != 2 {
 		t.Fatal("unexpected result expected multiple flow resolvers to be set")
 	}
 }
@@ -42,7 +42,7 @@ func TestWithServicesOption(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if len(result.Options.Services) != 1 {
+	if len(result.Options.ServiceResolvers) != 1 {
 		t.Fatal("unexpected result expected service resolver to be set")
 	}
 }
@@ -55,7 +55,7 @@ func TestWithMultipleServicesOption(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if len(result.Options.Services) != 2 {
+	if len(result.Options.ServiceResolvers) != 2 {
 		t.Fatal("unexpected result expected multiple service resolvers to be set")
 	}
 }
@@ -68,7 +68,7 @@ func TestWithEndpointsOption(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if len(result.Options.Endpoints) != 1 {
+	if len(result.Options.EndpointResolvers) != 1 {
 		t.Fatal("unexpected result expected endpoint resolver to be set")
 	}
 }
@@ -81,7 +81,7 @@ func TestWithMultipleEndpointsOption(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if len(result.Options.Endpoints) != 2 {
+	if len(result.Options.EndpointResolvers) != 2 {
 		t.Fatal("unexpected result expected multiple endpoints resolvers to be set")
 	}
 }

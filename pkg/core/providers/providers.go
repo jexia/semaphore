@@ -11,9 +11,8 @@ func Resolve(ctx instance.Context, options api.Options) (*specs.Collection, erro
 	flows := &specs.FlowsManifest{}
 	endpoints := &specs.EndpointsManifest{}
 	services := &specs.ServicesManifest{}
-	schemas := &specs.SchemaManifest{}
 
-	for _, resolver := range options.Flows {
+	for _, resolver := range options.FlowResolvers {
 		if resolver == nil {
 			continue
 		}
@@ -26,7 +25,7 @@ func Resolve(ctx instance.Context, options api.Options) (*specs.Collection, erro
 		flows.Append(manifests...)
 	}
 
-	for _, resolver := range options.Endpoints {
+	for _, resolver := range options.EndpointResolvers {
 		if resolver == nil {
 			continue
 		}
@@ -39,7 +38,7 @@ func Resolve(ctx instance.Context, options api.Options) (*specs.Collection, erro
 		endpoints.Append(manifests...)
 	}
 
-	for _, resolver := range options.Services {
+	for _, resolver := range options.ServiceResolvers {
 		if resolver == nil {
 			continue
 		}
@@ -52,24 +51,10 @@ func Resolve(ctx instance.Context, options api.Options) (*specs.Collection, erro
 		services.Append(manifests...)
 	}
 
-	for _, resolver := range options.Schemas {
-		if resolver == nil {
-			continue
-		}
-
-		manifests, err := resolver(ctx)
-		if err != nil {
-			return nil, err
-		}
-
-		schemas.Append(manifests...)
-	}
-
 	result := &specs.Collection{
 		FlowsManifest:     flows,
 		EndpointsManifest: endpoints,
 		ServicesManifest:  services,
-		SchemaManifest:    schemas,
 	}
 
 	return result, nil

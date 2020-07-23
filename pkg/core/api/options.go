@@ -19,11 +19,11 @@ type Option func(*Options)
 // NewOptions constructs a new options object
 func NewOptions(ctx instance.Context) Options {
 	return Options{
-		Ctx:      ctx,
-		Services: make([]providers.ServicesResolver, 0),
-		Flows:    make([]providers.FlowsResolver, 0),
-		Schemas:  make([]providers.SchemaResolver, 0),
-		Codec:    make(map[string]codec.Constructor),
+		Ctx:              ctx,
+		ServiceResolvers: make([]providers.ServicesResolver, 0),
+		FlowResolvers:    make([]providers.FlowsResolver, 0),
+		SchemaResolvers:  make([]providers.SchemaResolver, 0),
+		Codec:            make(map[string]codec.Constructor),
 	}
 }
 
@@ -34,10 +34,10 @@ type Options struct {
 	Codec                 codec.Constructors
 	Callers               transport.Callers
 	Listeners             transport.Listeners
-	Flows                 []providers.FlowsResolver
-	Endpoints             []providers.EndpointsResolver
-	Services              []providers.ServicesResolver
-	Schemas               []providers.SchemaResolver
+	FlowResolvers         []providers.FlowsResolver
+	EndpointResolvers     []providers.EndpointsResolver
+	ServiceResolvers      []providers.ServicesResolver
+	SchemaResolvers       providers.SchemaResolvers
 	Middleware            []Middleware
 	BeforeConstructor     BeforeConstructor
 	AfterConstructor      AfterConstructor

@@ -10,18 +10,18 @@ import (
 )
 
 // ManifestTypes compares the types defined insde the schema definitions against the configured specification
-func ManifestTypes(ctx instance.Context, services *specs.ServicesManifest, schema *specs.SchemaManifest, flows *specs.FlowsManifest) (err error) {
+func ManifestTypes(ctx instance.Context, services *specs.ServicesManifest, objects specs.Objects, flows *specs.FlowsManifest) (err error) {
 	ctx.Logger(logger.Core).Info("Comparing manifest types")
 
 	for _, flow := range flows.Flows {
-		err := FlowTypes(ctx, services, schema, flows, flow)
+		err := FlowTypes(ctx, services, objects, flows, flow)
 		if err != nil {
 			return err
 		}
 	}
 
 	for _, proxy := range flows.Proxy {
-		err := ProxyTypes(ctx, services, schema, flows, proxy)
+		err := ProxyTypes(ctx, services, objects, flows, proxy)
 		if err != nil {
 			return err
 		}
@@ -31,23 +31,23 @@ func ManifestTypes(ctx instance.Context, services *specs.ServicesManifest, schem
 }
 
 // ProxyTypes compares the given proxy against the configured schema types
-func ProxyTypes(ctx instance.Context, services *specs.ServicesManifest, schema *specs.SchemaManifest, flows *specs.FlowsManifest, proxy *specs.Proxy) (err error) {
+func ProxyTypes(ctx instance.Context, services *specs.ServicesManifest, objects specs.Objects, flows *specs.FlowsManifest, proxy *specs.Proxy) (err error) {
 	ctx.Logger(logger.Core).WithField("proxy", proxy.GetName()).Info("Compare proxy flow types")
 
 	if proxy.OnError != nil {
-		err = CheckParameterMapTypes(ctx, proxy.OnError.Response, schema, proxy)
+		err = CheckParameterMapTypes(ctx, proxy.OnError.Response, objects, proxy)
 		if err != nil {
 			return err
 		}
 	}
 
 	for _, node := range proxy.Nodes {
-		err = CallTypes(ctx, services, schema, flows, node, node.Call, proxy)
+		err = CallTypes(ctx, services, objects, flows, node, node.Call, proxy)
 		if err != nil {
 			return err
 		}
 
-		err = CallTypes(ctx, services, schema, flows, node, node.Rollback, proxy)
+		err = CallTypes(ctx, services, objects, flows, node, node.Rollback, proxy)
 		if err != nil {
 			return err
 		}
@@ -64,40 +64,40 @@ func ProxyTypes(ctx instance.Context, services *specs.ServicesManifest, schema *
 }
 
 // FlowTypes compares the flow types against the configured schema types
-func FlowTypes(ctx instance.Context, services *specs.ServicesManifest, schema *specs.SchemaManifest, flows *specs.FlowsManifest, flow *specs.Flow) (err error) {
+func FlowTypes(ctx instance.Context, services *specs.ServicesManifest, objects specs.Objects, flows *specs.FlowsManifest, flow *specs.Flow) (err error) {
 	ctx.Logger(logger.Core).WithField("flow", flow.GetName()).Info("Comparing flow types")
 
-	err = CheckParameterMapTypes(ctx, flow.Input, schema, flow)
+	err = CheckParameterMapTypes(ctx, flow.Input, objects, flow)
 	if err != nil {
 		return err
 	}
 
 	if flow.OnError != nil {
-		err = CheckParameterMapTypes(ctx, flow.OnError.Response, schema, flow)
+		err = CheckParameterMapTypes(ctx, flow.OnError.Response, objects, flow)
 		if err != nil {
 			return err
 		}
 	}
 
 	for _, node := range flow.Nodes {
-		err = CallTypes(ctx, services, schema, flows, node, node.Call, flow)
+		err = CallTypes(ctx, services, objects, flows, node, node.Call, flow)
 		if err != nil {
 			return err
 		}
 
-		err = CallTypes(ctx, services, schema, flows, node, node.Rollback, flow)
+		err = CallTypes(ctx, services, objects, flows, node, node.Rollback, flow)
 		if err != nil {
 			return err
 		}
 	}
 
 	if flow.Output != nil {
-		message := schema.GetProperty(flow.Output.Schema)
+		message := objects.Get(flow.Output.Schema)
 		if message == nil {
 			return trace.New(trace.WithMessage("undefined flow output object '%s' in '%s'", flow.Output.Schema, flow.Name))
 		}
 
-		err = CheckParameterMapTypes(ctx, flow.Output, schema, flow)
+		err = CheckParameterMapTypes(ctx, flow.Output, objects, flow)
 		if err != nil {
 			return err
 		}
@@ -107,7 +107,7 @@ func FlowTypes(ctx instance.Context, services *specs.ServicesManifest, schema *s
 }
 
 // CallTypes compares the given call types against the configured schema types
-func CallTypes(ctx instance.Context, services *specs.ServicesManifest, schema *specs.SchemaManifest, flows *specs.FlowsManifest, node *specs.Node, call *specs.Call, flow specs.FlowInterface) (err error) {
+func CallTypes(ctx instance.Context, services *specs.ServicesManifest, objects specs.Objects, flows *specs.FlowsManifest, node *specs.Node, call *specs.Call, flow specs.FlowInterface) (err error) {
 	if call == nil {
 		return nil
 	}
@@ -132,18 +132,18 @@ func CallTypes(ctx instance.Context, services *specs.ServicesManifest, schema *s
 		return trace.New(trace.WithMessage("undefined method '%s' in flow '%s'", call.Method, flow.GetName()))
 	}
 
-	err = CheckParameterMapTypes(ctx, call.Request, schema, flow)
+	err = CheckParameterMapTypes(ctx, call.Request, objects, flow)
 	if err != nil {
 		return err
 	}
 
-	err = CheckParameterMapTypes(ctx, call.Response, schema, flow)
+	err = CheckParameterMapTypes(ctx, call.Response, objects, flow)
 	if err != nil {
 		return err
 	}
 
 	if node.OnError != nil {
-		err = CheckParameterMapTypes(ctx, node.OnError.Response, schema, flow)
+		err = CheckParameterMapTypes(ctx, node.OnError.Response, objects, flow)
 		if err != nil {
 			return err
 		}
@@ -153,7 +153,7 @@ func CallTypes(ctx instance.Context, services *specs.ServicesManifest, schema *s
 }
 
 // CheckParameterMapTypes checks the given parameter map against the configured schema property
-func CheckParameterMapTypes(ctx instance.Context, parameters *specs.ParameterMap, schema *specs.SchemaManifest, flow specs.FlowInterface) error {
+func CheckParameterMapTypes(ctx instance.Context, parameters *specs.ParameterMap, objects specs.Objects, flow specs.FlowInterface) error {
 	if parameters == nil {
 		return nil
 	}
@@ -165,7 +165,7 @@ func CheckParameterMapTypes(ctx instance.Context, parameters *specs.ParameterMap
 		}
 	}
 
-	err := CheckPropertyTypes(parameters.Property, schema.GetProperty(parameters.Schema), flow)
+	err := CheckPropertyTypes(parameters.Property, objects.Get(parameters.Schema), flow)
 	if err != nil {
 		return err
 	}

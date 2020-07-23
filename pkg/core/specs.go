@@ -24,6 +24,11 @@ func Construct(ctx instance.Context, mem functions.Collection, options api.Optio
 		}
 	}
 
+	schemas, err := options.SchemaResolvers.Resolve(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	collection, err := providers.Resolve(ctx, options)
 	if err != nil {
 		return nil, err
@@ -47,7 +52,7 @@ func Construct(ctx instance.Context, mem functions.Collection, options api.Optio
 		return nil, err
 	}
 
-	err = references.DefineManifest(ctx, collection.ServicesManifest, collection.SchemaManifest, collection.FlowsManifest)
+	err = references.DefineManifest(ctx, collection.ServicesManifest, schemas, collection.FlowsManifest)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +64,7 @@ func Construct(ctx instance.Context, mem functions.Collection, options api.Optio
 
 	dependencies.ResolveReferences(ctx, collection.FlowsManifest)
 
-	err = compare.ManifestTypes(ctx, collection.ServicesManifest, collection.SchemaManifest, collection.FlowsManifest)
+	err = compare.ManifestTypes(ctx, collection.ServicesManifest, schemas, collection.FlowsManifest)
 	if err != nil {
 		return nil, err
 	}

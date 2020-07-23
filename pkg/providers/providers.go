@@ -14,5 +14,27 @@ type EndpointsResolver func(instance.Context) ([]*specs.EndpointsManifest, error
 // ServicesResolver when called collects the available service(s) with the configured configuration
 type ServicesResolver func(instance.Context) ([]*specs.ServicesManifest, error)
 
+// SchemaResolvers represents a collection of schema resolvers
+type SchemaResolvers []SchemaResolver
+
+func (resolvers SchemaResolvers) Resolve(ctx instance.Context) (specs.Objects, error) {
+	objects := make(specs.Objects)
+
+	for _, resolver := range resolvers {
+		if resolver == nil {
+			continue
+		}
+
+		result, err := resolver(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		objects.Append(result)
+	}
+
+	return objects, nil
+}
+
 // SchemaResolver when called collects the available service(s) with the configured configuration
-type SchemaResolver func(instance.Context) ([]*specs.SchemaManifest, error)
+type SchemaResolver func(instance.Context) (specs.Objects, error)
