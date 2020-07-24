@@ -465,6 +465,56 @@ func TestPrepareManifestFunctions(t *testing.T) {
 				},
 			},
 		},
+		"condition": {
+			expected:    1,
+			collections: 1,
+			flows: specs.FlowListInterface{
+				&specs.Proxy{
+					Nodes: []*specs.Node{
+						{
+							Condition: &specs.Condition{
+								Params: &specs.ParameterMap{
+									Property: &specs.Property{
+										Type:  types.Message,
+										Label: labels.Optional,
+										Nested: map[string]*specs.Property{
+											"fn": {
+												Name: "fn",
+												Path: "fn",
+												Raw:  "mock()",
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		"params": {
+			expected:    2,
+			collections: 1,
+			flows: specs.FlowListInterface{
+				&specs.Flow{
+					Nodes: []*specs.Node{
+						{
+							Call: &specs.Call{
+								Response: &specs.ParameterMap{
+									Params: map[string]*specs.Property{
+										"fn": {
+											Name: "fn",
+											Path: "fn",
+											Raw:  "mock(mock())",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 
 	for name, test := range tests {
@@ -761,6 +811,115 @@ func TestPrepareManifestFunctionsErr(t *testing.T) {
 									Name: "fn",
 									Path: "fn",
 									Raw:  "mock(mock())",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		"condition": {
+			expected:    1,
+			collections: 1,
+			flows: specs.FlowListInterface{
+				&specs.Flow{
+					Nodes: []*specs.Node{
+						{
+							Condition: &specs.Condition{
+								Params: &specs.ParameterMap{
+									Property: &specs.Property{
+										Type:  types.Message,
+										Label: labels.Optional,
+										Nested: map[string]*specs.Property{
+											"fn": {
+												Name: "fn",
+												Path: "fn",
+												Raw:  "mock()",
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		"call response": {
+			expected:    1,
+			collections: 1,
+			flows: specs.FlowListInterface{
+				&specs.Flow{
+					Nodes: []*specs.Node{
+						{
+							Call: &specs.Call{
+								Response: &specs.ParameterMap{
+									Header: specs.Header{
+										"fn": &specs.Property{
+											Name: "fn",
+											Path: "fn",
+											Raw:  "mock(mock())",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		"params": {
+			expected:    2,
+			collections: 1,
+			flows: specs.FlowListInterface{
+				&specs.Flow{
+					Nodes: []*specs.Node{
+						{
+							Call: &specs.Call{
+								Response: &specs.ParameterMap{
+									Params: map[string]*specs.Property{
+										"fn": {
+											Name: "fn",
+											Path: "fn",
+											Raw:  "mock(mock())",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		"output": {
+			expected:    1,
+			collections: 1,
+			flows: specs.FlowListInterface{
+				&specs.Flow{
+					Output: &specs.ParameterMap{
+						Params: map[string]*specs.Property{
+							"fn": {
+								Name: "fn",
+								Path: "fn",
+								Raw:  "mock()",
+							},
+						},
+					},
+				},
+			},
+		},
+		"forward": {
+			expected:    1,
+			collections: 1,
+			flows: specs.FlowListInterface{
+				&specs.Proxy{
+					Forward: &specs.Call{
+						Request: &specs.ParameterMap{
+							Header: map[string]*specs.Property{
+								"fn": {
+									Name: "fn",
+									Path: "fn",
+									Raw:  "mock()",
 								},
 							},
 						},
