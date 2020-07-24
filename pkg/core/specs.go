@@ -4,9 +4,7 @@ import (
 	"github.com/jexia/semaphore/pkg/checks"
 	"github.com/jexia/semaphore/pkg/compare"
 	"github.com/jexia/semaphore/pkg/core/api"
-	"github.com/jexia/semaphore/pkg/core/errors"
 	"github.com/jexia/semaphore/pkg/core/instance"
-	"github.com/jexia/semaphore/pkg/core/providers"
 	"github.com/jexia/semaphore/pkg/dependencies"
 	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/references"
@@ -16,75 +14,67 @@ import (
 // Construct construct a specs manifest from the given options.
 // The specifications are received from the providers. The property types are defined and functions are prepared.
 // Once done is a specs collection returned that could be used to update the listeners.
-func Construct(ctx instance.Context, mem functions.Collection, options api.Options) (result api.Specifications, err error) {
+func Construct(ctx instance.Context, mem functions.Collection, options api.Options) (specs.FlowListInterface, specs.EndpointList, specs.ServiceList, specs.Objects, error) {
 	if options.BeforeConstructor != nil {
 		err := options.BeforeConstructor(ctx, mem, options)
 		if err != nil {
-			return result, err
+			return nil, nil, nil, nil, err
 		}
+	}
+
+	flows, err := options.FlowResolvers.Resolve(ctx)
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
+
+	endpoints, err := options.EndpointResolvers.Resolve(ctx)
+	if err != nil {
+		return nil, nil, nil, nil, err
 	}
 
 	schemas, err := options.SchemaResolvers.Resolve(ctx)
 	if err != nil {
-		return result, err
+		return nil, nil, nil, nil, err
 	}
 
 	services, err := options.ServiceResolvers.Resolve(ctx)
 	if err != nil {
-		return result, err
-	}
-
-	collection, err := providers.Resolve(ctx, options)
-	if err != nil {
-		return result, err
-	}
-
-	errors.Resolve(collection.FlowsManifest)
-
-	// TODO: refactor me
-	flows := make(specs.FlowListInterface, len(collection.FlowsManifest.Flows)+len(collection.FlowsManifest.Proxy))
-
-	for _, flow := range collection.FlowsManifest.Flows {
-		flows = append(flows, flow)
-	}
-
-	for _, flow := range collection.FlowsManifest.Proxy {
-		flows = append(flows, flow)
+		return nil, nil, nil, nil, err
 	}
 
 	err = checks.FlowDuplicates(ctx, flows)
 	if err != nil {
-		return result, err
+		return nil, nil, nil, nil, err
 	}
 
-	err = references.DefineManifest(ctx, services, schemas, collection.FlowsManifest)
+	err = references.DefineManifest(ctx, services, schemas, flows)
 	if err != nil {
-		return result, err
+		return nil, nil, nil, nil, err
 	}
 
-	err = functions.PrepareManifestFunctions(ctx, mem, options.Functions, collection.FlowsManifest)
+	err = functions.PrepareManifestFunctions(ctx, mem, options.Functions, flows)
 	if err != nil {
-		return result, err
+		return nil, nil, nil, nil, err
 	}
 
-	dependencies.ResolveReferences(ctx, collection.FlowsManifest)
+	dependencies.ResolveReferences(ctx, flows)
 
-	err = compare.ManifestTypes(ctx, services, schemas, collection.FlowsManifest)
+	err = compare.ManifestTypes(ctx, services, schemas, flows)
 	if err != nil {
-		return result, err
+		return nil, nil, nil, nil, err
 	}
 
-	err = dependencies.ResolveManifest(ctx, collection.FlowsManifest)
+	err = dependencies.ResolveManifest(ctx, flows)
 	if err != nil {
-		return result, err
+		return nil, nil, nil, nil, err
 	}
 
 	if options.AfterConstructor != nil {
-		err = options.AfterConstructor(ctx, result)
+		err = options.AfterConstructor(ctx, flows, endpoints, services, schemas)
 		if err != nil {
-			return result, err
+			return nil, nil, nil, nil, err
 		}
 	}
 
-	return result, nil
+	return flows, endpoints, services, schemas, nil
 }

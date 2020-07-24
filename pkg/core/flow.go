@@ -1,4 +1,4 @@
-package flows
+package core
 
 import (
 	"github.com/jexia/semaphore/pkg/codec"
@@ -19,13 +19,13 @@ import (
 )
 
 // Apply constructs the flow managers from the given specs manifest
-func Apply(ctx instance.Context, mem functions.Collection, services specs.ServiceList, manifest *specs.EndpointsManifest, flows *specs.FlowsManifest, options api.Options) ([]*transport.Endpoint, error) {
-	results := make([]*transport.Endpoint, len(manifest.Endpoints))
+func Apply(ctx instance.Context, mem functions.Collection, services specs.ServiceList, endpoints specs.EndpointList, flows specs.FlowListInterface, options api.Options) ([]*transport.Endpoint, error) {
+	results := make([]*transport.Endpoint, len(endpoints))
 
-	ctx.Logger(logger.Core).WithField("endpoints", manifest.Endpoints).Debug("constructing endpoints")
+	ctx.Logger(logger.Core).WithField("endpoints", endpoints).Debug("constructing endpoints")
 
-	for index, endpoint := range manifest.Endpoints {
-		manager := flows.GetFlow(endpoint.Flow)
+	for index, endpoint := range endpoints {
+		manager := flows.Get(endpoint.Flow)
 		if manager == nil {
 			continue
 		}
@@ -53,7 +53,7 @@ func Apply(ctx instance.Context, mem functions.Collection, services specs.Servic
 			})
 		}
 
-		forward, err := NewForward(services, flows, manager.GetForward(), options)
+		forward, err := NewForward(services, manager.GetForward(), options)
 		if err != nil {
 			return nil, err
 		}
@@ -78,13 +78,13 @@ func Apply(ctx instance.Context, mem functions.Collection, services specs.Servic
 }
 
 // NewNodeCall constructs a flow caller for the given node call.
-func NewNodeCall(ctx instance.Context, mem functions.Collection, services specs.ServiceList, flows *specs.FlowsManifest, node *specs.Node, call *specs.Call, options api.Options, manager specs.FlowInterface) (flow.Call, error) {
+func NewNodeCall(ctx instance.Context, mem functions.Collection, services specs.ServiceList, flows specs.FlowListInterface, node *specs.Node, call *specs.Call, options api.Options, manager specs.FlowInterface) (flow.Call, error) {
 	if call == nil {
 		return nil, nil
 	}
 
 	if call.Service != "" {
-		return NewServiceCall(ctx, mem, services, flows, node, call, options, manager)
+		return NewServiceCall(ctx, mem, services, node, call, options, manager)
 	}
 
 	request, err := NewRequest(ctx, node, mem, nil, call.Request)
@@ -106,7 +106,7 @@ func NewNodeCall(ctx instance.Context, mem functions.Collection, services specs.
 }
 
 // NewServiceCall constructs a new flow caller for the given service
-func NewServiceCall(ctx instance.Context, mem functions.Collection, services specs.ServiceList, flows *specs.FlowsManifest, node *specs.Node, call *specs.Call, options api.Options, manager specs.FlowInterface) (flow.Call, error) {
+func NewServiceCall(ctx instance.Context, mem functions.Collection, services specs.ServiceList, node *specs.Node, call *specs.Call, options api.Options, manager specs.FlowInterface) (flow.Call, error) {
 	if call == nil {
 		return nil, nil
 	}
@@ -201,7 +201,7 @@ func NewRequest(ctx instance.Context, node *specs.Node, mem functions.Collection
 }
 
 // NewForward constructs a flow caller for the given call.
-func NewForward(services specs.ServiceList, flows *specs.FlowsManifest, call *specs.Call, options api.Options) (*transport.Forward, error) {
+func NewForward(services specs.ServiceList, call *specs.Call, options api.Options) (*transport.Forward, error) {
 	if call == nil {
 		return nil, nil
 	}

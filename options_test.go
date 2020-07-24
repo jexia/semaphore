@@ -9,7 +9,7 @@ import (
 )
 
 func TestWithFlowsOption(t *testing.T) {
-	resolver := func(instance.Context) ([]*specs.FlowsManifest, error) { return nil, nil }
+	resolver := func(instance.Context) (specs.FlowListInterface, error) { return nil, nil }
 
 	result, err := New(WithFlows(resolver))
 	if err != nil {
@@ -22,7 +22,7 @@ func TestWithFlowsOption(t *testing.T) {
 }
 
 func TestWithMultipleFlowsOption(t *testing.T) {
-	resolver := func(instance.Context) ([]*specs.FlowsManifest, error) { return nil, nil }
+	resolver := func(instance.Context) (specs.FlowListInterface, error) { return nil, nil }
 
 	result, err := New(WithFlows(resolver), WithFlows(resolver))
 	if err != nil {
@@ -61,7 +61,7 @@ func TestWithMultipleServicesOption(t *testing.T) {
 }
 
 func TestWithEndpointsOption(t *testing.T) {
-	resolver := func(instance.Context) ([]*specs.EndpointsManifest, error) { return nil, nil }
+	resolver := func(instance.Context) (specs.EndpointList, error) { return nil, nil }
 
 	result, err := New(WithEndpoints(resolver))
 	if err != nil {
@@ -74,7 +74,7 @@ func TestWithEndpointsOption(t *testing.T) {
 }
 
 func TestWithMultipleEndpointsOption(t *testing.T) {
-	resolver := func(instance.Context) ([]*specs.EndpointsManifest, error) { return nil, nil }
+	resolver := func(instance.Context) (specs.EndpointList, error) { return nil, nil }
 
 	result, err := New(WithEndpoints(resolver), WithEndpoints(resolver))
 	if err != nil {

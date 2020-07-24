@@ -8,21 +8,12 @@ import (
 )
 
 // ResolveManifest resolves all dependencies inside the given manifest
-func ResolveManifest(ctx instance.Context, manifest *specs.FlowsManifest) error {
+func ResolveManifest(ctx instance.Context, flows specs.FlowListInterface) error {
 	ctx.Logger(logger.Core).Info("Resolving manifest dependencies")
 
-	for _, flow := range manifest.Flows {
-		for _, node := range flow.Nodes {
+	for _, flow := range flows {
+		for _, node := range flow.GetNodes() {
 			err := ResolveNode(flow, node, make(map[string]*specs.Node))
-			if err != nil {
-				return err
-			}
-		}
-	}
-
-	for _, proxy := range manifest.Proxy {
-		for _, node := range proxy.Nodes {
-			err := ResolveNode(proxy, node, make(map[string]*specs.Node))
 			if err != nil {
 				return err
 			}

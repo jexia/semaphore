@@ -4,56 +4,24 @@ import (
 	"github.com/Knetic/govaluate"
 )
 
-// FlowsManifest holds a collection of definitions and resources
-type FlowsManifest struct {
-	Error *ParameterMap `json:"error,omitempty"`
-	Flows FlowList      `json:"flows,omitempty"`
-	Proxy ProxyList     `json:"proxies,omitempty"`
+// FlowListInterface represents a collection of flow interfaces
+type FlowListInterface []FlowInterface
+
+// Append appends the given flow list to the collection
+func (collection *FlowListInterface) Append(list ...FlowInterface) {
+	*collection = append(*collection, list...)
 }
 
-// GetFlow attempts to find a flow or proxy matching the given name
-func (manifest *FlowsManifest) GetFlow(name string) FlowInterface {
-	flow := manifest.Flows.Get(name)
-	if flow != nil {
-		return flow
-	}
-
-	proxy := manifest.Proxy.Get(name)
-	if proxy != nil {
-		return proxy
+// Get attempts to find a flow matching the given name
+func (collection FlowListInterface) Get(name string) FlowInterface {
+	for _, flow := range collection {
+		if flow.GetName() == name {
+			return flow
+		}
 	}
 
 	return nil
 }
-
-// Append merges the incoming manifest to the existing (left) manifest
-func (manifest *FlowsManifest) Append(incoming ...*FlowsManifest) {
-	if manifest == nil {
-		return
-	}
-
-	for _, right := range incoming {
-		if right.Error != nil {
-			manifest.Error = right.Error
-		}
-
-		manifest.Flows = append(manifest.Flows, right.Flows...)
-		manifest.Proxy = append(manifest.Proxy, right.Proxy...)
-	}
-}
-
-// FlowInterface represents a proxy or flow manager.
-type FlowInterface interface {
-	GetName() string
-	GetNodes() NodeList
-	GetInput() *ParameterMap
-	GetOutput() *ParameterMap
-	GetOnError() *OnError
-	GetForward() *Call
-}
-
-// FlowListInterface represents a collection of flow interfaces
-type FlowListInterface []FlowInterface
 
 // FlowList represents a collection of flows
 type FlowList []*Flow
@@ -67,6 +35,17 @@ func (collection FlowList) Get(name string) *Flow {
 	}
 
 	return nil
+}
+
+// FlowInterface represents a proxy or flow manager.
+type FlowInterface interface {
+	GetName() string
+	GetNodes() NodeList
+	GetNode(string) *Node
+	GetInput() *ParameterMap
+	GetOutput() *ParameterMap
+	GetOnError() *OnError
+	GetForward() *Call
 }
 
 // Flow defines a set of calls that should be called chronologically and produces an output message.
@@ -92,6 +71,11 @@ func (flow *Flow) GetName() string {
 // GetNodes returns the calls of the given flow
 func (flow *Flow) GetNodes() NodeList {
 	return flow.Nodes
+}
+
+// GetNode returns a node matching the given name within the flow node list
+func (flow *Flow) GetNode(name string) *Node {
+	return flow.Nodes.Get(name)
 }
 
 // GetOnError returns the error handling of the given flow
@@ -149,6 +133,11 @@ func (proxy *Proxy) GetNodes() NodeList {
 	return proxy.Nodes
 }
 
+// GetNode returns a node matching the given name within the flow node list
+func (proxy *Proxy) GetNode(name string) *Node {
+	return proxy.Nodes.Get(name)
+}
+
 // GetOnError returns the error handling of the given flow
 func (proxy *Proxy) GetOnError() *OnError {
 	return proxy.OnError
@@ -178,6 +167,17 @@ type Condition struct {
 
 // NodeList represents a collection of nodes
 type NodeList []*Node
+
+// Get returns a node with the given name
+func (nodes NodeList) Get(name string) *Node {
+	for _, node := range nodes {
+		if node.Name == name {
+			return node
+		}
+	}
+
+	return nil
+}
 
 // Node represents a point inside a given flow where a request or rollback could be preformed.
 // Nodes could be executed synchronously or asynchronously.

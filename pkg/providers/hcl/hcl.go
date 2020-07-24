@@ -47,7 +47,7 @@ func ServicesResolver(path string) providers.ServicesResolver {
 
 // FlowsResolver constructs a resource resolver for the given path
 func FlowsResolver(path string) providers.FlowsResolver {
-	return func(ctx instance.Context) ([]*specs.FlowsManifest, error) {
+	return func(ctx instance.Context) (specs.FlowListInterface, error) {
 		ctx.Logger(logger.Core).WithField("path", path).Debug("Resolving HCL flows")
 
 		definitions, err := ResolvePath(ctx, []string{}, path)
@@ -55,16 +55,23 @@ func FlowsResolver(path string) providers.FlowsResolver {
 			return nil, err
 		}
 
-		flows := make([]*specs.FlowsManifest, len(definitions))
+		var errObject *specs.ParameterMap
+		flows := make(specs.FlowListInterface, 0)
 
-		for index, definition := range definitions {
-			manifest, err := ParseFlows(ctx, definition)
+		for _, definition := range definitions {
+			errResult, result, err := ParseFlows(ctx, definition)
 			if err != nil {
 				return nil, err
 			}
 
-			flows[index] = manifest
+			if errResult != nil {
+				errObject = errResult
+			}
+
+			flows.Append(result...)
 		}
+
+		ResolveErrors(flows, errObject)
 
 		return flows, nil
 	}
@@ -72,7 +79,7 @@ func FlowsResolver(path string) providers.FlowsResolver {
 
 // EndpointsResolver constructs a resource resolver for the given path
 func EndpointsResolver(path string) providers.EndpointsResolver {
-	return func(ctx instance.Context) ([]*specs.EndpointsManifest, error) {
+	return func(ctx instance.Context) (specs.EndpointList, error) {
 		ctx.Logger(logger.Core).WithField("path", path).Debug("Resolving HCL endpoints")
 
 		definitions, err := ResolvePath(ctx, []string{}, path)
@@ -80,15 +87,15 @@ func EndpointsResolver(path string) providers.EndpointsResolver {
 			return nil, err
 		}
 
-		endpoints := make([]*specs.EndpointsManifest, len(definitions))
+		endpoints := make(specs.EndpointList, len(definitions))
 
-		for index, definition := range definitions {
-			manifest, err := ParseEndpoints(ctx, definition)
+		for _, definition := range definitions {
+			result, err := ParseEndpoints(ctx, definition)
 			if err != nil {
 				return nil, err
 			}
 
-			endpoints[index] = manifest
+			endpoints.Append(result)
 		}
 
 		return endpoints, nil

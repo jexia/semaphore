@@ -12,30 +12,24 @@ import (
 // ResolveReferences resolves all references inside the given manifest by forwarding references.
 // If a reference is referencing another reference the node is marked as a dependency of the
 // references resource and the referenced reference is copied over the the current resource.
-func ResolveReferences(ctx instance.Context, manifest *specs.FlowsManifest) {
+func ResolveReferences(ctx instance.Context, flows specs.FlowListInterface) {
 	ctx.Logger(logger.Core).Info("Resolving manifest references")
 
-	for _, flow := range manifest.Flows {
-		for _, node := range flow.Nodes {
+	for _, flow := range flows {
+		for _, node := range flow.GetNodes() {
 			ResolveNodeReferences(node)
 		}
 
 		// Error and output dependencies could safely be ignored
 		empty := map[string]*specs.Node{}
 
-		if flow.OnError != nil {
-			ResolveOnError(flow.OnError, empty)
+		if flow.GetOnError() != nil {
+			ResolveOnError(flow.GetOnError(), empty)
 		}
 
-		if flow.Output != nil {
-			ResolveHeaderReferences(flow.Output.Header, empty)
-			ResolvePropertyReferences(flow.Output.Property, empty)
-		}
-	}
-
-	for _, proxy := range manifest.Proxy {
-		for _, node := range proxy.Nodes {
-			ResolveNodeReferences(node)
+		if flow.GetOutput() != nil {
+			ResolveHeaderReferences(flow.GetOutput().Header, empty)
+			ResolvePropertyReferences(flow.GetOutput().Property, empty)
 		}
 	}
 }

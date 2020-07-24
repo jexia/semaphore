@@ -63,46 +63,13 @@ const (
 )
 
 // PrepareManifestFunctions prepares all function definitions inside the given manifest
-func PrepareManifestFunctions(ctx instance.Context, mem Collection, functions Custom, manifest *specs.FlowsManifest) (err error) {
+func PrepareManifestFunctions(ctx instance.Context, mem Collection, functions Custom, flows specs.FlowListInterface) (err error) {
 	ctx.Logger(logger.Core).Info("Preparing manifest functions")
 
-	for _, flow := range manifest.Flows {
-		err := PrepareFlowFunctions(ctx, mem, functions, manifest, flow)
+	for _, flow := range flows {
+		err := PrepareFlowFunctions(ctx, mem, functions, flow)
 		if err != nil {
 			return err
-		}
-	}
-
-	for _, proxy := range manifest.Proxy {
-		err := PrepareProxyFunctions(ctx, mem, functions, manifest, proxy)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// PrepareProxyFunctions prepares all function definitions inside the given proxy
-func PrepareProxyFunctions(ctx instance.Context, mem Collection, functions Custom, manifest *specs.FlowsManifest, proxy *specs.Proxy) (err error) {
-	ctx.Logger(logger.Core).WithField("proxy", proxy.GetName()).Info("Prepare proxy functions")
-
-	for _, node := range proxy.Nodes {
-		err = PrepareNodeFunctions(ctx, mem, functions, proxy, node)
-		if err != nil {
-			return err
-		}
-	}
-
-	if proxy.Forward != nil {
-		if proxy.Forward.Request != nil {
-			if proxy.Forward.Request.Header != nil {
-				stack := mem.Reserve(proxy.Forward.Request)
-				err = PrepareHeaderFunctions(ctx, proxy, stack, proxy.Forward.Request.Header, functions)
-				if err != nil {
-					return err
-				}
-			}
 		}
 	}
 
@@ -110,21 +77,31 @@ func PrepareProxyFunctions(ctx instance.Context, mem Collection, functions Custo
 }
 
 // PrepareFlowFunctions prepares the functions definitions inside the given flow
-func PrepareFlowFunctions(ctx instance.Context, mem Collection, functions Custom, manifest *specs.FlowsManifest, flow *specs.Flow) (err error) {
+func PrepareFlowFunctions(ctx instance.Context, mem Collection, functions Custom, flow specs.FlowInterface) (err error) {
 	ctx.Logger(logger.Core).WithField("flow", flow.GetName()).Info("Comparing flow functions")
 
-	for _, node := range flow.Nodes {
+	for _, node := range flow.GetNodes() {
 		err = PrepareNodeFunctions(ctx, mem, functions, flow, node)
 		if err != nil {
 			return err
 		}
 	}
 
-	if flow.Output != nil {
-		stack := mem.Reserve(flow.Output)
-		err := PrepareParameterMapFunctions(ctx, nil, flow, stack, flow.Output, functions)
+	if flow.GetOutput() != nil {
+		stack := mem.Reserve(flow.GetOutput())
+		err := PrepareParameterMapFunctions(ctx, nil, flow, stack, flow.GetOutput(), functions)
 		if err != nil {
 			return err
+		}
+	}
+
+	if flow.GetForward() != nil {
+		if flow.GetForward().Request != nil && flow.GetForward().Request.Header != nil {
+			stack := mem.Reserve(flow.GetForward().Request)
+			err = PrepareHeaderFunctions(ctx, flow, stack, flow.GetForward().Request.Header, functions)
+			if err != nil {
+				return err
+			}
 		}
 	}
 

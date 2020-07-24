@@ -40,6 +40,10 @@ func (objects Objects) Get(key string) *Property {
 
 // Append appends the given objects to the objects collection
 func (objects Objects) Append(arg Objects) {
+	if objects == nil {
+		return
+	}
+
 	for key, val := range arg {
 		objects[key] = val
 	}

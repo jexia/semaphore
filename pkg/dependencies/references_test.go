@@ -8,8 +8,8 @@ import (
 )
 
 func TestResolveReferences(t *testing.T) {
-	tests := map[string]func() (*specs.FlowsManifest, *specs.Property, *specs.Property){
-		"flow": func() (*specs.FlowsManifest, *specs.Property, *specs.Property) {
+	tests := map[string]func() (specs.FlowListInterface, *specs.Property, *specs.Property){
+		"flow": func() (specs.FlowListInterface, *specs.Property, *specs.Property) {
 			expected := &specs.Property{
 				Reference: &specs.PropertyReference{
 					Resource: "expected",
@@ -25,15 +25,13 @@ func TestResolveReferences(t *testing.T) {
 				},
 			}
 
-			manifest := &specs.FlowsManifest{
-				Flows: specs.FlowList{
-					{
-						Nodes: []*specs.Node{
-							{
-								Call: &specs.Call{
-									Request: &specs.ParameterMap{
-										Property: target,
-									},
+			flows := specs.FlowListInterface{
+				&specs.Flow{
+					Nodes: []*specs.Node{
+						{
+							Call: &specs.Call{
+								Request: &specs.ParameterMap{
+									Property: target,
 								},
 							},
 						},
@@ -41,9 +39,9 @@ func TestResolveReferences(t *testing.T) {
 				},
 			}
 
-			return manifest, target, expected
+			return flows, target, expected
 		},
-		"proxy": func() (*specs.FlowsManifest, *specs.Property, *specs.Property) {
+		"proxy": func() (specs.FlowListInterface, *specs.Property, *specs.Property) {
 			expected := &specs.Property{
 				Reference: &specs.PropertyReference{
 					Resource: "expected",
@@ -59,15 +57,13 @@ func TestResolveReferences(t *testing.T) {
 				},
 			}
 
-			manifest := &specs.FlowsManifest{
-				Proxy: specs.ProxyList{
-					{
-						Nodes: []*specs.Node{
-							{
-								Call: &specs.Call{
-									Request: &specs.ParameterMap{
-										Property: target,
-									},
+			flows := specs.FlowListInterface{
+				&specs.Proxy{
+					Nodes: []*specs.Node{
+						{
+							Call: &specs.Call{
+								Request: &specs.ParameterMap{
+									Property: target,
 								},
 							},
 						},
@@ -75,9 +71,9 @@ func TestResolveReferences(t *testing.T) {
 				},
 			}
 
-			return manifest, target, expected
+			return flows, target, expected
 		},
-		"params": func() (*specs.FlowsManifest, *specs.Property, *specs.Property) {
+		"params": func() (specs.FlowListInterface, *specs.Property, *specs.Property) {
 			expected := &specs.Property{
 				Reference: &specs.PropertyReference{
 					Resource: "expected",
@@ -93,16 +89,14 @@ func TestResolveReferences(t *testing.T) {
 				},
 			}
 
-			manifest := &specs.FlowsManifest{
-				Flows: specs.FlowList{
-					{
-						Nodes: []*specs.Node{
-							{
-								Call: &specs.Call{
-									Request: &specs.ParameterMap{
-										Params: map[string]*specs.Property{
-											"mock": target,
-										},
+			flows := specs.FlowListInterface{
+				&specs.Flow{
+					Nodes: []*specs.Node{
+						{
+							Call: &specs.Call{
+								Request: &specs.ParameterMap{
+									Params: map[string]*specs.Property{
+										"mock": target,
 									},
 								},
 							},
@@ -111,15 +105,15 @@ func TestResolveReferences(t *testing.T) {
 				},
 			}
 
-			return manifest, target, expected
+			return flows, target, expected
 		},
 	}
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			ctx := instance.NewContext()
-			manifest, target, expected := test()
-			ResolveReferences(ctx, manifest)
+			flows, target, expected := test()
+			ResolveReferences(ctx, flows)
 
 			if target.Reference.String() != expected.Reference.String() {
 				t.Errorf("unexpected reference '%s', expected '%s'", target.Reference, expected.Reference)
@@ -408,11 +402,7 @@ func TestResolveOutputReferences(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			flow, target, expected := test()
 			ctx := instance.NewContext()
-			ResolveReferences(ctx, &specs.FlowsManifest{
-				Flows: []*specs.Flow{
-					flow,
-				},
-			})
+			ResolveReferences(ctx, specs.FlowListInterface{flow})
 
 			if target.Reference == nil {
 				t.Fatal("target reference not set")

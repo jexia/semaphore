@@ -10,25 +10,23 @@ import (
 )
 
 func TestGetFlow(t *testing.T) {
-	manifest := specs.FlowsManifest{
-		Flows: []*specs.Flow{
-			{
-				Name: "first",
-			},
-			{
-				Name: "second",
-			},
+	flows := specs.FlowListInterface{
+		&specs.Flow{
+			Name: "first",
+		},
+		&specs.Flow{
+			Name: "second",
 		},
 	}
 
-	tests := map[string]*specs.Flow{
-		"second":  manifest.Flows[1],
-		"first":   manifest.Flows[0],
+	tests := map[string]specs.FlowInterface{
+		"second":  flows[1],
+		"first":   flows[0],
 		"unknown": nil,
 	}
 
 	for input, expected := range tests {
-		result := GetFlow(manifest, input)
+		result := flows.Get(input)
 		if result != expected {
 			t.Errorf("unexpected result %+v, expected %+v", result, expected)
 		}

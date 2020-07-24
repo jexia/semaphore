@@ -10,18 +10,11 @@ import (
 )
 
 // ManifestTypes compares the types defined insde the schema definitions against the configured specification
-func ManifestTypes(ctx instance.Context, services specs.ServiceList, objects specs.Objects, flows *specs.FlowsManifest) (err error) {
+func ManifestTypes(ctx instance.Context, services specs.ServiceList, objects specs.Objects, flows specs.FlowListInterface) (err error) {
 	ctx.Logger(logger.Core).Info("Comparing manifest types")
 
-	for _, flow := range flows.Flows {
-		err := FlowTypes(ctx, services, objects, flows, flow)
-		if err != nil {
-			return err
-		}
-	}
-
-	for _, proxy := range flows.Proxy {
-		err := ProxyTypes(ctx, services, objects, flows, proxy)
+	for _, flow := range flows {
+		err := FlowTypes(ctx, services, objects, flow)
 		if err != nil {
 			return err
 		}
@@ -31,7 +24,7 @@ func ManifestTypes(ctx instance.Context, services specs.ServiceList, objects spe
 }
 
 // ProxyTypes compares the given proxy against the configured schema types
-func ProxyTypes(ctx instance.Context, services specs.ServiceList, objects specs.Objects, flows *specs.FlowsManifest, proxy *specs.Proxy) (err error) {
+func ProxyTypes(ctx instance.Context, services specs.ServiceList, objects specs.Objects, proxy *specs.Proxy) (err error) {
 	ctx.Logger(logger.Core).WithField("proxy", proxy.GetName()).Info("Compare proxy flow types")
 
 	if proxy.OnError != nil {
@@ -42,12 +35,12 @@ func ProxyTypes(ctx instance.Context, services specs.ServiceList, objects specs.
 	}
 
 	for _, node := range proxy.Nodes {
-		err = CallTypes(ctx, services, objects, flows, node, node.Call, proxy)
+		err = CallTypes(ctx, services, objects, node, node.Call, proxy)
 		if err != nil {
 			return err
 		}
 
-		err = CallTypes(ctx, services, objects, flows, node, node.Rollback, proxy)
+		err = CallTypes(ctx, services, objects, node, node.Rollback, proxy)
 		if err != nil {
 			return err
 		}
@@ -64,42 +57,53 @@ func ProxyTypes(ctx instance.Context, services specs.ServiceList, objects specs.
 }
 
 // FlowTypes compares the flow types against the configured schema types
-func FlowTypes(ctx instance.Context, services specs.ServiceList, objects specs.Objects, flows *specs.FlowsManifest, flow *specs.Flow) (err error) {
+func FlowTypes(ctx instance.Context, services specs.ServiceList, objects specs.Objects, flow specs.FlowInterface) (err error) {
 	ctx.Logger(logger.Core).WithField("flow", flow.GetName()).Info("Comparing flow types")
 
-	err = CheckParameterMapTypes(ctx, flow.Input, objects, flow)
-	if err != nil {
-		return err
-	}
-
-	if flow.OnError != nil {
-		err = CheckParameterMapTypes(ctx, flow.OnError.Response, objects, flow)
+	if flow.GetInput() != nil {
+		err = CheckParameterMapTypes(ctx, flow.GetInput(), objects, flow)
 		if err != nil {
 			return err
 		}
 	}
 
-	for _, node := range flow.Nodes {
-		err = CallTypes(ctx, services, objects, flows, node, node.Call, flow)
-		if err != nil {
-			return err
-		}
-
-		err = CallTypes(ctx, services, objects, flows, node, node.Rollback, flow)
+	if flow.GetOnError() != nil {
+		err = CheckParameterMapTypes(ctx, flow.GetOnError().Response, objects, flow)
 		if err != nil {
 			return err
 		}
 	}
 
-	if flow.Output != nil {
-		message := objects.Get(flow.Output.Schema)
+	for _, node := range flow.GetNodes() {
+		err = CallTypes(ctx, services, objects, node, node.Call, flow)
+		if err != nil {
+			return err
+		}
+
+		err = CallTypes(ctx, services, objects, node, node.Rollback, flow)
+		if err != nil {
+			return err
+		}
+	}
+
+	if flow.GetOutput() != nil {
+		message := objects.Get(flow.GetOutput().Schema)
 		if message == nil {
-			return trace.New(trace.WithMessage("undefined flow output object '%s' in '%s'", flow.Output.Schema, flow.Name))
+			return trace.New(trace.WithMessage("undefined flow output object '%s' in '%s'", flow.GetOutput().Schema, flow.GetName()))
 		}
 
-		err = CheckParameterMapTypes(ctx, flow.Output, objects, flow)
+		err = CheckParameterMapTypes(ctx, flow.GetOutput(), objects, flow)
 		if err != nil {
 			return err
+		}
+	}
+
+	if flow.GetForward() != nil {
+		if flow.GetForward().Request != nil && flow.GetForward().Request.Header != nil {
+			err = CheckHeader(flow.GetForward().Request.Header, flow)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -107,7 +111,7 @@ func FlowTypes(ctx instance.Context, services specs.ServiceList, objects specs.O
 }
 
 // CallTypes compares the given call types against the configured schema types
-func CallTypes(ctx instance.Context, services specs.ServiceList, objects specs.Objects, flows *specs.FlowsManifest, node *specs.Node, call *specs.Call, flow specs.FlowInterface) (err error) {
+func CallTypes(ctx instance.Context, services specs.ServiceList, objects specs.Objects, node *specs.Node, call *specs.Call, flow specs.FlowInterface) (err error) {
 	if call == nil {
 		return nil
 	}

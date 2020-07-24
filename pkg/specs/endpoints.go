@@ -1,28 +1,17 @@
 package specs
 
-// EndpointsManifest holds a collection of flow endpoints
-type EndpointsManifest struct {
-	Endpoints EndpointList `json:"endpoints,omitempty"`
-}
-
-// Append merges the incoming manifest to the existing (left) manifest
-func (manifest *EndpointsManifest) Append(incoming ...*EndpointsManifest) {
-	if manifest == nil {
-		return
-	}
-
-	for _, right := range incoming {
-		manifest.Endpoints = append(manifest.Endpoints, right.Endpoints...)
-	}
-}
-
 // EndpointList represents a collection of endpoints
 type EndpointList []*Endpoint
 
-// Get attempts to find a endpoint for the given flow
-func (collection EndpointList) Get(flow string) []*Endpoint {
+// Append merges the incoming manifest to the existing (left) manifest
+func (endpoints *EndpointList) Append(list EndpointList) {
+	*endpoints = append(*endpoints, list...)
+}
+
+// Get returns all endpoints for the given flow
+func (endpoints EndpointList) Get(flow string) []*Endpoint {
 	result := make([]*Endpoint, 0)
-	for _, endpoint := range collection {
+	for _, endpoint := range endpoints {
 		if endpoint.Flow == flow {
 			result = append(result, endpoint)
 		}

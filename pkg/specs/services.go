@@ -4,8 +4,8 @@ package specs
 type ServiceList []*Service
 
 // Append appends the given services to the current services collection
-func (services ServiceList) Append(list ServiceList) {
-	services = append(services, list...)
+func (services *ServiceList) Append(list ServiceList) {
+	*services = append(*services, list...)
 }
 
 // Get attempts to find and return a flow with the given name

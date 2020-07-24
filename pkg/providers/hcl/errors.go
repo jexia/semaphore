@@ -1,4 +1,4 @@
-package errors
+package hcl
 
 import (
 	"github.com/jexia/semaphore/pkg/specs"
@@ -62,39 +62,22 @@ func MergeOnError(left *specs.OnError, right *specs.OnError) {
 	}
 }
 
-// Resolve clones any previously defined error objects or error handles
-func Resolve(manifest *specs.FlowsManifest) {
-	for _, flow := range manifest.Flows {
-		DefaultOnError(flow.OnError)
+// ResolveErrors clones any previously defined error objects or error handles
+func ResolveErrors(flows specs.FlowListInterface, err *specs.ParameterMap) {
+	for _, flow := range flows {
+		DefaultOnError(flow.GetOnError())
 
-		if flow.OnError.Response == nil {
-			flow.OnError.Response = manifest.Error.Clone()
+		if flow.GetOnError().Response == nil {
+			flow.GetOnError().Response = err.Clone()
 		}
 
-		for _, node := range flow.Nodes {
+		for _, node := range flow.GetNodes() {
 			if node.OnError == nil {
-				node.OnError = flow.OnError.Clone()
+				node.OnError = flow.GetOnError().Clone()
 				continue
 			}
 
-			MergeOnError(node.OnError, flow.OnError)
-		}
-	}
-
-	for _, proxy := range manifest.Proxy {
-		DefaultOnError(proxy.OnError)
-
-		if proxy.OnError.Response == nil {
-			proxy.OnError.Response = manifest.Error.Clone()
-		}
-
-		for _, node := range proxy.Nodes {
-			if node.OnError == nil {
-				node.OnError = proxy.OnError.Clone()
-				continue
-			}
-
-			MergeOnError(node.OnError, proxy.OnError)
+			MergeOnError(node.OnError, flow.GetOnError())
 		}
 	}
 }

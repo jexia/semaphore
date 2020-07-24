@@ -262,7 +262,7 @@ func TestNewServiceErr(t *testing.T) {
 func TestNewFlowsErr(t *testing.T) {
 	t.Parallel()
 
-	resolver := func(instance.Context) ([]*specs.FlowsManifest, error) { return nil, errors.New("unexpected") }
+	resolver := func(instance.Context) (specs.FlowListInterface, error) { return nil, errors.New("unexpected") }
 	_, err := New(
 		WithFlows(resolver),
 	)
@@ -272,7 +272,7 @@ func TestNewFlowsErr(t *testing.T) {
 	}
 }
 
-func TestNewGetCollection(t *testing.T) {
+func TestNewGetEndpoints(t *testing.T) {
 	t.Parallel()
 
 	client, err := New()
@@ -280,9 +280,51 @@ func TestNewGetCollection(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	result := client.Collection()
+	result := client.GetEndpoints()
 	if result == nil {
-		t.Fatal("unexpected empty collection")
+		t.Fatal("unexpected empty endpoints")
+	}
+}
+
+func TestNewGetFlows(t *testing.T) {
+	t.Parallel()
+
+	client, err := New()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	result := client.GetFlows()
+	if result == nil {
+		t.Fatal("unexpected empty flows")
+	}
+}
+
+func TestNewGetServices(t *testing.T) {
+	t.Parallel()
+
+	client, err := New()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	result := client.GetServices()
+	if result == nil {
+		t.Fatal("unexpected empty services")
+	}
+}
+
+func TestNewGetSchemas(t *testing.T) {
+	t.Parallel()
+
+	client, err := New()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	result := client.GetSchemas()
+	if result == nil {
+		t.Fatal("unexpected empty schemas")
 	}
 }
 

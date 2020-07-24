@@ -18,17 +18,6 @@ type ReferenceMap map[string]PathLookup
 // PathLookup represents a lookup method that returns the property available on the given path
 type PathLookup func(path string) *specs.Property
 
-// GetFlow attempts to find the given flow inside the given manifest
-func GetFlow(manifest specs.FlowsManifest, name string) *specs.Flow {
-	for _, flow := range manifest.Flows {
-		if flow.Name == name {
-			return flow
-		}
-	}
-
-	return nil
-}
-
 // ParseResource parses the given resource into the resource and props
 func ParseResource(resource string) (string, string) {
 	resources := template.SplitPath(resource)

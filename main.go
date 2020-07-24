@@ -3,8 +3,8 @@ package semaphore
 import (
 	"sync"
 
+	"github.com/jexia/semaphore/pkg/core"
 	"github.com/jexia/semaphore/pkg/core/api"
-	"github.com/jexia/semaphore/pkg/core/flows"
 	"github.com/jexia/semaphore/pkg/core/instance"
 	"github.com/jexia/semaphore/pkg/core/logger"
 	"github.com/jexia/semaphore/pkg/core/trace"
@@ -18,7 +18,10 @@ type Client struct {
 	Ctx          instance.Context
 	transporters []*transport.Endpoint
 	listeners    []transport.Listener
-	collection   *specs.Collection
+	flows        specs.FlowListInterface
+	endpoints    specs.EndpointList
+	services     specs.ServiceList
+	schemas      specs.Objects
 	Options      api.Options
 	mutex        sync.RWMutex
 }
@@ -55,14 +58,17 @@ func (client *Client) Handle(ctx instance.Context, options api.Options) error {
 	defer client.mutex.Unlock()
 
 	mem := functions.Collection{}
-	specifications, err := options.Constructor(ctx, mem, options)
+	flows, endpoints, services, schemas, err := options.Constructor(ctx, mem, options)
 	if err != nil {
 		return err
 	}
 
-	// TODO: refactor me and set values
-	// client.collection = collection
-	managers, err := flows.Apply(ctx, mem, specifications.Services, nil, nil, options)
+	client.flows = flows
+	client.endpoints = endpoints
+	client.services = services
+	client.schemas = schemas
+
+	managers, err := core.Apply(ctx, mem, services, endpoints, flows, options)
 	if err != nil {
 		return err
 	}
@@ -71,11 +77,24 @@ func (client *Client) Handle(ctx instance.Context, options api.Options) error {
 	return nil
 }
 
-// Collection returns the currently defined specs collection
-func (client *Client) Collection() *specs.Collection {
-	client.mutex.RLock()
-	defer client.mutex.RUnlock()
-	return client.collection
+// GetFlows returns the currently applied flows
+func (client *Client) GetFlows() specs.FlowListInterface {
+	return client.flows
+}
+
+// GetServices returns the currently applied services
+func (client *Client) GetServices() specs.ServiceList {
+	return client.services
+}
+
+// GetEndpoints returns the currently applied endpoints
+func (client *Client) GetEndpoints() specs.EndpointList {
+	return client.endpoints
+}
+
+// GetSchemas returns the currently applied schemas
+func (client *Client) GetSchemas() specs.Objects {
+	return client.schemas
 }
 
 // Close gracefully closes the given client
