@@ -72,6 +72,37 @@ func TestDuplicateManifests(t *testing.T) {
 	}
 }
 
+func TestDuplicateManifestsPass(t *testing.T) {
+	tests := map[string]specs.FlowListInterface{
+		"multiple flow": {
+			&specs.Flow{
+				Name: "first",
+			},
+			&specs.Flow{
+				Name: "second",
+			},
+		},
+		"flow and proxy": {
+			&specs.Flow{
+				Name: "first",
+			},
+			&specs.Proxy{
+				Name: "second",
+			},
+		},
+	}
+
+	for name, input := range tests {
+		t.Run(name, func(t *testing.T) {
+			ctx := instance.NewContext()
+			err := FlowDuplicates(ctx, input)
+			if err != nil {
+				t.Fatal("unexpected fail", err)
+			}
+		})
+	}
+}
+
 func TestReservedKeywordsManifests(t *testing.T) {
 	tests := map[string]specs.FlowListInterface{
 		"error": {
