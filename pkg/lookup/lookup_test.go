@@ -363,6 +363,33 @@ func NewResultMockProperty() *specs.Property {
 func NewMockCall(name string) *specs.Node {
 	return &specs.Node{
 		ID: name,
+		OnError: &specs.OnError{
+			Response: &specs.ParameterMap{
+				Header: specs.Header{
+					"cookie": &specs.Property{
+						Path:    "cookie",
+						Default: "mnomnom",
+						Type:    types.String,
+						Label:   labels.Optional,
+					},
+				},
+				Property: NewResultMockProperty(),
+			},
+			Status: &specs.Property{
+				Type: types.Int64,
+			},
+			Message: &specs.Property{
+				Type: types.Message,
+			},
+			Params: map[string]*specs.Property{
+				"sample": {
+					Path:    "sample",
+					Default: "mock",
+					Type:    types.String,
+					Label:   labels.Optional,
+				},
+			},
+		},
 		Call: &specs.Call{
 			Request: &specs.ParameterMap{
 				Header: specs.Header{
@@ -432,14 +459,14 @@ func TestGetAvailableResources(t *testing.T) {
 	tests := map[string]func() ([]string, map[string]ReferenceMap){
 		"input and first": func() ([]string, map[string]ReferenceMap) {
 			flow := NewMockFlow("first")
-			expected := []string{template.StackResource, "input", "first", "second"}
+			expected := []string{template.StackResource, template.ErrorResource, "input", "first", "second"}
 
 			result := GetAvailableResources(flow, "second")
 			return expected, result
 		},
 		"input": func() ([]string, map[string]ReferenceMap) {
 			flow := NewMockFlow("first")
-			expected := []string{template.StackResource, "input", "first"}
+			expected := []string{template.StackResource, template.ErrorResource, "input", "first"}
 
 			result := GetAvailableResources(flow, "first")
 			return expected, result
@@ -555,9 +582,9 @@ func NewPropertyReference(resource string, path string) *specs.PropertyReference
 	}
 }
 
-func TestGetResourceReference(t *testing.T) {
+func TestGetResourceOutputReference(t *testing.T) {
 	flow := NewMockFlow("first")
-	references := GetAvailableResources(flow, "output")
+	resources := GetNextResource(flow, template.OutputResource)
 	breakpoint := "first"
 
 	tests := map[*specs.PropertyReference]*specs.Property{
@@ -589,7 +616,36 @@ func TestGetResourceReference(t *testing.T) {
 
 	for input, expected := range tests {
 		t.Run(input.String(), func(t *testing.T) {
+			references := GetAvailableResources(flow, resources)
 			result := GetResourceReference(input, references, breakpoint)
+			if result == nil {
+				t.Fatalf("unexpected empty result on lookup '%s', expected '%+v'", input, expected)
+			}
+
+			if result.Path != expected.Path {
+				t.Fatalf("unexpected result '%+v', expected '%+v'", result, expected)
+			}
+		})
+	}
+}
+
+func TestGetResourceReference(t *testing.T) {
+	flow := NewMockFlow("first")
+
+	tests := map[*specs.PropertyReference]*specs.Property{
+		NewPropertyReference("error.params", "sample"):    flow.Nodes[0].OnError.Params["sample"],
+		NewPropertyReference("error", "status"):           flow.Nodes[0].OnError.Status,
+		NewPropertyReference("error.response", "status"):  flow.Nodes[0].OnError.Status,
+		NewPropertyReference("error", "message"):          flow.Nodes[0].OnError.Message,
+		NewPropertyReference("error.response", "message"): flow.Nodes[0].OnError.Message,
+		NewPropertyReference("first.error", "result"):     flow.Nodes[0].OnError.Response.Property.Nested["result"],
+	}
+
+	for input, expected := range tests {
+		t.Run(input.String(), func(t *testing.T) {
+			resource, _ := ParseResource(input.Resource)
+			references := GetAvailableResources(flow, "first")
+			result := GetResourceReference(input, references, resource)
 			if result == nil {
 				t.Fatalf("unexpected empty result on lookup '%s', expected '%+v'", input, expected)
 			}
