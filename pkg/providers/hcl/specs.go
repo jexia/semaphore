@@ -33,7 +33,7 @@ func ParseFlows(ctx instance.Context, manifest Manifest) (errObject *specs.Param
 			return errObject, nil, err
 		}
 
-		result.Append(flow)
+		result.Append(specs.FlowListInterface{flow})
 	}
 
 	for _, proxy := range manifest.Proxy {
@@ -42,7 +42,7 @@ func ParseFlows(ctx instance.Context, manifest Manifest) (errObject *specs.Param
 			return errObject, nil, err
 		}
 
-		result.Append(proxy)
+		result.Append(specs.FlowListInterface{proxy})
 	}
 
 	return errObject, result, nil

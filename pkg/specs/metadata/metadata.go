@@ -1,72 +1,29 @@
 package metadata
 
-type empty struct{}
-
-func (empty) Value(key interface{}) interface{} {
-	return nil
-}
-
-// Empty returns a empty meta object
-func Empty() Meta {
-	return empty{}
+// WithValue returns a copy of parent in which the value associated with key is val.
+func WithValue(parent *Meta, key, value interface{}) *Meta {
+	return &Meta{parent, key, value}
 }
 
 // Meta represents a metadata store capable of holding values that
 // extend a given struct through a context Value like approach.
-type Meta interface {
-	Value(key interface{}) interface{}
+type Meta struct {
+	parent *Meta
+	key    interface{}
+	val    interface{}
 }
 
-// WithValue returns a copy of parent in which the value associated with key is val.
-func WithValue(parent Meta, key, value interface{}) Meta {
-	if parent == nil {
-		parent = Empty()
+// Value compares the given key with the value key inside
+// the given meta object. If the keys match is the value
+// returned. If the keys do not match is the parent object called.
+func (c *Meta) Value(key interface{}) interface{} {
+	if c == nil {
+		return nil
 	}
 
-	return &valueMeta{parent, key, value}
-}
-
-type valueMeta struct {
-	Meta
-	key interface{}
-	val interface{}
-}
-
-func (c *valueMeta) Value(key interface{}) interface{} {
 	if c.key == key {
 		return c.val
 	}
 
-	return c.Meta.Value(key)
-}
-
-// WithValues combines the two given meta objects into one
-func WithValues(parent Meta, child Meta) Meta {
-	if parent == nil && child == nil {
-		return Empty()
-	}
-
-	if child == nil {
-		return parent
-	}
-
-	if parent == nil {
-		return child
-	}
-
-	return &valuesMeta{parent, child}
-}
-
-type valuesMeta struct {
-	parent Meta
-	child  Meta
-}
-
-func (c *valuesMeta) Value(key interface{}) interface{} {
-	v := c.parent.Value(key)
-	if v != nil {
-		return v
-	}
-
-	return c.child.Value(key)
+	return c.parent.Value(key)
 }

@@ -1,5 +1,7 @@
 package specs
 
+import "github.com/jexia/semaphore/pkg/specs/metadata"
+
 // EndpointList represents a collection of endpoints
 type EndpointList []*Endpoint
 
@@ -23,6 +25,7 @@ func (endpoints EndpointList) Get(flow string) []*Endpoint {
 // Endpoint exposes a flow. Endpoints are not parsed by Semaphore and have custom implementations in each caller.
 // The name of the endpoint represents the flow which should be executed.
 type Endpoint struct {
+	*metadata.Meta
 	Flow     string  `json:"flow,omitempty"`
 	Listener string  `json:"listener,omitempty"`
 	Options  Options `json:"options,omitempty"`

@@ -68,7 +68,7 @@ func FlowsResolver(path string) providers.FlowsResolver {
 				errObject = errResult
 			}
 
-			flows.Append(result...)
+			flows.Append(result)
 		}
 
 		ResolveErrors(flows, errObject)
