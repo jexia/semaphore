@@ -3,6 +3,7 @@ package http
 import (
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/jexia/semaphore/pkg/specs"
@@ -105,7 +106,7 @@ func ParseEndpointOptions(options specs.Options) (*EndpointOptions, error) {
 	}
 
 	if options[MethodOption] != "" {
-		result.Method = options[MethodOption]
+		result.Method = strings.ToUpper(options[MethodOption])
 	}
 
 	if options[EndpointOption] != "" {
