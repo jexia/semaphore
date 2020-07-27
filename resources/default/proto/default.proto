@@ -1,7 +1,0 @@
-syntax = "proto3";
-
-package semaphore;
-
-message Welcome {
-    string message = 1;
-}

@@ -13,7 +13,6 @@ FROM alpine
 COPY --from=build /usr/local/bin/semaphore /bin/semaphore
 
 RUN mkdir -p /etc/semaphore/
-COPY ./resources/default/ /etc/semaphore/
 WORKDIR /etc/semaphore
 
 ENTRYPOINT ["/bin/semaphore", "daemon"]
