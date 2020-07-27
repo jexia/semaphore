@@ -104,7 +104,7 @@ func BenchmarkSimpleMarshal(b *testing.B) {
 	}
 
 	flow := flows.Get("simple")
-	specs := flow.GetNode("first").Call.Request
+	specs := flow.GetNodes().Get("first").Call.Request
 
 	constructor := &Constructor{}
 	manager, err := constructor.New("input", specs)
@@ -141,7 +141,7 @@ func BenchmarkNestedMarshal(b *testing.B) {
 	}
 
 	flow := flows.Get("nested")
-	specs := flow.GetNode("first").Call.Request
+	specs := flow.GetNodes().Get("first").Call.Request
 
 	constructor := &Constructor{}
 	manager, err := constructor.New("input", specs)
@@ -180,7 +180,7 @@ func BenchmarkRepeatedMessagesMarshal(b *testing.B) {
 	}
 
 	flow := flows.Get("repeated")
-	specs := flow.GetNode("first").Call.Request
+	specs := flow.GetNodes().Get("first").Call.Request
 
 	constructor := &Constructor{}
 	manager, err := constructor.New("input", specs)
@@ -217,7 +217,7 @@ func BenchmarkRepeatedValuesMarshal(b *testing.B) {
 	}
 
 	flow := flows.Get("repeated_values")
-	specs := flow.GetNode("first").Call.Request
+	specs := flow.GetNodes().Get("first").Call.Request
 
 	constructor := &Constructor{}
 	manager, err := constructor.New("input", specs)
@@ -255,7 +255,7 @@ func BenchmarkSimpleUnmarshal(b *testing.B) {
 	}
 
 	flow := flows.Get("simple")
-	specs := flow.GetNode("first").Call.Request
+	specs := flow.GetNodes().Get("first").Call.Request
 
 	constructor := &Constructor{}
 	manager, err := constructor.New("input", specs)
@@ -293,7 +293,7 @@ func BenchmarkNestedUnmarshal(b *testing.B) {
 	}
 
 	flow := flows.Get("nested")
-	specs := flow.GetNode("first").Call.Request
+	specs := flow.GetNodes().Get("first").Call.Request
 
 	constructor := &Constructor{}
 	manager, err := constructor.New("input", specs)
@@ -333,7 +333,7 @@ func BenchmarkRepeatedMessagesUnmarshal(b *testing.B) {
 	}
 
 	flow := flows.Get("repeated")
-	specs := flow.GetNode("first").Call.Request
+	specs := flow.GetNodes().Get("first").Call.Request
 
 	constructor := &Constructor{}
 	manager, err := constructor.New("input", specs)
@@ -371,7 +371,7 @@ func BenchmarkRepeatedValuesUnmarshal(b *testing.B) {
 	}
 
 	flow := flows.Get("repeated_values")
-	specs := flow.GetNode("first").Call.Request
+	specs := flow.GetNodes().Get("first").Call.Request
 
 	constructor := &Constructor{}
 	manager, err := constructor.New("input", specs)
@@ -397,7 +397,7 @@ func TestMarshal(t *testing.T) {
 	}
 
 	flow := flows.Get("complete")
-	req := flow.GetNode("first").Call.Request
+	req := flow.GetNodes().Get("first").Call.Request
 
 	constructor := &Constructor{}
 	manager, err := constructor.New("input", req)
@@ -513,7 +513,7 @@ func TestUnmarshal(t *testing.T) {
 	}
 
 	flow := flows.Get("complete")
-	req := flow.GetNode("first").Call.Request
+	req := flow.GetNodes().Get("first").Call.Request
 
 	constructor := &Constructor{}
 	manager, err := constructor.New("input", req)
