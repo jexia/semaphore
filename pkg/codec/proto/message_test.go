@@ -113,7 +113,7 @@ func BenchmarkSimpleMarshal(b *testing.B) {
 	}
 
 	flow := flows.Get("simple")
-	specs := flow.GetNode("first").Call.Request
+	specs := flow.GetNodes().Get("first").Call.Request
 
 	constructor := NewConstructor()
 	manager, err := constructor.New("input", specs)
@@ -150,7 +150,7 @@ func BenchmarkNestedMarshal(b *testing.B) {
 	}
 
 	flow := flows.Get("simple")
-	specs := flow.GetNode("first").Call.Request
+	specs := flow.GetNodes().Get("first").Call.Request
 
 	constructor := NewConstructor()
 	manager, err := constructor.New("input", specs)
@@ -189,7 +189,7 @@ func BenchmarkRepeatedMarshal(b *testing.B) {
 	}
 
 	flow := flows.Get("simple")
-	specs := flow.GetNode("first").Call.Request
+	specs := flow.GetNodes().Get("first").Call.Request
 
 	constructor := NewConstructor()
 	manager, err := constructor.New("input", specs)
@@ -227,7 +227,7 @@ func BenchmarkSimpleUnmarshal(b *testing.B) {
 	}
 
 	flow := flows.Get("simple")
-	specs := flow.GetNode("first").Call.Request
+	specs := flow.GetNodes().Get("first").Call.Request
 
 	desc, err := NewMessage(specs.Property.Name, specs.Property.Nested)
 	if err != nil {
@@ -281,7 +281,7 @@ func BenchmarkNestedUnmarshal(b *testing.B) {
 	}
 
 	flow := flows.Get("nested")
-	specs := flow.GetNode("first").Call.Request
+	specs := flow.GetNodes().Get("first").Call.Request
 
 	desc, err := NewMessage(specs.Property.Name, specs.Property.Nested)
 	if err != nil {
@@ -337,7 +337,7 @@ func BenchmarkRepeatedUnmarshal(b *testing.B) {
 	}
 
 	flow := flows.Get("repeated")
-	specs := flow.GetNode("first").Call.Request
+	specs := flow.GetNodes().Get("first").Call.Request
 
 	desc, err := NewMessage(specs.Property.Name, specs.Property.Nested)
 	if err != nil {
@@ -379,7 +379,7 @@ func TestMarshal(t *testing.T) {
 	}
 
 	flow := flows.Get("complete")
-	req := flow.GetNode("first").Call.Request
+	req := flow.GetNodes().Get("first").Call.Request
 	desc, err := NewMessage("marshal", req.Property.Nested)
 	if err != nil {
 		t.Fatal(err)
@@ -498,7 +498,7 @@ func TestUnmarshal(t *testing.T) {
 	}
 
 	flow := flows.Get("complete")
-	req := flow.GetNode("first").Call.Request
+	req := flow.GetNodes().Get("first").Call.Request
 
 	tests := map[string]map[string]interface{}{
 		"simple": {

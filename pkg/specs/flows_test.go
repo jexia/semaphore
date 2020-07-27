@@ -77,7 +77,7 @@ func TestFlowInterface(t *testing.T) {
 		t.Error("unexpected result, expected nodes to be set")
 	}
 
-	if flow.GetNode("first") == nil {
+	if flow.GetNodes().Get("first") == nil {
 		t.Error("unexpected result, expected node to be set")
 	}
 
@@ -140,7 +140,7 @@ func TestProxyInterface(t *testing.T) {
 		t.Error("unexpected result, expected nodes to be set")
 	}
 
-	if flow.GetNode("first") == nil {
+	if flow.GetNodes().Get("first") == nil {
 		t.Error("unexpected result, expected node to be set")
 	}
 
