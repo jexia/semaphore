@@ -22,7 +22,7 @@ func (resolvers FlowsResolvers) Resolve(ctx instance.Context) (specs.FlowListInt
 			return nil, err
 		}
 
-		flows.Append(result...)
+		flows.Append(result)
 	}
 
 	return flows, nil

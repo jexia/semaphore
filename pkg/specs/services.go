@@ -1,5 +1,7 @@
 package specs
 
+import "github.com/jexia/semaphore/pkg/specs/metadata"
+
 // ServiceList represents a collection of services
 type ServiceList []*Service
 
@@ -21,6 +23,7 @@ func (services ServiceList) Get(name string) *Service {
 
 // Service represents a service which exposes a set of methods
 type Service struct {
+	*metadata.Meta
 	Comment            string    `json:"comment,omitempty"`
 	Package            string    `json:"package,omitempty"`
 	FullyQualifiedName string    `json:"fully_qualified_name,omitempty"`
@@ -45,6 +48,7 @@ func (service *Service) GetMethod(name string) *Method {
 
 // Method represents a service method
 type Method struct {
+	*metadata.Meta
 	Comment string  `json:"comment,omitempty"`
 	Name    string  `json:"name,omitempty"`
 	Input   string  `json:"input,omitempty"`

@@ -127,6 +127,44 @@ func TestParseReference(t *testing.T) {
 	}
 }
 
+func TestParseReferenceErr(t *testing.T) {
+	name := ""
+	path := "message"
+
+	tests := []string{
+		"input:..",
+	}
+
+	for _, input := range tests {
+		t.Run(input, func(t *testing.T) {
+			ctx := instance.NewContext()
+			_, err := Parse(ctx, path, name, input)
+			if err == nil {
+				t.Fatal("unexpected pass")
+			}
+		})
+	}
+}
+
+func TestUnkownReferencePattern(t *testing.T) {
+	name := ""
+	path := "message"
+
+	tests := []string{
+		"input",
+		"value",
+	}
+
+	for _, input := range tests {
+		t.Run(input, func(t *testing.T) {
+			_, err := ParseContent(path, name, input)
+			if err != nil {
+				t.Fatalf("unexpected err %s", err)
+			}
+		})
+	}
+}
+
 func TestParseTemplate(t *testing.T) {
 	name := ""
 
@@ -185,5 +223,24 @@ func TestParseTemplate(t *testing.T) {
 
 			CompareProperties(t, *property, expected)
 		})
+	}
+}
+
+func TestIsTemplate(t *testing.T) {
+	tests := map[string]bool{
+		"{{ resource:path }}": true,
+		"{{resource:path}}":   true,
+		"resource:path":       false,
+		"{{ resource:path":    false,
+		"{{resource:path":     false,
+		"resource:path }}":    false,
+		"resource:path}}":     false,
+	}
+
+	for input, expected := range tests {
+		result := Is(input)
+		if result != expected {
+			t.Fatalf("unexpected result %+v, expected %+v", result, expected)
+		}
 	}
 }

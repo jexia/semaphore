@@ -2,13 +2,14 @@ package specs
 
 import (
 	"github.com/Knetic/govaluate"
+	"github.com/jexia/semaphore/pkg/specs/metadata"
 )
 
 // FlowListInterface represents a collection of flow interfaces
 type FlowListInterface []FlowInterface
 
 // Append appends the given flow list to the collection
-func (collection *FlowListInterface) Append(list ...FlowInterface) {
+func (collection *FlowListInterface) Append(list FlowListInterface) {
 	*collection = append(*collection, list...)
 }
 
@@ -39,6 +40,7 @@ func (collection FlowList) Get(name string) *Flow {
 
 // FlowInterface represents a proxy or flow manager.
 type FlowInterface interface {
+	GetMeta() *metadata.Meta
 	GetName() string
 	GetNodes() NodeList
 	GetNode(string) *Node
@@ -56,11 +58,17 @@ type FlowInterface interface {
 // Calls are nested inside of flows and contain two labels, a unique name within the flow and the service and method to be called.
 // A dependency reference structure is generated within the flow which allows Semaphore to figure out which calls could be called parallel to improve performance.
 type Flow struct {
+	*metadata.Meta
 	Name    string        `json:"name,omitempty"`
 	Input   *ParameterMap `json:"input,omitempty"`
 	Nodes   NodeList      `json:"nodes,omitempty"`
 	Output  *ParameterMap `json:"output,omitempty"`
 	OnError *OnError      `json:"on_error,omitempty"`
+}
+
+// GetMeta returns the metadata value object of the given flow
+func (flow *Flow) GetMeta() *metadata.Meta {
+	return flow.Meta
 }
 
 // GetName returns the flow name
@@ -116,11 +124,17 @@ func (collection ProxyList) Get(name string) *Proxy {
 // Proxies could define calls that are executed before the request body is forwarded.
 // A proxy forward could ideally be used for file uploads or large messages which could not be stored in memory.
 type Proxy struct {
+	*metadata.Meta
 	Input   *ParameterMap `json:"input,omitempty"`
 	Name    string        `json:"name,omitempty"`
 	Nodes   NodeList      `json:"nodes,omitempty"`
 	Forward *Call         `json:"forward,omitempty"`
 	OnError *OnError      `json:"on_error,omitempty"`
+}
+
+// GetMeta returns the metadata value object of the given proxy
+func (proxy *Proxy) GetMeta() *metadata.Meta {
+	return proxy.Meta
 }
 
 // GetName returns the flow name
@@ -160,6 +174,7 @@ func (proxy *Proxy) GetForward() *Call {
 
 // Condition represents a condition which could be true or false
 type Condition struct {
+	*metadata.Meta
 	RawExpression string                         `json:"raw_expression,omitempty"`
 	Expression    *govaluate.EvaluableExpression `json:"-"`
 	Params        *ParameterMap                  `json:"-"`
@@ -185,6 +200,7 @@ func (nodes NodeList) Get(name string) *Node {
 // The request and response proto messages are used for type definitions.
 // A call could contain the request headers, request body, rollback, and the execution type.
 type Node struct {
+	*metadata.Meta
 	ID           string           `json:"id,omitempty"`
 	Name         string           `json:"name,omitempty"`
 	Condition    *Condition       `json:"condition,omitempty"`
@@ -202,6 +218,7 @@ func (node *Node) GetOnError() *OnError {
 
 // Call represents a call which is executed during runtime
 type Call struct {
+	*metadata.Meta
 	Service    string        `json:"service,omitempty"`
 	Method     string        `json:"method,omitempty"`
 	Request    *ParameterMap `json:"request,omitempty"`
@@ -209,8 +226,16 @@ type Call struct {
 	Descriptor *Method       `json:"-"`
 }
 
+// ErrorHandle represents a error handle object
+type ErrorHandle interface {
+	GetResponse() *ParameterMap
+	GetStatusCode() *Property
+	GetMessage() *Property
+}
+
 // OnError represents the variables that have to be returned if a unexpected error is returned
 type OnError struct {
+	*metadata.Meta
 	Response *ParameterMap        `json:"response,omitempty"`
 	Status   *Property            `json:"status,omitempty"`
 	Message  *Property            `json:"message,omitempty"`
@@ -224,6 +249,7 @@ func (err *OnError) Clone() *OnError {
 	}
 
 	result := &OnError{
+		Meta:     err.Meta,
 		Response: err.Response.Clone(),
 		Status:   err.Status.Clone(),
 		Message:  err.Message.Clone(),
