@@ -10,18 +10,16 @@ import (
 )
 
 // NewSchema constructs a new schema manifest from the given file descriptors
-func NewSchema(descriptors []*desc.FileDescriptor) []*specs.SchemaManifest {
-	result := &specs.SchemaManifest{
-		Properties: make(map[string]*specs.Property, 0),
-	}
+func NewSchema(descriptors []*desc.FileDescriptor) specs.Objects {
+	result := make(specs.Objects, 0)
 
 	for _, descriptor := range descriptors {
 		for _, message := range descriptor.GetMessageTypes() {
-			result.Properties[message.GetFullyQualifiedName()] = NewMessage("", message)
+			result[message.GetFullyQualifiedName()] = NewMessage("", message)
 		}
 	}
 
-	return []*specs.SchemaManifest{result}
+	return result
 }
 
 // NewMessage constructs a schema Property with the given message descriptor

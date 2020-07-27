@@ -16,7 +16,7 @@ import (
 	"github.com/jhump/protoreflect/dynamic"
 )
 
-func NewMock() (*specs.FlowsManifest, error) {
+func NewMock() (specs.FlowListInterface, error) {
 	client, err := semaphore.New(
 		semaphore.WithFlows(hcl.FlowsResolver("./tests/*.hcl")),
 		semaphore.WithServices(protobuffers.ServiceResolver([]string{"./tests"}, "./tests/*.proto")),
@@ -27,17 +27,7 @@ func NewMock() (*specs.FlowsManifest, error) {
 		return nil, err
 	}
 
-	return client.Collection().FlowsManifest, nil
-}
-
-func FindFlow(manifest *specs.FlowsManifest, name string) *specs.Flow {
-	for _, flow := range manifest.Flows {
-		if flow.GetName() == name {
-			return flow
-		}
-	}
-
-	return nil
+	return client.GetFlows(), nil
 }
 
 func FindNode(flow *specs.Flow, name string) *specs.Node {
@@ -117,13 +107,13 @@ func BenchmarkSimpleMarshal(b *testing.B) {
 	refs := refs.NewReferenceStore(len(input))
 	refs.StoreValues("input", "", input)
 
-	manifest, err := NewMock()
+	flows, err := NewMock()
 	if err != nil {
 		b.Fatal(err)
 	}
 
-	flow := FindFlow(manifest, "simple")
-	specs := FindNode(flow, "first").Call.Request
+	flow := flows.Get("simple")
+	specs := flow.GetNode("first").Call.Request
 
 	constructor := NewConstructor()
 	manager, err := constructor.New("input", specs)
@@ -154,13 +144,13 @@ func BenchmarkNestedMarshal(b *testing.B) {
 	refs := refs.NewReferenceStore(len(input))
 	refs.StoreValues("input", "", input)
 
-	manifest, err := NewMock()
+	flows, err := NewMock()
 	if err != nil {
 		b.Fatal(err)
 	}
 
-	flow := FindFlow(manifest, "simple")
-	specs := FindNode(flow, "first").Call.Request
+	flow := flows.Get("simple")
+	specs := flow.GetNode("first").Call.Request
 
 	constructor := NewConstructor()
 	manager, err := constructor.New("input", specs)
@@ -193,13 +183,13 @@ func BenchmarkRepeatedMarshal(b *testing.B) {
 	refs := refs.NewReferenceStore(len(input))
 	refs.StoreValues("input", "", input)
 
-	manifest, err := NewMock()
+	flows, err := NewMock()
 	if err != nil {
 		b.Fatal(err)
 	}
 
-	flow := FindFlow(manifest, "simple")
-	specs := FindNode(flow, "first").Call.Request
+	flow := flows.Get("simple")
+	specs := flow.GetNode("first").Call.Request
 
 	constructor := NewConstructor()
 	manager, err := constructor.New("input", specs)
@@ -231,13 +221,13 @@ func BenchmarkSimpleUnmarshal(b *testing.B) {
 	}
 
 	refs := refs.NewReferenceStore(len(input))
-	manifest, err := NewMock()
+	flows, err := NewMock()
 	if err != nil {
 		b.Fatal(err)
 	}
 
-	flow := FindFlow(manifest, "simple")
-	specs := FindNode(flow, "first").Call.Request
+	flow := flows.Get("simple")
+	specs := flow.GetNode("first").Call.Request
 
 	desc, err := NewMessage(specs.Property.Name, specs.Property.Nested)
 	if err != nil {
@@ -285,13 +275,13 @@ func BenchmarkNestedUnmarshal(b *testing.B) {
 	}
 
 	refs := refs.NewReferenceStore(len(input))
-	manifest, err := NewMock()
+	flows, err := NewMock()
 	if err != nil {
 		b.Fatal(err)
 	}
 
-	flow := FindFlow(manifest, "nested")
-	specs := FindNode(flow, "first").Call.Request
+	flow := flows.Get("nested")
+	specs := flow.GetNode("first").Call.Request
 
 	desc, err := NewMessage(specs.Property.Name, specs.Property.Nested)
 	if err != nil {
@@ -341,13 +331,13 @@ func BenchmarkRepeatedUnmarshal(b *testing.B) {
 	}
 
 	refs := refs.NewReferenceStore(len(input))
-	manifest, err := NewMock()
+	flows, err := NewMock()
 	if err != nil {
 		b.Fatal(err)
 	}
 
-	flow := FindFlow(manifest, "repeated")
-	specs := FindNode(flow, "first").Call.Request
+	flow := flows.Get("repeated")
+	specs := flow.GetNode("first").Call.Request
 
 	desc, err := NewMessage(specs.Property.Name, specs.Property.Nested)
 	if err != nil {
@@ -383,13 +373,13 @@ func BenchmarkRepeatedUnmarshal(b *testing.B) {
 }
 
 func TestMarshal(t *testing.T) {
-	manifest, err := NewMock()
+	flows, err := NewMock()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	flow := FindFlow(manifest, "complete")
-	req := FindNode(flow, "first").Call.Request
+	flow := flows.Get("complete")
+	req := flow.GetNode("first").Call.Request
 	desc, err := NewMessage("marshal", req.Property.Nested)
 	if err != nil {
 		t.Fatal(err)
@@ -502,13 +492,13 @@ func TestMarshal(t *testing.T) {
 }
 
 func TestUnmarshal(t *testing.T) {
-	manifest, err := NewMock()
+	flows, err := NewMock()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	flow := FindFlow(manifest, "complete")
-	req := FindNode(flow, "first").Call.Request
+	flow := flows.Get("complete")
+	req := flow.GetNode("first").Call.Request
 
 	tests := map[string]map[string]interface{}{
 		"simple": {

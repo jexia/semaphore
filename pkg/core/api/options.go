@@ -11,7 +11,7 @@ import (
 )
 
 // Constructor represents a specs constructor that could be used to construct specifications
-type Constructor func(ctx instance.Context, mem functions.Collection, options Options) (*specs.Collection, error)
+type Constructor func(ctx instance.Context, mem functions.Collection, options Options) (specs.FlowListInterface, specs.EndpointList, specs.ServiceList, specs.Objects, error)
 
 // Option represents a constructor func which sets a given option
 type Option func(*Options)
@@ -19,11 +19,11 @@ type Option func(*Options)
 // NewOptions constructs a new options object
 func NewOptions(ctx instance.Context) Options {
 	return Options{
-		Ctx:      ctx,
-		Services: make([]providers.ServicesResolver, 0),
-		Flows:    make([]providers.FlowsResolver, 0),
-		Schemas:  make([]providers.SchemaResolver, 0),
-		Codec:    make(map[string]codec.Constructor),
+		Ctx:              ctx,
+		ServiceResolvers: make([]providers.ServicesResolver, 0),
+		FlowResolvers:    make([]providers.FlowsResolver, 0),
+		SchemaResolvers:  make([]providers.SchemaResolver, 0),
+		Codec:            make(map[string]codec.Constructor),
 	}
 }
 
@@ -34,10 +34,10 @@ type Options struct {
 	Codec                 codec.Constructors
 	Callers               transport.Callers
 	Listeners             transport.Listeners
-	Flows                 []providers.FlowsResolver
-	Endpoints             []providers.EndpointsResolver
-	Services              []providers.ServicesResolver
-	Schemas               []providers.SchemaResolver
+	FlowResolvers         providers.FlowsResolvers
+	EndpointResolvers     providers.EndpointResolvers
+	ServiceResolvers      providers.ServiceResolvers
+	SchemaResolvers       providers.SchemaResolvers
 	Middleware            []Middleware
 	BeforeConstructor     BeforeConstructor
 	AfterConstructor      AfterConstructor
@@ -56,7 +56,7 @@ type Options struct {
 type Middleware func(instance.Context) ([]Option, error)
 
 // AfterConstructor is called after the specifications is constructored
-type AfterConstructor func(instance.Context, *specs.Collection) error
+type AfterConstructor func(instance.Context, specs.FlowListInterface, specs.EndpointList, specs.ServiceList, specs.Objects) error
 
 // AfterConstructorHandler wraps the after constructed function to allow middleware to be chained
 type AfterConstructorHandler func(AfterConstructor) AfterConstructor

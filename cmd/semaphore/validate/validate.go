@@ -36,7 +36,7 @@ func run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	_, err = options.Constructor(ctx, functions.Collection{}, options)
+	_, _, _, _, err = options.Constructor(ctx, functions.Collection{}, options)
 	if err != nil {
 		return err
 	}

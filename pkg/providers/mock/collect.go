@@ -28,7 +28,7 @@ func CollectionResolver(path string) (*Collection, error) {
 
 // SchemaResolver returns a new schema resolver for the given mock collection
 func SchemaResolver(path string) providers.SchemaResolver {
-	return func(ctx instance.Context) ([]*specs.SchemaManifest, error) {
+	return func(ctx instance.Context) (specs.Objects, error) {
 		reader, err := os.Open(path)
 		if err != nil {
 			return nil, err
@@ -45,7 +45,7 @@ func SchemaResolver(path string) providers.SchemaResolver {
 
 // ServicesResolver returns a new service(s) resolver for the given mock collection
 func ServicesResolver(path string) providers.ServicesResolver {
-	return func(ctx instance.Context) ([]*specs.ServicesManifest, error) {
+	return func(ctx instance.Context) (specs.ServiceList, error) {
 		reader, err := os.Open(path)
 		if err != nil {
 			return nil, err

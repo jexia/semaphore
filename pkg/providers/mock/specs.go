@@ -6,16 +6,14 @@ import (
 )
 
 // SchemaManifest formats the given mock collection to a specs schema manifest
-func SchemaManifest(collection *Collection) []*specs.SchemaManifest {
-	result := &specs.SchemaManifest{
-		Properties: make(map[string]*specs.Property),
-	}
+func SchemaManifest(collection *Collection) specs.Objects {
+	result := make(specs.Objects, 0)
 
 	for _, prop := range collection.GetMessages() {
-		result.Properties[prop.Name] = SpecsProperty("", prop)
+		result[prop.Name] = SpecsProperty("", prop)
 	}
 
-	return []*specs.SchemaManifest{result}
+	return result
 }
 
 // SpecsProperty formats the given mock property to a specs property
@@ -62,16 +60,14 @@ func SpecsProperty(path string, property *Property) *specs.Property {
 }
 
 // ServiceManifest formats the given mock collection to a specs service(s) manifest
-func ServiceManifest(collection *Collection) []*specs.ServicesManifest {
-	result := &specs.ServicesManifest{
-		Services: make([]*specs.Service, len(collection.GetServices())),
-	}
+func ServiceManifest(collection *Collection) specs.ServiceList {
+	result := make(specs.ServiceList, len(collection.GetServices()))
 
 	for index, service := range collection.GetServices() {
-		result.Services[index] = SpecsService(service)
+		result[index] = SpecsService(service)
 	}
 
-	return []*specs.ServicesManifest{result}
+	return result
 }
 
 // SpecsService formats the given mock service to a specs service

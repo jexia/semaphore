@@ -16,27 +16,7 @@ import (
 	"github.com/jexia/semaphore/pkg/specs/template"
 )
 
-func FindFlow(manifest *specs.FlowsManifest, name string) *specs.Flow {
-	for _, flow := range manifest.Flows {
-		if flow.GetName() == name {
-			return flow
-		}
-	}
-
-	return nil
-}
-
-func FindNode(flow *specs.Flow, name string) *specs.Node {
-	for _, node := range flow.GetNodes() {
-		if node.ID == name {
-			return node
-		}
-	}
-
-	return nil
-}
-
-func NewMock() (*specs.FlowsManifest, error) {
+func NewMock() (specs.FlowListInterface, error) {
 	path, err := filepath.Abs("./tests/schema.yaml")
 	if err != nil {
 		return nil, err
@@ -52,7 +32,7 @@ func NewMock() (*specs.FlowsManifest, error) {
 		return nil, err
 	}
 
-	return client.Collection().FlowsManifest, nil
+	return client.GetFlows(), nil
 }
 
 func ValidateStore(t *testing.T, prop *specs.Property, resource string, origin string, input map[string]interface{}, store refs.Store) {
@@ -118,13 +98,13 @@ func BenchmarkSimpleMarshal(b *testing.B) {
 	refs := refs.NewReferenceStore(len(input))
 	refs.StoreValues("input", "", input)
 
-	manifest, err := NewMock()
+	flows, err := NewMock()
 	if err != nil {
 		b.Fatal(err)
 	}
 
-	flow := FindFlow(manifest, "simple")
-	specs := FindNode(flow, "first").Call.Request
+	flow := flows.Get("simple")
+	specs := flow.GetNode("first").Call.Request
 
 	constructor := &Constructor{}
 	manager, err := constructor.New("input", specs)
@@ -155,13 +135,13 @@ func BenchmarkNestedMarshal(b *testing.B) {
 	refs := refs.NewReferenceStore(len(input))
 	refs.StoreValues("input", "", input)
 
-	manifest, err := NewMock()
+	flows, err := NewMock()
 	if err != nil {
 		b.Fatal(err)
 	}
 
-	flow := FindFlow(manifest, "nested")
-	specs := FindNode(flow, "first").Call.Request
+	flow := flows.Get("nested")
+	specs := flow.GetNode("first").Call.Request
 
 	constructor := &Constructor{}
 	manager, err := constructor.New("input", specs)
@@ -194,13 +174,13 @@ func BenchmarkRepeatedMessagesMarshal(b *testing.B) {
 	refs := refs.NewReferenceStore(len(input))
 	refs.StoreValues("input", "", input)
 
-	manifest, err := NewMock()
+	flows, err := NewMock()
 	if err != nil {
 		b.Fatal(err)
 	}
 
-	flow := FindFlow(manifest, "repeated")
-	specs := FindNode(flow, "first").Call.Request
+	flow := flows.Get("repeated")
+	specs := flow.GetNode("first").Call.Request
 
 	constructor := &Constructor{}
 	manager, err := constructor.New("input", specs)
@@ -231,13 +211,13 @@ func BenchmarkRepeatedValuesMarshal(b *testing.B) {
 	refs := refs.NewReferenceStore(len(input))
 	refs.StoreValues("input", "", input)
 
-	manifest, err := NewMock()
+	flows, err := NewMock()
 	if err != nil {
 		b.Fatal(err)
 	}
 
-	flow := FindFlow(manifest, "repeated_values")
-	specs := FindNode(flow, "first").Call.Request
+	flow := flows.Get("repeated_values")
+	specs := flow.GetNode("first").Call.Request
 
 	constructor := &Constructor{}
 	manager, err := constructor.New("input", specs)
@@ -269,13 +249,13 @@ func BenchmarkSimpleUnmarshal(b *testing.B) {
 	}
 
 	refs := refs.NewReferenceStore(len(input))
-	manifest, err := NewMock()
+	flows, err := NewMock()
 	if err != nil {
 		b.Fatal(err)
 	}
 
-	flow := FindFlow(manifest, "simple")
-	specs := FindNode(flow, "first").Call.Request
+	flow := flows.Get("simple")
+	specs := flow.GetNode("first").Call.Request
 
 	constructor := &Constructor{}
 	manager, err := constructor.New("input", specs)
@@ -307,13 +287,13 @@ func BenchmarkNestedUnmarshal(b *testing.B) {
 	}
 
 	refs := refs.NewReferenceStore(len(input))
-	manifest, err := NewMock()
+	flows, err := NewMock()
 	if err != nil {
 		b.Fatal(err)
 	}
 
-	flow := FindFlow(manifest, "nested")
-	specs := FindNode(flow, "first").Call.Request
+	flow := flows.Get("nested")
+	specs := flow.GetNode("first").Call.Request
 
 	constructor := &Constructor{}
 	manager, err := constructor.New("input", specs)
@@ -347,13 +327,13 @@ func BenchmarkRepeatedMessagesUnmarshal(b *testing.B) {
 	}
 
 	refs := refs.NewReferenceStore(len(input))
-	manifest, err := NewMock()
+	flows, err := NewMock()
 	if err != nil {
 		b.Fatal(err)
 	}
 
-	flow := FindFlow(manifest, "repeated")
-	specs := FindNode(flow, "first").Call.Request
+	flow := flows.Get("repeated")
+	specs := flow.GetNode("first").Call.Request
 
 	constructor := &Constructor{}
 	manager, err := constructor.New("input", specs)
@@ -385,13 +365,13 @@ func BenchmarkRepeatedValuesUnmarshal(b *testing.B) {
 	}
 
 	refs := refs.NewReferenceStore(len(input))
-	manifest, err := NewMock()
+	flows, err := NewMock()
 	if err != nil {
 		b.Fatal(err)
 	}
 
-	flow := FindFlow(manifest, "repeated_values")
-	specs := FindNode(flow, "first").Call.Request
+	flow := flows.Get("repeated_values")
+	specs := flow.GetNode("first").Call.Request
 
 	constructor := &Constructor{}
 	manager, err := constructor.New("input", specs)
@@ -411,13 +391,13 @@ func BenchmarkRepeatedValuesUnmarshal(b *testing.B) {
 }
 
 func TestMarshal(t *testing.T) {
-	manifest, err := NewMock()
+	flows, err := NewMock()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	flow := FindFlow(manifest, "complete")
-	req := FindNode(flow, "first").Call.Request
+	flow := flows.Get("complete")
+	req := flow.GetNode("first").Call.Request
 
 	constructor := &Constructor{}
 	manager, err := constructor.New("input", req)
@@ -527,13 +507,13 @@ func TestSimple(t *testing.T) {
 }
 
 func TestUnmarshal(t *testing.T) {
-	manifest, err := NewMock()
+	flows, err := NewMock()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	flow := FindFlow(manifest, "complete")
-	req := FindNode(flow, "first").Call.Request
+	flow := flows.Get("complete")
+	req := flow.GetNode("first").Call.Request
 
 	constructor := &Constructor{}
 	manager, err := constructor.New("input", req)

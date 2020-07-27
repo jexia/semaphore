@@ -10,18 +10,11 @@ import (
 )
 
 // ManifestTypes compares the types defined insde the schema definitions against the configured specification
-func ManifestTypes(ctx instance.Context, services *specs.ServicesManifest, schema *specs.SchemaManifest, flows *specs.FlowsManifest) (err error) {
+func ManifestTypes(ctx instance.Context, services specs.ServiceList, objects specs.Objects, flows specs.FlowListInterface) (err error) {
 	ctx.Logger(logger.Core).Info("Comparing manifest types")
 
-	for _, flow := range flows.Flows {
-		err := FlowTypes(ctx, services, schema, flows, flow)
-		if err != nil {
-			return err
-		}
-	}
-
-	for _, proxy := range flows.Proxy {
-		err := ProxyTypes(ctx, services, schema, flows, proxy)
+	for _, flow := range flows {
+		err := FlowTypes(ctx, services, objects, flow)
 		if err != nil {
 			return err
 		}
@@ -31,23 +24,23 @@ func ManifestTypes(ctx instance.Context, services *specs.ServicesManifest, schem
 }
 
 // ProxyTypes compares the given proxy against the configured schema types
-func ProxyTypes(ctx instance.Context, services *specs.ServicesManifest, schema *specs.SchemaManifest, flows *specs.FlowsManifest, proxy *specs.Proxy) (err error) {
+func ProxyTypes(ctx instance.Context, services specs.ServiceList, objects specs.Objects, proxy *specs.Proxy) (err error) {
 	ctx.Logger(logger.Core).WithField("proxy", proxy.GetName()).Info("Compare proxy flow types")
 
 	if proxy.OnError != nil {
-		err = CheckParameterMapTypes(ctx, proxy.OnError.Response, schema, proxy)
+		err = CheckParameterMapTypes(ctx, proxy.OnError.Response, objects, proxy)
 		if err != nil {
 			return err
 		}
 	}
 
 	for _, node := range proxy.Nodes {
-		err = CallTypes(ctx, services, schema, flows, node, node.Call, proxy)
+		err = CallTypes(ctx, services, objects, node, node.Call, proxy)
 		if err != nil {
 			return err
 		}
 
-		err = CallTypes(ctx, services, schema, flows, node, node.Rollback, proxy)
+		err = CallTypes(ctx, services, objects, node, node.Rollback, proxy)
 		if err != nil {
 			return err
 		}
@@ -64,42 +57,53 @@ func ProxyTypes(ctx instance.Context, services *specs.ServicesManifest, schema *
 }
 
 // FlowTypes compares the flow types against the configured schema types
-func FlowTypes(ctx instance.Context, services *specs.ServicesManifest, schema *specs.SchemaManifest, flows *specs.FlowsManifest, flow *specs.Flow) (err error) {
+func FlowTypes(ctx instance.Context, services specs.ServiceList, objects specs.Objects, flow specs.FlowInterface) (err error) {
 	ctx.Logger(logger.Core).WithField("flow", flow.GetName()).Info("Comparing flow types")
 
-	err = CheckParameterMapTypes(ctx, flow.Input, schema, flow)
-	if err != nil {
-		return err
-	}
-
-	if flow.OnError != nil {
-		err = CheckParameterMapTypes(ctx, flow.OnError.Response, schema, flow)
+	if flow.GetInput() != nil {
+		err = CheckParameterMapTypes(ctx, flow.GetInput(), objects, flow)
 		if err != nil {
 			return err
 		}
 	}
 
-	for _, node := range flow.Nodes {
-		err = CallTypes(ctx, services, schema, flows, node, node.Call, flow)
-		if err != nil {
-			return err
-		}
-
-		err = CallTypes(ctx, services, schema, flows, node, node.Rollback, flow)
+	if flow.GetOnError() != nil {
+		err = CheckParameterMapTypes(ctx, flow.GetOnError().Response, objects, flow)
 		if err != nil {
 			return err
 		}
 	}
 
-	if flow.Output != nil {
-		message := schema.GetProperty(flow.Output.Schema)
+	for _, node := range flow.GetNodes() {
+		err = CallTypes(ctx, services, objects, node, node.Call, flow)
+		if err != nil {
+			return err
+		}
+
+		err = CallTypes(ctx, services, objects, node, node.Rollback, flow)
+		if err != nil {
+			return err
+		}
+	}
+
+	if flow.GetOutput() != nil {
+		message := objects.Get(flow.GetOutput().Schema)
 		if message == nil {
-			return trace.New(trace.WithMessage("undefined flow output object '%s' in '%s'", flow.Output.Schema, flow.Name))
+			return trace.New(trace.WithMessage("undefined flow output object '%s' in '%s'", flow.GetOutput().Schema, flow.GetName()))
 		}
 
-		err = CheckParameterMapTypes(ctx, flow.Output, schema, flow)
+		err = CheckParameterMapTypes(ctx, flow.GetOutput(), objects, flow)
 		if err != nil {
 			return err
+		}
+	}
+
+	if flow.GetForward() != nil {
+		if flow.GetForward().Request != nil && flow.GetForward().Request.Header != nil {
+			err = CheckHeader(flow.GetForward().Request.Header, flow)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -107,7 +111,7 @@ func FlowTypes(ctx instance.Context, services *specs.ServicesManifest, schema *s
 }
 
 // CallTypes compares the given call types against the configured schema types
-func CallTypes(ctx instance.Context, services *specs.ServicesManifest, schema *specs.SchemaManifest, flows *specs.FlowsManifest, node *specs.Node, call *specs.Call, flow specs.FlowResourceManager) (err error) {
+func CallTypes(ctx instance.Context, services specs.ServiceList, objects specs.Objects, node *specs.Node, call *specs.Call, flow specs.FlowInterface) (err error) {
 	if call == nil {
 		return nil
 	}
@@ -122,7 +126,7 @@ func CallTypes(ctx instance.Context, services *specs.ServicesManifest, schema *s
 		"service": call.Service,
 	}).Info("Comparing call types")
 
-	service := services.GetService(call.Service)
+	service := services.Get(call.Service)
 	if service == nil {
 		return trace.New(trace.WithMessage("undefined service '%s' in flow '%s'", call.Service, flow.GetName()))
 	}
@@ -132,18 +136,18 @@ func CallTypes(ctx instance.Context, services *specs.ServicesManifest, schema *s
 		return trace.New(trace.WithMessage("undefined method '%s' in flow '%s'", call.Method, flow.GetName()))
 	}
 
-	err = CheckParameterMapTypes(ctx, call.Request, schema, flow)
+	err = CheckParameterMapTypes(ctx, call.Request, objects, flow)
 	if err != nil {
 		return err
 	}
 
-	err = CheckParameterMapTypes(ctx, call.Response, schema, flow)
+	err = CheckParameterMapTypes(ctx, call.Response, objects, flow)
 	if err != nil {
 		return err
 	}
 
 	if node.OnError != nil {
-		err = CheckParameterMapTypes(ctx, node.OnError.Response, schema, flow)
+		err = CheckParameterMapTypes(ctx, node.OnError.Response, objects, flow)
 		if err != nil {
 			return err
 		}
@@ -153,7 +157,7 @@ func CallTypes(ctx instance.Context, services *specs.ServicesManifest, schema *s
 }
 
 // CheckParameterMapTypes checks the given parameter map against the configured schema property
-func CheckParameterMapTypes(ctx instance.Context, parameters *specs.ParameterMap, schema *specs.SchemaManifest, flow specs.FlowResourceManager) error {
+func CheckParameterMapTypes(ctx instance.Context, parameters *specs.ParameterMap, objects specs.Objects, flow specs.FlowInterface) error {
 	if parameters == nil {
 		return nil
 	}
@@ -165,7 +169,7 @@ func CheckParameterMapTypes(ctx instance.Context, parameters *specs.ParameterMap
 		}
 	}
 
-	err := CheckPropertyTypes(parameters.Property, schema.GetProperty(parameters.Schema), flow)
+	err := CheckPropertyTypes(parameters.Property, objects.Get(parameters.Schema), flow)
 	if err != nil {
 		return err
 	}
@@ -174,7 +178,7 @@ func CheckParameterMapTypes(ctx instance.Context, parameters *specs.ParameterMap
 }
 
 // CheckPropertyTypes checks the given schema against the given schema method types
-func CheckPropertyTypes(property *specs.Property, schema *specs.Property, flow specs.FlowResourceManager) (err error) {
+func CheckPropertyTypes(property *specs.Property, schema *specs.Property, flow specs.FlowInterface) (err error) {
 	if schema == nil {
 		return trace.New(trace.WithExpression(property.Expr), trace.WithMessage("unable to check types for '%s' no schema given", property.Path))
 	}
@@ -222,7 +226,7 @@ func CheckPropertyTypes(property *specs.Property, schema *specs.Property, flow s
 }
 
 // CheckHeader compares the given header types
-func CheckHeader(header specs.Header, flow specs.FlowResourceManager) error {
+func CheckHeader(header specs.Header, flow specs.FlowInterface) error {
 	for _, header := range header {
 		if header.Type != types.String {
 			return trace.New(trace.WithMessage("cannot use type (%s) for 'header.%s' in flow '%s', expected (%s)", header.Type, header.Path, flow.GetName(), types.String))

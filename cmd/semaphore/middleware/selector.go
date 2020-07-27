@@ -16,16 +16,16 @@ import (
 // ServiceSelector parses the HCL definition on the given path and manipulates the collected services after constructed
 func ServiceSelector(path string) api.AfterConstructorHandler {
 	return func(next api.AfterConstructor) api.AfterConstructor {
-		return func(ctx instance.Context, collection *specs.Collection) error {
+		return func(ctx instance.Context, flows specs.FlowListInterface, endpoints specs.EndpointList, services specs.ServiceList, schemas specs.Objects) error {
 			definitions, err := hcl.ResolvePath(ctx, []string{}, path)
 			if err != nil {
 				return err
 			}
 
 			for _, definition := range definitions {
-				for _, services := range definition.ServiceSelector {
-					for _, selector := range services.Selectors {
-						for _, service := range collection.ServicesManifest.Services {
+				for _, srvs := range definition.ServiceSelector {
+					for _, selector := range srvs.Selectors {
+						for _, service := range services {
 							name := template.JoinPath(service.Package, service.Name)
 							matched, err := filepath.Match(selector.Pattern, name)
 							if err != nil {
@@ -76,7 +76,7 @@ func ServiceSelector(path string) api.AfterConstructorHandler {
 				}
 			}
 
-			return next(ctx, collection)
+			return next(ctx, flows, endpoints, services, schemas)
 		}
 	}
 }

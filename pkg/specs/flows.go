@@ -4,59 +4,30 @@ import (
 	"github.com/Knetic/govaluate"
 )
 
-// FlowsManifest holds a collection of definitions and resources
-type FlowsManifest struct {
-	Error *ParameterMap `json:"error,omitempty"`
-	Flows Flows         `json:"flows,omitempty"`
-	Proxy Proxies       `json:"proxies,omitempty"`
+// FlowListInterface represents a collection of flow interfaces
+type FlowListInterface []FlowInterface
+
+// Append appends the given flow list to the collection
+func (collection *FlowListInterface) Append(list ...FlowInterface) {
+	*collection = append(*collection, list...)
 }
 
-// GetFlow attempts to find a flow or proxy matching the given name
-func (manifest *FlowsManifest) GetFlow(name string) FlowResourceManager {
-	flow := manifest.Flows.Get(name)
-	if flow != nil {
-		return flow
-	}
-
-	proxy := manifest.Proxy.Get(name)
-	if proxy != nil {
-		return proxy
+// Get attempts to find a flow matching the given name
+func (collection FlowListInterface) Get(name string) FlowInterface {
+	for _, flow := range collection {
+		if flow.GetName() == name {
+			return flow
+		}
 	}
 
 	return nil
 }
 
-// Append merges the incoming manifest to the existing (left) manifest
-func (manifest *FlowsManifest) Append(incoming ...*FlowsManifest) {
-	if manifest == nil {
-		return
-	}
-
-	for _, right := range incoming {
-		if right.Error != nil {
-			manifest.Error = right.Error
-		}
-
-		manifest.Flows = append(manifest.Flows, right.Flows...)
-		manifest.Proxy = append(manifest.Proxy, right.Proxy...)
-	}
-}
-
-// FlowResourceManager represents a proxy or flow manager.
-type FlowResourceManager interface {
-	GetName() string
-	GetNodes() []*Node
-	GetInput() *ParameterMap
-	GetOutput() *ParameterMap
-	GetOnError() *OnError
-	GetForward() *Call
-}
-
-// Flows represents a collection of flows
-type Flows []*Flow
+// FlowList represents a collection of flows
+type FlowList []*Flow
 
 // Get attempts to find a flow matching the given name
-func (collection Flows) Get(name string) *Flow {
+func (collection FlowList) Get(name string) *Flow {
 	for _, flow := range collection {
 		if flow.Name == name {
 			return flow
@@ -64,6 +35,17 @@ func (collection Flows) Get(name string) *Flow {
 	}
 
 	return nil
+}
+
+// FlowInterface represents a proxy or flow manager.
+type FlowInterface interface {
+	GetName() string
+	GetNodes() NodeList
+	GetNode(string) *Node
+	GetInput() *ParameterMap
+	GetOutput() *ParameterMap
+	GetOnError() *OnError
+	GetForward() *Call
 }
 
 // Flow defines a set of calls that should be called chronologically and produces an output message.
@@ -76,7 +58,7 @@ func (collection Flows) Get(name string) *Flow {
 type Flow struct {
 	Name    string        `json:"name,omitempty"`
 	Input   *ParameterMap `json:"input,omitempty"`
-	Nodes   []*Node       `json:"nodes,omitempty"`
+	Nodes   NodeList      `json:"nodes,omitempty"`
 	Output  *ParameterMap `json:"output,omitempty"`
 	OnError *OnError      `json:"on_error,omitempty"`
 }
@@ -87,8 +69,13 @@ func (flow *Flow) GetName() string {
 }
 
 // GetNodes returns the calls of the given flow
-func (flow *Flow) GetNodes() []*Node {
+func (flow *Flow) GetNodes() NodeList {
 	return flow.Nodes
+}
+
+// GetNode returns a node matching the given name within the flow node list
+func (flow *Flow) GetNode(name string) *Node {
+	return flow.Nodes.Get(name)
 }
 
 // GetOnError returns the error handling of the given flow
@@ -111,11 +98,11 @@ func (flow *Flow) GetForward() *Call {
 	return nil
 }
 
-// Proxies represents a collection of proxies
-type Proxies []*Proxy
+// ProxyList represents a collection of proxies
+type ProxyList []*Proxy
 
 // Get attempts to find a proxy matching the given name
-func (collection Proxies) Get(name string) *Proxy {
+func (collection ProxyList) Get(name string) *Proxy {
 	for _, proxy := range collection {
 		if proxy.Name == name {
 			return proxy
@@ -131,7 +118,7 @@ func (collection Proxies) Get(name string) *Proxy {
 type Proxy struct {
 	Input   *ParameterMap `json:"input,omitempty"`
 	Name    string        `json:"name,omitempty"`
-	Nodes   []*Node       `json:"nodes,omitempty"`
+	Nodes   NodeList      `json:"nodes,omitempty"`
 	Forward *Call         `json:"forward,omitempty"`
 	OnError *OnError      `json:"on_error,omitempty"`
 }
@@ -142,8 +129,13 @@ func (proxy *Proxy) GetName() string {
 }
 
 // GetNodes returns the calls of the given flow
-func (proxy *Proxy) GetNodes() []*Node {
+func (proxy *Proxy) GetNodes() NodeList {
 	return proxy.Nodes
+}
+
+// GetNode returns a node matching the given name within the flow node list
+func (proxy *Proxy) GetNode(name string) *Node {
+	return proxy.Nodes.Get(name)
 }
 
 // GetOnError returns the error handling of the given flow
@@ -171,6 +163,20 @@ type Condition struct {
 	RawExpression string                         `json:"raw_expression,omitempty"`
 	Expression    *govaluate.EvaluableExpression `json:"-"`
 	Params        *ParameterMap                  `json:"-"`
+}
+
+// NodeList represents a collection of nodes
+type NodeList []*Node
+
+// Get returns a node with the given name
+func (nodes NodeList) Get(name string) *Node {
+	for _, node := range nodes {
+		if node.Name == name {
+			return node
+		}
+	}
+
+	return nil
 }
 
 // Node represents a point inside a given flow where a request or rollback could be preformed.

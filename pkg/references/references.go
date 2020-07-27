@@ -11,18 +11,11 @@ import (
 )
 
 // DefineManifest checks and defines the types for the given manifest
-func DefineManifest(ctx instance.Context, services *specs.ServicesManifest, schema *specs.SchemaManifest, flows *specs.FlowsManifest) (err error) {
+func DefineManifest(ctx instance.Context, services specs.ServiceList, schemas specs.Objects, flows specs.FlowListInterface) (err error) {
 	ctx.Logger(logger.Core).Info("Defining manifest types")
 
-	for _, flow := range flows.Flows {
-		err := DefineFlow(ctx, services, schema, flows, flow)
-		if err != nil {
-			return err
-		}
-	}
-
-	for _, proxy := range flows.Proxy {
-		err := DefineProxy(ctx, services, schema, flows, proxy)
+	for _, flow := range flows {
+		err := DefineFlow(ctx, services, schemas, flow)
 		if err != nil {
 			return err
 		}
@@ -31,36 +24,43 @@ func DefineManifest(ctx instance.Context, services *specs.ServicesManifest, sche
 	return nil
 }
 
-// DefineProxy checks and defines the types for the given proxy
-func DefineProxy(ctx instance.Context, services *specs.ServicesManifest, schema *specs.SchemaManifest, flows *specs.FlowsManifest, proxy *specs.Proxy) (err error) {
-	ctx.Logger(logger.Core).WithField("proxy", proxy.GetName()).Info("Defining proxy flow types")
+// DefineFlow defines the types for the given flow and the resources within the flow
+func DefineFlow(ctx instance.Context, services specs.ServiceList, schemas specs.Objects, flow specs.FlowInterface) (err error) {
+	ctx.Logger(logger.Core).WithField("flow", flow.GetName()).Info("Defining flow types")
 
-	if proxy.Input != nil && proxy.Input.Schema != "" {
-		input := schema.GetProperty(proxy.Input.Schema)
+	if flow.GetInput() != nil {
+		input := schemas.Get(flow.GetInput().Schema)
 		if input == nil {
-			return trace.New(trace.WithMessage("object '%s', is unavailable inside the schema collection", proxy.Input.Schema))
+			return trace.New(trace.WithMessage("object '%s', is unavailable inside the schema collection", flow.GetInput().Schema))
 		}
 
-		proxy.Input = ToParameterMap(proxy.Input, "", input)
+		flow.GetInput().Property = input
 	}
 
-	if proxy.OnError != nil {
-		err = DefineOnError(ctx, schema, nil, proxy.OnError, proxy)
+	if flow.GetOnError() != nil {
+		err = DefineOnError(ctx, schemas, nil, flow.GetOnError(), flow)
 		if err != nil {
 			return err
 		}
 	}
 
-	for _, node := range proxy.Nodes {
-		err = DefineNode(ctx, services, schema, flows, node, proxy)
+	for _, node := range flow.GetNodes() {
+		err = DefineNode(ctx, services, schemas, node, flow)
 		if err != nil {
 			return err
 		}
 	}
 
-	if proxy.Forward != nil {
-		for _, header := range proxy.Forward.Request.Header {
-			err = DefineProperty(ctx, nil, header, proxy)
+	if flow.GetOutput() != nil {
+		err = DefineParameterMap(ctx, schemas, nil, flow.GetOutput(), flow)
+		if err != nil {
+			return err
+		}
+	}
+
+	if flow.GetForward() != nil && flow.GetForward().Request != nil {
+		for _, header := range flow.GetForward().Request.Header {
+			err = DefineProperty(ctx, nil, header, flow)
 			if err != nil {
 				return err
 			}
@@ -70,68 +70,31 @@ func DefineProxy(ctx instance.Context, services *specs.ServicesManifest, schema 
 	return nil
 }
 
-// DefineFlow defines the types for the given flow
-func DefineFlow(ctx instance.Context, services *specs.ServicesManifest, schema *specs.SchemaManifest, flows *specs.FlowsManifest, flow *specs.Flow) (err error) {
-	ctx.Logger(logger.Core).WithField("flow", flow.GetName()).Info("Defining flow types")
-
-	if flow.Input != nil {
-		input := schema.GetProperty(flow.Input.Schema)
-		if input == nil {
-			return trace.New(trace.WithMessage("object '%s', is unavailable inside the schema collection", flow.Input.Schema))
-		}
-
-		flow.Input = ToParameterMap(flow.Input, "", input)
-	}
-
-	if flow.OnError != nil {
-		err = DefineOnError(ctx, schema, nil, flow.OnError, flow)
-		if err != nil {
-			return err
-		}
-	}
-
-	for _, node := range flow.Nodes {
-		err = DefineNode(ctx, services, schema, flows, node, flow)
-		if err != nil {
-			return err
-		}
-	}
-
-	if flow.Output != nil {
-		err = DefineParameterMap(ctx, schema, nil, flow.Output, flow)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
 // DefineNode defines all the references inside the given node
-func DefineNode(ctx instance.Context, services *specs.ServicesManifest, schema *specs.SchemaManifest, flows *specs.FlowsManifest, node *specs.Node, flow specs.FlowResourceManager) (err error) {
+func DefineNode(ctx instance.Context, services specs.ServiceList, schemas specs.Objects, node *specs.Node, flow specs.FlowInterface) (err error) {
 	if node.Condition != nil {
-		err = DefineParameterMap(ctx, schema, node, node.Condition.Params, flow)
+		err = DefineParameterMap(ctx, schemas, node, node.Condition.Params, flow)
 		if err != nil {
 			return err
 		}
 	}
 
 	if node.Call != nil {
-		err = DefineCall(ctx, services, schema, flows, node, node.Call, flow)
+		err = DefineCall(ctx, services, schemas, node, node.Call, flow)
 		if err != nil {
 			return err
 		}
 	}
 
 	if node.Rollback != nil {
-		err = DefineCall(ctx, services, schema, flows, node, node.Rollback, flow)
+		err = DefineCall(ctx, services, schemas, node, node.Rollback, flow)
 		if err != nil {
 			return err
 		}
 	}
 
 	if node.OnError != nil {
-		err = DefineOnError(ctx, schema, node, node.OnError, flow)
+		err = DefineOnError(ctx, schemas, node, node.OnError, flow)
 		if err != nil {
 			return err
 		}
@@ -141,9 +104,9 @@ func DefineNode(ctx instance.Context, services *specs.ServicesManifest, schema *
 }
 
 // DefineCall defineds the types for the specs call
-func DefineCall(ctx instance.Context, services *specs.ServicesManifest, schema *specs.SchemaManifest, flows *specs.FlowsManifest, node *specs.Node, call *specs.Call, flow specs.FlowResourceManager) (err error) {
+func DefineCall(ctx instance.Context, services specs.ServiceList, schemas specs.Objects, node *specs.Node, call *specs.Call, flow specs.FlowInterface) (err error) {
 	if call.Request != nil {
-		err = DefineParameterMap(ctx, schema, node, call.Request, flow)
+		err = DefineParameterMap(ctx, schemas, node, call.Request, flow)
 		if err != nil {
 			return err
 		}
@@ -156,7 +119,7 @@ func DefineCall(ctx instance.Context, services *specs.ServicesManifest, schema *
 			"service": call.Service,
 		}).Info("Defining call types")
 
-		service := services.GetService(call.Service)
+		service := services.Get(call.Service)
 		if service == nil {
 			return trace.New(trace.WithMessage("undefined service '%s' in flow '%s'", call.Service, flow.GetName()))
 		}
@@ -166,20 +129,22 @@ func DefineCall(ctx instance.Context, services *specs.ServicesManifest, schema *
 			return trace.New(trace.WithMessage("undefined method '%s' in flow '%s'", call.Method, flow.GetName()))
 		}
 
-		output := schema.GetProperty(method.Output)
+		output := schemas.Get(method.Output)
 		if output == nil {
 			return trace.New(trace.WithMessage("undefined method output property '%s' in flow '%s'", method.Output, flow.GetName()))
 		}
 
 		call.Descriptor = method
-		call.Response = ToParameterMap(nil, "", output)
+		call.Response = &specs.ParameterMap{
+			Property: output,
+		}
 
 		call.Request.Schema = method.Input
 		call.Response.Schema = method.Output
 	}
 
 	if call.Response != nil {
-		err = DefineParameterMap(ctx, schema, node, call.Response, flow)
+		err = DefineParameterMap(ctx, schemas, node, call.Response, flow)
 		if err != nil {
 			return err
 		}
@@ -189,9 +154,9 @@ func DefineCall(ctx instance.Context, services *specs.ServicesManifest, schema *
 }
 
 // DefineParameterMap defines the types for the given parameter map
-func DefineParameterMap(ctx instance.Context, schema *specs.SchemaManifest, node *specs.Node, params *specs.ParameterMap, flow specs.FlowResourceManager) (err error) {
+func DefineParameterMap(ctx instance.Context, schemas specs.Objects, node *specs.Node, params *specs.ParameterMap, flow specs.FlowInterface) (err error) {
 	if params.Schema != "" {
-		result := schema.GetProperty(params.Schema)
+		result := schemas.Get(params.Schema)
 		if result == nil {
 			return trace.New(trace.WithMessage("object '%s', is unavailable inside the schema collection", params.Schema))
 		}
@@ -222,7 +187,7 @@ func DefineParameterMap(ctx instance.Context, schema *specs.SchemaManifest, node
 }
 
 // DefineParams defines all types inside the given params
-func DefineParams(ctx instance.Context, node *specs.Node, params map[string]*specs.Property, flow specs.FlowResourceManager) error {
+func DefineParams(ctx instance.Context, node *specs.Node, params map[string]*specs.Property, flow specs.FlowInterface) error {
 	for _, param := range params {
 		if param.Reference == nil {
 			continue
@@ -239,7 +204,7 @@ func DefineParams(ctx instance.Context, node *specs.Node, params map[string]*spe
 
 // DefineProperty defines the given property type.
 // If any object is references it has to be fixed afterwards and moved into the correct dataset
-func DefineProperty(ctx instance.Context, node *specs.Node, property *specs.Property, flow specs.FlowResourceManager) error {
+func DefineProperty(ctx instance.Context, node *specs.Node, property *specs.Property, flow specs.FlowInterface) error {
 	if property == nil {
 		return nil
 	}
@@ -295,7 +260,7 @@ func DefineProperty(ctx instance.Context, node *specs.Node, property *specs.Prop
 }
 
 // LookupReference looks up the given reference
-func LookupReference(ctx instance.Context, node *specs.Node, breakpoint string, reference *specs.PropertyReference, flow specs.FlowResourceManager) (*specs.Property, error) {
+func LookupReference(ctx instance.Context, node *specs.Node, breakpoint string, reference *specs.PropertyReference, flow specs.FlowInterface) (*specs.Property, error) {
 	reference.Resource = lookup.ResolveSelfReference(reference.Resource, breakpoint)
 
 	ctx.Logger(logger.Core).WithFields(logrus.Fields{
@@ -336,9 +301,9 @@ func InsideProperty(source *specs.Property, target *specs.Property) bool {
 }
 
 // DefineOnError defines references made inside the given on error specs
-func DefineOnError(ctx instance.Context, schema *specs.SchemaManifest, node *specs.Node, params *specs.OnError, flow specs.FlowResourceManager) (err error) {
+func DefineOnError(ctx instance.Context, schemas specs.Objects, node *specs.Node, params *specs.OnError, flow specs.FlowInterface) (err error) {
 	if params.Response != nil {
-		err = DefineParameterMap(ctx, schema, node, params.Response, flow)
+		err = DefineParameterMap(ctx, schemas, node, params.Response, flow)
 		if err != nil {
 			return err
 		}

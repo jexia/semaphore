@@ -26,6 +26,29 @@ func (reference *PropertyReference) String() string {
 	return reference.Resource + ":" + reference.Path
 }
 
+// Objects represents a map string collection of properties
+type Objects map[string]*Property
+
+// Get attempts to return the given key from the objects collection
+func (objects Objects) Get(key string) *Property {
+	if objects == nil {
+		return nil
+	}
+
+	return objects[key]
+}
+
+// Append appends the given objects to the objects collection
+func (objects Objects) Append(arg Objects) {
+	if objects == nil {
+		return
+	}
+
+	for key, val := range arg {
+		objects[key] = val
+	}
+}
+
 // Property represents a value property.
 // A value property could contain a constant value or a value reference.
 type Property struct {

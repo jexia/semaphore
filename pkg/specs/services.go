@@ -1,24 +1,16 @@
 package specs
 
-// ServicesManifest holds a collection of services
-type ServicesManifest struct {
-	Services []*Service `json:"services,omitempty"`
+// ServiceList represents a collection of services
+type ServiceList []*Service
+
+// Append appends the given services to the current services collection
+func (services *ServiceList) Append(list ServiceList) {
+	*services = append(*services, list...)
 }
 
-// Append merges the incoming services into the given service manifest
-func (manifest *ServicesManifest) Append(incoming ...*ServicesManifest) {
-	if manifest == nil {
-		return
-	}
-
-	for _, right := range incoming {
-		manifest.Services = append(manifest.Services, right.Services...)
-	}
-}
-
-// GetService attempts to find and return a flow with the given name
-func (manifest *ServicesManifest) GetService(name string) *Service {
-	for _, service := range manifest.Services {
+// Get attempts to find and return a flow with the given name
+func (services ServiceList) Get(name string) *Service {
+	for _, service := range services {
 		if service.FullyQualifiedName == name {
 			return service
 		}

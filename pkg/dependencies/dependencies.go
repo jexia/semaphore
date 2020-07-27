@@ -8,21 +8,12 @@ import (
 )
 
 // ResolveManifest resolves all dependencies inside the given manifest
-func ResolveManifest(ctx instance.Context, manifest *specs.FlowsManifest) error {
+func ResolveManifest(ctx instance.Context, flows specs.FlowListInterface) error {
 	ctx.Logger(logger.Core).Info("Resolving manifest dependencies")
 
-	for _, flow := range manifest.Flows {
-		for _, node := range flow.Nodes {
+	for _, flow := range flows {
+		for _, node := range flow.GetNodes() {
 			err := ResolveNode(flow, node, make(map[string]*specs.Node))
-			if err != nil {
-				return err
-			}
-		}
-	}
-
-	for _, proxy := range manifest.Proxy {
-		for _, node := range proxy.Nodes {
-			err := ResolveNode(proxy, node, make(map[string]*specs.Node))
 			if err != nil {
 				return err
 			}
@@ -33,7 +24,7 @@ func ResolveManifest(ctx instance.Context, manifest *specs.FlowsManifest) error 
 }
 
 // ResolveNode resolves the given call dependencies and attempts to detect any circular dependencies
-func ResolveNode(manager specs.FlowResourceManager, node *specs.Node, unresolved map[string]*specs.Node) error {
+func ResolveNode(manager specs.FlowInterface, node *specs.Node, unresolved map[string]*specs.Node) error {
 	if len(node.DependsOn) == 0 {
 		return nil
 	}
@@ -72,7 +63,7 @@ func ResolveNode(manager specs.FlowResourceManager, node *specs.Node, unresolved
 }
 
 // FindNode attempts to find the given node inside the given flow manager
-func FindNode(manager specs.FlowResourceManager, node string) *specs.Node {
+func FindNode(manager specs.FlowInterface, node string) *specs.Node {
 	for _, inner := range manager.GetNodes() {
 		if inner.ID == node {
 			return inner

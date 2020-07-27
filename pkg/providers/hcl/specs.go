@@ -13,54 +13,48 @@ import (
 )
 
 // ParseFlows parses the given intermediate manifest to a flows manifest
-func ParseFlows(ctx instance.Context, manifest Manifest) (*specs.FlowsManifest, error) {
+func ParseFlows(ctx instance.Context, manifest Manifest) (errObject *specs.ParameterMap, _ specs.FlowListInterface, _ error) {
 	ctx.Logger(logger.Core).Info("Parsing intermediate manifest to flows manifest")
 
-	result := &specs.FlowsManifest{
-		Flows: make([]*specs.Flow, len(manifest.Flows)),
-		Proxy: make([]*specs.Proxy, len(manifest.Proxy)),
-	}
+	result := make(specs.FlowListInterface, 0, len(manifest.Flows)+len(manifest.Proxy))
 
 	if manifest.Error != nil {
 		spec, err := ParseIntermediateParameterMap(ctx, manifest.Error)
 		if err != nil {
-			return nil, err
+			return errObject, nil, err
 		}
 
-		result.Error = spec
+		errObject = spec
 	}
 
-	for index, flow := range manifest.Flows {
+	for _, flow := range manifest.Flows {
 		flow, err := ParseIntermediateFlow(ctx, flow)
 		if err != nil {
-			return nil, err
+			return errObject, nil, err
 		}
 
-		result.Flows[index] = flow
+		result.Append(flow)
 	}
 
-	for index, proxy := range manifest.Proxy {
+	for _, proxy := range manifest.Proxy {
 		proxy, err := ParseIntermediateProxy(ctx, proxy)
 		if err != nil {
-			return nil, err
+			return errObject, nil, err
 		}
 
-		result.Proxy[index] = proxy
+		result.Append(proxy)
 	}
 
-	return result, nil
+	return errObject, result, nil
 }
 
 // ParseEndpoints parses the given intermediate manifest to a endpoints manifest
-func ParseEndpoints(ctx instance.Context, manifest Manifest) (*specs.EndpointsManifest, error) {
+func ParseEndpoints(ctx instance.Context, manifest Manifest) (specs.EndpointList, error) {
 	ctx.Logger(logger.Core).Info("Parsing intermediate manifest to endpoints manifest")
 
-	result := &specs.EndpointsManifest{
-		Endpoints: make([]*specs.Endpoint, len(manifest.Endpoints)),
-	}
-
+	result := make(specs.EndpointList, len(manifest.Endpoints))
 	for index, endpoint := range manifest.Endpoints {
-		result.Endpoints[index] = ParseIntermediateEndpoint(ctx, endpoint)
+		result[index] = ParseIntermediateEndpoint(ctx, endpoint)
 	}
 
 	return result, nil

@@ -34,7 +34,9 @@ func BeforeConstructor(wrapper api.BeforeConstructorHandler) api.Option {
 func AfterConstructor(wrapper api.AfterConstructorHandler) api.Option {
 	return func(options *api.Options) {
 		if options.AfterConstructor == nil {
-			options.AfterConstructor = wrapper(func(instance.Context, *specs.Collection) error { return nil })
+			options.AfterConstructor = wrapper(func(instance.Context, specs.FlowListInterface, specs.EndpointList, specs.ServiceList, specs.Objects) error {
+				return nil
+			})
 			return
 		}
 

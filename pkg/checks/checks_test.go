@@ -8,59 +8,55 @@ import (
 )
 
 func TestDuplicateManifests(t *testing.T) {
-	tests := map[string]*specs.FlowsManifest{
+	tests := map[string]specs.FlowListInterface{
 		"duplicate flow": {
-
-			Flows: []*specs.Flow{
-				{
-					Name: "dup",
-				},
-				{
-					Name: "dup",
-				},
+			&specs.Flow{
+				Name: "dup",
+			},
+			&specs.Flow{
+				Name: "dup",
 			},
 		},
 		"duplicate proxy": {
-
-			Proxy: []*specs.Proxy{
-				{
-					Name: "dup",
-				},
-				{
-					Name: "dup",
-				},
+			&specs.Proxy{
+				Name: "dup",
+			},
+			&specs.Proxy{
+				Name: "dup",
 			},
 		},
 		"duplicate node": {
-
-			Flows: []*specs.Flow{
-				{
-					Name: "first",
-					Nodes: []*specs.Node{
-						{
-							ID: "dup",
-						},
-						{
-							ID: "dup",
-						},
+			&specs.Flow{
+				Name: "first",
+				Nodes: []*specs.Node{
+					{
+						ID: "dup",
+					},
+					{
+						ID: "dup",
 					},
 				},
 			},
 		},
 		"duplicate proxy node": {
-
-			Proxy: []*specs.Proxy{
-				{
-					Name: "first",
-					Nodes: []*specs.Node{
-						{
-							ID: "dup",
-						},
-						{
-							ID: "dup",
-						},
+			&specs.Proxy{
+				Name: "first",
+				Nodes: []*specs.Node{
+					{
+						ID: "dup",
+					},
+					{
+						ID: "dup",
 					},
 				},
+			},
+		},
+		"duplicate flow - proxy": {
+			&specs.Proxy{
+				Name: "first",
+			},
+			&specs.Flow{
+				Name: "first",
 			},
 		},
 	}
@@ -68,7 +64,7 @@ func TestDuplicateManifests(t *testing.T) {
 	for name, input := range tests {
 		t.Run(name, func(t *testing.T) {
 			ctx := instance.NewContext()
-			err := ManifestDuplicates(ctx, input)
+			err := FlowDuplicates(ctx, input)
 			if err == nil {
 				t.Fatal("unexpected pass", input)
 			}
@@ -76,40 +72,65 @@ func TestDuplicateManifests(t *testing.T) {
 	}
 }
 
+func TestDuplicateManifestsPass(t *testing.T) {
+	tests := map[string]specs.FlowListInterface{
+		"multiple flow": {
+			&specs.Flow{
+				Name: "first",
+			},
+			&specs.Flow{
+				Name: "second",
+			},
+		},
+		"flow and proxy": {
+			&specs.Flow{
+				Name: "first",
+			},
+			&specs.Proxy{
+				Name: "second",
+			},
+		},
+	}
+
+	for name, input := range tests {
+		t.Run(name, func(t *testing.T) {
+			ctx := instance.NewContext()
+			err := FlowDuplicates(ctx, input)
+			if err != nil {
+				t.Fatal("unexpected fail", err)
+			}
+		})
+	}
+}
+
 func TestReservedKeywordsManifests(t *testing.T) {
-	tests := map[string]*specs.FlowsManifest{
+	tests := map[string]specs.FlowListInterface{
 		"error": {
-			Flows: []*specs.Flow{
-				{
-					Name: "first",
-					Nodes: []*specs.Node{
-						{
-							ID: "error",
-						},
+			&specs.Flow{
+				Name: "first",
+				Nodes: []*specs.Node{
+					{
+						ID: "error",
 					},
 				},
 			},
 		},
 		"input": {
-			Flows: []*specs.Flow{
-				{
-					Name: "first",
-					Nodes: []*specs.Node{
-						{
-							ID: "input",
-						},
+			&specs.Flow{
+				Name: "first",
+				Nodes: []*specs.Node{
+					{
+						ID: "input",
 					},
 				},
 			},
 		},
 		"stack": {
-			Flows: []*specs.Flow{
-				{
-					Name: "first",
-					Nodes: []*specs.Node{
-						{
-							ID: "stack",
-						},
+			&specs.Flow{
+				Name: "first",
+				Nodes: []*specs.Node{
+					{
+						ID: "stack",
 					},
 				},
 			},
@@ -119,7 +140,7 @@ func TestReservedKeywordsManifests(t *testing.T) {
 	for name, input := range tests {
 		t.Run(name, func(t *testing.T) {
 			ctx := instance.NewContext()
-			err := ManifestDuplicates(ctx, input)
+			err := FlowDuplicates(ctx, input)
 			if err == nil {
 				t.Fatal("unexpected pass", input)
 			}

@@ -8,133 +8,129 @@ import (
 )
 
 func TestResolveManifestDependencies(t *testing.T) {
-	manifest := &specs.FlowsManifest{
-		Flows: []*specs.Flow{
-			{
-				Name: "first",
-				Nodes: []*specs.Node{
-					{
-						ID: "first",
-					},
-					{
-						ID: "second",
-						DependsOn: map[string]*specs.Node{
-							"first": nil,
-						},
-					},
-					{
-						ID: "third",
-						DependsOn: map[string]*specs.Node{
-							"first":  nil,
-							"second": nil,
-						},
+	flows := specs.FlowListInterface{
+		&specs.Flow{
+			Name: "first",
+			Nodes: []*specs.Node{
+				{
+					ID: "first",
+				},
+				{
+					ID: "second",
+					DependsOn: map[string]*specs.Node{
+						"first": nil,
 					},
 				},
-			},
-			{
-				Name: "second",
-				Nodes: []*specs.Node{
-					{
-						ID: "first",
-					},
-					{
-						ID: "second",
-						DependsOn: map[string]*specs.Node{
-							"first": nil,
-						},
-					},
-					{
-						ID: "third",
-						DependsOn: map[string]*specs.Node{
-							"first":  nil,
-							"second": nil,
-						},
-					},
-				},
-			},
-			{
-				Name: "third",
-				Nodes: []*specs.Node{
-					{
-						ID: "first",
-					},
-					{
-						ID: "second",
-						DependsOn: map[string]*specs.Node{
-							"first": nil,
-						},
-					},
-					{
-						ID: "third",
-						DependsOn: map[string]*specs.Node{
-							"first":  nil,
-							"second": nil,
-						},
+				{
+					ID: "third",
+					DependsOn: map[string]*specs.Node{
+						"first":  nil,
+						"second": nil,
 					},
 				},
 			},
 		},
-		Proxy: []*specs.Proxy{
-			{
-				Name: "first",
-				Nodes: []*specs.Node{
-					{
-						ID: "first",
+		&specs.Flow{
+			Name: "second",
+			Nodes: []*specs.Node{
+				{
+					ID: "first",
+				},
+				{
+					ID: "second",
+					DependsOn: map[string]*specs.Node{
+						"first": nil,
 					},
-					{
-						ID: "second",
-						DependsOn: map[string]*specs.Node{
-							"first": nil,
-						},
-					},
-					{
-						ID: "third",
-						DependsOn: map[string]*specs.Node{
-							"first":  nil,
-							"second": nil,
-						},
+				},
+				{
+					ID: "third",
+					DependsOn: map[string]*specs.Node{
+						"first":  nil,
+						"second": nil,
 					},
 				},
 			},
-			{
-				Name: "second",
-				Nodes: []*specs.Node{
-					{
-						ID: "first",
+		},
+		&specs.Flow{
+			Name: "third",
+			Nodes: []*specs.Node{
+				{
+					ID: "first",
+				},
+				{
+					ID: "second",
+					DependsOn: map[string]*specs.Node{
+						"first": nil,
 					},
-					{
-						ID: "second",
-						DependsOn: map[string]*specs.Node{
-							"first": nil,
-						},
-					},
-					{
-						ID: "third",
-						DependsOn: map[string]*specs.Node{
-							"first":  nil,
-							"second": nil,
-						},
+				},
+				{
+					ID: "third",
+					DependsOn: map[string]*specs.Node{
+						"first":  nil,
+						"second": nil,
 					},
 				},
 			},
-			{
-				Name: "third",
-				Nodes: []*specs.Node{
-					{
-						ID: "first",
+		},
+		&specs.Proxy{
+			Name: "first",
+			Nodes: []*specs.Node{
+				{
+					ID: "first",
+				},
+				{
+					ID: "second",
+					DependsOn: map[string]*specs.Node{
+						"first": nil,
 					},
-					{
-						ID: "second",
-						DependsOn: map[string]*specs.Node{
-							"first": nil,
-						},
+				},
+				{
+					ID: "third",
+					DependsOn: map[string]*specs.Node{
+						"first":  nil,
+						"second": nil,
 					},
-					{
-						ID: "third",
-						DependsOn: map[string]*specs.Node{
-							"first":  nil,
-							"second": nil,
-						},
+				},
+			},
+		},
+		&specs.Proxy{
+			Name: "second",
+			Nodes: []*specs.Node{
+				{
+					ID: "first",
+				},
+				{
+					ID: "second",
+					DependsOn: map[string]*specs.Node{
+						"first": nil,
+					},
+				},
+				{
+					ID: "third",
+					DependsOn: map[string]*specs.Node{
+						"first":  nil,
+						"second": nil,
+					},
+				},
+			},
+		},
+		&specs.Proxy{
+			Name: "third",
+			Nodes: []*specs.Node{
+				{
+					ID: "first",
+				},
+				{
+					ID: "second",
+					DependsOn: map[string]*specs.Node{
+						"first": nil,
+					},
+				},
+				{
+					ID: "third",
+					DependsOn: map[string]*specs.Node{
+						"first":  nil,
+						"second": nil,
 					},
 				},
 			},
@@ -142,13 +138,13 @@ func TestResolveManifestDependencies(t *testing.T) {
 	}
 
 	ctx := instance.NewContext()
-	err := ResolveManifest(ctx, manifest)
+	err := ResolveManifest(ctx, flows)
 	if err != nil {
 		t.Fatalf("unexpected error %s", err)
 	}
 
-	for _, flow := range manifest.Flows {
-		for _, call := range flow.Nodes {
+	for _, flow := range flows {
+		for _, call := range flow.GetNodes() {
 			if len(call.DependsOn) == 0 {
 				continue
 			}

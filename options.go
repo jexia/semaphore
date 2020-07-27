@@ -62,28 +62,28 @@ func WithConstructor(constructor api.Constructor) api.Option {
 // WithFlows appends the given flows resolver to the available flow resolvers
 func WithFlows(definition providers.FlowsResolver) api.Option {
 	return func(options *api.Options) {
-		options.Flows = append(options.Flows, definition)
+		options.FlowResolvers = append(options.FlowResolvers, definition)
 	}
 }
 
 // WithServices appends the given service resolver to the available service resolvers
 func WithServices(definition providers.ServicesResolver) api.Option {
 	return func(options *api.Options) {
-		options.Services = append(options.Services, definition)
+		options.ServiceResolvers = append(options.ServiceResolvers, definition)
 	}
 }
 
 // WithEndpoints appends the given endpoint resolver to the available endpoint resolvers
 func WithEndpoints(definition providers.EndpointsResolver) api.Option {
 	return func(options *api.Options) {
-		options.Endpoints = append(options.Endpoints, definition)
+		options.EndpointResolvers = append(options.EndpointResolvers, definition)
 	}
 }
 
 // WithSchema appends the schema collection to the schema store
 func WithSchema(resolver providers.SchemaResolver) api.Option {
 	return func(options *api.Options) {
-		options.Schemas = append(options.Schemas, resolver)
+		options.SchemaResolvers = append(options.SchemaResolvers, resolver)
 	}
 }
 
