@@ -10,6 +10,7 @@ import (
 	"github.com/jexia/semaphore/pkg/providers"
 	"github.com/jexia/semaphore/pkg/providers/hcl"
 	"github.com/jexia/semaphore/pkg/providers/mock"
+	"github.com/jexia/semaphore/pkg/schema"
 )
 
 const (
@@ -56,7 +57,20 @@ func TestUnmarshalFile(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			err = DefineManifest(ctx, services, schemas, flows)
+			err = func() (err error) {
+				err = schema.Define(ctx, services, schemas, flows)
+				if err != nil {
+					return err
+				}
+
+				err = Resolve(ctx, flows)
+				if err != nil {
+					return err
+				}
+
+				return nil
+			}()
+
 			if strings.HasSuffix(clean, pass) && err != nil {
 				t.Fatalf("expected test to pass but failed instead %s, %v", file.Name(), err)
 			}

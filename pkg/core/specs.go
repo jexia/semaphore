@@ -8,6 +8,7 @@ import (
 	"github.com/jexia/semaphore/pkg/dependencies"
 	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/references"
+	"github.com/jexia/semaphore/pkg/schema"
 	"github.com/jexia/semaphore/pkg/specs"
 )
 
@@ -47,7 +48,12 @@ func Construct(ctx instance.Context, mem functions.Collection, options api.Optio
 		return nil, nil, nil, nil, err
 	}
 
-	err = references.DefineManifest(ctx, services, schemas, flows)
+	err = schema.Define(ctx, services, schemas, flows)
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
+
+	err = references.Resolve(ctx, flows)
 	if err != nil {
 		return nil, nil, nil, nil, err
 	}

@@ -15,7 +15,7 @@ func DefineFunctions(ctx instance.Context, functions Stack, node *specs.Node, fl
 	for _, function := range functions {
 		if function.Arguments != nil {
 			for _, arg := range function.Arguments {
-				references.DefineProperty(ctx, node, arg, flow)
+				references.ResolveProperty(ctx, node, arg, flow)
 			}
 		}
 
@@ -23,7 +23,7 @@ func DefineFunctions(ctx instance.Context, functions Stack, node *specs.Node, fl
 			continue
 		}
 
-		references.DefineProperty(ctx, node, function.Returns, flow)
+		references.ResolveProperty(ctx, node, function.Returns, flow)
 	}
 
 	return nil

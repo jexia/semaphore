@@ -99,6 +99,17 @@ func GetAvailableResources(flow specs.FlowInterface, breakpoint string) map[stri
 				references[node.ID][template.ParamsResource] = ParamsLookup(node.Call.Request.Params, flow, breakpoint)
 				references[node.ID][template.RequestResource] = PropertyLookup(node.Call.Request.Property)
 			}
+
+			if node.Call.Response != nil {
+				if node.Call.Response.Stack != nil {
+					for key, returns := range node.Call.Response.Stack {
+						references[template.StackResource][key] = PropertyLookup(returns)
+					}
+				}
+
+				references[node.ID][template.ResponseResource] = PropertyLookup(node.Call.Response.Property)
+				references[node.ID][template.HeaderResource] = VariableHeaderLookup(node.Call.Response.Header)
+			}
 		}
 
 		if node.ID == breakpoint {
@@ -111,21 +122,6 @@ func GetAvailableResources(flow specs.FlowInterface, breakpoint string) map[stri
 				if node.GetOnError().Response != nil {
 					references[node.ID][template.ErrorResource] = PropertyLookup(node.GetOnError().Response.Property)
 				}
-			}
-
-			break
-		}
-
-		if node.Call != nil {
-			if node.Call.Response != nil {
-				if node.Call.Response.Stack != nil {
-					for key, returns := range node.Call.Response.Stack {
-						references[template.StackResource][key] = PropertyLookup(returns)
-					}
-				}
-
-				references[node.ID][template.ResponseResource] = PropertyLookup(node.Call.Response.Property)
-				references[node.ID][template.HeaderResource] = VariableHeaderLookup(node.Call.Response.Header)
 			}
 		}
 	}

@@ -14,9 +14,10 @@ var params = config.New()
 
 // Command represents the semaphore daemon command
 var Command = &cobra.Command{
-	Use:   "daemon",
-	Short: "Starts the Semaphore daemon, it will execute with the passed definitions and expose the configured endpoints",
-	RunE:  run,
+	Use:          "daemon",
+	Short:        "Starts the Semaphore daemon, it will execute with the passed definitions and expose the configured endpoints",
+	RunE:         run,
+	SilenceUsage: true,
 }
 
 func init() {

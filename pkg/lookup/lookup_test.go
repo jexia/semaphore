@@ -459,14 +459,14 @@ func TestGetAvailableResources(t *testing.T) {
 	tests := map[string]func() ([]string, map[string]ReferenceMap){
 		"input and first": func() ([]string, map[string]ReferenceMap) {
 			flow := NewMockFlow("first")
-			expected := []string{template.StackResource, template.ErrorResource, "input", "first", "second"}
+			expected := []string{template.StackResource, template.ErrorResource, "input", "first", "second", "third"}
 
 			result := GetAvailableResources(flow, "second")
 			return expected, result
 		},
 		"input": func() ([]string, map[string]ReferenceMap) {
 			flow := NewMockFlow("first")
-			expected := []string{template.StackResource, template.ErrorResource, "input", "first"}
+			expected := []string{template.StackResource, template.ErrorResource, "input", "first", "second", "third"}
 
 			result := GetAvailableResources(flow, "first")
 			return expected, result

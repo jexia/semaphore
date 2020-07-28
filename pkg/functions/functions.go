@@ -259,7 +259,7 @@ func PrepareFunction(ctx instance.Context, node *specs.Node, flow specs.FlowInte
 			return err
 		}
 
-		err = references.DefineProperty(ctx, node, result, flow)
+		err = references.ResolveProperty(ctx, node, result, flow)
 		if err != nil {
 			return err
 		}

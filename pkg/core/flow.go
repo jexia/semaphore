@@ -134,7 +134,7 @@ func NewServiceCall(ctx instance.Context, mem functions.Collection, services spe
 	method := dialer.GetMethod(node.Call.Method)
 	if method != nil {
 		for _, reference := range method.References() {
-			err := references.DefineProperty(ctx, node, reference, manager)
+			err := references.ResolveProperty(ctx, node, reference, manager)
 			if err != nil {
 				return nil, err
 			}
