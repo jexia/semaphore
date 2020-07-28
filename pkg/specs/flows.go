@@ -43,6 +43,7 @@ type FlowInterface interface {
 	GetMeta() *metadata.Meta
 	GetName() string
 	GetNodes() NodeList
+	SetNodes(NodeList)
 	GetInput() *ParameterMap
 	GetOutput() *ParameterMap
 	GetOnError() *OnError
@@ -78,6 +79,11 @@ func (flow *Flow) GetName() string {
 // GetNodes returns the calls of the given flow
 func (flow *Flow) GetNodes() NodeList {
 	return flow.Nodes
+}
+
+// SetNodes sets the given node list
+func (flow *Flow) SetNodes(nodes NodeList) {
+	flow.Nodes = nodes
 }
 
 // GetOnError returns the error handling of the given flow
@@ -141,6 +147,11 @@ func (proxy *Proxy) GetNodes() NodeList {
 	return proxy.Nodes
 }
 
+// SetNodes sets the given node list
+func (proxy *Proxy) SetNodes(nodes NodeList) {
+	proxy.Nodes = nodes
+}
+
 // GetOnError returns the error handling of the given flow
 func (proxy *Proxy) GetOnError() *OnError {
 	return proxy.OnError
@@ -171,11 +182,6 @@ type Condition struct {
 
 // NodeList represents a collection of nodes
 type NodeList []*Node
-
-// Append appends the given node to the nodes list
-func (nodes *NodeList) Append(node *Node) {
-	*nodes = append(*nodes, node)
-}
 
 // Get returns a node with the given name
 func (nodes NodeList) Get(name string) *Node {
