@@ -207,16 +207,6 @@ func CheckPropertyTypes(property *specs.Property, schema *specs.Property, flow s
 				return err
 			}
 		}
-
-		// Set any properties not defined inside the flow but available inside the schema
-		for _, prop := range schema.Nested {
-			_, has := property.Nested[prop.Name]
-			if has {
-				continue
-			}
-
-			property.Nested[prop.Name] = prop
-		}
 	}
 
 	// ensure the property position

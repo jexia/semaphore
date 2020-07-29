@@ -186,7 +186,7 @@ type NodeList []*Node
 // Get returns a node with the given name
 func (nodes NodeList) Get(name string) *Node {
 	for _, node := range nodes {
-		if node.Name == name {
+		if node.ID == name {
 			return node
 		}
 	}
