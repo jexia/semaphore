@@ -87,7 +87,7 @@ func EndpointsResolver(path string) providers.EndpointsResolver {
 			return nil, err
 		}
 
-		endpoints := make(specs.EndpointList, len(definitions))
+		endpoints := make(specs.EndpointList, 0, len(definitions))
 
 		for _, definition := range definitions {
 			result, err := ParseEndpoints(ctx, definition)
