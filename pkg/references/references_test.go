@@ -83,7 +83,7 @@ func TestUnmarshalFile(t *testing.T) {
 				return
 			}
 
-			err = compare.ManifestTypes(ctx, services, schemas, flows)
+			err = compare.Types(ctx, services, schemas, flows)
 
 			if strings.HasSuffix(clean, pass) && err != nil {
 				t.Fatalf("expected test to pass but failed instead %s, %v", file.Name(), err)

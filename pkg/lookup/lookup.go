@@ -270,6 +270,14 @@ func OnErrLookup(node string, spec *specs.OnError) PathLookup {
 		}
 	}
 
+	if spec.Message.Reference != nil && spec.Message.Reference.Resource == template.ErrorResource {
+		spec.Message.Reference.Property = spec.Message
+	}
+
+	if spec.Status.Reference != nil && spec.Status.Reference.Resource == template.ErrorResource {
+		spec.Status.Reference.Property = spec.Status
+	}
+
 	return func(path string) *specs.Property {
 		// The references {{ error:message }} and {{ error:status }} are always available and set by the flow manager on error
 		if path == "message" {

@@ -170,7 +170,6 @@ func ResolveProperty(ctx instance.Context, node *specs.Node, property *specs.Pro
 		}
 	}
 
-	// ensure property references to be looked up once
 	if property.Reference == nil {
 		return nil
 	}
@@ -187,10 +186,17 @@ func ResolveProperty(ctx instance.Context, node *specs.Node, property *specs.Pro
 		}
 	}
 
-	reference, err := LookupReference(ctx, node, breakpoint, property.Reference, flow)
+	reference, err := LookupReference(ctx, breakpoint, property.Reference, flow)
 	if err != nil {
 		ctx.Logger(logger.Core).WithField("err", err).Debug("Unable to lookup reference")
 		return trace.New(trace.WithExpression(property.Expr), trace.WithMessage("undefined reference '%s' in '%s.%s.%s'", property.Reference, flow.GetName(), breakpoint, property.Path))
+	}
+
+	if reference.Reference != nil && reference.Reference.Property == nil {
+		err := ResolveProperty(ctx, node, reference, flow)
+		if err != nil {
+			return err
+		}
 	}
 
 	ctx.Logger(logger.Core).WithFields(logrus.Fields{
@@ -212,7 +218,7 @@ func ResolveProperty(ctx instance.Context, node *specs.Node, property *specs.Pro
 }
 
 // LookupReference looks up the given reference
-func LookupReference(ctx instance.Context, node *specs.Node, breakpoint string, reference *specs.PropertyReference, flow specs.FlowInterface) (*specs.Property, error) {
+func LookupReference(ctx instance.Context, breakpoint string, reference *specs.PropertyReference, flow specs.FlowInterface) (*specs.Property, error) {
 	reference.Resource = lookup.ResolveSelfReference(reference.Resource, breakpoint)
 
 	ctx.Logger(logger.Core).WithFields(logrus.Fields{

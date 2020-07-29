@@ -60,7 +60,7 @@ func TestFlowInterface(t *testing.T) {
 		Meta:    metadata.WithValue(nil, nil, nil),
 		Name:    "sample",
 		Input:   &ParameterMap{},
-		Nodes:   NodeList{&Node{Name: "first"}},
+		Nodes:   NodeList{&Node{ID: "first"}},
 		Output:  &ParameterMap{},
 		OnError: &OnError{},
 	}
@@ -123,7 +123,7 @@ func TestProxyInterface(t *testing.T) {
 		Meta:    metadata.WithValue(nil, nil, nil),
 		Name:    "sample",
 		Input:   &ParameterMap{},
-		Nodes:   NodeList{&Node{Name: "first"}},
+		Nodes:   NodeList{&Node{ID: "first"}},
 		Forward: &Call{},
 		OnError: &OnError{},
 	}
@@ -174,7 +174,7 @@ func TestNode(t *testing.T) {
 }
 
 func TestNodeListGet(t *testing.T) {
-	nodes := &NodeList{&Node{Name: "first"}, &Node{Name: "second"}}
+	nodes := &NodeList{&Node{ID: "first"}, &Node{ID: "second"}}
 	result := nodes.Get("second")
 	if result == nil {
 		t.Error("unexpected empty result")
@@ -182,7 +182,7 @@ func TestNodeListGet(t *testing.T) {
 }
 
 func TestNodeListGetUnkown(t *testing.T) {
-	nodes := &NodeList{&Node{Name: "first"}, &Node{Name: "second"}}
+	nodes := &NodeList{&Node{ID: "first"}, &Node{ID: "second"}}
 	result := nodes.Get("unkown")
 	if result != nil {
 		t.Errorf("unexpected result %+v", result)

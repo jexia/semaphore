@@ -7,8 +7,8 @@ import (
 	"github.com/jexia/semaphore/pkg/specs"
 )
 
-// ResolveManifest resolves all dependencies inside the given manifest
-func ResolveManifest(ctx instance.Context, flows specs.FlowListInterface) error {
+// ResolveFlows resolves all dependencies inside the given manifest
+func ResolveFlows(ctx instance.Context, flows specs.FlowListInterface) error {
 	ctx.Logger(logger.Core).Info("Resolving manifest dependencies")
 
 	for _, flow := range flows {
@@ -44,7 +44,7 @@ func ResolveNode(manager specs.FlowInterface, node *specs.Node, unresolved map[s
 			return trace.New(trace.WithMessage("Circular dependency detected: %s.%s <-> %s.%s", manager.GetName(), node.ID, manager.GetName(), edge))
 		}
 
-		result := FindNode(manager, edge)
+		result := manager.GetNodes().Get(edge)
 		if result == nil {
 			continue
 		}
@@ -58,17 +58,6 @@ func ResolveNode(manager specs.FlowInterface, node *specs.Node, unresolved map[s
 	}
 
 	delete(unresolved, node.ID)
-
-	return nil
-}
-
-// FindNode attempts to find the given node inside the given flow manager
-func FindNode(manager specs.FlowInterface, node string) *specs.Node {
-	for _, inner := range manager.GetNodes() {
-		if inner.ID == node {
-			return inner
-		}
-	}
 
 	return nil
 }

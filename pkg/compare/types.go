@@ -9,8 +9,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// ManifestTypes compares the types defined insde the schema definitions against the configured specification
-func ManifestTypes(ctx instance.Context, services specs.ServiceList, objects specs.Objects, flows specs.FlowListInterface) (err error) {
+// Types compares the types defined insde the schema definitions against the configured specification
+func Types(ctx instance.Context, services specs.ServiceList, objects specs.Objects, flows specs.FlowListInterface) (err error) {
 	ctx.Logger(logger.Core).Info("Comparing manifest types")
 
 	for _, flow := range flows {

@@ -138,7 +138,7 @@ func TestResolveManifestDependencies(t *testing.T) {
 	}
 
 	ctx := instance.NewContext()
-	err := ResolveManifest(ctx, flows)
+	err := ResolveFlows(ctx, flows)
 	if err != nil {
 		t.Fatalf("unexpected error %s", err)
 	}

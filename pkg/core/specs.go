@@ -8,6 +8,7 @@ import (
 	"github.com/jexia/semaphore/pkg/dependencies"
 	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/references"
+	"github.com/jexia/semaphore/pkg/references/forwarding"
 	"github.com/jexia/semaphore/pkg/schema"
 	"github.com/jexia/semaphore/pkg/specs"
 )
@@ -63,14 +64,14 @@ func Construct(ctx instance.Context, mem functions.Collection, options api.Optio
 		return nil, nil, nil, nil, err
 	}
 
-	dependencies.ResolveReferences(ctx, flows)
+	forwarding.ResolveReferences(ctx, flows)
 
-	err = compare.ManifestTypes(ctx, services, schemas, flows)
+	err = dependencies.ResolveFlows(ctx, flows)
 	if err != nil {
 		return nil, nil, nil, nil, err
 	}
 
-	err = dependencies.ResolveManifest(ctx, flows)
+	err = compare.Types(ctx, services, schemas, flows)
 	if err != nil {
 		return nil, nil, nil, nil, err
 	}

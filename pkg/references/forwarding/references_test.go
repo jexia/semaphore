@@ -1,4 +1,4 @@
-package dependencies
+package forwarding
 
 import (
 	"testing"

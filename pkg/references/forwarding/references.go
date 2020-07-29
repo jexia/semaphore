@@ -1,4 +1,4 @@
-package dependencies
+package forwarding
 
 import (
 	"github.com/jexia/semaphore/pkg/core/instance"
@@ -8,6 +8,8 @@ import (
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/template"
 )
+
+// var InternalResources = []string{termplate.}
 
 // ResolveReferences resolves all references inside the given manifest by forwarding references.
 // If a reference is referencing another reference the node is marked as a dependency of the
@@ -83,6 +85,17 @@ func ResolveOnError(parameters *specs.OnError, dependencies map[string]*specs.No
 	}
 }
 
+// ResolveParamReferences resolves all nested references made inside the given params
+func ResolveParamReferences(params map[string]*specs.Property, dependencies map[string]*specs.Node) {
+	if params == nil {
+		return
+	}
+
+	for _, property := range params {
+		ResolvePropertyReferences(property, dependencies)
+	}
+}
+
 // ResolveFunctionsReferences resolves all references made inside the given function arguments and return value
 func ResolveFunctionsReferences(functions functions.Stack, dependencies map[string]*specs.Node) {
 	if functions == nil {
@@ -113,83 +126,47 @@ func ResolvePropertyReferences(property *specs.Property, dependencies map[string
 		return
 	}
 
-	if len(property.Nested) > 0 {
-		for _, nested := range property.Nested {
-			ResolvePropertyReferences(nested, dependencies)
-		}
-
-		return
+	for _, nested := range property.Nested {
+		ResolvePropertyReferences(nested, dependencies)
 	}
 
-	if property.Reference == nil {
-		return
-	}
-
-	if property.Reference.Property == nil {
+	if property.Reference == nil || property.Reference.Property == nil {
 		return
 	}
 
 	resource, _ := lookup.ParseResource(property.Reference.Resource)
-	if resource != template.StackResource && (resource != template.InputResource && resource != template.ErrorResource) {
-		dependencies[template.SplitPath(property.Reference.Resource)[0]] = nil
+	if !IsInternalResource(resource) {
+		dependency := template.SplitPath(property.Reference.Resource)[0]
+		dependencies[dependency] = nil
 	}
 
-	clone := CloneProperty(property.Reference.Property, property.Reference, property.Name, property.Path)
-	property.Reference = clone.Reference
-	property.Nested = clone.Nested
+	ScopePropertyReference(property)
 }
 
-// ResolveParamReferences resolves all nested references made inside the given params
-func ResolveParamReferences(params map[string]*specs.Property, dependencies map[string]*specs.Node) {
-	if params == nil {
+// ScopePropertyReference ...
+func ScopePropertyReference(property *specs.Property) {
+	if property.Reference == nil || property.Reference.Property == nil {
 		return
 	}
 
-	for key, property := range params {
-		if property.Reference == nil {
-			continue
-		}
-
-		resource, _ := lookup.ParseResource(property.Reference.Resource)
-		if resource != template.StackResource && resource != template.InputResource {
-			dependency := template.SplitPath(property.Reference.Resource)[0]
-			dependencies[dependency] = nil
-		}
-
-		clone := CloneProperty(property.Reference.Property, property.Reference, property.Name, property.Path)
-		params[key].Reference = clone.Reference
-		params[key].Nested = clone.Nested
+	if property.Reference.Property.Reference == nil {
+		return
 	}
+
+	property.Reference = property.Reference.Property.Reference
+	ScopePropertyReference(property)
 }
 
-// CloneProperty clones the given property with the given reference, name and path
-func CloneProperty(source *specs.Property, reference *specs.PropertyReference, name string, path string) *specs.Property {
-	result := source.Clone()
-	result.Name = name
-	result.Path = path
-	result.Reference = reference
+// IsInternalResource returns a boolean that represents whether the given
+// resource is a internal resource such as error, stack and more.
+func IsInternalResource(resource string) bool {
+	var resources = []string{template.InputResource, template.StackResource, template.ErrorResource}
 
-	if source != nil {
-		if source.Reference != nil {
-			result.Reference = &specs.PropertyReference{
-				Resource: source.Reference.Resource,
-				Path:     source.Reference.Path,
-			}
-		}
-
-		if len(source.Nested) != 0 {
-			result.Nested = make(map[string]*specs.Property, len(source.Nested))
-
-			for key, nested := range source.Nested {
-				ref := &specs.PropertyReference{
-					Resource: result.Reference.Resource,
-					Path:     template.JoinPath(result.Path, key),
-				}
-
-				result.Nested[key] = CloneProperty(nested, ref, key, template.JoinPath(path, key))
-			}
+	for _, key := range resources {
+		if resource == key {
+			return true
 		}
 	}
 
-	return result
+	return false
 }

@@ -13,6 +13,7 @@ import (
 	"github.com/jexia/semaphore/pkg/flow"
 	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/references"
+	"github.com/jexia/semaphore/pkg/references/forwarding"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/template"
 	"github.com/jexia/semaphore/pkg/transport"
@@ -139,7 +140,7 @@ func NewServiceCall(ctx instance.Context, mem functions.Collection, services spe
 				return nil, err
 			}
 
-			dependencies.ResolvePropertyReferences(reference, node.DependsOn)
+			forwarding.ResolvePropertyReferences(reference, node.DependsOn)
 			err = dependencies.ResolveNode(manager, node, make(map[string]*specs.Node))
 			if err != nil {
 				return nil, err
