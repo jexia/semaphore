@@ -63,17 +63,17 @@ func (client *Client) Handle(ctx instance.Context, options api.Options) error {
 		return err
 	}
 
-	client.flows = flows
-	client.endpoints = endpoints
-	client.services = services
-	client.schemas = schemas
-
 	managers, err := core.Apply(ctx, mem, services, endpoints, flows, options)
 	if err != nil {
 		return err
 	}
 
+	client.flows = flows
+	client.endpoints = endpoints
+	client.services = services
+	client.schemas = schemas
 	client.transporters = managers
+
 	return nil
 }
 
