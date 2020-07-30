@@ -41,7 +41,7 @@ func ResolveNode(manager specs.FlowInterface, node *specs.Node, unresolved map[s
 
 		_, unresolv := unresolved[edge]
 		if unresolv {
-			return trace.New(trace.WithMessage("Circular dependency detected: %s.%s <-> %s.%s", manager.GetName(), node.ID, manager.GetName(), edge))
+			return trace.New(trace.WithMessage("Resource dependencies, circular dependency detected: %s.%s <-> %s.%s", manager.GetName(), node.ID, manager.GetName(), edge))
 		}
 
 		result := manager.GetNodes().Get(edge)
