@@ -9,7 +9,7 @@ import (
 
 // ResolveFlows resolves all dependencies inside the given manifest
 func ResolveFlows(ctx instance.Context, flows specs.FlowListInterface) error {
-	ctx.Logger(logger.Core).Info("Resolving manifest dependencies")
+	ctx.Logger(logger.Core).Info("Resolving flow dependencies")
 
 	for _, flow := range flows {
 		for _, node := range flow.GetNodes() {
