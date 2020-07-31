@@ -1,9 +1,13 @@
+PROTODIR = proto
+
 install-dev:
 	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc
 	go install google.golang.org/protobuf/cmd/protoc-gen-go
 	@echo "Do not forget to install protoc C++ libraries manually"
 
-proto-build: proto/hello.pb.go
+proto-build: $(PROTODIR)/greeter.pb.go
+
+migration: sql-migrate up
 
 %.pb.go: %.proto
-	protoc --proto_path=proto --proto_path=../../ --go-grpc_out=proto --go_out=proto $^
+	protoc --proto_path=. --proto_path=$(PROTODIR) --go-grpc_out=paths=source_relative:. --go_out=paths=source_relative:. $^

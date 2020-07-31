@@ -2,45 +2,48 @@ syntax = "proto3";
 
 import "api/annotations.proto";
 
-package com.semaphore;
+package proto;
 
-service Todo {
+service Service {
     option (semaphore.api.service) = {
+        host: "https://jsonplaceholder.typicode.com/"
         transport: "http"
         codec: "json"
     };
 
-    rpc First(Empty) returns (Item) {
+    rpc GetTodo(Query) returns (Item) {
         option (semaphore.api.http) = {
             endpoint: "/todos/1"
             method: "GET"
         };
     };
 
-    rpc Get(Query) returns (Item) {
+    rpc GetUser(Query) returns (User) {
         option (semaphore.api.http) = {
-            endpoint: "/todos/:id"
+            endpoint: "/users/1"
             method: "GET"
         };
     };
 }
 
-// Represents a search query
 message Query {
-    // resource id
-    string id = 1;
 }
 
-message Empty {
+message Unauthorized {
+    string message = 1;
+    int64 status = 2;
 }
 
 message Item {
-    // user id owning the given todo
     int32 userId = 1;
-    // id of a given todo
     int32 id = 2;
-    // title of the todo
     string title = 3;
-    // represents whether the todo is completed or not
     bool completed = 4;
+}
+
+message User {
+    int32 id = 1;
+    string name = 2;
+    string username = 3;
+    string email = 4;
 }

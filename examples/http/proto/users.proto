@@ -4,15 +4,15 @@ import "api/annotations.proto";
 
 package com.semaphore;
 
-service Todo {
+service Users {
     option (semaphore.api.service) = {
         transport: "http"
         codec: "json"
     };
 
-    rpc Get(Query) returns (Item) {
+    rpc Get(Query) returns (User) {
         option (semaphore.api.http) = {
-            endpoint: "/todos/1"
+            endpoint: "/users/1"
             method: "GET"
         };
     };
@@ -21,9 +21,9 @@ service Todo {
 message Query {
 }
 
-message Item {
-    int32 userId = 1;
-    int32 id = 2;
-    string title = 3;
-    bool completed = 4;
+message User {
+    int32 id = 1;
+    string name = 2;
+    string username = 3;
+    string email = 4;
 }

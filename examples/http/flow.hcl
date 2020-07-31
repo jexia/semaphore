@@ -8,12 +8,12 @@ flow "FetchLatestProject" {
 	input "com.semaphore.Query" {}
 
 	resource "query" {
-		request "com.semaphore.Service" "GetTodo" {
+		request "com.semaphore.Todo" "Get" {
 		}
 	}
 
 	resource "user" {
-		request "com.semaphore.Service" "GetUser" {
+		request "com.semaphore.Users" "Get" {
 		}
 	}
 

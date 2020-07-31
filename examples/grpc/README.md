@@ -15,7 +15,7 @@ $ go run .
 Start Semaphore to expose the greeting service on port `8080`.
 
 ```bash
-$ cd semaphore
+$ cd gateway
 $ semaphore daemon -f config.hcl
 ```
 

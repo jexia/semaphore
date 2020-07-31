@@ -1,5 +1,5 @@
 log_level = "$LOG_LEVEL"
-protobuffers = ["./annotations", "./proto/*.proto"]
+protobuffers = ["./proto/*.proto"]
 
 include = ["flow.hcl"]
 
@@ -7,12 +7,8 @@ graphql {
     address = ":8080"
 }
 
-prometheus {
-    address = ":5050"
-}
-
 services {
-    select "proto.*" {
+    select "com.semaphore.*" {
         host = "https://jsonplaceholder.typicode.com/"
     }
 }

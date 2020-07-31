@@ -1,6 +1,8 @@
 package specs
 
 import (
+	"encoding/json"
+
 	"github.com/hashicorp/hcl/v2"
 	"github.com/jexia/semaphore/pkg/specs/labels"
 	"github.com/jexia/semaphore/pkg/specs/metadata"
@@ -73,6 +75,29 @@ type Property struct {
 	Raw       string               `json:"raw,omitempty"`
 	Options   Options              `json:"options,omitempty"`
 	Enum      *Enum                `json:"enum,omitempty"`
+}
+
+// MarshalJSON marshals the given object as JSON.
+// This method ensures that all default types stay consistent.
+func (prop Property) MarshalJSON() ([]byte, error) {
+	return nil, nil
+}
+
+// UnmarshalJSON unmarshals the given byte object as JSON.
+// This method ensures that all default types stay consistent.
+func (prop *Property) UnmarshalJSON(data []byte) error {
+	// Work around to avoid recursive calls
+	type property Property
+	r := property{}
+
+	err := json.Unmarshal(data, &r)
+	if err != nil {
+		return err
+	}
+
+	*prop = Property(r)
+
+	return nil
 }
 
 // Clone makes a deep clone of the given property
