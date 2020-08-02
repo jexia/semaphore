@@ -7,7 +7,7 @@ import (
 	"github.com/jexia/semaphore/pkg/core/instance"
 	"github.com/jexia/semaphore/pkg/flow"
 	"github.com/jexia/semaphore/pkg/functions"
-	"github.com/jexia/semaphore/pkg/refs"
+	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 )
 
@@ -48,7 +48,7 @@ func AfterConstructor(wrapper api.AfterConstructorHandler) api.Option {
 func BeforeManagerDo(wrapper flow.BeforeManagerHandler) api.Option {
 	return func(options *api.Options) {
 		if options.BeforeManagerDo == nil {
-			options.BeforeManagerDo = wrapper(func(ctx context.Context, manager *flow.Manager, store refs.Store) (context.Context, error) {
+			options.BeforeManagerDo = wrapper(func(ctx context.Context, manager *flow.Manager, store references.Store) (context.Context, error) {
 				return ctx, nil
 			})
 
@@ -63,7 +63,7 @@ func BeforeManagerDo(wrapper flow.BeforeManagerHandler) api.Option {
 func BeforeManagerRollback(wrapper flow.BeforeManagerHandler) api.Option {
 	return func(options *api.Options) {
 		if options.BeforeManagerRollback == nil {
-			options.BeforeManagerRollback = wrapper(func(ctx context.Context, manager *flow.Manager, store refs.Store) (context.Context, error) {
+			options.BeforeManagerRollback = wrapper(func(ctx context.Context, manager *flow.Manager, store references.Store) (context.Context, error) {
 				return ctx, nil
 			})
 
@@ -78,7 +78,7 @@ func BeforeManagerRollback(wrapper flow.BeforeManagerHandler) api.Option {
 func AfterManagerDo(wrapper flow.AfterManagerHandler) api.Option {
 	return func(options *api.Options) {
 		if options.AfterManagerDo == nil {
-			options.AfterManagerDo = wrapper(func(ctx context.Context, manager *flow.Manager, store refs.Store) (context.Context, error) {
+			options.AfterManagerDo = wrapper(func(ctx context.Context, manager *flow.Manager, store references.Store) (context.Context, error) {
 				return ctx, nil
 			})
 
@@ -93,7 +93,7 @@ func AfterManagerDo(wrapper flow.AfterManagerHandler) api.Option {
 func AfterManagerRollback(wrapper flow.AfterManagerHandler) api.Option {
 	return func(options *api.Options) {
 		if options.AfterManagerRollback == nil {
-			options.AfterManagerRollback = wrapper(func(ctx context.Context, manager *flow.Manager, store refs.Store) (context.Context, error) {
+			options.AfterManagerRollback = wrapper(func(ctx context.Context, manager *flow.Manager, store references.Store) (context.Context, error) {
 				return ctx, nil
 			})
 
@@ -108,7 +108,7 @@ func AfterManagerRollback(wrapper flow.AfterManagerHandler) api.Option {
 func BeforeNodeDo(wrapper flow.BeforeNodeHandler) api.Option {
 	return func(options *api.Options) {
 		if options.BeforeNodeDo == nil {
-			options.BeforeNodeDo = wrapper(func(ctx context.Context, node *flow.Node, tracker *flow.Tracker, processes *flow.Processes, store refs.Store) (context.Context, error) {
+			options.BeforeNodeDo = wrapper(func(ctx context.Context, node *flow.Node, tracker *flow.Tracker, processes *flow.Processes, store references.Store) (context.Context, error) {
 				return ctx, nil
 			})
 
@@ -123,7 +123,7 @@ func BeforeNodeDo(wrapper flow.BeforeNodeHandler) api.Option {
 func BeforeNodeRollback(wrapper flow.BeforeNodeHandler) api.Option {
 	return func(options *api.Options) {
 		if options.BeforeNodeRollback == nil {
-			options.BeforeNodeRollback = wrapper(func(ctx context.Context, node *flow.Node, tracker *flow.Tracker, processes *flow.Processes, store refs.Store) (context.Context, error) {
+			options.BeforeNodeRollback = wrapper(func(ctx context.Context, node *flow.Node, tracker *flow.Tracker, processes *flow.Processes, store references.Store) (context.Context, error) {
 				return ctx, nil
 			})
 
@@ -138,7 +138,7 @@ func BeforeNodeRollback(wrapper flow.BeforeNodeHandler) api.Option {
 func AfterNodeDo(wrapper flow.AfterNodeHandler) api.Option {
 	return func(options *api.Options) {
 		if options.AfterNodeDo == nil {
-			options.AfterNodeDo = wrapper(func(ctx context.Context, node *flow.Node, tracker *flow.Tracker, processes *flow.Processes, store refs.Store) (context.Context, error) {
+			options.AfterNodeDo = wrapper(func(ctx context.Context, node *flow.Node, tracker *flow.Tracker, processes *flow.Processes, store references.Store) (context.Context, error) {
 				return ctx, nil
 			})
 			return
@@ -152,7 +152,7 @@ func AfterNodeDo(wrapper flow.AfterNodeHandler) api.Option {
 func AfterNodeRollback(wrapper flow.AfterNodeHandler) api.Option {
 	return func(options *api.Options) {
 		if options.AfterNodeRollback == nil {
-			options.AfterNodeRollback = wrapper(func(ctx context.Context, node *flow.Node, tracker *flow.Tracker, processes *flow.Processes, store refs.Store) (context.Context, error) {
+			options.AfterNodeRollback = wrapper(func(ctx context.Context, node *flow.Node, tracker *flow.Tracker, processes *flow.Processes, store references.Store) (context.Context, error) {
 				return ctx, nil
 			})
 			return

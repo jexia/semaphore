@@ -10,7 +10,7 @@ import (
 	"github.com/jexia/semaphore/pkg/core/instance"
 	"github.com/jexia/semaphore/pkg/core/logger"
 	"github.com/jexia/semaphore/pkg/functions"
-	"github.com/jexia/semaphore/pkg/refs"
+	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/template"
 	"github.com/jexia/semaphore/pkg/transport"
@@ -89,7 +89,7 @@ func (caller *Caller) References() []*specs.Property {
 }
 
 // Do is called by the flow manager to call the configured service
-func (caller *Caller) Do(ctx context.Context, store refs.Store) error {
+func (caller *Caller) Do(ctx context.Context, store references.Store) error {
 	reader, writer := io.Pipe()
 	w := transport.NewResponseWriter(writer)
 	r := &transport.Request{
@@ -174,7 +174,7 @@ func (caller *Caller) Do(ctx context.Context, store refs.Store) error {
 }
 
 // HandleErr handles a thrown service error. If a error response is defined is it decoded
-func (caller *Caller) HandleErr(w *transport.Writer, reader io.Reader, store refs.Store) error {
+func (caller *Caller) HandleErr(w *transport.Writer, reader io.Reader, store references.Store) error {
 	var status interface{}
 	var message interface{}
 
@@ -235,10 +235,10 @@ func (caller *Caller) HandleErr(w *transport.Writer, reader io.Reader, store ref
 }
 
 // ExecuteFunctions executes the given functions and writes the results to the given store
-func ExecuteFunctions(stack functions.Stack, store refs.Store) error {
+func ExecuteFunctions(stack functions.Stack, store references.Store) error {
 	for key, function := range stack {
 		resource := template.JoinPath(template.StackResource, key)
-		err := function.Fn(refs.NewPrefixStore(store, resource, ""))
+		err := function.Fn(references.NewPrefixStore(store, resource, ""))
 		if err != nil {
 			return err
 		}

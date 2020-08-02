@@ -8,7 +8,7 @@ import (
 	"github.com/jexia/semaphore/pkg/codec/metadata"
 	"github.com/jexia/semaphore/pkg/core/instance"
 	"github.com/jexia/semaphore/pkg/functions"
-	"github.com/jexia/semaphore/pkg/refs"
+	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 )
 
@@ -53,7 +53,7 @@ type Caller interface {
 
 // Call is a preconfigured interface for a single service
 type Call interface {
-	SendMsg(ctx context.Context, writer ResponseWriter, request *Request, refs refs.Store) error
+	SendMsg(ctx context.Context, writer ResponseWriter, request *Request, refs references.Store) error
 	GetMethods() []Method
 	GetMethod(name string) Method
 	Close() error
@@ -81,10 +81,10 @@ func (collection Listeners) Get(name string) Listener {
 
 // Flow represents a flow which could be called by a transport
 type Flow interface {
-	NewStore() refs.Store
+	NewStore() references.Store
 	GetName() string
 	Errors() []Error
-	Do(ctx context.Context, refs refs.Store) error
+	Do(ctx context.Context, refs references.Store) error
 	Wait()
 }
 

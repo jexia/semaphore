@@ -3,7 +3,7 @@ package codec
 import (
 	"io"
 
-	"github.com/jexia/semaphore/pkg/refs"
+	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 )
 
@@ -25,6 +25,6 @@ type Constructor interface {
 type Manager interface {
 	Name() string
 	Property() *specs.Property
-	Marshal(refs.Store) (io.Reader, error)
-	Unmarshal(io.Reader, refs.Store) error
+	Marshal(references.Store) (io.Reader, error)
+	Unmarshal(io.Reader, references.Store) error
 }

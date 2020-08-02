@@ -9,7 +9,7 @@ import (
 	"github.com/jexia/semaphore/pkg/codec/json"
 	"github.com/jexia/semaphore/pkg/core/instance"
 	"github.com/jexia/semaphore/pkg/core/logger"
-	"github.com/jexia/semaphore/pkg/refs"
+	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/labels"
 	"github.com/jexia/semaphore/pkg/specs/types"
@@ -130,7 +130,7 @@ func BenchmarkSingleNodeCallingJSONCodecParallel(b *testing.B) {
 			ctx := context.Background()
 			tracker := NewTracker("", 1)
 			processes := NewProcesses(1)
-			refs := refs.NewReferenceStore(0)
+			refs := references.NewReferenceStore(0)
 
 			node.Do(ctx, tracker, processes, refs)
 		}
@@ -196,7 +196,7 @@ func BenchmarkSingleNodeCallingJSONCodecSerial(b *testing.B) {
 		ctx := context.Background()
 		tracker := NewTracker("", 1)
 		processes := NewProcesses(1)
-		refs := refs.NewReferenceStore(0)
+		refs := references.NewReferenceStore(0)
 
 		node.Do(ctx, tracker, processes, refs)
 	}
@@ -214,7 +214,7 @@ func BenchmarkSingleNodeCallingParallel(b *testing.B) {
 			ctx := context.Background()
 			tracker := NewTracker("", 1)
 			processes := NewProcesses(1)
-			refs := refs.NewReferenceStore(0)
+			refs := references.NewReferenceStore(0)
 
 			node.Do(ctx, tracker, processes, refs)
 		}
@@ -232,7 +232,7 @@ func BenchmarkSingleNodeCallingSerial(b *testing.B) {
 		ctx := context.Background()
 		tracker := NewTracker("", 1)
 		processes := NewProcesses(1)
-		refs := refs.NewReferenceStore(0)
+		refs := references.NewReferenceStore(0)
 
 		node.Do(ctx, tracker, processes, refs)
 	}
@@ -259,7 +259,7 @@ func BenchmarkBranchedNodeCallingParallel(b *testing.B) {
 			ctx := context.Background()
 			tracker := NewTracker("", len(nodes))
 			processes := NewProcesses(1)
-			refs := refs.NewReferenceStore(0)
+			refs := references.NewReferenceStore(0)
 
 			nodes[0].Do(ctx, tracker, processes, refs)
 		}
@@ -286,7 +286,7 @@ func BenchmarkBranchedNodeCallingSerial(b *testing.B) {
 		ctx := context.Background()
 		tracker := NewTracker("", len(nodes))
 		processes := NewProcesses(1)
-		refs := refs.NewReferenceStore(0)
+		refs := references.NewReferenceStore(0)
 
 		nodes[0].Do(ctx, tracker, processes, refs)
 	}
@@ -465,7 +465,7 @@ func TestNodeCalling(t *testing.T) {
 
 	tracker := NewTracker("", len(nodes))
 	processes := NewProcesses(1)
-	refs := refs.NewReferenceStore(0)
+	refs := references.NewReferenceStore(0)
 
 	nodes[0].Do(context.Background(), tracker, processes, refs)
 	processes.Wait()
@@ -503,7 +503,7 @@ func TestSlowNodeAbortingOnErr(t *testing.T) {
 
 	tracker := NewTracker("", len(nodes))
 	processes := NewProcesses(1)
-	refs := refs.NewReferenceStore(0)
+	refs := references.NewReferenceStore(0)
 
 	slow.mutex.Lock()
 	failed.mutex.Lock()
@@ -540,7 +540,7 @@ func TestNodeRevert(t *testing.T) {
 
 	tracker := NewTracker("", len(nodes))
 	processes := NewProcesses(1)
-	refs := refs.NewReferenceStore(0)
+	refs := references.NewReferenceStore(0)
 
 	nodes[len(nodes)-1].Rollback(context.Background(), tracker, processes, refs)
 	processes.Wait()
@@ -575,7 +575,7 @@ func TestNodeBranchesCalling(t *testing.T) {
 
 	tracker := NewTracker("", len(nodes))
 	processes := NewProcesses(1)
-	refs := refs.NewReferenceStore(0)
+	refs := references.NewReferenceStore(0)
 
 	nodes[0].Do(context.Background(), tracker, processes, refs)
 	processes.Wait()
@@ -594,7 +594,7 @@ func TestBeforeDoNode(t *testing.T) {
 	call := &caller{}
 	node := NewMockNode("mock", call, nil)
 
-	node.BeforeDo = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store refs.Store) (context.Context, error) {
+	node.BeforeDo = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store references.Store) (context.Context, error) {
 		counter++
 		return ctx, nil
 	}
@@ -616,7 +616,7 @@ func TestBeforeDoNodeErr(t *testing.T) {
 	call := &caller{}
 	node := NewMockNode("mock", call, nil)
 
-	node.BeforeDo = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store refs.Store) (context.Context, error) {
+	node.BeforeDo = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store references.Store) (context.Context, error) {
 		counter++
 		return ctx, expected
 	}
@@ -637,7 +637,7 @@ func TestAfterDoNode(t *testing.T) {
 	call := &caller{}
 	node := NewMockNode("mock", call, nil)
 
-	node.AfterDo = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store refs.Store) (context.Context, error) {
+	node.AfterDo = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store references.Store) (context.Context, error) {
 		counter++
 		return ctx, nil
 	}
@@ -659,7 +659,7 @@ func TestAfterDoNodeErr(t *testing.T) {
 	call := &caller{}
 	node := NewMockNode("mock", call, nil)
 
-	node.AfterDo = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store refs.Store) (context.Context, error) {
+	node.AfterDo = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store references.Store) (context.Context, error) {
 		counter++
 		return ctx, expected
 	}
@@ -680,7 +680,7 @@ func TestBeforeRevertNode(t *testing.T) {
 	call := &caller{}
 	node := NewMockNode("mock", call, nil)
 
-	node.BeforeRevert = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store refs.Store) (context.Context, error) {
+	node.BeforeRevert = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store references.Store) (context.Context, error) {
 		counter++
 		return ctx, nil
 	}
@@ -702,7 +702,7 @@ func TestBeforeRevertNodeErr(t *testing.T) {
 	call := &caller{}
 	node := NewMockNode("mock", call, nil)
 
-	node.BeforeRevert = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store refs.Store) (context.Context, error) {
+	node.BeforeRevert = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store references.Store) (context.Context, error) {
 		counter++
 		return ctx, expected
 	}
@@ -723,7 +723,7 @@ func TestAfterRevertNode(t *testing.T) {
 	call := &caller{}
 	node := NewMockNode("mock", call, nil)
 
-	node.AfterRevert = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store refs.Store) (context.Context, error) {
+	node.AfterRevert = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store references.Store) (context.Context, error) {
 		counter++
 		return ctx, nil
 	}
@@ -745,7 +745,7 @@ func TestAfterRevertNodeErr(t *testing.T) {
 	call := &caller{}
 	node := NewMockNode("mock", call, nil)
 
-	node.AfterRevert = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store refs.Store) (context.Context, error) {
+	node.AfterRevert = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store references.Store) (context.Context, error) {
 		counter++
 		return ctx, expected
 	}

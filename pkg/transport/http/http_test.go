@@ -10,7 +10,7 @@ import (
 
 	"github.com/jexia/semaphore/pkg/codec/metadata"
 	"github.com/jexia/semaphore/pkg/flow"
-	"github.com/jexia/semaphore/pkg/refs"
+	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/labels"
 	"github.com/jexia/semaphore/pkg/specs/types"
@@ -31,10 +31,10 @@ func JSONEqual(a, b io.Reader) (bool, interface{}, interface{}, error) {
 }
 
 type caller struct {
-	fn func(context.Context, refs.Store) error
+	fn func(context.Context, references.Store) error
 }
 
-func (caller *caller) Do(ctx context.Context, store refs.Store) error {
+func (caller *caller) Do(ctx context.Context, store references.Store) error {
 	return caller.fn(ctx, store)
 }
 
@@ -42,7 +42,7 @@ func (caller *caller) References() []*specs.Property {
 	return nil
 }
 
-func NewCallerFunc(fn func(context.Context, refs.Store) error) flow.Call {
+func NewCallerFunc(fn func(context.Context, references.Store) error) flow.Call {
 	return &caller{fn: fn}
 }
 

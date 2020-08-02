@@ -10,7 +10,7 @@ import (
 	"github.com/jexia/semaphore/pkg/codec/metadata"
 	"github.com/jexia/semaphore/pkg/core/instance"
 	"github.com/jexia/semaphore/pkg/flow"
-	"github.com/jexia/semaphore/pkg/refs"
+	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/labels"
 	"github.com/jexia/semaphore/pkg/specs/types"
@@ -51,7 +51,7 @@ func TestListener(t *testing.T) {
 	}
 
 	called := 0
-	call := NewCallerFunc(func(ctx context.Context, refs refs.Store) error {
+	call := NewCallerFunc(func(ctx context.Context, refs references.Store) error {
 		called++
 		return nil
 	})
@@ -98,7 +98,7 @@ func TestListener(t *testing.T) {
 		Body:   bytes.NewBuffer([]byte{}),
 	}
 
-	err = dial.SendMsg(context.Background(), rw, rq, refs.NewReferenceStore(0))
+	err = dial.SendMsg(context.Background(), rw, rq, references.NewReferenceStore(0))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -110,7 +110,7 @@ func TestListener(t *testing.T) {
 
 func TestErrorHandlingListener(t *testing.T) {
 	type test struct {
-		caller   func(refs.Store)
+		caller   func(references.Store)
 		err      *specs.OnError
 		expected int
 		result   string
@@ -134,7 +134,7 @@ func TestErrorHandlingListener(t *testing.T) {
 			result:   "database broken",
 		},
 		"reference": {
-			caller: func(store refs.Store) {
+			caller: func(store references.Store) {
 				store.StoreValue("error", "status", int64(429))
 				store.StoreValue("error", "message", "reference value")
 			},
@@ -160,7 +160,7 @@ func TestErrorHandlingListener(t *testing.T) {
 			result:   "reference value",
 		},
 		"input": {
-			caller: func(store refs.Store) {
+			caller: func(store references.Store) {
 				store.StoreValue("error", "status", int64(429))
 				store.StoreValue("input", "message", "reference value")
 			},
@@ -196,7 +196,7 @@ func TestErrorHandlingListener(t *testing.T) {
 			}
 
 			called := 0
-			call := NewCallerFunc(func(ctx context.Context, refs refs.Store) error {
+			call := NewCallerFunc(func(ctx context.Context, refs references.Store) error {
 				called++
 
 				if test.caller != nil {
@@ -253,7 +253,7 @@ func TestErrorHandlingListener(t *testing.T) {
 				Body:   bytes.NewBuffer([]byte{}),
 			}
 
-			err = dial.SendMsg(context.Background(), rw, rq, refs.NewReferenceStore(0))
+			err = dial.SendMsg(context.Background(), rw, rq, references.NewReferenceStore(0))
 			if err != nil {
 				t.Fatalf("unrecoverable err returned '%s'", err)
 			}

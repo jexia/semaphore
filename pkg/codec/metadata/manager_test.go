@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/jexia/semaphore/pkg/core/instance"
-	"github.com/jexia/semaphore/pkg/refs"
+	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/labels"
 	"github.com/jexia/semaphore/pkg/specs/types"
@@ -31,8 +31,8 @@ func TestNewManager(t *testing.T) {
 func TestManagerMarshal(t *testing.T) {
 	resource := "mock"
 
-	tests := map[string]func() (specs.Header, refs.Store, MD){
-		"simple": func() (specs.Header, refs.Store, MD) {
+	tests := map[string]func() (specs.Header, references.Store, MD){
+		"simple": func() (specs.Header, references.Store, MD) {
 			header := specs.Header{
 				"example": &specs.Property{
 					Name:    "example",
@@ -43,7 +43,7 @@ func TestManagerMarshal(t *testing.T) {
 				},
 			}
 
-			store := refs.NewReferenceStore(1)
+			store := references.NewReferenceStore(1)
 
 			expected := MD{
 				"example": "hello",
@@ -103,7 +103,7 @@ func TestManagerUnmarshal(t *testing.T) {
 			ctx := instance.NewContext()
 			manager := NewManager(ctx, resource, header)
 
-			store := refs.NewReferenceStore(len(input))
+			store := references.NewReferenceStore(len(input))
 			manager.Unmarshal(input, store)
 
 			for key, prop := range header {

@@ -1,14 +1,14 @@
 package graphql
 
 import (
-	"github.com/jexia/semaphore/pkg/refs"
+	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/labels"
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
 // ResponseValue constructs the response value send back to the client
-func ResponseValue(specs *specs.Property, refs refs.Store) (interface{}, error) {
+func ResponseValue(specs *specs.Property, refs references.Store) (interface{}, error) {
 	if specs.Type != types.Message {
 		return nil, ErrInvalidObject
 	}

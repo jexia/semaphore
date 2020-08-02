@@ -5,7 +5,7 @@ import (
 
 	"github.com/jexia/semaphore/pkg/core/instance"
 	"github.com/jexia/semaphore/pkg/core/logger"
-	"github.com/jexia/semaphore/pkg/refs"
+	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/template"
 )
@@ -27,7 +27,7 @@ type Manager struct {
 }
 
 // Marshal attempts to marshal the given metadata specs from the given refs store
-func (manager *Manager) Marshal(store refs.Store) MD {
+func (manager *Manager) Marshal(store references.Store) MD {
 	if manager == nil || manager.Params == nil {
 		return make(MD, 0)
 	}
@@ -57,9 +57,9 @@ func (manager *Manager) Marshal(store refs.Store) MD {
 }
 
 // Unmarshal unmarshals the given transport metadata into the given reference store
-func (manager *Manager) Unmarshal(metadata MD, store refs.Store) {
+func (manager *Manager) Unmarshal(metadata MD, store references.Store) {
 	for key, value := range metadata {
-		ref := refs.NewReference(strings.ToLower(key))
+		ref := references.NewReference(strings.ToLower(key))
 		ref.Value = value
 
 		manager.Context.Logger(logger.Flow).WithField("key", key).Debug("Unmarshalling header property")

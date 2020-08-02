@@ -5,7 +5,7 @@ import (
 
 	"github.com/jexia/semaphore/pkg/core/instance"
 	"github.com/jexia/semaphore/pkg/core/logger"
-	"github.com/jexia/semaphore/pkg/refs"
+	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/transport"
 	"github.com/sirupsen/logrus"
@@ -15,25 +15,25 @@ import (
 // The service called inside the call endpoint is retrieved from the services collection.
 // The call, codec and rollback are defined inside the node and used while processing requests.
 func NewNode(ctx instance.Context, node *specs.Node, condition *Condition, call, rollback Call, middleware *NodeMiddleware) *Node {
-	references := refs.References{}
+	refs := references.References{}
 
 	if middleware == nil {
 		middleware = &NodeMiddleware{}
 	}
 
 	if node.Call != nil {
-		references.MergeLeft(refs.ParameterReferences(node.Call.Request))
+		refs.MergeLeft(references.ParameterReferences(node.Call.Request))
 	}
 
 	if call != nil {
 		for _, prop := range call.References() {
-			references.MergeLeft(refs.PropertyReferences(prop))
+			refs.MergeLeft(references.PropertyReferences(prop))
 		}
 	}
 
 	if rollback != nil {
 		for _, prop := range rollback.References() {
-			references.MergeLeft(refs.PropertyReferences(prop))
+			refs.MergeLeft(references.PropertyReferences(prop))
 		}
 	}
 
@@ -50,7 +50,7 @@ func NewNode(ctx instance.Context, node *specs.Node, condition *Condition, call,
 		Call:         call,
 		Revert:       rollback,
 		DependsOn:    node.DependsOn,
-		References:   references,
+		References:   refs,
 		Next:         []*Node{},
 		OnError:      node.GetOnError(),
 		AfterDo:      middleware.AfterDo,
@@ -81,13 +81,13 @@ type NodeMiddleware struct {
 }
 
 // BeforeNode is called before a node is executed
-type BeforeNode func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store refs.Store) (context.Context, error)
+type BeforeNode func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store references.Store) (context.Context, error)
 
 // BeforeNodeHandler wraps the before node function to allow middleware to be chained
 type BeforeNodeHandler func(BeforeNode) BeforeNode
 
 // AfterNode is called after a node is executed
-type AfterNode func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store refs.Store) (context.Context, error)
+type AfterNode func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store references.Store) (context.Context, error)
 
 // AfterNodeHandler wraps the after node function to allow middleware to be chained
 type AfterNodeHandler func(AfterNode) AfterNode
@@ -113,7 +113,7 @@ type Node struct {
 
 // Do executes the given node an calls the next nodes.
 // If one of the nodes fails is the error marked and are the processes aborted.
-func (node *Node) Do(ctx context.Context, tracker *Tracker, processes *Processes, refs refs.Store) {
+func (node *Node) Do(ctx context.Context, tracker *Tracker, processes *Processes, refs references.Store) {
 	defer processes.Done()
 	node.logger.Debug("Executing node call: ", node.Name)
 
@@ -190,7 +190,7 @@ func (node *Node) Do(ctx context.Context, tracker *Tracker, processes *Processes
 
 // Rollback executes the given node rollback an calls the previous nodes.
 // If one of the nodes fails is the error marked but execution is not aborted.
-func (node *Node) Rollback(ctx context.Context, tracker *Tracker, processes *Processes, refs refs.Store) {
+func (node *Node) Rollback(ctx context.Context, tracker *Tracker, processes *Processes, refs references.Store) {
 	defer processes.Done()
 	node.logger.Debug("Executing node revert ", node.Name)
 

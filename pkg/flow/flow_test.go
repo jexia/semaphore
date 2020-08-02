@@ -9,17 +9,17 @@ import (
 
 	"github.com/jexia/semaphore/pkg/core/instance"
 	"github.com/jexia/semaphore/pkg/functions"
-	"github.com/jexia/semaphore/pkg/refs"
+	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 )
 
 type MockCodec struct{}
 
-func (codec *MockCodec) Marshal(refs.Store) (io.Reader, error) {
+func (codec *MockCodec) Marshal(references.Store) (io.Reader, error) {
 	return nil, nil
 }
 
-func (codec *MockCodec) Unmarshal(io.Reader, refs.Store) error {
+func (codec *MockCodec) Unmarshal(io.Reader, references.Store) error {
 	return nil
 }
 
@@ -35,7 +35,7 @@ func (caller *caller) References() []*specs.Property {
 	return caller.references
 }
 
-func (caller *caller) Do(context.Context, refs.Store) error {
+func (caller *caller) Do(context.Context, references.Store) error {
 	caller.mutex.Lock()
 	caller.Counter++
 	caller.mutex.Unlock()
@@ -141,7 +141,7 @@ func TestBeforeDoFlow(t *testing.T) {
 	call := &caller{}
 	_, manager := NewMockFlowManager(call, nil)
 
-	manager.BeforeDo = func(ctx context.Context, manager *Manager, store refs.Store) (context.Context, error) {
+	manager.BeforeDo = func(ctx context.Context, manager *Manager, store references.Store) (context.Context, error) {
 		counter++
 		return ctx, nil
 	}
@@ -162,7 +162,7 @@ func TestBeforeDoFlowErr(t *testing.T) {
 	call := &caller{}
 	_, manager := NewMockFlowManager(call, nil)
 
-	manager.BeforeDo = func(ctx context.Context, manager *Manager, store refs.Store) (context.Context, error) {
+	manager.BeforeDo = func(ctx context.Context, manager *Manager, store references.Store) (context.Context, error) {
 		counter++
 		return ctx, expected
 	}
@@ -183,7 +183,7 @@ func TestAfterDoFlowErr(t *testing.T) {
 	call := &caller{}
 	_, manager := NewMockFlowManager(call, nil)
 
-	manager.AfterDo = func(ctx context.Context, manager *Manager, store refs.Store) (context.Context, error) {
+	manager.AfterDo = func(ctx context.Context, manager *Manager, store references.Store) (context.Context, error) {
 		counter++
 		return ctx, expected
 	}
@@ -203,7 +203,7 @@ func TestAfterDoFlow(t *testing.T) {
 	call := &caller{}
 	_, manager := NewMockFlowManager(call, nil)
 
-	manager.AfterDo = func(ctx context.Context, manager *Manager, store refs.Store) (context.Context, error) {
+	manager.AfterDo = func(ctx context.Context, manager *Manager, store references.Store) (context.Context, error) {
 		counter++
 		return ctx, nil
 	}
@@ -223,7 +223,7 @@ func TestBeforeRollbackFlow(t *testing.T) {
 	call := &caller{}
 	nodes, manager := NewMockFlowManager(call, nil)
 
-	manager.BeforeRollback = func(ctx context.Context, manager *Manager, store refs.Store) (context.Context, error) {
+	manager.BeforeRollback = func(ctx context.Context, manager *Manager, store references.Store) (context.Context, error) {
 		counter++
 		return ctx, nil
 	}
@@ -242,7 +242,7 @@ func TestBeforeRollbackFlowErr(t *testing.T) {
 	call := &caller{}
 	nodes, manager := NewMockFlowManager(call, nil)
 
-	manager.BeforeRollback = func(ctx context.Context, manager *Manager, store refs.Store) (context.Context, error) {
+	manager.BeforeRollback = func(ctx context.Context, manager *Manager, store references.Store) (context.Context, error) {
 		counter++
 		return ctx, expected
 	}
@@ -260,7 +260,7 @@ func TestAfterRollbackFlow(t *testing.T) {
 	call := &caller{}
 	nodes, manager := NewMockFlowManager(call, nil)
 
-	manager.AfterRollback = func(ctx context.Context, manager *Manager, store refs.Store) (context.Context, error) {
+	manager.AfterRollback = func(ctx context.Context, manager *Manager, store references.Store) (context.Context, error) {
 		counter++
 		return ctx, nil
 	}
@@ -279,7 +279,7 @@ func TestAfterRollbackFlowErr(t *testing.T) {
 	call := &caller{}
 	nodes, manager := NewMockFlowManager(call, nil)
 
-	manager.AfterRollback = func(ctx context.Context, manager *Manager, store refs.Store) (context.Context, error) {
+	manager.AfterRollback = func(ctx context.Context, manager *Manager, store references.Store) (context.Context, error) {
 		counter++
 		return ctx, expected
 	}
@@ -299,7 +299,7 @@ func TestAfterManagerFunctions(t *testing.T) {
 	}
 
 	current := 0
-	counter := func(store refs.Store) error {
+	counter := func(store references.Store) error {
 		current++
 		return nil
 	}
@@ -346,7 +346,7 @@ func TestAfterManagerFunctions(t *testing.T) {
 				t.Fatal("unexpected result, expected a manager to be returned")
 			}
 
-			store := refs.NewReferenceStore(1)
+			store := references.NewReferenceStore(1)
 			err := manager.Do(context.Background(), store)
 			if err != nil {
 				t.Fatalf("unexpected error, %s", err)
@@ -367,11 +367,11 @@ func TestAfterManagerFunctionsError(t *testing.T) {
 
 	expected := errors.New("unexpected error")
 
-	pass := func(store refs.Store) error {
+	pass := func(store references.Store) error {
 		return nil
 	}
 
-	fail := func(store refs.Store) error {
+	fail := func(store references.Store) error {
 		return expected
 	}
 
@@ -416,7 +416,7 @@ func TestAfterManagerFunctionsError(t *testing.T) {
 				t.Fatal("unexpected result, expected a manager to be returned")
 			}
 
-			store := refs.NewReferenceStore(1)
+			store := references.NewReferenceStore(1)
 			err := manager.Do(context.Background(), store)
 			if err == nil {
 				t.Fatal("unexpected pass expected a error to be returned")

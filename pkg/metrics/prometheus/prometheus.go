@@ -10,7 +10,7 @@ import (
 	"github.com/jexia/semaphore/pkg/core/instance"
 	"github.com/jexia/semaphore/pkg/core/logger"
 	"github.com/jexia/semaphore/pkg/flow"
-	"github.com/jexia/semaphore/pkg/refs"
+	"github.com/jexia/semaphore/pkg/references"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
@@ -152,7 +152,7 @@ func (collector *collector) Registry() *prometheus.Registry {
 
 // BeforeDo gets called before a flow gets executed
 func (collector *collector) BeforeDo(next flow.BeforeManager) flow.BeforeManager {
-	return func(ctx context.Context, manager *flow.Manager, store refs.Store) (context.Context, error) {
+	return func(ctx context.Context, manager *flow.Manager, store references.Store) (context.Context, error) {
 		req := collector.flowsDo.With(prometheus.Labels{
 			"flow": manager.Name,
 		})
@@ -168,7 +168,7 @@ func (collector *collector) BeforeDo(next flow.BeforeManager) flow.BeforeManager
 
 // AfterDo gets called after a flow is executed
 func (collector *collector) AfterDo(next flow.AfterManager) flow.AfterManager {
-	return func(ctx context.Context, manager *flow.Manager, store refs.Store) (context.Context, error) {
+	return func(ctx context.Context, manager *flow.Manager, store references.Store) (context.Context, error) {
 		value := ctx.Value(StartTimeCtx)
 		if value != nil {
 			duration := collector.flowDo.With(prometheus.Labels{
@@ -187,7 +187,7 @@ func (collector *collector) AfterDo(next flow.AfterManager) flow.AfterManager {
 
 // BeforeRollback gets called before a flow rollback gets executed
 func (collector *collector) BeforeRollback(next flow.BeforeManager) flow.BeforeManager {
-	return func(ctx context.Context, manager *flow.Manager, store refs.Store) (context.Context, error) {
+	return func(ctx context.Context, manager *flow.Manager, store references.Store) (context.Context, error) {
 		req := collector.flowsRollback.With(prometheus.Labels{
 			"flow": manager.Name,
 		})
@@ -203,7 +203,7 @@ func (collector *collector) BeforeRollback(next flow.BeforeManager) flow.BeforeM
 
 // AfterRollback gets called before a flow rollback is executed
 func (collector *collector) AfterRollback(next flow.AfterManager) flow.AfterManager {
-	return func(ctx context.Context, manager *flow.Manager, store refs.Store) (context.Context, error) {
+	return func(ctx context.Context, manager *flow.Manager, store references.Store) (context.Context, error) {
 		value := ctx.Value(StartTimeCtx)
 		if value != nil {
 			duration := collector.flowRollback.With(prometheus.Labels{
@@ -222,7 +222,7 @@ func (collector *collector) AfterRollback(next flow.AfterManager) flow.AfterMana
 
 // BeforeDo gets called before a node gets executed
 func (collector *collector) BeforeNode(next flow.BeforeNode) flow.BeforeNode {
-	return func(ctx context.Context, node *flow.Node, tracker *flow.Tracker, processes *flow.Processes, store refs.Store) (context.Context, error) {
+	return func(ctx context.Context, node *flow.Node, tracker *flow.Tracker, processes *flow.Processes, store references.Store) (context.Context, error) {
 		req := collector.nodes.With(prometheus.Labels{
 			"flow": tracker.Flow,
 			"node": node.Name,
@@ -239,7 +239,7 @@ func (collector *collector) BeforeNode(next flow.BeforeNode) flow.BeforeNode {
 
 // AfterDo gets called after a node is executed
 func (collector *collector) AfterNode(next flow.AfterNode) flow.AfterNode {
-	return func(ctx context.Context, node *flow.Node, tracker *flow.Tracker, processes *flow.Processes, store refs.Store) (context.Context, error) {
+	return func(ctx context.Context, node *flow.Node, tracker *flow.Tracker, processes *flow.Processes, store references.Store) (context.Context, error) {
 		value := ctx.Value(StartTimeCtx)
 		if value != nil {
 			duration := collector.node.With(prometheus.Labels{

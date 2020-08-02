@@ -16,7 +16,7 @@ import (
 	"github.com/jexia/semaphore/pkg/codec/json"
 	"github.com/jexia/semaphore/pkg/core/instance"
 	"github.com/jexia/semaphore/pkg/flow"
-	"github.com/jexia/semaphore/pkg/refs"
+	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/labels"
 	"github.com/jexia/semaphore/pkg/specs/types"
@@ -66,7 +66,7 @@ func TestListener(t *testing.T) {
 	}
 
 	called := 0
-	call := NewCallerFunc(func(ctx context.Context, refs refs.Store) error {
+	call := NewCallerFunc(func(ctx context.Context, refs references.Store) error {
 		called++
 		return nil
 	})
@@ -98,7 +98,7 @@ func TestListenerBadRequest(t *testing.T) {
 		{
 			Name:     "first",
 			Previous: flow.Nodes{},
-			Call: NewCallerFunc(func(ctx context.Context, refs refs.Store) error {
+			Call: NewCallerFunc(func(ctx context.Context, refs references.Store) error {
 				called++
 				return nil
 			}),
@@ -129,7 +129,7 @@ func TestPathReferences(t *testing.T) {
 		{
 			Name:     "first",
 			Previous: flow.Nodes{},
-			Call: NewCallerFunc(func(ctx context.Context, refs refs.Store) error {
+			Call: NewCallerFunc(func(ctx context.Context, refs references.Store) error {
 				ref := refs.Load("input", "message")
 				if ref == nil {
 					t.Fatal("input:message ref has not been set")
@@ -175,7 +175,7 @@ func TestStoringParams(t *testing.T) {
 	expected := "sample"
 	called := 0
 
-	call := NewCallerFunc(func(ctx context.Context, refs refs.Store) error {
+	call := NewCallerFunc(func(ctx context.Context, refs references.Store) error {
 		ref := refs.Load("input", path)
 		if ref == nil {
 			t.Fatal("reference not set")
@@ -287,7 +287,7 @@ func TestListenerForwarding(t *testing.T) {
 func TestListenerErrorHandling(t *testing.T) {
 	type test struct {
 		input    map[string]string
-		caller   func(refs.Store)
+		caller   func(references.Store)
 		err      *specs.OnError
 		expected int
 		response map[string]interface{}
@@ -298,7 +298,7 @@ func TestListenerErrorHandling(t *testing.T) {
 			input: map[string]string{
 				"message": "value",
 			},
-			caller: func(store refs.Store) {
+			caller: func(store references.Store) {
 				store.StoreValue("error", "message", "value")
 				store.StoreValue("error", "status", int64(500))
 			},
@@ -352,7 +352,7 @@ func TestListenerErrorHandling(t *testing.T) {
 			input: map[string]string{
 				"message": "value",
 			},
-			caller: func(store refs.Store) {
+			caller: func(store references.Store) {
 				store.StoreValue("error", "message", "value")
 				store.StoreValue("error", "status", int64(500))
 				store.StoreValue("input", "status", int64(401))
@@ -408,7 +408,7 @@ func TestListenerErrorHandling(t *testing.T) {
 			input: map[string]string{
 				"message": "value",
 			},
-			caller: func(store refs.Store) {
+			caller: func(store references.Store) {
 				store.StoreValue("error", "message", "value")
 				store.StoreValue("error", "status", int64(404))
 			},
@@ -463,7 +463,7 @@ func TestListenerErrorHandling(t *testing.T) {
 			input: map[string]string{
 				"message": "value",
 			},
-			caller: func(store refs.Store) {
+			caller: func(store references.Store) {
 				store.StoreValue("error", "message", "value")
 				store.StoreValue("error", "status", int64(404))
 			},
@@ -536,7 +536,7 @@ func TestListenerErrorHandling(t *testing.T) {
 			input: map[string]string{
 				"message": "value",
 			},
-			caller: func(store refs.Store) {
+			caller: func(store references.Store) {
 				store.StoreValue("error", "message", "value")
 				store.StoreValue("error", "status", int64(404))
 			},
@@ -568,7 +568,7 @@ func TestListenerErrorHandling(t *testing.T) {
 			}
 
 			called := 0
-			call := NewCallerFunc(func(ctx context.Context, refs refs.Store) error {
+			call := NewCallerFunc(func(ctx context.Context, refs references.Store) error {
 				called++
 
 				if test.caller != nil {

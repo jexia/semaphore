@@ -17,7 +17,7 @@ import (
 	"github.com/jexia/semaphore/pkg/providers"
 	"github.com/jexia/semaphore/pkg/providers/hcl"
 	"github.com/jexia/semaphore/pkg/providers/mock"
-	"github.com/jexia/semaphore/pkg/refs"
+	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/transport"
 	"github.com/jexia/semaphore/pkg/transport/http"
@@ -341,7 +341,7 @@ func TestClosingRunningFlows(t *testing.T) {
 
 	ctx := instance.NewContext()
 	manager := flow.NewManager(ctx, "", nil, nil, nil, &flow.ManagerMiddleware{
-		AfterDo: func(ctx context.Context, manager *flow.Manager, store refs.Store) (context.Context, error) {
+		AfterDo: func(ctx context.Context, manager *flow.Manager, store references.Store) (context.Context, error) {
 			close(run)
 			time.Sleep(timeout)
 			return ctx, nil
@@ -354,7 +354,7 @@ func TestClosingRunningFlows(t *testing.T) {
 		},
 	}
 
-	go manager.Do(context.Background(), refs.NewReferenceStore(0))
+	go manager.Do(context.Background(), references.NewReferenceStore(0))
 	<-run
 
 	start := time.Now()

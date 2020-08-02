@@ -9,7 +9,7 @@ import (
 	"github.com/jexia/semaphore/pkg/codec/json"
 	"github.com/jexia/semaphore/pkg/core/instance"
 	"github.com/jexia/semaphore/pkg/functions"
-	"github.com/jexia/semaphore/pkg/refs"
+	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/labels"
 	"github.com/jexia/semaphore/pkg/specs/template"
@@ -23,7 +23,7 @@ type transporter struct {
 	status int
 }
 
-func (t *transporter) SendMsg(ctx context.Context, writer transport.ResponseWriter, request *transport.Request, refs refs.Store) error {
+func (t *transporter) SendMsg(ctx context.Context, writer transport.ResponseWriter, request *transport.Request, refs references.Store) error {
 	writer.HeaderStatus(t.status)
 
 	go func() {
@@ -56,7 +56,7 @@ type fncounter struct {
 	err     error
 }
 
-func (counter *fncounter) handle(refs.Store) error {
+func (counter *fncounter) handle(references.Store) error {
 	counter.mutex.Lock()
 	counter.counter++
 	counter.mutex.Unlock()
@@ -85,7 +85,7 @@ func TestCallExecution(t *testing.T) {
 	type test struct {
 		node    *specs.Node
 		options *CallOptions
-		store   refs.Store
+		store   references.Store
 	}
 
 	constructor := json.NewConstructor()
@@ -123,7 +123,7 @@ func TestCallExecution(t *testing.T) {
 				Request: &Request{
 					functions: functions.Stack{
 						"sample": &functions.Function{
-							Fn: func(store refs.Store) error { return nil },
+							Fn: func(store references.Store) error { return nil },
 						},
 					},
 				},
@@ -137,7 +137,7 @@ func TestCallExecution(t *testing.T) {
 				Response: &Request{
 					functions: functions.Stack{
 						"sample": &functions.Function{
-							Fn: func(store refs.Store) error { return nil },
+							Fn: func(store references.Store) error { return nil },
 						},
 					},
 				},
@@ -168,7 +168,7 @@ func TestCallFunctionsExecution(t *testing.T) {
 		expected int
 		node     *specs.Node
 		options  *CallOptions
-		store    refs.Store
+		store    references.Store
 	}
 
 	tests := map[string]func() *test{
@@ -275,7 +275,7 @@ func TestCallErrHandling(t *testing.T) {
 	ctx := instance.NewContext()
 	call := NewCall(ctx, node, options)
 
-	store := refs.NewReferenceStore(0)
+	store := references.NewReferenceStore(0)
 	err := call.Do(context.Background(), store)
 	if err == nil {
 		t.Fatal("unexpected pass expected a error to be returned")
@@ -290,7 +290,7 @@ func TestTransportStatusCodeHandling(t *testing.T) {
 	type test struct {
 		node    *specs.Node
 		options *CallOptions
-		store   refs.Store
+		store   references.Store
 		err     error
 	}
 
@@ -301,7 +301,7 @@ func TestTransportStatusCodeHandling(t *testing.T) {
 				options: &CallOptions{
 					Transport: NewMockTransport(nil, transport.StatusOK, nil),
 				},
-				store: refs.NewReferenceStore(0),
+				store: references.NewReferenceStore(0),
 				err:   nil,
 			}
 		},
@@ -312,7 +312,7 @@ func TestTransportStatusCodeHandling(t *testing.T) {
 					Transport:      NewMockTransport(nil, transport.StatusOK, nil),
 					ExpectedStatus: []int{transport.StatusOK},
 				},
-				store: refs.NewReferenceStore(0),
+				store: references.NewReferenceStore(0),
 				err:   nil,
 			}
 		},
@@ -323,7 +323,7 @@ func TestTransportStatusCodeHandling(t *testing.T) {
 					Transport:      NewMockTransport(nil, 201, nil),
 					ExpectedStatus: []int{201},
 				},
-				store: refs.NewReferenceStore(0),
+				store: references.NewReferenceStore(0),
 				err:   nil,
 			}
 		},
@@ -334,7 +334,7 @@ func TestTransportStatusCodeHandling(t *testing.T) {
 					Transport:      NewMockTransport(nil, 300, nil),
 					ExpectedStatus: []int{300},
 				},
-				store: refs.NewReferenceStore(0),
+				store: references.NewReferenceStore(0),
 				err:   nil,
 			}
 		},
@@ -345,7 +345,7 @@ func TestTransportStatusCodeHandling(t *testing.T) {
 					Transport:      NewMockTransport(nil, 500, nil),
 					ExpectedStatus: []int{transport.StatusOK},
 				},
-				store: refs.NewReferenceStore(0),
+				store: references.NewReferenceStore(0),
 				err:   ErrAbortFlow,
 			}
 		},
@@ -356,7 +356,7 @@ func TestTransportStatusCodeHandling(t *testing.T) {
 					Transport:      NewMockTransport(nil, 401, nil),
 					ExpectedStatus: []int{transport.StatusOK},
 				},
-				store: refs.NewReferenceStore(0),
+				store: references.NewReferenceStore(0),
 				err:   ErrAbortFlow,
 			}
 		},
@@ -384,7 +384,7 @@ func TestTransportErrorSchemaDecoding(t *testing.T) {
 	type test struct {
 		node      *specs.Node
 		options   *CallOptions
-		store     refs.Store
+		store     references.Store
 		reference string
 	}
 
@@ -418,7 +418,7 @@ func TestTransportErrorSchemaDecoding(t *testing.T) {
 					Transport:      NewMockTransport(nil, 500, []byte(message)),
 					Err:            NewOnError(nil, codec, nil, nil, nil),
 				},
-				store:     refs.NewReferenceStore(1),
+				store:     references.NewReferenceStore(1),
 				reference: "message",
 			}
 		},
@@ -458,7 +458,7 @@ func TestTransportErrorSchemaDecoding(t *testing.T) {
 					Transport:      NewMockTransport(nil, 500, []byte(message)),
 					Err:            NewOnError(nil, codec, nil, nil, nil),
 				},
-				store:     refs.NewReferenceStore(1),
+				store:     references.NewReferenceStore(1),
 				reference: "meta.message",
 			}
 		},
@@ -493,7 +493,7 @@ func TestErrFunctionsExecution(t *testing.T) {
 		expected int
 		node     *specs.Node
 		options  *CallOptions
-		store    refs.Store
+		store    references.Store
 	}
 
 	tests := map[string]func() *test{
@@ -504,7 +504,7 @@ func TestErrFunctionsExecution(t *testing.T) {
 				fn:       counter,
 				expected: 1,
 				node:     &specs.Node{},
-				store:    refs.NewReferenceStore(0),
+				store:    references.NewReferenceStore(0),
 				options: &CallOptions{
 					Transport: NewMockTransport(nil, 500, nil),
 					Err: &OnError{
@@ -524,7 +524,7 @@ func TestErrFunctionsExecution(t *testing.T) {
 				fn:       counter,
 				expected: 3,
 				node:     &specs.Node{},
-				store:    refs.NewReferenceStore(0),
+				store:    references.NewReferenceStore(0),
 				options: &CallOptions{
 					Transport: NewMockTransport(nil, 500, nil),
 					Err: &OnError{

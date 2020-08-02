@@ -11,7 +11,7 @@ import (
 	"github.com/jexia/semaphore"
 	"github.com/jexia/semaphore/pkg/providers/hcl"
 	"github.com/jexia/semaphore/pkg/providers/mock"
-	"github.com/jexia/semaphore/pkg/refs"
+	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/template"
 )
@@ -35,7 +35,7 @@ func NewMock() (specs.FlowListInterface, error) {
 	return client.GetFlows(), nil
 }
 
-func ValidateStore(t *testing.T, prop *specs.Property, resource string, origin string, input map[string]interface{}, store refs.Store) {
+func ValidateStore(t *testing.T, prop *specs.Property, resource string, origin string, input map[string]interface{}, store references.Store) {
 	for key, value := range input {
 		nprop := prop.Nested[key]
 		if nprop == nil {
@@ -95,7 +95,7 @@ func BenchmarkSimpleMarshal(b *testing.B) {
 		"message": "message",
 	}
 
-	refs := refs.NewReferenceStore(len(input))
+	refs := references.NewReferenceStore(len(input))
 	refs.StoreValues("input", "", input)
 
 	flows, err := NewMock()
@@ -132,7 +132,7 @@ func BenchmarkNestedMarshal(b *testing.B) {
 		},
 	}
 
-	refs := refs.NewReferenceStore(len(input))
+	refs := references.NewReferenceStore(len(input))
 	refs.StoreValues("input", "", input)
 
 	flows, err := NewMock()
@@ -171,7 +171,7 @@ func BenchmarkRepeatedMessagesMarshal(b *testing.B) {
 		},
 	}
 
-	refs := refs.NewReferenceStore(len(input))
+	refs := references.NewReferenceStore(len(input))
 	refs.StoreValues("input", "", input)
 
 	flows, err := NewMock()
@@ -208,7 +208,7 @@ func BenchmarkRepeatedValuesMarshal(b *testing.B) {
 		},
 	}
 
-	refs := refs.NewReferenceStore(len(input))
+	refs := references.NewReferenceStore(len(input))
 	refs.StoreValues("input", "", input)
 
 	flows, err := NewMock()
@@ -248,7 +248,7 @@ func BenchmarkSimpleUnmarshal(b *testing.B) {
 		b.Fatal(err)
 	}
 
-	refs := refs.NewReferenceStore(len(input))
+	refs := references.NewReferenceStore(len(input))
 	flows, err := NewMock()
 	if err != nil {
 		b.Fatal(err)
@@ -286,7 +286,7 @@ func BenchmarkNestedUnmarshal(b *testing.B) {
 		b.Fatal(err)
 	}
 
-	refs := refs.NewReferenceStore(len(input))
+	refs := references.NewReferenceStore(len(input))
 	flows, err := NewMock()
 	if err != nil {
 		b.Fatal(err)
@@ -326,7 +326,7 @@ func BenchmarkRepeatedMessagesUnmarshal(b *testing.B) {
 		b.Fatal(err)
 	}
 
-	refs := refs.NewReferenceStore(len(input))
+	refs := references.NewReferenceStore(len(input))
 	flows, err := NewMock()
 	if err != nil {
 		b.Fatal(err)
@@ -364,7 +364,7 @@ func BenchmarkRepeatedValuesUnmarshal(b *testing.B) {
 		b.Fatal(err)
 	}
 
-	refs := refs.NewReferenceStore(len(input))
+	refs := references.NewReferenceStore(len(input))
 	flows, err := NewMock()
 	if err != nil {
 		b.Fatal(err)
@@ -467,7 +467,7 @@ func TestMarshal(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			refs := refs.NewReferenceStore(len(input))
+			refs := references.NewReferenceStore(len(input))
 			refs.StoreValues("input", "", input)
 
 			reader, err := manager.Marshal(refs)
@@ -581,7 +581,7 @@ func TestUnmarshal(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			store := refs.NewReferenceStore(len(input))
+			store := references.NewReferenceStore(len(input))
 			err = manager.Unmarshal(bytes.NewBuffer(inputAsJSON), store)
 			if err != nil {
 				t.Fatal(err)

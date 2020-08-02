@@ -7,7 +7,7 @@ import (
 	"github.com/jexia/semaphore/pkg/conditions"
 	"github.com/jexia/semaphore/pkg/core/instance"
 	"github.com/jexia/semaphore/pkg/functions"
-	"github.com/jexia/semaphore/pkg/refs"
+	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/labels"
 	"github.com/jexia/semaphore/pkg/specs/types"
@@ -44,7 +44,7 @@ func TestConditionEvaluation(t *testing.T) {
 		"functions": {
 			stack: functions.Stack{
 				"first": &functions.Function{
-					Fn: func(store refs.Store) error {
+					Fn: func(store references.Store) error {
 						store.StoreValue("", ".", 1)
 						return nil
 					},
@@ -59,7 +59,7 @@ func TestConditionEvaluation(t *testing.T) {
 		},
 	}
 
-	store := refs.NewReferenceStore(5)
+	store := references.NewReferenceStore(5)
 	store.StoreValue("input", "id", 1)
 	store.StoreValue("input", "name", "john")
 	store.StoreValue("input", "age", 99)
@@ -101,7 +101,7 @@ func TestInvalidConditionEvaluation(t *testing.T) {
 		"function error": {
 			stack: functions.Stack{
 				"first": &functions.Function{
-					Fn: func(store refs.Store) error {
+					Fn: func(store references.Store) error {
 						store.StoreValue("", ".", 1)
 						return errors.New("unexpected error")
 					},
@@ -115,7 +115,7 @@ func TestInvalidConditionEvaluation(t *testing.T) {
 		},
 	}
 
-	store := refs.NewReferenceStore(5)
+	store := references.NewReferenceStore(5)
 	store.StoreValue("input", "id", 1)
 	store.StoreValue("input", "name", "john")
 	store.StoreValue("input", "age", 99)

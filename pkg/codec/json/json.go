@@ -8,7 +8,7 @@ import (
 	"github.com/francoispqt/gojay"
 	"github.com/jexia/semaphore/pkg/codec"
 	"github.com/jexia/semaphore/pkg/core/trace"
-	"github.com/jexia/semaphore/pkg/refs"
+	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 )
 
@@ -57,7 +57,7 @@ func (manager *Manager) Property() *specs.Property {
 
 // Marshal marshals the given reference store into a JSON message.
 // This method is called during runtime to encode a new message with the values stored inside the given reference store
-func (manager *Manager) Marshal(refs refs.Store) (io.Reader, error) {
+func (manager *Manager) Marshal(refs references.Store) (io.Reader, error) {
 	if manager.specs == nil {
 		return nil, nil
 	}
@@ -73,7 +73,7 @@ func (manager *Manager) Marshal(refs refs.Store) (io.Reader, error) {
 
 // Unmarshal unmarshals the given JSON io reader into the given reference store.
 // This method is called during runtime to decode a new message and store it inside the given reference store
-func (manager *Manager) Unmarshal(reader io.Reader, refs refs.Store) error {
+func (manager *Manager) Unmarshal(reader io.Reader, refs references.Store) error {
 	if manager.specs == nil {
 		return nil
 	}

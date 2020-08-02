@@ -10,7 +10,6 @@ import (
 	"github.com/jexia/semaphore/pkg/core/logger"
 	"github.com/jexia/semaphore/pkg/core/trace"
 	"github.com/jexia/semaphore/pkg/references"
-	"github.com/jexia/semaphore/pkg/refs"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/template"
 )
@@ -25,7 +24,7 @@ type Intermediate func(args ...*specs.Property) (*specs.Property, Exec, error)
 
 // Exec is a executable function.
 // A store should be returned which could be used to encode the function property
-type Exec func(store refs.Store) error
+type Exec func(store references.Store) error
 
 // Collection represents a collection of stacks grouped by nodes
 type Collection map[*specs.ParameterMap]Stack

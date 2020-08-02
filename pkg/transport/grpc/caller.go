@@ -10,7 +10,7 @@ import (
 	"github.com/jexia/semaphore/pkg/core/logger"
 	"github.com/jexia/semaphore/pkg/core/trace"
 	"github.com/jexia/semaphore/pkg/functions"
-	"github.com/jexia/semaphore/pkg/refs"
+	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/transport"
 	"github.com/sirupsen/logrus"
@@ -132,7 +132,7 @@ func (call *Call) Director(ctx context.Context) (*grpc.ClientConn, error) {
 }
 
 // SendMsg calls the configured host and attempts to call the given endpoint with the given headers and stream
-func (call *Call) SendMsg(ctx context.Context, rw transport.ResponseWriter, pr *transport.Request, refs refs.Store) error {
+func (call *Call) SendMsg(ctx context.Context, rw transport.ResponseWriter, pr *transport.Request, refs references.Store) error {
 	method := call.methods[pr.Method.GetName()]
 	if method == nil {
 		return trace.New(trace.WithMessage("unknown service method %s", pr.Method.GetName()))

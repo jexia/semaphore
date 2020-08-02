@@ -11,7 +11,7 @@ import (
 	"github.com/jexia/semaphore/pkg/codec/json"
 	"github.com/jexia/semaphore/pkg/codec/metadata"
 	"github.com/jexia/semaphore/pkg/core/instance"
-	"github.com/jexia/semaphore/pkg/refs"
+	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs/labels"
 	"github.com/jexia/semaphore/pkg/specs/types"
 	"github.com/jexia/semaphore/pkg/transport"
@@ -58,7 +58,7 @@ func TestCaller(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	refs := refs.NewReferenceStore(1)
+	refs := references.NewReferenceStore(1)
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(`{"message":"` + message + `"}`))
 	}))
@@ -318,15 +318,15 @@ func TestCallerReferencesLookup(t *testing.T) {
 			}
 
 			method := caller.GetMethod("mock")
-			references := method.References()
-			if len(references) != 1 {
-				t.Fatalf("unexpected references %+v", references)
+			refs := method.References()
+			if len(refs) != 1 {
+				t.Fatalf("unexpected references %+v", refs)
 			}
 
-			references[0].Type = types.String
-			references[0].Label = labels.Optional
+			refs[0].Type = types.String
+			refs[0].Label = labels.Optional
 
-			store := refs.NewReferenceStore(1)
+			store := references.NewReferenceStore(1)
 			ctx := context.Background()
 			req := transport.Request{
 				Method: method,

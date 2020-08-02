@@ -4,7 +4,7 @@ import (
 	"github.com/jexia/semaphore/pkg/codec"
 	"github.com/jexia/semaphore/pkg/codec/metadata"
 	"github.com/jexia/semaphore/pkg/core/instance"
-	"github.com/jexia/semaphore/pkg/refs"
+	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/template"
 )
@@ -44,7 +44,7 @@ type Object struct {
 // ResolveStatusCode attempts to resolve the defined status code.
 // If no status code property has been defined or the property is not a int64.
 // Is a internal server error status returned.
-func (object *Object) ResolveStatusCode(store refs.Store) int {
+func (object *Object) ResolveStatusCode(store references.Store) int {
 	if object.StatusCode == nil {
 		return StatusInternalErr
 	}
@@ -67,7 +67,7 @@ func (object *Object) ResolveStatusCode(store refs.Store) int {
 // ResolveMessage attempts to resolve the defined message.
 // If no message property has been defined or the property is not a string.
 // Is a internal server error message returned.
-func (object *Object) ResolveMessage(store refs.Store) string {
+func (object *Object) ResolveMessage(store references.Store) string {
 	if object.Message == nil {
 		return StatusMessage(StatusInternalErr)
 	}

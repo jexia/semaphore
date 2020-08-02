@@ -10,7 +10,7 @@ import (
 	"github.com/jexia/semaphore"
 	"github.com/jexia/semaphore/pkg/providers/hcl"
 	"github.com/jexia/semaphore/pkg/providers/protobuffers"
-	"github.com/jexia/semaphore/pkg/refs"
+	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/template"
 	"github.com/jhump/protoreflect/dynamic"
@@ -40,7 +40,7 @@ func FindNode(flow *specs.Flow, name string) *specs.Node {
 	return nil
 }
 
-func ValidateStore(t *testing.T, prop *specs.Property, resource string, origin string, input map[string]interface{}, store refs.Store) {
+func ValidateStore(t *testing.T, prop *specs.Property, resource string, origin string, input map[string]interface{}, store references.Store) {
 	for key, value := range input {
 		nprop := prop.Nested[key]
 		if nprop == nil {
@@ -104,7 +104,7 @@ func BenchmarkSimpleMarshal(b *testing.B) {
 		"message": "message",
 	}
 
-	refs := refs.NewReferenceStore(len(input))
+	refs := references.NewReferenceStore(len(input))
 	refs.StoreValues("input", "", input)
 
 	flows, err := NewMock()
@@ -141,7 +141,7 @@ func BenchmarkNestedMarshal(b *testing.B) {
 		},
 	}
 
-	refs := refs.NewReferenceStore(len(input))
+	refs := references.NewReferenceStore(len(input))
 	refs.StoreValues("input", "", input)
 
 	flows, err := NewMock()
@@ -180,7 +180,7 @@ func BenchmarkRepeatedMarshal(b *testing.B) {
 		},
 	}
 
-	refs := refs.NewReferenceStore(len(input))
+	refs := references.NewReferenceStore(len(input))
 	refs.StoreValues("input", "", input)
 
 	flows, err := NewMock()
@@ -220,7 +220,7 @@ func BenchmarkSimpleUnmarshal(b *testing.B) {
 		b.Fatal(err)
 	}
 
-	refs := refs.NewReferenceStore(len(input))
+	refs := references.NewReferenceStore(len(input))
 	flows, err := NewMock()
 	if err != nil {
 		b.Fatal(err)
@@ -274,7 +274,7 @@ func BenchmarkNestedUnmarshal(b *testing.B) {
 		b.Fatal(err)
 	}
 
-	refs := refs.NewReferenceStore(len(input))
+	refs := references.NewReferenceStore(len(input))
 	flows, err := NewMock()
 	if err != nil {
 		b.Fatal(err)
@@ -330,7 +330,7 @@ func BenchmarkRepeatedUnmarshal(b *testing.B) {
 		b.Fatal(err)
 	}
 
-	refs := refs.NewReferenceStore(len(input))
+	refs := references.NewReferenceStore(len(input))
 	flows, err := NewMock()
 	if err != nil {
 		b.Fatal(err)
@@ -413,13 +413,13 @@ func TestMarshal(t *testing.T) {
 		},
 		"enum": {
 			"nested": map[string]interface{}{},
-			"status": refs.Enum("PENDING", 1),
+			"status": references.Enum("PENDING", 1),
 		},
 		"repeating_enum": {
 			"nested": map[string]interface{}{},
 			"repeating_status": []interface{}{
-				refs.Enum("PENDING", 1),
-				refs.Enum("UNKNOWN", 0),
+				references.Enum("PENDING", 1),
+				references.Enum("UNKNOWN", 0),
 			},
 		},
 		"repeating_values": {
@@ -449,7 +449,7 @@ func TestMarshal(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			store := refs.NewReferenceStore(3)
+			store := references.NewReferenceStore(3)
 			store.StoreValues("input", "", input)
 
 			reader, err := manager.Marshal(store)
@@ -527,13 +527,13 @@ func TestUnmarshal(t *testing.T) {
 		},
 		"enum": {
 			"nested": map[string]interface{}{},
-			"status": refs.Enum("PENDING", 1),
+			"status": references.Enum("PENDING", 1),
 		},
 		"repeating_enum": {
 			"nested": map[string]interface{}{},
 			"repeating_status": []interface{}{
-				refs.Enum("PENDING", 1),
-				refs.Enum("UNKNOWN", 0),
+				references.Enum("PENDING", 1),
+				references.Enum("UNKNOWN", 0),
 			},
 		},
 		"complex": {
@@ -572,7 +572,7 @@ func TestUnmarshal(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			store := refs.NewReferenceStore(len(input))
+			store := references.NewReferenceStore(len(input))
 
 			constructor := NewConstructor()
 			manager, err := constructor.New("input", req)

@@ -7,7 +7,7 @@ import (
 	"github.com/jexia/semaphore/pkg/core/instance"
 	"github.com/jexia/semaphore/pkg/core/logger"
 	"github.com/jexia/semaphore/pkg/functions"
-	"github.com/jexia/semaphore/pkg/refs"
+	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/transport"
 	"github.com/sirupsen/logrus"
@@ -16,7 +16,7 @@ import (
 // Call represents a transport caller implementation
 type Call interface {
 	References() []*specs.Property
-	Do(context.Context, refs.Store) error
+	Do(context.Context, references.Store) error
 }
 
 // NewManager constructs a new manager for the given flow.
@@ -63,13 +63,13 @@ type ManagerMiddleware struct {
 }
 
 // BeforeManager is called before a manager get's calles
-type BeforeManager func(ctx context.Context, manager *Manager, store refs.Store) (context.Context, error)
+type BeforeManager func(ctx context.Context, manager *Manager, store references.Store) (context.Context, error)
 
 // BeforeManagerHandler wraps the before call function to allow middleware to be chained
 type BeforeManagerHandler func(BeforeManager) BeforeManager
 
 // AfterManager is called after a manager is called
-type AfterManager func(ctx context.Context, manager *Manager, store refs.Store) (context.Context, error)
+type AfterManager func(ctx context.Context, manager *Manager, store references.Store) (context.Context, error)
 
 // AfterManagerHandler wraps the after call function to allow middleware to be chained
 type AfterManagerHandler func(AfterManager) AfterManager
@@ -114,13 +114,13 @@ func (manager *Manager) Errors() []transport.Error {
 }
 
 // NewStore constructs a new reference store for the given manager
-func (manager *Manager) NewStore() refs.Store {
-	return refs.NewReferenceStore(manager.References)
+func (manager *Manager) NewStore() references.Store {
+	return references.NewReferenceStore(manager.References)
 }
 
 // Do calls all the nodes inside the manager if a error is returned is a rollback of all the already executed steps triggered.
 // Nodes are executed concurrently to one another.
-func (manager *Manager) Do(ctx context.Context, refs refs.Store) error {
+func (manager *Manager) Do(ctx context.Context, refs references.Store) error {
 	if manager.BeforeDo != nil {
 		patched, err := manager.BeforeDo(ctx, manager, refs)
 		if err != nil {
@@ -178,7 +178,7 @@ func (manager *Manager) Do(ctx context.Context, refs refs.Store) error {
 
 // Revert reverts the executed nodes found inside the given tracker.
 // All nodes that have not been executed will be ignored.
-func (manager *Manager) Revert(executed *Tracker, refs refs.Store) {
+func (manager *Manager) Revert(executed *Tracker, refs references.Store) {
 	defer manager.wg.Done()
 
 	var err error

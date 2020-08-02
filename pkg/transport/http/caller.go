@@ -11,7 +11,7 @@ import (
 	"github.com/jexia/semaphore/pkg/core/logger"
 	"github.com/jexia/semaphore/pkg/core/trace"
 	"github.com/jexia/semaphore/pkg/functions"
-	"github.com/jexia/semaphore/pkg/refs"
+	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/types"
 	"github.com/jexia/semaphore/pkg/transport"
@@ -138,7 +138,7 @@ func (call *Call) GetMethod(name string) transport.Method {
 }
 
 // SendMsg calls the configured host and attempts to call the given endpoint with the given headers and stream
-func (call *Call) SendMsg(ctx context.Context, rw transport.ResponseWriter, pr *transport.Request, refs refs.Store) error {
+func (call *Call) SendMsg(ctx context.Context, rw transport.ResponseWriter, pr *transport.Request, refs references.Store) error {
 	request := http.MethodGet
 	url, err := url.Parse(call.host)
 	if err != nil {
@@ -195,7 +195,7 @@ func (call *Call) Close() error {
 }
 
 // LookupEndpointReferences looks up the references within the given endpoint and returns the newly constructed endpoint
-func LookupEndpointReferences(method *Method, store refs.Store) string {
+func LookupEndpointReferences(method *Method, store references.Store) string {
 	result := method.endpoint
 
 	for _, prop := range method.references {

@@ -4,7 +4,7 @@ import (
 	"github.com/jexia/semaphore/pkg/core/instance"
 	"github.com/jexia/semaphore/pkg/core/logger"
 	"github.com/jexia/semaphore/pkg/functions"
-	"github.com/jexia/semaphore/pkg/refs"
+	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 )
 
@@ -23,7 +23,7 @@ type Condition struct {
 }
 
 // Eval evaluates the given condition with the given reference store
-func (condition *Condition) Eval(ctx instance.Context, store refs.Store) (bool, error) {
+func (condition *Condition) Eval(ctx instance.Context, store references.Store) (bool, error) {
 	err := ExecuteFunctions(condition.stack, store)
 	if err != nil {
 		return false, err

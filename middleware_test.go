@@ -7,7 +7,7 @@ import (
 	"github.com/jexia/semaphore/pkg/core/api"
 	"github.com/jexia/semaphore/pkg/core/instance"
 	"github.com/jexia/semaphore/pkg/flow"
-	"github.com/jexia/semaphore/pkg/refs"
+	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 )
 
@@ -88,7 +88,7 @@ func TestAfterConstructorOption(t *testing.T) {
 func TestBeforeManagerDoOption(t *testing.T) {
 	fn := func(i *int) flow.BeforeManagerHandler {
 		return func(next flow.BeforeManager) flow.BeforeManager {
-			return func(ctx context.Context, manager *flow.Manager, store refs.Store) (context.Context, error) {
+			return func(ctx context.Context, manager *flow.Manager, store references.Store) (context.Context, error) {
 				*i++
 				return next(ctx, manager, store)
 			}
@@ -148,7 +148,7 @@ func TestBeforeManagerDoOption(t *testing.T) {
 func TestBeforeManagerRollbackOption(t *testing.T) {
 	fn := func(i *int) flow.BeforeManagerHandler {
 		return func(next flow.BeforeManager) flow.BeforeManager {
-			return func(ctx context.Context, manager *flow.Manager, store refs.Store) (context.Context, error) {
+			return func(ctx context.Context, manager *flow.Manager, store references.Store) (context.Context, error) {
 				*i++
 				return next(ctx, manager, store)
 			}
@@ -208,7 +208,7 @@ func TestBeforeManagerRollbackOption(t *testing.T) {
 func TestAfterManagerRollbackOption(t *testing.T) {
 	fn := func(i *int) flow.AfterManagerHandler {
 		return func(next flow.AfterManager) flow.AfterManager {
-			return func(ctx context.Context, manager *flow.Manager, store refs.Store) (context.Context, error) {
+			return func(ctx context.Context, manager *flow.Manager, store references.Store) (context.Context, error) {
 				*i++
 				return next(ctx, manager, store)
 			}
@@ -268,7 +268,7 @@ func TestAfterManagerRollbackOption(t *testing.T) {
 func TestAfterManagerDoOption(t *testing.T) {
 	fn := func(i *int) flow.AfterManagerHandler {
 		return func(next flow.AfterManager) flow.AfterManager {
-			return func(ctx context.Context, manager *flow.Manager, store refs.Store) (context.Context, error) {
+			return func(ctx context.Context, manager *flow.Manager, store references.Store) (context.Context, error) {
 				*i++
 				return next(ctx, manager, store)
 			}
@@ -328,7 +328,7 @@ func TestAfterManagerDoOption(t *testing.T) {
 func TestBeforeNodeDoOption(t *testing.T) {
 	fn := func(i *int) flow.BeforeNodeHandler {
 		return func(next flow.BeforeNode) flow.BeforeNode {
-			return func(ctx context.Context, node *flow.Node, tracker *flow.Tracker, processes *flow.Processes, store refs.Store) (context.Context, error) {
+			return func(ctx context.Context, node *flow.Node, tracker *flow.Tracker, processes *flow.Processes, store references.Store) (context.Context, error) {
 				*i++
 				return next(ctx, node, tracker, processes, store)
 			}
@@ -388,7 +388,7 @@ func TestBeforeNodeDoOption(t *testing.T) {
 func TestBeforeNodeRollbackOption(t *testing.T) {
 	fn := func(i *int) flow.BeforeNodeHandler {
 		return func(next flow.BeforeNode) flow.BeforeNode {
-			return func(ctx context.Context, node *flow.Node, tracker *flow.Tracker, processes *flow.Processes, store refs.Store) (context.Context, error) {
+			return func(ctx context.Context, node *flow.Node, tracker *flow.Tracker, processes *flow.Processes, store references.Store) (context.Context, error) {
 				*i++
 				return next(ctx, node, tracker, processes, store)
 			}
@@ -448,7 +448,7 @@ func TestBeforeNodeRollbackOption(t *testing.T) {
 func TestAfterNodeRollbackOption(t *testing.T) {
 	fn := func(i *int) flow.AfterNodeHandler {
 		return func(next flow.AfterNode) flow.AfterNode {
-			return func(ctx context.Context, node *flow.Node, tracker *flow.Tracker, processes *flow.Processes, store refs.Store) (context.Context, error) {
+			return func(ctx context.Context, node *flow.Node, tracker *flow.Tracker, processes *flow.Processes, store references.Store) (context.Context, error) {
 				*i++
 				return next(ctx, node, tracker, processes, store)
 			}
@@ -508,7 +508,7 @@ func TestAfterNodeRollbackOption(t *testing.T) {
 func TestAfterNodeDoOption(t *testing.T) {
 	fn := func(i *int) flow.AfterNodeHandler {
 		return func(next flow.AfterNode) flow.AfterNode {
-			return func(ctx context.Context, node *flow.Node, tracker *flow.Tracker, processes *flow.Processes, store refs.Store) (context.Context, error) {
+			return func(ctx context.Context, node *flow.Node, tracker *flow.Tracker, processes *flow.Processes, store references.Store) (context.Context, error) {
 				*i++
 				return next(ctx, node, tracker, processes, store)
 			}

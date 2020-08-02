@@ -11,7 +11,7 @@ import (
 	"github.com/jexia/semaphore/pkg/codec/metadata"
 	"github.com/jexia/semaphore/pkg/core/instance"
 	"github.com/jexia/semaphore/pkg/flow"
-	"github.com/jexia/semaphore/pkg/refs"
+	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/transport"
 )
@@ -34,7 +34,7 @@ func TestCaller(t *testing.T) {
 	}
 
 	called := 0
-	call := NewCallerFunc(func(ctx context.Context, refs refs.Store) error {
+	call := NewCallerFunc(func(ctx context.Context, refs references.Store) error {
 		called++
 		return nil
 	})
@@ -85,7 +85,7 @@ func TestCaller(t *testing.T) {
 		Body:   bytes.NewBuffer([]byte{}),
 	}
 
-	err = dial.SendMsg(context.Background(), rw, rq, refs.NewReferenceStore(0))
+	err = dial.SendMsg(context.Background(), rw, rq, references.NewReferenceStore(0))
 	if err != nil {
 		t.Fatal(err)
 	}

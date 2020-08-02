@@ -1,4 +1,4 @@
-package refs
+package references
 
 import (
 	"encoding/json"

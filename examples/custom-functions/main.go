@@ -11,7 +11,7 @@ import (
 	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/providers/hcl"
 	"github.com/jexia/semaphore/pkg/providers/protobuffers"
-	"github.com/jexia/semaphore/pkg/refs"
+	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/labels"
 	"github.com/jexia/semaphore/pkg/specs/types"
@@ -62,7 +62,7 @@ func jwt(args ...*specs.Property) (*specs.Property, functions.Exec, error) {
 		return nil, nil, fmt.Errorf("invalid argument type (%s), expected (%s)", input.Type, types.String)
 	}
 
-	fn := func(store refs.Store) error {
+	fn := func(store references.Store) error {
 		value := input.Default
 
 		if input.Reference != nil {
