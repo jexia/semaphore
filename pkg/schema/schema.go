@@ -152,7 +152,7 @@ func DefineProperty(property *specs.Property, schema *specs.Property, flow specs
 	for key, nested := range property.Nested {
 		object := schema.Nested[key]
 		if object == nil {
-			return trace.New(trace.WithExpression(nested.Expr), trace.WithMessage("undefined schema nested message property '%s' in flow '%s'", nested.Path, flow.GetName()))
+			return trace.New(trace.WithMessage("undefined schema nested message property '%s' in flow '%s'", key, flow.GetName()))
 		}
 
 		err := DefineProperty(nested, object, flow)
