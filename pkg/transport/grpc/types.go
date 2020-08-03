@@ -40,7 +40,7 @@ func (method *Method) GetRequest() map[string]*specs.Property {
 		return make(map[string]*specs.Property, 0)
 	}
 
-	return method.Request.Schema.Property.Nested
+	return method.Request.Definition.Property.Nested
 }
 
 // GetResponse returns the request output parameter map
@@ -49,7 +49,7 @@ func (method *Method) GetResponse() map[string]*specs.Property {
 		return make(map[string]*specs.Property, 0)
 	}
 
-	return method.Response.Schema.Property.Nested
+	return method.Response.Definition.Property.Nested
 }
 
 // Service represents a gRPC service

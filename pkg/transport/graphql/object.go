@@ -104,7 +104,7 @@ func NewSchemaObject(objects *Objects, name string, object *transport.Object) (*
 		return NewEmptyObject(objects, name), nil
 	}
 
-	params := object.Schema
+	params := object.Definition
 	if params == nil {
 		return NewEmptyObject(objects, name), nil
 	}

@@ -117,11 +117,11 @@ func (listener *Listener) Handle(ctx instance.Context, endpoints []*transport.En
 					return nil, errors.New(message)
 				}
 
-				if endpoint.Response == nil || endpoint.Response.Schema == nil {
+				if endpoint.Response == nil || endpoint.Response.Definition == nil {
 					return make(map[string]interface{}), nil
 				}
 
-				result, err := ResponseValue(endpoint.Response.Schema.Property, store)
+				result, err := ResponseValue(endpoint.Response.Definition.Property, store)
 				if err != nil {
 					return nil, err
 				}
@@ -143,15 +143,15 @@ func (listener *Listener) Handle(ctx instance.Context, endpoints []*transport.En
 		}
 
 		if endpoint.Request != nil {
-			req, err := NewArgs(endpoint.Request.Schema)
+			req, err := NewArgs(endpoint.Request.Definition)
 			if err != nil {
 				return err
 			}
 
 			field.Args = req
 
-			if endpoint.Request.Schema != nil && endpoint.Request.Schema.Property != nil {
-				field.Description = endpoint.Request.Schema.Property.Comment
+			if endpoint.Request.Definition != nil && endpoint.Request.Definition.Property != nil {
+				field.Description = endpoint.Request.Definition.Property.Comment
 			}
 		}
 

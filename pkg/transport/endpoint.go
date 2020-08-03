@@ -26,7 +26,7 @@ func NewEndpoint(listener string, flow Flow, forward *Forward, options specs.Opt
 // NewObject constructs a new data object
 func NewObject(schema *specs.ParameterMap, status *specs.Property, message *specs.Property) *Object {
 	return &Object{
-		Schema:     schema,
+		Definition: schema,
 		StatusCode: status,
 		Message:    message,
 	}
@@ -34,7 +34,7 @@ func NewObject(schema *specs.ParameterMap, status *specs.Property, message *spec
 
 // Object represents a data object.
 type Object struct {
-	Schema     *specs.ParameterMap
+	Definition *specs.ParameterMap
 	StatusCode *specs.Property
 	Message    *specs.Property
 	Codec      codec.Manager
@@ -89,21 +89,21 @@ func (object *Object) ResolveMessage(store references.Store) string {
 
 // NewMeta updates the current object metadata manager
 func (object *Object) NewMeta(ctx instance.Context, resource string) {
-	if object == nil || object.Schema == nil {
+	if object == nil || object.Definition == nil {
 		return
 	}
 
-	object.Meta = metadata.NewManager(ctx, resource, object.Schema.Header)
+	object.Meta = metadata.NewManager(ctx, resource, object.Definition.Header)
 }
 
 // NewCodec updates the given object to use the given codec.
 // Errors returned while constructing a new codec manager are returned.
 func (object *Object) NewCodec(ctx instance.Context, resource string, codec codec.Constructor) error {
-	if object == nil || object.Schema == nil || codec == nil {
+	if object == nil || object.Definition == nil || codec == nil {
 		return nil
 	}
 
-	manager, err := codec.New(resource, object.Schema)
+	manager, err := codec.New(resource, object.Definition)
 	if err != nil {
 		return err
 	}
