@@ -8,12 +8,12 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// Define defines the types of all schemas inside the given flow list
-func Define(ctx instance.Context, services specs.ServiceList, schemas specs.Objects, flows specs.FlowListInterface) (err error) {
+// Resolve ensures that all schema properties are defined inside the given flows
+func Resolve(ctx instance.Context, services specs.ServiceList, schemas specs.Objects, flows specs.FlowListInterface) (err error) {
 	ctx.Logger(logger.Core).Info("Defining manifest types")
 
 	for _, flow := range flows {
-		err := DefineFlow(ctx, services, schemas, flow)
+		err := ResolveFlow(ctx, services, schemas, flow)
 		if err != nil {
 			return err
 		}
@@ -22,8 +22,8 @@ func Define(ctx instance.Context, services specs.ServiceList, schemas specs.Obje
 	return nil
 }
 
-// DefineFlow defines the types for the given flow and the resources within the flow
-func DefineFlow(ctx instance.Context, services specs.ServiceList, schemas specs.Objects, flow specs.FlowInterface) (err error) {
+// ResolveFlow ensures that all schema properties are defined inside the given flow
+func ResolveFlow(ctx instance.Context, services specs.ServiceList, schemas specs.Objects, flow specs.FlowInterface) (err error) {
 	ctx.Logger(logger.Core).WithField("flow", flow.GetName()).Info("Defining flow types")
 
 	if flow.GetInput() != nil {
@@ -36,21 +36,21 @@ func DefineFlow(ctx instance.Context, services specs.ServiceList, schemas specs.
 	}
 
 	if flow.GetOnError() != nil {
-		err = DefineOnError(ctx, schemas, flow.GetOnError(), flow)
+		err = ResolveOnError(ctx, schemas, flow.GetOnError(), flow)
 		if err != nil {
 			return err
 		}
 	}
 
 	for _, node := range flow.GetNodes() {
-		err = DefineNode(ctx, services, schemas, node, flow)
+		err = ResolveNode(ctx, services, schemas, node, flow)
 		if err != nil {
 			return err
 		}
 	}
 
 	if flow.GetOutput() != nil {
-		err = DefineParameterMap(ctx, schemas, flow.GetOutput(), flow)
+		err = ResolveParameterMap(ctx, schemas, flow.GetOutput(), flow)
 		if err != nil {
 			return err
 		}
@@ -59,10 +59,10 @@ func DefineFlow(ctx instance.Context, services specs.ServiceList, schemas specs.
 	return nil
 }
 
-// DefineNode defines all the references inside the given node
-func DefineNode(ctx instance.Context, services specs.ServiceList, schemas specs.Objects, node *specs.Node, flow specs.FlowInterface) (err error) {
+// ResolveNode ensures that all schema properties are defined inside the given node
+func ResolveNode(ctx instance.Context, services specs.ServiceList, schemas specs.Objects, node *specs.Node, flow specs.FlowInterface) (err error) {
 	if node.Condition != nil {
-		err = DefineParameterMap(ctx, schemas, node.Condition.Params, flow)
+		err = ResolveParameterMap(ctx, schemas, node.Condition.Params, flow)
 		if err != nil {
 			return err
 		}
@@ -83,7 +83,7 @@ func DefineNode(ctx instance.Context, services specs.ServiceList, schemas specs.
 	}
 
 	if node.OnError != nil {
-		err = DefineOnError(ctx, schemas, node.OnError, flow)
+		err = ResolveOnError(ctx, schemas, node.OnError, flow)
 		if err != nil {
 			return err
 		}
@@ -95,7 +95,7 @@ func DefineNode(ctx instance.Context, services specs.ServiceList, schemas specs.
 // DefineCall defineds the types for the specs call
 func DefineCall(ctx instance.Context, services specs.ServiceList, schemas specs.Objects, node *specs.Node, call *specs.Call, flow specs.FlowInterface) (err error) {
 	if call.Request != nil {
-		err = DefineParameterMap(ctx, schemas, call.Request, flow)
+		err = ResolveParameterMap(ctx, schemas, call.Request, flow)
 		if err != nil {
 			return err
 		}
@@ -133,7 +133,7 @@ func DefineCall(ctx instance.Context, services specs.ServiceList, schemas specs.
 	}
 
 	if call.Response != nil {
-		err = DefineParameterMap(ctx, schemas, call.Response, flow)
+		err = ResolveParameterMap(ctx, schemas, call.Response, flow)
 		if err != nil {
 			return err
 		}
@@ -142,8 +142,8 @@ func DefineCall(ctx instance.Context, services specs.ServiceList, schemas specs.
 	return nil
 }
 
-// DefineProperty ensures that all schema properties are defined
-func DefineProperty(property *specs.Property, schema *specs.Property, flow specs.FlowInterface) error {
+// ResolveProperty ensures that all schema properties are defined inside the given property
+func ResolveProperty(property *specs.Property, schema *specs.Property, flow specs.FlowInterface) error {
 	if property == nil {
 		property = schema
 		return nil
@@ -155,7 +155,7 @@ func DefineProperty(property *specs.Property, schema *specs.Property, flow specs
 			return trace.New(trace.WithMessage("undefined schema nested message property '%s' in flow '%s'", key, flow.GetName()))
 		}
 
-		err := DefineProperty(nested, object, flow)
+		err := ResolveProperty(nested, object, flow)
 		if err != nil {
 			return err
 		}
@@ -179,8 +179,8 @@ func DefineProperty(property *specs.Property, schema *specs.Property, flow specs
 	return nil
 }
 
-// DefineParameterMap defines the types for the given parameter map
-func DefineParameterMap(ctx instance.Context, schemas specs.Objects, params *specs.ParameterMap, flow specs.FlowInterface) (err error) {
+// ResolveParameterMap ensures that all schema properties are defined inisde the given parameter map
+func ResolveParameterMap(ctx instance.Context, schemas specs.Objects, params *specs.ParameterMap, flow specs.FlowInterface) (err error) {
 	if params == nil || params.Schema == "" {
 		return nil
 	}
@@ -190,7 +190,7 @@ func DefineParameterMap(ctx instance.Context, schemas specs.Objects, params *spe
 		return trace.New(trace.WithMessage("object '%s', is unavailable inside the schema collection", params.Schema))
 	}
 
-	err = DefineProperty(params.Property, schema, flow)
+	err = ResolveProperty(params.Property, schema, flow)
 	if err != nil {
 		return err
 	}
@@ -198,10 +198,10 @@ func DefineParameterMap(ctx instance.Context, schemas specs.Objects, params *spe
 	return nil
 }
 
-// DefineOnError defines references made inside the given on error specs
-func DefineOnError(ctx instance.Context, schemas specs.Objects, params *specs.OnError, flow specs.FlowInterface) (err error) {
+// ResolveOnError ensures that all schema properties are defined inside the given on error object
+func ResolveOnError(ctx instance.Context, schemas specs.Objects, params *specs.OnError, flow specs.FlowInterface) (err error) {
 	if params.Response != nil {
-		err = DefineParameterMap(ctx, schemas, params.Response, flow)
+		err = ResolveParameterMap(ctx, schemas, params.Response, flow)
 		if err != nil {
 			return err
 		}

@@ -49,7 +49,7 @@ func Construct(ctx instance.Context, mem functions.Collection, options api.Optio
 		return nil, nil, nil, nil, err
 	}
 
-	err = schema.Define(ctx, services, schemas, flows)
+	err = schema.Resolve(ctx, services, schemas, flows)
 	if err != nil {
 		return nil, nil, nil, nil, err
 	}

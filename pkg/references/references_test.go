@@ -58,7 +58,7 @@ func TestUnmarshalFile(t *testing.T) {
 			}
 
 			err = func() (err error) {
-				err = schema.Define(ctx, services, schemas, flows)
+				err = schema.Resolve(ctx, services, schemas, flows)
 				if err != nil {
 					return err
 				}
