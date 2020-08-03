@@ -1,4 +1,4 @@
-package schema
+package providers
 
 import (
 	"github.com/jexia/semaphore/pkg/core/instance"

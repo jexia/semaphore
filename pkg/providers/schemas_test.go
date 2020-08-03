@@ -1,4 +1,4 @@
-package schema
+package providers
 
 import (
 	"testing"
@@ -391,7 +391,7 @@ func TestUndefinedNestedSchemaProperty(t *testing.T) {
 				Name: "mock",
 			}
 
-			err := DefineParameterMap(ctx, schemas, test, flow)
+			err := ResolveParameterMap(ctx, schemas, test, flow)
 			if err == nil {
 				t.Fatal("unexpected pass")
 			}
@@ -412,7 +412,7 @@ func TestSettingUndefinedNested(t *testing.T) {
 		Name: "mock",
 	}
 
-	err := DefineParameterMap(ctx, schemas, test, flow)
+	err := ResolveParameterMap(ctx, schemas, test, flow)
 	if err != nil {
 		t.Fatal(err)
 	}

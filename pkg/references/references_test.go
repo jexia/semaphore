@@ -10,7 +10,6 @@ import (
 	"github.com/jexia/semaphore/pkg/providers"
 	"github.com/jexia/semaphore/pkg/providers/hcl"
 	"github.com/jexia/semaphore/pkg/providers/mock"
-	"github.com/jexia/semaphore/pkg/schema"
 )
 
 const (
@@ -58,7 +57,7 @@ func TestUnmarshalFile(t *testing.T) {
 			}
 
 			err = func() (err error) {
-				err = schema.Resolve(ctx, services, schemas, flows)
+				err = providers.Resolve(ctx, services, schemas, flows)
 				if err != nil {
 					return err
 				}
