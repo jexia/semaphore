@@ -183,7 +183,7 @@ type Condition struct {
 // NodeList represents a collection of nodes
 type NodeList []*Node
 
-// Get returns a node with the given name
+// Get returns a node with the given ID
 func (nodes NodeList) Get(name string) *Node {
 	for _, node := range nodes {
 		if node.ID == name {
