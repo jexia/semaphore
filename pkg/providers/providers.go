@@ -87,8 +87,8 @@ type ServicesResolver func(instance.Context) (specs.ServiceList, error)
 type SchemaResolvers []SchemaResolver
 
 // Resolve resolves all schema resolves and returns a aggregated Object
-func (resolvers SchemaResolvers) Resolve(ctx instance.Context) (specs.Objects, error) {
-	objects := specs.Objects{}
+func (resolvers SchemaResolvers) Resolve(ctx instance.Context) (specs.Schemas, error) {
+	objects := specs.Schemas{}
 
 	for _, resolver := range resolvers {
 		if resolver == nil {
@@ -107,4 +107,4 @@ func (resolvers SchemaResolvers) Resolve(ctx instance.Context) (specs.Objects, e
 }
 
 // SchemaResolver when called collects the available service(s) with the configured configuration
-type SchemaResolver func(instance.Context) (specs.Objects, error)
+type SchemaResolver func(instance.Context) (specs.Schemas, error)

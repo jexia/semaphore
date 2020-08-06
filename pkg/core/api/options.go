@@ -11,7 +11,7 @@ import (
 )
 
 // Constructor represents a specs constructor that could be used to construct specifications
-type Constructor func(ctx instance.Context, mem functions.Collection, options Options) (specs.FlowListInterface, specs.EndpointList, specs.ServiceList, specs.Objects, error)
+type Constructor func(ctx instance.Context, mem functions.Collection, options Options) (specs.FlowListInterface, specs.EndpointList, specs.ServiceList, specs.Schemas, error)
 
 // Option represents a constructor func which sets a given option
 type Option func(*Options)
@@ -56,7 +56,7 @@ type Options struct {
 type Middleware func(instance.Context) ([]Option, error)
 
 // AfterConstructor is called after the specifications is constructored
-type AfterConstructor func(instance.Context, specs.FlowListInterface, specs.EndpointList, specs.ServiceList, specs.Objects) error
+type AfterConstructor func(instance.Context, specs.FlowListInterface, specs.EndpointList, specs.ServiceList, specs.Schemas) error
 
 // AfterConstructorHandler wraps the after constructed function to allow middleware to be chained
 type AfterConstructorHandler func(AfterConstructor) AfterConstructor

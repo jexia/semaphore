@@ -21,7 +21,7 @@ type Client struct {
 	flows        specs.FlowListInterface
 	endpoints    specs.EndpointList
 	services     specs.ServiceList
-	schemas      specs.Objects
+	schemas      specs.Schemas
 	Options      api.Options
 	mutex        sync.RWMutex
 }
@@ -93,7 +93,7 @@ func (client *Client) GetEndpoints() specs.EndpointList {
 }
 
 // GetSchemas returns the currently applied schemas
-func (client *Client) GetSchemas() specs.Objects {
+func (client *Client) GetSchemas() specs.Schemas {
 	return client.schemas
 }
 

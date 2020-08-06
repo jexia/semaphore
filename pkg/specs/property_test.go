@@ -75,9 +75,9 @@ func TestPropertyReferenceString(t *testing.T) {
 }
 
 func TestObjectsAppend(t *testing.T) {
-	objects := Objects{}
+	objects := Schemas{}
 
-	objects.Append(Objects{
+	objects.Append(Schemas{
 		"first":  &Property{},
 		"second": &Property{},
 	})
@@ -88,12 +88,12 @@ func TestObjectsAppend(t *testing.T) {
 }
 
 func TestObjectsAppendNilValue(t *testing.T) {
-	var objects Objects
+	var objects Schemas
 	objects.Append(nil)
 }
 
 func TestObjectsGet(t *testing.T) {
-	objects := Objects{
+	objects := Schemas{
 		"first":  &Property{},
 		"second": &Property{},
 	}
@@ -105,7 +105,7 @@ func TestObjectsGet(t *testing.T) {
 }
 
 func TestObjectsGetNilValue(t *testing.T) {
-	var objects Objects
+	var objects Schemas
 	result := objects.Get("unkown")
 	if result != nil {
 		t.Fatalf("unexpected result %+v", result)

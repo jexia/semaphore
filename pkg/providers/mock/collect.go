@@ -28,7 +28,7 @@ func CollectionResolver(path string) (*Collection, error) {
 
 // SchemaResolver returns a new schema resolver for the given mock collection
 func SchemaResolver(path string) providers.SchemaResolver {
-	return func(ctx instance.Context) (specs.Objects, error) {
+	return func(ctx instance.Context) (specs.Schemas, error) {
 		reader, err := os.Open(path)
 		if err != nil {
 			return nil, err

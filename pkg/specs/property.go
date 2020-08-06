@@ -33,11 +33,11 @@ func (reference *PropertyReference) String() string {
 	return reference.Resource + ":" + reference.Path
 }
 
-// Objects represents a map string collection of properties
-type Objects map[string]*Property
+// Schemas represents a map string collection of properties
+type Schemas map[string]*Property
 
 // Get attempts to return the given key from the objects collection
-func (objects Objects) Get(key string) *Property {
+func (objects Schemas) Get(key string) *Property {
 	if objects == nil {
 		return nil
 	}
@@ -46,7 +46,7 @@ func (objects Objects) Get(key string) *Property {
 }
 
 // Append appends the given objects to the objects collection
-func (objects Objects) Append(arg Objects) {
+func (objects Schemas) Append(arg Schemas) {
 	if objects == nil {
 		return
 	}

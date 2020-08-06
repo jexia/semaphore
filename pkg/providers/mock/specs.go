@@ -6,8 +6,8 @@ import (
 )
 
 // SchemaManifest formats the given mock collection to a specs schema manifest
-func SchemaManifest(collection *Collection) specs.Objects {
-	result := make(specs.Objects, 0)
+func SchemaManifest(collection *Collection) specs.Schemas {
+	result := make(specs.Schemas, 0)
 
 	for _, prop := range collection.GetMessages() {
 		result[prop.Name] = SpecsProperty("", prop)

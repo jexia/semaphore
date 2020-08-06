@@ -10,7 +10,7 @@ import (
 )
 
 // Types compares the types defined insde the schema definitions against the configured specification
-func Types(ctx instance.Context, services specs.ServiceList, objects specs.Objects, flows specs.FlowListInterface) (err error) {
+func Types(ctx instance.Context, services specs.ServiceList, objects specs.Schemas, flows specs.FlowListInterface) (err error) {
 	ctx.Logger(logger.Core).Info("Comparing manifest types")
 
 	for _, flow := range flows {
@@ -24,7 +24,7 @@ func Types(ctx instance.Context, services specs.ServiceList, objects specs.Objec
 }
 
 // ProxyTypes compares the given proxy against the configured schema types
-func ProxyTypes(ctx instance.Context, services specs.ServiceList, objects specs.Objects, proxy *specs.Proxy) (err error) {
+func ProxyTypes(ctx instance.Context, services specs.ServiceList, objects specs.Schemas, proxy *specs.Proxy) (err error) {
 	ctx.Logger(logger.Core).WithField("proxy", proxy.GetName()).Info("Compare proxy flow types")
 
 	if proxy.OnError != nil {
@@ -57,7 +57,7 @@ func ProxyTypes(ctx instance.Context, services specs.ServiceList, objects specs.
 }
 
 // FlowTypes compares the flow types against the configured schema types
-func FlowTypes(ctx instance.Context, services specs.ServiceList, objects specs.Objects, flow specs.FlowInterface) (err error) {
+func FlowTypes(ctx instance.Context, services specs.ServiceList, objects specs.Schemas, flow specs.FlowInterface) (err error) {
 	ctx.Logger(logger.Core).WithField("flow", flow.GetName()).Info("Comparing flow types")
 
 	if flow.GetInput() != nil {
@@ -111,7 +111,7 @@ func FlowTypes(ctx instance.Context, services specs.ServiceList, objects specs.O
 }
 
 // CallTypes compares the given call types against the configured schema types
-func CallTypes(ctx instance.Context, services specs.ServiceList, objects specs.Objects, node *specs.Node, call *specs.Call, flow specs.FlowInterface) (err error) {
+func CallTypes(ctx instance.Context, services specs.ServiceList, objects specs.Schemas, node *specs.Node, call *specs.Call, flow specs.FlowInterface) (err error) {
 	if call == nil {
 		return nil
 	}
@@ -157,7 +157,7 @@ func CallTypes(ctx instance.Context, services specs.ServiceList, objects specs.O
 }
 
 // CheckParameterMapTypes checks the given parameter map against the configured schema property
-func CheckParameterMapTypes(ctx instance.Context, parameters *specs.ParameterMap, objects specs.Objects, flow specs.FlowInterface) error {
+func CheckParameterMapTypes(ctx instance.Context, parameters *specs.ParameterMap, objects specs.Schemas, flow specs.FlowInterface) error {
 	if parameters == nil {
 		return nil
 	}

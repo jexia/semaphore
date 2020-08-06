@@ -31,8 +31,8 @@ func NewMockServices() specs.ServiceList {
 	}
 }
 
-func NewMockSchemas() specs.Objects {
-	return specs.Objects{
+func NewMockSchemas() specs.Schemas {
+	return specs.Schemas{
 		"com.mock.message": &specs.Property{
 			Type:  types.Message,
 			Label: labels.Optional,

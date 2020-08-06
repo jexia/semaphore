@@ -16,7 +16,7 @@ import (
 // ServiceSelector parses the HCL definition on the given path and manipulates the collected services after constructed
 func ServiceSelector(path string) api.AfterConstructorHandler {
 	return func(next api.AfterConstructor) api.AfterConstructor {
-		return func(ctx instance.Context, flows specs.FlowListInterface, endpoints specs.EndpointList, services specs.ServiceList, schemas specs.Objects) error {
+		return func(ctx instance.Context, flows specs.FlowListInterface, endpoints specs.EndpointList, services specs.ServiceList, schemas specs.Schemas) error {
 			definitions, err := hcl.ResolvePath(ctx, []string{}, path)
 			if err != nil {
 				return err

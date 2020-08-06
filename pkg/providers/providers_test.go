@@ -101,8 +101,8 @@ func TestNilServiceResolvers(t *testing.T) {
 }
 
 func TestSchemaResolvers(t *testing.T) {
-	resolver := func(instance.Context) (specs.Objects, error) {
-		return specs.Objects{"mock": &specs.Property{}}, nil
+	resolver := func(instance.Context) (specs.Schemas, error) {
+		return specs.Schemas{"mock": &specs.Property{}}, nil
 	}
 
 	ctx := instance.NewContext()
@@ -120,7 +120,7 @@ func TestSchemaResolvers(t *testing.T) {
 
 func TestSchemaResolversErr(t *testing.T) {
 	expected := errors.New("mock")
-	resolver := func(instance.Context) (specs.Objects, error) {
+	resolver := func(instance.Context) (specs.Schemas, error) {
 		return nil, expected
 	}
 
