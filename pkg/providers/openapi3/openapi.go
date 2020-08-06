@@ -1,9 +1,12 @@
-package openapi
+package openapi3
+
+import "github.com/jexia/semaphore/pkg/providers/openapi3/types"
 
 // Object represents the version 3 open api specification
 type Object struct {
-	Version    string               `json:"openapi,omitempty"`
+	Version    string               `json:"openapi"`
 	Servers    []*ServerRef         `json:"servers,omitempty"`
+	Info       Info                 `json:"info"`
 	Paths      map[string]*PathItem `json:"paths,omitempty"`
 	Components *Components          `json:"components,omitempty"`
 }
@@ -19,9 +22,9 @@ type ServerRef struct {
 // and MAY be presented in editing or documentation
 // generation tools for convenience.
 type Info struct {
+	Title       string   `json:"title"`
+	Version     string   `json:"version"`
 	Description string   `json:"description,omitempty"`
-	Version     string   `json:"version,omitempty"`
-	Title       string   `json:"title,omitempty"`
 	Contact     *Contact `json:"contact,omitempty"`
 }
 
@@ -45,7 +48,8 @@ type Components struct {
 // data types. These types can be objects, but also
 // primitives and arrays.
 type Schema struct {
-	Type        string             `json:"type,omitempty"`
+	Reference   string             `json:"$ref,omitempty"`
+	Type        types.Type         `json:"type,omitempty"`
 	Description string             `json:"description,omitempty"`
 	Required    []string           `json:"required,omitempty"`
 	Properties  map[string]*Schema `json:"properties,omitempty"`
@@ -81,16 +85,45 @@ type Operation struct {
 	Responses   map[string]*Response `json:"responses,omitempty"`
 }
 
+// ParameterIn represents the parameter in options
+type ParameterIn string
+
+// Available parameter in options
+const (
+	ParameterQuery  ParameterIn = "query"
+	ParameterHeader ParameterIn = "header"
+	ParameterPath   ParameterIn = "path"
+	ParameterCookie ParameterIn = "cookie"
+)
+
 // Parameter a list of parameters that are applicable for this operation.
 type Parameter struct {
+	Name        string      `json:"name,omitempty"`
+	In          ParameterIn `json:"in,omitempty"`
+	Description string      `json:"description,omitempty"`
+	Required    bool        `json:"required"`
+	Schema      *Schema     `json:"schema,omitempty"`
 }
 
 // RequestBody the request body applicable for this operation.
 // The requestBody is only supported in HTTP methods where
 // the HTTP 1.1 specification RFC7231 has explicitly defined
 // semantics for request bodies
-type RequestBody struct{}
+type RequestBody struct {
+	Description string               `json:"description,omitempty"`
+	Content     map[string]MediaType `json:"content,omitempty"`
+	Required    bool                 `json:"required"`
+}
+
+// MediaType each Media Type Object provides schema and examples
+// for the media type identified by its key.
+type MediaType struct {
+	Schema Schema `json:"schema,omitempty"`
+}
 
 // Response the list of possible responses as they are returned
 // from executing this operation.
-type Response struct{}
+type Response struct {
+	Description string               `json:"description"`
+	Content     map[string]MediaType `json:"content,omitempty"`
+}

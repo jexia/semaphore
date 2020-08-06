@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/jexia/semaphore/cmd/semaphore/daemon"
+	"github.com/jexia/semaphore/cmd/semaphore/generate"
 	"github.com/jexia/semaphore/cmd/semaphore/validate"
 	"github.com/spf13/cobra"
 )
@@ -26,6 +27,7 @@ Create custom extensions or use the availability of custom functions and protoco
 func init() {
 	cmd.AddCommand(daemon.Command)
 	cmd.AddCommand(validate.Command)
+	cmd.AddCommand(generate.Command)
 }
 
 func main() {
