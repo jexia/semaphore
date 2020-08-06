@@ -219,10 +219,10 @@ func LookupEndpointReferences(method *Method, store references.Store) string {
 
 // TemplateReferences returns the property references within the given value
 func TemplateReferences(value string, functions functions.Custom) ([]*specs.Property, error) {
-	references := NamedParameters(value)
+	references := RawNamedParameters(value)
 	result := make([]*specs.Property, 0, len(references))
 	for _, key := range references {
-		path := key
+		path := key[1:]
 		property := &specs.Property{
 			Path: key,
 			Reference: &specs.PropertyReference{
