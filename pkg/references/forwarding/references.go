@@ -1,8 +1,8 @@
 package forwarding
 
 import (
-	"github.com/jexia/semaphore/pkg/core/instance"
-	"github.com/jexia/semaphore/pkg/core/logger"
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/lookup"
 	"github.com/jexia/semaphore/pkg/specs"
@@ -14,8 +14,8 @@ import (
 // ResolveReferences resolves all references inside the given manifest by forwarding references.
 // If a reference is referencing another reference the node is marked as a dependency of the
 // references resource and the referenced reference is copied over the the current resource.
-func ResolveReferences(ctx instance.Context, flows specs.FlowListInterface) {
-	ctx.Logger(logger.Core).Info("Resolving manifest references")
+func ResolveReferences(ctx *broker.Context, flows specs.FlowListInterface) {
+	logger.Info(ctx, "resolving flow references")
 
 	for _, flow := range flows {
 		for _, node := range flow.GetNodes() {

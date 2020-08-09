@@ -4,7 +4,7 @@ import (
 	"regexp"
 
 	"github.com/Knetic/govaluate"
-	"github.com/jexia/semaphore/pkg/core/instance"
+	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/template"
 )
@@ -14,7 +14,7 @@ var (
 )
 
 // NewEvaluableExpression constructs a new condition out of the given expression
-func NewEvaluableExpression(ctx instance.Context, raw string) (*specs.Condition, error) {
+func NewEvaluableExpression(ctx *broker.Context, raw string) (*specs.Condition, error) {
 	raw = templatePattern.ReplaceAllString(raw, "[$1]") // replace template tags with govaluate parameter escape characters
 	expression, err := govaluate.NewEvaluableExpression(raw)
 	if err != nil {

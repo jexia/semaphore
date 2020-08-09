@@ -12,9 +12,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/codec"
 	"github.com/jexia/semaphore/pkg/codec/json"
-	"github.com/jexia/semaphore/pkg/core/instance"
 	"github.com/jexia/semaphore/pkg/flow"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
@@ -27,7 +28,7 @@ func NewMockListener(t *testing.T, nodes flow.Nodes, errs transport.Errs) (trans
 	port := AvailablePort(t)
 	addr := fmt.Sprintf(":%d", port)
 
-	ctx := instance.NewContext()
+	ctx := logger.WithLogger(broker.NewContext())
 	listener := NewListener(addr, nil)(ctx)
 
 	json := json.NewConstructor()
@@ -60,7 +61,7 @@ func NewMockListener(t *testing.T, nodes flow.Nodes, errs transport.Errs) (trans
 }
 
 func TestListener(t *testing.T) {
-	ctx := instance.NewContext()
+	ctx := logger.WithLogger(broker.NewContext())
 	node := &specs.Node{
 		ID: "first",
 	}
@@ -148,7 +149,7 @@ func TestPathReferences(t *testing.T) {
 	listener, port := NewMockListener(t, nodes, nil)
 	defer listener.Close()
 
-	ctx := instance.NewContext()
+	ctx := logger.WithLogger(broker.NewContext())
 	endpoints := []*transport.Endpoint{
 		{
 			Flow: flow.NewManager(ctx, "test", nodes, nil, nil, nil),
@@ -166,7 +167,7 @@ func TestPathReferences(t *testing.T) {
 }
 
 func TestStoringParams(t *testing.T) {
-	ctx := instance.NewContext()
+	ctx := logger.WithLogger(broker.NewContext())
 	node := &specs.Node{
 		ID: "first",
 	}
@@ -226,7 +227,7 @@ func TestStoringParams(t *testing.T) {
 }
 
 func TestListenerForwarding(t *testing.T) {
-	ctx := instance.NewContext()
+	ctx := logger.WithLogger(broker.NewContext())
 
 	mock := fmt.Sprintf(":%d", AvailablePort(t))
 	forward := fmt.Sprintf(":%d", AvailablePort(t))
@@ -561,7 +562,7 @@ func TestListenerErrorHandling(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			ctx := instance.NewContext()
+			ctx := logger.WithLogger(broker.NewContext())
 			node := &specs.Node{
 				ID:      "first",
 				OnError: test.err,

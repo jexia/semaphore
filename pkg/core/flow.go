@@ -1,13 +1,13 @@
 package core
 
 import (
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/codec"
 	"github.com/jexia/semaphore/pkg/codec/metadata"
 	"github.com/jexia/semaphore/pkg/core/api"
 	"github.com/jexia/semaphore/pkg/core/flows/condition"
 	"github.com/jexia/semaphore/pkg/core/flows/listeners"
-	"github.com/jexia/semaphore/pkg/core/instance"
-	"github.com/jexia/semaphore/pkg/core/logger"
 	"github.com/jexia/semaphore/pkg/core/trace"
 	"github.com/jexia/semaphore/pkg/dependencies"
 	"github.com/jexia/semaphore/pkg/flow"
@@ -20,10 +20,10 @@ import (
 )
 
 // Apply constructs the flow managers from the given specs manifest
-func Apply(ctx instance.Context, mem functions.Collection, services specs.ServiceList, endpoints specs.EndpointList, flows specs.FlowListInterface, options api.Options) ([]*transport.Endpoint, error) {
+func Apply(ctx *broker.Context, mem functions.Collection, services specs.ServiceList, endpoints specs.EndpointList, flows specs.FlowListInterface, options api.Options) ([]*transport.Endpoint, error) {
 	results := make([]*transport.Endpoint, len(endpoints))
 
-	ctx.Logger(logger.Core).WithField("endpoints", endpoints).Debug("constructing endpoints")
+	logger.Debug(ctx, "constructing endpoints")
 
 	for index, endpoint := range endpoints {
 		manager := flows.Get(endpoint.Flow)
@@ -79,7 +79,7 @@ func Apply(ctx instance.Context, mem functions.Collection, services specs.Servic
 }
 
 // NewNodeCall constructs a flow caller for the given node call.
-func NewNodeCall(ctx instance.Context, mem functions.Collection, services specs.ServiceList, flows specs.FlowListInterface, node *specs.Node, call *specs.Call, options api.Options, manager specs.FlowInterface) (flow.Call, error) {
+func NewNodeCall(ctx *broker.Context, mem functions.Collection, services specs.ServiceList, flows specs.FlowListInterface, node *specs.Node, call *specs.Call, options api.Options, manager specs.FlowInterface) (flow.Call, error) {
 	if call == nil {
 		return nil, nil
 	}
@@ -107,7 +107,7 @@ func NewNodeCall(ctx instance.Context, mem functions.Collection, services specs.
 }
 
 // NewServiceCall constructs a new flow caller for the given service
-func NewServiceCall(ctx instance.Context, mem functions.Collection, services specs.ServiceList, node *specs.Node, call *specs.Call, options api.Options, manager specs.FlowInterface) (flow.Call, error) {
+func NewServiceCall(ctx *broker.Context, mem functions.Collection, services specs.ServiceList, node *specs.Node, call *specs.Call, options api.Options, manager specs.FlowInterface) (flow.Call, error) {
 	if call == nil {
 		return nil, nil
 	}
@@ -181,7 +181,7 @@ func NewServiceCall(ctx instance.Context, mem functions.Collection, services spe
 }
 
 // NewRequest constructs a new request from the given parameter map and codec
-func NewRequest(ctx instance.Context, node *specs.Node, mem functions.Collection, constructor codec.Constructor, params *specs.ParameterMap) (*flow.Request, error) {
+func NewRequest(ctx *broker.Context, node *specs.Node, mem functions.Collection, constructor codec.Constructor, params *specs.ParameterMap) (*flow.Request, error) {
 	if params == nil {
 		return nil, nil
 	}
@@ -224,7 +224,7 @@ func NewForward(services specs.ServiceList, call *specs.Call, options api.Option
 }
 
 // NewError constructs a new error object from the given parameter map and codec
-func NewError(ctx instance.Context, node *specs.Node, mem functions.Collection, constructor codec.Constructor, err *specs.OnError) (*flow.OnError, error) {
+func NewError(ctx *broker.Context, node *specs.Node, mem functions.Collection, constructor codec.Constructor, err *specs.OnError) (*flow.OnError, error) {
 	if err == nil {
 		return nil, nil
 	}

@@ -7,7 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jexia/semaphore/pkg/core/instance"
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 )
 
 func TempFolderStructure(t *testing.T, files []string, linked map[string]string) string {
@@ -101,7 +102,7 @@ func TestResolvePath(t *testing.T) {
 
 	for pattern, expected := range tests {
 		t.Run(pattern, func(t *testing.T) {
-			ctx := instance.NewContext()
+			ctx := logger.WithLogger(broker.NewContext())
 
 			files, err := ResolvePath(ctx, []string{}, filepath.Join(root, pattern))
 			if err != nil {
@@ -132,7 +133,7 @@ func TestResolvePathErr(t *testing.T) {
 
 	for _, pattern := range tests {
 		t.Run(pattern, func(t *testing.T) {
-			ctx := instance.NewContext()
+			ctx := logger.WithLogger(broker.NewContext())
 
 			_, err := ResolvePath(ctx, []string{}, filepath.Join(root, pattern))
 			if err == nil {

@@ -3,13 +3,12 @@ package semaphore
 import (
 	"testing"
 
-	"github.com/jexia/semaphore/pkg/core/instance"
-	"github.com/jexia/semaphore/pkg/core/logger"
+	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/specs"
 )
 
 func TestWithFlowsOption(t *testing.T) {
-	resolver := func(instance.Context) (specs.FlowListInterface, error) { return nil, nil }
+	resolver := func(*broker.Context) (specs.FlowListInterface, error) { return nil, nil }
 
 	result, err := New(WithFlows(resolver))
 	if err != nil {
@@ -22,7 +21,7 @@ func TestWithFlowsOption(t *testing.T) {
 }
 
 func TestWithMultipleFlowsOption(t *testing.T) {
-	resolver := func(instance.Context) (specs.FlowListInterface, error) { return nil, nil }
+	resolver := func(*broker.Context) (specs.FlowListInterface, error) { return nil, nil }
 
 	result, err := New(WithFlows(resolver), WithFlows(resolver))
 	if err != nil {
@@ -35,7 +34,7 @@ func TestWithMultipleFlowsOption(t *testing.T) {
 }
 
 func TestWithServicesOption(t *testing.T) {
-	resolver := func(instance.Context) (specs.ServiceList, error) { return nil, nil }
+	resolver := func(*broker.Context) (specs.ServiceList, error) { return nil, nil }
 
 	result, err := New(WithServices(resolver))
 	if err != nil {
@@ -48,7 +47,7 @@ func TestWithServicesOption(t *testing.T) {
 }
 
 func TestWithMultipleServicesOption(t *testing.T) {
-	resolver := func(instance.Context) (specs.ServiceList, error) { return nil, nil }
+	resolver := func(*broker.Context) (specs.ServiceList, error) { return nil, nil }
 
 	result, err := New(WithServices(resolver), WithServices(resolver))
 	if err != nil {
@@ -61,7 +60,7 @@ func TestWithMultipleServicesOption(t *testing.T) {
 }
 
 func TestWithEndpointsOption(t *testing.T) {
-	resolver := func(instance.Context) (specs.EndpointList, error) { return nil, nil }
+	resolver := func(*broker.Context) (specs.EndpointList, error) { return nil, nil }
 
 	result, err := New(WithEndpoints(resolver))
 	if err != nil {
@@ -74,7 +73,7 @@ func TestWithEndpointsOption(t *testing.T) {
 }
 
 func TestWithMultipleEndpointsOption(t *testing.T) {
-	resolver := func(instance.Context) (specs.EndpointList, error) { return nil, nil }
+	resolver := func(*broker.Context) (specs.EndpointList, error) { return nil, nil }
 
 	result, err := New(WithEndpoints(resolver), WithEndpoints(resolver))
 	if err != nil {
@@ -87,14 +86,14 @@ func TestWithMultipleEndpointsOption(t *testing.T) {
 }
 
 func TestWithLogLevel(t *testing.T) {
-	_, err := New(WithLogLevel(logger.Core, "debug"))
+	_, err := New(WithLogLevel("*", "debug"))
 	if err != nil {
 		t.Fatal(err)
 	}
 }
 
 func TestWithInvalidLogLevel(t *testing.T) {
-	_, err := New(WithLogLevel(logger.Core, "unknown"))
+	_, err := New(WithLogLevel("*", "unknown"))
 	if err != nil {
 		t.Fatal(err)
 	}

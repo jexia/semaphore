@@ -1,17 +1,17 @@
 package hcl
 
 import (
-	"github.com/jexia/semaphore/pkg/core/instance"
-	"github.com/jexia/semaphore/pkg/core/logger"
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/template"
-	"github.com/sirupsen/logrus"
 	"github.com/zclconf/go-cty/cty"
+	"go.uber.org/zap"
 )
 
 // ParseServices parses the given intermediate manifest to a schema
-func ParseServices(ctx instance.Context, manifest Manifest) (specs.ServiceList, error) {
-	ctx.Logger(logger.Core).Info("Parsing intermediate manifest to schema")
+func ParseServices(ctx *broker.Context, manifest Manifest) (specs.ServiceList, error) {
+	logger.Info(ctx, "parsing intermediate manifest to schema")
 
 	result := make(specs.ServiceList, len(manifest.Services))
 
@@ -28,8 +28,9 @@ func ParseServices(ctx instance.Context, manifest Manifest) (specs.ServiceList, 
 }
 
 // ParseIntermediateService parses the given intermediate service to a specs service
-func ParseIntermediateService(ctx instance.Context, manifest Service) (*specs.Service, error) {
-	ctx.Logger(logger.Core).WithField("service", manifest.Name).Debug("Parsing intermediate service to schema")
+func ParseIntermediateService(parent *broker.Context, manifest Service) (*specs.Service, error) {
+	ctx := logger.WithFields(parent, zap.String("service", manifest.Name))
+	logger.Debug(ctx, "parsing intermediate service to schema")
 
 	methods, err := ParseIntermediateMethods(ctx, manifest.Methods)
 	if err != nil {
@@ -51,19 +52,17 @@ func ParseIntermediateService(ctx instance.Context, manifest Service) (*specs.Se
 }
 
 // ParseIntermediateMethods parses the given methods for the given service
-func ParseIntermediateMethods(ctx instance.Context, methods []Method) ([]*specs.Method, error) {
+func ParseIntermediateMethods(ctx *broker.Context, methods []Method) ([]*specs.Method, error) {
 	result := make([]*specs.Method, len(methods))
 
-	for index, manifest := range methods {
-		ctx.Logger(logger.Core).WithFields(logrus.Fields{
-			"method": manifest.Name,
-		}).Debug("Parsing intermediate method to schema")
+	for index, method := range methods {
+		logger.Debug(ctx, "parsing intermediate method to schema", zap.String("method", method.Name))
 
 		result[index] = &specs.Method{
-			Name:    manifest.Name,
-			Input:   manifest.Input,
-			Output:  manifest.Output,
-			Options: ParseIntermediateDefinitionOptions(manifest.Options),
+			Name:    method.Name,
+			Input:   method.Input,
+			Output:  method.Output,
+			Options: ParseIntermediateDefinitionOptions(method.Options),
 		}
 	}
 

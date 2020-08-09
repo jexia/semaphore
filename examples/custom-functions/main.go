@@ -7,7 +7,6 @@ import (
 	"github.com/jexia/semaphore"
 	"github.com/jexia/semaphore/pkg/codec/json"
 	"github.com/jexia/semaphore/pkg/codec/proto"
-	"github.com/jexia/semaphore/pkg/core/logger"
 	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/providers/hcl"
 	"github.com/jexia/semaphore/pkg/providers/protobuffers"
@@ -24,7 +23,7 @@ func main() {
 	}
 
 	client, err := semaphore.New(
-		semaphore.WithLogLevel(logger.Global, "debug"),
+		semaphore.WithLogLevel("*", "debug"),
 		semaphore.WithListener(http.NewListener(":8080", specs.Options{})),
 		semaphore.WithFlows(hcl.FlowsResolver("./*.hcl")),
 		semaphore.WithEndpoints(hcl.EndpointsResolver("./*.hcl")),

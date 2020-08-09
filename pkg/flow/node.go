@@ -3,18 +3,21 @@ package flow
 import (
 	"context"
 
-	"github.com/jexia/semaphore/pkg/core/instance"
-	"github.com/jexia/semaphore/pkg/core/logger"
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/transport"
-	"github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 )
 
 // NewNode constructs a new node for the given call.
 // The service called inside the call endpoint is retrieved from the services collection.
 // The call, codec and rollback are defined inside the node and used while processing requests.
-func NewNode(ctx instance.Context, node *specs.Node, condition *Condition, call, rollback Call, middleware *NodeMiddleware) *Node {
+func NewNode(parent *broker.Context, node *specs.Node, condition *Condition, call, rollback Call, middleware *NodeMiddleware) *Node {
+	module := broker.WithModule(broker.Child(parent), "node", node.Name)
+	ctx := logger.WithLogger(module)
+
 	refs := references.References{}
 
 	if middleware == nil {
@@ -37,14 +40,11 @@ func NewNode(ctx instance.Context, node *specs.Node, condition *Condition, call,
 		}
 	}
 
-	logger := ctx.Logger(logger.Flow)
-
 	return &Node{
 		BeforeDo:     middleware.BeforeDo,
 		BeforeRevert: middleware.BeforeRollback,
 		Condition:    condition,
 		ctx:          ctx,
-		logger:       logger,
 		Name:         node.ID,
 		Previous:     []*Node{},
 		Call:         call,
@@ -97,8 +97,7 @@ type Node struct {
 	BeforeDo     BeforeNode
 	BeforeRevert BeforeNode
 	Condition    *Condition
-	ctx          instance.Context
-	logger       *logrus.Logger
+	ctx          *broker.Context
 	Name         string
 	Previous     Nodes
 	Call         Call
@@ -115,41 +114,41 @@ type Node struct {
 // If one of the nodes fails is the error marked and are the processes aborted.
 func (node *Node) Do(ctx context.Context, tracker *Tracker, processes *Processes, refs references.Store) {
 	defer processes.Done()
-	node.logger.Debug("Executing node call: ", node.Name)
+	logger.Debug(node.ctx, "executing node call")
 
 	tracker.Lock(node)
 	defer tracker.Unlock(node)
 
 	if !tracker.Reached(node, len(node.Previous)) {
-		node.logger.Debug("Has not met dependencies yet: ", node.Name)
+		logger.Debug(node.ctx, "has not met dependencies yet")
 		return
 	}
 
 	var err error
 
 	if node.Condition != nil {
-		node.logger.Debug("Evaluating condition: ", node.Name)
+		logger.Debug(node.ctx, "evaluating condition")
 
 		pass, err := node.Condition.Eval(node.ctx, refs)
 		if err != nil {
-			node.logger.Debug("Condition evaluation failed: ", err)
+			logger.Error(node.ctx, "condition evaluation failed", zap.Error(err))
 			processes.Fatal(transport.WrapError(err, node.OnError))
 			return
 		}
 
 		if !pass {
-			node.logger.Debug("Condition prevented node from being executed: ", node.Name)
+			logger.Debug(node.ctx, "condition prevented node from being executed")
 			node.Skip(ctx, tracker)
 			return
 		}
 
-		node.logger.Debug("Node condition passed: ", node.Name)
+		logger.Debug(node.ctx, "node condition passed")
 	}
 
 	if node.BeforeDo != nil {
 		ctx, err = node.BeforeDo(ctx, node, tracker, processes, refs)
 		if err != nil {
-			node.logger.Error("Node before middleware failed: ", err)
+			logger.Error(node.ctx, "node before middleware failed", zap.Error(err))
 			processes.Fatal(transport.WrapError(err, node.OnError))
 			return
 		}
@@ -158,17 +157,17 @@ func (node *Node) Do(ctx context.Context, tracker *Tracker, processes *Processes
 	if node.Call != nil {
 		err = node.Call.Do(ctx, refs)
 		if err != nil {
-			node.logger.Error("Call failed: ", node.Name)
+			logger.Error(node.ctx, "call failed", zap.Error(err))
 			processes.Fatal(transport.WrapError(err, node.OnError))
 			return
 		}
 	}
 
-	node.logger.Debug("Marking node as completed: ", node.Name)
+	logger.Debug(node.ctx, "marking node as completed")
 	tracker.Mark(node)
 
 	if processes.Err() != nil {
-		node.logger.Error("Stopping execution a error has been thrown: ", node.Name)
+		logger.Error(node.ctx, "stopping execution a error has been thrown", zap.Error(err))
 		return
 	}
 
@@ -181,7 +180,7 @@ func (node *Node) Do(ctx context.Context, tracker *Tracker, processes *Processes
 	if node.AfterDo != nil {
 		_, err = node.AfterDo(ctx, node, tracker, processes, refs)
 		if err != nil {
-			node.logger.Error("Node after middleware failed: ", err)
+			logger.Error(node.ctx, "node after middleware failed", zap.Error(err))
 			processes.Fatal(transport.WrapError(err, node.OnError))
 			return
 		}
@@ -192,13 +191,13 @@ func (node *Node) Do(ctx context.Context, tracker *Tracker, processes *Processes
 // If one of the nodes fails is the error marked but execution is not aborted.
 func (node *Node) Rollback(ctx context.Context, tracker *Tracker, processes *Processes, refs references.Store) {
 	defer processes.Done()
-	node.logger.Debug("Executing node revert ", node.Name)
+	logger.Debug(node.ctx, "executing node revert")
 
 	tracker.Lock(node)
 	defer tracker.Unlock(node)
 
 	if !tracker.Reached(node, len(node.Next)) {
-		node.logger.Debug("Has not met dependencies yet: ", node.Name)
+		logger.Debug(node.ctx, "has not met dependencies yet")
 		return
 	}
 
@@ -207,7 +206,7 @@ func (node *Node) Rollback(ctx context.Context, tracker *Tracker, processes *Pro
 	if node.BeforeRevert != nil {
 		ctx, err = node.BeforeRevert(ctx, node, tracker, processes, refs)
 		if err != nil {
-			node.logger.Error("Node before middleware failed: ", err)
+			logger.Error(node.ctx, "node before revert middleware failed", zap.Error(err))
 			processes.Fatal(transport.WrapError(err, node.OnError))
 			return
 		}
@@ -224,17 +223,17 @@ func (node *Node) Rollback(ctx context.Context, tracker *Tracker, processes *Pro
 	if node.Revert != nil {
 		err = node.Revert.Do(ctx, refs)
 		if err != nil {
-			node.logger.Error("Node revert failed: ", err)
+			logger.Error(node.ctx, "node revert failed", zap.Error(err))
 		}
 	}
 
-	node.logger.Debug("Marking node as completed: ", node.Name)
+	logger.Debug(node.ctx, "marking node as completed")
 	tracker.Mark(node)
 
 	if node.AfterRevert != nil {
 		ctx, err = node.AfterRevert(ctx, node, tracker, processes, refs)
 		if err != nil {
-			node.logger.Error("Node after middleware failed: ", err)
+			logger.Error(node.ctx, "node after revert middleware failed", zap.Error(err))
 			processes.Fatal(transport.WrapError(err, node.OnError))
 			return
 		}

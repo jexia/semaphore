@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"github.com/jexia/semaphore/pkg/core/instance"
-	"github.com/jexia/semaphore/pkg/core/logger"
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/core/trace"
 	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/references"
@@ -15,6 +15,7 @@ import (
 	"github.com/micro/go-micro/v2/client"
 	"github.com/micro/go-micro/v2/codec/bytes"
 	micrometa "github.com/micro/go-micro/v2/metadata"
+	"go.uber.org/zap"
 )
 
 // Service is an interface that wraps the lower level libraries
@@ -31,7 +32,7 @@ type Service interface {
 
 // NewCaller constructs a new go micro transport wrapper
 func NewCaller(name string, service Service) transport.NewCaller {
-	return func(ctx instance.Context) transport.Caller {
+	return func(ctx *broker.Context) transport.Caller {
 		return &Caller{
 			name:    name,
 			service: service,
@@ -41,7 +42,7 @@ func NewCaller(name string, service Service) transport.NewCaller {
 
 // Caller represents the caller constructor
 type Caller struct {
-	ctx     instance.Context
+	ctx     *broker.Context
 	name    string
 	service Service
 }
@@ -53,6 +54,9 @@ func (caller *Caller) Name() string {
 
 // Dial constructs a new caller for the given service
 func (caller *Caller) Dial(service *specs.Service, functions functions.Custom, opts specs.Options) (transport.Call, error) {
+	module := broker.WithModule(caller.ctx, "caller", "go-micro")
+	ctx := logger.WithFields(logger.WithLogger(module), zap.String("service", service.Name))
+
 	methods := make(map[string]*Method, len(service.Methods))
 
 	for _, method := range service.Methods {
@@ -64,7 +68,7 @@ func (caller *Caller) Dial(service *specs.Service, functions functions.Custom, o
 	}
 
 	result := &Call{
-		ctx:     caller.ctx,
+		ctx:     ctx,
 		pkg:     service.Package,
 		service: service.Name,
 		methods: methods,
@@ -97,7 +101,7 @@ func (method *Method) References() []*specs.Property {
 
 // Call represents the go micro transport wrapper implementation
 type Call struct {
-	ctx     instance.Context
+	ctx     *broker.Context
 	pkg     string
 	service string
 	client  client.Client
@@ -164,7 +168,7 @@ func (call *Call) SendMsg(ctx context.Context, rw transport.ResponseWriter, pr *
 		defer rw.Close()
 		_, err = rw.Write(res.Data)
 		if err != nil {
-			call.ctx.Logger(logger.Transport).Error(err)
+			logger.Error(call.ctx, "unable to write the response body", zap.Error(err))
 		}
 	}()
 
@@ -173,6 +177,6 @@ func (call *Call) SendMsg(ctx context.Context, rw transport.ResponseWriter, pr *
 
 // Close closes the given caller
 func (call *Call) Close() error {
-	call.ctx.Logger(logger.Transport).Info("Closing go micro caller")
+	logger.Info(call.ctx, "cloding go micro caller")
 	return nil
 }

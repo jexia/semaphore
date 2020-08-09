@@ -6,19 +6,21 @@ import (
 	"time"
 
 	"github.com/jexia/semaphore"
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/core/api"
-	"github.com/jexia/semaphore/pkg/core/instance"
-	"github.com/jexia/semaphore/pkg/core/logger"
 	"github.com/jexia/semaphore/pkg/flow"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"go.uber.org/zap"
 )
 
 // New constructs a new prometheus middleware instance
 func New(addr string) api.Middleware {
-	return func(ctx instance.Context) ([]api.Option, error) {
-		ctx.Logger(logger.Core).WithField("addr", addr).Info("Setting up prometheus")
+	return func(parent *broker.Context) ([]api.Option, error) {
+		ctx := logger.WithLogger(broker.WithModule(parent, "prometheus"))
+		logger.Info(ctx, "setting up", zap.String("addr", addr))
 
 		collector, err := NewCollector()
 		if err != nil {

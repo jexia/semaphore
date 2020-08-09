@@ -7,10 +7,12 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/jexia/semaphore/pkg/core/instance"
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
+	"go.uber.org/zap"
 )
 
 type MockCodec struct{}
@@ -43,7 +45,7 @@ func (caller *caller) Do(context.Context, references.Store) error {
 }
 
 func NewMockFlowManager(caller Call, revert Call) ([]*Node, *Manager) {
-	ctx := instance.NewContext()
+	ctx := logger.WithLogger(broker.NewContext())
 
 	nodes := []*Node{
 		NewMockNode("first", caller, revert),
@@ -63,7 +65,7 @@ func NewMockFlowManager(caller Call, revert Call) ([]*Node, *Manager) {
 
 	return nodes, &Manager{
 		Name:       "mock",
-		ctx:        ctx,
+		ctx:        logger.WithFields(ctx, zap.String("flow", "mock")),
 		Starting:   []*Node{nodes[0]},
 		References: 0,
 		Nodes:      nodes,
@@ -86,7 +88,7 @@ func TestNewManager(t *testing.T) {
 
 	for name, nodes := range tests {
 		t.Run(name, func(t *testing.T) {
-			ctx := instance.NewContext()
+			ctx := logger.WithLogger(broker.NewContext())
 			manager := NewManager(ctx, name, nodes, nil, nil, nil)
 			if manager == nil {
 				t.Fatal("unexpected result, expected a manager to be returned")
@@ -340,7 +342,7 @@ func TestAfterManagerFunctions(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			current = 0
-			ctx := instance.NewContext()
+			ctx := logger.WithLogger(broker.NewContext())
 			manager := NewManager(ctx, name, []*Node{}, nil, test.stack, nil)
 			if manager == nil {
 				t.Fatal("unexpected result, expected a manager to be returned")
@@ -410,7 +412,7 @@ func TestAfterManagerFunctionsError(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			ctx := instance.NewContext()
+			ctx := logger.WithLogger(broker.NewContext())
 			manager := NewManager(ctx, name, []*Node{}, nil, test.stack, nil)
 			if manager == nil {
 				t.Fatal("unexpected result, expected a manager to be returned")

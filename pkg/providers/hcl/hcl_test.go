@@ -3,7 +3,8 @@ package hcl
 import (
 	"testing"
 
-	"github.com/jexia/semaphore/pkg/core/instance"
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 )
 
 func TestResolveService(t *testing.T) {
@@ -14,7 +15,7 @@ func TestResolveService(t *testing.T) {
 
 	for name, path := range tests {
 		t.Run(name, func(t *testing.T) {
-			ctx := instance.NewContext()
+			ctx := logger.WithLogger(broker.NewContext())
 			resolver := ServicesResolver(path)
 
 			_, err := resolver(ctx)
@@ -33,7 +34,7 @@ func TestResolveServiceFail(t *testing.T) {
 
 	for name, path := range tests {
 		t.Run(name, func(t *testing.T) {
-			ctx := instance.NewContext()
+			ctx := logger.WithLogger(broker.NewContext())
 			resolver := ServicesResolver(path)
 
 			_, err := resolver(ctx)
@@ -51,7 +52,7 @@ func TestResolveIncludeFail(t *testing.T) {
 
 	for name, path := range tests {
 		t.Run(name, func(t *testing.T) {
-			ctx := instance.NewContext()
+			ctx := logger.WithLogger(broker.NewContext())
 			resolver := ServicesResolver(path)
 
 			_, err := resolver(ctx)
@@ -69,7 +70,7 @@ func TestResolveInclude(t *testing.T) {
 
 	for name, path := range tests {
 		t.Run(name, func(t *testing.T) {
-			ctx := instance.NewContext()
+			ctx := logger.WithLogger(broker.NewContext())
 			resolver := ServicesResolver(path)
 
 			_, err := resolver(ctx)
@@ -87,7 +88,7 @@ func TestResolveIncludeNoFiles(t *testing.T) {
 
 	for name, path := range tests {
 		t.Run(name, func(t *testing.T) {
-			ctx := instance.NewContext()
+			ctx := logger.WithLogger(broker.NewContext())
 			resolver := ServicesResolver(path)
 
 			_, err := resolver(ctx)
@@ -106,7 +107,7 @@ func TestResolveFlows(t *testing.T) {
 
 	for name, path := range tests {
 		t.Run(name, func(t *testing.T) {
-			ctx := instance.NewContext()
+			ctx := logger.WithLogger(broker.NewContext())
 			resolver := FlowsResolver(path)
 
 			_, err := resolver(ctx)
@@ -125,7 +126,7 @@ func TestResolveFlowsFail(t *testing.T) {
 
 	for name, path := range tests {
 		t.Run(name, func(t *testing.T) {
-			ctx := instance.NewContext()
+			ctx := logger.WithLogger(broker.NewContext())
 			resolver := FlowsResolver(path)
 
 			_, err := resolver(ctx)
@@ -144,7 +145,7 @@ func TestResolveEndpoints(t *testing.T) {
 
 	for name, path := range tests {
 		t.Run(name, func(t *testing.T) {
-			ctx := instance.NewContext()
+			ctx := logger.WithLogger(broker.NewContext())
 			resolver := EndpointsResolver(path)
 
 			_, err := resolver(ctx)
@@ -163,7 +164,7 @@ func TestResolveEndpointsFail(t *testing.T) {
 
 	for name, path := range tests {
 		t.Run(name, func(t *testing.T) {
-			ctx := instance.NewContext()
+			ctx := logger.WithLogger(broker.NewContext())
 			resolver := EndpointsResolver(path)
 
 			_, err := resolver(ctx)
@@ -182,7 +183,8 @@ func TestResolveOptions(t *testing.T) {
 
 	for name, path := range tests {
 		t.Run(name, func(t *testing.T) {
-			_, err := GetOptions(instance.NewContext(), path)
+			ctx := logger.WithLogger(broker.NewContext())
+			_, err := GetOptions(ctx, path)
 			if err != nil {
 				t.Fatal(err)
 			}

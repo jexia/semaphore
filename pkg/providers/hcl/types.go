@@ -1,17 +1,18 @@
 package hcl
 
 import (
-	"github.com/jexia/semaphore/pkg/core/instance"
-	"github.com/jexia/semaphore/pkg/core/logger"
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/types"
 	"github.com/zclconf/go-cty/cty"
 	"github.com/zclconf/go-cty/cty/gocty"
+	"go.uber.org/zap"
 )
 
 // SetDefaultValue sets the given value as default value inside the given property
-func SetDefaultValue(ctx instance.Context, property *specs.Property, value cty.Value) {
-	ctx.Logger(logger.Core).WithField("path", property.Path).WithField("value", value).Debug("Set default value for property")
+func SetDefaultValue(ctx *broker.Context, property *specs.Property, value cty.Value) {
+	logger.Debug(ctx, "set default value for property", zap.String("path", property.Path), zap.Any("value", value))
 
 	switch value.Type() {
 	case cty.String:

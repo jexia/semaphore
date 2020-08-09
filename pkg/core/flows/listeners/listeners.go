@@ -1,11 +1,11 @@
 package listeners
 
 import (
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/core/api"
-	"github.com/jexia/semaphore/pkg/core/logger"
 	"github.com/jexia/semaphore/pkg/core/trace"
 	"github.com/jexia/semaphore/pkg/transport"
-	"github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 )
 
 // Apply collects the given endpoints and applies them to the configured listeners.
@@ -13,24 +13,18 @@ import (
 func Apply(endpoints []*transport.Endpoint, options api.Options) error {
 	collections := make(map[string][]*transport.Endpoint, len(options.Listeners))
 
-	options.Ctx.Logger(logger.Core).WithField("endpoints", endpoints).Debug("constructing listeners")
+	logger.Debug(options.Ctx, "constructing listeners")
 
 	for _, endpoint := range endpoints {
 		if endpoint == nil {
 			continue
 		}
 
-		options.Ctx.Logger(logger.Core).WithFields(logrus.Fields{
-			"flow":     endpoint.Flow.GetName(),
-			"listener": endpoint.Listener,
-		}).Info("Preparing endpoint")
+		logger.Info(options.Ctx, "preparing endpoint", zap.String("flow", endpoint.Flow.GetName()), zap.String("listener", endpoint.Listener))
 
 		listener := options.Listeners.Get(endpoint.Listener)
 		if listener == nil {
-			options.Ctx.Logger(logger.Core).WithFields(logrus.Fields{
-				"listener": endpoint.Listener,
-			}).Error("Listener not found")
-
+			logger.Error(options.Ctx, "listener not found", zap.String("listener", endpoint.Listener))
 			return trace.New(trace.WithMessage("unknown listener %s", endpoint.Listener))
 		}
 
@@ -38,16 +32,12 @@ func Apply(endpoints []*transport.Endpoint, options api.Options) error {
 	}
 
 	for key, collection := range collections {
-		options.Ctx.Logger(logger.Core).WithField("listener", key).Debug("applying listener handles")
+		logger.Debug(options.Ctx, "applying listener handles", zap.String("listener", key))
 
 		listener := options.Listeners.Get(key)
 		err := listener.Handle(options.Ctx, collection, options.Codec)
 		if err != nil {
-			options.Ctx.Logger(logger.Core).WithFields(logrus.Fields{
-				"listener": listener.Name(),
-				"err":      err,
-			}).Error("Listener returned an error")
-
+			logger.Error(options.Ctx, "listener returned an error", zap.String("listener", listener.Name()), zap.Error(err))
 			return err
 		}
 	}

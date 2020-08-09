@@ -4,9 +4,9 @@ import (
 	"context"
 	"io"
 
+	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/codec"
 	"github.com/jexia/semaphore/pkg/codec/metadata"
-	"github.com/jexia/semaphore/pkg/core/instance"
 	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
@@ -43,7 +43,7 @@ func (collection Callers) Get(name string) Caller {
 }
 
 // NewCaller constructs a new caller with the given context
-type NewCaller func(ctx instance.Context) Caller
+type NewCaller func(ctx *broker.Context) Caller
 
 // Caller constructs new calls which could be used to call services
 type Caller interface {
@@ -89,12 +89,12 @@ type Flow interface {
 }
 
 // NewListener constructs a new listener with the given context
-type NewListener func(ctx instance.Context) Listener
+type NewListener func(ctx *broker.Context) Listener
 
 // Listener specifies the listener implementation
 type Listener interface {
 	Name() string
 	Serve() error
 	Close() error
-	Handle(instance.Context, []*Endpoint, map[string]codec.Constructor) error
+	Handle(*broker.Context, []*Endpoint, map[string]codec.Constructor) error
 }

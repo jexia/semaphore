@@ -4,30 +4,31 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/jexia/semaphore/pkg/core/instance"
-	"github.com/jexia/semaphore/pkg/core/logger"
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/providers"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/desc/protoparse"
+	"go.uber.org/zap"
 )
 
 // Collect attempts to collect all the available proto files inside the given path and parses them to resources
-func Collect(ctx instance.Context, paths []string, path string) ([]*desc.FileDescriptor, error) {
+func Collect(ctx *broker.Context, paths []string, path string) ([]*desc.FileDescriptor, error) {
 	imports := make([]string, len(paths))
 	for index, path := range paths {
 		imports[index] = path
 	}
 
-	ctx.Logger(logger.Core).WithField("path", path).Debug("Collect available proto")
-	ctx.Logger(logger.Core).WithField("imports", paths).Debug("Collect available proto with imports")
+	logger.Debug(ctx, "collect available proto", zap.String("path", path))
+	logger.Debug(ctx, "collect available proto with imports", zap.Strings("imports", paths))
 
 	path, err := filepath.Abs(path)
 	if err != nil {
 		return nil, err
 	}
 
-	ctx.Logger(logger.Core).WithField("path", path).Debug("Absolute proto path")
+	logger.Debug(ctx, "absolute proto path", zap.String("path", path))
 
 	for index, path := range imports {
 		path, err := filepath.Abs(path)
@@ -38,7 +39,7 @@ func Collect(ctx instance.Context, paths []string, path string) ([]*desc.FileDes
 		imports[index] = path
 	}
 
-	ctx.Logger(logger.Core).WithField("imports", paths).Debug("Absolute proto imports")
+	logger.Debug(ctx, "absolute proto imports", zap.Strings("imports", imports))
 
 	files, err := providers.ResolvePath(ctx, []string{}, path)
 	if err != nil {
@@ -70,8 +71,8 @@ func Collect(ctx instance.Context, paths []string, path string) ([]*desc.FileDes
 
 // ServiceResolver returns a new service(s) resolver for the given protoc collection
 func ServiceResolver(imports []string, path string) providers.ServicesResolver {
-	return func(ctx instance.Context) (specs.ServiceList, error) {
-		ctx.Logger(logger.Core).WithField("path", path).Debug("Resolving proto services")
+	return func(ctx *broker.Context) (specs.ServiceList, error) {
+		logger.Debug(ctx, "resolving proto services", zap.String("path", path))
 
 		files, err := Collect(ctx, imports, path)
 		if err != nil {
@@ -84,8 +85,8 @@ func ServiceResolver(imports []string, path string) providers.ServicesResolver {
 
 // SchemaResolver returns a new schema resolver for the given protoc collection
 func SchemaResolver(imports []string, path string) providers.SchemaResolver {
-	return func(ctx instance.Context) (specs.Schemas, error) {
-		ctx.Logger(logger.Core).WithField("path", path).Debug("Resolving proto schemas")
+	return func(ctx *broker.Context) (specs.Schemas, error) {
+		logger.Debug(ctx, "resolving proto schemas", zap.String("path", path))
 
 		files, err := Collect(ctx, imports, path)
 		if err != nil {

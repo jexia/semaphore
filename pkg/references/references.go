@@ -1,21 +1,21 @@
 package references
 
 import (
-	"github.com/jexia/semaphore/pkg/core/instance"
-	"github.com/jexia/semaphore/pkg/core/logger"
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/core/trace"
 	"github.com/jexia/semaphore/pkg/lookup"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/template"
-	"github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 )
 
 // Resolve all references inside the given flow list
-func Resolve(ctx instance.Context, flows specs.FlowListInterface) (err error) {
-	ctx.Logger(logger.Core).Info("Defining manifest types")
+func Resolve(ctx *broker.Context, flows specs.FlowListInterface) (err error) {
+	logger.Info(ctx, "defining manifest types")
 
 	for _, flow := range flows {
-		err := ResolveFlow(ctx, flow)
+		err := ResolveFlow(logger.WithFields(ctx, zap.String("flow", flow.GetName())), flow)
 		if err != nil {
 			return err
 		}
@@ -25,8 +25,8 @@ func Resolve(ctx instance.Context, flows specs.FlowListInterface) (err error) {
 }
 
 // ResolveFlow all references made within the given flow
-func ResolveFlow(ctx instance.Context, flow specs.FlowInterface) (err error) {
-	ctx.Logger(logger.Core).WithField("flow", flow.GetName()).Info("Defining flow types")
+func ResolveFlow(ctx *broker.Context, flow specs.FlowInterface) (err error) {
+	logger.Info(ctx, "defining flow types")
 
 	if flow.GetOnError() != nil {
 		err = ResolveOnError(ctx, nil, flow.GetOnError(), flow)
@@ -62,7 +62,7 @@ func ResolveFlow(ctx instance.Context, flow specs.FlowInterface) (err error) {
 }
 
 // ResolveNode resolves all references made within the given node
-func ResolveNode(ctx instance.Context, node *specs.Node, flow specs.FlowInterface) (err error) {
+func ResolveNode(ctx *broker.Context, node *specs.Node, flow specs.FlowInterface) (err error) {
 	if node.Condition != nil {
 		err = ResolveParameterMap(ctx, node, node.Condition.Params, flow)
 		if err != nil {
@@ -95,7 +95,7 @@ func ResolveNode(ctx instance.Context, node *specs.Node, flow specs.FlowInterfac
 }
 
 // ResolveCall resolves all references made within the given call
-func ResolveCall(ctx instance.Context, node *specs.Node, call *specs.Call, flow specs.FlowInterface) (err error) {
+func ResolveCall(ctx *broker.Context, node *specs.Node, call *specs.Call, flow specs.FlowInterface) (err error) {
 	if call.Request != nil {
 		err = ResolveParameterMap(ctx, node, call.Request, flow)
 		if err != nil {
@@ -114,7 +114,7 @@ func ResolveCall(ctx instance.Context, node *specs.Node, call *specs.Call, flow 
 }
 
 // ResolveParameterMap resolves all references made within the given parameter map
-func ResolveParameterMap(ctx instance.Context, node *specs.Node, params *specs.ParameterMap, flow specs.FlowInterface) (err error) {
+func ResolveParameterMap(ctx *broker.Context, node *specs.Node, params *specs.ParameterMap, flow specs.FlowInterface) (err error) {
 	for _, header := range params.Header {
 		err = ResolveProperty(ctx, node, header, flow)
 		if err != nil {
@@ -140,7 +140,7 @@ func ResolveParameterMap(ctx instance.Context, node *specs.Node, params *specs.P
 }
 
 // ResolveParams resolves all references made within the given parameters
-func ResolveParams(ctx instance.Context, node *specs.Node, params map[string]*specs.Property, flow specs.FlowInterface) error {
+func ResolveParams(ctx *broker.Context, node *specs.Node, params map[string]*specs.Property, flow specs.FlowInterface) error {
 	for _, param := range params {
 		if param.Reference == nil {
 			continue
@@ -156,7 +156,7 @@ func ResolveParams(ctx instance.Context, node *specs.Node, params map[string]*sp
 }
 
 // ResolveProperty resolves all references made within the given property
-func ResolveProperty(ctx instance.Context, node *specs.Node, property *specs.Property, flow specs.FlowInterface) error {
+func ResolveProperty(ctx *broker.Context, node *specs.Node, property *specs.Property, flow specs.FlowInterface) error {
 	if property == nil {
 		return nil
 	}
@@ -188,7 +188,7 @@ func ResolveProperty(ctx instance.Context, node *specs.Node, property *specs.Pro
 
 	reference, err := LookupReference(ctx, breakpoint, property.Reference, flow)
 	if err != nil {
-		ctx.Logger(logger.Core).WithField("err", err).Debug("Unable to lookup reference")
+		logger.Error(ctx, "unable to lookup reference", zap.Error(err))
 		return trace.New(trace.WithExpression(property.Expr), trace.WithMessage("undefined reference '%s' in '%s.%s.%s'", property.Reference, flow.GetName(), breakpoint, property.Path))
 	}
 
@@ -199,11 +199,11 @@ func ResolveProperty(ctx instance.Context, node *specs.Node, property *specs.Pro
 		}
 	}
 
-	ctx.Logger(logger.Core).WithFields(logrus.Fields{
-		"reference": property.Reference,
-		"name":      reference.Name,
-		"path":      reference.Path,
-	}).Debug("References lookup result")
+	logger.Debug(ctx, "references lookup result",
+		zap.String("reference", property.Reference.String()),
+		zap.String("name", property.Name),
+		zap.String("path", property.Path),
+	)
 
 	property.Type = reference.Type
 	property.Label = reference.Label
@@ -218,13 +218,13 @@ func ResolveProperty(ctx instance.Context, node *specs.Node, property *specs.Pro
 }
 
 // LookupReference looks up the given reference
-func LookupReference(ctx instance.Context, breakpoint string, reference *specs.PropertyReference, flow specs.FlowInterface) (*specs.Property, error) {
+func LookupReference(ctx *broker.Context, breakpoint string, reference *specs.PropertyReference, flow specs.FlowInterface) (*specs.Property, error) {
 	reference.Resource = lookup.ResolveSelfReference(reference.Resource, breakpoint)
 
-	ctx.Logger(logger.Core).WithFields(logrus.Fields{
-		"breakpoint": breakpoint,
-		"reference":  reference,
-	}).Debug("Lookup references until breakpoint")
+	logger.Debug(ctx, "lookup references until breakpoint",
+		zap.String("reference", reference.String()),
+		zap.String("breakpoint", breakpoint),
+	)
 
 	references := lookup.GetAvailableResources(flow, breakpoint)
 	result := lookup.GetResourceReference(reference, references, breakpoint)
@@ -232,10 +232,11 @@ func LookupReference(ctx instance.Context, breakpoint string, reference *specs.P
 		return nil, trace.New(trace.WithMessage("undefined resource '%s' in '%s'.'%s'", reference, flow.GetName(), breakpoint))
 	}
 
-	ctx.Logger(logger.Core).WithFields(logrus.Fields{
-		"breakpoint": breakpoint,
-		"reference":  result,
-	}).Debug("Lookup references result")
+	logger.Debug(ctx, "lookup references result",
+		zap.String("reference", reference.String()),
+		zap.String("path", result.Path),
+		zap.String("name", result.Name),
+	)
 
 	return result, nil
 }
@@ -259,7 +260,7 @@ func InsideProperty(source *specs.Property, target *specs.Property) bool {
 }
 
 // ResolveOnError resolves references made inside the given on error specs
-func ResolveOnError(ctx instance.Context, node *specs.Node, params *specs.OnError, flow specs.FlowInterface) (err error) {
+func ResolveOnError(ctx *broker.Context, node *specs.Node, params *specs.OnError, flow specs.FlowInterface) (err error) {
 	if params.Response != nil {
 		err = ResolveParameterMap(ctx, node, params.Response, flow)
 		if err != nil {

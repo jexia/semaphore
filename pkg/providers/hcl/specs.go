@@ -2,19 +2,20 @@ package hcl
 
 import (
 	"github.com/hashicorp/hcl/v2"
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/conditions"
-	"github.com/jexia/semaphore/pkg/core/instance"
-	"github.com/jexia/semaphore/pkg/core/logger"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/labels"
 	"github.com/jexia/semaphore/pkg/specs/template"
 	"github.com/jexia/semaphore/pkg/specs/types"
 	"github.com/zclconf/go-cty/cty"
+	"go.uber.org/zap"
 )
 
 // ParseFlows parses the given intermediate manifest to a flows manifest
-func ParseFlows(ctx instance.Context, manifest Manifest) (errObject *specs.ParameterMap, _ specs.FlowListInterface, _ error) {
-	ctx.Logger(logger.Core).Info("Parsing intermediate manifest to flows manifest")
+func ParseFlows(ctx *broker.Context, manifest Manifest) (errObject *specs.ParameterMap, _ specs.FlowListInterface, _ error) {
+	logger.Info(ctx, "parsing intermediate manifest to flows manifest")
 
 	result := make(specs.FlowListInterface, 0, len(manifest.Flows)+len(manifest.Proxy))
 
@@ -28,7 +29,7 @@ func ParseFlows(ctx instance.Context, manifest Manifest) (errObject *specs.Param
 	}
 
 	for _, flow := range manifest.Flows {
-		flow, err := ParseIntermediateFlow(ctx, flow)
+		flow, err := ParseIntermediateFlow(logger.WithFields(ctx, zap.String("flow", flow.Name)), flow)
 		if err != nil {
 			return errObject, nil, err
 		}
@@ -49,20 +50,20 @@ func ParseFlows(ctx instance.Context, manifest Manifest) (errObject *specs.Param
 }
 
 // ParseEndpoints parses the given intermediate manifest to a endpoints manifest
-func ParseEndpoints(ctx instance.Context, manifest Manifest) (specs.EndpointList, error) {
-	ctx.Logger(logger.Core).Info("Parsing intermediate manifest to endpoints manifest")
+func ParseEndpoints(ctx *broker.Context, manifest Manifest) (specs.EndpointList, error) {
+	logger.Info(ctx, "parsing intermediate manifest to endpoints manifest")
 
 	result := make(specs.EndpointList, len(manifest.Endpoints))
 	for index, endpoint := range manifest.Endpoints {
-		result[index] = ParseIntermediateEndpoint(ctx, endpoint)
+		result[index] = ParseIntermediateEndpoint(logger.WithFields(ctx, zap.String("flow", endpoint.Flow)), endpoint)
 	}
 
 	return result, nil
 }
 
 // ParseIntermediateEndpoint parses the given intermediate endpoint to a specs endpoint
-func ParseIntermediateEndpoint(ctx instance.Context, endpoint Endpoint) *specs.Endpoint {
-	ctx.Logger(logger.Core).WithField("flow", endpoint.Flow).Debug("Parsing intermediate endpoint to specs")
+func ParseIntermediateEndpoint(ctx *broker.Context, endpoint Endpoint) *specs.Endpoint {
+	logger.Debug(ctx, "parsing intermediate endpoint to specs")
 
 	result := specs.Endpoint{
 		Options:  ParseIntermediateSpecOptions(endpoint.Options),
@@ -74,8 +75,8 @@ func ParseIntermediateEndpoint(ctx instance.Context, endpoint Endpoint) *specs.E
 }
 
 // ParseIntermediateFlow parses the given intermediate flow to a specs flow
-func ParseIntermediateFlow(ctx instance.Context, flow Flow) (*specs.Flow, error) {
-	ctx.Logger(logger.Core).WithField("flow", flow.Name).Debug("Parsing intermediate flow to specs")
+func ParseIntermediateFlow(ctx *broker.Context, flow Flow) (*specs.Flow, error) {
+	logger.Info(ctx, "parsing intermediate flow to specs")
 
 	input, err := ParseIntermediateInputParameterMap(ctx, flow.Input)
 	if err != nil {
@@ -174,7 +175,7 @@ func DependsOn(dependency *specs.Node, nodes ...*specs.Node) {
 }
 
 // ParseIntermediateInputParameterMap parses the given input parameter map
-func ParseIntermediateInputParameterMap(ctx instance.Context, params *InputParameterMap) (*specs.ParameterMap, error) {
+func ParseIntermediateInputParameterMap(ctx *broker.Context, params *InputParameterMap) (*specs.ParameterMap, error) {
 	if params == nil {
 		return nil, nil
 	}
@@ -202,7 +203,7 @@ func ParseIntermediateInputParameterMap(ctx instance.Context, params *InputParam
 }
 
 // ParseIntermediateProxy parses the given intermediate proxy to a specs proxy
-func ParseIntermediateProxy(ctx instance.Context, proxy Proxy) (*specs.Proxy, error) {
+func ParseIntermediateProxy(ctx *broker.Context, proxy Proxy) (*specs.Proxy, error) {
 	forward, err := ParseIntermediateProxyForward(ctx, proxy.Forward)
 	if err != nil {
 		return nil, err
@@ -295,7 +296,7 @@ func ParseIntermediateProxy(ctx instance.Context, proxy Proxy) (*specs.Proxy, er
 }
 
 // ParseIntermediateProxyForward parses the given intermediate proxy forward to a specs proxy forward
-func ParseIntermediateProxyForward(ctx instance.Context, proxy ProxyForward) (*specs.Call, error) {
+func ParseIntermediateProxyForward(ctx *broker.Context, proxy ProxyForward) (*specs.Call, error) {
 	result := specs.Call{
 		Service: proxy.Service,
 		Request: &specs.ParameterMap{},
@@ -314,7 +315,7 @@ func ParseIntermediateProxyForward(ctx instance.Context, proxy ProxyForward) (*s
 }
 
 // ParseIntermediateParameterMap parses the given intermediate parameter map to a spec parameter map
-func ParseIntermediateParameterMap(ctx instance.Context, params *ParameterMap) (*specs.ParameterMap, error) {
+func ParseIntermediateParameterMap(ctx *broker.Context, params *ParameterMap) (*specs.ParameterMap, error) {
 	if params == nil {
 		return nil, nil
 	}
@@ -375,7 +376,7 @@ func ParseIntermediateParameterMap(ctx instance.Context, params *ParameterMap) (
 }
 
 // ParseIntermediateNestedParameterMap parses the given intermediate parameter map to a spec parameter map
-func ParseIntermediateNestedParameterMap(ctx instance.Context, params NestedParameterMap, path string) (*specs.Property, error) {
+func ParseIntermediateNestedParameterMap(ctx *broker.Context, params NestedParameterMap, path string) (*specs.Property, error) {
 	properties, _ := params.Properties.JustAttributes()
 	result := specs.Property{
 		Name:   params.Name,
@@ -416,7 +417,7 @@ func ParseIntermediateNestedParameterMap(ctx instance.Context, params NestedPara
 }
 
 // ParseIntermediateRepeatedParameterMap parses the given intermediate repeated parameter map to a spec repeated parameter map
-func ParseIntermediateRepeatedParameterMap(ctx instance.Context, params RepeatedParameterMap, path string) (*specs.Property, error) {
+func ParseIntermediateRepeatedParameterMap(ctx *broker.Context, params RepeatedParameterMap, path string) (*specs.Property, error) {
 	properties, _ := params.Properties.JustAttributes()
 	result := specs.Property{
 		Name:      params.Name,
@@ -458,7 +459,7 @@ func ParseIntermediateRepeatedParameterMap(ctx instance.Context, params Repeated
 }
 
 // ParseIntermediateHeader parses the given intermediate header to a spec header
-func ParseIntermediateHeader(ctx instance.Context, header *Header) (specs.Header, error) {
+func ParseIntermediateHeader(ctx *broker.Context, header *Header) (specs.Header, error) {
 	attributes, _ := header.Body.JustAttributes()
 	result := make(specs.Header, len(attributes))
 
@@ -496,7 +497,7 @@ func ParseIntermediateSpecOptions(options hcl.Body) specs.Options {
 }
 
 // ParseIntermediateParameters parses the given intermediate parameters
-func ParseIntermediateParameters(ctx instance.Context, options hcl.Body) (map[string]*specs.Property, error) {
+func ParseIntermediateParameters(ctx *broker.Context, options hcl.Body) (map[string]*specs.Property, error) {
 	if options == nil {
 		return map[string]*specs.Property{}, nil
 	}
@@ -517,7 +518,7 @@ func ParseIntermediateParameters(ctx instance.Context, options hcl.Body) (map[st
 }
 
 // ParseIntermediateNode parses the given intermediate call to a spec call
-func ParseIntermediateNode(ctx instance.Context, dependencies map[string]*specs.Node, node Resource) (*specs.Node, error) {
+func ParseIntermediateNode(ctx *broker.Context, dependencies map[string]*specs.Node, node Resource) (*specs.Node, error) {
 	call, err := ParseIntermediateCall(ctx, node.Request)
 	if err != nil {
 		return nil, err
@@ -568,7 +569,7 @@ func ParseIntermediateNode(ctx instance.Context, dependencies map[string]*specs.
 }
 
 // ParseIntermediateCall parses the given intermediate call to a spec call
-func ParseIntermediateCall(ctx instance.Context, call *Call) (*specs.Call, error) {
+func ParseIntermediateCall(ctx *broker.Context, call *Call) (*specs.Call, error) {
 	if call == nil {
 		return nil, nil
 	}
@@ -588,7 +589,7 @@ func ParseIntermediateCall(ctx instance.Context, call *Call) (*specs.Call, error
 }
 
 // ParseIntermediateCallParameterMap parses the given intermediate parameter map to a spec parameter map
-func ParseIntermediateCallParameterMap(ctx instance.Context, params *Call) (*specs.ParameterMap, error) {
+func ParseIntermediateCallParameterMap(ctx *broker.Context, params *Call) (*specs.ParameterMap, error) {
 	if params == nil {
 		return nil, nil
 	}
@@ -657,12 +658,12 @@ func ParseIntermediateCallParameterMap(ctx instance.Context, params *Call) (*spe
 }
 
 // ParseIntermediateProperty parses the given intermediate property to a spec property
-func ParseIntermediateProperty(ctx instance.Context, path string, property *hcl.Attribute) (*specs.Property, error) {
+func ParseIntermediateProperty(ctx *broker.Context, path string, property *hcl.Attribute) (*specs.Property, error) {
 	if property == nil {
 		return nil, nil
 	}
 
-	ctx.Logger(logger.Core).WithField("path", path).Debug("Parsing intermediate property to specs")
+	logger.Debug(ctx, "parsing intermediate property to specs", zap.String("path", path))
 
 	value, _ := property.Expr.Value(nil)
 	result := &specs.Property{
@@ -687,7 +688,7 @@ func ParseIntermediateProperty(ctx instance.Context, path string, property *hcl.
 }
 
 // ParseIntermediateBefore parses the given before into a collection of dependencies
-func ParseIntermediateBefore(ctx instance.Context, before *Before) (dependencies map[string]*specs.Node, references []Resources, resources []Resource) {
+func ParseIntermediateBefore(ctx *broker.Context, before *Before) (dependencies map[string]*specs.Node, references []Resources, resources []Resource) {
 	result := make(map[string]*specs.Node)
 
 	for _, resources := range before.References {
@@ -708,7 +709,7 @@ func ParseIntermediateBefore(ctx instance.Context, before *Before) (dependencies
 }
 
 // ParseIntermediateResources parses the given resources to nodes
-func ParseIntermediateResources(ctx instance.Context, dependencies map[string]*specs.Node, resources Resources) ([]*specs.Node, error) {
+func ParseIntermediateResources(ctx *broker.Context, dependencies map[string]*specs.Node, resources Resources) ([]*specs.Node, error) {
 	attrs, _ := resources.Properties.JustAttributes()
 	nodes := make([]*specs.Node, 0, len(attrs))
 
@@ -735,7 +736,7 @@ func ParseIntermediateResources(ctx instance.Context, dependencies map[string]*s
 }
 
 // ParseIntermediateCondition parses the given intermediate condition and returns the compiled nodes
-func ParseIntermediateCondition(ctx instance.Context, dependencies map[string]*specs.Node, condition Condition) ([]*specs.Node, error) {
+func ParseIntermediateCondition(ctx *broker.Context, dependencies map[string]*specs.Node, condition Condition) ([]*specs.Node, error) {
 	expr, err := conditions.NewEvaluableExpression(ctx, condition.Expression)
 	if err != nil {
 		return nil, err
@@ -784,7 +785,7 @@ func ParseIntermediateCondition(ctx instance.Context, dependencies map[string]*s
 }
 
 // ParseIntermediateOnError returns a specs on error
-func ParseIntermediateOnError(ctx instance.Context, onError *OnError) (*specs.OnError, error) {
+func ParseIntermediateOnError(ctx *broker.Context, onError *OnError) (*specs.OnError, error) {
 	properties, err := ParseIntermediateParameters(ctx, onError.Body)
 	if err != nil {
 		return nil, err

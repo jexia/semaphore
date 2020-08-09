@@ -3,8 +3,8 @@ package semaphore
 import (
 	"context"
 
+	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/core/api"
-	"github.com/jexia/semaphore/pkg/core/instance"
 	"github.com/jexia/semaphore/pkg/flow"
 	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/references"
@@ -22,7 +22,7 @@ func WithMiddleware(middleware api.Middleware) api.Option {
 func BeforeConstructor(wrapper api.BeforeConstructorHandler) api.Option {
 	return func(options *api.Options) {
 		if options.BeforeConstructor == nil {
-			options.BeforeConstructor = wrapper(func(instance.Context, functions.Collection, api.Options) error { return nil })
+			options.BeforeConstructor = wrapper(func(*broker.Context, functions.Collection, api.Options) error { return nil })
 			return
 		}
 
@@ -34,7 +34,7 @@ func BeforeConstructor(wrapper api.BeforeConstructorHandler) api.Option {
 func AfterConstructor(wrapper api.AfterConstructorHandler) api.Option {
 	return func(options *api.Options) {
 		if options.AfterConstructor == nil {
-			options.AfterConstructor = wrapper(func(instance.Context, specs.FlowListInterface, specs.EndpointList, specs.ServiceList, specs.Schemas) error {
+			options.AfterConstructor = wrapper(func(*broker.Context, specs.FlowListInterface, specs.EndpointList, specs.ServiceList, specs.Schemas) error {
 				return nil
 			})
 			return
