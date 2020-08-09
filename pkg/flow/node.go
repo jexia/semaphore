@@ -15,7 +15,7 @@ import (
 // The service called inside the call endpoint is retrieved from the services collection.
 // The call, codec and rollback are defined inside the node and used while processing requests.
 func NewNode(parent *broker.Context, node *specs.Node, condition *Condition, call, rollback Call, middleware *NodeMiddleware) *Node {
-	module := broker.WithModule(broker.Child(parent), "node", node.Name)
+	module := broker.WithModule(parent, "node", node.Name)
 	ctx := logger.WithLogger(module)
 
 	refs := references.References{}
