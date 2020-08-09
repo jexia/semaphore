@@ -4,8 +4,9 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/conditions"
-	"github.com/jexia/semaphore/pkg/core/instance"
 	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
@@ -68,7 +69,7 @@ func TestConditionEvaluation(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			ctx := instance.NewContext()
+			ctx := logger.WithLogger(broker.NewContext())
 			spec, err := conditions.NewEvaluableExpression(ctx, test.condition)
 			if err != nil {
 				t.Fatal(err)
@@ -124,7 +125,7 @@ func TestInvalidConditionEvaluation(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			ctx := instance.NewContext()
+			ctx := logger.WithLogger(broker.NewContext())
 			spec, err := conditions.NewEvaluableExpression(ctx, test.condition)
 			if err != nil {
 				t.Fatal(err)

@@ -3,7 +3,8 @@ package providers
 import (
 	"testing"
 
-	"github.com/jexia/semaphore/pkg/core/instance"
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/labels"
 	"github.com/jexia/semaphore/pkg/specs/types"
@@ -181,7 +182,7 @@ func TestDefineSchemas(t *testing.T) {
 
 	for name, flows := range tests {
 		t.Run(name, func(t *testing.T) {
-			ctx := instance.NewContext()
+			ctx := logger.WithLogger(broker.NewContext())
 			services := NewMockServices()
 			schemas := NewMockSchemas()
 
@@ -344,7 +345,7 @@ func TestDefineSchemasUnkown(t *testing.T) {
 
 	for name, flows := range tests {
 		t.Run(name, func(t *testing.T) {
-			ctx := instance.NewContext()
+			ctx := logger.WithLogger(broker.NewContext())
 			services := NewMockServices()
 			schemas := NewMockSchemas()
 
@@ -384,7 +385,7 @@ func TestUndefinedNestedSchemaProperty(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			ctx := instance.NewContext()
+			ctx := logger.WithLogger(broker.NewContext())
 			schemas := NewMockSchemas()
 
 			flow := &specs.Flow{
@@ -405,7 +406,7 @@ func TestSettingUndefinedNested(t *testing.T) {
 		Property: &specs.Property{},
 	}
 
-	ctx := instance.NewContext()
+	ctx := logger.WithLogger(broker.NewContext())
 	schemas := NewMockSchemas()
 
 	flow := &specs.Flow{

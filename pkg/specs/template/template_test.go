@@ -3,7 +3,8 @@ package template
 import (
 	"testing"
 
-	"github.com/jexia/semaphore/pkg/core/instance"
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/specs"
 )
 
@@ -137,7 +138,7 @@ func TestParseReferenceErr(t *testing.T) {
 
 	for _, input := range tests {
 		t.Run(input, func(t *testing.T) {
-			ctx := instance.NewContext()
+			ctx := logger.WithLogger(broker.NewContext())
 			_, err := Parse(ctx, path, name, input)
 			if err == nil {
 				t.Fatal("unexpected pass")
@@ -215,7 +216,7 @@ func TestParseTemplate(t *testing.T) {
 
 	for input, expected := range tests {
 		t.Run(input, func(t *testing.T) {
-			ctx := instance.NewContext()
+			ctx := logger.WithLogger(broker.NewContext())
 			property, err := Parse(ctx, expected.Path, name, input)
 			if err != nil {
 				t.Error(err)

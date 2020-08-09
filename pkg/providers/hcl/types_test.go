@@ -4,7 +4,8 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/jexia/semaphore/pkg/core/instance"
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/types"
 	"github.com/zclconf/go-cty/cty"
@@ -32,7 +33,7 @@ func TestSetDefaultValue(t *testing.T) {
 	}
 
 	for input, expected := range tests {
-		ctx := instance.NewContext()
+		ctx := logger.WithLogger(broker.NewContext())
 		property := specs.Property{}
 		SetDefaultValue(ctx, &property, input)
 

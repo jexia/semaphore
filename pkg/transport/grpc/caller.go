@@ -6,14 +6,14 @@ import (
 	"io/ioutil"
 	"sync"
 
-	"github.com/jexia/semaphore/pkg/core/instance"
-	"github.com/jexia/semaphore/pkg/core/logger"
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/core/trace"
 	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/transport"
-	"github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
@@ -26,7 +26,7 @@ var proxy = &grpc.StreamDesc{
 
 // NewCaller constructs a new HTTP caller
 func NewCaller() transport.NewCaller {
-	return func(ctx instance.Context) transport.Caller {
+	return func(ctx *broker.Context) transport.Caller {
 		return &Caller{
 			ctx: ctx,
 		}
@@ -35,7 +35,7 @@ func NewCaller() transport.NewCaller {
 
 // Caller represents the caller constructor
 type Caller struct {
-	ctx instance.Context
+	ctx *broker.Context
 }
 
 // Name returns the name of the given caller
@@ -45,12 +45,10 @@ func (caller *Caller) Name() string {
 
 // Dial constructs a new caller for the given host
 func (caller *Caller) Dial(service *specs.Service, functions functions.Custom, opts specs.Options) (transport.Call, error) {
-	logger := caller.ctx.Logger(logger.Transport)
+	module := broker.WithModule(caller.ctx, "caller", "grpc")
+	ctx := logger.WithFields(logger.WithLogger(module), zap.String("service", service.Name))
 
-	logger.WithFields(logrus.Fields{
-		"service": service.Name,
-		"host":    service.Host,
-	}).Info("Constructing new gRPC caller")
+	logger.Info(ctx, "constructing new gRPC caller", zap.String("host", service.Host))
 
 	options, err := ParseCallerOptions(opts)
 	if err != nil {
@@ -67,8 +65,7 @@ func (caller *Caller) Dial(service *specs.Service, functions functions.Custom, o
 	}
 
 	result := &Call{
-		ctx:     caller.ctx,
-		logger:  logger,
+		ctx:     ctx,
 		service: service.Name,
 		host:    service.Host,
 		methods: methods,
@@ -80,8 +77,7 @@ func (caller *Caller) Dial(service *specs.Service, functions functions.Custom, o
 
 // Call represents the HTTP caller implementation
 type Call struct {
-	ctx     instance.Context
-	logger  *logrus.Logger
+	ctx     *broker.Context
 	service string
 	host    string
 	methods map[string]*Method
@@ -190,7 +186,7 @@ func (call *Call) SendMsg(ctx context.Context, rw transport.ResponseWriter, pr *
 		defer rw.Close()
 		_, err = rw.Write(res.payload)
 		if err != nil {
-			call.ctx.Logger(logger.Core).Error(err)
+			logger.Error(call.ctx, "unable to write the response body", zap.Error(err))
 		}
 
 	}()
@@ -200,6 +196,6 @@ func (call *Call) SendMsg(ctx context.Context, rw transport.ResponseWriter, pr *
 
 // Close closes the given caller
 func (call *Call) Close() error {
-	call.logger.WithField("host", call.host).Info("Closing HTTP caller")
+	logger.Info(call.ctx, "closing gRPC caller")
 	return nil
 }

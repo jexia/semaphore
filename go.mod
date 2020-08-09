@@ -15,10 +15,10 @@ require (
 	github.com/micro/go-micro/v2 v2.3.0
 	github.com/mitchellh/go-wordwrap v1.0.0 // indirect
 	github.com/prometheus/client_golang v1.2.1
-	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/cobra v0.0.6
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/zclconf/go-cty v1.3.1
+	go.uber.org/zap v1.13.0
 	golang.org/x/net v0.0.0-20200319234117-63522dbf7eec // indirect
 	golang.org/x/sys v0.0.0-20200317113312-5766fd39f98d // indirect
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0 // indirect

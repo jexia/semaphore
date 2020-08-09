@@ -5,9 +5,9 @@ import (
 	"path/filepath"
 	"regexp"
 
-	"github.com/jexia/semaphore/pkg/core/instance"
-	"github.com/jexia/semaphore/pkg/core/logger"
-	"github.com/sirupsen/logrus"
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
+	"go.uber.org/zap"
 )
 
 // A FileInfo describes a file
@@ -24,21 +24,21 @@ func CleanPattern(path string) string {
 }
 
 // ResolvePath resolves the given path and returns the matching pattern files.
-func ResolvePath(ctx instance.Context, ignore []string, pattern string) (files []*FileInfo, _ error) {
+func ResolvePath(ctx *broker.Context, ignore []string, pattern string) (files []*FileInfo, _ error) {
 	resolved := map[string]struct{}{}
 	for _, path := range ignore {
 		resolved[path] = struct{}{}
 	}
 
-	ctx.Logger(logger.Core).WithField("dir", pattern).Debug("Resolve path")
+	logger.Debug(ctx, "resolve path", zap.String("pattern", pattern))
 
 	dir := filepath.Dir(CleanPattern(pattern))
 	return walk(ctx, dir, dir, resolved, pattern)
 }
 
-func walk(ctx instance.Context, absolute string, target string, resolved map[string]struct{}, pattern string) (files []*FileInfo, _ error) {
+func walk(ctx *broker.Context, absolute string, target string, resolved map[string]struct{}, pattern string) (files []*FileInfo, _ error) {
 	pattern = filepath.Clean(pattern)
-	ctx.Logger(logger.Core).WithField("dir", target).Debug("Resolve pattern")
+	logger.Debug(ctx, "resolve pattern", zap.String("dir", target))
 
 	err := filepath.Walk(target, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -49,10 +49,10 @@ func walk(ctx instance.Context, absolute string, target string, resolved map[str
 			path = filepath.Join(absolute, fname)
 		}
 
-		ctx.Logger(logger.Core).WithFields(logrus.Fields{
-			"path":    path,
-			"pattern": pattern,
-		}).Debug("Matching path")
+		logger.Debug(ctx, "matching path",
+			zap.String("path", path),
+			zap.String("pattern", pattern),
+		)
 
 		_, has := resolved[path]
 		if has {
@@ -94,7 +94,7 @@ func walk(ctx instance.Context, absolute string, target string, resolved map[str
 			return nil
 		}
 
-		ctx.Logger(logger.Core).WithField("path", path).Debug("File matched pattern")
+		logger.Debug(ctx, "file matched pattern", zap.String("path", path))
 
 		files = append(files, &FileInfo{
 			FileInfo: info,

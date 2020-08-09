@@ -1,16 +1,16 @@
 package providers
 
 import (
-	"github.com/jexia/semaphore/pkg/core/instance"
-	"github.com/jexia/semaphore/pkg/core/logger"
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/core/trace"
 	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 )
 
 // Resolve ensures that all schema properties are defined inside the given flows
-func Resolve(ctx instance.Context, services specs.ServiceList, schemas specs.Schemas, flows specs.FlowListInterface) (err error) {
-	ctx.Logger(logger.Core).Info("Defining manifest types")
+func Resolve(ctx *broker.Context, services specs.ServiceList, schemas specs.Schemas, flows specs.FlowListInterface) (err error) {
+	logger.Info(ctx, "defining manifest types")
 
 	for _, flow := range flows {
 		err := ResolveFlow(ctx, services, schemas, flow)
@@ -23,8 +23,9 @@ func Resolve(ctx instance.Context, services specs.ServiceList, schemas specs.Sch
 }
 
 // ResolveFlow ensures that all schema properties are defined inside the given flow
-func ResolveFlow(ctx instance.Context, services specs.ServiceList, schemas specs.Schemas, flow specs.FlowInterface) (err error) {
-	ctx.Logger(logger.Core).WithField("flow", flow.GetName()).Info("Defining flow types")
+func ResolveFlow(parent *broker.Context, services specs.ServiceList, schemas specs.Schemas, flow specs.FlowInterface) (err error) {
+	ctx := logger.WithFields(parent, zap.String("flow", flow.GetName()))
+	logger.Info(ctx, "defining flow types")
 
 	if flow.GetInput() != nil {
 		input := schemas.Get(flow.GetInput().Schema)
@@ -60,7 +61,7 @@ func ResolveFlow(ctx instance.Context, services specs.ServiceList, schemas specs
 }
 
 // ResolveNode ensures that all schema properties are defined inside the given node
-func ResolveNode(ctx instance.Context, services specs.ServiceList, schemas specs.Schemas, node *specs.Node, flow specs.FlowInterface) (err error) {
+func ResolveNode(ctx *broker.Context, services specs.ServiceList, schemas specs.Schemas, node *specs.Node, flow specs.FlowInterface) (err error) {
 	if node.Condition != nil {
 		err = ResolveParameterMap(ctx, schemas, node.Condition.Params, flow)
 		if err != nil {
@@ -93,7 +94,7 @@ func ResolveNode(ctx instance.Context, services specs.ServiceList, schemas specs
 }
 
 // DefineCall defineds the types for the specs call
-func DefineCall(ctx instance.Context, services specs.ServiceList, schemas specs.Schemas, node *specs.Node, call *specs.Call, flow specs.FlowInterface) (err error) {
+func DefineCall(ctx *broker.Context, services specs.ServiceList, schemas specs.Schemas, node *specs.Node, call *specs.Call, flow specs.FlowInterface) (err error) {
 	if call.Request != nil {
 		err = ResolveParameterMap(ctx, schemas, call.Request, flow)
 		if err != nil {
@@ -102,11 +103,11 @@ func DefineCall(ctx instance.Context, services specs.ServiceList, schemas specs.
 	}
 
 	if call.Method != "" {
-		ctx.Logger(logger.Core).WithFields(logrus.Fields{
-			"call":    node.ID,
-			"method":  call.Method,
-			"service": call.Service,
-		}).Info("Defining call types")
+		logger.Info(ctx, "defining call types",
+			zap.String("call", node.ID),
+			zap.String("method", call.Method),
+			zap.String("service", call.Service),
+		)
 
 		service := services.Get(call.Service)
 		if service == nil {
@@ -180,7 +181,7 @@ func ResolveProperty(property *specs.Property, schema *specs.Property, flow spec
 }
 
 // ResolveParameterMap ensures that all schema properties are defined inisde the given parameter map
-func ResolveParameterMap(ctx instance.Context, schemas specs.Schemas, params *specs.ParameterMap, flow specs.FlowInterface) (err error) {
+func ResolveParameterMap(ctx *broker.Context, schemas specs.Schemas, params *specs.ParameterMap, flow specs.FlowInterface) (err error) {
 	if params == nil || params.Schema == "" {
 		return nil
 	}
@@ -199,7 +200,7 @@ func ResolveParameterMap(ctx instance.Context, schemas specs.Schemas, params *sp
 }
 
 // ResolveOnError ensures that all schema properties are defined inside the given on error object
-func ResolveOnError(ctx instance.Context, schemas specs.Schemas, params *specs.OnError, flow specs.FlowInterface) (err error) {
+func ResolveOnError(ctx *broker.Context, schemas specs.Schemas, params *specs.OnError, flow specs.FlowInterface) (err error) {
 	if params.Response != nil {
 		err = ResolveParameterMap(ctx, schemas, params.Response, flow)
 		if err != nil {

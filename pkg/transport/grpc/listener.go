@@ -7,12 +7,13 @@ import (
 	"net"
 	"sync"
 
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/codec"
 	"github.com/jexia/semaphore/pkg/codec/proto"
-	"github.com/jexia/semaphore/pkg/core/instance"
-	"github.com/jexia/semaphore/pkg/core/logger"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/transport"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	rpcMeta "google.golang.org/grpc/metadata"
@@ -21,7 +22,10 @@ import (
 
 // NewListener constructs a new listener for the given addr
 func NewListener(addr string, opts specs.Options) transport.NewListener {
-	return func(ctx instance.Context) transport.Listener {
+	return func(parent *broker.Context) transport.Listener {
+		module := broker.WithModule(parent, "listener", "grpc")
+		ctx := logger.WithLogger(module)
+
 		return &Listener{
 			addr: addr,
 			ctx:  ctx,
@@ -32,7 +36,7 @@ func NewListener(addr string, opts specs.Options) transport.NewListener {
 // Listener represents a HTTP listener
 type Listener struct {
 	addr     string
-	ctx      instance.Context
+	ctx      *broker.Context
 	server   *grpc.Server
 	methods  map[string]*Method
 	services map[string]*Service
@@ -46,7 +50,7 @@ func (listener *Listener) Name() string {
 
 // Serve opens the HTTP listener and calls the given handler function on reach request
 func (listener *Listener) Serve() error {
-	listener.ctx.Logger(logger.Transport).WithField("addr", listener.addr).Info("Serving gRPC listener")
+	logger.Info(listener.ctx, "serving gRPC listener", zap.String("addr", listener.addr))
 
 	listener.server = grpc.NewServer(
 		grpc.CustomCodec(Codec()),
@@ -69,9 +73,8 @@ func (listener *Listener) Serve() error {
 }
 
 // Handle parses the given endpoints and constructs route handlers
-func (listener *Listener) Handle(ctx instance.Context, endpoints []*transport.Endpoint, codecs map[string]codec.Constructor) error {
-	logger := listener.ctx.Logger(logger.Transport)
-	logger.Info("gRPC listener received new endpoints")
+func (listener *Listener) Handle(ctx *broker.Context, endpoints []*transport.Endpoint, codecs map[string]codec.Constructor) error {
+	logger.Info(listener.ctx, "gRPC listener received new endpoints")
 
 	constructor := proto.NewConstructor()
 	methods := make(map[string]*Method, len(endpoints))
@@ -180,7 +183,7 @@ func (listener *Listener) handler(srv interface{}, stream grpc.ServerStream) err
 	if err != nil {
 		object := method.Endpoint.Errs.Get(transport.Unwrap(err))
 		if object == nil {
-			listener.ctx.Logger(logger.Transport).Error("Unable to lookup error manager")
+			logger.Error(listener.ctx, "unable to lookup error manager", zap.Error(err))
 			return grpc.Errorf(codes.Internal, err.Error())
 		}
 
@@ -219,7 +222,7 @@ func (listener *Listener) handler(srv interface{}, stream grpc.ServerStream) err
 
 // Close closes the given listener
 func (listener *Listener) Close() error {
-	listener.ctx.Logger(logger.Transport).Info("Closing gRPC listener")
+	logger.Info(listener.ctx, "closing gRPC listener")
 	listener.server.GracefulStop()
 	return nil
 }

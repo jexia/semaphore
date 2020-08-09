@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/codec/json"
-	"github.com/jexia/semaphore/pkg/core/instance"
-	"github.com/jexia/semaphore/pkg/core/logger"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/labels"
@@ -16,12 +16,10 @@ import (
 )
 
 func NewMockNode(name string, caller Call, rollback Call) *Node {
-	ctx := instance.NewContext()
-	logger := ctx.Logger(logger.Flow)
+	ctx := logger.WithLogger(broker.NewContext())
 
 	return &Node{
 		ctx:        ctx,
-		logger:     logger,
 		Name:       name,
 		Call:       caller,
 		Revert:     rollback,
@@ -71,7 +69,7 @@ func NewMockOnError() *specs.OnError {
 }
 
 func BenchmarkSingleNodeCallingJSONCodecParallel(b *testing.B) {
-	ctx := instance.NewContext()
+	ctx := logger.WithLogger(broker.NewContext())
 	constructor := json.NewConstructor()
 
 	req, err := constructor.New("first.request", &specs.ParameterMap{
@@ -138,7 +136,7 @@ func BenchmarkSingleNodeCallingJSONCodecParallel(b *testing.B) {
 }
 
 func BenchmarkSingleNodeCallingJSONCodecSerial(b *testing.B) {
-	ctx := instance.NewContext()
+	ctx := logger.WithLogger(broker.NewContext())
 	constructor := json.NewConstructor()
 
 	req, err := constructor.New("first.request", &specs.ParameterMap{
@@ -409,7 +407,7 @@ func TestConstructingNode(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			ctx := instance.NewContext()
+			ctx := logger.WithLogger(broker.NewContext())
 			result := NewNode(ctx, test.Node, nil, test.Call, test.Rollback, nil)
 
 			if len(result.References) != test.Expected {
@@ -420,7 +418,7 @@ func TestConstructingNode(t *testing.T) {
 }
 
 func TestConstructingNodeReferences(t *testing.T) {
-	ctx := instance.NewContext()
+	ctx := logger.WithLogger(broker.NewContext())
 	call := &caller{}
 	rollback := &caller{}
 

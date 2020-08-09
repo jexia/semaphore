@@ -4,11 +4,11 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/jexia/semaphore/pkg/core/instance"
-	"github.com/jexia/semaphore/pkg/core/logger"
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/core/trace"
 	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 )
 
 var (
@@ -125,21 +125,21 @@ func ParseContent(path string, name string, content string) (*specs.Property, er
 }
 
 // Parse parses the given value template and sets the resource and path
-func Parse(ctx instance.Context, path string, name string, value string) (*specs.Property, error) {
+func Parse(ctx *broker.Context, path string, name string, value string) (*specs.Property, error) {
 	content := GetTemplateContent(value)
-	ctx.Logger(logger.Core).WithField("path", path).WithField("template", content).Debug("Parsing property template")
+	logger.Debug(ctx, "parsing property template", zap.String("path", path), zap.String("template", content))
 
 	result, err := ParseContent(path, name, content)
 	if err != nil {
 		return nil, err
 	}
 
-	ctx.Logger(logger.Core).WithFields(logrus.Fields{
-		"path":      path,
-		"type":      result.Type,
-		"default":   result.Default,
-		"reference": result.Reference,
-	}).Debug("Template results in property with type")
+	logger.Debug(ctx, "template results in property with type",
+		zap.String("path", path),
+		zap.String("type", string(result.Type)),
+		zap.Any("default", result.Default),
+		zap.String("reference", result.Reference.String()),
+	)
 
 	return result, nil
 }

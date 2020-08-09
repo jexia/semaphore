@@ -1,13 +1,13 @@
 package functions
 
 import (
-	"github.com/jexia/semaphore/pkg/core/instance"
+	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 )
 
 // DefineFunctions defined all properties within the given functions
-func DefineFunctions(ctx instance.Context, functions Stack, node *specs.Node, flow specs.FlowInterface) error {
+func DefineFunctions(ctx *broker.Context, functions Stack, node *specs.Node, flow specs.FlowInterface) error {
 	if functions == nil {
 		return nil
 	}

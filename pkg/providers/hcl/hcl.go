@@ -10,20 +10,20 @@ import (
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/gohcl"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
-	"github.com/jexia/semaphore/pkg/core/instance"
-	"github.com/jexia/semaphore/pkg/core/logger"
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/core/trace"
 	"github.com/jexia/semaphore/pkg/providers"
 	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 )
 
 // ServicesResolver constructs a schema resolver for the given path.
 // The HCL schema resolver relies on other schema registries.
 // Those need to be resolved before the HCL schemas are resolved.
 func ServicesResolver(path string) providers.ServicesResolver {
-	return func(ctx instance.Context) (specs.ServiceList, error) {
-		ctx.Logger(logger.Core).WithField("path", path).Debug("Resolving HCL services")
+	return func(ctx *broker.Context) (specs.ServiceList, error) {
+		logger.Debug(ctx, "resolving HCL services", zap.String("path", path))
 
 		definitions, err := ResolvePath(ctx, []string{}, path)
 		if err != nil {
@@ -47,8 +47,8 @@ func ServicesResolver(path string) providers.ServicesResolver {
 
 // FlowsResolver constructs a resource resolver for the given path
 func FlowsResolver(path string) providers.FlowsResolver {
-	return func(ctx instance.Context) (specs.FlowListInterface, error) {
-		ctx.Logger(logger.Core).WithField("path", path).Debug("Resolving HCL flows")
+	return func(ctx *broker.Context) (specs.FlowListInterface, error) {
+		logger.Debug(ctx, "resolving HCL flows", zap.String("path", path))
 
 		definitions, err := ResolvePath(ctx, []string{}, path)
 		if err != nil {
@@ -79,8 +79,8 @@ func FlowsResolver(path string) providers.FlowsResolver {
 
 // EndpointsResolver constructs a resource resolver for the given path
 func EndpointsResolver(path string) providers.EndpointsResolver {
-	return func(ctx instance.Context) (specs.EndpointList, error) {
-		ctx.Logger(logger.Core).WithField("path", path).Debug("Resolving HCL endpoints")
+	return func(ctx *broker.Context) (specs.EndpointList, error) {
+		logger.Debug(ctx, "resolving HCL endpoints", zap.String("path", path))
 
 		definitions, err := ResolvePath(ctx, []string{}, path)
 		if err != nil {
@@ -103,7 +103,7 @@ func EndpointsResolver(path string) providers.EndpointsResolver {
 }
 
 // GetOptions returns the defined options inside the given path
-func GetOptions(ctx instance.Context, path string) (*Options, error) {
+func GetOptions(ctx *broker.Context, path string) (*Options, error) {
 	definitions, err := ResolvePath(ctx, []string{}, path)
 	if err != nil {
 		return nil, err
@@ -149,8 +149,8 @@ type Resolve struct {
 
 // ResolvePath resolves the given path and returns the available manifests.
 // All defined includes are followed and their manifests are included
-func ResolvePath(ctx instance.Context, ignore []string, path string) ([]Manifest, error) {
-	ctx.Logger(logger.Core).WithField("path", path).Info("Resolving HCL path")
+func ResolvePath(ctx *broker.Context, ignore []string, path string) ([]Manifest, error) {
+	logger.Debug(ctx, "resolving HCL path", zap.String("path", path))
 
 	manifests := make([]Manifest, 0)
 	if path == "" {
@@ -168,13 +168,10 @@ func ResolvePath(ctx instance.Context, ignore []string, path string) ([]Manifest
 		return nil, trace.New(trace.WithMessage("unable to resolve path, no files found '%s'", path))
 	}
 
-	ctx.Logger(logger.Core).WithFields(logrus.Fields{
-		"path":  path,
-		"files": len(files),
-	}).Debug("Files found after resolving path")
+	logger.Debug(ctx, "files found", zap.String("path", path), zap.Int("files", len(files)))
 
 	for _, file := range files {
-		ctx.Logger(logger.Core).WithField("path", file.Path).Debug("Resolving file")
+		logger.Debug(ctx, "resolving file", zap.String("path", file.Path))
 
 		reader, err := os.Open(file.Path)
 		if err != nil {
@@ -205,7 +202,7 @@ func ResolvePath(ctx instance.Context, ignore []string, path string) ([]Manifest
 				path = filepath.Join(filepath.Dir(file.Path), include)
 			}
 
-			ctx.Logger(logger.Core).WithField("path", path).Info("Including HCL file")
+			logger.Info(ctx, "including HCL file", zap.String("path", path))
 			results, err := ResolvePath(ctx, ignore, path)
 			if err != nil {
 				return nil, trace.New(trace.WithMessage("unable to read include %s: %s", include, err))
@@ -215,25 +212,22 @@ func ResolvePath(ctx instance.Context, ignore []string, path string) ([]Manifest
 		}
 	}
 
-	ctx.Logger(logger.Core).WithFields(logrus.Fields{
-		"path":      path,
-		"manifests": len(files),
-	}).Debug("Resolve path result")
-
+	logger.Debug(ctx, "resolve path result", zap.String("path", path), zap.Int("manifests", len(files)))
 	return manifests, nil
 }
 
 // UnmarshalHCL unmarshals the given HCL stream into a intermediate resource.
 // All environment variables found inside the given file are replaced.
-func UnmarshalHCL(ctx instance.Context, filename string, reader io.Reader) (manifest Manifest, _ error) {
-	ctx.Logger(logger.Core).WithField("file", filename).Info("Reading HCL files")
+func UnmarshalHCL(parent *broker.Context, filename string, reader io.Reader) (manifest Manifest, _ error) {
+	ctx := logger.WithFields(parent, zap.String("file", filename))
+	logger.Info(ctx, "reading HCL files")
 
 	bb, err := ioutil.ReadAll(reader)
 	if err != nil {
 		return manifest, err
 	}
 
-	ctx.Logger(logger.Core).WithField("file", filename).Debug("Parsing HCL syntax")
+	logger.Info(ctx, "parsing HCL syntax")
 
 	// replace all environment variables found inside the given file
 	bb = []byte(os.ExpandEnv(string(bb)))
@@ -243,7 +237,7 @@ func UnmarshalHCL(ctx instance.Context, filename string, reader io.Reader) (mani
 		return manifest, errors.New(diags.Error())
 	}
 
-	ctx.Logger(logger.Core).WithField("file", filename).Debug("Decoding HCL syntax")
+	logger.Debug(ctx, "decoding HCL syntax")
 
 	diags = gohcl.DecodeBody(file.Body, nil, &manifest)
 	if diags.HasErrors() {

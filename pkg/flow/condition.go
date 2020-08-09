@@ -1,11 +1,12 @@
 package flow
 
 import (
-	"github.com/jexia/semaphore/pkg/core/instance"
-	"github.com/jexia/semaphore/pkg/core/logger"
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
+	"go.uber.org/zap"
 )
 
 // NewCondition constructs a new condition of the given functions stack and specs condition
@@ -23,7 +24,7 @@ type Condition struct {
 }
 
 // Eval evaluates the given condition with the given reference store
-func (condition *Condition) Eval(ctx instance.Context, store references.Store) (bool, error) {
+func (condition *Condition) Eval(ctx *broker.Context, store references.Store) (bool, error) {
 	err := ExecuteFunctions(condition.stack, store)
 	if err != nil {
 		return false, err
@@ -43,7 +44,8 @@ func (condition *Condition) Eval(ctx instance.Context, store references.Store) (
 		parameters[key] = value
 	}
 
-	ctx.Logger(logger.Flow).WithField("parameters", parameters).Debug("Evaluating comparison")
+	logger.Debug(ctx, "evaluating comparison", zap.Any("parameters", parameters))
+
 	result, err := condition.condition.Expression.Evaluate(parameters)
 	if err != nil {
 		return false, err

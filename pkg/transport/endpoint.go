@@ -1,9 +1,9 @@
 package transport
 
 import (
+	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/codec"
 	"github.com/jexia/semaphore/pkg/codec/metadata"
-	"github.com/jexia/semaphore/pkg/core/instance"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/template"
@@ -88,7 +88,7 @@ func (object *Object) ResolveMessage(store references.Store) string {
 }
 
 // NewMeta updates the current object metadata manager
-func (object *Object) NewMeta(ctx instance.Context, resource string) {
+func (object *Object) NewMeta(ctx *broker.Context, resource string) {
 	if object == nil || object.Definition == nil {
 		return
 	}
@@ -98,7 +98,7 @@ func (object *Object) NewMeta(ctx instance.Context, resource string) {
 
 // NewCodec updates the given object to use the given codec.
 // Errors returned while constructing a new codec manager are returned.
-func (object *Object) NewCodec(ctx instance.Context, resource string, codec codec.Constructor) error {
+func (object *Object) NewCodec(ctx *broker.Context, resource string, codec codec.Constructor) error {
 	if object == nil || object.Definition == nil || codec == nil {
 		return nil
 	}
@@ -141,7 +141,7 @@ type Forward struct {
 }
 
 // NewMeta updates the current object metadata manager
-func (forward *Forward) NewMeta(ctx instance.Context, resource string) {
+func (forward *Forward) NewMeta(ctx *broker.Context, resource string) {
 	if forward == nil || forward.Schema == nil {
 		return
 	}
@@ -162,7 +162,7 @@ type Endpoint struct {
 
 // NewCodec updates the endpoint request and response codecs and metadata managers.
 // If a forwarding service is set is the request codec ignored.
-func (endpoint *Endpoint) NewCodec(ctx instance.Context, codec codec.Constructor) (err error) {
+func (endpoint *Endpoint) NewCodec(ctx *broker.Context, codec codec.Constructor) (err error) {
 	endpoint.Request.NewMeta(ctx, template.InputResource)
 
 	if endpoint.Forward == nil {

@@ -4,16 +4,17 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/jexia/semaphore/pkg/core/instance"
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/specs"
 )
 
 func TestFlowResolvers(t *testing.T) {
-	resolver := func(instance.Context) (specs.FlowListInterface, error) {
+	resolver := func(*broker.Context) (specs.FlowListInterface, error) {
 		return specs.FlowListInterface{&specs.Flow{}}, nil
 	}
 
-	ctx := instance.NewContext()
+	ctx := logger.WithLogger(broker.NewContext())
 
 	resolvers := FlowsResolvers{resolver}
 	flows, err := resolvers.Resolve(ctx)
@@ -28,11 +29,11 @@ func TestFlowResolvers(t *testing.T) {
 
 func TestFlowResolversErr(t *testing.T) {
 	expected := errors.New("mock")
-	resolver := func(instance.Context) (specs.FlowListInterface, error) {
+	resolver := func(*broker.Context) (specs.FlowListInterface, error) {
 		return nil, expected
 	}
 
-	ctx := instance.NewContext()
+	ctx := logger.WithLogger(broker.NewContext())
 
 	resolvers := FlowsResolvers{resolver}
 	_, err := resolvers.Resolve(ctx)
@@ -46,7 +47,7 @@ func TestFlowResolversErr(t *testing.T) {
 }
 
 func TestNilFlowResolvers(t *testing.T) {
-	ctx := instance.NewContext()
+	ctx := logger.WithLogger(broker.NewContext())
 	resolvers := FlowsResolvers{nil}
 	_, err := resolvers.Resolve(ctx)
 	if err != nil {
@@ -55,11 +56,11 @@ func TestNilFlowResolvers(t *testing.T) {
 }
 
 func TestServiceResolvers(t *testing.T) {
-	resolver := func(instance.Context) (specs.ServiceList, error) {
+	resolver := func(*broker.Context) (specs.ServiceList, error) {
 		return specs.ServiceList{&specs.Service{}}, nil
 	}
 
-	ctx := instance.NewContext()
+	ctx := logger.WithLogger(broker.NewContext())
 
 	resolvers := ServiceResolvers{resolver}
 	services, err := resolvers.Resolve(ctx)
@@ -74,11 +75,11 @@ func TestServiceResolvers(t *testing.T) {
 
 func TestServiceResolversErr(t *testing.T) {
 	expected := errors.New("mock")
-	resolver := func(instance.Context) (specs.ServiceList, error) {
+	resolver := func(*broker.Context) (specs.ServiceList, error) {
 		return nil, expected
 	}
 
-	ctx := instance.NewContext()
+	ctx := logger.WithLogger(broker.NewContext())
 
 	resolvers := ServiceResolvers{resolver}
 	_, err := resolvers.Resolve(ctx)
@@ -92,7 +93,7 @@ func TestServiceResolversErr(t *testing.T) {
 }
 
 func TestNilServiceResolvers(t *testing.T) {
-	ctx := instance.NewContext()
+	ctx := logger.WithLogger(broker.NewContext())
 	resolvers := ServiceResolvers{nil}
 	_, err := resolvers.Resolve(ctx)
 	if err != nil {
@@ -101,11 +102,11 @@ func TestNilServiceResolvers(t *testing.T) {
 }
 
 func TestSchemaResolvers(t *testing.T) {
-	resolver := func(instance.Context) (specs.Schemas, error) {
+	resolver := func(*broker.Context) (specs.Schemas, error) {
 		return specs.Schemas{"mock": &specs.Property{}}, nil
 	}
 
-	ctx := instance.NewContext()
+	ctx := logger.WithLogger(broker.NewContext())
 
 	resolvers := SchemaResolvers{resolver}
 	schemas, err := resolvers.Resolve(ctx)
@@ -120,11 +121,11 @@ func TestSchemaResolvers(t *testing.T) {
 
 func TestSchemaResolversErr(t *testing.T) {
 	expected := errors.New("mock")
-	resolver := func(instance.Context) (specs.Schemas, error) {
+	resolver := func(*broker.Context) (specs.Schemas, error) {
 		return nil, expected
 	}
 
-	ctx := instance.NewContext()
+	ctx := logger.WithLogger(broker.NewContext())
 
 	resolvers := SchemaResolvers{resolver}
 	_, err := resolvers.Resolve(ctx)
@@ -138,7 +139,7 @@ func TestSchemaResolversErr(t *testing.T) {
 }
 
 func TestNilSchemaResolvers(t *testing.T) {
-	ctx := instance.NewContext()
+	ctx := logger.WithLogger(broker.NewContext())
 	resolvers := SchemaResolvers{nil}
 	_, err := resolvers.Resolve(ctx)
 	if err != nil {
@@ -147,11 +148,11 @@ func TestNilSchemaResolvers(t *testing.T) {
 }
 
 func TestEndpointResolvers(t *testing.T) {
-	resolver := func(instance.Context) (specs.EndpointList, error) {
+	resolver := func(*broker.Context) (specs.EndpointList, error) {
 		return specs.EndpointList{&specs.Endpoint{}}, nil
 	}
 
-	ctx := instance.NewContext()
+	ctx := logger.WithLogger(broker.NewContext())
 
 	resolvers := EndpointResolvers{resolver}
 	endpoints, err := resolvers.Resolve(ctx)
@@ -166,11 +167,11 @@ func TestEndpointResolvers(t *testing.T) {
 
 func TestEndpointResolversErr(t *testing.T) {
 	expected := errors.New("mock")
-	resolver := func(instance.Context) (specs.EndpointList, error) {
+	resolver := func(*broker.Context) (specs.EndpointList, error) {
 		return nil, expected
 	}
 
-	ctx := instance.NewContext()
+	ctx := logger.WithLogger(broker.NewContext())
 
 	resolvers := EndpointResolvers{resolver}
 	_, err := resolvers.Resolve(ctx)
@@ -184,7 +185,7 @@ func TestEndpointResolversErr(t *testing.T) {
 }
 
 func TestNilEndpointResolvers(t *testing.T) {
-	ctx := instance.NewContext()
+	ctx := logger.WithLogger(broker.NewContext())
 	resolvers := EndpointResolvers{nil}
 	_, err := resolvers.Resolve(ctx)
 	if err != nil {

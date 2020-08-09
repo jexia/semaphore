@@ -3,7 +3,8 @@ package dependencies
 import (
 	"testing"
 
-	"github.com/jexia/semaphore/pkg/core/instance"
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/specs"
 )
 
@@ -137,7 +138,7 @@ func TestResolveManifestDependencies(t *testing.T) {
 		},
 	}
 
-	ctx := instance.NewContext()
+	ctx := logger.WithLogger(broker.NewContext())
 	err := ResolveFlows(ctx, flows)
 	if err != nil {
 		t.Fatalf("unexpected error %s", err)

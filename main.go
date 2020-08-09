@@ -3,19 +3,20 @@ package semaphore
 import (
 	"sync"
 
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/core"
 	"github.com/jexia/semaphore/pkg/core/api"
-	"github.com/jexia/semaphore/pkg/core/instance"
-	"github.com/jexia/semaphore/pkg/core/logger"
 	"github.com/jexia/semaphore/pkg/core/trace"
 	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/transport"
+	"go.uber.org/zap"
 )
 
 // Client represents a semaphore instance
 type Client struct {
-	Ctx          instance.Context
+	Ctx          *broker.Context
 	transporters []*transport.Endpoint
 	listeners    []transport.Listener
 	flows        specs.FlowListInterface
@@ -36,7 +37,7 @@ func (client *Client) Serve() (result error) {
 	wg.Add(len(client.listeners))
 
 	for _, listener := range client.listeners {
-		client.Ctx.Logger(logger.Core).WithField("listener", listener.Name()).Info("serving listener")
+		logger.Info(client.Ctx, "serving listener", zap.String("listener", listener.Name()))
 
 		go func(listener transport.Listener) {
 			defer wg.Done()
@@ -53,7 +54,7 @@ func (client *Client) Serve() (result error) {
 
 // Handle updates the flows with the given specs collection.
 // The given functions collection is used to execute functions on runtime.
-func (client *Client) Handle(ctx instance.Context, options api.Options) error {
+func (client *Client) Handle(ctx *broker.Context, options api.Options) error {
 	client.mutex.Lock()
 	defer client.mutex.Unlock()
 
@@ -114,7 +115,7 @@ func (client *Client) Close() {
 
 // New constructs a new Semaphore instance
 func New(opts ...api.Option) (*Client, error) {
-	ctx := instance.NewContext()
+	ctx := logger.WithLogger(broker.NewContext())
 	options, err := NewOptions(ctx, opts...)
 	if err != nil {
 		return nil, err

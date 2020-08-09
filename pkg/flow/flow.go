@@ -4,13 +4,13 @@ import (
 	"context"
 	"sync"
 
-	"github.com/jexia/semaphore/pkg/core/instance"
-	"github.com/jexia/semaphore/pkg/core/logger"
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/transport"
-	"github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 )
 
 // Call represents a transport caller implementation
@@ -22,7 +22,10 @@ type Call interface {
 // NewManager constructs a new manager for the given flow.
 // Branches are constructed for the constructed nodes to optimalise performance.
 // Various variables such as the amount of nodes, references and loose ends are collected to optimalise allocations during runtime.
-func NewManager(ctx instance.Context, name string, nodes []*Node, err specs.ErrorHandle, after functions.Stack, middleware *ManagerMiddleware) *Manager {
+func NewManager(parent *broker.Context, name string, nodes []*Node, err specs.ErrorHandle, after functions.Stack, middleware *ManagerMiddleware) *Manager {
+	module := broker.WithModule(broker.Child(parent), "flow", name)
+	ctx := logger.WithLogger(module)
+
 	ConstructBranches(nodes)
 
 	if middleware == nil {
@@ -78,7 +81,7 @@ type AfterManagerHandler func(AfterManager) AfterManager
 type Manager struct {
 	BeforeDo       BeforeManager
 	BeforeRollback BeforeManager
-	ctx            instance.Context
+	ctx            *broker.Context
 	Name           string
 	Starting       []*Node
 	References     int
@@ -133,7 +136,7 @@ func (manager *Manager) Do(ctx context.Context, refs references.Store) error {
 	manager.wg.Add(1)
 	defer manager.wg.Done()
 
-	manager.ctx.Logger(logger.Flow).WithField("flow", manager.Name).Debug("Executing flow")
+	logger.Debug(manager.ctx, "executing flow")
 
 	processes := NewProcesses(len(manager.Starting))
 	tracker := NewTracker(manager.Name, len(manager.Nodes))
@@ -144,7 +147,7 @@ func (manager *Manager) Do(ctx context.Context, refs references.Store) error {
 
 	processes.Wait()
 
-	manager.ctx.Logger(logger.Flow).WithField("flow", manager.Name).Debug("Processes completed")
+	logger.Debug(manager.ctx, "processes completed")
 
 	if manager.AfterFunctions != nil && processes.Err() == nil {
 		err := ExecuteFunctions(manager.AfterFunctions, refs)
@@ -154,17 +157,14 @@ func (manager *Manager) Do(ctx context.Context, refs references.Store) error {
 	}
 
 	if processes.Err() != nil {
-		manager.ctx.Logger(logger.Flow).WithFields(logrus.Fields{
-			"flow": manager.Name,
-			"err":  processes.Err(),
-		}).Error("An error occurred, executing rollback")
+		logger.Error(manager.ctx, "an error occurred, executing rollback", zap.Error(processes.Err()))
 
 		manager.wg.Add(1)
 		go manager.Revert(tracker, refs)
 		return processes.Err()
 	}
 
-	manager.ctx.Logger(logger.Flow).WithField("flow", manager.Name).Debug("Flow completed")
+	logger.Debug(manager.ctx, "flow completed")
 
 	if manager.AfterDo != nil {
 		_, err := manager.AfterDo(ctx, manager, refs)
@@ -187,7 +187,7 @@ func (manager *Manager) Revert(executed *Tracker, refs references.Store) {
 	if manager.BeforeRollback != nil {
 		ctx, err = manager.BeforeRollback(ctx, manager, refs)
 		if err != nil {
-			manager.ctx.Logger(logger.Flow).Error("Revert failed before rollback returned a error: ", err)
+			logger.Error(manager.ctx, "revert failed before rollback returned a error", zap.Error(err))
 			return
 		}
 	}
@@ -215,7 +215,7 @@ func (manager *Manager) Revert(executed *Tracker, refs references.Store) {
 	if manager.AfterRollback != nil {
 		_, err = manager.AfterRollback(ctx, manager, refs)
 		if err != nil {
-			manager.ctx.Logger(logger.Flow).Error("Revert failed after rollback returned a error: ", err)
+			logger.Error(manager.ctx, "revert failed after rollback returned a error", zap.Error(err))
 			return
 		}
 	}
@@ -223,6 +223,6 @@ func (manager *Manager) Revert(executed *Tracker, refs references.Store) {
 
 // Wait awaits till all calls and rollbacks are completed
 func (manager *Manager) Wait() {
-	manager.ctx.Logger(logger.Flow).WithField("flow", manager.Name).Info("Awaiting till all processes are completed")
+	logger.Info(manager.ctx, "awaiting till all processes are completed")
 	manager.wg.Wait()
 }

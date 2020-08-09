@@ -7,20 +7,20 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/jexia/semaphore/pkg/core/instance"
-	"github.com/jexia/semaphore/pkg/core/logger"
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/core/trace"
 	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/types"
 	"github.com/jexia/semaphore/pkg/transport"
-	"github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 )
 
 // NewCaller constructs a new HTTP caller
 func NewCaller() transport.NewCaller {
-	return func(ctx instance.Context) transport.Caller {
+	return func(ctx *broker.Context) transport.Caller {
 		return &Caller{
 			ctx: ctx,
 		}
@@ -29,7 +29,7 @@ func NewCaller() transport.NewCaller {
 
 // Caller represents the caller constructor
 type Caller struct {
-	ctx instance.Context
+	ctx *broker.Context
 }
 
 // Name returns the name of the given caller
@@ -39,11 +39,10 @@ func (caller *Caller) Name() string {
 
 // Dial constructs a new caller for the given host
 func (caller *Caller) Dial(service *specs.Service, functions functions.Custom, opts specs.Options) (transport.Call, error) {
-	logger := caller.ctx.Logger(logger.Transport)
-	logger.WithFields(logrus.Fields{
-		"service": service.Name,
-		"host":    service.Host,
-	}).Info("Constructing new HTTP caller")
+	module := broker.WithModule(caller.ctx, "caller", "http")
+	ctx := logger.WithFields(logger.WithLogger(module), zap.String("service", service.Name))
+
+	logger.Info(ctx, "constructing new HTTP caller", zap.String("host", service.Host))
 
 	options, err := ParseCallerOptions(opts)
 	if err != nil {
@@ -73,7 +72,6 @@ func (caller *Caller) Dial(service *specs.Service, functions functions.Custom, o
 
 	result := &Call{
 		ctx:     caller.ctx,
-		logger:  logger,
 		service: service.Name,
 		host:    service.Host,
 		proxy:   NewProxy(options),
@@ -107,8 +105,7 @@ func (method *Method) References() []*specs.Property {
 
 // Call represents the HTTP caller implementation
 type Call struct {
-	ctx     instance.Context
-	logger  *logrus.Logger
+	ctx     *broker.Context
 	service string
 	host    string
 	methods map[string]*Method
@@ -159,11 +156,10 @@ func (call *Call) SendMsg(ctx context.Context, rw transport.ResponseWriter, pr *
 		request = method.request
 	}
 
-	call.logger.WithFields(logrus.Fields{
-		"url":     url,
-		"service": call.service,
-		"method":  request,
-	}).Debug("Calling HTTP caller")
+	logger.Debug(call.ctx, "calling HTTP caller",
+		zap.String("url", url.String()),
+		zap.String("method", request),
+	)
 
 	req, err := http.NewRequestWithContext(ctx, request, url.String(), pr.Body)
 	if err != nil {
@@ -190,7 +186,7 @@ func (call *Call) SendMsg(ctx context.Context, rw transport.ResponseWriter, pr *
 
 // Close closes the given caller
 func (call *Call) Close() error {
-	call.logger.WithField("host", call.host).Info("Closing HTTP caller")
+	logger.Info(call.ctx, "closing HTTP caller", zap.String("host", call.host))
 	return nil
 }
 

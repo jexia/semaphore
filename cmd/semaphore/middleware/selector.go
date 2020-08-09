@@ -3,20 +3,20 @@ package middleware
 import (
 	"path/filepath"
 
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/core/api"
-	"github.com/jexia/semaphore/pkg/core/instance"
-	"github.com/jexia/semaphore/pkg/core/logger"
 	"github.com/jexia/semaphore/pkg/providers/hcl"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/template"
-	"github.com/sirupsen/logrus"
 	"github.com/zclconf/go-cty/cty"
+	"go.uber.org/zap"
 )
 
 // ServiceSelector parses the HCL definition on the given path and manipulates the collected services after constructed
 func ServiceSelector(path string) api.AfterConstructorHandler {
 	return func(next api.AfterConstructor) api.AfterConstructor {
-		return func(ctx instance.Context, flows specs.FlowListInterface, endpoints specs.EndpointList, services specs.ServiceList, schemas specs.Schemas) error {
+		return func(ctx *broker.Context, flows specs.FlowListInterface, endpoints specs.EndpointList, services specs.ServiceList, schemas specs.Schemas) error {
 			definitions, err := hcl.ResolvePath(ctx, []string{}, path)
 			if err != nil {
 				return err
@@ -32,23 +32,23 @@ func ServiceSelector(path string) api.AfterConstructorHandler {
 								return err
 							}
 
-							ctx.Logger(logger.Core).WithFields(logrus.Fields{
-								"pattern": selector.Pattern,
-								"service": name,
-								"matched": matched,
-							}).Debug("pattern matching service")
+							logger.Debug(ctx, "pattern matching service",
+								zap.String("pattern", selector.Pattern),
+								zap.String("service", name),
+								zap.Bool("matched", matched),
+							)
 
 							if !matched {
 								continue
 							}
 
-							ctx.Logger(logger.Core).WithFields(logrus.Fields{
-								"host":      selector.Host,
-								"selector":  selector.Pattern,
-								"codec":     selector.Codec,
-								"transport": selector.Transport,
-								"service":   name,
-							}).Info("overriding service configuration")
+							logger.Info(ctx, "overriding service configuration",
+								zap.String("host", selector.Host),
+								zap.String("pattern", selector.Pattern),
+								zap.String("codec", selector.Codec),
+								zap.String("transport", selector.Transport),
+								zap.String("service", name),
+							)
 
 							if selector.Host != "" {
 								service.Host = selector.Host

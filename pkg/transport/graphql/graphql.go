@@ -8,12 +8,13 @@ import (
 	"sync"
 
 	"github.com/graphql-go/graphql"
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/codec"
-	"github.com/jexia/semaphore/pkg/core/instance"
-	"github.com/jexia/semaphore/pkg/core/logger"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/template"
 	"github.com/jexia/semaphore/pkg/transport"
+	"go.uber.org/zap"
 )
 
 // Schema base
@@ -28,7 +29,10 @@ type req struct {
 
 // NewListener constructs a new listener for the given addr
 func NewListener(addr string, opts specs.Options) transport.NewListener {
-	return func(ctx instance.Context) transport.Listener {
+	return func(parent *broker.Context) transport.Listener {
+		module := broker.WithModule(parent, "listener", "graphql")
+		ctx := logger.WithLogger(module)
+
 		return &Listener{
 			ctx: ctx,
 			server: &http.Server{
@@ -40,7 +44,7 @@ func NewListener(addr string, opts specs.Options) transport.NewListener {
 
 // Listener represents a GraphQL listener
 type Listener struct {
-	ctx    instance.Context
+	ctx    *broker.Context
 	schema graphql.Schema
 	mutex  sync.RWMutex
 	server *http.Server
@@ -69,7 +73,7 @@ func (listener *Listener) Serve() error {
 		json.NewEncoder(w).Encode(result)
 	})
 
-	listener.ctx.Logger(logger.Flow).WithField("addr", listener.server.Addr).Infof("Serving GraphQL listener")
+	logger.Info(listener.ctx, "serving GraphQL listener", zap.String("addr", listener.server.Addr))
 
 	err := listener.server.ListenAndServe()
 	if err == http.ErrServerClosed {
@@ -80,7 +84,7 @@ func (listener *Listener) Serve() error {
 }
 
 // Handle parses the given endpoints and constructs route handlers
-func (listener *Listener) Handle(ctx instance.Context, endpoints []*transport.Endpoint, constructors map[string]codec.Constructor) error {
+func (listener *Listener) Handle(ctx *broker.Context, endpoints []*transport.Endpoint, constructors map[string]codec.Constructor) error {
 	objects := NewObjects()
 	fields := map[string]graphql.Fields{
 		QueryObject:    {},
@@ -109,7 +113,7 @@ func (listener *Listener) Handle(ctx instance.Context, endpoints []*transport.En
 				if err != nil {
 					object := endpoint.Errs.Get(transport.Unwrap(err))
 					if object == nil {
-						listener.ctx.Logger(logger.Transport).Error("Unable to lookup error manager")
+						logger.Error(listener.ctx, "unable to lookup error manager", zap.Error(err))
 						return nil, err
 					}
 
@@ -199,6 +203,6 @@ func (listener *Listener) Handle(ctx instance.Context, endpoints []*transport.En
 
 // Close closes the given listener
 func (listener *Listener) Close() error {
-	listener.ctx.Logger(logger.Transport).Info("Closing GraphQL listener")
+	logger.Info(listener.ctx, "closing GraphQL listener")
 	return listener.server.Close()
 }

@@ -1,10 +1,10 @@
 package core
 
 import (
+	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/checks"
 	"github.com/jexia/semaphore/pkg/compare"
 	"github.com/jexia/semaphore/pkg/core/api"
-	"github.com/jexia/semaphore/pkg/core/instance"
 	"github.com/jexia/semaphore/pkg/dependencies"
 	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/providers"
@@ -16,7 +16,7 @@ import (
 // Construct construct a specs manifest from the given options.
 // The specifications are received from the providers. The property types are defined and functions are prepared.
 // Once done is a specs collection returned that could be used to update the listeners.
-func Construct(ctx instance.Context, mem functions.Collection, options api.Options) (specs.FlowListInterface, specs.EndpointList, specs.ServiceList, specs.Schemas, error) {
+func Construct(ctx *broker.Context, mem functions.Collection, options api.Options) (specs.FlowListInterface, specs.EndpointList, specs.ServiceList, specs.Schemas, error) {
 	if options.BeforeConstructor != nil {
 		err := options.BeforeConstructor(ctx, mem, options)
 		if err != nil {

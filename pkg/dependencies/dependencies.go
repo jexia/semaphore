@@ -1,15 +1,15 @@
 package dependencies
 
 import (
-	"github.com/jexia/semaphore/pkg/core/instance"
-	"github.com/jexia/semaphore/pkg/core/logger"
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/core/trace"
 	"github.com/jexia/semaphore/pkg/specs"
 )
 
 // ResolveFlows resolves all dependencies inside the given manifest
-func ResolveFlows(ctx instance.Context, flows specs.FlowListInterface) error {
-	ctx.Logger(logger.Core).Info("Resolving flow dependencies")
+func ResolveFlows(ctx *broker.Context, flows specs.FlowListInterface) error {
+	logger.Info(ctx, "resolving flow dependencies")
 
 	for _, flow := range flows {
 		for _, node := range flow.GetNodes() {

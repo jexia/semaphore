@@ -3,7 +3,8 @@ package forwarding
 import (
 	"testing"
 
-	"github.com/jexia/semaphore/pkg/core/instance"
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/specs"
 )
 
@@ -111,7 +112,7 @@ func TestResolveReferences(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			ctx := instance.NewContext()
+			ctx := logger.WithLogger(broker.NewContext())
 			flows, target, expected := test()
 			ResolveReferences(ctx, flows)
 
@@ -401,7 +402,7 @@ func TestResolveOutputReferences(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			flow, target, expected := test()
-			ctx := instance.NewContext()
+			ctx := logger.WithLogger(broker.NewContext())
 			ResolveReferences(ctx, specs.FlowListInterface{flow})
 
 			if target.Reference == nil {

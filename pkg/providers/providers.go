@@ -1,7 +1,7 @@
 package providers
 
 import (
-	"github.com/jexia/semaphore/pkg/core/instance"
+	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/specs"
 )
 
@@ -9,7 +9,7 @@ import (
 type FlowsResolvers []FlowsResolver
 
 // Resolve resolvers the flows and returns a aggregated response
-func (resolvers FlowsResolvers) Resolve(ctx instance.Context) (specs.FlowListInterface, error) {
+func (resolvers FlowsResolvers) Resolve(ctx *broker.Context) (specs.FlowListInterface, error) {
 	flows := specs.FlowListInterface{}
 
 	for _, resolver := range resolvers {
@@ -29,13 +29,13 @@ func (resolvers FlowsResolvers) Resolve(ctx instance.Context) (specs.FlowListInt
 }
 
 // FlowsResolver when called collects the available flow(s) with the configured configuration
-type FlowsResolver func(instance.Context) (specs.FlowListInterface, error)
+type FlowsResolver func(*broker.Context) (specs.FlowListInterface, error)
 
 // EndpointResolvers represents a collection of endpoint resolvers
 type EndpointResolvers []EndpointsResolver
 
 // Resolve resolves the endpoint resolvers collection and returns a aggregated response
-func (resolvers EndpointResolvers) Resolve(ctx instance.Context) (specs.EndpointList, error) {
+func (resolvers EndpointResolvers) Resolve(ctx *broker.Context) (specs.EndpointList, error) {
 	endpoints := specs.EndpointList{}
 
 	for _, resolver := range resolvers {
@@ -55,13 +55,13 @@ func (resolvers EndpointResolvers) Resolve(ctx instance.Context) (specs.Endpoint
 }
 
 // EndpointsResolver when called collects the available endpoint(s) with the configured configuration
-type EndpointsResolver func(instance.Context) (specs.EndpointList, error)
+type EndpointsResolver func(*broker.Context) (specs.EndpointList, error)
 
 // ServiceResolvers represents a collection of service resolvers
 type ServiceResolvers []ServicesResolver
 
 // Resolve resolves all the given service resolvers and returns a aggregated service list
-func (resolvers ServiceResolvers) Resolve(ctx instance.Context) (specs.ServiceList, error) {
+func (resolvers ServiceResolvers) Resolve(ctx *broker.Context) (specs.ServiceList, error) {
 	services := specs.ServiceList{}
 
 	for _, resolver := range resolvers {
@@ -81,13 +81,13 @@ func (resolvers ServiceResolvers) Resolve(ctx instance.Context) (specs.ServiceLi
 }
 
 // ServicesResolver when called collects the available service(s) with the configured configuration
-type ServicesResolver func(instance.Context) (specs.ServiceList, error)
+type ServicesResolver func(*broker.Context) (specs.ServiceList, error)
 
 // SchemaResolvers represents a collection of schema resolvers
 type SchemaResolvers []SchemaResolver
 
 // Resolve resolves all schema resolves and returns a aggregated Object
-func (resolvers SchemaResolvers) Resolve(ctx instance.Context) (specs.Schemas, error) {
+func (resolvers SchemaResolvers) Resolve(ctx *broker.Context) (specs.Schemas, error) {
 	objects := specs.Schemas{}
 
 	for _, resolver := range resolvers {
@@ -107,4 +107,4 @@ func (resolvers SchemaResolvers) Resolve(ctx instance.Context) (specs.Schemas, e
 }
 
 // SchemaResolver when called collects the available service(s) with the configured configuration
-type SchemaResolver func(instance.Context) (specs.Schemas, error)
+type SchemaResolver func(*broker.Context) (specs.Schemas, error)
