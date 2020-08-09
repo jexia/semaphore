@@ -6,7 +6,7 @@ import (
 
 	"github.com/jexia/semaphore"
 	"github.com/jexia/semaphore/cmd/semaphore/config"
-	"github.com/jexia/semaphore/pkg/core/instance"
+	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/providers/openapi3"
 	"github.com/spf13/cobra"
@@ -34,7 +34,7 @@ func run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	ctx := instance.NewContext()
+	ctx := broker.NewContext()
 	options, err := semaphore.NewOptions(ctx, arguments...)
 	if err != nil {
 		return err
