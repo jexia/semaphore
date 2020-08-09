@@ -3,7 +3,8 @@ package conditions
 import (
 	"testing"
 
-	"github.com/jexia/semaphore/pkg/core/instance"
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/specs"
 )
 
@@ -63,7 +64,7 @@ func TestNewEvaluableExpression(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.raw, func(t *testing.T) {
-			ctx := instance.NewContext()
+			ctx := logger.WithLogger(broker.NewContext())
 			condition, err := NewEvaluableExpression(ctx, test.raw)
 			if err != nil {
 				t.Fatal(err)
@@ -109,7 +110,7 @@ func TestInvalidExpressions(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test, func(t *testing.T) {
-			ctx := instance.NewContext()
+			ctx := logger.WithLogger(broker.NewContext())
 			_, err := NewEvaluableExpression(ctx, test)
 			if err == nil {
 				t.Fatal("unexpected pass")
@@ -125,7 +126,7 @@ func TestInvalidReference(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test, func(t *testing.T) {
-			ctx := instance.NewContext()
+			ctx := logger.WithLogger(broker.NewContext())
 			_, err := NewEvaluableExpression(ctx, test)
 			if err == nil {
 				t.Fatal("unexpected pass")

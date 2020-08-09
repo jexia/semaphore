@@ -8,7 +8,8 @@ import (
 
 	"github.com/golang/protobuf/proto"
 	dpb "github.com/golang/protobuf/protoc-gen-go/descriptor"
-	"github.com/jexia/semaphore/pkg/core/instance"
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/flow"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/transport"
@@ -40,7 +41,7 @@ func NewMockServer(t *testing.T, endpoints []*transport.Endpoint) (*grpc.ClientC
 	addr := n.Addr().String()
 	n.Close()
 
-	ctx := instance.NewContext()
+	ctx := logger.WithLogger(broker.NewContext())
 	constructor := NewListener(addr, nil)
 	listener := constructor(ctx).(*Listener)
 	err = listener.Handle(ctx, endpoints, nil)
@@ -59,7 +60,7 @@ func NewMockServer(t *testing.T, endpoints []*transport.Endpoint) (*grpc.ClientC
 }
 
 func TestListServices(t *testing.T) {
-	ctx := instance.NewContext()
+	ctx := logger.WithLogger(broker.NewContext())
 	endpoints := []*transport.Endpoint{
 		{
 			Options: specs.Options{
@@ -126,7 +127,7 @@ func TestListServices(t *testing.T) {
 }
 
 func TestFileContainingSymbol(t *testing.T) {
-	ctx := instance.NewContext()
+	ctx := logger.WithLogger(broker.NewContext())
 	endpoints := []*transport.Endpoint{
 		{
 			Options: specs.Options{

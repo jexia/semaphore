@@ -6,8 +6,9 @@ import (
 	"net"
 	"testing"
 
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/codec"
-	"github.com/jexia/semaphore/pkg/core/instance"
 	"github.com/jexia/semaphore/pkg/flow"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
@@ -36,7 +37,7 @@ func NewMockListener(t *testing.T, nodes flow.Nodes, errs transport.Errs) (trans
 	port := AvailablePort(t)
 	addr := fmt.Sprintf(":%d", port)
 
-	ctx := instance.NewContext()
+	ctx := logger.WithLogger(broker.NewContext())
 	listener := NewListener(addr, nil)(ctx)
 
 	constructors := map[string]codec.Constructor{}

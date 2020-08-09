@@ -3,8 +3,8 @@ package checks
 import (
 	"sync"
 
-	"github.com/jexia/semaphore/pkg/core/instance"
-	"github.com/jexia/semaphore/pkg/core/logger"
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/core/trace"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/template"
@@ -18,9 +18,8 @@ var ReservedKeywords = []string{
 }
 
 // FlowDuplicates checks for duplicate definitions
-func FlowDuplicates(ctx instance.Context, flows specs.FlowListInterface) error {
-	ctx.Logger(logger.Core).Info("Checking manifest duplicates")
-
+func FlowDuplicates(ctx *broker.Context, flows specs.FlowListInterface) error {
+	logger.Info(ctx, "checking manifest duplicates")
 	tracker := sync.Map{}
 
 	for _, flow := range flows {
@@ -39,9 +38,8 @@ func FlowDuplicates(ctx instance.Context, flows specs.FlowListInterface) error {
 }
 
 // NodeDuplicates checks for duplicate definitions
-func NodeDuplicates(ctx instance.Context, flow string, nodes []*specs.Node) error {
-	ctx.Logger(logger.Core).Info("Checking flow duplicates")
-
+func NodeDuplicates(ctx *broker.Context, flow string, nodes []*specs.Node) error {
+	logger.Info(ctx, "checking flow duplicates")
 	calls := sync.Map{}
 
 	for _, node := range nodes {

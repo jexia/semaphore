@@ -8,10 +8,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/codec/json"
 	"github.com/jexia/semaphore/pkg/core/api"
-	"github.com/jexia/semaphore/pkg/core/instance"
-	"github.com/jexia/semaphore/pkg/core/logger"
 	"github.com/jexia/semaphore/pkg/flow"
 	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/providers"
@@ -54,7 +54,7 @@ func TestNewClient(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	ctx := instance.NewContext()
+	ctx := logger.WithLogger(broker.NewContext())
 	files, err := providers.ResolvePath(ctx, []string{}, path)
 	if err != nil {
 		t.Fatal(err)
@@ -72,7 +72,7 @@ func TestNewClient(t *testing.T) {
 				WithCodec(json.NewConstructor()),
 				WithListener(http.NewListener(":0", nil)),
 				WithCaller(http.NewCaller()),
-				WithLogLevel(logger.Core, "debug"),
+				WithLogLevel("*", "debug"),
 			)
 
 			if err != nil {
@@ -99,7 +99,7 @@ func TestNewClientMiddlewareError(t *testing.T) {
 	t.Parallel()
 
 	expected := errors.New("middleware")
-	_, err := New(WithMiddleware(func(ctx instance.Context) ([]api.Option, error) {
+	_, err := New(WithMiddleware(func(ctx *broker.Context) ([]api.Option, error) {
 		return nil, expected
 	}))
 
@@ -116,7 +116,7 @@ func TestNewClientMiddlewareOptions(t *testing.T) {
 	t.Parallel()
 
 	expected := "mock"
-	client, err := New(WithMiddleware(func(ctx instance.Context) ([]api.Option, error) {
+	client, err := New(WithMiddleware(func(ctx *broker.Context) ([]api.Option, error) {
 		result := []api.Option{
 			WithFunctions(functions.Custom{
 				expected: func(args ...*specs.Property) (*specs.Property, functions.Exec, error) {
@@ -146,7 +146,7 @@ func TestServe(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	ctx := instance.NewContext()
+	ctx := logger.WithLogger(broker.NewContext())
 	files, err := providers.ResolvePath(ctx, []string{}, path)
 	if err != nil {
 		t.Fatal(err)
@@ -164,7 +164,7 @@ func TestServe(t *testing.T) {
 				WithCodec(json.NewConstructor()),
 				WithListener(http.NewListener(":0", nil)),
 				WithCaller(http.NewCaller()),
-				WithLogLevel(logger.Core, "debug"),
+				WithLogLevel("*", "debug"),
 			)
 
 			if err != nil {
@@ -192,7 +192,7 @@ func TestErrServe(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	ctx := instance.NewContext()
+	ctx := logger.WithLogger(broker.NewContext())
 	files, err := providers.ResolvePath(ctx, []string{}, path)
 	if err != nil {
 		t.Fatal(err)
@@ -217,7 +217,7 @@ func TestErrServe(t *testing.T) {
 				WithCodec(json.NewConstructor()),
 				WithListener(http.NewListener(listener.Addr().String(), nil)),
 				WithCaller(http.NewCaller()),
-				WithLogLevel(logger.Core, "debug"),
+				WithLogLevel("*", "debug"),
 			)
 
 			if err != nil {
@@ -249,7 +249,7 @@ func TestServeNoListeners(t *testing.T) {
 func TestNewServiceErr(t *testing.T) {
 	t.Parallel()
 
-	resolver := func(instance.Context) (specs.ServiceList, error) { return nil, errors.New("unexpected") }
+	resolver := func(*broker.Context) (specs.ServiceList, error) { return nil, errors.New("unexpected") }
 	_, err := New(
 		WithServices(resolver),
 	)
@@ -262,7 +262,7 @@ func TestNewServiceErr(t *testing.T) {
 func TestNewFlowsErr(t *testing.T) {
 	t.Parallel()
 
-	resolver := func(instance.Context) (specs.FlowListInterface, error) { return nil, errors.New("unexpected") }
+	resolver := func(*broker.Context) (specs.FlowListInterface, error) { return nil, errors.New("unexpected") }
 	_, err := New(
 		WithFlows(resolver),
 	)
@@ -339,7 +339,7 @@ func TestClosingRunningFlows(t *testing.T) {
 	timeout := 100 * time.Microsecond
 	run := make(chan struct{})
 
-	ctx := instance.NewContext()
+	ctx := logger.WithLogger(broker.NewContext())
 	manager := flow.NewManager(ctx, "", nil, nil, nil, &flow.ManagerMiddleware{
 		AfterDo: func(ctx context.Context, manager *flow.Manager, store references.Store) (context.Context, error) {
 			close(run)

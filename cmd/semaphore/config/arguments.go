@@ -3,11 +3,11 @@ package config
 import (
 	"github.com/jexia/semaphore"
 	"github.com/jexia/semaphore/cmd/semaphore/middleware"
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/codec/json"
 	"github.com/jexia/semaphore/pkg/codec/proto"
 	"github.com/jexia/semaphore/pkg/core/api"
-	"github.com/jexia/semaphore/pkg/core/instance"
-	"github.com/jexia/semaphore/pkg/core/logger"
 	"github.com/jexia/semaphore/pkg/metrics/prometheus"
 	"github.com/jexia/semaphore/pkg/providers/hcl"
 	"github.com/jexia/semaphore/pkg/providers/protobuffers"
@@ -17,6 +17,8 @@ import (
 	"github.com/jexia/semaphore/pkg/transport/http"
 	"github.com/jexia/semaphore/pkg/transport/micro"
 	microGRPC "github.com/micro/go-micro/v2/service/grpc"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 // ConstructArguments constructs the option arguments from the given parameters
@@ -29,8 +31,15 @@ func ConstructArguments(params *Semaphore) ([]api.Option, error) {
 		semaphore.WithCaller(http.NewCaller()),
 	}
 
-	ctx := instance.NewContext()
-	ctx.SetLevel(logger.Global, params.LogLevel)
+	ctx := logger.WithLogger(broker.NewContext())
+
+	level := zapcore.InfoLevel
+	err := level.UnmarshalText([]byte(params.LogLevel))
+	if err != nil {
+		logger.Error(ctx, "unable to unmarshal log level", zap.String("level", params.LogLevel))
+	}
+
+	logger.SetLevel(ctx, "*", level)
 
 	for _, path := range params.Files {
 		arguments = append(arguments, semaphore.WithFlows(hcl.FlowsResolver(path)))
@@ -67,7 +76,7 @@ func ConstructArguments(params *Semaphore) ([]api.Option, error) {
 		arguments = append(arguments, semaphore.WithMiddleware(prometheus.New(params.Prometheus.Address)))
 	}
 
-	arguments = append([]api.Option{semaphore.WithLogLevel(logger.Global, params.LogLevel)}, arguments...)
+	arguments = append([]api.Option{semaphore.WithLogLevel("*", params.LogLevel)}, arguments...)
 
 	return arguments, nil
 }

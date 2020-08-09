@@ -3,15 +3,16 @@ package metadata
 import (
 	"strings"
 
-	"github.com/jexia/semaphore/pkg/core/instance"
-	"github.com/jexia/semaphore/pkg/core/logger"
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/template"
+	"go.uber.org/zap"
 )
 
 // NewManager constructs a new metadata manager for the given resource.
-func NewManager(ctx instance.Context, resource string, params specs.Header) *Manager {
+func NewManager(ctx *broker.Context, resource string, params specs.Header) *Manager {
 	return &Manager{
 		Context:  ctx,
 		Resource: template.JoinPath(resource, template.HeaderResource),
@@ -21,7 +22,7 @@ func NewManager(ctx instance.Context, resource string, params specs.Header) *Man
 
 // Manager represents a metadata manager for a given resource
 type Manager struct {
-	Context  instance.Context
+	Context  *broker.Context
 	Resource string
 	Params   specs.Header
 }
@@ -43,10 +44,10 @@ func (manager *Manager) Marshal(store references.Store) MD {
 			}
 		}
 
-		manager.Context.Logger(logger.Flow).WithField("key", key).Debug("Marshalling header property")
+		logger.Debug(manager.Context, "Marshalling header property", zap.String("key", key))
 
 		if value == nil {
-			manager.Context.Logger(logger.Flow).WithField("key", key).Debug("Header property is empty")
+			logger.Debug(manager.Context, "Header property is empty", zap.String("key", key))
 			continue
 		}
 
@@ -62,8 +63,7 @@ func (manager *Manager) Unmarshal(metadata MD, store references.Store) {
 		ref := references.NewReference(strings.ToLower(key))
 		ref.Value = value
 
-		manager.Context.Logger(logger.Flow).WithField("key", key).Debug("Unmarshalling header property")
-
+		logger.Debug(manager.Context, "Unmarshalling header property", zap.String("key", key))
 		store.StoreReference(manager.Resource, ref)
 	}
 }

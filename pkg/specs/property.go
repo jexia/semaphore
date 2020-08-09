@@ -30,6 +30,10 @@ func (reference *PropertyReference) Clone() *PropertyReference {
 }
 
 func (reference *PropertyReference) String() string {
+	if reference == nil {
+		return ""
+	}
+
 	return reference.Resource + ":" + reference.Path
 }
 

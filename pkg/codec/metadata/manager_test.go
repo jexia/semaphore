@@ -3,7 +3,8 @@ package metadata
 import (
 	"testing"
 
-	"github.com/jexia/semaphore/pkg/core/instance"
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/labels"
@@ -21,7 +22,7 @@ func TestNewManager(t *testing.T) {
 		},
 	}
 
-	ctx := instance.NewContext()
+	ctx := logger.WithLogger(broker.NewContext())
 	manager := NewManager(ctx, resource, params)
 	if manager == nil {
 		t.Fatal("undefined manager")
@@ -56,7 +57,7 @@ func TestManagerMarshal(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			header, store, expected := test()
-			ctx := instance.NewContext()
+			ctx := logger.WithLogger(broker.NewContext())
 			manager := NewManager(ctx, resource, header)
 
 			result := manager.Marshal(store)
@@ -100,7 +101,7 @@ func TestManagerUnmarshal(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			header, input := test()
-			ctx := instance.NewContext()
+			ctx := logger.WithLogger(broker.NewContext())
 			manager := NewManager(ctx, resource, header)
 
 			store := references.NewReferenceStore(len(input))

@@ -5,16 +5,16 @@ import (
 	"errors"
 	"io"
 
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/codec"
 	"github.com/jexia/semaphore/pkg/codec/metadata"
-	"github.com/jexia/semaphore/pkg/core/instance"
-	"github.com/jexia/semaphore/pkg/core/logger"
 	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/template"
 	"github.com/jexia/semaphore/pkg/transport"
-	"github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 )
 
 // ErrAbortFlow represents the error thrown when a flow has to be aborted
@@ -40,7 +40,10 @@ type CallOptions struct {
 }
 
 // NewCall constructs a new flow caller from the given transport caller and
-func NewCall(ctx instance.Context, node *specs.Node, options *CallOptions) Call {
+func NewCall(parent *broker.Context, node *specs.Node, options *CallOptions) Call {
+	module := broker.WithModule(broker.Child(parent), "caller", node.ID)
+	ctx := logger.WithFields(logger.WithLogger(module), zap.String("node", node.ID))
+
 	result := &Caller{
 		ctx:            ctx,
 		node:           node,
@@ -72,7 +75,7 @@ type Request struct {
 
 // Caller represents a flow transport caller
 type Caller struct {
-	ctx            instance.Context
+	ctx            *broker.Context
 	node           *specs.Node
 	method         transport.Method
 	transport      transport.Call
@@ -124,11 +127,7 @@ func (caller *Caller) Do(ctx context.Context, store references.Store) error {
 		// A separate go routine could be created inside the transporter to stream the returned message to the io reader
 		err := caller.transport.SendMsg(ctx, w, r, store)
 		if err != nil {
-			caller.ctx.Logger(logger.Flow).WithFields(logrus.Fields{
-				"node": caller.node.ID,
-				"err":  err,
-			}).Error("Transport returned a unexpected error")
-
+			logger.Error(caller.ctx, "transporter returned a unexpected error", zap.String("node", caller.node.ID), zap.Error(err))
 			return err
 		}
 	} else {
@@ -137,10 +136,7 @@ func (caller *Caller) Do(ctx context.Context, store references.Store) error {
 
 	_, expected := caller.ExpectedStatus[w.Status()]
 	if caller.transport != nil && !expected {
-		caller.ctx.Logger(logger.Flow).WithFields(logrus.Fields{
-			"node":   caller.node.ID,
-			"status": w.Status(),
-		}).Error("Service returned a unexpected status, aborting flow")
+		logger.Error(caller.ctx, "service returned a unexpected status, aborting flow", zap.Int("status", w.Status()))
 
 		err := caller.HandleErr(w, reader, store)
 		if err != nil {

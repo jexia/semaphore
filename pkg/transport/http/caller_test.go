@@ -8,9 +8,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/codec/json"
 	"github.com/jexia/semaphore/pkg/codec/metadata"
-	"github.com/jexia/semaphore/pkg/core/instance"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs/labels"
 	"github.com/jexia/semaphore/pkg/specs/types"
@@ -29,7 +30,7 @@ func (d *DiscardWriter) Close() error {
 }
 
 func NewMockCaller() *Caller {
-	ctx := instance.NewContext()
+	ctx := logger.WithLogger(broker.NewContext())
 	caller := &Caller{
 		ctx: ctx,
 	}
@@ -37,7 +38,7 @@ func NewMockCaller() *Caller {
 }
 
 func TestNewCaller(t *testing.T) {
-	ctx := instance.NewContext()
+	ctx := logger.WithLogger(broker.NewContext())
 	constructor := NewCaller()
 	listener := constructor(ctx)
 	if listener == nil {

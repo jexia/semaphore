@@ -4,7 +4,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/jexia/semaphore/pkg/core/instance"
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/labels"
 	"github.com/jexia/semaphore/pkg/specs/types"
@@ -76,7 +77,7 @@ func TestParseFunction(t *testing.T) {
 
 	for input, expected := range tests {
 		t.Run(input, func(t *testing.T) {
-			ctx := instance.NewContext()
+			ctx := logger.WithLogger(broker.NewContext())
 			prop := specs.Property{
 				Name: "",
 				Path: "message",
@@ -110,7 +111,7 @@ func TestParseUnavailableFunction(t *testing.T) {
 			Raw:  input,
 		}
 
-		ctx := instance.NewContext()
+		ctx := logger.WithLogger(broker.NewContext())
 		err := PrepareFunction(ctx, nil, nil, prop, make(Stack), custom)
 		if err == nil {
 			t.Error("unexpected pass")
@@ -524,7 +525,7 @@ func TestPrepareManifestFunctions(t *testing.T) {
 				"mock": counter.fn,
 			}
 
-			ctx := instance.NewContext()
+			ctx := logger.WithLogger(broker.NewContext())
 			mem := Collection{}
 
 			err := PrepareManifestFunctions(ctx, mem, functions, test.flows)
@@ -939,7 +940,7 @@ func TestPrepareManifestFunctionsErr(t *testing.T) {
 				"mock": counter.fn,
 			}
 
-			ctx := instance.NewContext()
+			ctx := logger.WithLogger(broker.NewContext())
 			mem := Collection{}
 
 			err := PrepareManifestFunctions(ctx, mem, functions, test.flows)
@@ -1032,7 +1033,7 @@ func TestPrepareParameterMapFunctions(t *testing.T) {
 				"mock": counter.fn,
 			}
 
-			ctx := instance.NewContext()
+			ctx := logger.WithLogger(broker.NewContext())
 			stack := Stack{}
 
 			err := PrepareParameterMapFunctions(ctx, nil, nil, stack, test.params, functions)

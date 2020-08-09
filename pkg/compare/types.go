@@ -1,17 +1,17 @@
 package compare
 
 import (
-	"github.com/jexia/semaphore/pkg/core/instance"
-	"github.com/jexia/semaphore/pkg/core/logger"
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/core/trace"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/types"
-	"github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 )
 
 // Types compares the types defined insde the schema definitions against the configured specification
-func Types(ctx instance.Context, services specs.ServiceList, objects specs.Schemas, flows specs.FlowListInterface) (err error) {
-	ctx.Logger(logger.Core).Info("Comparing manifest types")
+func Types(ctx *broker.Context, services specs.ServiceList, objects specs.Schemas, flows specs.FlowListInterface) (err error) {
+	logger.Info(ctx, "Comparing manifest types")
 
 	for _, flow := range flows {
 		err := FlowTypes(ctx, services, objects, flow)
@@ -24,8 +24,8 @@ func Types(ctx instance.Context, services specs.ServiceList, objects specs.Schem
 }
 
 // ProxyTypes compares the given proxy against the configured schema types
-func ProxyTypes(ctx instance.Context, services specs.ServiceList, objects specs.Schemas, proxy *specs.Proxy) (err error) {
-	ctx.Logger(logger.Core).WithField("proxy", proxy.GetName()).Info("Compare proxy flow types")
+func ProxyTypes(ctx *broker.Context, services specs.ServiceList, objects specs.Schemas, proxy *specs.Proxy) (err error) {
+	logger.Info(ctx, "Compare proxy flow types", zap.String("proxy", proxy.GetName()))
 
 	if proxy.OnError != nil {
 		err = CheckParameterMapTypes(ctx, proxy.OnError.Response, objects, proxy)
@@ -57,8 +57,8 @@ func ProxyTypes(ctx instance.Context, services specs.ServiceList, objects specs.
 }
 
 // FlowTypes compares the flow types against the configured schema types
-func FlowTypes(ctx instance.Context, services specs.ServiceList, objects specs.Schemas, flow specs.FlowInterface) (err error) {
-	ctx.Logger(logger.Core).WithField("flow", flow.GetName()).Info("Comparing flow types")
+func FlowTypes(ctx *broker.Context, services specs.ServiceList, objects specs.Schemas, flow specs.FlowInterface) (err error) {
+	logger.Info(ctx, "Comparing flow types", zap.String("flow", flow.GetName()))
 
 	if flow.GetInput() != nil {
 		err = CheckParameterMapTypes(ctx, flow.GetInput(), objects, flow)
@@ -111,7 +111,7 @@ func FlowTypes(ctx instance.Context, services specs.ServiceList, objects specs.S
 }
 
 // CallTypes compares the given call types against the configured schema types
-func CallTypes(ctx instance.Context, services specs.ServiceList, objects specs.Schemas, node *specs.Node, call *specs.Call, flow specs.FlowInterface) (err error) {
+func CallTypes(ctx *broker.Context, services specs.ServiceList, objects specs.Schemas, node *specs.Node, call *specs.Call, flow specs.FlowInterface) (err error) {
 	if call == nil {
 		return nil
 	}
@@ -120,11 +120,7 @@ func CallTypes(ctx instance.Context, services specs.ServiceList, objects specs.S
 		return nil
 	}
 
-	ctx.Logger(logger.Core).WithFields(logrus.Fields{
-		"call":    node.ID,
-		"method":  call.Method,
-		"service": call.Service,
-	}).Info("Comparing call types")
+	logger.Info(ctx, "Comparing call types", zap.String("call", node.ID), zap.String("method", call.Method), zap.String("service", call.Service))
 
 	service := services.Get(call.Service)
 	if service == nil {
@@ -157,7 +153,7 @@ func CallTypes(ctx instance.Context, services specs.ServiceList, objects specs.S
 }
 
 // CheckParameterMapTypes checks the given parameter map against the configured schema property
-func CheckParameterMapTypes(ctx instance.Context, parameters *specs.ParameterMap, objects specs.Schemas, flow specs.FlowInterface) error {
+func CheckParameterMapTypes(ctx *broker.Context, parameters *specs.ParameterMap, objects specs.Schemas, flow specs.FlowInterface) error {
 	if parameters == nil {
 		return nil
 	}

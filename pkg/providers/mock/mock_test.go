@@ -5,7 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/jexia/semaphore/pkg/core/instance"
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/providers"
 )
 
@@ -15,7 +16,7 @@ func TestSchemaParsing(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	ctx := instance.NewContext()
+	ctx := logger.WithLogger(broker.NewContext())
 	files, err := providers.ResolvePath(ctx, []string{}, path)
 	if err != nil {
 		t.Fatal(err)
@@ -23,7 +24,7 @@ func TestSchemaParsing(t *testing.T) {
 
 	for _, file := range files {
 		t.Run(file.Name(), func(t *testing.T) {
-			ctx := instance.NewContext()
+			ctx := logger.WithLogger(broker.NewContext())
 			path := file.Name()[:len(file.Name())-len(filepath.Ext(file.Name()))]
 
 			if strings.HasSuffix(path, fail) {

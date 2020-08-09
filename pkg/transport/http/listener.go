@@ -9,23 +9,27 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/codec"
 	"github.com/jexia/semaphore/pkg/codec/metadata"
-	"github.com/jexia/semaphore/pkg/core/instance"
-	"github.com/jexia/semaphore/pkg/core/logger"
 	"github.com/jexia/semaphore/pkg/core/trace"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/template"
 	"github.com/jexia/semaphore/pkg/transport"
 	"github.com/julienschmidt/httprouter"
+	"go.uber.org/zap"
 )
 
 // NewListener constructs a new listener for the given addr
 func NewListener(addr string, opts specs.Options) transport.NewListener {
-	return func(ctx instance.Context) transport.Listener {
+	return func(parent *broker.Context) transport.Listener {
+		module := broker.WithModule(parent, "listener", "http")
+		ctx := logger.WithLogger(logger.WithFields(module, zap.String("listener", "http")))
+
 		options, err := ParseListenerOptions(opts)
 		if err != nil {
-			ctx.Logger(logger.Transport).Warnf("unable to parse HTTP listener options, unexpected error %s", err)
+			logger.Error(ctx, "unable to parse HTTP listener options, unexpected error", zap.Error(err))
 		}
 
 		return &Listener{
@@ -42,7 +46,7 @@ func NewListener(addr string, opts specs.Options) transport.NewListener {
 
 // Listener represents a HTTP listener
 type Listener struct {
-	ctx     instance.Context
+	ctx     *broker.Context
 	options *ListenerOptions
 	server  *http.Server
 	mutex   sync.RWMutex
@@ -57,7 +61,7 @@ func (listener *Listener) Name() string {
 
 // Serve opens the HTTP listener and calls the given handler function on reach request
 func (listener *Listener) Serve() (err error) {
-	listener.ctx.Logger(logger.Transport).WithField("addr", listener.server.Addr).Info("Serving HTTP listener")
+	logger.Info(listener.ctx, "serving HTTP listener", zap.String("addr", listener.server.Addr))
 
 	listener.server.Handler = listener.HandleCors(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		listener.mutex.RLock()
@@ -81,8 +85,8 @@ func (listener *Listener) Serve() (err error) {
 }
 
 // Handle parses the given endpoints and constructs route handlers
-func (listener *Listener) Handle(ctx instance.Context, endpoints []*transport.Endpoint, codecs map[string]codec.Constructor) error {
-	listener.ctx.Logger(logger.Transport).Info("HTTP listener received new endpoints")
+func (listener *Listener) Handle(ctx *broker.Context, endpoints []*transport.Endpoint, codecs map[string]codec.Constructor) error {
+	logger.Info(listener.ctx, "HTTP listener received new endpoints")
 
 	router := httprouter.New()
 	headers := map[string]struct{}{}
@@ -93,6 +97,7 @@ func (listener *Listener) Handle(ctx instance.Context, endpoints []*transport.En
 			return fmt.Errorf("endpoint %s: %s", endpoint.Flow, err)
 		}
 
+		ctx := logger.WithFields(ctx, zap.String("endpoint", options.Endpoint), zap.String("method", options.Method))
 		handle, err := NewHandle(ctx, endpoint, options, codecs)
 		if err != nil {
 			return err
@@ -124,7 +129,7 @@ func (listener *Listener) Handle(ctx instance.Context, endpoints []*transport.En
 
 // Close closes the given listener
 func (listener *Listener) Close() error {
-	listener.ctx.Logger(logger.Transport).Info("Closing HTTP listener")
+	logger.Info(listener.ctx, "closing HTTP listener")
 	return listener.server.Close()
 }
 
@@ -152,7 +157,7 @@ func (listener *Listener) HandleCors(h http.Handler) http.Handler {
 }
 
 // NewHandle constructs a new handle function for the given endpoint to the given flow
-func NewHandle(ctx instance.Context, endpoint *transport.Endpoint, options *EndpointOptions, constructors map[string]codec.Constructor) (*Handle, error) {
+func NewHandle(ctx *broker.Context, endpoint *transport.Endpoint, options *EndpointOptions, constructors map[string]codec.Constructor) (*Handle, error) {
 	if constructors == nil {
 		constructors = make(map[string]codec.Constructor)
 	}
@@ -203,7 +208,7 @@ type Request struct {
 // Handle holds a endpoint its options and a optional request and response
 type Handle struct {
 	*transport.Endpoint
-	ctx     instance.Context
+	ctx     *broker.Context
 	Options *EndpointOptions
 	Proxy   *Proxy
 }
@@ -214,7 +219,7 @@ func (handle *Handle) HTTPFunc(w http.ResponseWriter, r *http.Request, ps httpro
 		return
 	}
 
-	handle.ctx.Logger(logger.Transport).Debug("New incoming HTTP request")
+	logger.Debug(handle.ctx, "incoming HTTP request")
 
 	defer r.Body.Close()
 	store := handle.Endpoint.Flow.NewStore()
@@ -235,7 +240,7 @@ func (handle *Handle) HTTPFunc(w http.ResponseWriter, r *http.Request, ps httpro
 		if handle.Request.Codec != nil {
 			err := handle.Request.Codec.Unmarshal(r.Body, store)
 			if err != nil {
-				handle.ctx.Logger(logger.Transport).Error(err)
+				logger.Error(handle.ctx, "unexpected error while unmarshalling the request body", zap.Error(err))
 				w.WriteHeader(http.StatusBadRequest)
 				return
 			}
@@ -246,7 +251,7 @@ func (handle *Handle) HTTPFunc(w http.ResponseWriter, r *http.Request, ps httpro
 	if err != nil {
 		object := handle.Endpoint.Errs.Get(transport.Unwrap(err))
 		if object == nil {
-			handle.ctx.Logger(logger.Transport).Error("Unable to lookup error manager")
+			logger.Error(handle.ctx, "unable to lookup error manager", zap.Error(err))
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -259,14 +264,14 @@ func (handle *Handle) HTTPFunc(w http.ResponseWriter, r *http.Request, ps httpro
 		if object.Codec != nil {
 			reader, err := object.Codec.Marshal(store)
 			if err != nil {
-				handle.ctx.Logger(logger.Transport).Error(err)
+				logger.Error(handle.ctx, "unexpected error while marshalling the response body", zap.Error(err))
 				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
 
 			_, err = io.Copy(w, reader)
 			if err != nil {
-				handle.ctx.Logger(logger.Transport).Error(err)
+				logger.Error(handle.ctx, "unexpected error copying the error message body to the client", zap.Error(err))
 			}
 		}
 
@@ -292,7 +297,7 @@ func (handle *Handle) HTTPFunc(w http.ResponseWriter, r *http.Request, ps httpro
 
 			_, err = io.Copy(w, reader)
 			if err != nil {
-				handle.ctx.Logger(logger.Transport).Error(err)
+				logger.Error(handle.ctx, "unexpected error copying the message body to the client", zap.Error(err))
 				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}

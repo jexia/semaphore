@@ -4,15 +4,15 @@ import (
 	"context"
 	"testing"
 
+	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/core/api"
-	"github.com/jexia/semaphore/pkg/core/instance"
 	"github.com/jexia/semaphore/pkg/flow"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 )
 
 func TestWithMiddleware(t *testing.T) {
-	middleware := func(instance.Context) ([]api.Option, error) {
+	middleware := func(*broker.Context) ([]api.Option, error) {
 		return nil, nil
 	}
 
@@ -33,7 +33,7 @@ func TestWithMiddleware(t *testing.T) {
 func TestAfterConstructorOption(t *testing.T) {
 	fn := func(i *int) api.AfterConstructorHandler {
 		return func(next api.AfterConstructor) api.AfterConstructor {
-			return func(ctx instance.Context, flow specs.FlowListInterface, endpoints specs.EndpointList, services specs.ServiceList, schemas specs.Schemas) error {
+			return func(ctx *broker.Context, flow specs.FlowListInterface, endpoints specs.EndpointList, services specs.ServiceList, schemas specs.Schemas) error {
 				*i++
 				return next(ctx, flow, endpoints, services, schemas)
 			}

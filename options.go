@@ -1,14 +1,16 @@
 package semaphore
 
 import (
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/codec"
 	"github.com/jexia/semaphore/pkg/core"
 	"github.com/jexia/semaphore/pkg/core/api"
-	"github.com/jexia/semaphore/pkg/core/instance"
-	"github.com/jexia/semaphore/pkg/core/logger"
 	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/providers"
 	"github.com/jexia/semaphore/pkg/transport"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 // DefaultOptions sets the default options for the given options object
@@ -17,7 +19,7 @@ func DefaultOptions(options *api.Options) {
 }
 
 // NewOptions constructs a api.Options object from the given api.Option constructors
-func NewOptions(ctx instance.Context, options ...api.Option) (api.Options, error) {
+func NewOptions(ctx *broker.Context, options ...api.Option) (api.Options, error) {
 	result := api.NewOptions(ctx)
 	DefaultOptions(&result)
 
@@ -122,11 +124,14 @@ func WithFunctions(custom functions.Custom) api.Option {
 }
 
 // WithLogLevel sets the log level for the given module
-func WithLogLevel(module logger.Module, level string) api.Option {
+func WithLogLevel(pattern string, value string) api.Option {
 	return func(options *api.Options) {
-		err := options.Ctx.SetLevel(module, level)
+		level := zapcore.InfoLevel
+		err := level.UnmarshalText([]byte(value))
 		if err != nil {
-			options.Ctx.Logger(logger.Core).Warnf("unable to set the logging level, %s", err)
+			logger.Error(options.Ctx, "unable to unmarshal log level", zap.String("level", value))
 		}
+
+		logger.SetLevel(options.Ctx, pattern, level)
 	}
 }

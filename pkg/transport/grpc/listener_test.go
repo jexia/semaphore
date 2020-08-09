@@ -7,8 +7,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/codec/metadata"
-	"github.com/jexia/semaphore/pkg/core/instance"
 	"github.com/jexia/semaphore/pkg/flow"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
@@ -25,7 +26,7 @@ func TestNewListener(t *testing.T) {
 				t.Fatal("nil listener constructor")
 			}
 
-			ctx := instance.NewContext()
+			ctx := logger.WithLogger(broker.NewContext())
 			listener := constructor(ctx)
 			if constructor == nil {
 				t.Fatal("nil listener")
@@ -45,7 +46,7 @@ func TestNewListener(t *testing.T) {
 }
 
 func TestListener(t *testing.T) {
-	ctx := instance.NewContext()
+	ctx := logger.WithLogger(broker.NewContext())
 	node := &specs.Node{
 		ID: "first",
 	}
@@ -189,7 +190,7 @@ func TestErrorHandlingListener(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			ctx := instance.NewContext()
+			ctx := logger.WithLogger(broker.NewContext())
 			node := &specs.Node{
 				ID:      "first",
 				OnError: test.err,
