@@ -9,18 +9,25 @@ import (
 	"go.uber.org/zap"
 )
 
+// Expression represents expression that contains the list of parameters and can be evaluated
+type Expression interface {
+	specs.Evaluable
+
+	GetParameters() *specs.ParameterMap
+}
+
 // NewCondition constructs a new condition of the given functions stack and specs condition
-func NewCondition(stack functions.Stack, spec *specs.Condition) *Condition {
+func NewCondition(stack functions.Stack, exp Expression) *Condition {
 	return &Condition{
-		stack:     stack,
-		condition: spec,
+		stack:      stack,
+		expression: exp,
 	}
 }
 
 // Condition represents a condition which could be evaluated and results in a boolean
 type Condition struct {
-	stack     functions.Stack
-	condition *specs.Condition
+	stack      functions.Stack
+	expression Expression
 }
 
 // Eval evaluates the given condition with the given reference store
@@ -30,8 +37,8 @@ func (condition *Condition) Eval(ctx *broker.Context, store references.Store) (b
 		return false, err
 	}
 
-	parameters := make(map[string]interface{}, len(condition.condition.Params.Params))
-	for key, param := range condition.condition.Params.Params {
+	parameters := make(map[string]interface{}, len(condition.expression.GetParameters().Params))
+	for key, param := range condition.expression.GetParameters().Params {
 		value := param.Default
 
 		if param.Reference != nil {
@@ -46,7 +53,7 @@ func (condition *Condition) Eval(ctx *broker.Context, store references.Store) (b
 
 	logger.Debug(ctx, "evaluating comparison", zap.Any("parameters", parameters))
 
-	result, err := condition.condition.Expression.Evaluate(parameters)
+	result, err := condition.expression.Evaluate(parameters)
 	if err != nil {
 		return false, err
 	}

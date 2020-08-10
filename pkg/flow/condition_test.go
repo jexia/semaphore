@@ -70,12 +70,12 @@ func TestConditionEvaluation(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			ctx := logger.WithLogger(broker.NewContext())
-			spec, err := conditions.NewEvaluableExpression(ctx, test.condition)
+			exp, err := conditions.NewEvaluableExpression(ctx, test.condition)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			condition := NewCondition(test.stack, spec)
+			condition := NewCondition(test.stack, exp)
 			result, err := condition.Eval(ctx, store)
 			if err != nil {
 				t.Fatal(err)
@@ -126,12 +126,12 @@ func TestInvalidConditionEvaluation(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			ctx := logger.WithLogger(broker.NewContext())
-			spec, err := conditions.NewEvaluableExpression(ctx, test.condition)
+			exp, err := conditions.NewEvaluableExpression(ctx, test.condition)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			condition := NewCondition(test.stack, spec)
+			condition := NewCondition(test.stack, exp)
 			_, err = condition.Eval(ctx, store)
 			if err == nil {
 				t.Fatal("unexpected pass")
