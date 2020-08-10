@@ -1,0 +1,32 @@
+openapi: 3.0.0
+info:
+  title: ""
+  version: ""
+paths:
+  /user:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/com.semaphore.User'
+        required: false
+      responses:
+        default:
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/com.semaphore.User'
+components:
+  schemas:
+    com.semaphore.User:
+      properties:
+        email:
+          type: string
+        id:
+          type: integer
+        name:
+          type: string
+        username:
+          type: string
