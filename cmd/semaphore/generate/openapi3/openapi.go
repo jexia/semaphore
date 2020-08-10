@@ -17,8 +17,10 @@ var params = config.New()
 
 // Command represents the semaphore daemon command
 var Command = &cobra.Command{
-	Use:          "openapi3",
-	Short:        "Generates a openapi3 specification",
+	Use:   "openapi3",
+	Short: "Generates a openapi3 specification",
+	Long: `Generates a openapi3 specification.
+*NOTE*: This is a experimental feature and not all features are supported yet.`,
 	RunE:         run,
 	SilenceUsage: true,
 }
