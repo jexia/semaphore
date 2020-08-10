@@ -52,6 +52,29 @@ func TestManagerMarshal(t *testing.T) {
 
 			return header, store, expected
 		},
+		"reference": func() (specs.Header, references.Store, MD) {
+			header := specs.Header{
+				"example": &specs.Property{
+					Name:  "example",
+					Path:  "example",
+					Type:  types.String,
+					Label: labels.Optional,
+					Reference: &specs.PropertyReference{
+						Resource: "input",
+						Path:     "value",
+					},
+				},
+			}
+
+			store := references.NewReferenceStore(1)
+			store.StoreValue("input", "value", "message")
+
+			expected := MD{
+				"example": "hello",
+			}
+
+			return header, store, expected
+		},
 	}
 
 	for name, test := range tests {
@@ -79,8 +102,8 @@ func TestManagerMarshal(t *testing.T) {
 func TestManagerUnmarshal(t *testing.T) {
 	resource := "mock"
 
-	tests := map[string]func() (specs.Header, MD){
-		"simple": func() (specs.Header, MD) {
+	tests := map[string]func() (specs.Header, MD, MD){
+		"simple": func() (specs.Header, MD, MD) {
 			params := specs.Header{
 				"example": &specs.Property{
 					Name:  "example",
@@ -94,13 +117,38 @@ func TestManagerUnmarshal(t *testing.T) {
 				"example": "hello",
 			}
 
-			return params, input
+			expected := MD{
+				"example": "hello",
+			}
+
+			return params, input, expected
+		},
+		"unnessasery allocation": func() (specs.Header, MD, MD) {
+			params := specs.Header{
+				"example": &specs.Property{
+					Name:  "example",
+					Path:  "example",
+					Type:  types.String,
+					Label: labels.Optional,
+				},
+			}
+
+			input := MD{
+				"example": "hello",
+				"unkown":  "hello",
+			}
+
+			expected := MD{
+				"example": "hello",
+			}
+
+			return params, input, expected
 		},
 	}
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			header, input := test()
+			header, input, expected := test()
 			ctx := logger.WithLogger(broker.NewContext())
 			manager := NewManager(ctx, resource, header)
 
@@ -124,6 +172,11 @@ func TestManagerUnmarshal(t *testing.T) {
 
 				if str != input[key] {
 					t.Fatalf("unexpected value %s, expected %s", str, input[key])
+				}
+
+				_, has := expected[key]
+				if !has {
+					t.Fatalf("unexpected header key %s", key)
 				}
 			}
 		})
