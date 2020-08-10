@@ -57,7 +57,7 @@ func SetLevel(ctx *broker.Context, pattern string, level zapcore.Level) error {
 		return err
 	}
 
-	if matched || pattern == ctx.Module {
+	if (matched || pattern == ctx.Module) && ctx.Atom != nil {
 		ctx.Atom.SetLevel(level)
 	}
 
