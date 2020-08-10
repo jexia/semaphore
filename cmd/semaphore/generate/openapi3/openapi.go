@@ -1,8 +1,7 @@
 package openapi3
 
 import (
-	"encoding/json"
-	"fmt"
+	"os"
 
 	"github.com/jexia/semaphore"
 	"github.com/jexia/semaphore/cmd/semaphore/config"
@@ -11,6 +10,7 @@ import (
 	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/providers/openapi3"
 	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v2"
 )
 
 var params = config.New()
@@ -53,8 +53,15 @@ func run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	bb, _ := json.Marshal(object)
-	fmt.Println(string(bb))
+	bb, err := yaml.Marshal(object)
+	if err != nil {
+		return err
+	}
+
+	_, err = os.Stdout.Write(bb)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
