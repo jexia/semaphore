@@ -23,7 +23,7 @@ type Call interface {
 // Branches are constructed for the constructed nodes to optimalise performance.
 // Various variables such as the amount of nodes, references and loose ends are collected to optimalise allocations during runtime.
 func NewManager(parent *broker.Context, name string, nodes []*Node, err specs.ErrorHandle, after functions.Stack, middleware *ManagerMiddleware) *Manager {
-	module := broker.WithModule(broker.Child(parent), "flow", name)
+	module := broker.WithModule(parent, "flow", name)
 	ctx := logger.WithLogger(module)
 
 	ConstructBranches(nodes)

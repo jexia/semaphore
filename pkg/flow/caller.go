@@ -41,7 +41,7 @@ type CallOptions struct {
 
 // NewCall constructs a new flow caller from the given transport caller and
 func NewCall(parent *broker.Context, node *specs.Node, options *CallOptions) Call {
-	module := broker.WithModule(broker.Child(parent), "caller", node.ID)
+	module := broker.WithModule(parent, "caller", node.ID)
 	ctx := logger.WithFields(logger.WithLogger(module), zap.String("node", node.ID))
 
 	result := &Caller{

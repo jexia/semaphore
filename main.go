@@ -4,9 +4,9 @@ import (
 	"sync"
 
 	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/config"
 	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/core"
-	"github.com/jexia/semaphore/pkg/core/api"
 	"github.com/jexia/semaphore/pkg/core/trace"
 	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/specs"
@@ -23,7 +23,7 @@ type Client struct {
 	endpoints    specs.EndpointList
 	services     specs.ServiceList
 	schemas      specs.Schemas
-	Options      api.Options
+	Options      config.Options
 	mutex        sync.RWMutex
 }
 
@@ -54,7 +54,7 @@ func (client *Client) Serve() (result error) {
 
 // Handle updates the flows with the given specs collection.
 // The given functions collection is used to execute functions on runtime.
-func (client *Client) Handle(ctx *broker.Context, options api.Options) error {
+func (client *Client) Handle(ctx *broker.Context, options config.Options) error {
 	client.mutex.Lock()
 	defer client.mutex.Unlock()
 
@@ -114,7 +114,7 @@ func (client *Client) Close() {
 }
 
 // New constructs a new Semaphore instance
-func New(opts ...api.Option) (*Client, error) {
+func New(opts ...config.Option) (*Client, error) {
 	ctx := logger.WithLogger(broker.NewContext())
 	options, err := NewOptions(ctx, opts...)
 	if err != nil {
