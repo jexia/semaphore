@@ -1,9 +1,6 @@
 package specs
 
-import (
-	"github.com/Knetic/govaluate"
-	"github.com/jexia/semaphore/pkg/specs/metadata"
-)
+import "github.com/jexia/semaphore/pkg/specs/metadata"
 
 // FlowListInterface represents a collection of flow interfaces
 type FlowListInterface []FlowInterface
@@ -172,13 +169,21 @@ func (proxy *Proxy) GetForward() *Call {
 	return proxy.Forward
 }
 
+// Evaluable can be evaluated (runs the expression) using provided parameters
+type Evaluable interface {
+	Evaluate(parameters map[string]interface{}) (interface{}, error)
+}
+
 // Condition represents a condition which could be true or false
 type Condition struct {
 	*metadata.Meta
-	RawExpression string                         `json:"raw_expression,omitempty"`
-	Expression    *govaluate.EvaluableExpression `json:"-"`
-	Params        *ParameterMap                  `json:"-"`
+	RawExpression string `json:"raw_expression,omitempty"`
+	Evaluable     `json:"-"`
+	Params        *ParameterMap `json:"-"`
 }
+
+// GetParameters returns the list of parameters
+func (c Condition) GetParameters() *ParameterMap { return c.Params }
 
 // NodeList represents a collection of nodes
 type NodeList []*Node

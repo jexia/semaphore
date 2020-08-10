@@ -36,7 +36,7 @@ func NewEvaluableExpression(ctx *broker.Context, raw string) (*specs.Condition, 
 
 	result := &specs.Condition{
 		RawExpression: raw,
-		Expression:    expression,
+		Evaluable:     expression,
 		Params:        params,
 	}
 
