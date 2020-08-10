@@ -34,10 +34,5 @@ components:
           type: integer
         name:
           type: string
-        status:
-          type: string
-          enum:
-          - UNAVAILABLE
-          - AVAILABLE
         username:
           type: string

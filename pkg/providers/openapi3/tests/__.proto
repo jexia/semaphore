@@ -17,15 +17,9 @@ message Item {
     bool completed = 4;
 }
 
-enum Status {
-    UNAVAILABLE = 0;
-    AVAILABLE = 1;
-}
-
 message User {
     int32 id = 1;
     string name = 2;
     string username = 3;
     string email = 4;
-    Status status = 5;
 }
