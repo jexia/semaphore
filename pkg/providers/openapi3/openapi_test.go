@@ -3,6 +3,7 @@ package openapi3
 import (
 	"io/ioutil"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -68,8 +69,7 @@ func TestOpenAPI3Generation(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			object, err := Generate(endpoints, flows)
-			result, err := yaml.Marshal(object)
+			result, err := Generate(endpoints, flows)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -82,13 +82,19 @@ func TestOpenAPI3Generation(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			expected, err := ioutil.ReadFile(path)
+			bb, err := ioutil.ReadFile(path)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			if string(result) != string(expected) {
-				t.Log(string(result))
+			expected := Object{}
+
+			err = yaml.Unmarshal(bb, &expected)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if reflect.DeepEqual(result, expected) {
 				t.Fatal("unexpected result")
 			}
 		})
