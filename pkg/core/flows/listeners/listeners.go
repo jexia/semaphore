@@ -1,8 +1,8 @@
 package listeners
 
 import (
+	"github.com/jexia/semaphore/pkg/broker/config"
 	"github.com/jexia/semaphore/pkg/broker/logger"
-	"github.com/jexia/semaphore/pkg/core/api"
 	"github.com/jexia/semaphore/pkg/core/trace"
 	"github.com/jexia/semaphore/pkg/transport"
 	"go.uber.org/zap"
@@ -10,7 +10,7 @@ import (
 
 // Apply collects the given endpoints and applies them to the configured listeners.
 // A error is returned if a listener is not found or a listener returned a error.
-func Apply(endpoints []*transport.Endpoint, options api.Options) error {
+func Apply(endpoints []*transport.Endpoint, options config.Options) error {
 	collections := make(map[string][]*transport.Endpoint, len(options.Listeners))
 
 	logger.Debug(options.Ctx, "constructing listeners")

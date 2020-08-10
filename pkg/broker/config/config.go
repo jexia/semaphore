@@ -1,4 +1,4 @@
-package api
+package config
 
 import (
 	"github.com/jexia/semaphore/pkg/broker"

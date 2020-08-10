@@ -4,10 +4,10 @@ import (
 	"github.com/jexia/semaphore"
 	"github.com/jexia/semaphore/cmd/semaphore/middleware"
 	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/config"
 	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/codec/json"
 	"github.com/jexia/semaphore/pkg/codec/proto"
-	"github.com/jexia/semaphore/pkg/core/api"
 	"github.com/jexia/semaphore/pkg/metrics/prometheus"
 	"github.com/jexia/semaphore/pkg/providers/hcl"
 	"github.com/jexia/semaphore/pkg/providers/protobuffers"
@@ -22,8 +22,8 @@ import (
 )
 
 // ConstructArguments constructs the option arguments from the given parameters
-func ConstructArguments(params *Semaphore) ([]api.Option, error) {
-	arguments := []api.Option{
+func ConstructArguments(params *Semaphore) ([]config.Option, error) {
+	arguments := []config.Option{
 		semaphore.WithCodec(json.NewConstructor()),
 		semaphore.WithCodec(proto.NewConstructor()),
 		semaphore.WithCaller(micro.NewCaller("micro-grpc", microGRPC.NewService())),
@@ -76,7 +76,7 @@ func ConstructArguments(params *Semaphore) ([]api.Option, error) {
 		arguments = append(arguments, semaphore.WithMiddleware(prometheus.New(params.Prometheus.Address)))
 	}
 
-	arguments = append([]api.Option{semaphore.WithLogLevel("*", params.LogLevel)}, arguments...)
+	arguments = append([]config.Option{semaphore.WithLogLevel("*", params.LogLevel)}, arguments...)
 
 	return arguments, nil
 }

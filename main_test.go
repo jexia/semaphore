@@ -9,9 +9,9 @@ import (
 	"time"
 
 	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/config"
 	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/codec/json"
-	"github.com/jexia/semaphore/pkg/core/api"
 	"github.com/jexia/semaphore/pkg/flow"
 	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/providers"
@@ -30,7 +30,7 @@ func TestNewOptions(t *testing.T) {
 		"cdf": nil,
 	}
 
-	tests := [][]api.Option{
+	tests := [][]config.Option{
 		{WithFlows(nil), WithSchema(nil)},
 		{WithFlows(nil)},
 		{WithSchema(nil)},
@@ -99,7 +99,7 @@ func TestNewClientMiddlewareError(t *testing.T) {
 	t.Parallel()
 
 	expected := errors.New("middleware")
-	_, err := New(WithMiddleware(func(ctx *broker.Context) ([]api.Option, error) {
+	_, err := New(WithMiddleware(func(ctx *broker.Context) ([]config.Option, error) {
 		return nil, expected
 	}))
 
@@ -116,8 +116,8 @@ func TestNewClientMiddlewareOptions(t *testing.T) {
 	t.Parallel()
 
 	expected := "mock"
-	client, err := New(WithMiddleware(func(ctx *broker.Context) ([]api.Option, error) {
-		result := []api.Option{
+	client, err := New(WithMiddleware(func(ctx *broker.Context) ([]config.Option, error) {
+		result := []config.Option{
 			WithFunctions(functions.Custom{
 				expected: func(args ...*specs.Property) (*specs.Property, functions.Exec, error) {
 					return nil, nil, nil
