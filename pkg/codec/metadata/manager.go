@@ -60,6 +60,11 @@ func (manager *Manager) Marshal(store references.Store) MD {
 // Unmarshal unmarshals the given transport metadata into the given reference store
 func (manager *Manager) Unmarshal(metadata MD, store references.Store) {
 	for key, value := range metadata {
+		_, has := manager.Params[key]
+		if !has {
+			continue
+		}
+
 		ref := references.NewReference(strings.ToLower(key))
 		ref.Value = value
 
