@@ -1,0 +1,96 @@
+package openapi3
+
+import (
+	"io/ioutil"
+	"path/filepath"
+	"strings"
+	"testing"
+
+	"github.com/jexia/semaphore"
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/config"
+	"github.com/jexia/semaphore/pkg/broker/logger"
+	"github.com/jexia/semaphore/pkg/codec/json"
+	"github.com/jexia/semaphore/pkg/functions"
+	"github.com/jexia/semaphore/pkg/providers"
+	"github.com/jexia/semaphore/pkg/providers/hcl"
+	"github.com/jexia/semaphore/pkg/providers/protobuffers"
+	"github.com/jexia/semaphore/pkg/transport/grpc"
+	"github.com/jexia/semaphore/pkg/transport/http"
+	"gopkg.in/yaml.v2"
+)
+
+func TestOpenAPI3Generation(t *testing.T) {
+	t.Parallel()
+
+	path, err := filepath.Abs("./tests/*.hcl")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	ctx := logger.WithLogger(broker.NewContext())
+	files, err := providers.ResolvePath(ctx, []string{}, path)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, file := range files {
+		t.Run(file.Name(), func(t *testing.T) {
+			ctx := logger.WithLogger(broker.NewContext())
+
+			options, err := hcl.GetOptions(ctx, file.Path)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			arguments := []config.Option{
+				semaphore.WithFlows(hcl.FlowsResolver(file.Path)),
+				semaphore.WithServices(hcl.ServicesResolver(file.Path)),
+				semaphore.WithEndpoints(hcl.EndpointsResolver(file.Path)),
+				semaphore.WithCodec(json.NewConstructor()),
+				semaphore.WithListener(http.NewListener(":0", nil)),
+				semaphore.WithListener(grpc.NewListener(":0", nil)),
+				semaphore.WithCaller(http.NewCaller()),
+			}
+
+			for _, proto := range options.Protobuffers {
+				arguments = append(arguments, semaphore.WithSchema(protobuffers.SchemaResolver([]string{"./tests"}, proto)))
+			}
+
+			client, err := semaphore.New(arguments...)
+
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			flows, endpoints, _, _, err := client.Options.Constructor(ctx, functions.Collection{}, client.Options)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			object, err := Generate(endpoints, flows)
+			result, err := yaml.Marshal(object)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			name := strings.TrimSuffix(file.Name(), filepath.Ext(file.Name()))
+			target := name + ".yaml"
+
+			path, err := filepath.Abs("./tests/" + target)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			expected, err := ioutil.ReadFile(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if string(result) != string(expected) {
+				t.Log(string(result))
+				t.Fatal("unexpected result")
+			}
+		})
+	}
+}
