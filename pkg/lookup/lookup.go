@@ -90,7 +90,7 @@ func GetAvailableResources(flow specs.FlowInterface, breakpoint string) map[stri
 		references[node.ID] = ReferenceMap{}
 		if node.Call != nil {
 			if node.Intermediate != nil {
-				references[node.ID][template.ResponseResource] = PropertyLookup(node.Intermediate)
+				references[node.ID][template.ResponseResource] = PropertyLookup(node.Intermediate.Property)
 			}
 
 			if node.Call.Request != nil {

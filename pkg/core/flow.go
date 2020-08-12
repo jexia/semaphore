@@ -43,6 +43,11 @@ func Apply(ctx *broker.Context, mem functions.Collection, services specs.Service
 				}),
 			}
 
+			if node.Intermediate != nil {
+				stack := mem[node.Intermediate]
+				arguments = append(arguments, flow.WithFunctions(stack))
+			}
+
 			if node.Condition != nil {
 				arguments = append(arguments, flow.WithCondition(condition.New(ctx, mem, node.Condition)))
 			}

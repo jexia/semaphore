@@ -224,16 +224,16 @@ type Dependencies map[string]*Node
 // A call could contain the request headers, request body, rollback, and the execution type.
 type Node struct {
 	*metadata.Meta
-	Type         NodeType     `json:"type,omitempty"`
-	ID           string       `json:"id,omitempty"`
-	Name         string       `json:"name,omitempty"`
-	Intermediate *Property    `json:"intermediate,omitempty"`
-	Condition    *Condition   `json:"condition,omitempty"`
-	DependsOn    Dependencies `json:"depends_on,omitempty"`
-	Call         *Call        `json:"call,omitempty"`
-	Rollback     *Call        `json:"rollback,omitempty"`
-	ExpectStatus []int        `json:"expect_status,omitempty"`
-	OnError      *OnError     `json:"on_error,omitempty"`
+	Type         NodeType      `json:"type,omitempty"`
+	ID           string        `json:"id,omitempty"`
+	Name         string        `json:"name,omitempty"`
+	Intermediate *ParameterMap `json:"intermediate,omitempty"`
+	Condition    *Condition    `json:"condition,omitempty"`
+	DependsOn    Dependencies  `json:"depends_on,omitempty"`
+	Call         *Call         `json:"call,omitempty"`
+	Rollback     *Call         `json:"rollback,omitempty"`
+	ExpectStatus []int         `json:"expect_status,omitempty"`
+	OnError      *OnError      `json:"on_error,omitempty"`
 }
 
 // GetOnError returns the error handling for the given node

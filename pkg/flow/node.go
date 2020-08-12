@@ -5,6 +5,7 @@ import (
 
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
+	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/transport"
@@ -14,11 +15,11 @@ import (
 // NodeOptions represent a set of options that could be set through
 // option functions.
 type NodeOptions struct {
-	condition    *Condition
-	call         Call
-	intermediate *specs.Property
-	rollback     Call
-	middleware   *NodeMiddleware
+	condition  *Condition
+	call       Call
+	functions  functions.Stack
+	rollback   Call
+	middleware *NodeMiddleware
 }
 
 // NodeOption is a wrapper function
@@ -45,10 +46,10 @@ func WithCondition(condition *Condition) NodeOption {
 	}
 }
 
-// WithIntermediate sets the given intermediate property
-func WithIntermediate(intermediate *specs.Property) NodeOption {
+// WithFunctions sets the given functions stack
+func WithFunctions(functions functions.Stack) NodeOption {
 	return func(option *NodeOptions) {
-		option.intermediate = intermediate
+		option.functions = functions
 	}
 }
 
@@ -59,8 +60,8 @@ func WithNodeMiddleware(middleware *NodeMiddleware) NodeOption {
 	}
 }
 
-// CollectNodeOptions constructs a new node options object and collects the options.
-func CollectNodeOptions(opts []NodeOption) NodeOptions {
+// NewNodeOptions constructs a new node options object and collects the options.
+func NewNodeOptions(opts ...NodeOption) NodeOptions {
 	options := NodeOptions{
 		middleware: &NodeMiddleware{},
 	}
@@ -76,7 +77,7 @@ func CollectNodeOptions(opts []NodeOption) NodeOptions {
 // The service called inside the call endpoint is retrieved from the services collection.
 // The call, codec and rollback are defined inside the node and used while processing requests.
 func NewNode(parent *broker.Context, node *specs.Node, opts ...NodeOption) *Node {
-	options := CollectNodeOptions(opts)
+	options := NewNodeOptions(opts...)
 
 	module := broker.WithModule(parent, "node", node.Name)
 	ctx := logger.WithLogger(module)
@@ -106,6 +107,7 @@ func NewNode(parent *broker.Context, node *specs.Node, opts ...NodeOption) *Node
 		ctx:          ctx,
 		Name:         node.ID,
 		Previous:     []*Node{},
+		Functions:    options.functions,
 		Call:         options.call,
 		Revert:       options.rollback,
 		DependsOn:    node.DependsOn,
@@ -159,6 +161,7 @@ type Node struct {
 	ctx          *broker.Context
 	Name         string
 	Previous     Nodes
+	Functions    functions.Stack
 	Call         Call
 	Revert       Call
 	DependsOn    specs.Dependencies
@@ -184,6 +187,15 @@ func (node *Node) Do(ctx context.Context, tracker *Tracker, processes *Processes
 	}
 
 	var err error
+
+	if node.Functions != nil {
+		err = ExecuteFunctions(node.Functions, refs)
+		if err != nil {
+			logger.Error(node.ctx, "node functions failed", zap.Error(err))
+			processes.Fatal(transport.WrapError(err, node.OnError))
+			return
+		}
+	}
 
 	if node.Condition != nil {
 		logger.Debug(node.ctx, "evaluating condition")

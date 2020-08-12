@@ -110,6 +110,14 @@ func PrepareFlowFunctions(ctx *broker.Context, mem Collection, functions Custom,
 
 // PrepareNodeFunctions prepares the available functions within the given node
 func PrepareNodeFunctions(ctx *broker.Context, mem Collection, functions Custom, flow specs.FlowInterface, node *specs.Node) (err error) {
+	if node.Intermediate != nil {
+		stack := mem.Reserve(node.Intermediate)
+		err = PrepareParameterMapFunctions(ctx, node, flow, stack, node.Intermediate, functions)
+		if err != nil {
+			return err
+		}
+	}
+
 	if node.Condition != nil {
 		stack := mem.Reserve(node.Condition.Params)
 		err = PrepareParameterMapFunctions(ctx, node, flow, stack, node.Condition.Params, functions)

@@ -9,6 +9,7 @@ import (
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/codec/json"
+	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/labels"
@@ -756,5 +757,111 @@ func TestAfterRevertNodeErr(t *testing.T) {
 
 	if counter != 1 {
 		t.Fatalf("unexpected counter %d, expected after revert function to be called", counter)
+	}
+}
+
+func TestNodeDoFunctions(t *testing.T) {
+	counter := 0
+	call := &caller{}
+	node := NewMockNode("mock", call, nil)
+
+	node.Functions = functions.Stack{
+		"hash": &functions.Function{
+			Fn: func(store references.Store) error {
+				counter++
+				return nil
+			},
+		},
+	}
+
+	processes := NewProcesses(1)
+	node.Do(context.Background(), NewTracker("", 1), processes, nil)
+	if processes.Err() != nil {
+		t.Error(processes.Err())
+	}
+
+	if counter != 1 {
+		t.Fatalf("unexpected counter %d, expected node function to be called", counter)
+	}
+}
+
+func TestNodeDoFunctionsErr(t *testing.T) {
+	expected := errors.New("unexpected err")
+	counter := 0
+	call := &caller{}
+	node := NewMockNode("mock", call, nil)
+
+	node.Functions = functions.Stack{
+		"hash": &functions.Function{
+			Fn: func(store references.Store) error {
+				counter++
+				return expected
+			},
+		},
+	}
+
+	processes := NewProcesses(1)
+	node.Do(context.Background(), NewTracker("", 1), processes, nil)
+	if !errors.Is(processes.Err(), expected) {
+		t.Errorf("unexpected err '%s', expected '%s' to be thrown", processes.Err(), expected)
+	}
+
+	if counter != 1 {
+		t.Fatalf("unexpected counter %d, expected node function to be called", counter)
+	}
+}
+
+func TestNodeDoConditionFunctions(t *testing.T) {
+	counter := 0
+	call := &caller{}
+	node := NewMockNode("mock", call, nil)
+
+	node.Condition = &Condition{
+		stack: functions.Stack{
+			"hash": &functions.Function{
+				Fn: func(store references.Store) error {
+					counter++
+					return nil
+				},
+			},
+		},
+	}
+
+	processes := NewProcesses(1)
+	node.Do(context.Background(), NewTracker("", 1), processes, nil)
+	if processes.Err() != nil {
+		t.Error(processes.Err())
+	}
+
+	if counter != 1 {
+		t.Fatalf("unexpected counter %d, expected condition function to be called", counter)
+	}
+}
+
+func TestNodeDoConditionFunctionsErr(t *testing.T) {
+	expected := errors.New("unexpected err")
+	counter := 0
+	call := &caller{}
+	node := NewMockNode("mock", call, nil)
+
+	node.Condition = &Condition{
+		stack: functions.Stack{
+			"hash": &functions.Function{
+				Fn: func(store references.Store) error {
+					counter++
+					return expected
+				},
+			},
+		},
+	}
+
+	processes := NewProcesses(1)
+	node.Do(context.Background(), NewTracker("", 1), processes, nil)
+	if !errors.Is(processes.Err(), expected) {
+		t.Errorf("unexpected err '%s', expected '%s' to be thrown", processes.Err(), expected)
+	}
+
+	if counter != 1 {
+		t.Fatalf("unexpected counter %d, expected condition functions to be called", counter)
 	}
 }

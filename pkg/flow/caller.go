@@ -29,6 +29,13 @@ func NewRequest(functions functions.Stack, codec codec.Manager, metadata *metada
 	}
 }
 
+// Request represents a codec and metadata manager
+type Request struct {
+	functions functions.Stack
+	codec     codec.Manager
+	metadata  *metadata.Manager
+}
+
 // CallOptions represents the available options that could be used to construct a new flow caller
 type CallOptions struct {
 	Transport      transport.Call
@@ -70,13 +77,6 @@ func NewCall(parent *broker.Context, node *specs.Node, options *CallOptions) Cal
 	}
 
 	return result
-}
-
-// Request represents a codec and metadata manager
-type Request struct {
-	functions functions.Stack
-	codec     codec.Manager
-	metadata  *metadata.Manager
 }
 
 // Caller represents a flow transport caller
