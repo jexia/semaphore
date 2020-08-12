@@ -70,7 +70,7 @@ func TestNewClient(t *testing.T) {
 				WithServices(hcl.ServicesResolver(file.Path)),
 				WithSchema(mock.SchemaResolver(schema)),
 				WithCodec(json.NewConstructor()),
-				WithListener(http.NewListener(":0", nil)),
+				WithListener(http.NewListener(":0")),
 				WithCaller(http.NewCaller()),
 				WithLogLevel("*", "debug"),
 			)
@@ -162,7 +162,7 @@ func TestServe(t *testing.T) {
 				WithServices(hcl.ServicesResolver(file.Path)),
 				WithSchema(mock.SchemaResolver(schema)),
 				WithCodec(json.NewConstructor()),
-				WithListener(http.NewListener(":0", nil)),
+				WithListener(http.NewListener(":0")),
 				WithCaller(http.NewCaller()),
 				WithLogLevel("*", "debug"),
 			)
@@ -215,7 +215,7 @@ func TestErrServe(t *testing.T) {
 				WithServices(hcl.ServicesResolver(file.Path)),
 				WithSchema(mock.SchemaResolver(schema)),
 				WithCodec(json.NewConstructor()),
-				WithListener(http.NewListener(listener.Addr().String(), nil)),
+				WithListener(http.NewListener(listener.Addr().String())),
 				WithCaller(http.NewCaller()),
 				WithLogLevel("*", "debug"),
 			)

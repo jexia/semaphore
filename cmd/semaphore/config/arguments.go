@@ -61,7 +61,19 @@ func ConstructArguments(params *Semaphore) ([]config.Option, error) {
 	}
 
 	if params.HTTP.Address != "" {
-		arguments = append(arguments, semaphore.WithListener(http.NewListener(params.HTTP.Address, specs.Options{})))
+		arguments = append(
+			arguments,
+			semaphore.WithListener(
+				http.NewListener(
+					params.HTTP.Address,
+					http.WithOrigins(params.HTTP.Origin),
+					http.WithReadTimeout(params.HTTP.ReadTimeout),
+					http.WithWriteTimeout(params.HTTP.WriteTimeout),
+					http.WithKeyFile(params.HTTP.KeyFile),
+					http.WithCertFile(params.HTTP.CertFile),
+				),
+			),
+		)
 	}
 
 	if params.GraphQL.Address != "" {

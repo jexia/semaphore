@@ -190,6 +190,9 @@ github.com/prometheus/common/model
 github.com/prometheus/procfs
 github.com/prometheus/procfs/internal/fs
 github.com/prometheus/procfs/internal/util
+# github.com/rs/cors v1.7.0
+## explicit
+github.com/rs/cors
 # github.com/spf13/cobra v0.0.6
 ## explicit
 github.com/spf13/cobra

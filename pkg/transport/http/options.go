@@ -14,10 +14,6 @@ const (
 	InsecureOption = "insecure"
 	// CAFileOption certificate authority file path
 	CAFileOption = "ca_file"
-	// CertFileOption certificate file path
-	CertFileOption = "cert_file"
-	// KeyFileOption certificate key file path
-	KeyFileOption = "key_file"
 	// ReadTimeoutOption represents the HTTP read timeout option key
 	ReadTimeoutOption = "read_timeout"
 	// WriteTimeoutOption represents the HTTP write timeout option key
@@ -37,54 +33,6 @@ const (
 	// MaxIdleConnsOption represents the max idle connections option key
 	MaxIdleConnsOption = "max_idle_conns"
 )
-
-// ListenerOptions represents the available HTTP options
-type ListenerOptions struct {
-	ReadTimeout  time.Duration
-	WriteTimeout time.Duration
-	CertFile     string
-	KeyFile      string
-}
-
-// ParseListenerOptions parses the given specs options into HTTP options
-func ParseListenerOptions(options specs.Options) (*ListenerOptions, error) {
-	result := &ListenerOptions{
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 5 * time.Second,
-	}
-
-	read, has := options[ReadTimeoutOption]
-	if has {
-		duration, err := time.ParseDuration(read)
-		if err != nil {
-			return nil, err
-		}
-
-		result.ReadTimeout = duration
-	}
-
-	write, has := options[WriteTimeoutOption]
-	if has {
-		duration, err := time.ParseDuration(write)
-		if err != nil {
-			return nil, err
-		}
-
-		result.WriteTimeout = duration
-	}
-
-	key, has := options[KeyFileOption]
-	if has {
-		result.KeyFile = key
-	}
-
-	crt, has := options[CertFileOption]
-	if has {
-		result.CertFile = crt
-	}
-
-	return result, nil
-}
 
 // EndpointOptions represents the available HTTP options
 type EndpointOptions struct {

@@ -5,7 +5,9 @@ endpoint "FetchLatestProject" "http" {
 }
 
 flow "FetchLatestProject" {
-	input "com.semaphore.Query" {}
+	input "com.semaphore.Query" {
+		header = ["Authorization", "Timestamp"]
+	}
 
 	resource "query" {
 		request "com.semaphore.Todo" "Get" {

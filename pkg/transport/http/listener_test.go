@@ -25,30 +25,36 @@ import (
 )
 
 func NewMockListener(t *testing.T, nodes flow.Nodes, errs transport.Errs) (transport.Listener, string) {
-	port := AvailablePort(t)
-	addr := fmt.Sprintf(":%d", port)
+	var (
+		port   = AvailablePort(t)
+		addr   = fmt.Sprintf(":%d", port)
+		origin = []string{"test.com"}
 
-	ctx := logger.WithLogger(broker.NewContext())
-	listener := NewListener(addr, nil)(ctx)
+		ctx      = logger.WithLogger(broker.NewContext())
+		listener = NewListener(addr, WithOrigins(origin))(ctx)
 
-	json := json.NewConstructor()
-	constructors := map[string]codec.Constructor{
-		json.Name(): json,
-	}
+		json = json.NewConstructor()
 
-	endpoints := []*transport.Endpoint{
-		{
-			Request: transport.NewObject(NewSimpleMockSpecs(), nil, nil),
-			Flow:    flow.NewManager(ctx, "test", nodes, nil, nil, nil),
-			Errs:    errs,
-			Options: specs.Options{
-				EndpointOption: "/",
-				MethodOption:   http.MethodPost,
-				CodecOption:    json.Name(),
+		constructors = map[string]codec.Constructor{
+			json.Name(): json,
+		}
+
+		endpoints = []*transport.Endpoint{
+			{
+				Request: &transport.Object{
+					Definition: NewSimpleMockSpecs(),
+				},
+				Flow: flow.NewManager(ctx, "test", nodes, nil, nil, nil),
+				Errs: errs,
+				Options: specs.Options{
+					EndpointOption: "/",
+					MethodOption:   http.MethodPost,
+					CodecOption:    json.Name(),
+				},
+				Response: transport.NewObject(NewSimpleMockSpecs(), nil, nil),
 			},
-			Response: transport.NewObject(NewSimpleMockSpecs(), nil, nil),
-		},
-	}
+		}
+	)
 
 	listener.Handle(ctx, endpoints, constructors)
 	go listener.Serve()
@@ -58,6 +64,96 @@ func NewMockListener(t *testing.T, nodes flow.Nodes, errs transport.Errs) (trans
 
 	endpoint := fmt.Sprintf("http://127.0.0.1:%d/", port)
 	return listener, endpoint
+}
+
+func TestCORS(t *testing.T) {
+	type test struct {
+		headers          map[string]string
+		shouldPresent    map[string]string
+		shouldNotPresent []string
+	}
+
+	tests := map[string]test{
+		"bad origin": {
+			headers: map[string]string{"Origin": "un.known"},
+			shouldPresent: map[string]string{
+				"Allow": "OPTIONS, POST",
+			},
+			shouldNotPresent: []string{
+				"Access-Control-Allow-Origin",
+				"Access-Control-Allow-Headers",
+			},
+		},
+		"good origin": {
+			headers: map[string]string{
+				"Origin":                         "test.com",
+				"Access-Control-Request-Method":  "POST",
+				"Access-Control-Request-Headers": "Authorization",
+			},
+			shouldPresent: map[string]string{
+				"Access-Control-Allow-Origin":  "test.com",
+				"Access-Control-Allow-Methods": "POST",
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			var (
+				ctx  = logger.WithLogger(broker.NewContext())
+				node = &specs.Node{
+					ID: "first",
+				}
+
+				called = 0
+				call   = NewCallerFunc(func(ctx context.Context, refs references.Store) error {
+					called++
+					return nil
+				})
+
+				nodes = flow.Nodes{
+					flow.NewNode(ctx, node, nil, call, nil, nil),
+				}
+			)
+
+			listener, endpoint := NewMockListener(t, nodes, nil)
+			defer listener.Close()
+
+			req, err := http.NewRequest(http.MethodOptions, endpoint, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			for header, value := range test.headers {
+				req.Header.Set(header, value)
+			}
+
+			result, err := http.DefaultClient.Do(req)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if result.StatusCode != http.StatusOK {
+				t.Fatalf("unexpected status code %d", result.StatusCode)
+			}
+
+			for header, expected := range test.shouldPresent {
+				if value := result.Header.Get(header); value != expected {
+					t.Errorf("header %q should have value %q instead of %q", header, expected, value)
+				}
+			}
+
+			for _, header := range test.shouldNotPresent {
+				if result.Header.Get(header) != "" {
+					t.Errorf("header %q should not present in the response", header)
+				}
+			}
+
+			if called != 0 {
+				t.Errorf("node handler should not be called")
+			}
+		})
+	}
 }
 
 func TestListener(t *testing.T) {
@@ -240,7 +336,7 @@ func TestListenerForwarding(t *testing.T) {
 		return
 	}))
 
-	listener := NewListener(mock, nil)(ctx)
+	listener := NewListener(mock)(ctx)
 
 	json := json.NewConstructor()
 	constructors := map[string]codec.Constructor{
