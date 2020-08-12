@@ -59,7 +59,7 @@ func TestGetNextResource(t *testing.T) {
 			breakpoint: "first",
 			expected:   "second",
 			manager: &specs.Flow{
-				Nodes: []*specs.Node{
+				Nodes: specs.NodeList{
 					{
 						ID: "first",
 					},
@@ -73,7 +73,7 @@ func TestGetNextResource(t *testing.T) {
 			breakpoint: "second",
 			expected:   "third",
 			manager: &specs.Flow{
-				Nodes: []*specs.Node{
+				Nodes: specs.NodeList{
 					{
 						ID: "first",
 					},
@@ -90,7 +90,7 @@ func TestGetNextResource(t *testing.T) {
 			breakpoint: "last",
 			expected:   template.OutputResource,
 			manager: &specs.Flow{
-				Nodes: []*specs.Node{
+				Nodes: specs.NodeList{
 					{
 						ID: "first",
 					},
@@ -104,7 +104,7 @@ func TestGetNextResource(t *testing.T) {
 			breakpoint: "unknown",
 			expected:   "unknown",
 			manager: &specs.Flow{
-				Nodes: []*specs.Node{
+				Nodes: specs.NodeList{
 					{
 						ID: "first",
 					},
@@ -444,7 +444,7 @@ func NewMockFlow(name string) *specs.Flow {
 		Input: &specs.ParameterMap{
 			Property: NewInputMockProperty(),
 		},
-		Nodes: []*specs.Node{
+		Nodes: specs.NodeList{
 			NewMockCall("first"),
 			NewMockCall("second"),
 			NewMockCall("third"),

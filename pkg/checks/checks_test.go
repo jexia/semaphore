@@ -29,7 +29,7 @@ func TestDuplicateManifests(t *testing.T) {
 		"duplicate node": {
 			&specs.Flow{
 				Name: "first",
-				Nodes: []*specs.Node{
+				Nodes: specs.NodeList{
 					{
 						ID: "dup",
 					},
@@ -42,7 +42,7 @@ func TestDuplicateManifests(t *testing.T) {
 		"duplicate proxy node": {
 			&specs.Proxy{
 				Name: "first",
-				Nodes: []*specs.Node{
+				Nodes: specs.NodeList{
 					{
 						ID: "dup",
 					},
@@ -109,7 +109,7 @@ func TestReservedKeywordsManifests(t *testing.T) {
 		"error": {
 			&specs.Flow{
 				Name: "first",
-				Nodes: []*specs.Node{
+				Nodes: specs.NodeList{
 					{
 						ID: "error",
 					},
@@ -119,7 +119,7 @@ func TestReservedKeywordsManifests(t *testing.T) {
 		"input": {
 			&specs.Flow{
 				Name: "first",
-				Nodes: []*specs.Node{
+				Nodes: specs.NodeList{
 					{
 						ID: "input",
 					},
@@ -129,7 +129,7 @@ func TestReservedKeywordsManifests(t *testing.T) {
 		"stack": {
 			&specs.Flow{
 				Name: "first",
-				Nodes: []*specs.Node{
+				Nodes: specs.NodeList{
 					{
 						ID: "stack",
 					},
@@ -153,7 +153,7 @@ func TestDuplicateNodes(t *testing.T) {
 	tests := map[string]*specs.Flow{
 		"simple": {
 			Name: "first",
-			Nodes: []*specs.Node{
+			Nodes: specs.NodeList{
 				{
 					ID: "dup",
 				},

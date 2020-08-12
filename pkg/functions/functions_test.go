@@ -132,7 +132,7 @@ func TestPrepareManifestFunctions(t *testing.T) {
 			collections: 3,
 			flows: specs.FlowListInterface{
 				&specs.Flow{
-					Nodes: []*specs.Node{
+					Nodes: specs.NodeList{
 						{
 							Call: &specs.Call{
 								Request: &specs.ParameterMap{
@@ -185,7 +185,7 @@ func TestPrepareManifestFunctions(t *testing.T) {
 			collections: 2,
 			flows: specs.FlowListInterface{
 				&specs.Flow{
-					Nodes: []*specs.Node{
+					Nodes: specs.NodeList{
 						{
 							Rollback: &specs.Call{
 								Request: &specs.ParameterMap{
@@ -239,7 +239,7 @@ func TestPrepareManifestFunctions(t *testing.T) {
 			collections: 2,
 			flows: specs.FlowListInterface{
 				&specs.Flow{
-					Nodes: []*specs.Node{
+					Nodes: specs.NodeList{
 						{
 							Call: &specs.Call{
 								Request: &specs.ParameterMap{
@@ -271,7 +271,7 @@ func TestPrepareManifestFunctions(t *testing.T) {
 			collections: 2,
 			flows: specs.FlowListInterface{
 				&specs.Proxy{
-					Nodes: []*specs.Node{
+					Nodes: specs.NodeList{
 						{
 							Call: &specs.Call{
 								Request: &specs.ParameterMap{
@@ -311,7 +311,7 @@ func TestPrepareManifestFunctions(t *testing.T) {
 			collections: 2,
 			flows: specs.FlowListInterface{
 				&specs.Proxy{
-					Nodes: []*specs.Node{
+					Nodes: specs.NodeList{
 						{
 							Rollback: &specs.Call{
 								Request: &specs.ParameterMap{
@@ -365,7 +365,7 @@ func TestPrepareManifestFunctions(t *testing.T) {
 			collections: 2,
 			flows: specs.FlowListInterface{
 				&specs.Proxy{
-					Nodes: []*specs.Node{
+					Nodes: specs.NodeList{
 						{
 							Call: &specs.Call{
 								Request: &specs.ParameterMap{
@@ -399,7 +399,7 @@ func TestPrepareManifestFunctions(t *testing.T) {
 			collections: 1,
 			flows: specs.FlowListInterface{
 				&specs.Proxy{
-					Nodes: []*specs.Node{
+					Nodes: specs.NodeList{
 						{
 							Call: &specs.Call{
 								Request: &specs.ParameterMap{
@@ -418,7 +418,7 @@ func TestPrepareManifestFunctions(t *testing.T) {
 			collections: 1,
 			flows: specs.FlowListInterface{
 				&specs.Proxy{
-					Nodes: []*specs.Node{
+					Nodes: specs.NodeList{
 						{
 							Call: &specs.Call{
 								Response: &specs.ParameterMap{
@@ -437,7 +437,7 @@ func TestPrepareManifestFunctions(t *testing.T) {
 			collections: 1,
 			flows: specs.FlowListInterface{
 				&specs.Proxy{
-					Nodes: []*specs.Node{
+					Nodes: specs.NodeList{
 						{
 							Call: &specs.Call{
 								Request: &specs.ParameterMap{
@@ -454,7 +454,7 @@ func TestPrepareManifestFunctions(t *testing.T) {
 			collections: 1,
 			flows: specs.FlowListInterface{
 				&specs.Proxy{
-					Nodes: []*specs.Node{
+					Nodes: specs.NodeList{
 						{
 							Call: &specs.Call{
 								Response: &specs.ParameterMap{
@@ -471,7 +471,7 @@ func TestPrepareManifestFunctions(t *testing.T) {
 			collections: 1,
 			flows: specs.FlowListInterface{
 				&specs.Proxy{
-					Nodes: []*specs.Node{
+					Nodes: specs.NodeList{
 						{
 							Condition: &specs.Condition{
 								Params: &specs.ParameterMap{
@@ -498,7 +498,7 @@ func TestPrepareManifestFunctions(t *testing.T) {
 			collections: 1,
 			flows: specs.FlowListInterface{
 				&specs.Flow{
-					Nodes: []*specs.Node{
+					Nodes: specs.NodeList{
 						{
 							Call: &specs.Call{
 								Response: &specs.ParameterMap{
@@ -557,7 +557,7 @@ func TestPrepareManifestFunctionsErr(t *testing.T) {
 			collections: 3,
 			flows: specs.FlowListInterface{
 				&specs.Flow{
-					Nodes: []*specs.Node{
+					Nodes: specs.NodeList{
 						{
 							Call: &specs.Call{
 								Request: &specs.ParameterMap{
@@ -610,7 +610,7 @@ func TestPrepareManifestFunctionsErr(t *testing.T) {
 			collections: 2,
 			flows: specs.FlowListInterface{
 				&specs.Flow{
-					Nodes: []*specs.Node{
+					Nodes: specs.NodeList{
 						{
 							Rollback: &specs.Call{
 								Request: &specs.ParameterMap{
@@ -664,7 +664,7 @@ func TestPrepareManifestFunctionsErr(t *testing.T) {
 			collections: 2,
 			flows: specs.FlowListInterface{
 				&specs.Flow{
-					Nodes: []*specs.Node{
+					Nodes: specs.NodeList{
 						{
 							Call: &specs.Call{
 								Request: &specs.ParameterMap{
@@ -696,7 +696,7 @@ func TestPrepareManifestFunctionsErr(t *testing.T) {
 			collections: 2,
 			flows: specs.FlowListInterface{
 				&specs.Proxy{
-					Nodes: []*specs.Node{
+					Nodes: specs.NodeList{
 						{
 							Call: &specs.Call{
 								Request: &specs.ParameterMap{
@@ -736,7 +736,7 @@ func TestPrepareManifestFunctionsErr(t *testing.T) {
 			collections: 2,
 			flows: specs.FlowListInterface{
 				&specs.Proxy{
-					Nodes: []*specs.Node{
+					Nodes: specs.NodeList{
 						{
 							Rollback: &specs.Call{
 								Request: &specs.ParameterMap{
@@ -790,7 +790,7 @@ func TestPrepareManifestFunctionsErr(t *testing.T) {
 			collections: 2,
 			flows: specs.FlowListInterface{
 				&specs.Proxy{
-					Nodes: []*specs.Node{
+					Nodes: specs.NodeList{
 						{
 							Call: &specs.Call{
 								Request: &specs.ParameterMap{
@@ -824,7 +824,7 @@ func TestPrepareManifestFunctionsErr(t *testing.T) {
 			collections: 1,
 			flows: specs.FlowListInterface{
 				&specs.Flow{
-					Nodes: []*specs.Node{
+					Nodes: specs.NodeList{
 						{
 							Condition: &specs.Condition{
 								Params: &specs.ParameterMap{
@@ -851,7 +851,7 @@ func TestPrepareManifestFunctionsErr(t *testing.T) {
 			collections: 1,
 			flows: specs.FlowListInterface{
 				&specs.Flow{
-					Nodes: []*specs.Node{
+					Nodes: specs.NodeList{
 						{
 							Call: &specs.Call{
 								Response: &specs.ParameterMap{
@@ -874,7 +874,7 @@ func TestPrepareManifestFunctionsErr(t *testing.T) {
 			collections: 1,
 			flows: specs.FlowListInterface{
 				&specs.Flow{
-					Nodes: []*specs.Node{
+					Nodes: specs.NodeList{
 						{
 							Call: &specs.Call{
 								Response: &specs.ParameterMap{

@@ -752,7 +752,7 @@ func ParseIntermediateCondition(ctx *broker.Context, dependencies map[string]*sp
 		Condition: expr,
 	}
 
-	result := []*specs.Node{expression}
+	result := specs.NodeList{expression}
 
 	for _, references := range condition.References {
 		nodes, err := ParseIntermediateResources(ctx, dependencies, references)
