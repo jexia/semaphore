@@ -2,6 +2,7 @@ package functions
 
 import (
 	"errors"
+	"reflect"
 	"testing"
 
 	"github.com/jexia/semaphore/pkg/broker"
@@ -53,6 +54,25 @@ func CompareProperties(t *testing.T, left specs.Property, right specs.Property) 
 		if left.Reference.Path != right.Reference.Path {
 			t.Errorf("unexpected reference path '%s', expected '%s'", left.Reference.Path, right.Reference.Path)
 		}
+	}
+}
+
+func TestCollectionReserve(t *testing.T) {
+	key := &specs.ParameterMap{}
+	expected := Stack{}
+
+	collection := Collection{
+		key: expected,
+	}
+
+	result := collection.Reserve(key)
+	if !reflect.DeepEqual(result, expected) {
+		t.Fatalf("unexpected result %+v, expected %+v", result, expected)
+	}
+
+	unkown := collection.Reserve(&specs.ParameterMap{})
+	if len(unkown) != 0 {
+		t.Fatalf("unkown stack %+v, expected a empty stack", unkown)
 	}
 }
 
@@ -119,7 +139,7 @@ func TestParseUnavailableFunction(t *testing.T) {
 	}
 }
 
-func TestPrepareManifestFunctions(t *testing.T) {
+func TestPrepareFunctions(t *testing.T) {
 	type test struct {
 		expected    int
 		collections int
@@ -493,6 +513,31 @@ func TestPrepareManifestFunctions(t *testing.T) {
 				},
 			},
 		},
+		"intermediate": {
+			expected:    1,
+			collections: 1,
+			flows: specs.FlowListInterface{
+				&specs.Proxy{
+					Nodes: specs.NodeList{
+						{
+							Intermediate: &specs.ParameterMap{
+								Property: &specs.Property{
+									Type:  types.Message,
+									Label: labels.Optional,
+									Nested: map[string]*specs.Property{
+										"fn": {
+											Name: "fn",
+											Path: "fn",
+											Raw:  "mock()",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 		"params": {
 			expected:    2,
 			collections: 1,
@@ -544,7 +589,7 @@ func TestPrepareManifestFunctions(t *testing.T) {
 	}
 }
 
-func TestPrepareManifestFunctionsErr(t *testing.T) {
+func TestPrepareFunctionsErr(t *testing.T) {
 	type test struct {
 		expected    int
 		collections int
@@ -846,6 +891,31 @@ func TestPrepareManifestFunctionsErr(t *testing.T) {
 				},
 			},
 		},
+		"intermediate": {
+			expected:    1,
+			collections: 1,
+			flows: specs.FlowListInterface{
+				&specs.Flow{
+					Nodes: specs.NodeList{
+						{
+							Intermediate: &specs.ParameterMap{
+								Property: &specs.Property{
+									Type:  types.Message,
+									Label: labels.Optional,
+									Nested: map[string]*specs.Property{
+										"fn": {
+											Name: "fn",
+											Path: "fn",
+											Raw:  "mock()",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 		"call response": {
 			expected:    1,
 			collections: 1,
@@ -1045,5 +1115,26 @@ func TestPrepareParameterMapFunctions(t *testing.T) {
 				t.Fatalf("unexpected counter result %d, expected %d functions to be called", counter.total, test.expected)
 			}
 		})
+	}
+}
+
+func TestPrepareParamsFunctionsNil(t *testing.T) {
+	err := PrepareParamsFunctions(nil, nil, nil, nil, nil, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestPreparePropertyFunctionsNil(t *testing.T) {
+	err := PreparePropertyFunctions(nil, nil, nil, nil, nil, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestPrepareFunctionNil(t *testing.T) {
+	err := PrepareFunction(nil, nil, nil, nil, nil, nil)
+	if err != nil {
+		t.Fatal(err)
 	}
 }
