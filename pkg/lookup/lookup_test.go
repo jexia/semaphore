@@ -400,6 +400,21 @@ func NewMockCall(name string) *specs.Node {
 						Label:   labels.Optional,
 					},
 				},
+				Stack: map[string]*specs.Property{
+					name + "_request": {
+						Type:  types.Message,
+						Label: labels.Optional,
+						Nested: map[string]*specs.Property{
+							"nested": {
+								Name:    "nested",
+								Path:    "nested",
+								Type:    types.String,
+								Label:   labels.Optional,
+								Default: "nested string",
+							},
+						},
+					},
+				},
 				Params: map[string]*specs.Property{
 					"message": {
 						Path:    "message",
@@ -424,6 +439,21 @@ func NewMockCall(name string) *specs.Node {
 				Property: NewInputMockProperty(),
 			},
 			Response: &specs.ParameterMap{
+				Stack: map[string]*specs.Property{
+					name + "_response": {
+						Type:  types.Message,
+						Label: labels.Optional,
+						Nested: map[string]*specs.Property{
+							"nested": {
+								Name:    "nested",
+								Path:    "nested",
+								Type:    types.String,
+								Label:   labels.Optional,
+								Default: "nested string",
+							},
+						},
+					},
+				},
 				Header: specs.Header{
 					"cookie": &specs.Property{
 						Path:    "cookie",
@@ -478,7 +508,7 @@ func TestGetAvailableResources(t *testing.T) {
 			result := GetAvailableResources(flow, "output")
 			return expected, result
 		},
-		"stack lookup": func() ([]string, map[string]ReferenceMap) {
+		"stack lookup request": func() ([]string, map[string]ReferenceMap) {
 			flow := NewMockFlow("first")
 			expected := []string{template.StackResource, template.ErrorResource, "input", "first", "second", "third"}
 
@@ -488,7 +518,31 @@ func TestGetAvailableResources(t *testing.T) {
 				},
 			}
 
+			result := GetAvailableResources(flow, "output")
+			return expected, result
+		},
+		"stack lookup response": func() ([]string, map[string]ReferenceMap) {
+			flow := NewMockFlow("first")
+			expected := []string{template.StackResource, template.ErrorResource, "input", "first", "second", "third"}
+
 			flow.Nodes[0].Call.Response.Stack = map[string]*specs.Property{
+				"ref": {
+					Path: "ref",
+				},
+			}
+
+			result := GetAvailableResources(flow, "output")
+			return expected, result
+		},
+		"stack lookup intermediate": func() ([]string, map[string]ReferenceMap) {
+			flow := NewMockFlow("first")
+			expected := []string{template.StackResource, template.ErrorResource, "input", "first", "second", "third"}
+
+			flow.Nodes[0].Intermediate = flow.Nodes[0].Call.Request
+			flow.Nodes[0].Call = nil
+			flow.Nodes[0].Rollback = nil
+
+			flow.Nodes[0].Intermediate.Stack = map[string]*specs.Property{
 				"ref": {
 					Path: "ref",
 				},
@@ -605,13 +659,16 @@ func TestGetResourceOutputReference(t *testing.T) {
 		NewPropertyReference("first.response", "repeated.repeated.result"): flow.Nodes[0].Call.Response.Property.Nested["repeated"].Nested["repeated"].Nested["result"],
 		NewPropertyReference("first.response", "nested.repeated.result"):   flow.Nodes[0].Call.Response.Property.Nested["nested"].Nested["repeated"].Nested["result"],
 		NewPropertyReference("first.response", "nested.nested.result"):     flow.Nodes[0].Call.Response.Property.Nested["nested"].Nested["nested"].Nested["result"],
-		NewPropertyReference("first.response", "nested.repeated.result"):   flow.Nodes[0].Call.Response.Property.Nested["nested"].Nested["repeated"].Nested["result"],
 		NewPropertyReference("first.request", "nested.repeated.message"):   flow.Nodes[0].Call.Request.Property.Nested["nested"].Nested["repeated"].Nested["message"],
 		NewPropertyReference("first.request", "nested.nested.message"):     flow.Nodes[0].Call.Request.Property.Nested["nested"].Nested["nested"].Nested["message"],
 		NewPropertyReference("first.request", "nested.repeated.message"):   flow.Nodes[0].Call.Request.Property.Nested["nested"].Nested["repeated"].Nested["message"],
 		NewPropertyReference("first.params", "message"):                    flow.Nodes[0].Call.Request.Params["message"],
 		NewPropertyReference("first.params", "name"):                       flow.Nodes[0].Call.Request.Params["name"],
 		NewPropertyReference("first.params", "reference"):                  flow.Nodes[0].Call.Request.Property.Nested["message"],
+		NewPropertyReference("stack.first_request", "."):                   flow.Nodes[0].Call.Request.Stack["first_request"],
+		NewPropertyReference("stack.first_request", "nested"):              flow.Nodes[0].Call.Request.Stack["first_request"].Nested["nested"],
+		NewPropertyReference("stack.first_response", "."):                  flow.Nodes[0].Call.Response.Stack["first_response"],
+		NewPropertyReference("stack.first_response", "nested"):             flow.Nodes[0].Call.Response.Stack["first_response"].Nested["nested"],
 	}
 
 	for input, expected := range tests {
@@ -639,6 +696,44 @@ func TestGetResourceReference(t *testing.T) {
 		NewPropertyReference("error", "message"):          flow.Nodes[0].OnError.Message,
 		NewPropertyReference("error.response", "message"): flow.Nodes[0].OnError.Message,
 		NewPropertyReference("first.error", "result"):     flow.Nodes[0].OnError.Response.Property.Nested["result"],
+	}
+
+	for input, expected := range tests {
+		t.Run(input.String(), func(t *testing.T) {
+			resource, _ := ParseResource(input.Resource)
+			references := GetAvailableResources(flow, "first")
+			result := GetResourceReference(input, references, resource)
+			if result == nil {
+				t.Fatalf("unexpected empty result on lookup '%s', expected '%+v'", input, expected)
+			}
+
+			if result.Path != expected.Path {
+				t.Fatalf("unexpected result '%+v', expected '%+v'", result, expected)
+			}
+		})
+	}
+}
+
+func TestGetIntermediateResourceReference(t *testing.T) {
+	flow := NewMockFlow("first")
+
+	// set intermediate property
+	flow.Nodes[0].Intermediate = flow.Nodes[0].Call.Response
+	flow.Nodes[0].Call = nil
+	flow.Nodes[0].Rollback = nil
+
+	tests := map[*specs.PropertyReference]*specs.Property{
+		NewPropertyReference("first", "result"):                            flow.Nodes[0].Intermediate.Property.Nested["result"],
+		NewPropertyReference("first.response", "result"):                   flow.Nodes[0].Intermediate.Property.Nested["result"],
+		NewPropertyReference("first.header", "cookie"):                     flow.Nodes[0].Intermediate.Header["cookie"],
+		NewPropertyReference("first", "nested.result"):                     flow.Nodes[0].Intermediate.Property.Nested["nested"].Nested["result"],
+		NewPropertyReference("first", "nested.nested.result"):              flow.Nodes[0].Intermediate.Property.Nested["nested"].Nested["nested"].Nested["result"],
+		NewPropertyReference("first.response", "nested.nested.result"):     flow.Nodes[0].Intermediate.Property.Nested["nested"].Nested["nested"].Nested["result"],
+		NewPropertyReference("first.response", "nested.repeated.result"):   flow.Nodes[0].Intermediate.Property.Nested["nested"].Nested["repeated"].Nested["result"],
+		NewPropertyReference("first.response", "repeated.repeated.result"): flow.Nodes[0].Intermediate.Property.Nested["repeated"].Nested["repeated"].Nested["result"],
+		NewPropertyReference("first.response", "nested.repeated.result"):   flow.Nodes[0].Intermediate.Property.Nested["nested"].Nested["repeated"].Nested["result"],
+		NewPropertyReference("first.response", "nested.nested.result"):     flow.Nodes[0].Intermediate.Property.Nested["nested"].Nested["nested"].Nested["result"],
+		NewPropertyReference("first.response", "nested.repeated.result"):   flow.Nodes[0].Intermediate.Property.Nested["nested"].Nested["repeated"].Nested["result"],
 	}
 
 	for input, expected := range tests {
