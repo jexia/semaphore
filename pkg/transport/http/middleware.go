@@ -26,7 +26,6 @@ func OptionsHandler(origins, headers, methods []string) http.Handler {
 		AllowOriginFunc: allowOrigin,
 		AllowedHeaders:  headers,
 		AllowedMethods:  methods,
-		Debug:           true,
 	})
 
 	return mw.Handler(
