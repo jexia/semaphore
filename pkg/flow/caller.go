@@ -39,6 +39,12 @@ type CallOptions struct {
 	ExpectedStatus []int
 }
 
+// Call represents a transport caller implementation
+type Call interface {
+	References() []*specs.Property
+	Do(context.Context, references.Store) error
+}
+
 // NewCall constructs a new flow caller from the given transport caller and
 func NewCall(parent *broker.Context, node *specs.Node, options *CallOptions) Call {
 	module := broker.WithModule(parent, "caller", node.ID)

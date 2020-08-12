@@ -13,12 +13,6 @@ import (
 	"go.uber.org/zap"
 )
 
-// Call represents a transport caller implementation
-type Call interface {
-	References() []*specs.Property
-	Do(context.Context, references.Store) error
-}
-
 // NewManager constructs a new manager for the given flow.
 // Branches are constructed for the constructed nodes to optimalise performance.
 // Various variables such as the amount of nodes, references and loose ends are collected to optimalise allocations during runtime.

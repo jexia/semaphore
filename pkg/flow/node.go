@@ -11,50 +11,109 @@ import (
 	"go.uber.org/zap"
 )
 
+// NodeOptions represent a set of options that could be set through
+// option functions.
+type NodeOptions struct {
+	condition    *Condition
+	call         Call
+	intermediate *specs.Property
+	rollback     Call
+	middleware   *NodeMiddleware
+}
+
+// NodeOption is a wrapper function
+type NodeOption func(*NodeOptions)
+
+// WithCall sets the given call
+func WithCall(call Call) NodeOption {
+	return func(option *NodeOptions) {
+		option.call = call
+	}
+}
+
+// WithRollback sets the given call as rollback
+func WithRollback(call Call) NodeOption {
+	return func(option *NodeOptions) {
+		option.rollback = call
+	}
+}
+
+// WithCondition sets the given condition
+func WithCondition(condition *Condition) NodeOption {
+	return func(option *NodeOptions) {
+		option.condition = condition
+	}
+}
+
+// WithIntermediate sets the given intermediate property
+func WithIntermediate(intermediate *specs.Property) NodeOption {
+	return func(option *NodeOptions) {
+		option.intermediate = intermediate
+	}
+}
+
+// WithNodeMiddleware sets the given middleware
+func WithNodeMiddleware(middleware *NodeMiddleware) NodeOption {
+	return func(option *NodeOptions) {
+		option.middleware = middleware
+	}
+}
+
+// CollectNodeOptions constructs a new node options object and collects the options.
+func CollectNodeOptions(opts []NodeOption) NodeOptions {
+	options := NodeOptions{
+		middleware: &NodeMiddleware{},
+	}
+
+	for _, opt := range opts {
+		opt(&options)
+	}
+
+	return options
+}
+
 // NewNode constructs a new node for the given call.
 // The service called inside the call endpoint is retrieved from the services collection.
 // The call, codec and rollback are defined inside the node and used while processing requests.
-func NewNode(parent *broker.Context, node *specs.Node, condition *Condition, call, rollback Call, middleware *NodeMiddleware) *Node {
+func NewNode(parent *broker.Context, node *specs.Node, opts ...NodeOption) *Node {
+	options := CollectNodeOptions(opts)
+
 	module := broker.WithModule(parent, "node", node.Name)
 	ctx := logger.WithLogger(module)
 
-	refs := references.References{}
-
-	if middleware == nil {
-		middleware = &NodeMiddleware{}
-	}
+	refs := references.Collection{}
 
 	if node.Call != nil {
 		refs.MergeLeft(references.ParameterReferences(node.Call.Request))
 	}
 
-	if call != nil {
-		for _, prop := range call.References() {
+	if options.call != nil {
+		for _, prop := range options.call.References() {
 			refs.MergeLeft(references.PropertyReferences(prop))
 		}
 	}
 
-	if rollback != nil {
-		for _, prop := range rollback.References() {
+	if options.rollback != nil {
+		for _, prop := range options.rollback.References() {
 			refs.MergeLeft(references.PropertyReferences(prop))
 		}
 	}
 
 	return &Node{
-		BeforeDo:     middleware.BeforeDo,
-		BeforeRevert: middleware.BeforeRollback,
-		Condition:    condition,
+		BeforeDo:     options.middleware.BeforeDo,
+		BeforeRevert: options.middleware.BeforeRollback,
+		Condition:    options.condition,
 		ctx:          ctx,
 		Name:         node.ID,
 		Previous:     []*Node{},
-		Call:         call,
-		Revert:       rollback,
+		Call:         options.call,
+		Revert:       options.rollback,
 		DependsOn:    node.DependsOn,
 		References:   refs,
 		Next:         []*Node{},
 		OnError:      node.GetOnError(),
-		AfterDo:      middleware.AfterDo,
-		AfterRevert:  middleware.AfterRollback,
+		AfterDo:      options.middleware.AfterDo,
+		AfterRevert:  options.middleware.AfterRollback,
 	}
 }
 

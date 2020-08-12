@@ -239,11 +239,11 @@ func (prefix *PrefixStore) StoreEnum(resource string, path string, enum int32) {
 	prefix.store.StoreEnum(prefix.resource, template.JoinPath(prefix.path, path), enum)
 }
 
-// References represents a map of property references
-type References map[string]*specs.PropertyReference
+// Collection represents a map of property references
+type Collection map[string]*specs.PropertyReference
 
 // MergeLeft merges the references into the given reference
-func (references References) MergeLeft(incoming ...References) {
+func (references Collection) MergeLeft(incoming ...Collection) {
 	for _, refs := range incoming {
 		for key, val := range refs {
 			references[key] = val
@@ -252,11 +252,11 @@ func (references References) MergeLeft(incoming ...References) {
 }
 
 // ParameterReferences returns all the available references inside the given parameter map
-func ParameterReferences(params *specs.ParameterMap) References {
+func ParameterReferences(params *specs.ParameterMap) Collection {
 	result := make(map[string]*specs.PropertyReference)
 
 	if params == nil {
-		return References{}
+		return Collection{}
 	}
 
 	if params.Header != nil {
@@ -277,7 +277,7 @@ func ParameterReferences(params *specs.ParameterMap) References {
 }
 
 // PropertyReferences returns the available references within the given property
-func PropertyReferences(property *specs.Property) References {
+func PropertyReferences(property *specs.Property) Collection {
 	result := make(map[string]*specs.PropertyReference)
 
 	if property.Reference != nil {

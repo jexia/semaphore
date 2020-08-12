@@ -73,7 +73,7 @@ func TestListener(t *testing.T) {
 	})
 
 	nodes := flow.Nodes{
-		flow.NewNode(ctx, node, nil, call, nil, nil),
+		flow.NewNode(ctx, node, flow.WithCall(call)),
 	}
 
 	listener, endpoint := NewMockListener(t, nodes, nil)
@@ -195,7 +195,7 @@ func TestStoringParams(t *testing.T) {
 	})
 
 	nodes := flow.Nodes{
-		flow.NewNode(ctx, node, nil, call, nil, nil),
+		flow.NewNode(ctx, node, flow.WithCall(call)),
 	}
 
 	listener, endpoint := NewMockListener(t, nodes, nil)
@@ -580,7 +580,7 @@ func TestListenerErrorHandling(t *testing.T) {
 			})
 
 			nodes := flow.Nodes{
-				flow.NewNode(ctx, node, nil, call, nil, nil),
+				flow.NewNode(ctx, node, flow.WithCall(call)),
 			}
 
 			obj := transport.NewObject(node.OnError.Response, node.OnError.Status, nil)
