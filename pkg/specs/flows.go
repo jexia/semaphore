@@ -199,6 +199,21 @@ func (nodes NodeList) Get(name string) *Node {
 	return nil
 }
 
+// NodeType represents the type of the given node.
+// A type determines the purpose of the node but not the implementation.
+type NodeType string
+
+var (
+	// NodeCall is assigned when the given node is used to call a external service
+	NodeCall NodeType = "call"
+	// NodeCondition is assigned when the given node is used to execute a
+	// conditional expression.
+	NodeCondition NodeType = "condition"
+	// NodeIntermediate is assigned when the node is used as a coming in
+	// between nodes.
+	NodeIntermediate NodeType = "intermediate"
+)
+
 // Node represents a point inside a given flow where a request or rollback could be preformed.
 // Nodes could be executed synchronously or asynchronously.
 // All calls are referencing a service method, the service should match the alias defined inside the service.
@@ -206,6 +221,7 @@ func (nodes NodeList) Get(name string) *Node {
 // A call could contain the request headers, request body, rollback, and the execution type.
 type Node struct {
 	*metadata.Meta
+	Type         NodeType         `json:"type,omitempty"`
 	ID           string           `json:"id,omitempty"`
 	Name         string           `json:"name,omitempty"`
 	Condition    *Condition       `json:"condition,omitempty"`
