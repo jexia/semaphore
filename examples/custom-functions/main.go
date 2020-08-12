@@ -24,7 +24,7 @@ func main() {
 
 	client, err := semaphore.New(
 		semaphore.WithLogLevel("*", "debug"),
-		semaphore.WithListener(http.NewListener(":8080", specs.Options{})),
+		semaphore.WithListener(http.NewListener(":8080", nil, specs.Options{})),
 		semaphore.WithFlows(hcl.FlowsResolver("./*.hcl")),
 		semaphore.WithEndpoints(hcl.EndpointsResolver("./*.hcl")),
 		semaphore.WithSchema(protobuffers.SchemaResolver([]string{"./proto"}, "./proto/*.proto")),
