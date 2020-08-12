@@ -53,7 +53,7 @@ func WithReadTimeout(timeout string) ListenerOption {
 
 		duration, err := time.ParseDuration(timeout)
 		if err != nil {
-			return fmt.Errorf("invalid input for read timeout: %w", err)
+			return fmt.Errorf("invalid duration for read timeout: %q", timeout)
 		}
 
 		options.readTimeout = duration
@@ -71,7 +71,7 @@ func WithWriteTimeout(timeout string) ListenerOption {
 
 		duration, err := time.ParseDuration(timeout)
 		if err != nil {
-			return fmt.Errorf("invalid input for write timeout: %w", err)
+			return fmt.Errorf("invalid duration for write timeout: %q", timeout)
 		}
 
 		options.writeTimeout = duration
@@ -89,7 +89,7 @@ func WithKeyFile(path string) ListenerOption {
 
 		info, err := os.Stat(path)
 		if err != nil {
-			return fmt.Errorf("cannot open key file: %w", err)
+			return fmt.Errorf("cannot open key file: %q", path)
 		}
 
 		if info.IsDir() {
@@ -111,7 +111,7 @@ func WithCertFile(path string) ListenerOption {
 
 		info, err := os.Stat(path)
 		if err != nil {
-			return fmt.Errorf("cannot open certificate file: %w", err)
+			return fmt.Errorf("cannot open certificate file: %q", path)
 		}
 
 		if info.IsDir() {
