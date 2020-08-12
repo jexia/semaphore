@@ -34,6 +34,7 @@ func Parse(options *hcl.Options, target *Semaphore) {
 	if options.HTTP != nil && target.HTTP.Address == "" {
 		target.HTTP = HTTP{
 			Address: options.HTTP.Address,
+			Origin:  options.HTTP.Origin,
 		}
 	}
 
@@ -69,6 +70,7 @@ type Prometheus struct {
 // HTTP configurations
 type HTTP struct {
 	Address string
+	Origin  []string
 }
 
 // GRPC configurations

@@ -22,7 +22,7 @@ import (
 )
 
 // NewListener constructs a new listener for the given addr
-func NewListener(addr string, opts specs.Options) transport.NewListener {
+func NewListener(addr string, origins []string, opts specs.Options) transport.NewListener {
 	return func(parent *broker.Context) transport.Listener {
 		module := broker.WithModule(parent, "listener", "http")
 		ctx := logger.WithLogger(logger.WithFields(module, zap.String("listener", "http")))
@@ -35,6 +35,7 @@ func NewListener(addr string, opts specs.Options) transport.NewListener {
 		return &Listener{
 			ctx:     ctx,
 			options: options,
+			origins: origins,
 			server: &http.Server{
 				Addr:         addr,
 				ReadTimeout:  options.ReadTimeout,
@@ -51,25 +52,26 @@ type Listener struct {
 	server  *http.Server
 	mutex   sync.RWMutex
 	router  http.Handler
-	headers string
+	origins []string
 }
 
 // Name returns the name of the given listener
-func (listener *Listener) Name() string {
-	return "http"
-}
+func (listener *Listener) Name() string { return "http" }
 
 // Serve opens the HTTP listener and calls the given handler function on reach request
 func (listener *Listener) Serve() (err error) {
 	logger.Info(listener.ctx, "serving HTTP listener", zap.String("addr", listener.server.Addr))
 
-	listener.server.Handler = listener.HandleCors(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		listener.mutex.RLock()
-		if listener.router != nil {
-			listener.router.ServeHTTP(w, r)
-		}
-		listener.mutex.RUnlock()
-	}))
+	listener.server.Handler = http.HandlerFunc(
+		func(w http.ResponseWriter, r *http.Request) {
+			listener.mutex.RLock()
+			defer listener.mutex.RUnlock()
+
+			if listener.router != nil {
+				listener.router.ServeHTTP(w, r)
+			}
+		},
+	)
 
 	if listener.options.CertFile != "" && listener.options.KeyFile != "" {
 		err = listener.server.ListenAndServeTLS(listener.options.CertFile, listener.options.KeyFile)
@@ -88,14 +90,20 @@ func (listener *Listener) Serve() (err error) {
 func (listener *Listener) Handle(ctx *broker.Context, endpoints []*transport.Endpoint, codecs map[string]codec.Constructor) error {
 	logger.Info(listener.ctx, "HTTP listener received new endpoints")
 
-	router := httprouter.New()
-	headers := map[string]struct{}{}
+	var (
+		router  = httprouter.New()
+		headers = make(UniqueStringItems)
+		methods = make(UniqueStringItems)
+	)
 
 	for _, endpoint := range endpoints {
+
 		options, err := ParseEndpointOptions(endpoint.Options)
 		if err != nil {
 			return fmt.Errorf("endpoint %s: %s", endpoint.Flow, err)
 		}
+
+		methods.Add(options.Method)
 
 		ctx := logger.WithFields(ctx, zap.String("endpoint", options.Endpoint), zap.String("method", options.Method))
 		handle, err := NewHandle(ctx, endpoint, options, codecs)
@@ -103,10 +111,10 @@ func (listener *Listener) Handle(ctx *broker.Context, endpoints []*transport.End
 			return err
 		}
 
-		if handle.Request != nil {
-			if handle.Request.Meta != nil {
-				for header := range handle.Request.Meta.Params {
-					headers[header] = struct{}{}
+		if endpoint.Request != nil {
+			if endpoint.Request.Meta != nil {
+				for header := range endpoint.Request.Meta.Params {
+					headers.Add(header)
 				}
 			}
 		}
@@ -114,14 +122,10 @@ func (listener *Listener) Handle(ctx *broker.Context, endpoints []*transport.End
 		router.Handle(options.Method, options.Endpoint, handle.HTTPFunc)
 	}
 
-	list := make([]string, 0, len(headers))
-	for header := range headers {
-		list = append(list, header)
-	}
+	router.GlobalOPTIONS = OptionsHandler(listener.origins, headers.Get(), methods.Get())
 
 	listener.mutex.Lock()
 	listener.router = router
-	listener.headers = strings.Join(list, ", ")
 	listener.mutex.Unlock()
 
 	return nil
@@ -131,29 +135,6 @@ func (listener *Listener) Handle(ctx *broker.Context, endpoints []*transport.End
 func (listener *Listener) Close() error {
 	logger.Info(listener.ctx, "closing HTTP listener")
 	return listener.server.Close()
-}
-
-// HandleCors handles the defining of cors headers for the incoming HTTP request
-func (listener *Listener) HandleCors(h http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		headers := w.Header()
-		method := r.Header.Get("Access-Control-Request-Method")
-
-		headers.Add("Vary", "Origin")
-		headers.Add("Vary", "Access-Control-Request-Method")
-		headers.Add("Vary", "Access-Control-Request-Headers")
-
-		headers.Set("Access-Control-Allow-Origin", "*")
-		headers.Set("Access-Control-Allow-Headers", "*")
-		headers.Set("Access-Control-Allow-Methods", strings.ToUpper(method))
-
-		if r.Method != http.MethodOptions || r.Header.Get("Access-Control-Request-Method") == "" {
-			h.ServeHTTP(w, r)
-			return
-		}
-
-		w.WriteHeader(http.StatusOK)
-	})
 }
 
 // NewHandle constructs a new handle function for the given endpoint to the given flow

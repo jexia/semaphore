@@ -28,7 +28,8 @@ type GraphQL struct {
 
 // HTTP represent the HTTP option definitions
 type HTTP struct {
-	Address string `hcl:"address"`
+	Address string   `hcl:"address"`
+	Origin  []string `hcl:"origin,optional"`
 }
 
 // GRPC represent the gRPC option definitions

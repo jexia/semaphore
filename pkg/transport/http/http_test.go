@@ -48,6 +48,20 @@ func NewCallerFunc(fn func(context.Context, references.Store) error) flow.Call {
 
 func NewSimpleMockSpecs() *specs.ParameterMap {
 	return &specs.ParameterMap{
+		Header: specs.Header{
+			"Authorization": &specs.Property{
+				Name:  "Authorization",
+				Path:  "authorization",
+				Type:  "string",
+				Label: "optional",
+			},
+			"Timestamp": &specs.Property{
+				Name:  "Timestamp",
+				Path:  "timestamp",
+				Type:  "string",
+				Label: "optional",
+			},
+		},
 		Property: &specs.Property{
 			Type:  types.Message,
 			Label: labels.Optional,
