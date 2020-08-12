@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func Test_NewListenerOptions(t *testing.T) {
+func TestNewListenerOptions(t *testing.T) {
 	type test struct {
 		options  []ListenerOption
 		error    error

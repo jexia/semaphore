@@ -1,8 +1,6 @@
 package config
 
 import (
-	"log"
-
 	"github.com/jexia/semaphore"
 	"github.com/jexia/semaphore/cmd/semaphore/middleware"
 	"github.com/jexia/semaphore/pkg/broker"
@@ -61,12 +59,6 @@ func ConstructArguments(params *Semaphore) ([]config.Option, error) {
 		arguments = append(arguments, semaphore.WithSchema(protobuffers.SchemaResolver(params.Protobuffers, path)))
 		arguments = append(arguments, semaphore.WithServices(protobuffers.ServiceResolver(params.Protobuffers, path)))
 	}
-
-	log.Println()
-	log.Println()
-	log.Println(params.HTTP)
-	log.Println()
-	log.Println()
 
 	if params.HTTP.Address != "" {
 		arguments = append(
