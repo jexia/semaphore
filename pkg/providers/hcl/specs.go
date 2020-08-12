@@ -725,14 +725,10 @@ func ParseIntermediateResources(ctx *broker.Context, dependencies map[string]*sp
 		}
 
 		node := &specs.Node{
-			Type:      specs.NodeIntermediate,
-			DependsOn: DependenciesExcept(dependencies, prop.Name),
-			ID:        prop.Name,
-			Call: &specs.Call{
-				Response: &specs.ParameterMap{
-					Property: prop,
-				},
-			},
+			Type:         specs.NodeIntermediate,
+			DependsOn:    DependenciesExcept(dependencies, prop.Name),
+			ID:           prop.Name,
+			Intermediate: prop,
 		}
 
 		nodes = append(nodes, node)

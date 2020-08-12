@@ -89,6 +89,10 @@ func GetAvailableResources(flow specs.FlowInterface, breakpoint string) map[stri
 	for _, node := range flow.GetNodes() {
 		references[node.ID] = ReferenceMap{}
 		if node.Call != nil {
+			if node.Intermediate != nil {
+				references[node.ID][template.ResponseResource] = PropertyLookup(node.Intermediate)
+			}
+
 			if node.Call.Request != nil {
 				if node.Call.Request.Stack != nil {
 					for key, returns := range node.Call.Request.Stack {

@@ -224,6 +224,7 @@ type Node struct {
 	Type         NodeType         `json:"type,omitempty"`
 	ID           string           `json:"id,omitempty"`
 	Name         string           `json:"name,omitempty"`
+	Intermediate *Property        `json:"intermediate,omitempty"`
 	Condition    *Condition       `json:"condition,omitempty"`
 	DependsOn    map[string]*Node `json:"depends_on,omitempty"`
 	Call         *Call            `json:"call,omitempty"`
