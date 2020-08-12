@@ -141,7 +141,7 @@ func NewServiceCall(ctx *broker.Context, mem functions.Collection, services spec
 			}
 
 			forwarding.ResolvePropertyReferences(reference, node.DependsOn)
-			err = dependencies.ResolveNode(manager, node, make(map[string]*specs.Node))
+			err = dependencies.ResolveNode(manager, node, make(specs.Dependencies))
 			if err != nil {
 				return nil, err
 			}

@@ -13,7 +13,7 @@ func ResolveFlows(ctx *broker.Context, flows specs.FlowListInterface) error {
 
 	for _, flow := range flows {
 		for _, node := range flow.GetNodes() {
-			err := ResolveNode(flow, node, make(map[string]*specs.Node))
+			err := ResolveNode(flow, node, make(specs.Dependencies))
 			if err != nil {
 				return err
 			}
@@ -24,7 +24,7 @@ func ResolveFlows(ctx *broker.Context, flows specs.FlowListInterface) error {
 }
 
 // ResolveNode resolves the given call dependencies and attempts to detect any circular dependencies
-func ResolveNode(manager specs.FlowInterface, node *specs.Node, unresolved map[string]*specs.Node) error {
+func ResolveNode(manager specs.FlowInterface, node *specs.Node, unresolved specs.Dependencies) error {
 	if len(node.DependsOn) == 0 {
 		return nil
 	}

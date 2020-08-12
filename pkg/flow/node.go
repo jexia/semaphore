@@ -102,7 +102,7 @@ type Node struct {
 	Previous     Nodes
 	Call         Call
 	Revert       Call
-	DependsOn    map[string]*specs.Node
+	DependsOn    specs.Dependencies
 	References   map[string]*specs.PropertyReference
 	Next         Nodes
 	OnError      specs.ErrorHandle
