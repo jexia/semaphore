@@ -26,22 +26,15 @@ func Parse(options *hcl.Options, target *Semaphore) {
 	}
 
 	if options.GraphQL != nil && target.GraphQL.Address == "" {
-		target.GraphQL = GraphQL{
-			Address: options.GraphQL.Address,
-		}
+		target.GraphQL = GraphQL(*options.GraphQL)
 	}
 
 	if options.HTTP != nil && target.HTTP.Address == "" {
-		target.HTTP = HTTP{
-			Address: options.HTTP.Address,
-			Origin:  options.HTTP.Origin,
-		}
+		target.HTTP = HTTP(*options.HTTP)
 	}
 
 	if options.GRPC != nil && target.GRPC.Address == "" {
-		target.GRPC = GRPC{
-			Address: options.GRPC.Address,
-		}
+		target.GRPC = GRPC(*options.GRPC)
 	}
 
 	if options.Prometheus != nil && target.Prometheus.Address == "" {
@@ -69,8 +62,12 @@ type Prometheus struct {
 
 // HTTP configurations
 type HTTP struct {
-	Address string
-	Origin  []string
+	Address      string
+	Origin       []string
+	CertFile     string
+	KeyFile      string
+	ReadTimeout  string
+	WriteTimeout string
 }
 
 // GRPC configurations

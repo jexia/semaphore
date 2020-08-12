@@ -14,7 +14,6 @@ import (
 	"github.com/jexia/semaphore/pkg/codec"
 	"github.com/jexia/semaphore/pkg/codec/metadata"
 	"github.com/jexia/semaphore/pkg/core/trace"
-	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/template"
 	"github.com/jexia/semaphore/pkg/transport"
 	"github.com/julienschmidt/httprouter"
@@ -22,12 +21,12 @@ import (
 )
 
 // NewListener constructs a new listener for the given addr
-func NewListener(addr string, origins []string, opts specs.Options) transport.NewListener {
+func NewListener(addr string, options ...ListenerOption) transport.NewListener {
 	return func(parent *broker.Context) transport.Listener {
 		module := broker.WithModule(parent, "listener", "http")
 		ctx := logger.WithLogger(logger.WithFields(module, zap.String("listener", "http")))
 
-		options, err := ParseListenerOptions(opts)
+		options, err := NewListenerOptions(options...)
 		if err != nil {
 			logger.Error(ctx, "unable to parse HTTP listener options, unexpected error", zap.Error(err))
 		}
@@ -35,11 +34,10 @@ func NewListener(addr string, origins []string, opts specs.Options) transport.Ne
 		return &Listener{
 			ctx:     ctx,
 			options: options,
-			origins: origins,
 			server: &http.Server{
 				Addr:         addr,
-				ReadTimeout:  options.ReadTimeout,
-				WriteTimeout: options.WriteTimeout,
+				ReadTimeout:  options.readTimeout,
+				WriteTimeout: options.writeTimeout,
 			},
 		}
 	}
@@ -52,7 +50,6 @@ type Listener struct {
 	server  *http.Server
 	mutex   sync.RWMutex
 	router  http.Handler
-	origins []string
 }
 
 // Name returns the name of the given listener
@@ -73,8 +70,8 @@ func (listener *Listener) Serve() (err error) {
 		},
 	)
 
-	if listener.options.CertFile != "" && listener.options.KeyFile != "" {
-		err = listener.server.ListenAndServeTLS(listener.options.CertFile, listener.options.KeyFile)
+	if listener.options.certFile != "" && listener.options.keyFile != "" {
+		err = listener.server.ListenAndServeTLS(listener.options.certFile, listener.options.keyFile)
 	} else {
 		err = listener.server.ListenAndServe()
 	}
@@ -122,7 +119,7 @@ func (listener *Listener) Handle(ctx *broker.Context, endpoints []*transport.End
 		router.Handle(options.Method, options.Endpoint, handle.HTTPFunc)
 	}
 
-	router.GlobalOPTIONS = OptionsHandler(listener.origins, headers.Get(), methods.Get())
+	router.GlobalOPTIONS = OptionsHandler(listener.options.origins, headers.Get(), methods.Get())
 
 	listener.mutex.Lock()
 	listener.router = router

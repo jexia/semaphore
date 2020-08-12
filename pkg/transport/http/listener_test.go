@@ -31,7 +31,7 @@ func NewMockListener(t *testing.T, nodes flow.Nodes, errs transport.Errs) (trans
 		origin = []string{"test.com"}
 
 		ctx      = logger.WithLogger(broker.NewContext())
-		listener = NewListener(addr, origin, nil)(ctx)
+		listener = NewListener(addr, WithOrigins(origin))(ctx)
 
 		json = json.NewConstructor()
 
@@ -336,7 +336,7 @@ func TestListenerForwarding(t *testing.T) {
 		return
 	}))
 
-	listener := NewListener(mock, []string{}, nil)(ctx)
+	listener := NewListener(mock)(ctx)
 
 	json := json.NewConstructor()
 	constructors := map[string]codec.Constructor{

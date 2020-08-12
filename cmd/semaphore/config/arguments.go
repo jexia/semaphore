@@ -1,6 +1,8 @@
 package config
 
 import (
+	"log"
+
 	"github.com/jexia/semaphore"
 	"github.com/jexia/semaphore/cmd/semaphore/middleware"
 	"github.com/jexia/semaphore/pkg/broker"
@@ -60,8 +62,26 @@ func ConstructArguments(params *Semaphore) ([]config.Option, error) {
 		arguments = append(arguments, semaphore.WithServices(protobuffers.ServiceResolver(params.Protobuffers, path)))
 	}
 
+	log.Println()
+	log.Println()
+	log.Println(params.HTTP)
+	log.Println()
+	log.Println()
+
 	if params.HTTP.Address != "" {
-		arguments = append(arguments, semaphore.WithListener(http.NewListener(params.HTTP.Address, params.HTTP.Origin, specs.Options{})))
+		arguments = append(
+			arguments,
+			semaphore.WithListener(
+				http.NewListener(
+					params.HTTP.Address,
+					http.WithOrigins(params.HTTP.Origin),
+					http.WithReadTimeout(params.HTTP.ReadTimeout),
+					http.WithWriteTimeout(params.HTTP.WriteTimeout),
+					http.WithKeyFile(params.HTTP.KeyFile),
+					http.WithCertFile(params.HTTP.CertFile),
+				),
+			),
+		)
 	}
 
 	if params.GraphQL.Address != "" {

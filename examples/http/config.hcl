@@ -5,7 +5,6 @@ include = ["flow.hcl"]
 
 http {
     address = ":8080"
-    origin = ["http://test.com","http://example.com"]
 }
 
 services {
