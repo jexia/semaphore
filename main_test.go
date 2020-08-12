@@ -336,7 +336,7 @@ func TestClosingRunningFlows(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	timeout := 100 * time.Microsecond
+	timeout := 100 * time.Millisecond
 	run := make(chan struct{})
 
 	ctx := logger.WithLogger(broker.NewContext())
