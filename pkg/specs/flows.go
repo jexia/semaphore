@@ -200,7 +200,7 @@ func (nodes NodeList) Get(name string) *Node {
 }
 
 // NodeType represents the type of the given node.
-// A type determains the purpose of the node but not the implementation.
+// A type determines the purpose of the node but not the implementation.
 type NodeType string
 
 var (
