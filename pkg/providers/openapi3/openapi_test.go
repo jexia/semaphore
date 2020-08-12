@@ -49,7 +49,7 @@ func TestOpenAPI3Generation(t *testing.T) {
 				semaphore.WithServices(hcl.ServicesResolver(file.Path)),
 				semaphore.WithEndpoints(hcl.EndpointsResolver(file.Path)),
 				semaphore.WithCodec(json.NewConstructor()),
-				semaphore.WithListener(http.NewListener(":0", nil)),
+				semaphore.WithListener(http.NewListener(":0", nil, nil)),
 				semaphore.WithListener(grpc.NewListener(":0", nil)),
 				semaphore.WithCaller(http.NewCaller()),
 			}
