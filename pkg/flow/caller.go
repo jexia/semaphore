@@ -20,20 +20,11 @@ import (
 // ErrAbortFlow represents the error thrown when a flow has to be aborted
 var ErrAbortFlow = errors.New("abort flow")
 
-// NewRequest constructs a new request for the given codec and header manager
-func NewRequest(functions functions.Stack, codec codec.Manager, metadata *metadata.Manager) *Request {
-	return &Request{
-		functions: functions,
-		codec:     codec,
-		metadata:  metadata,
-	}
-}
-
 // Request represents a codec and metadata manager
 type Request struct {
-	functions functions.Stack
-	codec     codec.Manager
-	metadata  *metadata.Manager
+	Functions functions.Stack
+	Codec     codec.Manager
+	Metadata  *metadata.Manager
 }
 
 // CallOptions represents the available options that could be used to construct a new flow caller
@@ -106,24 +97,24 @@ func (caller *Caller) Do(ctx context.Context, store references.Store) error {
 	}
 
 	if caller.request != nil {
-		if caller.request.functions != nil {
-			err := ExecuteFunctions(caller.request.functions, store)
+		if caller.request.Functions != nil {
+			err := ExecuteFunctions(caller.request.Functions, store)
 			if err != nil {
 				return err
 			}
 		}
 
-		if caller.request.metadata != nil {
-			r.Header = caller.request.metadata.Marshal(store)
+		if caller.request.Metadata != nil {
+			r.Header = caller.request.Metadata.Marshal(store)
 		}
 
-		if caller.request.codec != nil {
-			body, err := caller.request.codec.Marshal(store)
+		if caller.request.Codec != nil {
+			body, err := caller.request.Codec.Marshal(store)
 			if err != nil {
 				return err
 			}
 
-			r.Codec = caller.request.codec.Name()
+			r.Codec = caller.request.Codec.Name()
 			r.Body = body
 		}
 	}
@@ -153,22 +144,22 @@ func (caller *Caller) Do(ctx context.Context, store references.Store) error {
 	}
 
 	if caller.response != nil {
-		if caller.response.codec != nil {
-			err := caller.response.codec.Unmarshal(reader, store)
+		if caller.response.Codec != nil {
+			err := caller.response.Codec.Unmarshal(reader, store)
 			if err != nil {
 				return err
 			}
 		}
 
-		if caller.response.functions != nil {
-			err := ExecuteFunctions(caller.response.functions, store)
+		if caller.response.Functions != nil {
+			err := ExecuteFunctions(caller.response.Functions, store)
 			if err != nil {
 				return err
 			}
 		}
 
-		if caller.response.metadata != nil {
-			caller.response.metadata.Unmarshal(w.Header(), store)
+		if caller.response.Metadata != nil {
+			caller.response.Metadata.Unmarshal(w.Header(), store)
 		}
 	}
 
@@ -218,7 +209,7 @@ func (caller *Caller) HandleErr(w *transport.Writer, reader io.Reader, store ref
 		}
 
 		if caller.err.metadata != nil {
-			caller.response.metadata.Unmarshal(w.Header(), store)
+			caller.response.Metadata.Unmarshal(w.Header(), store)
 		}
 	}
 

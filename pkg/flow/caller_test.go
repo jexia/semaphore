@@ -64,13 +64,6 @@ func (counter *fncounter) handle(references.Store) error {
 	return counter.err
 }
 
-func TestNewRequest(t *testing.T) {
-	request := NewRequest(nil, nil, nil)
-	if request == nil {
-		t.Fatal("unexpected result, expected a request to be returned")
-	}
-}
-
 func TestNewCall(t *testing.T) {
 	ctx := logger.WithLogger(broker.NewContext())
 	node := &specs.Node{}
@@ -104,7 +97,7 @@ func TestCallExecution(t *testing.T) {
 			node: &specs.Node{},
 			options: &CallOptions{
 				Request: &Request{
-					codec: codec,
+					Codec: codec,
 				},
 				Response: &Request{},
 			},
@@ -114,7 +107,7 @@ func TestCallExecution(t *testing.T) {
 			options: &CallOptions{
 				Request: &Request{},
 				Response: &Request{
-					codec: codec,
+					Codec: codec,
 				},
 			},
 		},
@@ -122,7 +115,7 @@ func TestCallExecution(t *testing.T) {
 			node: &specs.Node{},
 			options: &CallOptions{
 				Request: &Request{
-					functions: functions.Stack{
+					Functions: functions.Stack{
 						"sample": &functions.Function{
 							Fn: func(store references.Store) error { return nil },
 						},
@@ -136,7 +129,7 @@ func TestCallExecution(t *testing.T) {
 			options: &CallOptions{
 				Request: &Request{},
 				Response: &Request{
-					functions: functions.Stack{
+					Functions: functions.Stack{
 						"sample": &functions.Function{
 							Fn: func(store references.Store) error { return nil },
 						},
@@ -182,7 +175,7 @@ func TestCallFunctionsExecution(t *testing.T) {
 				node:     &specs.Node{},
 				options: &CallOptions{
 					Request: &Request{
-						functions: functions.Stack{
+						Functions: functions.Stack{
 							"sample": &functions.Function{
 								Fn: counter.handle,
 							},
@@ -202,7 +195,7 @@ func TestCallFunctionsExecution(t *testing.T) {
 				options: &CallOptions{
 					Request: &Request{},
 					Response: &Request{
-						functions: functions.Stack{
+						Functions: functions.Stack{
 							"sample": &functions.Function{
 								Fn: counter.handle,
 							},
@@ -220,7 +213,7 @@ func TestCallFunctionsExecution(t *testing.T) {
 				node:     &specs.Node{},
 				options: &CallOptions{
 					Request: &Request{
-						functions: functions.Stack{
+						Functions: functions.Stack{
 							"first": &functions.Function{
 								Fn: counter.handle,
 							},
@@ -230,7 +223,7 @@ func TestCallFunctionsExecution(t *testing.T) {
 						},
 					},
 					Response: &Request{
-						functions: functions.Stack{
+						Functions: functions.Stack{
 							"first": &functions.Function{
 								Fn: counter.handle,
 							},

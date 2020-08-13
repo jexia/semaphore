@@ -114,8 +114,12 @@ func BenchmarkSingleNodeCallingJSONCodecParallel(b *testing.B) {
 	}
 
 	options := &CallOptions{
-		Request:  NewRequest(nil, req, nil),
-		Response: NewRequest(nil, res, nil),
+		Request: &Request{
+			Codec: req,
+		},
+		Response: &Request{
+			Codec: res,
+		},
 	}
 
 	call := NewCall(ctx, nil, options)
@@ -181,8 +185,12 @@ func BenchmarkSingleNodeCallingJSONCodecSerial(b *testing.B) {
 	}
 
 	options := &CallOptions{
-		Request:  NewRequest(nil, req, nil),
-		Response: NewRequest(nil, res, nil),
+		Request: &Request{
+			Codec: req,
+		},
+		Response: &Request{
+			Codec: res,
+		},
 	}
 
 	call := NewCall(ctx, nil, options)

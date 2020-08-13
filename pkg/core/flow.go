@@ -189,7 +189,13 @@ func NewRequest(ctx *broker.Context, node *specs.Node, mem functions.Collection,
 
 	stack := mem[params]
 	metadata := metadata.NewManager(ctx, node.ID, params.Header)
-	return flow.NewRequest(stack, codec, metadata), nil
+	request := &flow.Request{
+		Functions: stack,
+		Codec:     codec,
+		Metadata:  metadata,
+	}
+
+	return request, nil
 }
 
 // NewForward constructs a flow caller for the given call.
