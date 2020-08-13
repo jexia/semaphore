@@ -346,67 +346,13 @@ func TestConstructingNode(t *testing.T) {
 										Path:     "first",
 									},
 								},
+								"second": {
+									Reference: &specs.PropertyReference{
+										Resource: "input",
+										Path:     "first",
+									},
+								},
 							},
-						},
-					},
-				},
-			},
-			Call: &caller{
-				references: []*specs.Property{
-					{
-						Reference: &specs.PropertyReference{
-							Resource: "input",
-							Path:     "first",
-						},
-					},
-				},
-			},
-			Rollback: &caller{
-				references: []*specs.Property{
-					{
-						Reference: &specs.PropertyReference{
-							Resource: "input",
-							Path:     "first",
-						},
-					},
-				},
-			},
-		},
-		"call references": {
-			Expected: 2,
-			Node:     &specs.Node{},
-			Call: &caller{
-				references: []*specs.Property{
-					{
-						Reference: &specs.PropertyReference{
-							Resource: "input",
-							Path:     "first",
-						},
-					},
-					{
-						Reference: &specs.PropertyReference{
-							Resource: "input",
-							Path:     "second",
-						},
-					},
-				},
-			},
-		},
-		"rollback references": {
-			Expected: 2,
-			Node:     &specs.Node{},
-			Rollback: &caller{
-				references: []*specs.Property{
-					{
-						Reference: &specs.PropertyReference{
-							Resource: "input",
-							Path:     "first",
-						},
-					},
-					{
-						Reference: &specs.PropertyReference{
-							Resource: "input",
-							Path:     "second",
 						},
 					},
 				},

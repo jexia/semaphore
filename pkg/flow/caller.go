@@ -39,11 +39,10 @@ type CallOptions struct {
 
 // Call represents a transport caller implementation
 type Call interface {
-	References() []*specs.Property
 	Do(context.Context, references.Store) error
 }
 
-// NewCall constructs a new flow caller from the given transport caller and
+// NewCall constructs a new flow caller from the given transport caller and options
 func NewCall(parent *broker.Context, node *specs.Node, options *CallOptions) Call {
 	module := broker.WithModule(parent, "caller", node.ID)
 	ctx := logger.WithFields(logger.WithLogger(module), zap.String("node", node.ID))
@@ -76,16 +75,10 @@ type Caller struct {
 	node           *specs.Node
 	method         transport.Method
 	transport      transport.Call
-	references     []*specs.Property
 	request        *Request
 	response       *Request
 	err            *OnError
 	ExpectedStatus map[int]struct{}
-}
-
-// References returns the references inside the configured transport caller
-func (caller *Caller) References() []*specs.Property {
-	return caller.references
 }
 
 // Do is called by the flow manager to call the configured service

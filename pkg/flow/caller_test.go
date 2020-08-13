@@ -75,6 +75,17 @@ func TestNewCall(t *testing.T) {
 	}
 }
 
+func TestCallReferences(t *testing.T) {
+	ctx := logger.WithLogger(broker.NewContext())
+	node := &specs.Node{}
+	options := &CallOptions{}
+
+	result := NewCall(ctx, node, options)
+	if result == nil {
+		t.Fatal("unexpected result, expected a call to be constructed")
+	}
+}
+
 func TestCallExecution(t *testing.T) {
 	type test struct {
 		node    *specs.Node

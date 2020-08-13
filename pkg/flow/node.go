@@ -86,18 +86,6 @@ func NewNode(parent *broker.Context, node *specs.Node, opts ...NodeOption) *Node
 		refs.MergeLeft(references.ParameterReferences(node.Call.Request))
 	}
 
-	if options.call != nil {
-		for _, prop := range options.call.References() {
-			refs.MergeLeft(references.PropertyReferences(prop))
-		}
-	}
-
-	if options.rollback != nil {
-		for _, prop := range options.rollback.References() {
-			refs.MergeLeft(references.PropertyReferences(prop))
-		}
-	}
-
 	return &Node{
 		NodeMiddleware: options.middleware,
 		Condition:      options.condition,

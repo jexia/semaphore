@@ -26,15 +26,10 @@ func (codec *MockCodec) Unmarshal(io.Reader, references.Store) error {
 }
 
 type caller struct {
-	name       string
-	Counter    int
-	mutex      sync.Mutex
-	Err        error
-	references []*specs.Property
-}
-
-func (caller *caller) References() []*specs.Property {
-	return caller.references
+	name    string
+	Counter int
+	mutex   sync.Mutex
+	Err     error
 }
 
 func (caller *caller) Do(context.Context, references.Store) error {
