@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	ejson "encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -64,6 +65,53 @@ func NewMockListener(t *testing.T, nodes flow.Nodes, errs transport.Errs) (trans
 
 	endpoint := fmt.Sprintf("http://127.0.0.1:%d/", port)
 	return listener, endpoint
+}
+
+func TestListenerRouteConflict(t *testing.T) {
+	t.Run("detect route confilcts and catch panics thrown by julienschmidt httprouter", func(t *testing.T) {
+		var (
+			port   = AvailablePort(t)
+			addr   = fmt.Sprintf(":%d", port)
+			origin = []string{"test.com"}
+
+			ctx      = logger.WithLogger(broker.NewContext())
+			listener = NewListener(addr, WithOrigins(origin))(ctx)
+
+			json = json.NewConstructor()
+
+			constructors = map[string]codec.Constructor{
+				json.Name(): json,
+			}
+
+			endpoints = []*transport.Endpoint{
+				{
+					Flow: flow.NewManager(ctx, "test", flow.Nodes{}, nil, nil, nil),
+					Options: specs.Options{
+						EndpointOption: "/static",
+						MethodOption:   http.MethodGet,
+						CodecOption:    json.Name(),
+					},
+				},
+				{
+					Flow: flow.NewManager(ctx, "test", flow.Nodes{}, nil, nil, nil),
+					Options: specs.Options{
+						EndpointOption: "/:variable",
+						MethodOption:   http.MethodGet,
+						CodecOption:    json.Name(),
+					},
+				},
+			}
+		)
+
+		err := listener.Handle(ctx, endpoints, constructors)
+		if err == nil {
+			t.Errorf("error was expected")
+		}
+
+		if !errors.As(err, new(ErrRouteConflict)) {
+			t.Errorf("unexpected error: %s", err)
+		}
+	})
 }
 
 func TestCORS(t *testing.T) {

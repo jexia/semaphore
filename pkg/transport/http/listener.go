@@ -116,7 +116,19 @@ func (listener *Listener) Handle(ctx *broker.Context, endpoints []*transport.End
 			}
 		}
 
-		router.Handle(options.Method, options.Endpoint, handle.HTTPFunc)
+		if err := func(router *httprouter.Router) (err error) {
+			defer func() {
+				if r := recover(); r != nil {
+					err = ErrRouteConflict(fmt.Sprintf("%s", r))
+				}
+			}()
+
+			router.Handle(options.Method, options.Endpoint, handle.HTTPFunc)
+
+			return err
+		}(router); err != nil {
+			return err
+		}
 	}
 
 	router.GlobalOPTIONS = OptionsHandler(listener.options.origins, headers.Get(), methods.Get())
