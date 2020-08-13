@@ -25,14 +25,14 @@ func (codec *MockCodec) Unmarshal(io.Reader, references.Store) error {
 	return nil
 }
 
-type caller struct {
+type mocker struct {
 	name    string
 	Counter int
 	mutex   sync.Mutex
 	Err     error
 }
 
-func (caller *caller) Do(context.Context, references.Store) error {
+func (caller *mocker) Do(context.Context, references.Store) error {
 	caller.mutex.Lock()
 	caller.Counter++
 	caller.mutex.Unlock()
@@ -93,7 +93,7 @@ func TestNewManager(t *testing.T) {
 }
 
 func TestCallFlowManager(t *testing.T) {
-	caller := &caller{}
+	caller := &mocker{}
 	nodes, manager := NewMockFlowManager(caller, nil)
 	err := manager.Do(context.Background(), nil)
 	if err != nil {
@@ -110,12 +110,12 @@ func TestFailFlowManager(t *testing.T) {
 	reverts := 2
 	calls := 2
 
-	rollback := &caller{}
-	call := &caller{}
+	rollback := &mocker{}
+	call := &mocker{}
 
 	nodes, manager := NewMockFlowManager(call, rollback)
 
-	nodes[2].Call = &caller{Err: expected}
+	nodes[2].Call = &mocker{Err: expected}
 
 	err := manager.Do(context.Background(), nil)
 	if !errors.Is(err, expected) {
@@ -135,7 +135,7 @@ func TestFailFlowManager(t *testing.T) {
 
 func TestBeforeDoFlow(t *testing.T) {
 	counter := 0
-	call := &caller{}
+	call := &mocker{}
 	_, manager := NewMockFlowManager(call, nil)
 
 	manager.BeforeDo = func(ctx context.Context, manager *Manager, store references.Store) (context.Context, error) {
@@ -156,7 +156,7 @@ func TestBeforeDoFlow(t *testing.T) {
 func TestBeforeDoFlowErr(t *testing.T) {
 	expected := errors.New("unexpected error")
 	counter := 0
-	call := &caller{}
+	call := &mocker{}
 	_, manager := NewMockFlowManager(call, nil)
 
 	manager.BeforeDo = func(ctx context.Context, manager *Manager, store references.Store) (context.Context, error) {
@@ -177,7 +177,7 @@ func TestBeforeDoFlowErr(t *testing.T) {
 func TestAfterDoFlowErr(t *testing.T) {
 	expected := errors.New("unexpected error")
 	counter := 0
-	call := &caller{}
+	call := &mocker{}
 	_, manager := NewMockFlowManager(call, nil)
 
 	manager.AfterDo = func(ctx context.Context, manager *Manager, store references.Store) (context.Context, error) {
@@ -197,7 +197,7 @@ func TestAfterDoFlowErr(t *testing.T) {
 
 func TestAfterDoFlow(t *testing.T) {
 	counter := 0
-	call := &caller{}
+	call := &mocker{}
 	_, manager := NewMockFlowManager(call, nil)
 
 	manager.AfterDo = func(ctx context.Context, manager *Manager, store references.Store) (context.Context, error) {
@@ -217,7 +217,7 @@ func TestAfterDoFlow(t *testing.T) {
 
 func TestBeforeRollbackFlow(t *testing.T) {
 	counter := 0
-	call := &caller{}
+	call := &mocker{}
 	nodes, manager := NewMockFlowManager(call, nil)
 
 	manager.BeforeRollback = func(ctx context.Context, manager *Manager, store references.Store) (context.Context, error) {
@@ -236,7 +236,7 @@ func TestBeforeRollbackFlow(t *testing.T) {
 func TestBeforeRollbackFlowErr(t *testing.T) {
 	expected := errors.New("unexpected error")
 	counter := 0
-	call := &caller{}
+	call := &mocker{}
 	nodes, manager := NewMockFlowManager(call, nil)
 
 	manager.BeforeRollback = func(ctx context.Context, manager *Manager, store references.Store) (context.Context, error) {
@@ -254,7 +254,7 @@ func TestBeforeRollbackFlowErr(t *testing.T) {
 
 func TestAfterRollbackFlow(t *testing.T) {
 	counter := 0
-	call := &caller{}
+	call := &mocker{}
 	nodes, manager := NewMockFlowManager(call, nil)
 
 	manager.AfterRollback = func(ctx context.Context, manager *Manager, store references.Store) (context.Context, error) {
@@ -273,7 +273,7 @@ func TestAfterRollbackFlow(t *testing.T) {
 func TestAfterRollbackFlowErr(t *testing.T) {
 	expected := errors.New("unexpected error")
 	counter := 0
-	call := &caller{}
+	call := &mocker{}
 	nodes, manager := NewMockFlowManager(call, nil)
 
 	manager.AfterRollback = func(ctx context.Context, manager *Manager, store references.Store) (context.Context, error) {
@@ -427,7 +427,7 @@ func TestAfterManagerFunctionsError(t *testing.T) {
 }
 
 func TestErrorHandlers(t *testing.T) {
-	caller := &caller{}
+	caller := &mocker{}
 	nodes, manager := NewMockFlowManager(caller, nil)
 
 	expected := len(nodes) + 1 // expect nodes and flow error handler
@@ -438,7 +438,7 @@ func TestErrorHandlers(t *testing.T) {
 }
 
 func TestManagerName(t *testing.T) {
-	caller := &caller{}
+	caller := &mocker{}
 	_, manager := NewMockFlowManager(caller, nil)
 
 	expected := "mock"

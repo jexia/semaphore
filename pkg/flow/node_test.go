@@ -210,7 +210,7 @@ func BenchmarkSingleNodeCallingJSONCodecSerial(b *testing.B) {
 }
 
 func BenchmarkSingleNodeCallingParallel(b *testing.B) {
-	caller := &caller{}
+	caller := &mocker{}
 	node := NewMockNode("first", caller, nil)
 
 	b.ReportAllocs()
@@ -229,7 +229,7 @@ func BenchmarkSingleNodeCallingParallel(b *testing.B) {
 }
 
 func BenchmarkSingleNodeCallingSerial(b *testing.B) {
-	caller := &caller{}
+	caller := &mocker{}
 	node := NewMockNode("first", caller, nil)
 
 	b.ReportAllocs()
@@ -246,7 +246,7 @@ func BenchmarkSingleNodeCallingSerial(b *testing.B) {
 }
 
 func BenchmarkBranchedNodeCallingParallel(b *testing.B) {
-	caller := &caller{}
+	caller := &mocker{}
 	nodes := []*Node{
 		NewMockNode("first", caller, nil),
 		NewMockNode("second", caller, nil),
@@ -274,7 +274,7 @@ func BenchmarkBranchedNodeCallingParallel(b *testing.B) {
 }
 
 func BenchmarkBranchedNodeCallingSerial(b *testing.B) {
-	caller := &caller{}
+	caller := &mocker{}
 	nodes := []*Node{
 		NewMockNode("first", caller, nil),
 		NewMockNode("second", caller, nil),
@@ -374,8 +374,8 @@ func TestConstructingNode(t *testing.T) {
 
 func TestConstructingNodeReferences(t *testing.T) {
 	ctx := logger.WithLogger(broker.NewContext())
-	call := &caller{}
-	rollback := &caller{}
+	call := &mocker{}
+	rollback := &mocker{}
 
 	node := &specs.Node{
 		ID: "mock",
@@ -403,7 +403,7 @@ func TestNodeHas(t *testing.T) {
 }
 
 func TestNodeCalling(t *testing.T) {
-	caller := &caller{}
+	caller := &mocker{}
 
 	nodes := []*Node{
 		NewMockNode("first", caller, nil),
@@ -433,9 +433,9 @@ func TestNodeCalling(t *testing.T) {
 }
 
 func TestSlowNodeAbortingOnErr(t *testing.T) {
-	slow := &caller{name: "slow"}
-	failed := &caller{name: "failed", Err: errors.New("unexpected")}
-	caller := &caller{}
+	slow := &mocker{name: "slow"}
+	failed := &mocker{name: "failed", Err: errors.New("unexpected")}
+	caller := &mocker{}
 
 	nodes := []*Node{
 		NewMockNode("first", caller, nil),
@@ -478,7 +478,7 @@ func TestSlowNodeAbortingOnErr(t *testing.T) {
 }
 
 func TestNodeRevert(t *testing.T) {
-	rollback := &caller{}
+	rollback := &mocker{}
 
 	nodes := []*Node{
 		NewMockNode("first", nil, rollback),
@@ -508,7 +508,7 @@ func TestNodeRevert(t *testing.T) {
 }
 
 func TestNodeBranchesCalling(t *testing.T) {
-	caller := &caller{}
+	caller := &mocker{}
 
 	nodes := []*Node{
 		NewMockNode("first", caller, nil),
@@ -544,7 +544,7 @@ func TestNodeBranchesCalling(t *testing.T) {
 
 func TestBeforeDoNode(t *testing.T) {
 	counter := 0
-	call := &caller{}
+	call := &mocker{}
 	node := NewMockNode("mock", call, nil)
 
 	node.BeforeDo = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store references.Store) (context.Context, error) {
@@ -566,7 +566,7 @@ func TestBeforeDoNode(t *testing.T) {
 func TestBeforeDoNodeErr(t *testing.T) {
 	expected := errors.New("unexpected err")
 	counter := 0
-	call := &caller{}
+	call := &mocker{}
 	node := NewMockNode("mock", call, nil)
 
 	node.BeforeDo = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store references.Store) (context.Context, error) {
@@ -587,7 +587,7 @@ func TestBeforeDoNodeErr(t *testing.T) {
 
 func TestAfterDoNode(t *testing.T) {
 	counter := 0
-	call := &caller{}
+	call := &mocker{}
 	node := NewMockNode("mock", call, nil)
 
 	node.AfterDo = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store references.Store) (context.Context, error) {
@@ -609,7 +609,7 @@ func TestAfterDoNode(t *testing.T) {
 func TestAfterDoNodeErr(t *testing.T) {
 	expected := errors.New("unexpected err")
 	counter := 0
-	call := &caller{}
+	call := &mocker{}
 	node := NewMockNode("mock", call, nil)
 
 	node.AfterDo = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store references.Store) (context.Context, error) {
@@ -630,7 +630,7 @@ func TestAfterDoNodeErr(t *testing.T) {
 
 func TestBeforeRevertNode(t *testing.T) {
 	counter := 0
-	call := &caller{}
+	call := &mocker{}
 	node := NewMockNode("mock", call, nil)
 
 	node.BeforeRollback = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store references.Store) (context.Context, error) {
@@ -652,7 +652,7 @@ func TestBeforeRevertNode(t *testing.T) {
 func TestBeforeRevertNodeErr(t *testing.T) {
 	expected := errors.New("unexpected err")
 	counter := 0
-	call := &caller{}
+	call := &mocker{}
 	node := NewMockNode("mock", call, nil)
 
 	node.BeforeRollback = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store references.Store) (context.Context, error) {
@@ -673,7 +673,7 @@ func TestBeforeRevertNodeErr(t *testing.T) {
 
 func TestAfterRevertNode(t *testing.T) {
 	counter := 0
-	call := &caller{}
+	call := &mocker{}
 	node := NewMockNode("mock", call, nil)
 
 	node.AfterRollback = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store references.Store) (context.Context, error) {
@@ -695,7 +695,7 @@ func TestAfterRevertNode(t *testing.T) {
 func TestAfterRevertNodeErr(t *testing.T) {
 	expected := errors.New("unexpected err")
 	counter := 0
-	call := &caller{}
+	call := &mocker{}
 	node := NewMockNode("mock", call, nil)
 
 	node.AfterRollback = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store references.Store) (context.Context, error) {
@@ -716,7 +716,7 @@ func TestAfterRevertNodeErr(t *testing.T) {
 
 func TestNodeDoFunctions(t *testing.T) {
 	counter := 0
-	call := &caller{}
+	call := &mocker{}
 	node := NewMockNode("mock", call, nil)
 
 	node.Functions = functions.Stack{
@@ -742,7 +742,7 @@ func TestNodeDoFunctions(t *testing.T) {
 func TestNodeDoFunctionsErr(t *testing.T) {
 	expected := errors.New("unexpected err")
 	counter := 0
-	call := &caller{}
+	call := &mocker{}
 	node := NewMockNode("mock", call, nil)
 
 	node.Functions = functions.Stack{
@@ -767,7 +767,7 @@ func TestNodeDoFunctionsErr(t *testing.T) {
 
 func TestNodeDoConditionFunctions(t *testing.T) {
 	counter := 0
-	call := &caller{}
+	call := &mocker{}
 	node := NewMockNode("mock", call, nil)
 
 	node.Condition = &Condition{
@@ -795,7 +795,7 @@ func TestNodeDoConditionFunctions(t *testing.T) {
 func TestNodeDoConditionFunctionsErr(t *testing.T) {
 	expected := errors.New("unexpected err")
 	counter := 0
-	call := &caller{}
+	call := &mocker{}
 	node := NewMockNode("mock", call, nil)
 
 	node.Condition = &Condition{

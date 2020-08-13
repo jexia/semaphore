@@ -47,7 +47,7 @@ func NewCall(parent *broker.Context, node *specs.Node, options *CallOptions) Cal
 	module := broker.WithModule(parent, "caller", node.ID)
 	ctx := logger.WithFields(logger.WithLogger(module), zap.String("node", node.ID))
 
-	result := &Caller{
+	result := &caller{
 		ctx:            ctx,
 		node:           node,
 		transport:      options.Transport,
@@ -70,7 +70,7 @@ func NewCall(parent *broker.Context, node *specs.Node, options *CallOptions) Cal
 }
 
 // Caller represents a flow transport caller
-type Caller struct {
+type caller struct {
 	ctx            *broker.Context
 	node           *specs.Node
 	method         transport.Method
@@ -82,7 +82,7 @@ type Caller struct {
 }
 
 // Do is called by the flow manager to call the configured service
-func (caller *Caller) Do(ctx context.Context, store references.Store) error {
+func (caller *caller) Do(ctx context.Context, store references.Store) error {
 	reader, writer := io.Pipe()
 	w := transport.NewResponseWriter(writer)
 	r := &transport.Request{
@@ -160,7 +160,7 @@ func (caller *Caller) Do(ctx context.Context, store references.Store) error {
 }
 
 // HandleErr handles a thrown service error. If a error response is defined is it decoded
-func (caller *Caller) HandleErr(w *transport.Writer, reader io.Reader, store references.Store) error {
+func (caller *caller) HandleErr(w *transport.Writer, reader io.Reader, store references.Store) error {
 	var status interface{}
 	var message interface{}
 
