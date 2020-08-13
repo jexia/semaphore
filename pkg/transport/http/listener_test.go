@@ -31,7 +31,7 @@ func NewMockListener(t *testing.T, nodes flow.Nodes, errs transport.Errs) (trans
 		addr   = fmt.Sprintf(":%d", port)
 		origin = []string{"test.com"}
 
-		ctx      = logger.WithLogger(broker.NewContext())
+		ctx      = logger.WithLogger(broker.NewBackground())
 		listener = NewListener(addr, WithOrigins(origin))(ctx)
 
 		json = json.NewConstructor()
@@ -74,7 +74,7 @@ func TestListenerRouteConflict(t *testing.T) {
 			addr   = fmt.Sprintf(":%d", port)
 			origin = []string{"test.com"}
 
-			ctx      = logger.WithLogger(broker.NewContext())
+			ctx      = logger.WithLogger(broker.NewBackground())
 			listener = NewListener(addr, WithOrigins(origin))(ctx)
 
 			json = json.NewConstructor()
@@ -148,7 +148,7 @@ func TestCORS(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			var (
-				ctx  = logger.WithLogger(broker.NewContext())
+				ctx  = logger.WithLogger(broker.NewBackground())
 				node = &specs.Node{
 					ID: "first",
 				}
@@ -205,7 +205,7 @@ func TestCORS(t *testing.T) {
 }
 
 func TestListener(t *testing.T) {
-	ctx := logger.WithLogger(broker.NewContext())
+	ctx := logger.WithLogger(broker.NewBackground())
 	node := &specs.Node{
 		ID: "first",
 	}
@@ -293,7 +293,7 @@ func TestPathReferences(t *testing.T) {
 	listener, port := NewMockListener(t, nodes, nil)
 	defer listener.Close()
 
-	ctx := logger.WithLogger(broker.NewContext())
+	ctx := logger.WithLogger(broker.NewBackground())
 	endpoints := []*transport.Endpoint{
 		{
 			Flow: flow.NewManager(ctx, "test", nodes, nil, nil, nil),
@@ -311,7 +311,7 @@ func TestPathReferences(t *testing.T) {
 }
 
 func TestStoringParams(t *testing.T) {
-	ctx := logger.WithLogger(broker.NewContext())
+	ctx := logger.WithLogger(broker.NewBackground())
 	node := &specs.Node{
 		ID: "first",
 	}
@@ -371,7 +371,7 @@ func TestStoringParams(t *testing.T) {
 }
 
 func TestListenerForwarding(t *testing.T) {
-	ctx := logger.WithLogger(broker.NewContext())
+	ctx := logger.WithLogger(broker.NewBackground())
 
 	mock := fmt.Sprintf(":%d", AvailablePort(t))
 	forward := fmt.Sprintf(":%d", AvailablePort(t))
@@ -706,7 +706,7 @@ func TestListenerErrorHandling(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			ctx := logger.WithLogger(broker.NewContext())
+			ctx := logger.WithLogger(broker.NewBackground())
 			node := &specs.Node{
 				ID:      "first",
 				OnError: test.err,

@@ -11,7 +11,7 @@ import (
 )
 
 func TestDefineFunction(t *testing.T) {
-	ctx := logger.WithLogger(broker.NewContext())
+	ctx := logger.WithLogger(broker.NewBackground())
 
 	type test struct {
 		stack Stack

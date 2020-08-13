@@ -14,7 +14,7 @@ func TestFlowResolvers(t *testing.T) {
 		return specs.FlowListInterface{&specs.Flow{}}, nil
 	}
 
-	ctx := logger.WithLogger(broker.NewContext())
+	ctx := logger.WithLogger(broker.NewBackground())
 
 	resolvers := FlowsResolvers{resolver}
 	flows, err := resolvers.Resolve(ctx)
@@ -33,7 +33,7 @@ func TestFlowResolversErr(t *testing.T) {
 		return nil, expected
 	}
 
-	ctx := logger.WithLogger(broker.NewContext())
+	ctx := logger.WithLogger(broker.NewBackground())
 
 	resolvers := FlowsResolvers{resolver}
 	_, err := resolvers.Resolve(ctx)
@@ -47,7 +47,7 @@ func TestFlowResolversErr(t *testing.T) {
 }
 
 func TestNilFlowResolvers(t *testing.T) {
-	ctx := logger.WithLogger(broker.NewContext())
+	ctx := logger.WithLogger(broker.NewBackground())
 	resolvers := FlowsResolvers{nil}
 	_, err := resolvers.Resolve(ctx)
 	if err != nil {
@@ -60,7 +60,7 @@ func TestServiceResolvers(t *testing.T) {
 		return specs.ServiceList{&specs.Service{}}, nil
 	}
 
-	ctx := logger.WithLogger(broker.NewContext())
+	ctx := logger.WithLogger(broker.NewBackground())
 
 	resolvers := ServiceResolvers{resolver}
 	services, err := resolvers.Resolve(ctx)
@@ -79,7 +79,7 @@ func TestServiceResolversErr(t *testing.T) {
 		return nil, expected
 	}
 
-	ctx := logger.WithLogger(broker.NewContext())
+	ctx := logger.WithLogger(broker.NewBackground())
 
 	resolvers := ServiceResolvers{resolver}
 	_, err := resolvers.Resolve(ctx)
@@ -93,7 +93,7 @@ func TestServiceResolversErr(t *testing.T) {
 }
 
 func TestNilServiceResolvers(t *testing.T) {
-	ctx := logger.WithLogger(broker.NewContext())
+	ctx := logger.WithLogger(broker.NewBackground())
 	resolvers := ServiceResolvers{nil}
 	_, err := resolvers.Resolve(ctx)
 	if err != nil {
@@ -106,7 +106,7 @@ func TestSchemaResolvers(t *testing.T) {
 		return specs.Schemas{"mock": &specs.Property{}}, nil
 	}
 
-	ctx := logger.WithLogger(broker.NewContext())
+	ctx := logger.WithLogger(broker.NewBackground())
 
 	resolvers := SchemaResolvers{resolver}
 	schemas, err := resolvers.Resolve(ctx)
@@ -125,7 +125,7 @@ func TestSchemaResolversErr(t *testing.T) {
 		return nil, expected
 	}
 
-	ctx := logger.WithLogger(broker.NewContext())
+	ctx := logger.WithLogger(broker.NewBackground())
 
 	resolvers := SchemaResolvers{resolver}
 	_, err := resolvers.Resolve(ctx)
@@ -139,7 +139,7 @@ func TestSchemaResolversErr(t *testing.T) {
 }
 
 func TestNilSchemaResolvers(t *testing.T) {
-	ctx := logger.WithLogger(broker.NewContext())
+	ctx := logger.WithLogger(broker.NewBackground())
 	resolvers := SchemaResolvers{nil}
 	_, err := resolvers.Resolve(ctx)
 	if err != nil {
@@ -152,7 +152,7 @@ func TestEndpointResolvers(t *testing.T) {
 		return specs.EndpointList{&specs.Endpoint{}}, nil
 	}
 
-	ctx := logger.WithLogger(broker.NewContext())
+	ctx := logger.WithLogger(broker.NewBackground())
 
 	resolvers := EndpointResolvers{resolver}
 	endpoints, err := resolvers.Resolve(ctx)
@@ -171,7 +171,7 @@ func TestEndpointResolversErr(t *testing.T) {
 		return nil, expected
 	}
 
-	ctx := logger.WithLogger(broker.NewContext())
+	ctx := logger.WithLogger(broker.NewBackground())
 
 	resolvers := EndpointResolvers{resolver}
 	_, err := resolvers.Resolve(ctx)
@@ -185,7 +185,7 @@ func TestEndpointResolversErr(t *testing.T) {
 }
 
 func TestNilEndpointResolvers(t *testing.T) {
-	ctx := logger.WithLogger(broker.NewContext())
+	ctx := logger.WithLogger(broker.NewBackground())
 	resolvers := EndpointResolvers{nil}
 	_, err := resolvers.Resolve(ctx)
 	if err != nil {

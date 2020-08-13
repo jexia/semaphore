@@ -17,7 +17,7 @@ import (
 )
 
 func NewMockNode(name string, caller Call, rollback Call) *Node {
-	ctx := logger.WithLogger(broker.NewContext())
+	ctx := logger.WithLogger(broker.NewBackground())
 
 	return &Node{
 		ctx:        ctx,
@@ -70,7 +70,7 @@ func NewMockOnError() *specs.OnError {
 }
 
 func BenchmarkSingleNodeCallingJSONCodecParallel(b *testing.B) {
-	ctx := logger.WithLogger(broker.NewContext())
+	ctx := logger.WithLogger(broker.NewBackground())
 	constructor := json.NewConstructor()
 
 	req, err := constructor.New("first.request", &specs.ParameterMap{
@@ -141,7 +141,7 @@ func BenchmarkSingleNodeCallingJSONCodecParallel(b *testing.B) {
 }
 
 func BenchmarkSingleNodeCallingJSONCodecSerial(b *testing.B) {
-	ctx := logger.WithLogger(broker.NewContext())
+	ctx := logger.WithLogger(broker.NewBackground())
 	constructor := json.NewConstructor()
 
 	req, err := constructor.New("first.request", &specs.ParameterMap{
@@ -362,7 +362,7 @@ func TestConstructingNode(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			ctx := logger.WithLogger(broker.NewContext())
+			ctx := logger.WithLogger(broker.NewBackground())
 			result := NewNode(ctx, test.Node, WithCall(test.Call), WithRollback(test.Rollback))
 
 			if len(result.References) != test.Expected {
@@ -373,7 +373,7 @@ func TestConstructingNode(t *testing.T) {
 }
 
 func TestConstructingNodeReferences(t *testing.T) {
-	ctx := logger.WithLogger(broker.NewContext())
+	ctx := logger.WithLogger(broker.NewBackground())
 	call := &mocker{}
 	rollback := &mocker{}
 

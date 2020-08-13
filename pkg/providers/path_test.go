@@ -102,7 +102,7 @@ func TestResolvePath(t *testing.T) {
 
 	for pattern, expected := range tests {
 		t.Run(pattern, func(t *testing.T) {
-			ctx := logger.WithLogger(broker.NewContext())
+			ctx := logger.WithLogger(broker.NewBackground())
 
 			files, err := ResolvePath(ctx, []string{}, filepath.Join(root, pattern))
 			if err != nil {
@@ -133,7 +133,7 @@ func TestResolvePathErr(t *testing.T) {
 
 	for _, pattern := range tests {
 		t.Run(pattern, func(t *testing.T) {
-			ctx := logger.WithLogger(broker.NewContext())
+			ctx := logger.WithLogger(broker.NewBackground())
 
 			_, err := ResolvePath(ctx, []string{}, filepath.Join(root, pattern))
 			if err == nil {

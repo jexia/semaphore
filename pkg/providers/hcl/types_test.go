@@ -33,7 +33,7 @@ func TestSetDefaultValue(t *testing.T) {
 	}
 
 	for input, expected := range tests {
-		ctx := logger.WithLogger(broker.NewContext())
+		ctx := logger.WithLogger(broker.NewBackground())
 		property := specs.Property{}
 		SetDefaultValue(ctx, &property, input)
 

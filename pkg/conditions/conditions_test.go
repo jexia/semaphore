@@ -64,7 +64,7 @@ func TestNewEvaluableExpression(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.raw, func(t *testing.T) {
-			ctx := logger.WithLogger(broker.NewContext())
+			ctx := logger.WithLogger(broker.NewBackground())
 			condition, err := NewEvaluableExpression(ctx, test.raw)
 			if err != nil {
 				t.Fatal(err)
@@ -110,7 +110,7 @@ func TestInvalidExpressions(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test, func(t *testing.T) {
-			ctx := logger.WithLogger(broker.NewContext())
+			ctx := logger.WithLogger(broker.NewBackground())
 			_, err := NewEvaluableExpression(ctx, test)
 			if err == nil {
 				t.Fatal("unexpected pass")
@@ -126,7 +126,7 @@ func TestInvalidReference(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test, func(t *testing.T) {
-			ctx := logger.WithLogger(broker.NewContext())
+			ctx := logger.WithLogger(broker.NewBackground())
 			_, err := NewEvaluableExpression(ctx, test)
 			if err == nil {
 				t.Fatal("unexpected pass")

@@ -15,7 +15,7 @@ func TestResolveService(t *testing.T) {
 
 	for name, path := range tests {
 		t.Run(name, func(t *testing.T) {
-			ctx := logger.WithLogger(broker.NewContext())
+			ctx := logger.WithLogger(broker.NewBackground())
 			resolver := ServicesResolver(path)
 
 			_, err := resolver(ctx)
@@ -34,7 +34,7 @@ func TestResolveServiceFail(t *testing.T) {
 
 	for name, path := range tests {
 		t.Run(name, func(t *testing.T) {
-			ctx := logger.WithLogger(broker.NewContext())
+			ctx := logger.WithLogger(broker.NewBackground())
 			resolver := ServicesResolver(path)
 
 			_, err := resolver(ctx)
@@ -52,7 +52,7 @@ func TestResolveIncludeFail(t *testing.T) {
 
 	for name, path := range tests {
 		t.Run(name, func(t *testing.T) {
-			ctx := logger.WithLogger(broker.NewContext())
+			ctx := logger.WithLogger(broker.NewBackground())
 			resolver := ServicesResolver(path)
 
 			_, err := resolver(ctx)
@@ -70,7 +70,7 @@ func TestResolveInclude(t *testing.T) {
 
 	for name, path := range tests {
 		t.Run(name, func(t *testing.T) {
-			ctx := logger.WithLogger(broker.NewContext())
+			ctx := logger.WithLogger(broker.NewBackground())
 			resolver := ServicesResolver(path)
 
 			_, err := resolver(ctx)
@@ -88,7 +88,7 @@ func TestResolveIncludeNoFiles(t *testing.T) {
 
 	for name, path := range tests {
 		t.Run(name, func(t *testing.T) {
-			ctx := logger.WithLogger(broker.NewContext())
+			ctx := logger.WithLogger(broker.NewBackground())
 			resolver := ServicesResolver(path)
 
 			_, err := resolver(ctx)
@@ -107,7 +107,7 @@ func TestResolveFlows(t *testing.T) {
 
 	for name, path := range tests {
 		t.Run(name, func(t *testing.T) {
-			ctx := logger.WithLogger(broker.NewContext())
+			ctx := logger.WithLogger(broker.NewBackground())
 			resolver := FlowsResolver(path)
 
 			_, err := resolver(ctx)
@@ -126,7 +126,7 @@ func TestResolveFlowsFail(t *testing.T) {
 
 	for name, path := range tests {
 		t.Run(name, func(t *testing.T) {
-			ctx := logger.WithLogger(broker.NewContext())
+			ctx := logger.WithLogger(broker.NewBackground())
 			resolver := FlowsResolver(path)
 
 			_, err := resolver(ctx)
@@ -145,7 +145,7 @@ func TestResolveEndpoints(t *testing.T) {
 
 	for name, path := range tests {
 		t.Run(name, func(t *testing.T) {
-			ctx := logger.WithLogger(broker.NewContext())
+			ctx := logger.WithLogger(broker.NewBackground())
 			resolver := EndpointsResolver(path)
 
 			_, err := resolver(ctx)
@@ -164,7 +164,7 @@ func TestResolveEndpointsFail(t *testing.T) {
 
 	for name, path := range tests {
 		t.Run(name, func(t *testing.T) {
-			ctx := logger.WithLogger(broker.NewContext())
+			ctx := logger.WithLogger(broker.NewBackground())
 			resolver := EndpointsResolver(path)
 
 			_, err := resolver(ctx)
@@ -183,7 +183,7 @@ func TestResolveOptions(t *testing.T) {
 
 	for name, path := range tests {
 		t.Run(name, func(t *testing.T) {
-			ctx := logger.WithLogger(broker.NewContext())
+			ctx := logger.WithLogger(broker.NewBackground())
 			_, err := GetOptions(ctx, path)
 			if err != nil {
 				t.Fatal(err)

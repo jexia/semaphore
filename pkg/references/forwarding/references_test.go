@@ -112,7 +112,7 @@ func TestResolveReferences(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			ctx := logger.WithLogger(broker.NewContext())
+			ctx := logger.WithLogger(broker.NewBackground())
 			flows, target, expected := test()
 			ResolveReferences(ctx, flows)
 
@@ -402,7 +402,7 @@ func TestResolveOutputReferences(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			flow, target, expected := test()
-			ctx := logger.WithLogger(broker.NewContext())
+			ctx := logger.WithLogger(broker.NewBackground())
 			ResolveReferences(ctx, specs.FlowListInterface{flow})
 
 			if target.Reference == nil {

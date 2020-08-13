@@ -29,7 +29,7 @@ func (d *DiscardWriter) Close() error {
 }
 
 func TestCaller(t *testing.T) {
-	ctx := logger.WithLogger(broker.NewContext())
+	ctx := logger.WithLogger(broker.NewBackground())
 	node := &specs.Node{
 		ID: "first",
 	}

@@ -4,11 +4,22 @@ import (
 	"strings"
 
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 // NewContext constructs a new empty context
 func NewContext() *Context {
 	return &Context{}
+}
+
+// NewBackground constructs a new context with a Atom log level set
+// to fatal level avoiding to write logs.
+func NewBackground() *Context {
+	atom := zap.NewAtomicLevelAt(zapcore.FatalLevel)
+
+	return &Context{
+		Atom: &atom,
+	}
 }
 
 // A Context carries the module name and logger across module boundaries

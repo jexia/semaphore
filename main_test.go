@@ -54,7 +54,7 @@ func TestNewClient(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	ctx := logger.WithLogger(broker.NewContext())
+	ctx := logger.WithLogger(broker.NewBackground())
 	files, err := providers.ResolvePath(ctx, []string{}, path)
 	if err != nil {
 		t.Fatal(err)
@@ -146,7 +146,7 @@ func TestServe(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	ctx := logger.WithLogger(broker.NewContext())
+	ctx := logger.WithLogger(broker.NewBackground())
 	files, err := providers.ResolvePath(ctx, []string{}, path)
 	if err != nil {
 		t.Fatal(err)
@@ -192,7 +192,7 @@ func TestErrServe(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	ctx := logger.WithLogger(broker.NewContext())
+	ctx := logger.WithLogger(broker.NewBackground())
 	files, err := providers.ResolvePath(ctx, []string{}, path)
 	if err != nil {
 		t.Fatal(err)
@@ -339,7 +339,7 @@ func TestClosingRunningFlows(t *testing.T) {
 	timeout := 100 * time.Millisecond
 	run := make(chan struct{})
 
-	ctx := logger.WithLogger(broker.NewContext())
+	ctx := logger.WithLogger(broker.NewBackground())
 	manager := flow.NewManager(ctx, "", nil, nil, nil, &flow.ManagerMiddleware{
 		AfterDo: func(ctx context.Context, manager *flow.Manager, store references.Store) (context.Context, error) {
 			close(run)

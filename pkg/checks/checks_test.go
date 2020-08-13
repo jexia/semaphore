@@ -64,7 +64,7 @@ func TestDuplicateManifests(t *testing.T) {
 
 	for name, input := range tests {
 		t.Run(name, func(t *testing.T) {
-			ctx := logger.WithLogger(broker.NewContext())
+			ctx := logger.WithLogger(broker.NewBackground())
 			err := FlowDuplicates(ctx, input)
 			if err == nil {
 				t.Fatal("unexpected pass", input)
@@ -95,7 +95,7 @@ func TestDuplicateManifestsPass(t *testing.T) {
 
 	for name, input := range tests {
 		t.Run(name, func(t *testing.T) {
-			ctx := logger.WithLogger(broker.NewContext())
+			ctx := logger.WithLogger(broker.NewBackground())
 			err := FlowDuplicates(ctx, input)
 			if err != nil {
 				t.Fatal("unexpected fail", err)
@@ -140,7 +140,7 @@ func TestReservedKeywordsManifests(t *testing.T) {
 
 	for name, input := range tests {
 		t.Run(name, func(t *testing.T) {
-			ctx := logger.WithLogger(broker.NewContext())
+			ctx := logger.WithLogger(broker.NewBackground())
 			err := FlowDuplicates(ctx, input)
 			if err == nil {
 				t.Fatal("unexpected pass", input)
@@ -166,7 +166,7 @@ func TestDuplicateNodes(t *testing.T) {
 
 	for name, input := range tests {
 		t.Run(name, func(t *testing.T) {
-			ctx := logger.WithLogger(broker.NewContext())
+			ctx := logger.WithLogger(broker.NewBackground())
 			err := NodeDuplicates(ctx, input.Name, input.Nodes)
 			if err == nil {
 				t.Fatal("unexpected pass", input)

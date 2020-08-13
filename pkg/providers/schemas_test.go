@@ -182,7 +182,7 @@ func TestDefineSchemas(t *testing.T) {
 
 	for name, flows := range tests {
 		t.Run(name, func(t *testing.T) {
-			ctx := logger.WithLogger(broker.NewContext())
+			ctx := logger.WithLogger(broker.NewBackground())
 			services := NewMockServices()
 			schemas := NewMockSchemas()
 
@@ -345,7 +345,7 @@ func TestDefineSchemasUnknown(t *testing.T) {
 
 	for name, flows := range tests {
 		t.Run(name, func(t *testing.T) {
-			ctx := logger.WithLogger(broker.NewContext())
+			ctx := logger.WithLogger(broker.NewBackground())
 			services := NewMockServices()
 			schemas := NewMockSchemas()
 
@@ -385,7 +385,7 @@ func TestUndefinedNestedSchemaProperty(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			ctx := logger.WithLogger(broker.NewContext())
+			ctx := logger.WithLogger(broker.NewBackground())
 			schemas := NewMockSchemas()
 
 			flow := &specs.Flow{
@@ -406,7 +406,7 @@ func TestSettingUndefinedNested(t *testing.T) {
 		Property: &specs.Property{},
 	}
 
-	ctx := logger.WithLogger(broker.NewContext())
+	ctx := logger.WithLogger(broker.NewBackground())
 	schemas := NewMockSchemas()
 
 	flow := &specs.Flow{

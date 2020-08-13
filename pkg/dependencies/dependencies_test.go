@@ -138,7 +138,7 @@ func TestResolveManifestDependencies(t *testing.T) {
 		},
 	}
 
-	ctx := logger.WithLogger(broker.NewContext())
+	ctx := logger.WithLogger(broker.NewBackground())
 	err := ResolveFlows(ctx, flows)
 	if err != nil {
 		t.Fatalf("unexpected error %s", err)

@@ -138,7 +138,7 @@ func TestParseReferenceErr(t *testing.T) {
 
 	for _, input := range tests {
 		t.Run(input, func(t *testing.T) {
-			ctx := logger.WithLogger(broker.NewContext())
+			ctx := logger.WithLogger(broker.NewBackground())
 			_, err := Parse(ctx, path, name, input)
 			if err == nil {
 				t.Fatal("unexpected pass")
@@ -216,7 +216,7 @@ func TestParseTemplate(t *testing.T) {
 
 	for input, expected := range tests {
 		t.Run(input, func(t *testing.T) {
-			ctx := logger.WithLogger(broker.NewContext())
+			ctx := logger.WithLogger(broker.NewBackground())
 			property, err := Parse(ctx, expected.Path, name, input)
 			if err != nil {
 				t.Error(err)

@@ -97,7 +97,7 @@ func TestParseFunction(t *testing.T) {
 
 	for input, expected := range tests {
 		t.Run(input, func(t *testing.T) {
-			ctx := logger.WithLogger(broker.NewContext())
+			ctx := logger.WithLogger(broker.NewBackground())
 			prop := specs.Property{
 				Name: "",
 				Path: "message",
@@ -131,7 +131,7 @@ func TestParseUnavailableFunction(t *testing.T) {
 			Raw:  input,
 		}
 
-		ctx := logger.WithLogger(broker.NewContext())
+		ctx := logger.WithLogger(broker.NewBackground())
 		err := PrepareFunction(ctx, nil, nil, prop, make(Stack), custom)
 		if err == nil {
 			t.Error("unexpected pass")
@@ -570,7 +570,7 @@ func TestPrepareFunctions(t *testing.T) {
 				"mock": counter.fn,
 			}
 
-			ctx := logger.WithLogger(broker.NewContext())
+			ctx := logger.WithLogger(broker.NewBackground())
 			mem := Collection{}
 
 			err := PrepareManifestFunctions(ctx, mem, functions, test.flows)
@@ -1010,7 +1010,7 @@ func TestPrepareFunctionsErr(t *testing.T) {
 				"mock": counter.fn,
 			}
 
-			ctx := logger.WithLogger(broker.NewContext())
+			ctx := logger.WithLogger(broker.NewBackground())
 			mem := Collection{}
 
 			err := PrepareManifestFunctions(ctx, mem, functions, test.flows)
@@ -1103,7 +1103,7 @@ func TestPrepareParameterMapFunctions(t *testing.T) {
 				"mock": counter.fn,
 			}
 
-			ctx := logger.WithLogger(broker.NewContext())
+			ctx := logger.WithLogger(broker.NewBackground())
 			stack := Stack{}
 
 			err := PrepareParameterMapFunctions(ctx, nil, nil, stack, test.params, functions)

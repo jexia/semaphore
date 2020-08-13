@@ -9,6 +9,17 @@ func TestNewContext(t *testing.T) {
 	}
 }
 
+func TestNewBackground(t *testing.T) {
+	ctx := NewBackground()
+	if ctx == nil {
+		t.Fatal("unexpected empty context")
+	}
+
+	if ctx.Atom == nil {
+		t.Fatal("context log level Atom not set")
+	}
+}
+
 func TestChild(t *testing.T) {
 	parent := NewContext()
 	if parent == nil {

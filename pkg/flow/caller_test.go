@@ -65,7 +65,7 @@ func (counter *fncounter) handle(references.Store) error {
 }
 
 func TestNewCall(t *testing.T) {
-	ctx := logger.WithLogger(broker.NewContext())
+	ctx := logger.WithLogger(broker.NewBackground())
 	node := &specs.Node{}
 	options := &CallOptions{}
 
@@ -76,7 +76,7 @@ func TestNewCall(t *testing.T) {
 }
 
 func TestCallReferences(t *testing.T) {
-	ctx := logger.WithLogger(broker.NewContext())
+	ctx := logger.WithLogger(broker.NewBackground())
 	node := &specs.Node{}
 	options := &CallOptions{}
 
@@ -152,7 +152,7 @@ func TestCallExecution(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			ctx := logger.WithLogger(broker.NewContext())
+			ctx := logger.WithLogger(broker.NewBackground())
 
 			result := NewCall(ctx, test.node, test.options)
 			if result == nil {
@@ -250,7 +250,7 @@ func TestCallFunctionsExecution(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			ctx := logger.WithLogger(broker.NewContext())
+			ctx := logger.WithLogger(broker.NewBackground())
 			options := test()
 
 			result := NewCall(ctx, options.node, options.options)
@@ -277,7 +277,7 @@ func TestCallErrHandling(t *testing.T) {
 		Transport: NewMockTransport(expected, 0, nil),
 	}
 
-	ctx := logger.WithLogger(broker.NewContext())
+	ctx := logger.WithLogger(broker.NewBackground())
 	call := NewCall(ctx, node, options)
 
 	store := references.NewReferenceStore(0)
@@ -369,7 +369,7 @@ func TestTransportStatusCodeHandling(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			ctx := logger.WithLogger(broker.NewContext())
+			ctx := logger.WithLogger(broker.NewBackground())
 			options := test()
 
 			result := NewCall(ctx, options.node, options.options)
@@ -471,7 +471,7 @@ func TestTransportErrorSchemaDecoding(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			ctx := logger.WithLogger(broker.NewContext())
+			ctx := logger.WithLogger(broker.NewBackground())
 			options := test(t)
 
 			result := NewCall(ctx, options.node, options.options)
@@ -552,7 +552,7 @@ func TestErrFunctionsExecution(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			ctx := logger.WithLogger(broker.NewContext())
+			ctx := logger.WithLogger(broker.NewBackground())
 			options := test()
 
 			result := NewCall(ctx, options.node, options.options)

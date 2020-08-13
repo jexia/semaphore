@@ -40,7 +40,7 @@ func (caller *mocker) Do(context.Context, references.Store) error {
 }
 
 func NewMockFlowManager(caller Call, revert Call) ([]*Node, *Manager) {
-	ctx := logger.WithLogger(broker.NewContext())
+	ctx := logger.WithLogger(broker.NewBackground())
 
 	nodes := []*Node{
 		NewMockNode("first", caller, revert),
@@ -83,7 +83,7 @@ func TestNewManager(t *testing.T) {
 
 	for name, nodes := range tests {
 		t.Run(name, func(t *testing.T) {
-			ctx := logger.WithLogger(broker.NewContext())
+			ctx := logger.WithLogger(broker.NewBackground())
 			manager := NewManager(ctx, name, nodes, nil, nil, nil)
 			if manager == nil {
 				t.Fatal("unexpected result, expected a manager to be returned")
@@ -337,7 +337,7 @@ func TestAfterManagerFunctions(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			current = 0
-			ctx := logger.WithLogger(broker.NewContext())
+			ctx := logger.WithLogger(broker.NewBackground())
 			manager := NewManager(ctx, name, []*Node{}, nil, test.stack, nil)
 			if manager == nil {
 				t.Fatal("unexpected result, expected a manager to be returned")
@@ -407,7 +407,7 @@ func TestAfterManagerFunctionsError(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			ctx := logger.WithLogger(broker.NewContext())
+			ctx := logger.WithLogger(broker.NewBackground())
 			manager := NewManager(ctx, name, []*Node{}, nil, test.stack, nil)
 			if manager == nil {
 				t.Fatal("unexpected result, expected a manager to be returned")

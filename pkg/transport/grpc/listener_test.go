@@ -26,7 +26,7 @@ func TestNewListener(t *testing.T) {
 				t.Fatal("nil listener constructor")
 			}
 
-			ctx := logger.WithLogger(broker.NewContext())
+			ctx := logger.WithLogger(broker.NewBackground())
 			listener := constructor(ctx)
 			if constructor == nil {
 				t.Fatal("nil listener")
@@ -46,7 +46,7 @@ func TestNewListener(t *testing.T) {
 }
 
 func TestListener(t *testing.T) {
-	ctx := logger.WithLogger(broker.NewContext())
+	ctx := logger.WithLogger(broker.NewBackground())
 	node := &specs.Node{
 		ID: "first",
 	}
@@ -190,7 +190,7 @@ func TestErrorHandlingListener(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			ctx := logger.WithLogger(broker.NewContext())
+			ctx := logger.WithLogger(broker.NewBackground())
 			node := &specs.Node{
 				ID:      "first",
 				OnError: test.err,

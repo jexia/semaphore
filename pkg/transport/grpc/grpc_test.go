@@ -37,7 +37,7 @@ func NewMockListener(t *testing.T, nodes flow.Nodes, errs transport.Errs) (trans
 	port := AvailablePort(t)
 	addr := fmt.Sprintf(":%d", port)
 
-	ctx := logger.WithLogger(broker.NewContext())
+	ctx := logger.WithLogger(broker.NewBackground())
 	listener := NewListener(addr, nil)(ctx)
 
 	constructors := map[string]codec.Constructor{}

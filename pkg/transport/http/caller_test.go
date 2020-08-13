@@ -30,7 +30,7 @@ func (d *DiscardWriter) Close() error {
 }
 
 func NewMockCaller() *Caller {
-	ctx := logger.WithLogger(broker.NewContext())
+	ctx := logger.WithLogger(broker.NewBackground())
 	caller := &Caller{
 		ctx: ctx,
 	}
@@ -38,7 +38,7 @@ func NewMockCaller() *Caller {
 }
 
 func TestNewCaller(t *testing.T) {
-	ctx := logger.WithLogger(broker.NewContext())
+	ctx := logger.WithLogger(broker.NewBackground())
 	constructor := NewCaller()
 	listener := constructor(ctx)
 	if listener == nil {

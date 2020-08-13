@@ -41,7 +41,7 @@ func NewMockServer(t *testing.T, endpoints []*transport.Endpoint) (*grpc.ClientC
 	addr := n.Addr().String()
 	n.Close()
 
-	ctx := logger.WithLogger(broker.NewContext())
+	ctx := logger.WithLogger(broker.NewBackground())
 	constructor := NewListener(addr, nil)
 	listener := constructor(ctx).(*Listener)
 	err = listener.Handle(ctx, endpoints, nil)
@@ -60,7 +60,7 @@ func NewMockServer(t *testing.T, endpoints []*transport.Endpoint) (*grpc.ClientC
 }
 
 func TestListServices(t *testing.T) {
-	ctx := logger.WithLogger(broker.NewContext())
+	ctx := logger.WithLogger(broker.NewBackground())
 	endpoints := []*transport.Endpoint{
 		{
 			Options: specs.Options{
@@ -127,7 +127,7 @@ func TestListServices(t *testing.T) {
 }
 
 func TestFileContainingSymbol(t *testing.T) {
-	ctx := logger.WithLogger(broker.NewContext())
+	ctx := logger.WithLogger(broker.NewBackground())
 	endpoints := []*transport.Endpoint{
 		{
 			Options: specs.Options{

@@ -22,7 +22,7 @@ func TestNewManager(t *testing.T) {
 		},
 	}
 
-	ctx := logger.WithLogger(broker.NewContext())
+	ctx := logger.WithLogger(broker.NewBackground())
 	manager := NewManager(ctx, resource, params)
 	if manager == nil {
 		t.Fatal("undefined manager")
@@ -80,7 +80,7 @@ func TestManagerMarshal(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			header, store, expected := test()
-			ctx := logger.WithLogger(broker.NewContext())
+			ctx := logger.WithLogger(broker.NewBackground())
 			manager := NewManager(ctx, resource, header)
 
 			result := manager.Marshal(store)
@@ -149,7 +149,7 @@ func TestManagerUnmarshal(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			header, input, expected := test()
-			ctx := logger.WithLogger(broker.NewContext())
+			ctx := logger.WithLogger(broker.NewBackground())
 			manager := NewManager(ctx, resource, header)
 
 			store := references.NewReferenceStore(len(input))
