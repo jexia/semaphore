@@ -9,6 +9,7 @@ import (
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/codec/json"
+	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/labels"
@@ -113,8 +114,12 @@ func BenchmarkSingleNodeCallingJSONCodecParallel(b *testing.B) {
 	}
 
 	options := &CallOptions{
-		Request:  NewRequest(nil, req, nil),
-		Response: NewRequest(nil, res, nil),
+		Request: &Request{
+			Codec: req,
+		},
+		Response: &Request{
+			Codec: res,
+		},
 	}
 
 	call := NewCall(ctx, nil, options)
@@ -180,8 +185,12 @@ func BenchmarkSingleNodeCallingJSONCodecSerial(b *testing.B) {
 	}
 
 	options := &CallOptions{
-		Request:  NewRequest(nil, req, nil),
-		Response: NewRequest(nil, res, nil),
+		Request: &Request{
+			Codec: req,
+		},
+		Response: &Request{
+			Codec: res,
+		},
 	}
 
 	call := NewCall(ctx, nil, options)
@@ -201,7 +210,7 @@ func BenchmarkSingleNodeCallingJSONCodecSerial(b *testing.B) {
 }
 
 func BenchmarkSingleNodeCallingParallel(b *testing.B) {
-	caller := &caller{}
+	caller := &mocker{}
 	node := NewMockNode("first", caller, nil)
 
 	b.ReportAllocs()
@@ -220,7 +229,7 @@ func BenchmarkSingleNodeCallingParallel(b *testing.B) {
 }
 
 func BenchmarkSingleNodeCallingSerial(b *testing.B) {
-	caller := &caller{}
+	caller := &mocker{}
 	node := NewMockNode("first", caller, nil)
 
 	b.ReportAllocs()
@@ -237,7 +246,7 @@ func BenchmarkSingleNodeCallingSerial(b *testing.B) {
 }
 
 func BenchmarkBranchedNodeCallingParallel(b *testing.B) {
-	caller := &caller{}
+	caller := &mocker{}
 	nodes := []*Node{
 		NewMockNode("first", caller, nil),
 		NewMockNode("second", caller, nil),
@@ -265,7 +274,7 @@ func BenchmarkBranchedNodeCallingParallel(b *testing.B) {
 }
 
 func BenchmarkBranchedNodeCallingSerial(b *testing.B) {
-	caller := &caller{}
+	caller := &mocker{}
 	nodes := []*Node{
 		NewMockNode("first", caller, nil),
 		NewMockNode("second", caller, nil),
@@ -337,67 +346,13 @@ func TestConstructingNode(t *testing.T) {
 										Path:     "first",
 									},
 								},
+								"second": {
+									Reference: &specs.PropertyReference{
+										Resource: "input",
+										Path:     "first",
+									},
+								},
 							},
-						},
-					},
-				},
-			},
-			Call: &caller{
-				references: []*specs.Property{
-					{
-						Reference: &specs.PropertyReference{
-							Resource: "input",
-							Path:     "first",
-						},
-					},
-				},
-			},
-			Rollback: &caller{
-				references: []*specs.Property{
-					{
-						Reference: &specs.PropertyReference{
-							Resource: "input",
-							Path:     "first",
-						},
-					},
-				},
-			},
-		},
-		"call references": {
-			Expected: 2,
-			Node:     &specs.Node{},
-			Call: &caller{
-				references: []*specs.Property{
-					{
-						Reference: &specs.PropertyReference{
-							Resource: "input",
-							Path:     "first",
-						},
-					},
-					{
-						Reference: &specs.PropertyReference{
-							Resource: "input",
-							Path:     "second",
-						},
-					},
-				},
-			},
-		},
-		"rollback references": {
-			Expected: 2,
-			Node:     &specs.Node{},
-			Rollback: &caller{
-				references: []*specs.Property{
-					{
-						Reference: &specs.PropertyReference{
-							Resource: "input",
-							Path:     "first",
-						},
-					},
-					{
-						Reference: &specs.PropertyReference{
-							Resource: "input",
-							Path:     "second",
 						},
 					},
 				},
@@ -408,7 +363,7 @@ func TestConstructingNode(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			ctx := logger.WithLogger(broker.NewContext())
-			result := NewNode(ctx, test.Node, nil, test.Call, test.Rollback, nil)
+			result := NewNode(ctx, test.Node, WithCall(test.Call), WithRollback(test.Rollback))
 
 			if len(result.References) != test.Expected {
 				t.Fatalf("unexpected amount of references %d, expected %d", len(result.References), test.Expected)
@@ -419,14 +374,14 @@ func TestConstructingNode(t *testing.T) {
 
 func TestConstructingNodeReferences(t *testing.T) {
 	ctx := logger.WithLogger(broker.NewContext())
-	call := &caller{}
-	rollback := &caller{}
+	call := &mocker{}
+	rollback := &mocker{}
 
 	node := &specs.Node{
 		ID: "mock",
 	}
 
-	result := NewNode(ctx, node, nil, call, rollback, nil)
+	result := NewNode(ctx, node, WithCall(call), WithRollback(rollback))
 	if result == nil {
 		t.Fatal("nil node returned")
 	}
@@ -448,7 +403,7 @@ func TestNodeHas(t *testing.T) {
 }
 
 func TestNodeCalling(t *testing.T) {
-	caller := &caller{}
+	caller := &mocker{}
 
 	nodes := []*Node{
 		NewMockNode("first", caller, nil),
@@ -478,9 +433,9 @@ func TestNodeCalling(t *testing.T) {
 }
 
 func TestSlowNodeAbortingOnErr(t *testing.T) {
-	slow := &caller{name: "slow"}
-	failed := &caller{name: "failed", Err: errors.New("unexpected")}
-	caller := &caller{}
+	slow := &mocker{name: "slow"}
+	failed := &mocker{name: "failed", Err: errors.New("unexpected")}
+	caller := &mocker{}
 
 	nodes := []*Node{
 		NewMockNode("first", caller, nil),
@@ -523,7 +478,7 @@ func TestSlowNodeAbortingOnErr(t *testing.T) {
 }
 
 func TestNodeRevert(t *testing.T) {
-	rollback := &caller{}
+	rollback := &mocker{}
 
 	nodes := []*Node{
 		NewMockNode("first", nil, rollback),
@@ -553,7 +508,7 @@ func TestNodeRevert(t *testing.T) {
 }
 
 func TestNodeBranchesCalling(t *testing.T) {
-	caller := &caller{}
+	caller := &mocker{}
 
 	nodes := []*Node{
 		NewMockNode("first", caller, nil),
@@ -589,7 +544,7 @@ func TestNodeBranchesCalling(t *testing.T) {
 
 func TestBeforeDoNode(t *testing.T) {
 	counter := 0
-	call := &caller{}
+	call := &mocker{}
 	node := NewMockNode("mock", call, nil)
 
 	node.BeforeDo = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store references.Store) (context.Context, error) {
@@ -611,7 +566,7 @@ func TestBeforeDoNode(t *testing.T) {
 func TestBeforeDoNodeErr(t *testing.T) {
 	expected := errors.New("unexpected err")
 	counter := 0
-	call := &caller{}
+	call := &mocker{}
 	node := NewMockNode("mock", call, nil)
 
 	node.BeforeDo = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store references.Store) (context.Context, error) {
@@ -632,7 +587,7 @@ func TestBeforeDoNodeErr(t *testing.T) {
 
 func TestAfterDoNode(t *testing.T) {
 	counter := 0
-	call := &caller{}
+	call := &mocker{}
 	node := NewMockNode("mock", call, nil)
 
 	node.AfterDo = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store references.Store) (context.Context, error) {
@@ -654,7 +609,7 @@ func TestAfterDoNode(t *testing.T) {
 func TestAfterDoNodeErr(t *testing.T) {
 	expected := errors.New("unexpected err")
 	counter := 0
-	call := &caller{}
+	call := &mocker{}
 	node := NewMockNode("mock", call, nil)
 
 	node.AfterDo = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store references.Store) (context.Context, error) {
@@ -675,10 +630,10 @@ func TestAfterDoNodeErr(t *testing.T) {
 
 func TestBeforeRevertNode(t *testing.T) {
 	counter := 0
-	call := &caller{}
+	call := &mocker{}
 	node := NewMockNode("mock", call, nil)
 
-	node.BeforeRevert = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store references.Store) (context.Context, error) {
+	node.BeforeRollback = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store references.Store) (context.Context, error) {
 		counter++
 		return ctx, nil
 	}
@@ -697,10 +652,10 @@ func TestBeforeRevertNode(t *testing.T) {
 func TestBeforeRevertNodeErr(t *testing.T) {
 	expected := errors.New("unexpected err")
 	counter := 0
-	call := &caller{}
+	call := &mocker{}
 	node := NewMockNode("mock", call, nil)
 
-	node.BeforeRevert = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store references.Store) (context.Context, error) {
+	node.BeforeRollback = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store references.Store) (context.Context, error) {
 		counter++
 		return ctx, expected
 	}
@@ -718,10 +673,10 @@ func TestBeforeRevertNodeErr(t *testing.T) {
 
 func TestAfterRevertNode(t *testing.T) {
 	counter := 0
-	call := &caller{}
+	call := &mocker{}
 	node := NewMockNode("mock", call, nil)
 
-	node.AfterRevert = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store references.Store) (context.Context, error) {
+	node.AfterRollback = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store references.Store) (context.Context, error) {
 		counter++
 		return ctx, nil
 	}
@@ -740,10 +695,10 @@ func TestAfterRevertNode(t *testing.T) {
 func TestAfterRevertNodeErr(t *testing.T) {
 	expected := errors.New("unexpected err")
 	counter := 0
-	call := &caller{}
+	call := &mocker{}
 	node := NewMockNode("mock", call, nil)
 
-	node.AfterRevert = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store references.Store) (context.Context, error) {
+	node.AfterRollback = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store references.Store) (context.Context, error) {
 		counter++
 		return ctx, expected
 	}
@@ -756,5 +711,111 @@ func TestAfterRevertNodeErr(t *testing.T) {
 
 	if counter != 1 {
 		t.Fatalf("unexpected counter %d, expected after revert function to be called", counter)
+	}
+}
+
+func TestNodeDoFunctions(t *testing.T) {
+	counter := 0
+	call := &mocker{}
+	node := NewMockNode("mock", call, nil)
+
+	node.Functions = functions.Stack{
+		"hash": &functions.Function{
+			Fn: func(store references.Store) error {
+				counter++
+				return nil
+			},
+		},
+	}
+
+	processes := NewProcesses(1)
+	node.Do(context.Background(), NewTracker("", 1), processes, nil)
+	if processes.Err() != nil {
+		t.Error(processes.Err())
+	}
+
+	if counter != 1 {
+		t.Fatalf("unexpected counter %d, expected node function to be called", counter)
+	}
+}
+
+func TestNodeDoFunctionsErr(t *testing.T) {
+	expected := errors.New("unexpected err")
+	counter := 0
+	call := &mocker{}
+	node := NewMockNode("mock", call, nil)
+
+	node.Functions = functions.Stack{
+		"hash": &functions.Function{
+			Fn: func(store references.Store) error {
+				counter++
+				return expected
+			},
+		},
+	}
+
+	processes := NewProcesses(1)
+	node.Do(context.Background(), NewTracker("", 1), processes, nil)
+	if !errors.Is(processes.Err(), expected) {
+		t.Errorf("unexpected err '%s', expected '%s' to be thrown", processes.Err(), expected)
+	}
+
+	if counter != 1 {
+		t.Fatalf("unexpected counter %d, expected node function to be called", counter)
+	}
+}
+
+func TestNodeDoConditionFunctions(t *testing.T) {
+	counter := 0
+	call := &mocker{}
+	node := NewMockNode("mock", call, nil)
+
+	node.Condition = &Condition{
+		stack: functions.Stack{
+			"hash": &functions.Function{
+				Fn: func(store references.Store) error {
+					counter++
+					return nil
+				},
+			},
+		},
+	}
+
+	processes := NewProcesses(1)
+	node.Do(context.Background(), NewTracker("", 1), processes, nil)
+	if processes.Err() != nil {
+		t.Error(processes.Err())
+	}
+
+	if counter != 1 {
+		t.Fatalf("unexpected counter %d, expected condition function to be called", counter)
+	}
+}
+
+func TestNodeDoConditionFunctionsErr(t *testing.T) {
+	expected := errors.New("unexpected err")
+	counter := 0
+	call := &mocker{}
+	node := NewMockNode("mock", call, nil)
+
+	node.Condition = &Condition{
+		stack: functions.Stack{
+			"hash": &functions.Function{
+				Fn: func(store references.Store) error {
+					counter++
+					return expected
+				},
+			},
+		},
+	}
+
+	processes := NewProcesses(1)
+	node.Do(context.Background(), NewTracker("", 1), processes, nil)
+	if !errors.Is(processes.Err(), expected) {
+		t.Errorf("unexpected err '%s', expected '%s' to be thrown", processes.Err(), expected)
+	}
+
+	if counter != 1 {
+		t.Fatalf("unexpected counter %d, expected condition functions to be called", counter)
 	}
 }

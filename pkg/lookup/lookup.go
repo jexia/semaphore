@@ -88,6 +88,18 @@ func GetAvailableResources(flow specs.FlowInterface, breakpoint string) map[stri
 
 	for _, node := range flow.GetNodes() {
 		references[node.ID] = ReferenceMap{}
+
+		if node.Intermediate != nil {
+			if node.Intermediate.Stack != nil {
+				for key, returns := range node.Intermediate.Stack {
+					references[template.StackResource][key] = PropertyLookup(returns)
+				}
+			}
+
+			references[node.ID][template.ResponseResource] = PropertyLookup(node.Intermediate.Property)
+			references[node.ID][template.HeaderResource] = VariableHeaderLookup(node.Intermediate.Header)
+		}
+
 		if node.Call != nil {
 			if node.Call.Request != nil {
 				if node.Call.Request.Stack != nil {

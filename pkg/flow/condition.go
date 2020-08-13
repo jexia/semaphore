@@ -37,6 +37,10 @@ func (condition *Condition) Eval(ctx *broker.Context, store references.Store) (b
 		return false, err
 	}
 
+	if condition.expression == nil {
+		return true, nil
+	}
+
 	parameters := make(map[string]interface{}, len(condition.expression.GetParameters().Params))
 	for key, param := range condition.expression.GetParameters().Params {
 		value := param.Default

@@ -23,7 +23,7 @@ func ResolveReferences(ctx *broker.Context, flows specs.FlowListInterface) {
 		}
 
 		// Error and output dependencies could safely be ignored
-		empty := map[string]*specs.Node{}
+		empty := specs.Dependencies{}
 
 		if flow.GetOnError() != nil {
 			ResolveOnError(flow.GetOnError(), empty)
@@ -39,7 +39,7 @@ func ResolveReferences(ctx *broker.Context, flows specs.FlowListInterface) {
 // ResolveNodeReferences resolves the node references found inside the request and response property
 func ResolveNodeReferences(node *specs.Node) {
 	if node.DependsOn == nil {
-		node.DependsOn = map[string]*specs.Node{}
+		node.DependsOn = specs.Dependencies{}
 	}
 
 	if node.OnError != nil {
@@ -62,7 +62,7 @@ func ResolveNodeReferences(node *specs.Node) {
 }
 
 // ResolveParameterMap resolves the params inside the given parameter map
-func ResolveParameterMap(parameters *specs.ParameterMap, dependencies map[string]*specs.Node) {
+func ResolveParameterMap(parameters *specs.ParameterMap, dependencies specs.Dependencies) {
 	if parameters == nil {
 		return
 	}
@@ -73,7 +73,7 @@ func ResolveParameterMap(parameters *specs.ParameterMap, dependencies map[string
 }
 
 // ResolveOnError resolves the params inside the given parameter map
-func ResolveOnError(parameters *specs.OnError, dependencies map[string]*specs.Node) {
+func ResolveOnError(parameters *specs.OnError, dependencies specs.Dependencies) {
 	if parameters == nil {
 		return
 	}
@@ -86,7 +86,7 @@ func ResolveOnError(parameters *specs.OnError, dependencies map[string]*specs.No
 }
 
 // ResolveParamReferences resolves all nested references made inside the given params
-func ResolveParamReferences(params map[string]*specs.Property, dependencies map[string]*specs.Node) {
+func ResolveParamReferences(params map[string]*specs.Property, dependencies specs.Dependencies) {
 	if params == nil {
 		return
 	}
@@ -97,7 +97,7 @@ func ResolveParamReferences(params map[string]*specs.Property, dependencies map[
 }
 
 // ResolveFunctionsReferences resolves all references made inside the given function arguments and return value
-func ResolveFunctionsReferences(functions functions.Stack, dependencies map[string]*specs.Node) {
+func ResolveFunctionsReferences(functions functions.Stack, dependencies specs.Dependencies) {
 	if functions == nil {
 		return
 	}
@@ -114,14 +114,14 @@ func ResolveFunctionsReferences(functions functions.Stack, dependencies map[stri
 }
 
 // ResolveHeaderReferences resolves all references made inside the header
-func ResolveHeaderReferences(header specs.Header, dependencies map[string]*specs.Node) {
+func ResolveHeaderReferences(header specs.Header, dependencies specs.Dependencies) {
 	for _, prop := range header {
 		ResolvePropertyReferences(prop, dependencies)
 	}
 }
 
 // ResolvePropertyReferences moves any property reference into the correct data structure
-func ResolvePropertyReferences(property *specs.Property, dependencies map[string]*specs.Node) {
+func ResolvePropertyReferences(property *specs.Property, dependencies specs.Dependencies) {
 	if property == nil {
 		return
 	}

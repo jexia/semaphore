@@ -34,24 +34,43 @@ func Apply(ctx *broker.Context, mem functions.Collection, services specs.Service
 		nodes := make([]*flow.Node, len(manager.GetNodes()))
 
 		for index, node := range manager.GetNodes() {
-			condition := condition.New(ctx, mem, node.Condition)
-
-			caller, err := NewNodeCall(ctx, mem, services, flows, node, node.Call, options, manager)
-			if err != nil {
-				return nil, err
+			arguments := []flow.NodeOption{
+				flow.WithNodeMiddleware(flow.NodeMiddleware{
+					BeforeDo:       options.BeforeNodeDo,
+					AfterDo:        options.AfterNodeDo,
+					BeforeRollback: options.BeforeNodeRollback,
+					AfterRollback:  options.AfterNodeRollback,
+				}),
 			}
 
-			rollback, err := NewNodeCall(ctx, mem, services, flows, node, node.Rollback, options, manager)
-			if err != nil {
-				return nil, err
+			if node.Intermediate != nil {
+				stack := mem[node.Intermediate]
+				arguments = append(arguments, flow.WithFunctions(stack))
 			}
 
-			nodes[index] = flow.NewNode(ctx, node, condition, caller, rollback, &flow.NodeMiddleware{
-				BeforeDo:       options.BeforeNodeDo,
-				AfterDo:        options.AfterNodeDo,
-				BeforeRollback: options.BeforeNodeRollback,
-				AfterRollback:  options.AfterNodeRollback,
-			})
+			if node.Condition != nil {
+				arguments = append(arguments, flow.WithCondition(condition.New(ctx, mem, node.Condition)))
+			}
+
+			if node.Call != nil {
+				caller, err := NewServiceCall(ctx, mem, services, node, node.Call, options, manager)
+				if err != nil {
+					return nil, err
+				}
+
+				arguments = append(arguments, flow.WithCall(caller))
+			}
+
+			if node.Rollback != nil {
+				rollback, err := NewServiceCall(ctx, mem, services, node, node.Rollback, options, manager)
+				if err != nil {
+					return nil, err
+				}
+
+				arguments = append(arguments, flow.WithRollback(rollback))
+			}
+
+			nodes[index] = flow.NewNode(ctx, node, arguments...)
 		}
 
 		forward, err := NewForward(services, manager.GetForward(), options)
@@ -76,34 +95,6 @@ func Apply(ctx *broker.Context, mem functions.Collection, services specs.Service
 	}
 
 	return results, nil
-}
-
-// NewNodeCall constructs a flow caller for the given node call.
-func NewNodeCall(ctx *broker.Context, mem functions.Collection, services specs.ServiceList, flows specs.FlowListInterface, node *specs.Node, call *specs.Call, options config.Options, manager specs.FlowInterface) (flow.Call, error) {
-	if call == nil {
-		return nil, nil
-	}
-
-	if call.Service != "" {
-		return NewServiceCall(ctx, mem, services, node, call, options, manager)
-	}
-
-	request, err := NewRequest(ctx, node, mem, nil, call.Request)
-	if err != nil {
-		return nil, err
-	}
-
-	response, err := NewRequest(ctx, node, mem, nil, call.Response)
-	if err != nil {
-		return nil, err
-	}
-
-	caller := flow.NewCall(ctx, node, &flow.CallOptions{
-		Request:  request,
-		Response: response,
-	})
-
-	return caller, nil
 }
 
 // NewServiceCall constructs a new flow caller for the given service
@@ -141,7 +132,7 @@ func NewServiceCall(ctx *broker.Context, mem functions.Collection, services spec
 			}
 
 			forwarding.ResolvePropertyReferences(reference, node.DependsOn)
-			err = dependencies.ResolveNode(manager, node, make(map[string]*specs.Node))
+			err = dependencies.ResolveNode(manager, node, make(specs.Dependencies))
 			if err != nil {
 				return nil, err
 			}
@@ -198,7 +189,13 @@ func NewRequest(ctx *broker.Context, node *specs.Node, mem functions.Collection,
 
 	stack := mem[params]
 	metadata := metadata.NewManager(ctx, node.ID, params.Header)
-	return flow.NewRequest(stack, codec, metadata), nil
+	request := &flow.Request{
+		Functions: stack,
+		Codec:     codec,
+		Metadata:  metadata,
+	}
+
+	return request, nil
 }
 
 // NewForward constructs a flow caller for the given call.

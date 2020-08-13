@@ -214,6 +214,9 @@ var (
 	NodeIntermediate NodeType = "intermediate"
 )
 
+// Dependencies represents a collection of node dependencies
+type Dependencies map[string]*Node
+
 // Node represents a point inside a given flow where a request or rollback could be preformed.
 // Nodes could be executed synchronously or asynchronously.
 // All calls are referencing a service method, the service should match the alias defined inside the service.
@@ -221,15 +224,16 @@ var (
 // A call could contain the request headers, request body, rollback, and the execution type.
 type Node struct {
 	*metadata.Meta
-	Type         NodeType         `json:"type,omitempty"`
-	ID           string           `json:"id,omitempty"`
-	Name         string           `json:"name,omitempty"`
-	Condition    *Condition       `json:"condition,omitempty"`
-	DependsOn    map[string]*Node `json:"depends_on,omitempty"`
-	Call         *Call            `json:"call,omitempty"`
-	Rollback     *Call            `json:"rollback,omitempty"`
-	ExpectStatus []int            `json:"expect_status,omitempty"`
-	OnError      *OnError         `json:"on_error,omitempty"`
+	Type         NodeType      `json:"type,omitempty"`
+	ID           string        `json:"id,omitempty"`
+	Name         string        `json:"name,omitempty"`
+	Intermediate *ParameterMap `json:"intermediate,omitempty"`
+	Condition    *Condition    `json:"condition,omitempty"`
+	DependsOn    Dependencies  `json:"depends_on,omitempty"`
+	Call         *Call         `json:"call,omitempty"`
+	Rollback     *Call         `json:"rollback,omitempty"`
+	ExpectStatus []int         `json:"expect_status,omitempty"`
+	OnError      *OnError      `json:"on_error,omitempty"`
 }
 
 // GetOnError returns the error handling for the given node

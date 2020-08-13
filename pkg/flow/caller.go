@@ -20,13 +20,11 @@ import (
 // ErrAbortFlow represents the error thrown when a flow has to be aborted
 var ErrAbortFlow = errors.New("abort flow")
 
-// NewRequest constructs a new request for the given codec and header manager
-func NewRequest(functions functions.Stack, codec codec.Manager, metadata *metadata.Manager) *Request {
-	return &Request{
-		functions: functions,
-		codec:     codec,
-		metadata:  metadata,
-	}
+// Request represents a codec and metadata manager
+type Request struct {
+	Functions functions.Stack
+	Codec     codec.Manager
+	Metadata  *metadata.Manager
 }
 
 // CallOptions represents the available options that could be used to construct a new flow caller
@@ -39,12 +37,17 @@ type CallOptions struct {
 	ExpectedStatus []int
 }
 
-// NewCall constructs a new flow caller from the given transport caller and
+// Call represents a transport caller implementation
+type Call interface {
+	Do(context.Context, references.Store) error
+}
+
+// NewCall constructs a new flow caller from the given transport caller and options
 func NewCall(parent *broker.Context, node *specs.Node, options *CallOptions) Call {
 	module := broker.WithModule(parent, "caller", node.ID)
 	ctx := logger.WithFields(logger.WithLogger(module), zap.String("node", node.ID))
 
-	result := &Caller{
+	result := &caller{
 		ctx:            ctx,
 		node:           node,
 		transport:      options.Transport,
@@ -66,33 +69,20 @@ func NewCall(parent *broker.Context, node *specs.Node, options *CallOptions) Cal
 	return result
 }
 
-// Request represents a codec and metadata manager
-type Request struct {
-	functions functions.Stack
-	codec     codec.Manager
-	metadata  *metadata.Manager
-}
-
 // Caller represents a flow transport caller
-type Caller struct {
+type caller struct {
 	ctx            *broker.Context
 	node           *specs.Node
 	method         transport.Method
 	transport      transport.Call
-	references     []*specs.Property
 	request        *Request
 	response       *Request
 	err            *OnError
 	ExpectedStatus map[int]struct{}
 }
 
-// References returns the references inside the configured transport caller
-func (caller *Caller) References() []*specs.Property {
-	return caller.references
-}
-
 // Do is called by the flow manager to call the configured service
-func (caller *Caller) Do(ctx context.Context, store references.Store) error {
+func (caller *caller) Do(ctx context.Context, store references.Store) error {
 	reader, writer := io.Pipe()
 	w := transport.NewResponseWriter(writer)
 	r := &transport.Request{
@@ -100,24 +90,24 @@ func (caller *Caller) Do(ctx context.Context, store references.Store) error {
 	}
 
 	if caller.request != nil {
-		if caller.request.functions != nil {
-			err := ExecuteFunctions(caller.request.functions, store)
+		if caller.request.Functions != nil {
+			err := ExecuteFunctions(caller.request.Functions, store)
 			if err != nil {
 				return err
 			}
 		}
 
-		if caller.request.metadata != nil {
-			r.Header = caller.request.metadata.Marshal(store)
+		if caller.request.Metadata != nil {
+			r.Header = caller.request.Metadata.Marshal(store)
 		}
 
-		if caller.request.codec != nil {
-			body, err := caller.request.codec.Marshal(store)
+		if caller.request.Codec != nil {
+			body, err := caller.request.Codec.Marshal(store)
 			if err != nil {
 				return err
 			}
 
-			r.Codec = caller.request.codec.Name()
+			r.Codec = caller.request.Codec.Name()
 			r.Body = body
 		}
 	}
@@ -147,22 +137,22 @@ func (caller *Caller) Do(ctx context.Context, store references.Store) error {
 	}
 
 	if caller.response != nil {
-		if caller.response.codec != nil {
-			err := caller.response.codec.Unmarshal(reader, store)
+		if caller.response.Codec != nil {
+			err := caller.response.Codec.Unmarshal(reader, store)
 			if err != nil {
 				return err
 			}
 		}
 
-		if caller.response.functions != nil {
-			err := ExecuteFunctions(caller.response.functions, store)
+		if caller.response.Functions != nil {
+			err := ExecuteFunctions(caller.response.Functions, store)
 			if err != nil {
 				return err
 			}
 		}
 
-		if caller.response.metadata != nil {
-			caller.response.metadata.Unmarshal(w.Header(), store)
+		if caller.response.Metadata != nil {
+			caller.response.Metadata.Unmarshal(w.Header(), store)
 		}
 	}
 
@@ -170,7 +160,7 @@ func (caller *Caller) Do(ctx context.Context, store references.Store) error {
 }
 
 // HandleErr handles a thrown service error. If a error response is defined is it decoded
-func (caller *Caller) HandleErr(w *transport.Writer, reader io.Reader, store references.Store) error {
+func (caller *caller) HandleErr(w *transport.Writer, reader io.Reader, store references.Store) error {
 	var status interface{}
 	var message interface{}
 
@@ -212,7 +202,7 @@ func (caller *Caller) HandleErr(w *transport.Writer, reader io.Reader, store ref
 		}
 
 		if caller.err.metadata != nil {
-			caller.response.metadata.Unmarshal(w.Header(), store)
+			caller.response.Metadata.Unmarshal(w.Header(), store)
 		}
 	}
 

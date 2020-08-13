@@ -114,7 +114,7 @@ func ParseIntermediateFlow(ctx *broker.Context, flow Flow) (*specs.Flow, error) 
 		result.OnError.Response = spec
 	}
 
-	var before map[string]*specs.Node
+	var before specs.Dependencies
 	if flow.Before != nil {
 		dependencies, references, resources := ParseIntermediateBefore(ctx, flow.Before)
 		before = dependencies
@@ -154,8 +154,8 @@ func ParseIntermediateFlow(ctx *broker.Context, flow Flow) (*specs.Flow, error) 
 }
 
 // DependenciesExcept copies the given dependencies except the given resource
-func DependenciesExcept(dependencies map[string]*specs.Node, resource string) map[string]*specs.Node {
-	result := map[string]*specs.Node{}
+func DependenciesExcept(dependencies specs.Dependencies, resource string) specs.Dependencies {
+	result := specs.Dependencies{}
 	for key, val := range dependencies {
 		if key == resource {
 			continue
@@ -256,7 +256,7 @@ func ParseIntermediateProxy(ctx *broker.Context, proxy Proxy) (*specs.Proxy, err
 		result.OnError.Response = spec
 	}
 
-	var before map[string]*specs.Node
+	var before specs.Dependencies
 	if proxy.Before != nil {
 		dependencies, references, resources := ParseIntermediateBefore(ctx, proxy.Before)
 		before = dependencies
@@ -518,7 +518,7 @@ func ParseIntermediateParameters(ctx *broker.Context, options hcl.Body) (map[str
 }
 
 // ParseIntermediateNode parses the given intermediate call to a spec call
-func ParseIntermediateNode(ctx *broker.Context, dependencies map[string]*specs.Node, node Resource) (*specs.Node, error) {
+func ParseIntermediateNode(ctx *broker.Context, dependencies specs.Dependencies, node Resource) (*specs.Node, error) {
 	call, err := ParseIntermediateCall(ctx, node.Request)
 	if err != nil {
 		return nil, err
@@ -531,7 +531,7 @@ func ParseIntermediateNode(ctx *broker.Context, dependencies map[string]*specs.N
 
 	result := specs.Node{
 		Type:         specs.NodeIntermediate,
-		DependsOn:    make(map[string]*specs.Node, len(node.DependsOn)),
+		DependsOn:    make(specs.Dependencies, len(node.DependsOn)),
 		ID:           node.Name,
 		Name:         node.Name,
 		Call:         call,
@@ -693,8 +693,8 @@ func ParseIntermediateProperty(ctx *broker.Context, path string, property *hcl.A
 }
 
 // ParseIntermediateBefore parses the given before into a collection of dependencies
-func ParseIntermediateBefore(ctx *broker.Context, before *Before) (dependencies map[string]*specs.Node, references []Resources, resources []Resource) {
-	result := make(map[string]*specs.Node)
+func ParseIntermediateBefore(ctx *broker.Context, before *Before) (dependencies specs.Dependencies, references []Resources, resources []Resource) {
+	result := make(specs.Dependencies)
 
 	for _, resources := range before.References {
 		attrs, _ := resources.Properties.JustAttributes()
@@ -714,7 +714,7 @@ func ParseIntermediateBefore(ctx *broker.Context, before *Before) (dependencies 
 }
 
 // ParseIntermediateResources parses the given resources to nodes
-func ParseIntermediateResources(ctx *broker.Context, dependencies map[string]*specs.Node, resources Resources) ([]*specs.Node, error) {
+func ParseIntermediateResources(ctx *broker.Context, dependencies specs.Dependencies, resources Resources) ([]*specs.Node, error) {
 	attrs, _ := resources.Properties.JustAttributes()
 	nodes := make([]*specs.Node, 0, len(attrs))
 
@@ -728,10 +728,8 @@ func ParseIntermediateResources(ctx *broker.Context, dependencies map[string]*sp
 			Type:      specs.NodeIntermediate,
 			DependsOn: DependenciesExcept(dependencies, prop.Name),
 			ID:        prop.Name,
-			Call: &specs.Call{
-				Response: &specs.ParameterMap{
-					Property: prop,
-				},
+			Intermediate: &specs.ParameterMap{
+				Property: prop,
 			},
 		}
 
@@ -742,7 +740,7 @@ func ParseIntermediateResources(ctx *broker.Context, dependencies map[string]*sp
 }
 
 // ParseIntermediateCondition parses the given intermediate condition and returns the compiled nodes
-func ParseIntermediateCondition(ctx *broker.Context, dependencies map[string]*specs.Node, condition Condition) ([]*specs.Node, error) {
+func ParseIntermediateCondition(ctx *broker.Context, dependencies specs.Dependencies, condition Condition) ([]*specs.Node, error) {
 	expr, err := conditions.NewEvaluableExpression(ctx, condition.Expression)
 	if err != nil {
 		return nil, err
@@ -752,11 +750,11 @@ func ParseIntermediateCondition(ctx *broker.Context, dependencies map[string]*sp
 		Type:      specs.NodeCondition,
 		ID:        condition.Expression,
 		Name:      "condition",
-		DependsOn: map[string]*specs.Node{},
+		DependsOn: specs.Dependencies{},
 		Condition: expr,
 	}
 
-	result := []*specs.Node{expression}
+	result := specs.NodeList{expression}
 
 	for _, references := range condition.References {
 		nodes, err := ParseIntermediateResources(ctx, dependencies, references)

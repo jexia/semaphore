@@ -5,56 +5,100 @@ import (
 
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
+	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/transport"
 	"go.uber.org/zap"
 )
 
+// NodeOptions represent a set of options that could be set through
+// option functions.
+type NodeOptions struct {
+	condition  *Condition
+	call       Call
+	functions  functions.Stack
+	rollback   Call
+	middleware NodeMiddleware
+}
+
+// NodeOption is a wrapper function
+type NodeOption func(*NodeOptions)
+
+// WithCall sets the given call
+func WithCall(call Call) NodeOption {
+	return func(option *NodeOptions) {
+		option.call = call
+	}
+}
+
+// WithRollback sets the given call as rollback
+func WithRollback(call Call) NodeOption {
+	return func(option *NodeOptions) {
+		option.rollback = call
+	}
+}
+
+// WithCondition sets the given condition
+func WithCondition(condition *Condition) NodeOption {
+	return func(option *NodeOptions) {
+		option.condition = condition
+	}
+}
+
+// WithFunctions sets the given functions stack
+func WithFunctions(functions functions.Stack) NodeOption {
+	return func(option *NodeOptions) {
+		option.functions = functions
+	}
+}
+
+// WithNodeMiddleware sets the given middleware
+func WithNodeMiddleware(middleware NodeMiddleware) NodeOption {
+	return func(option *NodeOptions) {
+		option.middleware = middleware
+	}
+}
+
+// NewNodeOptions constructs a new node options object and collects the options
+func NewNodeOptions(opts ...NodeOption) NodeOptions {
+	options := NodeOptions{}
+
+	for _, opt := range opts {
+		opt(&options)
+	}
+
+	return options
+}
+
 // NewNode constructs a new node for the given call.
 // The service called inside the call endpoint is retrieved from the services collection.
 // The call, codec and rollback are defined inside the node and used while processing requests.
-func NewNode(parent *broker.Context, node *specs.Node, condition *Condition, call, rollback Call, middleware *NodeMiddleware) *Node {
+func NewNode(parent *broker.Context, node *specs.Node, opts ...NodeOption) *Node {
+	options := NewNodeOptions(opts...)
+
 	module := broker.WithModule(parent, "node", node.Name)
 	ctx := logger.WithLogger(module)
 
-	refs := references.References{}
-
-	if middleware == nil {
-		middleware = &NodeMiddleware{}
-	}
+	refs := references.Collection{}
 
 	if node.Call != nil {
 		refs.MergeLeft(references.ParameterReferences(node.Call.Request))
 	}
 
-	if call != nil {
-		for _, prop := range call.References() {
-			refs.MergeLeft(references.PropertyReferences(prop))
-		}
-	}
-
-	if rollback != nil {
-		for _, prop := range rollback.References() {
-			refs.MergeLeft(references.PropertyReferences(prop))
-		}
-	}
-
 	return &Node{
-		BeforeDo:     middleware.BeforeDo,
-		BeforeRevert: middleware.BeforeRollback,
-		Condition:    condition,
-		ctx:          ctx,
-		Name:         node.ID,
-		Previous:     []*Node{},
-		Call:         call,
-		Revert:       rollback,
-		DependsOn:    node.DependsOn,
-		References:   refs,
-		Next:         []*Node{},
-		OnError:      node.GetOnError(),
-		AfterDo:      middleware.AfterDo,
-		AfterRevert:  middleware.AfterRollback,
+		NodeMiddleware: options.middleware,
+		Condition:      options.condition,
+		ctx:            ctx,
+		Name:           node.ID,
+		Previous:       []*Node{},
+		Functions:      options.functions,
+		Call:           options.call,
+		Revert:         options.rollback,
+		DependsOn:      node.DependsOn,
+		References:     refs,
+		Next:           []*Node{},
+		OnError:        node.GetOnError(),
 	}
 }
 
@@ -94,20 +138,18 @@ type AfterNodeHandler func(AfterNode) AfterNode
 
 // Node represents a collection of callers and rollbacks which could be executed parallel.
 type Node struct {
-	BeforeDo     BeforeNode
-	BeforeRevert BeforeNode
-	Condition    *Condition
-	ctx          *broker.Context
-	Name         string
-	Previous     Nodes
-	Call         Call
-	Revert       Call
-	DependsOn    map[string]*specs.Node
-	References   map[string]*specs.PropertyReference
-	Next         Nodes
-	OnError      specs.ErrorHandle
-	AfterDo      AfterNode
-	AfterRevert  AfterNode
+	NodeMiddleware
+	Condition  *Condition
+	ctx        *broker.Context
+	Name       string
+	Previous   Nodes
+	Functions  functions.Stack
+	Call       Call
+	Revert     Call
+	DependsOn  specs.Dependencies
+	References map[string]*specs.PropertyReference
+	Next       Nodes
+	OnError    specs.ErrorHandle
 }
 
 // Do executes the given node an calls the next nodes.
@@ -125,6 +167,15 @@ func (node *Node) Do(ctx context.Context, tracker *Tracker, processes *Processes
 	}
 
 	var err error
+
+	if node.Functions != nil {
+		err = ExecuteFunctions(node.Functions, refs)
+		if err != nil {
+			logger.Error(node.ctx, "node functions failed", zap.Error(err))
+			processes.Fatal(transport.WrapError(err, node.OnError))
+			return
+		}
+	}
 
 	if node.Condition != nil {
 		logger.Debug(node.ctx, "evaluating condition")
@@ -203,8 +254,8 @@ func (node *Node) Rollback(ctx context.Context, tracker *Tracker, processes *Pro
 
 	var err error
 
-	if node.BeforeRevert != nil {
-		ctx, err = node.BeforeRevert(ctx, node, tracker, processes, refs)
+	if node.BeforeRollback != nil {
+		ctx, err = node.BeforeRollback(ctx, node, tracker, processes, refs)
 		if err != nil {
 			logger.Error(node.ctx, "node before revert middleware failed", zap.Error(err))
 			processes.Fatal(transport.WrapError(err, node.OnError))
@@ -230,8 +281,8 @@ func (node *Node) Rollback(ctx context.Context, tracker *Tracker, processes *Pro
 	logger.Debug(node.ctx, "marking node as completed")
 	tracker.Mark(node)
 
-	if node.AfterRevert != nil {
-		ctx, err = node.AfterRevert(ctx, node, tracker, processes, refs)
+	if node.AfterRollback != nil {
+		ctx, err = node.AfterRollback(ctx, node, tracker, processes, refs)
 		if err != nil {
 			logger.Error(node.ctx, "node after revert middleware failed", zap.Error(err))
 			processes.Fatal(transport.WrapError(err, node.OnError))

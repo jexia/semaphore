@@ -12,7 +12,7 @@ func TestResolveManifestDependencies(t *testing.T) {
 	flows := specs.FlowListInterface{
 		&specs.Flow{
 			Name: "first",
-			Nodes: []*specs.Node{
+			Nodes: specs.NodeList{
 				{
 					ID: "first",
 				},
@@ -33,7 +33,7 @@ func TestResolveManifestDependencies(t *testing.T) {
 		},
 		&specs.Flow{
 			Name: "second",
-			Nodes: []*specs.Node{
+			Nodes: specs.NodeList{
 				{
 					ID: "first",
 				},
@@ -54,7 +54,7 @@ func TestResolveManifestDependencies(t *testing.T) {
 		},
 		&specs.Flow{
 			Name: "third",
-			Nodes: []*specs.Node{
+			Nodes: specs.NodeList{
 				{
 					ID: "first",
 				},
@@ -75,7 +75,7 @@ func TestResolveManifestDependencies(t *testing.T) {
 		},
 		&specs.Proxy{
 			Name: "first",
-			Nodes: []*specs.Node{
+			Nodes: specs.NodeList{
 				{
 					ID: "first",
 				},
@@ -96,7 +96,7 @@ func TestResolveManifestDependencies(t *testing.T) {
 		},
 		&specs.Proxy{
 			Name: "second",
-			Nodes: []*specs.Node{
+			Nodes: specs.NodeList{
 				{
 					ID: "first",
 				},
@@ -117,7 +117,7 @@ func TestResolveManifestDependencies(t *testing.T) {
 		},
 		&specs.Proxy{
 			Name: "third",
-			Nodes: []*specs.Node{
+			Nodes: specs.NodeList{
 				{
 					ID: "first",
 				},
@@ -161,7 +161,7 @@ func TestResolveManifestDependencies(t *testing.T) {
 
 func TestResolveCallDependencies(t *testing.T) {
 	flow := &specs.Flow{
-		Nodes: []*specs.Node{
+		Nodes: specs.NodeList{
 			{
 				ID: "first",
 			},
@@ -181,7 +181,7 @@ func TestResolveCallDependencies(t *testing.T) {
 		},
 	}
 
-	tests := []*specs.Node{
+	tests := specs.NodeList{
 		flow.Nodes[1],
 		flow.Nodes[2],
 	}
@@ -202,7 +202,7 @@ func TestResolveCallDependencies(t *testing.T) {
 
 func TestCallCircularDependenciesDetection(t *testing.T) {
 	flow := &specs.Flow{
-		Nodes: []*specs.Node{
+		Nodes: specs.NodeList{
 			{
 				ID: "first",
 				DependsOn: map[string]*specs.Node{
@@ -218,7 +218,7 @@ func TestCallCircularDependenciesDetection(t *testing.T) {
 		},
 	}
 
-	tests := []*specs.Node{
+	tests := specs.NodeList{
 		flow.Nodes[0],
 		flow.Nodes[1],
 	}
@@ -233,7 +233,7 @@ func TestCallCircularDependenciesDetection(t *testing.T) {
 
 func TestSelfDependencyDetection(t *testing.T) {
 	flow := &specs.Flow{
-		Nodes: []*specs.Node{
+		Nodes: specs.NodeList{
 			{
 				ID: "first",
 				DependsOn: map[string]*specs.Node{
@@ -249,7 +249,7 @@ func TestSelfDependencyDetection(t *testing.T) {
 		},
 	}
 
-	tests := []*specs.Node{
+	tests := specs.NodeList{
 		flow.Nodes[0],
 	}
 

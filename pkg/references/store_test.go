@@ -513,8 +513,8 @@ func TestMergeReferences(t *testing.T) {
 	resource := "input"
 	path := ""
 
-	left := References{}
-	right := References{
+	left := Collection{}
+	right := Collection{
 		key: &specs.PropertyReference{
 			Resource: resource,
 			Path:     path,

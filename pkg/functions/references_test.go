@@ -38,7 +38,7 @@ func TestDefineFunction(t *testing.T) {
 				ID: "second",
 			},
 			flow: &specs.Flow{
-				Nodes: []*specs.Node{
+				Nodes: specs.NodeList{
 					{
 						ID: "first",
 						Call: &specs.Call{
@@ -79,7 +79,7 @@ func TestDefineFunction(t *testing.T) {
 				ID: "second",
 			},
 			flow: &specs.Flow{
-				Nodes: []*specs.Node{
+				Nodes: specs.NodeList{
 					{
 						ID: "first",
 						Call: &specs.Call{
@@ -109,7 +109,7 @@ func TestDefineFunction(t *testing.T) {
 			stack: nil,
 			node:  nil,
 			flow: &specs.Flow{
-				Nodes: []*specs.Node{},
+				Nodes: specs.NodeList{},
 			},
 		},
 	}

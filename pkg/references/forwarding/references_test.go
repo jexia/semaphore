@@ -28,7 +28,7 @@ func TestResolveReferences(t *testing.T) {
 
 			flows := specs.FlowListInterface{
 				&specs.Flow{
-					Nodes: []*specs.Node{
+					Nodes: specs.NodeList{
 						{
 							Call: &specs.Call{
 								Request: &specs.ParameterMap{
@@ -60,7 +60,7 @@ func TestResolveReferences(t *testing.T) {
 
 			flows := specs.FlowListInterface{
 				&specs.Proxy{
-					Nodes: []*specs.Node{
+					Nodes: specs.NodeList{
 						{
 							Call: &specs.Call{
 								Request: &specs.ParameterMap{
@@ -92,7 +92,7 @@ func TestResolveReferences(t *testing.T) {
 
 			flows := specs.FlowListInterface{
 				&specs.Flow{
-					Nodes: []*specs.Node{
+					Nodes: specs.NodeList{
 						{
 							Call: &specs.Call{
 								Request: &specs.ParameterMap{

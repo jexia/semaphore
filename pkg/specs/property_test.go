@@ -106,7 +106,7 @@ func TestObjectsGet(t *testing.T) {
 
 func TestObjectsGetNilValue(t *testing.T) {
 	var objects Schemas
-	result := objects.Get("unkown")
+	result := objects.Get("unknown")
 	if result != nil {
 		t.Fatalf("unexpected result %+v", result)
 	}
