@@ -77,7 +77,7 @@ func TestNewListenerOptions(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			actual, err := NewListenerOptions(test.options...)
 
-			if err != test.error {
+			if err != nil && err.Error() != test.error.Error() {
 				t.Errorf("error [%v] was expected to be [%v]", err, test.error)
 			}
 
