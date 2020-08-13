@@ -108,7 +108,7 @@ func AfterManagerRollback(wrapper flow.AfterManagerHandler) config.Option {
 func BeforeNodeDo(wrapper flow.BeforeNodeHandler) config.Option {
 	return func(ctx *broker.Context, options *config.Options) {
 		if options.BeforeNodeDo == nil {
-			options.BeforeNodeDo = wrapper(func(ctx context.Context, node *flow.Node, tracker *flow.Tracker, processes *flow.Processes, store references.Store) (context.Context, error) {
+			options.BeforeNodeDo = wrapper(func(ctx context.Context, node *flow.Node, tracker flow.Tracker, processes *flow.Processes, store references.Store) (context.Context, error) {
 				return ctx, nil
 			})
 
@@ -123,7 +123,7 @@ func BeforeNodeDo(wrapper flow.BeforeNodeHandler) config.Option {
 func BeforeNodeRollback(wrapper flow.BeforeNodeHandler) config.Option {
 	return func(ctx *broker.Context, options *config.Options) {
 		if options.BeforeNodeRollback == nil {
-			options.BeforeNodeRollback = wrapper(func(ctx context.Context, node *flow.Node, tracker *flow.Tracker, processes *flow.Processes, store references.Store) (context.Context, error) {
+			options.BeforeNodeRollback = wrapper(func(ctx context.Context, node *flow.Node, tracker flow.Tracker, processes *flow.Processes, store references.Store) (context.Context, error) {
 				return ctx, nil
 			})
 
@@ -138,7 +138,7 @@ func BeforeNodeRollback(wrapper flow.BeforeNodeHandler) config.Option {
 func AfterNodeDo(wrapper flow.AfterNodeHandler) config.Option {
 	return func(ctx *broker.Context, options *config.Options) {
 		if options.AfterNodeDo == nil {
-			options.AfterNodeDo = wrapper(func(ctx context.Context, node *flow.Node, tracker *flow.Tracker, processes *flow.Processes, store references.Store) (context.Context, error) {
+			options.AfterNodeDo = wrapper(func(ctx context.Context, node *flow.Node, tracker flow.Tracker, processes *flow.Processes, store references.Store) (context.Context, error) {
 				return ctx, nil
 			})
 			return
@@ -152,7 +152,7 @@ func AfterNodeDo(wrapper flow.AfterNodeHandler) config.Option {
 func AfterNodeRollback(wrapper flow.AfterNodeHandler) config.Option {
 	return func(ctx *broker.Context, options *config.Options) {
 		if options.AfterNodeRollback == nil {
-			options.AfterNodeRollback = wrapper(func(ctx context.Context, node *flow.Node, tracker *flow.Tracker, processes *flow.Processes, store references.Store) (context.Context, error) {
+			options.AfterNodeRollback = wrapper(func(ctx context.Context, node *flow.Node, tracker flow.Tracker, processes *flow.Processes, store references.Store) (context.Context, error) {
 				return ctx, nil
 			})
 			return

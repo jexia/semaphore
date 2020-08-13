@@ -44,6 +44,10 @@ type Call interface {
 
 // NewCall constructs a new flow caller from the given transport caller and options
 func NewCall(parent *broker.Context, node *specs.Node, options *CallOptions) Call {
+	if node == nil || options == nil {
+		return nil
+	}
+
 	module := broker.WithModule(parent, "caller", node.ID)
 	ctx := logger.WithFields(logger.WithLogger(module), zap.String("node", node.ID))
 

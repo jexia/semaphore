@@ -75,6 +75,14 @@ func TestNewCall(t *testing.T) {
 	}
 }
 
+func TestNewCallNil(t *testing.T) {
+	ctx := logger.WithLogger(broker.NewBackground())
+	result := NewCall(ctx, nil, nil)
+	if result != nil {
+		t.Fatal("unexpected call")
+	}
+}
+
 func TestCallReferences(t *testing.T) {
 	ctx := logger.WithLogger(broker.NewBackground())
 	node := &specs.Node{}

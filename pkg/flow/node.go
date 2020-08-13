@@ -26,8 +26,12 @@ type NodeOptions struct {
 type NodeArguments []NodeOption
 
 // Set sets the given option inside the given arguments
-func (arguments NodeArguments) Set(option NodeOption) {
-	arguments = append(arguments, option)
+func (arguments *NodeArguments) Set(option NodeOption) {
+	if option == nil {
+		return
+	}
+
+	*arguments = append(*arguments, option)
 }
 
 // NodeOption is a wrapper function
@@ -133,13 +137,13 @@ type NodeMiddleware struct {
 }
 
 // BeforeNode is called before a node is executed
-type BeforeNode func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store references.Store) (context.Context, error)
+type BeforeNode func(ctx context.Context, node *Node, tracker Tracker, processes *Processes, store references.Store) (context.Context, error)
 
 // BeforeNodeHandler wraps the before node function to allow middleware to be chained
 type BeforeNodeHandler func(BeforeNode) BeforeNode
 
 // AfterNode is called after a node is executed
-type AfterNode func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store references.Store) (context.Context, error)
+type AfterNode func(ctx context.Context, node *Node, tracker Tracker, processes *Processes, store references.Store) (context.Context, error)
 
 // AfterNodeHandler wraps the after node function to allow middleware to be chained
 type AfterNodeHandler func(AfterNode) AfterNode
@@ -162,7 +166,7 @@ type Node struct {
 
 // Do executes the given node an calls the next nodes.
 // If one of the nodes fails is the error marked and are the processes aborted.
-func (node *Node) Do(ctx context.Context, tracker *Tracker, processes *Processes, refs references.Store) {
+func (node *Node) Do(ctx context.Context, tracker Tracker, processes *Processes, refs references.Store) {
 	defer processes.Done()
 	logger.Debug(node.ctx, "executing node call")
 
@@ -248,7 +252,7 @@ func (node *Node) Do(ctx context.Context, tracker *Tracker, processes *Processes
 
 // Rollback executes the given node rollback an calls the previous nodes.
 // If one of the nodes fails is the error marked but execution is not aborted.
-func (node *Node) Rollback(ctx context.Context, tracker *Tracker, processes *Processes, refs references.Store) {
+func (node *Node) Rollback(ctx context.Context, tracker Tracker, processes *Processes, refs references.Store) {
 	defer processes.Done()
 	logger.Debug(node.ctx, "executing node revert")
 
@@ -300,7 +304,7 @@ func (node *Node) Rollback(ctx context.Context, tracker *Tracker, processes *Pro
 }
 
 // Skip skips the given node and all it's dependencies and nested conditions
-func (node *Node) Skip(ctx context.Context, tracker *Tracker) {
+func (node *Node) Skip(ctx context.Context, tracker Tracker) {
 	tracker.Skip(node)
 
 	for _, node := range node.Next {

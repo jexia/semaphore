@@ -172,7 +172,7 @@ func (manager *Manager) Do(ctx context.Context, refs references.Store) error {
 
 // Revert reverts the executed nodes found inside the given tracker.
 // All nodes that have not been executed will be ignored.
-func (manager *Manager) Revert(executed *Tracker, refs references.Store) {
+func (manager *Manager) Revert(executed Tracker, refs references.Store) {
 	defer manager.wg.Done()
 
 	var err error

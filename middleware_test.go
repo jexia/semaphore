@@ -342,7 +342,7 @@ func TestBeforeNodeDoOption(t *testing.T) {
 
 	fn := func(i *int) flow.BeforeNodeHandler {
 		return func(next flow.BeforeNode) flow.BeforeNode {
-			return func(ctx context.Context, node *flow.Node, tracker *flow.Tracker, processes *flow.Processes, store references.Store) (context.Context, error) {
+			return func(ctx context.Context, node *flow.Node, tracker flow.Tracker, processes *flow.Processes, store references.Store) (context.Context, error) {
 				*i++
 				return next(ctx, node, tracker, processes, store)
 			}
@@ -404,7 +404,7 @@ func TestBeforeNodeRollbackOption(t *testing.T) {
 
 	fn := func(i *int) flow.BeforeNodeHandler {
 		return func(next flow.BeforeNode) flow.BeforeNode {
-			return func(ctx context.Context, node *flow.Node, tracker *flow.Tracker, processes *flow.Processes, store references.Store) (context.Context, error) {
+			return func(ctx context.Context, node *flow.Node, tracker flow.Tracker, processes *flow.Processes, store references.Store) (context.Context, error) {
 				*i++
 				return next(ctx, node, tracker, processes, store)
 			}
@@ -466,7 +466,7 @@ func TestAfterNodeRollbackOption(t *testing.T) {
 
 	fn := func(i *int) flow.AfterNodeHandler {
 		return func(next flow.AfterNode) flow.AfterNode {
-			return func(ctx context.Context, node *flow.Node, tracker *flow.Tracker, processes *flow.Processes, store references.Store) (context.Context, error) {
+			return func(ctx context.Context, node *flow.Node, tracker flow.Tracker, processes *flow.Processes, store references.Store) (context.Context, error) {
 				*i++
 				return next(ctx, node, tracker, processes, store)
 			}
@@ -528,7 +528,7 @@ func TestAfterNodeDoOption(t *testing.T) {
 
 	fn := func(i *int) flow.AfterNodeHandler {
 		return func(next flow.AfterNode) flow.AfterNode {
-			return func(ctx context.Context, node *flow.Node, tracker *flow.Tracker, processes *flow.Processes, store references.Store) (context.Context, error) {
+			return func(ctx context.Context, node *flow.Node, tracker flow.Tracker, processes *flow.Processes, store references.Store) (context.Context, error) {
 				*i++
 				return next(ctx, node, tracker, processes, store)
 			}
