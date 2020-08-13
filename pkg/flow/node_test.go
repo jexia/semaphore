@@ -687,7 +687,7 @@ func TestBeforeRevertNode(t *testing.T) {
 	call := &caller{}
 	node := NewMockNode("mock", call, nil)
 
-	node.BeforeRevert = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store references.Store) (context.Context, error) {
+	node.BeforeRollback = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store references.Store) (context.Context, error) {
 		counter++
 		return ctx, nil
 	}
@@ -709,7 +709,7 @@ func TestBeforeRevertNodeErr(t *testing.T) {
 	call := &caller{}
 	node := NewMockNode("mock", call, nil)
 
-	node.BeforeRevert = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store references.Store) (context.Context, error) {
+	node.BeforeRollback = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store references.Store) (context.Context, error) {
 		counter++
 		return ctx, expected
 	}
@@ -730,7 +730,7 @@ func TestAfterRevertNode(t *testing.T) {
 	call := &caller{}
 	node := NewMockNode("mock", call, nil)
 
-	node.AfterRevert = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store references.Store) (context.Context, error) {
+	node.AfterRollback = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store references.Store) (context.Context, error) {
 		counter++
 		return ctx, nil
 	}
@@ -752,7 +752,7 @@ func TestAfterRevertNodeErr(t *testing.T) {
 	call := &caller{}
 	node := NewMockNode("mock", call, nil)
 
-	node.AfterRevert = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store references.Store) (context.Context, error) {
+	node.AfterRollback = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store references.Store) (context.Context, error) {
 		counter++
 		return ctx, expected
 	}

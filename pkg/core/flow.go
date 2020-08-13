@@ -35,7 +35,7 @@ func Apply(ctx *broker.Context, mem functions.Collection, services specs.Service
 
 		for index, node := range manager.GetNodes() {
 			arguments := []flow.NodeOption{
-				flow.WithNodeMiddleware(&flow.NodeMiddleware{
+				flow.WithNodeMiddleware(flow.NodeMiddleware{
 					BeforeDo:       options.BeforeNodeDo,
 					AfterDo:        options.AfterNodeDo,
 					BeforeRollback: options.BeforeNodeRollback,

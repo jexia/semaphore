@@ -19,7 +19,7 @@ type NodeOptions struct {
 	call       Call
 	functions  functions.Stack
 	rollback   Call
-	middleware *NodeMiddleware
+	middleware NodeMiddleware
 }
 
 // NodeOption is a wrapper function
@@ -54,7 +54,7 @@ func WithFunctions(functions functions.Stack) NodeOption {
 }
 
 // WithNodeMiddleware sets the given middleware
-func WithNodeMiddleware(middleware *NodeMiddleware) NodeOption {
+func WithNodeMiddleware(middleware NodeMiddleware) NodeOption {
 	return func(option *NodeOptions) {
 		option.middleware = middleware
 	}
@@ -62,9 +62,7 @@ func WithNodeMiddleware(middleware *NodeMiddleware) NodeOption {
 
 // NewNodeOptions constructs a new node options object and collects the options
 func NewNodeOptions(opts ...NodeOption) NodeOptions {
-	options := NodeOptions{
-		middleware: &NodeMiddleware{},
-	}
+	options := NodeOptions{}
 
 	for _, opt := range opts {
 		opt(&options)
@@ -101,21 +99,18 @@ func NewNode(parent *broker.Context, node *specs.Node, opts ...NodeOption) *Node
 	}
 
 	return &Node{
-		BeforeDo:     options.middleware.BeforeDo,
-		BeforeRevert: options.middleware.BeforeRollback,
-		Condition:    options.condition,
-		ctx:          ctx,
-		Name:         node.ID,
-		Previous:     []*Node{},
-		Functions:    options.functions,
-		Call:         options.call,
-		Revert:       options.rollback,
-		DependsOn:    node.DependsOn,
-		References:   refs,
-		Next:         []*Node{},
-		OnError:      node.GetOnError(),
-		AfterDo:      options.middleware.AfterDo,
-		AfterRevert:  options.middleware.AfterRollback,
+		NodeMiddleware: options.middleware,
+		Condition:      options.condition,
+		ctx:            ctx,
+		Name:           node.ID,
+		Previous:       []*Node{},
+		Functions:      options.functions,
+		Call:           options.call,
+		Revert:         options.rollback,
+		DependsOn:      node.DependsOn,
+		References:     refs,
+		Next:           []*Node{},
+		OnError:        node.GetOnError(),
 	}
 }
 
@@ -155,21 +150,18 @@ type AfterNodeHandler func(AfterNode) AfterNode
 
 // Node represents a collection of callers and rollbacks which could be executed parallel.
 type Node struct {
-	BeforeDo     BeforeNode
-	BeforeRevert BeforeNode
-	Condition    *Condition
-	ctx          *broker.Context
-	Name         string
-	Previous     Nodes
-	Functions    functions.Stack
-	Call         Call
-	Revert       Call
-	DependsOn    specs.Dependencies
-	References   map[string]*specs.PropertyReference
-	Next         Nodes
-	OnError      specs.ErrorHandle
-	AfterDo      AfterNode
-	AfterRevert  AfterNode
+	NodeMiddleware
+	Condition  *Condition
+	ctx        *broker.Context
+	Name       string
+	Previous   Nodes
+	Functions  functions.Stack
+	Call       Call
+	Revert     Call
+	DependsOn  specs.Dependencies
+	References map[string]*specs.PropertyReference
+	Next       Nodes
+	OnError    specs.ErrorHandle
 }
 
 // Do executes the given node an calls the next nodes.
@@ -274,8 +266,8 @@ func (node *Node) Rollback(ctx context.Context, tracker *Tracker, processes *Pro
 
 	var err error
 
-	if node.BeforeRevert != nil {
-		ctx, err = node.BeforeRevert(ctx, node, tracker, processes, refs)
+	if node.BeforeRollback != nil {
+		ctx, err = node.BeforeRollback(ctx, node, tracker, processes, refs)
 		if err != nil {
 			logger.Error(node.ctx, "node before revert middleware failed", zap.Error(err))
 			processes.Fatal(transport.WrapError(err, node.OnError))
@@ -301,8 +293,8 @@ func (node *Node) Rollback(ctx context.Context, tracker *Tracker, processes *Pro
 	logger.Debug(node.ctx, "marking node as completed")
 	tracker.Mark(node)
 
-	if node.AfterRevert != nil {
-		ctx, err = node.AfterRevert(ctx, node, tracker, processes, refs)
+	if node.AfterRollback != nil {
+		ctx, err = node.AfterRollback(ctx, node, tracker, processes, refs)
 		if err != nil {
 			logger.Error(node.ctx, "node after revert middleware failed", zap.Error(err))
 			processes.Fatal(transport.WrapError(err, node.OnError))
