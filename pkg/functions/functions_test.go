@@ -70,9 +70,9 @@ func TestCollectionReserve(t *testing.T) {
 		t.Fatalf("unexpected result %+v, expected %+v", result, expected)
 	}
 
-	unkown := collection.Reserve(&specs.ParameterMap{})
-	if len(unkown) != 0 {
-		t.Fatalf("unkown stack %+v, expected a empty stack", unkown)
+	unknown := collection.Reserve(&specs.ParameterMap{})
+	if len(unknown) != 0 {
+		t.Fatalf("unknown stack %+v, expected a empty stack", unknown)
 	}
 }
 

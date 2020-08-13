@@ -147,7 +147,7 @@ func TestParseReferenceErr(t *testing.T) {
 	}
 }
 
-func TestUnkownReferencePattern(t *testing.T) {
+func TestUnknownReferencePattern(t *testing.T) {
 	name := ""
 	path := "message"
 

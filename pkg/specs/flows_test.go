@@ -26,7 +26,7 @@ func TestFlowListInterfaceGet(t *testing.T) {
 	}
 }
 
-func TestFlowListInterfaceGetUnkown(t *testing.T) {
+func TestFlowListInterfaceGetUnknown(t *testing.T) {
 	flows := FlowListInterface{}
 	result := flows.Get("expected")
 
@@ -46,7 +46,7 @@ func TestFlowListGet(t *testing.T) {
 	}
 }
 
-func TestFlowListGetUnkown(t *testing.T) {
+func TestFlowListGetUnknown(t *testing.T) {
 	flows := FlowList{}
 	result := flows.Get("expected")
 
@@ -109,7 +109,7 @@ func TestProxyListGet(t *testing.T) {
 	}
 }
 
-func TestProxyListGetUnkown(t *testing.T) {
+func TestProxyListGetUnknown(t *testing.T) {
 	flows := ProxyList{}
 	result := flows.Get("expected")
 
@@ -181,9 +181,9 @@ func TestNodeListGet(t *testing.T) {
 	}
 }
 
-func TestNodeListGetUnkown(t *testing.T) {
+func TestNodeListGetUnknown(t *testing.T) {
 	nodes := &NodeList{&Node{ID: "first"}, &Node{ID: "second"}}
-	result := nodes.Get("unkown")
+	result := nodes.Get("unknown")
 	if result != nil {
 		t.Errorf("unexpected result %+v", result)
 	}

@@ -26,10 +26,10 @@ func TestServicesGet(t *testing.T) {
 	}
 }
 
-func TestServicesGetUnkown(t *testing.T) {
+func TestServicesGetUnknown(t *testing.T) {
 	services := ServiceList{&Service{FullyQualifiedName: "first"}}
 
-	result := services.Get("unkown")
+	result := services.Get("unknown")
 	if result != nil {
 		t.Fatalf("unexpected result %+v", result)
 	}
@@ -53,7 +53,7 @@ func TestServiceGetMethod(t *testing.T) {
 	}
 }
 
-func TestServiceGetUnkownMethod(t *testing.T) {
+func TestServiceGetUnknownMethod(t *testing.T) {
 	service := &Service{
 		Methods: []*Method{
 			{
@@ -62,7 +62,7 @@ func TestServiceGetUnkownMethod(t *testing.T) {
 		},
 	}
 
-	result := service.GetMethod("unkown")
+	result := service.GetMethod("unknown")
 	if result != nil {
 		t.Fatalf("unexpected result %+v", result)
 	}

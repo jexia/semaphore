@@ -1,8 +1,8 @@
 FROM golang:1.14 AS build
 
 ARG version=unknown
-ARG build=unkown
-ARG label=unkown
+ARG build=unknown
+ARG label=unknown
 
 WORKDIR /app
 

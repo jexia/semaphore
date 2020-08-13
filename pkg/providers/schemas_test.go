@@ -23,9 +23,9 @@ func NewMockServices() specs.ServiceList {
 					Output: "com.mock.message",
 				},
 				{
-					Name:   "unkown",
-					Input:  "com.mock.unkown",
-					Output: "com.mock.unkown",
+					Name:   "unknown",
+					Input:  "com.mock.unknown",
+					Output: "com.mock.unknown",
 				},
 			},
 		},
@@ -194,21 +194,21 @@ func TestDefineSchemas(t *testing.T) {
 	}
 }
 
-func TestDefineSchemasUnkown(t *testing.T) {
+func TestDefineSchemasUnknown(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]specs.FlowListInterface{
 		"input": {
 			&specs.Flow{
 				Input: &specs.ParameterMap{
-					Schema: "com.mock.unkown",
+					Schema: "com.mock.unknown",
 				},
 			},
 		},
 		"output": {
 			&specs.Flow{
 				Output: &specs.ParameterMap{
-					Schema: "com.mock.unkown",
+					Schema: "com.mock.unknown",
 				},
 			},
 		},
@@ -218,7 +218,7 @@ func TestDefineSchemasUnkown(t *testing.T) {
 					&specs.Node{
 						Call: &specs.Call{
 							Request: &specs.ParameterMap{
-								Schema: "com.mock.unkown",
+								Schema: "com.mock.unknown",
 							},
 						},
 					},
@@ -231,7 +231,7 @@ func TestDefineSchemasUnkown(t *testing.T) {
 					&specs.Node{
 						Call: &specs.Call{
 							Response: &specs.ParameterMap{
-								Schema: "com.mock.unkown",
+								Schema: "com.mock.unknown",
 							},
 						},
 					},
@@ -272,7 +272,7 @@ func TestDefineSchemasUnkown(t *testing.T) {
 					&specs.Node{
 						Call: &specs.Call{
 							Service:  "com.mock.greeter",
-							Method:   "unkown",
+							Method:   "unknown",
 							Request:  &specs.ParameterMap{},
 							Response: &specs.ParameterMap{},
 						},
@@ -286,7 +286,7 @@ func TestDefineSchemasUnkown(t *testing.T) {
 					&specs.Node{
 						OnError: &specs.OnError{
 							Response: &specs.ParameterMap{
-								Schema: "com.mock.unkown",
+								Schema: "com.mock.unknown",
 							},
 						},
 					},
@@ -299,7 +299,7 @@ func TestDefineSchemasUnkown(t *testing.T) {
 					&specs.Node{
 						Condition: &specs.Condition{
 							Params: &specs.ParameterMap{
-								Schema: "com.mock.unkown",
+								Schema: "com.mock.unknown",
 							},
 						},
 					},
@@ -312,7 +312,7 @@ func TestDefineSchemasUnkown(t *testing.T) {
 					&specs.Node{
 						Rollback: &specs.Call{
 							Request: &specs.ParameterMap{
-								Schema: "com.mock.unkown",
+								Schema: "com.mock.unknown",
 							},
 						},
 					},
@@ -325,7 +325,7 @@ func TestDefineSchemasUnkown(t *testing.T) {
 					&specs.Node{
 						Rollback: &specs.Call{
 							Response: &specs.ParameterMap{
-								Schema: "com.mock.unkown",
+								Schema: "com.mock.unknown",
 							},
 						},
 					},
@@ -336,7 +336,7 @@ func TestDefineSchemasUnkown(t *testing.T) {
 			&specs.Flow{
 				OnError: &specs.OnError{
 					Response: &specs.ParameterMap{
-						Schema: "com.mock.unkown",
+						Schema: "com.mock.unknown",
 					},
 				},
 			},

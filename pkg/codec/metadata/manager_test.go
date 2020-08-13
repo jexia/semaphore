@@ -135,7 +135,7 @@ func TestManagerUnmarshal(t *testing.T) {
 
 			input := MD{
 				"example": "hello",
-				"unkown":  "hello",
+				"unknown": "hello",
 			}
 
 			expected := MD{
