@@ -60,7 +60,7 @@ func WithNodeMiddleware(middleware *NodeMiddleware) NodeOption {
 	}
 }
 
-// NewNodeOptions constructs a new node options object and collects the options.
+// NewNodeOptions constructs a new node options object and collects the options
 func NewNodeOptions(opts ...NodeOption) NodeOptions {
 	options := NodeOptions{
 		middleware: &NodeMiddleware{},
