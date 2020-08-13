@@ -1,4 +1,4 @@
-// Package metadata is a way of defining message headers
+// Package metadata allows for the definition of metadata such as headers
 package metadata
 
 import (
