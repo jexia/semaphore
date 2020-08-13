@@ -22,6 +22,14 @@ type NodeOptions struct {
 	middleware NodeMiddleware
 }
 
+// NodeArguments represents a collection of node options
+type NodeArguments []NodeOption
+
+// Set sets the given option inside the given arguments
+func (arguments NodeArguments) Set(option NodeOption) {
+	arguments = append(arguments, option)
+}
+
 // NodeOption is a wrapper function
 type NodeOption func(*NodeOptions)
 

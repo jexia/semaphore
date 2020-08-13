@@ -76,6 +76,20 @@ func TestCollectionReserve(t *testing.T) {
 	}
 }
 
+func TestCollectionLoad(t *testing.T) {
+	key := &specs.ParameterMap{}
+	expected := Stack{}
+
+	collection := Collection{
+		key: expected,
+	}
+
+	result := collection.Load(key)
+	if !reflect.DeepEqual(result, expected) {
+		t.Fatalf("unexpected result %+v, expected %+v", result, expected)
+	}
+}
+
 func TestParseFunction(t *testing.T) {
 	static := specs.Property{
 		Path:    "message",

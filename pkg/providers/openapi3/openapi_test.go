@@ -11,9 +11,10 @@ import (
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/config"
 	"github.com/jexia/semaphore/pkg/broker/logger"
+	"github.com/jexia/semaphore/pkg/broker/providers"
 	"github.com/jexia/semaphore/pkg/codec/json"
 	"github.com/jexia/semaphore/pkg/functions"
-	"github.com/jexia/semaphore/pkg/providers"
+	provider "github.com/jexia/semaphore/pkg/providers"
 	"github.com/jexia/semaphore/pkg/providers/hcl"
 	"github.com/jexia/semaphore/pkg/providers/protobuffers"
 	"github.com/jexia/semaphore/pkg/transport/grpc"
@@ -30,7 +31,7 @@ func TestOpenAPI3Generation(t *testing.T) {
 	}
 
 	ctx := logger.WithLogger(broker.NewBackground())
-	files, err := providers.ResolvePath(ctx, []string{}, path)
+	files, err := provider.ResolvePath(ctx, []string{}, path)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -58,18 +59,18 @@ func TestOpenAPI3Generation(t *testing.T) {
 				arguments = append(arguments, semaphore.WithSchema(protobuffers.SchemaResolver([]string{"./tests"}, proto)))
 			}
 
-			client, err := semaphore.New(arguments...)
+			client, err := semaphore.New(ctx, arguments...)
 
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			flows, endpoints, _, _, err := client.Options.Constructor(ctx, functions.Collection{}, client.Options)
+			collection, err := providers.Resolve(ctx, functions.Collection{}, client.Options)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			result, err := Generate(endpoints, flows)
+			result, err := Generate(collection.EndpointList, collection.FlowListInterface)
 			if err != nil {
 				t.Fatal(err)
 			}

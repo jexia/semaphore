@@ -194,8 +194,8 @@ func (caller *caller) HandleErr(w *transport.Writer, reader io.Reader, store ref
 			}
 		}
 
-		if caller.err.functions != nil {
-			err := ExecuteFunctions(caller.err.functions, store)
+		if caller.err.stack != nil {
+			err := ExecuteFunctions(caller.err.stack, store)
 			if err != nil {
 				return err
 			}

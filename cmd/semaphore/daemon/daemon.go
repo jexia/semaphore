@@ -7,6 +7,8 @@ import (
 
 	"github.com/jexia/semaphore"
 	"github.com/jexia/semaphore/cmd/semaphore/config"
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/spf13/cobra"
 )
 
@@ -30,12 +32,13 @@ func init() {
 }
 
 func run(cmd *cobra.Command, args []string) error {
+	ctx := logger.WithLogger(broker.NewContext())
 	arguments, err := config.ConstructArguments(params)
 	if err != nil {
 		return err
 	}
 
-	client, err := semaphore.New(arguments...)
+	client, err := semaphore.New(ctx, arguments...)
 	if err != nil {
 		return err
 	}

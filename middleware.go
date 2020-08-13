@@ -13,14 +13,14 @@ import (
 
 // WithMiddleware initialises the given middleware and defines all options
 func WithMiddleware(middleware config.Middleware) config.Option {
-	return func(options *config.Options) {
+	return func(ctx *broker.Context, options *config.Options) {
 		options.Middleware = append(options.Middleware, middleware)
 	}
 }
 
 // BeforeConstructor the passed function gets called before new specifications are constructed
 func BeforeConstructor(wrapper config.BeforeConstructorHandler) config.Option {
-	return func(options *config.Options) {
+	return func(ctx *broker.Context, options *config.Options) {
 		if options.BeforeConstructor == nil {
 			options.BeforeConstructor = wrapper(func(*broker.Context, functions.Collection, config.Options) error { return nil })
 			return
@@ -32,7 +32,7 @@ func BeforeConstructor(wrapper config.BeforeConstructorHandler) config.Option {
 
 // AfterConstructor the passed function gets called once all options have been applied
 func AfterConstructor(wrapper config.AfterConstructorHandler) config.Option {
-	return func(options *config.Options) {
+	return func(ctx *broker.Context, options *config.Options) {
 		if options.AfterConstructor == nil {
 			options.AfterConstructor = wrapper(func(*broker.Context, specs.FlowListInterface, specs.EndpointList, specs.ServiceList, specs.Schemas) error {
 				return nil
@@ -46,7 +46,7 @@ func AfterConstructor(wrapper config.AfterConstructorHandler) config.Option {
 
 // BeforeManagerDo the passed function gets called before a request gets handled by a flow manager
 func BeforeManagerDo(wrapper flow.BeforeManagerHandler) config.Option {
-	return func(options *config.Options) {
+	return func(ctx *broker.Context, options *config.Options) {
 		if options.BeforeManagerDo == nil {
 			options.BeforeManagerDo = wrapper(func(ctx context.Context, manager *flow.Manager, store references.Store) (context.Context, error) {
 				return ctx, nil
@@ -61,7 +61,7 @@ func BeforeManagerDo(wrapper flow.BeforeManagerHandler) config.Option {
 
 // BeforeManagerRollback the passed function gets called before a rollback request gets handled by a flow manager
 func BeforeManagerRollback(wrapper flow.BeforeManagerHandler) config.Option {
-	return func(options *config.Options) {
+	return func(ctx *broker.Context, options *config.Options) {
 		if options.BeforeManagerRollback == nil {
 			options.BeforeManagerRollback = wrapper(func(ctx context.Context, manager *flow.Manager, store references.Store) (context.Context, error) {
 				return ctx, nil
@@ -76,7 +76,7 @@ func BeforeManagerRollback(wrapper flow.BeforeManagerHandler) config.Option {
 
 // AfterManagerDo the passed function gets after a flow has been handled by the flow manager
 func AfterManagerDo(wrapper flow.AfterManagerHandler) config.Option {
-	return func(options *config.Options) {
+	return func(ctx *broker.Context, options *config.Options) {
 		if options.AfterManagerDo == nil {
 			options.AfterManagerDo = wrapper(func(ctx context.Context, manager *flow.Manager, store references.Store) (context.Context, error) {
 				return ctx, nil
@@ -91,7 +91,7 @@ func AfterManagerDo(wrapper flow.AfterManagerHandler) config.Option {
 
 // AfterManagerRollback the passed function gets after a flow rollback has been handled by the flow manager
 func AfterManagerRollback(wrapper flow.AfterManagerHandler) config.Option {
-	return func(options *config.Options) {
+	return func(ctx *broker.Context, options *config.Options) {
 		if options.AfterManagerRollback == nil {
 			options.AfterManagerRollback = wrapper(func(ctx context.Context, manager *flow.Manager, store references.Store) (context.Context, error) {
 				return ctx, nil
@@ -106,7 +106,7 @@ func AfterManagerRollback(wrapper flow.AfterManagerHandler) config.Option {
 
 // BeforeNodeDo the passed function gets called before a node is executed
 func BeforeNodeDo(wrapper flow.BeforeNodeHandler) config.Option {
-	return func(options *config.Options) {
+	return func(ctx *broker.Context, options *config.Options) {
 		if options.BeforeNodeDo == nil {
 			options.BeforeNodeDo = wrapper(func(ctx context.Context, node *flow.Node, tracker *flow.Tracker, processes *flow.Processes, store references.Store) (context.Context, error) {
 				return ctx, nil
@@ -121,7 +121,7 @@ func BeforeNodeDo(wrapper flow.BeforeNodeHandler) config.Option {
 
 // BeforeNodeRollback the passed function gets called before a node rollback is executed
 func BeforeNodeRollback(wrapper flow.BeforeNodeHandler) config.Option {
-	return func(options *config.Options) {
+	return func(ctx *broker.Context, options *config.Options) {
 		if options.BeforeNodeRollback == nil {
 			options.BeforeNodeRollback = wrapper(func(ctx context.Context, node *flow.Node, tracker *flow.Tracker, processes *flow.Processes, store references.Store) (context.Context, error) {
 				return ctx, nil
@@ -136,7 +136,7 @@ func BeforeNodeRollback(wrapper flow.BeforeNodeHandler) config.Option {
 
 // AfterNodeDo the passed function gets called after a node is executed
 func AfterNodeDo(wrapper flow.AfterNodeHandler) config.Option {
-	return func(options *config.Options) {
+	return func(ctx *broker.Context, options *config.Options) {
 		if options.AfterNodeDo == nil {
 			options.AfterNodeDo = wrapper(func(ctx context.Context, node *flow.Node, tracker *flow.Tracker, processes *flow.Processes, store references.Store) (context.Context, error) {
 				return ctx, nil
@@ -150,7 +150,7 @@ func AfterNodeDo(wrapper flow.AfterNodeHandler) config.Option {
 
 // AfterNodeRollback the passed function gets called after a node rollback is executed
 func AfterNodeRollback(wrapper flow.AfterNodeHandler) config.Option {
-	return func(options *config.Options) {
+	return func(ctx *broker.Context, options *config.Options) {
 		if options.AfterNodeRollback == nil {
 			options.AfterNodeRollback = wrapper(func(ctx context.Context, node *flow.Node, tracker *flow.Tracker, processes *flow.Processes, store references.Store) (context.Context, error) {
 				return ctx, nil

@@ -69,7 +69,7 @@ func TestConditionEvaluation(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			ctx := logger.WithLogger(broker.NewBackground())
+			ctx := logger.WithLogger(broker.NewContext())
 			exp, err := conditions.NewEvaluableExpression(ctx, test.condition)
 			if err != nil {
 				t.Fatal(err)
@@ -125,7 +125,7 @@ func TestInvalidConditionEvaluation(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			ctx := logger.WithLogger(broker.NewBackground())
+			ctx := logger.WithLogger(broker.NewContext())
 			exp, err := conditions.NewEvaluableExpression(ctx, test.condition)
 			if err != nil {
 				t.Fatal(err)

@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
-	"github.com/jexia/semaphore/pkg/core/trace"
+	"github.com/jexia/semaphore/pkg/broker/trace"
 	"github.com/jexia/semaphore/pkg/providers"
 	"github.com/jexia/semaphore/pkg/specs"
 	"go.uber.org/zap"

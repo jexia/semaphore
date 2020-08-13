@@ -4,13 +4,15 @@ import (
 	"testing"
 
 	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/specs"
 )
 
 func TestWithFlowsOption(t *testing.T) {
+	ctx := logger.WithLogger(broker.NewBackground())
 	resolver := func(*broker.Context) (specs.FlowListInterface, error) { return nil, nil }
 
-	result, err := New(WithFlows(resolver))
+	result, err := New(ctx, WithFlows(resolver))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -21,9 +23,10 @@ func TestWithFlowsOption(t *testing.T) {
 }
 
 func TestWithMultipleFlowsOption(t *testing.T) {
+	ctx := logger.WithLogger(broker.NewBackground())
 	resolver := func(*broker.Context) (specs.FlowListInterface, error) { return nil, nil }
 
-	result, err := New(WithFlows(resolver), WithFlows(resolver))
+	result, err := New(ctx, WithFlows(resolver), WithFlows(resolver))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -34,9 +37,10 @@ func TestWithMultipleFlowsOption(t *testing.T) {
 }
 
 func TestWithServicesOption(t *testing.T) {
+	ctx := logger.WithLogger(broker.NewBackground())
 	resolver := func(*broker.Context) (specs.ServiceList, error) { return nil, nil }
 
-	result, err := New(WithServices(resolver))
+	result, err := New(ctx, WithServices(resolver))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -47,9 +51,10 @@ func TestWithServicesOption(t *testing.T) {
 }
 
 func TestWithMultipleServicesOption(t *testing.T) {
+	ctx := logger.WithLogger(broker.NewBackground())
 	resolver := func(*broker.Context) (specs.ServiceList, error) { return nil, nil }
 
-	result, err := New(WithServices(resolver), WithServices(resolver))
+	result, err := New(ctx, WithServices(resolver), WithServices(resolver))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -60,9 +65,10 @@ func TestWithMultipleServicesOption(t *testing.T) {
 }
 
 func TestWithEndpointsOption(t *testing.T) {
+	ctx := logger.WithLogger(broker.NewBackground())
 	resolver := func(*broker.Context) (specs.EndpointList, error) { return nil, nil }
 
-	result, err := New(WithEndpoints(resolver))
+	result, err := New(ctx, WithEndpoints(resolver))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -73,9 +79,10 @@ func TestWithEndpointsOption(t *testing.T) {
 }
 
 func TestWithMultipleEndpointsOption(t *testing.T) {
+	ctx := logger.WithLogger(broker.NewBackground())
 	resolver := func(*broker.Context) (specs.EndpointList, error) { return nil, nil }
 
-	result, err := New(WithEndpoints(resolver), WithEndpoints(resolver))
+	result, err := New(ctx, WithEndpoints(resolver), WithEndpoints(resolver))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -86,14 +93,16 @@ func TestWithMultipleEndpointsOption(t *testing.T) {
 }
 
 func TestWithLogLevel(t *testing.T) {
-	_, err := New(WithLogLevel("*", "debug"))
+	ctx := logger.WithLogger(broker.NewBackground())
+	_, err := New(ctx, WithLogLevel("*", "debug"))
 	if err != nil {
 		t.Fatal(err)
 	}
 }
 
 func TestWithInvalidLogLevel(t *testing.T) {
-	_, err := New(WithLogLevel("*", "unknown"))
+	ctx := logger.WithLogger(broker.NewBackground())
+	_, err := New(ctx, WithLogLevel("*", "unknown"))
 	if err != nil {
 		t.Fatal(err)
 	}

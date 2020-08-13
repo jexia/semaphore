@@ -25,6 +25,7 @@ import (
 
 func TestNewOptions(t *testing.T) {
 	t.Parallel()
+	ctx := logger.WithLogger(broker.NewBackground())
 
 	functions := map[string]functions.Intermediate{
 		"cdf": nil,
@@ -39,7 +40,7 @@ func TestNewOptions(t *testing.T) {
 	}
 
 	for _, input := range tests {
-		_, err := New(input...)
+		_, err := New(ctx, input...)
 		if err != nil {
 			t.Fatalf("unexpected fail %+v", err)
 		}
@@ -65,7 +66,7 @@ func TestNewClient(t *testing.T) {
 			clean := file.Name()[:len(file.Name())-len(filepath.Ext(file.Name()))]
 			schema := filepath.Join(filepath.Dir(file.Path), clean+".yaml")
 
-			_, err = New(
+			_, err = New(ctx,
 				WithFlows(hcl.FlowsResolver(file.Path)),
 				WithServices(hcl.ServicesResolver(file.Path)),
 				WithSchema(mock.SchemaResolver(schema)),
@@ -85,7 +86,8 @@ func TestNewClient(t *testing.T) {
 func TestNewClientNilOptions(t *testing.T) {
 	t.Parallel()
 
-	semaphore, err := New(nil)
+	ctx := logger.WithLogger(broker.NewBackground())
+	semaphore, err := New(ctx, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -95,11 +97,21 @@ func TestNewClientNilOptions(t *testing.T) {
 	}
 }
 
-func TestNewClientMiddlewareError(t *testing.T) {
+func TestNewClientNilContext(t *testing.T) {
 	t.Parallel()
 
+	_, err := New(nil)
+	if err == nil {
+		t.Fatal("unexpected pass")
+	}
+}
+
+func TestNewClientMiddlewareError(t *testing.T) {
+	t.Parallel()
+	ctx := logger.WithLogger(broker.NewBackground())
+
 	expected := errors.New("middleware")
-	_, err := New(WithMiddleware(func(ctx *broker.Context) ([]config.Option, error) {
+	_, err := New(ctx, WithMiddleware(func(ctx *broker.Context) ([]config.Option, error) {
 		return nil, expected
 	}))
 
@@ -114,9 +126,10 @@ func TestNewClientMiddlewareError(t *testing.T) {
 
 func TestNewClientMiddlewareOptions(t *testing.T) {
 	t.Parallel()
+	ctx := logger.WithLogger(broker.NewBackground())
 
 	expected := "mock"
-	client, err := New(WithMiddleware(func(ctx *broker.Context) ([]config.Option, error) {
+	client, err := New(ctx, WithMiddleware(func(ctx *broker.Context) ([]config.Option, error) {
 		result := []config.Option{
 			WithFunctions(functions.Custom{
 				expected: func(args ...*specs.Property) (*specs.Property, functions.Exec, error) {
@@ -157,7 +170,7 @@ func TestServe(t *testing.T) {
 			clean := file.Name()[:len(file.Name())-len(filepath.Ext(file.Name()))]
 			schema := filepath.Join(filepath.Dir(file.Path), clean+".yaml")
 
-			client, err := New(
+			client, err := New(ctx,
 				WithFlows(hcl.FlowsResolver(file.Path)),
 				WithServices(hcl.ServicesResolver(file.Path)),
 				WithSchema(mock.SchemaResolver(schema)),
@@ -210,7 +223,7 @@ func TestErrServe(t *testing.T) {
 			clean := file.Name()[:len(file.Name())-len(filepath.Ext(file.Name()))]
 			schema := filepath.Join(filepath.Dir(file.Path), clean+".yaml")
 
-			client, err := New(
+			client, err := New(ctx,
 				WithFlows(hcl.FlowsResolver(file.Path)),
 				WithServices(hcl.ServicesResolver(file.Path)),
 				WithSchema(mock.SchemaResolver(schema)),
@@ -234,8 +247,9 @@ func TestErrServe(t *testing.T) {
 
 func TestServeNoListeners(t *testing.T) {
 	t.Parallel()
+	ctx := logger.WithLogger(broker.NewBackground())
 
-	client, err := New()
+	client, err := New(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -248,9 +262,10 @@ func TestServeNoListeners(t *testing.T) {
 
 func TestNewServiceErr(t *testing.T) {
 	t.Parallel()
+	ctx := logger.WithLogger(broker.NewBackground())
 
 	resolver := func(*broker.Context) (specs.ServiceList, error) { return nil, errors.New("unexpected") }
-	_, err := New(
+	_, err := New(ctx,
 		WithServices(resolver),
 	)
 
@@ -261,9 +276,10 @@ func TestNewServiceErr(t *testing.T) {
 
 func TestNewFlowsErr(t *testing.T) {
 	t.Parallel()
+	ctx := logger.WithLogger(broker.NewBackground())
 
 	resolver := func(*broker.Context) (specs.FlowListInterface, error) { return nil, errors.New("unexpected") }
-	_, err := New(
+	_, err := New(ctx,
 		WithFlows(resolver),
 	)
 
@@ -274,8 +290,9 @@ func TestNewFlowsErr(t *testing.T) {
 
 func TestNewGetEndpoints(t *testing.T) {
 	t.Parallel()
+	ctx := logger.WithLogger(broker.NewBackground())
 
-	client, err := New()
+	client, err := New(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -288,8 +305,9 @@ func TestNewGetEndpoints(t *testing.T) {
 
 func TestNewGetFlows(t *testing.T) {
 	t.Parallel()
+	ctx := logger.WithLogger(broker.NewBackground())
 
-	client, err := New()
+	client, err := New(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -302,8 +320,9 @@ func TestNewGetFlows(t *testing.T) {
 
 func TestNewGetServices(t *testing.T) {
 	t.Parallel()
+	ctx := logger.WithLogger(broker.NewBackground())
 
-	client, err := New()
+	client, err := New(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -316,8 +335,9 @@ func TestNewGetServices(t *testing.T) {
 
 func TestNewGetSchemas(t *testing.T) {
 	t.Parallel()
+	ctx := logger.WithLogger(broker.NewBackground())
 
-	client, err := New()
+	client, err := New(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -330,8 +350,9 @@ func TestNewGetSchemas(t *testing.T) {
 
 func TestClosingRunningFlows(t *testing.T) {
 	t.Parallel()
+	ctx := logger.WithLogger(broker.NewBackground())
 
-	client, err := New()
+	client, err := New(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -339,7 +360,6 @@ func TestClosingRunningFlows(t *testing.T) {
 	timeout := 100 * time.Millisecond
 	run := make(chan struct{})
 
-	ctx := logger.WithLogger(broker.NewBackground())
 	manager := flow.NewManager(ctx, "", nil, nil, nil, &flow.ManagerMiddleware{
 		AfterDo: func(ctx context.Context, manager *flow.Manager, store references.Store) (context.Context, error) {
 			close(run)
@@ -367,8 +387,9 @@ func TestClosingRunningFlows(t *testing.T) {
 
 func TestClosingEmptyFlows(t *testing.T) {
 	t.Parallel()
+	ctx := logger.WithLogger(broker.NewBackground())
 
-	client, err := New()
+	client, err := New(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}

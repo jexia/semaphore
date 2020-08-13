@@ -1,13 +1,16 @@
 package semaphore
 
 import (
+	"errors"
 	"sync"
 
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/config"
+	"github.com/jexia/semaphore/pkg/broker/endpoints"
+	"github.com/jexia/semaphore/pkg/broker/listeners"
 	"github.com/jexia/semaphore/pkg/broker/logger"
-	"github.com/jexia/semaphore/pkg/core"
-	"github.com/jexia/semaphore/pkg/core/trace"
+	"github.com/jexia/semaphore/pkg/broker/providers"
+	"github.com/jexia/semaphore/pkg/broker/trace"
 	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/transport"
@@ -16,15 +19,16 @@ import (
 
 // Client represents a semaphore instance
 type Client struct {
-	Ctx          *broker.Context
-	transporters []*transport.Endpoint
-	listeners    []transport.Listener
+	config.Options
+	ctx          *broker.Context
+	transporters transport.EndpointList
+	listeners    transport.ListenerList
 	flows        specs.FlowListInterface
 	endpoints    specs.EndpointList
 	services     specs.ServiceList
 	schemas      specs.Schemas
-	Options      config.Options
 	mutex        sync.RWMutex
+	stack        functions.Collection
 }
 
 // Serve opens all listeners inside the given semaphore client
@@ -37,7 +41,7 @@ func (client *Client) Serve() (result error) {
 	wg.Add(len(client.listeners))
 
 	for _, listener := range client.listeners {
-		logger.Info(client.Ctx, "serving listener", zap.String("listener", listener.Name()))
+		logger.Info(client.ctx, "serving listener", zap.String("listener", listener.Name()))
 
 		go func(listener transport.Listener) {
 			defer wg.Done()
@@ -52,28 +56,39 @@ func (client *Client) Serve() (result error) {
 	return result
 }
 
-// Handle updates the flows with the given specs collection.
+// Resolve resolves the configured providers and constructs a valid Semaphore
+// specification. Any error thrown during the compilation of the specification
+// is returned.
+func (client *Client) Resolve(ctx *broker.Context) (providers.Collection, error) {
+	return providers.Resolve(ctx, client.stack, client.Options)
+}
+
+// Apply updates the flows with the given specs collection.
 // The given functions collection is used to execute functions on runtime.
-func (client *Client) Handle(ctx *broker.Context, options config.Options) error {
+func (client *Client) Apply(ctx *broker.Context, collection providers.Collection) error {
 	client.mutex.Lock()
 	defer client.mutex.Unlock()
 
-	mem := functions.Collection{}
-	flows, endpoints, services, schemas, err := options.Constructor(ctx, mem, options)
+	transporters, err := endpoints.Transporters(ctx, collection.EndpointList, collection.FlowListInterface,
+		endpoints.WithServices(collection.ServiceList),
+		endpoints.WithOptions(client.Options),
+		endpoints.WithFunctions(client.stack),
+	)
+
 	if err != nil {
 		return err
 	}
 
-	managers, err := core.Apply(ctx, mem, services, endpoints, flows, options)
+	err = listeners.Apply(ctx, client.Codec, client.listeners, transporters)
 	if err != nil {
 		return err
 	}
 
-	client.flows = flows
-	client.endpoints = endpoints
-	client.services = services
-	client.schemas = schemas
-	client.transporters = managers
+	client.flows = collection.FlowListInterface
+	client.endpoints = collection.EndpointList
+	client.services = collection.ServiceList
+	client.schemas = collection.Schemas
+	client.transporters = transporters
 
 	return nil
 }
@@ -114,20 +129,29 @@ func (client *Client) Close() {
 }
 
 // New constructs a new Semaphore instance
-func New(opts ...config.Option) (*Client, error) {
-	ctx := logger.WithLogger(broker.NewContext())
+func New(ctx *broker.Context, opts ...config.Option) (*Client, error) {
+	if ctx == nil {
+		return nil, errors.New("nil context")
+	}
+
 	options, err := NewOptions(ctx, opts...)
 	if err != nil {
 		return nil, err
 	}
 
 	client := &Client{
-		Ctx:       ctx,
+		ctx:       ctx,
 		listeners: options.Listeners,
 		Options:   options,
+		stack:     functions.Collection{},
 	}
 
-	err = client.Handle(ctx, options)
+	specs, err := client.Resolve(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	err = client.Apply(ctx, specs)
 	if err != nil {
 		return nil, err
 	}

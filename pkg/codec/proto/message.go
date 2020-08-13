@@ -5,8 +5,8 @@ import (
 	"io"
 	"io/ioutil"
 
+	"github.com/jexia/semaphore/pkg/broker/trace"
 	"github.com/jexia/semaphore/pkg/codec"
-	"github.com/jexia/semaphore/pkg/core/trace"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/types"

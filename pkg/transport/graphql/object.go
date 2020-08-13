@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"github.com/graphql-go/graphql"
-	"github.com/jexia/semaphore/pkg/core/trace"
+	"github.com/jexia/semaphore/pkg/broker/trace"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/labels"
 	"github.com/jexia/semaphore/pkg/specs/types"

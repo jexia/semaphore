@@ -9,6 +9,8 @@ import (
 	"testing"
 
 	"github.com/jexia/semaphore"
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/providers/hcl"
 	"github.com/jexia/semaphore/pkg/providers/mock"
 	"github.com/jexia/semaphore/pkg/references"
@@ -22,7 +24,10 @@ func NewMock() (specs.FlowListInterface, error) {
 		return nil, err
 	}
 
+	ctx := logger.WithLogger(broker.NewBackground())
+
 	client, err := semaphore.New(
+		ctx,
 		semaphore.WithFlows(hcl.FlowsResolver("./tests/*.hcl")),
 		semaphore.WithSchema(mock.SchemaResolver(path)),
 		semaphore.WithServices(mock.ServicesResolver(path)),
