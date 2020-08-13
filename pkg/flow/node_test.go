@@ -821,7 +821,7 @@ func TestNodeDoConditionFunctionsErr(t *testing.T) {
 	}
 }
 
-func TestNodeDoConditionBreakt(t *testing.T) {
+func TestNodeDoConditionBreaks(t *testing.T) {
 	ctx := logger.WithLogger(broker.NewBackground())
 	call := &mocker{}
 	node := NewMockNode("mock", call, nil)
@@ -849,6 +849,56 @@ func TestNodeDoConditionBreakt(t *testing.T) {
 
 	if tracker.Met(node) {
 		t.Fatal("tracker has met a skipped node")
+	}
+}
+
+func TestNodeDoSkipChildren(t *testing.T) {
+	ctx := logger.WithLogger(broker.NewBackground())
+	call := &mocker{}
+
+	expression, err := conditions.NewEvaluableExpression(ctx, "false")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	condition := &Condition{
+		expression: expression,
+	}
+
+	first := NewMockNode("first", call, nil)
+	second := NewMockNode("second", call, nil)
+	third := NewMockNode("third", call, nil)
+
+	first.Next = Nodes{second}
+	second.Next = Nodes{third}
+
+	first.Condition = condition
+	second.Condition = condition
+
+	processes := NewProcesses(1)
+	tracker := NewTracker("", 1)
+
+	first.Do(context.Background(), tracker, processes, nil)
+	if processes.Err() != nil {
+		t.Error(processes.Err())
+	}
+
+	result := Nodes{
+		first,
+		second,
+		third,
+	}
+
+	for _, node := range result {
+		t.Run(node.Name, func(t *testing.T) {
+			if !tracker.Skipped(node) {
+				t.Fatal("tracker has not skipped the node")
+			}
+
+			if tracker.Met(node) {
+				t.Fatal("tracker has met the skipped node")
+			}
+		})
 	}
 }
 
