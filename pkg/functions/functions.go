@@ -8,7 +8,7 @@ import (
 
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
-	"github.com/jexia/semaphore/pkg/core/trace"
+	"github.com/jexia/semaphore/pkg/broker/trace"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/template"
@@ -39,6 +39,11 @@ func (collection Collection) Reserve(params *specs.ParameterMap) Stack {
 	}
 
 	collection[params] = Stack{}
+	return collection[params]
+}
+
+// Load attempts to load the function stack for the given parameter map
+func (collection Collection) Load(params *specs.ParameterMap) Stack {
 	return collection[params]
 }
 

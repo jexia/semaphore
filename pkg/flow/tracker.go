@@ -4,45 +4,78 @@ import (
 	"sync"
 )
 
+// Tracker represents a structure responsible of tracking nodes
+type Tracker interface {
+	// Flow returns the flow name of the assigned tracker
+	Flow() string
+	// Mark marks the given node as called
+	Mark(node *Node)
+	// Skip marks the given node as marked and flag the given node as skipped
+	Skip(node *Node)
+	// Skipped returns a boolean representing whether the given node has been skipped
+	Skipped(node *Node) bool
+	// Reached checks whether the required dependencies counter have been reached
+	Reached(node *Node, nodes int) bool
+	// Met checks whether the given nodes have been called
+	Met(nodes ...*Node) bool
+	// Lock locks the given node
+	Lock(node *Node)
+	// Unlock unlocks the given node
+	Unlock(node *Node)
+}
+
 // NewTracker constructs a new tracker
-func NewTracker(flow string, nodes int) *Tracker {
-	return &Tracker{
-		Flow:    flow,
-		Nodes:   make(map[string]int, nodes),
-		Skipped: make(map[string]int, nodes),
-		Locks:   make(map[*Node]*sync.Mutex, nodes),
+func NewTracker(flow string, nodes int) Tracker {
+	return &tracker{
+		flow:    flow,
+		nodes:   make(map[string]int, nodes),
+		skipped: make(map[string]int, nodes),
+		locks:   make(map[*Node]*sync.Mutex, nodes),
 	}
 }
 
 // Tracker represents a structure responsible of tracking nodes
-type Tracker struct {
-	Flow    string
+type tracker struct {
+	flow    string
 	mutex   sync.Mutex
-	Nodes   map[string]int
-	Skipped map[string]int
-	Locks   map[*Node]*sync.Mutex
+	nodes   map[string]int
+	skipped map[string]int
+	locks   map[*Node]*sync.Mutex
+}
+
+// Flow returns the flow name of the assigned tracker
+func (tracker *tracker) Flow() string {
+	return tracker.flow
 }
 
 // Mark marks the given node as called
-func (tracker *Tracker) Mark(node *Node) {
+func (tracker *tracker) Mark(node *Node) {
 	tracker.mutex.Lock()
-	tracker.Nodes[node.Name]++
+	tracker.nodes[node.Name]++
 	tracker.mutex.Unlock()
 }
 
 // Skip marks the given node as marked and flag the given node as skipped
-func (tracker *Tracker) Skip(node *Node) {
+func (tracker *tracker) Skip(node *Node) {
 	tracker.mutex.Lock()
-	tracker.Nodes[node.Name]++
-	tracker.Skipped[node.Name]++
+	tracker.nodes[node.Name]++
+	tracker.skipped[node.Name]++
 	tracker.mutex.Unlock()
 }
 
+// Skip marks the given node as marked and flag the given node as skipped
+func (tracker *tracker) Skipped(node *Node) bool {
+	tracker.mutex.Lock()
+	_, has := tracker.skipped[node.Name]
+	tracker.mutex.Unlock()
+	return has
+}
+
 // Reached checks whether the required dependencies counter have been reached
-func (tracker *Tracker) Reached(node *Node, nodes int) bool {
+func (tracker *tracker) Reached(node *Node, nodes int) bool {
 	tracker.mutex.Lock()
 	defer tracker.mutex.Unlock()
-	if tracker.Nodes[node.Name] != nodes {
+	if tracker.nodes[node.Name] != nodes {
 		return false
 	}
 
@@ -50,16 +83,16 @@ func (tracker *Tracker) Reached(node *Node, nodes int) bool {
 }
 
 // Met checks whether the given nodes have been called
-func (tracker *Tracker) Met(nodes ...*Node) bool {
+func (tracker *tracker) Met(nodes ...*Node) bool {
 	tracker.mutex.Lock()
 	defer tracker.mutex.Unlock()
 	for _, node := range nodes {
-		_, skipped := tracker.Skipped[node.Name]
+		_, skipped := tracker.skipped[node.Name]
 		if skipped {
 			return false
 		}
 
-		value := tracker.Nodes[node.Name]
+		value := tracker.nodes[node.Name]
 		if value == 0 {
 			return false
 		}
@@ -68,21 +101,21 @@ func (tracker *Tracker) Met(nodes ...*Node) bool {
 }
 
 // Lock locks the given node
-func (tracker *Tracker) Lock(node *Node) {
+func (tracker *tracker) Lock(node *Node) {
 	tracker.mutex.Lock()
-	mutex := tracker.Locks[node]
+	mutex := tracker.locks[node]
 	if mutex == nil {
 		mutex = &sync.Mutex{}
-		tracker.Locks[node] = mutex
+		tracker.locks[node] = mutex
 	}
 	tracker.mutex.Unlock()
 	mutex.Lock()
 }
 
 // Unlock unlocks the given node
-func (tracker *Tracker) Unlock(node *Node) {
+func (tracker *tracker) Unlock(node *Node) {
 	tracker.mutex.Lock()
-	mutex := tracker.Locks[node]
+	mutex := tracker.locks[node]
 	tracker.mutex.Unlock()
 	mutex.Unlock()
 }

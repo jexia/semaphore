@@ -10,16 +10,12 @@ import (
 	"github.com/jexia/semaphore/pkg/transport"
 )
 
-// Constructor represents a specs constructor that could be used to construct specifications
-type Constructor func(ctx *broker.Context, mem functions.Collection, options Options) (specs.FlowListInterface, specs.EndpointList, specs.ServiceList, specs.Schemas, error)
-
 // Option represents a constructor func which sets a given option
-type Option func(*Options)
+type Option func(*broker.Context, *Options)
 
 // NewOptions constructs a new options object
-func NewOptions(ctx *broker.Context) Options {
+func NewOptions() Options {
 	return Options{
-		Ctx:              ctx,
 		ServiceResolvers: make([]providers.ServicesResolver, 0),
 		FlowResolvers:    make([]providers.FlowsResolver, 0),
 		SchemaResolvers:  make([]providers.SchemaResolver, 0),
@@ -29,11 +25,9 @@ func NewOptions(ctx *broker.Context) Options {
 
 // Options represents all the available options
 type Options struct {
-	Ctx                   *broker.Context
-	Constructor           Constructor
 	Codec                 codec.Constructors
 	Callers               transport.Callers
-	Listeners             transport.Listeners
+	Listeners             transport.ListenerList
 	FlowResolvers         providers.FlowsResolvers
 	EndpointResolvers     providers.EndpointResolvers
 	ServiceResolvers      providers.ServiceResolvers

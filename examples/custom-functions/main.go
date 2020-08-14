@@ -5,6 +5,8 @@ import (
 	"fmt"
 
 	"github.com/jexia/semaphore"
+	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/codec/json"
 	"github.com/jexia/semaphore/pkg/codec/proto"
 	"github.com/jexia/semaphore/pkg/functions"
@@ -18,11 +20,12 @@ import (
 )
 
 func main() {
+	ctx := logger.WithLogger(broker.NewContext())
 	functions := functions.Custom{
 		"jwt": jwt,
 	}
 
-	client, err := semaphore.New(
+	client, err := semaphore.New(ctx,
 		semaphore.WithLogLevel("*", "debug"),
 		semaphore.WithListener(http.NewListener(":8080")),
 		semaphore.WithFlows(hcl.FlowsResolver("./*.hcl")),

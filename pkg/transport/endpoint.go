@@ -149,6 +149,9 @@ func (forward *Forward) NewMeta(ctx *broker.Context, resource string) {
 	forward.Meta = metadata.NewManager(ctx, resource, forward.Schema)
 }
 
+// EndpointList represents a collection of transport endpoints
+type EndpointList []*Endpoint
+
 // Endpoint represents a transport listener endpoint
 type Endpoint struct {
 	Listener string

@@ -75,6 +75,14 @@ func TestNewCall(t *testing.T) {
 	}
 }
 
+func TestNewCallNil(t *testing.T) {
+	ctx := logger.WithLogger(broker.NewBackground())
+	result := NewCall(ctx, nil, nil)
+	if result != nil {
+		t.Fatal("unexpected call")
+	}
+}
+
 func TestCallReferences(t *testing.T) {
 	ctx := logger.WithLogger(broker.NewBackground())
 	node := &specs.Node{}
@@ -421,7 +429,7 @@ func TestTransportErrorSchemaDecoding(t *testing.T) {
 				options: &CallOptions{
 					ExpectedStatus: []int{transport.StatusOK},
 					Transport:      NewMockTransport(nil, 500, []byte(message)),
-					Err:            NewOnError(nil, codec, nil, nil, nil),
+					Err:            NewOnError(nil, codec, nil, nil),
 				},
 				store:     references.NewReferenceStore(1),
 				reference: "message",
@@ -461,7 +469,7 @@ func TestTransportErrorSchemaDecoding(t *testing.T) {
 				options: &CallOptions{
 					ExpectedStatus: []int{transport.StatusOK},
 					Transport:      NewMockTransport(nil, 500, []byte(message)),
-					Err:            NewOnError(nil, codec, nil, nil, nil),
+					Err:            NewOnError(nil, codec, nil, nil),
 				},
 				store:     references.NewReferenceStore(1),
 				reference: "meta.message",
@@ -513,7 +521,7 @@ func TestErrFunctionsExecution(t *testing.T) {
 				options: &CallOptions{
 					Transport: NewMockTransport(nil, 500, nil),
 					Err: &OnError{
-						functions: functions.Stack{
+						stack: functions.Stack{
 							"sample": &functions.Function{
 								Fn: counter.handle,
 							},
@@ -533,7 +541,7 @@ func TestErrFunctionsExecution(t *testing.T) {
 				options: &CallOptions{
 					Transport: NewMockTransport(nil, 500, nil),
 					Err: &OnError{
-						functions: functions.Stack{
+						stack: functions.Stack{
 							"first": &functions.Function{
 								Fn: counter.handle,
 							},

@@ -1,4 +1,4 @@
-package core
+package providers
 
 import (
 	"github.com/jexia/semaphore/pkg/broker"
@@ -13,75 +13,92 @@ import (
 	"github.com/jexia/semaphore/pkg/specs"
 )
 
-// Construct construct a specs manifest from the given options.
-// The specifications are received from the providers. The property types are defined and functions are prepared.
-// Once done is a specs collection returned that could be used to update the listeners.
-func Construct(ctx *broker.Context, mem functions.Collection, options config.Options) (specs.FlowListInterface, specs.EndpointList, specs.ServiceList, specs.Schemas, error) {
+// Collection represents a collection of specification lists and objects.
+// These objects could be used to initialize a Semaphore broker.
+type Collection struct {
+	specs.FlowListInterface
+	specs.EndpointList
+	specs.ServiceList
+	specs.Schemas
+}
+
+// Resolve collects and constructs the a specs from the given options.
+// The specifications are received from the providers. The property types are
+// defined and functions are prepared. Once done is a specs collection returned
+// that could be used to update the listeners.
+func Resolve(ctx *broker.Context, mem functions.Collection, options config.Options) (Collection, error) {
 	if options.BeforeConstructor != nil {
 		err := options.BeforeConstructor(ctx, mem, options)
 		if err != nil {
-			return nil, nil, nil, nil, err
+			return Collection{}, err
 		}
 	}
 
 	flows, err := options.FlowResolvers.Resolve(ctx)
 	if err != nil {
-		return nil, nil, nil, nil, err
+		return Collection{}, err
 	}
 
 	endpoints, err := options.EndpointResolvers.Resolve(ctx)
 	if err != nil {
-		return nil, nil, nil, nil, err
+		return Collection{}, err
 	}
 
 	schemas, err := options.SchemaResolvers.Resolve(ctx)
 	if err != nil {
-		return nil, nil, nil, nil, err
+		return Collection{}, err
 	}
 
 	services, err := options.ServiceResolvers.Resolve(ctx)
 	if err != nil {
-		return nil, nil, nil, nil, err
+		return Collection{}, err
 	}
 
 	err = checks.FlowDuplicates(ctx, flows)
 	if err != nil {
-		return nil, nil, nil, nil, err
+		return Collection{}, err
 	}
 
 	err = providers.Resolve(ctx, services, schemas, flows)
 	if err != nil {
-		return nil, nil, nil, nil, err
+		return Collection{}, err
 	}
 
 	err = references.Resolve(ctx, flows)
 	if err != nil {
-		return nil, nil, nil, nil, err
+		return Collection{}, err
 	}
 
 	err = functions.PrepareManifestFunctions(ctx, mem, options.Functions, flows)
 	if err != nil {
-		return nil, nil, nil, nil, err
+		return Collection{}, err
 	}
 
 	forwarding.ResolveReferences(ctx, flows)
 
 	err = dependencies.ResolveFlows(ctx, flows)
 	if err != nil {
-		return nil, nil, nil, nil, err
+		return Collection{}, err
 	}
 
 	err = compare.Types(ctx, services, schemas, flows)
 	if err != nil {
-		return nil, nil, nil, nil, err
+		return Collection{}, err
 	}
 
 	if options.AfterConstructor != nil {
 		err = options.AfterConstructor(ctx, flows, endpoints, services, schemas)
 		if err != nil {
-			return nil, nil, nil, nil, err
+			return Collection{}, err
 		}
 	}
 
-	return flows, endpoints, services, schemas, nil
+	result := Collection{
+		FlowListInterface: flows,
+		EndpointList:      endpoints,
+		ServiceList:       services,
+		Schemas:           schemas,
+	}
+
+	return result, nil
 }

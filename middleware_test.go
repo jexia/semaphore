@@ -6,17 +6,19 @@ import (
 
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/config"
+	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/flow"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 )
 
 func TestWithMiddleware(t *testing.T) {
+	ctx := logger.WithLogger(broker.NewBackground())
 	middleware := func(*broker.Context) ([]config.Option, error) {
 		return nil, nil
 	}
 
-	client, err := New(WithMiddleware(middleware), WithMiddleware(middleware))
+	client, err := New(ctx, WithMiddleware(middleware), WithMiddleware(middleware))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -31,6 +33,8 @@ func TestWithMiddleware(t *testing.T) {
 }
 
 func TestAfterConstructorOption(t *testing.T) {
+	ctx := logger.WithLogger(broker.NewBackground())
+
 	fn := func(i *int) config.AfterConstructorHandler {
 		return func(next config.AfterConstructor) config.AfterConstructor {
 			return func(ctx *broker.Context, flow specs.FlowListInterface, endpoints specs.EndpointList, services specs.ServiceList, schemas specs.Schemas) error {
@@ -69,7 +73,7 @@ func TestAfterConstructorOption(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			result, options := test.arguments()
-			client, err := New(options...)
+			client, err := New(ctx, options...)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -86,6 +90,8 @@ func TestAfterConstructorOption(t *testing.T) {
 }
 
 func TestBeforeManagerDoOption(t *testing.T) {
+	ctx := logger.WithLogger(broker.NewBackground())
+
 	fn := func(i *int) flow.BeforeManagerHandler {
 		return func(next flow.BeforeManager) flow.BeforeManager {
 			return func(ctx context.Context, manager *flow.Manager, store references.Store) (context.Context, error) {
@@ -124,7 +130,7 @@ func TestBeforeManagerDoOption(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			result, options := test.arguments()
-			client, err := New(options...)
+			client, err := New(ctx, options...)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -146,6 +152,8 @@ func TestBeforeManagerDoOption(t *testing.T) {
 }
 
 func TestBeforeManagerRollbackOption(t *testing.T) {
+	ctx := logger.WithLogger(broker.NewBackground())
+
 	fn := func(i *int) flow.BeforeManagerHandler {
 		return func(next flow.BeforeManager) flow.BeforeManager {
 			return func(ctx context.Context, manager *flow.Manager, store references.Store) (context.Context, error) {
@@ -184,7 +192,7 @@ func TestBeforeManagerRollbackOption(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			result, options := test.arguments()
-			client, err := New(options...)
+			client, err := New(ctx, options...)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -206,6 +214,8 @@ func TestBeforeManagerRollbackOption(t *testing.T) {
 }
 
 func TestAfterManagerRollbackOption(t *testing.T) {
+	ctx := logger.WithLogger(broker.NewBackground())
+
 	fn := func(i *int) flow.AfterManagerHandler {
 		return func(next flow.AfterManager) flow.AfterManager {
 			return func(ctx context.Context, manager *flow.Manager, store references.Store) (context.Context, error) {
@@ -244,7 +254,7 @@ func TestAfterManagerRollbackOption(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			result, options := test.arguments()
-			client, err := New(options...)
+			client, err := New(ctx, options...)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -266,6 +276,8 @@ func TestAfterManagerRollbackOption(t *testing.T) {
 }
 
 func TestAfterManagerDoOption(t *testing.T) {
+	ctx := logger.WithLogger(broker.NewBackground())
+
 	fn := func(i *int) flow.AfterManagerHandler {
 		return func(next flow.AfterManager) flow.AfterManager {
 			return func(ctx context.Context, manager *flow.Manager, store references.Store) (context.Context, error) {
@@ -304,7 +316,7 @@ func TestAfterManagerDoOption(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			result, options := test.arguments()
-			client, err := New(options...)
+			client, err := New(ctx, options...)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -326,9 +338,11 @@ func TestAfterManagerDoOption(t *testing.T) {
 }
 
 func TestBeforeNodeDoOption(t *testing.T) {
+	ctx := logger.WithLogger(broker.NewBackground())
+
 	fn := func(i *int) flow.BeforeNodeHandler {
 		return func(next flow.BeforeNode) flow.BeforeNode {
-			return func(ctx context.Context, node *flow.Node, tracker *flow.Tracker, processes *flow.Processes, store references.Store) (context.Context, error) {
+			return func(ctx context.Context, node *flow.Node, tracker flow.Tracker, processes *flow.Processes, store references.Store) (context.Context, error) {
 				*i++
 				return next(ctx, node, tracker, processes, store)
 			}
@@ -364,7 +378,7 @@ func TestBeforeNodeDoOption(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			result, options := test.arguments()
-			client, err := New(options...)
+			client, err := New(ctx, options...)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -386,9 +400,11 @@ func TestBeforeNodeDoOption(t *testing.T) {
 }
 
 func TestBeforeNodeRollbackOption(t *testing.T) {
+	ctx := logger.WithLogger(broker.NewBackground())
+
 	fn := func(i *int) flow.BeforeNodeHandler {
 		return func(next flow.BeforeNode) flow.BeforeNode {
-			return func(ctx context.Context, node *flow.Node, tracker *flow.Tracker, processes *flow.Processes, store references.Store) (context.Context, error) {
+			return func(ctx context.Context, node *flow.Node, tracker flow.Tracker, processes *flow.Processes, store references.Store) (context.Context, error) {
 				*i++
 				return next(ctx, node, tracker, processes, store)
 			}
@@ -424,7 +440,7 @@ func TestBeforeNodeRollbackOption(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			result, options := test.arguments()
-			client, err := New(options...)
+			client, err := New(ctx, options...)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -446,9 +462,11 @@ func TestBeforeNodeRollbackOption(t *testing.T) {
 }
 
 func TestAfterNodeRollbackOption(t *testing.T) {
+	ctx := logger.WithLogger(broker.NewBackground())
+
 	fn := func(i *int) flow.AfterNodeHandler {
 		return func(next flow.AfterNode) flow.AfterNode {
-			return func(ctx context.Context, node *flow.Node, tracker *flow.Tracker, processes *flow.Processes, store references.Store) (context.Context, error) {
+			return func(ctx context.Context, node *flow.Node, tracker flow.Tracker, processes *flow.Processes, store references.Store) (context.Context, error) {
 				*i++
 				return next(ctx, node, tracker, processes, store)
 			}
@@ -484,7 +502,7 @@ func TestAfterNodeRollbackOption(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			result, options := test.arguments()
-			client, err := New(options...)
+			client, err := New(ctx, options...)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -506,9 +524,11 @@ func TestAfterNodeRollbackOption(t *testing.T) {
 }
 
 func TestAfterNodeDoOption(t *testing.T) {
+	ctx := logger.WithLogger(broker.NewBackground())
+
 	fn := func(i *int) flow.AfterNodeHandler {
 		return func(next flow.AfterNode) flow.AfterNode {
-			return func(ctx context.Context, node *flow.Node, tracker *flow.Tracker, processes *flow.Processes, store references.Store) (context.Context, error) {
+			return func(ctx context.Context, node *flow.Node, tracker flow.Tracker, processes *flow.Processes, store references.Store) (context.Context, error) {
 				*i++
 				return next(ctx, node, tracker, processes, store)
 			}
@@ -544,7 +564,7 @@ func TestAfterNodeDoOption(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			result, options := test.arguments()
-			client, err := New(options...)
+			client, err := New(ctx, options...)
 			if err != nil {
 				t.Fatal(err)
 			}
