@@ -27,7 +27,6 @@ type Listener struct {
 	ctx         *broker.Context
 	server      *grpc.Server
 	methods     map[string]*Method
-	services    map[string]*proto.Service
 	descriptors map[string]*desc.FileDescriptor
 	mutex       sync.RWMutex
 }
@@ -124,7 +123,6 @@ func (listener *Listener) Handle(ctx *broker.Context, endpoints []*transport.End
 
 	listener.mutex.Lock()
 	listener.methods = methods
-	listener.services = services
 	listener.descriptors = descriptors
 	listener.mutex.Unlock()
 
