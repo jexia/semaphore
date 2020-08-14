@@ -67,7 +67,7 @@ func run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	// TODO: configure printer
+	// TODO: configure printer with additional options
 	printer := &protoprint.Printer{}
 
 	for key, service := range services {
