@@ -58,13 +58,18 @@ func (client *Client) Serve() (result error) {
 
 // Resolve resolves the configured providers and constructs a valid Semaphore
 // specification. Any error thrown during the compilation of the specification
-// is returned.
+// is returned. Type checks are performed after the specifications have been
+// resolved ensuring type safety.
 func (client *Client) Resolve(ctx *broker.Context) (providers.Collection, error) {
 	return providers.Resolve(ctx, client.stack, client.Options)
 }
 
-// Apply updates the flows with the given specs collection.
-// The given functions collection is used to execute functions on runtime.
+// Apply updates the listeners with the given specs collection.
+// Transporters are created from the available endpoints and flows.
+// The created transporters are passed to the listeners to be hot-swapped.
+//
+// This method does not perform any checks checking ensuring strict types
+// or whether the specification is valid.
 func (client *Client) Apply(ctx *broker.Context, collection providers.Collection) error {
 	client.mutex.Lock()
 	defer client.mutex.Unlock()
