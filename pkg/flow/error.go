@@ -8,21 +8,26 @@ import (
 )
 
 // NewOnError constructs a new error for the given codec and header manager
-func NewOnError(functions functions.Stack, codec codec.Manager, metadata *metadata.Manager, status, message *specs.Property) *OnError {
-	return &OnError{
-		functions: functions,
-		codec:     codec,
-		metadata:  metadata,
-		status:    status,
-		message:   message,
+func NewOnError(stack functions.Stack, codec codec.Manager, metadata *metadata.Manager, err *specs.OnError) *OnError {
+	result := &OnError{
+		stack:    stack,
+		codec:    codec,
+		metadata: metadata,
 	}
+
+	if err != nil {
+		result.status = err.Status
+		result.message = err.Message
+	}
+
+	return result
 }
 
 // OnError represents a error codec and metadata manager
 type OnError struct {
-	functions functions.Stack
-	codec     codec.Manager
-	metadata  *metadata.Manager
-	status    *specs.Property
-	message   *specs.Property
+	stack    functions.Stack
+	codec    codec.Manager
+	metadata *metadata.Manager
+	status   *specs.Property
+	message  *specs.Property
 }

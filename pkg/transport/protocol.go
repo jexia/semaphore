@@ -65,11 +65,11 @@ type Method interface {
 	References() []*specs.Property
 }
 
-// Listeners represents a collection of listeners
-type Listeners []Listener
+// ListenerList represents a collection of listeners
+type ListenerList []Listener
 
 // Get attempts to return a listener with the given name
-func (collection Listeners) Get(name string) Listener {
+func (collection ListenerList) Get(name string) Listener {
 	for _, listener := range collection {
 		if listener.Name() == name {
 			return listener

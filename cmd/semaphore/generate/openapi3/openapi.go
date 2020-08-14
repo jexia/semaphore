@@ -7,6 +7,7 @@ import (
 	"github.com/jexia/semaphore/cmd/semaphore/config"
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
+	"github.com/jexia/semaphore/pkg/broker/providers"
 	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/providers/openapi3"
 	"github.com/spf13/cobra"
@@ -43,12 +44,12 @@ func run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	flows, endpoints, _, _, err := options.Constructor(ctx, functions.Collection{}, options)
+	collection, err := providers.Resolve(ctx, functions.Collection{}, options)
 	if err != nil {
 		return err
 	}
 
-	object, err := openapi3.Generate(endpoints, flows)
+	object, err := openapi3.Generate(collection.EndpointList, collection.FlowListInterface)
 	if err != nil {
 		return err
 	}

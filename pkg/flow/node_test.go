@@ -9,6 +9,7 @@ import (
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/codec/json"
+	"github.com/jexia/semaphore/pkg/conditions"
 	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
@@ -547,7 +548,7 @@ func TestBeforeDoNode(t *testing.T) {
 	call := &mocker{}
 	node := NewMockNode("mock", call, nil)
 
-	node.BeforeDo = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store references.Store) (context.Context, error) {
+	node.BeforeDo = func(ctx context.Context, node *Node, tracker Tracker, processes *Processes, store references.Store) (context.Context, error) {
 		counter++
 		return ctx, nil
 	}
@@ -569,7 +570,7 @@ func TestBeforeDoNodeErr(t *testing.T) {
 	call := &mocker{}
 	node := NewMockNode("mock", call, nil)
 
-	node.BeforeDo = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store references.Store) (context.Context, error) {
+	node.BeforeDo = func(ctx context.Context, node *Node, tracker Tracker, processes *Processes, store references.Store) (context.Context, error) {
 		counter++
 		return ctx, expected
 	}
@@ -590,7 +591,7 @@ func TestAfterDoNode(t *testing.T) {
 	call := &mocker{}
 	node := NewMockNode("mock", call, nil)
 
-	node.AfterDo = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store references.Store) (context.Context, error) {
+	node.AfterDo = func(ctx context.Context, node *Node, tracker Tracker, processes *Processes, store references.Store) (context.Context, error) {
 		counter++
 		return ctx, nil
 	}
@@ -612,7 +613,7 @@ func TestAfterDoNodeErr(t *testing.T) {
 	call := &mocker{}
 	node := NewMockNode("mock", call, nil)
 
-	node.AfterDo = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store references.Store) (context.Context, error) {
+	node.AfterDo = func(ctx context.Context, node *Node, tracker Tracker, processes *Processes, store references.Store) (context.Context, error) {
 		counter++
 		return ctx, expected
 	}
@@ -633,7 +634,7 @@ func TestBeforeRevertNode(t *testing.T) {
 	call := &mocker{}
 	node := NewMockNode("mock", call, nil)
 
-	node.BeforeRollback = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store references.Store) (context.Context, error) {
+	node.BeforeRollback = func(ctx context.Context, node *Node, tracker Tracker, processes *Processes, store references.Store) (context.Context, error) {
 		counter++
 		return ctx, nil
 	}
@@ -655,7 +656,7 @@ func TestBeforeRevertNodeErr(t *testing.T) {
 	call := &mocker{}
 	node := NewMockNode("mock", call, nil)
 
-	node.BeforeRollback = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store references.Store) (context.Context, error) {
+	node.BeforeRollback = func(ctx context.Context, node *Node, tracker Tracker, processes *Processes, store references.Store) (context.Context, error) {
 		counter++
 		return ctx, expected
 	}
@@ -676,7 +677,7 @@ func TestAfterRevertNode(t *testing.T) {
 	call := &mocker{}
 	node := NewMockNode("mock", call, nil)
 
-	node.AfterRollback = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store references.Store) (context.Context, error) {
+	node.AfterRollback = func(ctx context.Context, node *Node, tracker Tracker, processes *Processes, store references.Store) (context.Context, error) {
 		counter++
 		return ctx, nil
 	}
@@ -698,7 +699,7 @@ func TestAfterRevertNodeErr(t *testing.T) {
 	call := &mocker{}
 	node := NewMockNode("mock", call, nil)
 
-	node.AfterRollback = func(ctx context.Context, node *Node, tracker *Tracker, processes *Processes, store references.Store) (context.Context, error) {
+	node.AfterRollback = func(ctx context.Context, node *Node, tracker Tracker, processes *Processes, store references.Store) (context.Context, error) {
 		counter++
 		return ctx, expected
 	}
@@ -817,5 +818,178 @@ func TestNodeDoConditionFunctionsErr(t *testing.T) {
 
 	if counter != 1 {
 		t.Fatalf("unexpected counter %d, expected condition functions to be called", counter)
+	}
+}
+
+func TestNodeDoConditionBreaks(t *testing.T) {
+	ctx := logger.WithLogger(broker.NewBackground())
+	call := &mocker{}
+	node := NewMockNode("mock", call, nil)
+
+	expression, err := conditions.NewEvaluableExpression(ctx, "false")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	node.Condition = &Condition{
+		expression: expression,
+	}
+
+	processes := NewProcesses(1)
+	tracker := NewTracker("", 1)
+
+	node.Do(context.Background(), tracker, processes, nil)
+	if processes.Err() != nil {
+		t.Error(processes.Err())
+	}
+
+	if !tracker.Skipped(node) {
+		t.Fatal("tracker has not skipped the node")
+	}
+
+	if tracker.Met(node) {
+		t.Fatal("tracker has met a skipped node")
+	}
+}
+
+func TestNodeDoSkipChildren(t *testing.T) {
+	ctx := logger.WithLogger(broker.NewBackground())
+	call := &mocker{}
+
+	expression, err := conditions.NewEvaluableExpression(ctx, "false")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	condition := &Condition{
+		expression: expression,
+	}
+
+	first := NewMockNode("first", call, nil)
+	second := NewMockNode("second", call, nil)
+	third := NewMockNode("third", call, nil)
+
+	first.Next = Nodes{second}
+	second.Next = Nodes{third}
+
+	first.Condition = condition
+	second.Condition = condition
+
+	processes := NewProcesses(1)
+	tracker := NewTracker("", 1)
+
+	first.Do(context.Background(), tracker, processes, nil)
+	if processes.Err() != nil {
+		t.Error(processes.Err())
+	}
+
+	result := Nodes{
+		first,
+		second,
+		third,
+	}
+
+	for _, node := range result {
+		t.Run(node.Name, func(t *testing.T) {
+			if !tracker.Skipped(node) {
+				t.Fatal("tracker has not skipped the node")
+			}
+
+			if tracker.Met(node) {
+				t.Fatal("tracker has met the skipped node")
+			}
+		})
+	}
+}
+
+func TestWithCall(t *testing.T) {
+	expected := &caller{}
+	options := NodeOptions{}
+
+	option := WithCall(expected)
+
+	option(&options)
+	if options.call == nil {
+		t.Fatal("call not set")
+	}
+
+	if options.call != expected {
+		t.Fatal("unexpected call")
+	}
+}
+
+func TestWithRollback(t *testing.T) {
+	expected := &caller{}
+	options := NodeOptions{}
+
+	option := WithRollback(expected)
+
+	option(&options)
+	if options.rollback == nil {
+		t.Fatal("rollback not set")
+	}
+
+	if options.rollback != expected {
+		t.Fatal("unexpected rollback")
+	}
+}
+
+func TestWithCondition(t *testing.T) {
+	expected := &Condition{}
+	options := NodeOptions{}
+
+	option := WithCondition(expected)
+
+	option(&options)
+	if options.condition == nil {
+		t.Fatal("confition not set")
+	}
+
+	if options.condition != expected {
+		t.Fatal("unexpected condition")
+	}
+}
+
+func TestWithFunctions(t *testing.T) {
+	expected := functions.Stack{}
+	options := NodeOptions{}
+
+	option := WithFunctions(expected)
+
+	option(&options)
+	if options.functions == nil {
+		t.Fatal("functions not set")
+	}
+}
+
+func TestWithNodeMiddleware(t *testing.T) {
+	expected := NodeMiddleware{
+		AfterDo: func(ctx context.Context, node *Node, tracker Tracker, processes *Processes, store references.Store) (context.Context, error) {
+			return nil, nil
+		},
+	}
+
+	options := NodeOptions{}
+
+	option := WithNodeMiddleware(expected)
+
+	option(&options)
+	if options.middleware.AfterDo == nil {
+		t.Fatal("middleware not set")
+	}
+}
+
+func TestSettingNodeArguments(t *testing.T) {
+	arguments := NodeArguments{}
+	arguments.Set(nil)
+
+	if len(arguments) != 0 {
+		t.Fatal("expected empty arguments")
+	}
+
+	arguments.Set(WithCondition(nil))
+
+	if len(arguments) != 1 {
+		t.Fatal("arguments not set properly")
 	}
 }

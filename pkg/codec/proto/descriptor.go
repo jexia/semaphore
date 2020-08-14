@@ -3,7 +3,7 @@ package proto
 import (
 	"strings"
 
-	"github.com/jexia/semaphore/pkg/core/trace"
+	"github.com/jexia/semaphore/pkg/broker/trace"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/types"
 	"github.com/jhump/protoreflect/desc/builder"

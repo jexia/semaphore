@@ -224,9 +224,9 @@ func (collector *collector) AfterRollback(next flow.AfterManager) flow.AfterMana
 
 // BeforeDo gets called before a node gets executed
 func (collector *collector) BeforeNode(next flow.BeforeNode) flow.BeforeNode {
-	return func(ctx context.Context, node *flow.Node, tracker *flow.Tracker, processes *flow.Processes, store references.Store) (context.Context, error) {
+	return func(ctx context.Context, node *flow.Node, tracker flow.Tracker, processes *flow.Processes, store references.Store) (context.Context, error) {
 		req := collector.nodes.With(prometheus.Labels{
-			"flow": tracker.Flow,
+			"flow": tracker.Flow(),
 			"node": node.Name,
 		})
 
@@ -241,11 +241,11 @@ func (collector *collector) BeforeNode(next flow.BeforeNode) flow.BeforeNode {
 
 // AfterDo gets called after a node is executed
 func (collector *collector) AfterNode(next flow.AfterNode) flow.AfterNode {
-	return func(ctx context.Context, node *flow.Node, tracker *flow.Tracker, processes *flow.Processes, store references.Store) (context.Context, error) {
+	return func(ctx context.Context, node *flow.Node, tracker flow.Tracker, processes *flow.Processes, store references.Store) (context.Context, error) {
 		value := ctx.Value(StartTimeCtx)
 		if value != nil {
 			duration := collector.node.With(prometheus.Labels{
-				"flow": tracker.Flow,
+				"flow": tracker.Flow(),
 				"node": node.Name,
 			})
 

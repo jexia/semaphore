@@ -44,6 +44,10 @@ type Call interface {
 
 // NewCall constructs a new flow caller from the given transport caller and options
 func NewCall(parent *broker.Context, node *specs.Node, options *CallOptions) Call {
+	if node == nil || options == nil {
+		return nil
+	}
+
 	module := broker.WithModule(parent, "caller", node.ID)
 	ctx := logger.WithFields(logger.WithLogger(module), zap.String("node", node.ID))
 
@@ -194,8 +198,8 @@ func (caller *caller) HandleErr(w *transport.Writer, reader io.Reader, store ref
 			}
 		}
 
-		if caller.err.functions != nil {
-			err := ExecuteFunctions(caller.err.functions, store)
+		if caller.err.stack != nil {
+			err := ExecuteFunctions(caller.err.stack, store)
 			if err != nil {
 				return err
 			}

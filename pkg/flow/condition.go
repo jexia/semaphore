@@ -17,10 +17,10 @@ type Expression interface {
 }
 
 // NewCondition constructs a new condition of the given functions stack and specs condition
-func NewCondition(stack functions.Stack, exp Expression) *Condition {
+func NewCondition(stack functions.Stack, expression Expression) *Condition {
 	return &Condition{
 		stack:      stack,
-		expression: exp,
+		expression: expression,
 	}
 }
 

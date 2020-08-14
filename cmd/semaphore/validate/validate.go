@@ -5,6 +5,7 @@ import (
 	"github.com/jexia/semaphore/cmd/semaphore/config"
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
+	"github.com/jexia/semaphore/pkg/broker/providers"
 	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/spf13/cobra"
 )
@@ -37,7 +38,7 @@ func run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	_, _, _, _, err = options.Constructor(ctx, functions.Collection{}, options)
+	_, err = providers.Resolve(ctx, functions.Collection{}, options)
 	if err != nil {
 		return err
 	}
