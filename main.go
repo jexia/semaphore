@@ -68,8 +68,8 @@ func (client *Client) Resolve(ctx *broker.Context) (providers.Collection, error)
 // Transporters are created from the available endpoints and flows.
 // The created transporters are passed to the listeners to be hot-swapped.
 //
-// This method does not perform any checks checking ensuring strict types
-// or whether the specification is valid.
+// This method does not perform any checks ensuring that the given
+// specification is valid.
 func (client *Client) Apply(ctx *broker.Context, collection providers.Collection) error {
 	client.mutex.Lock()
 	defer client.mutex.Unlock()
