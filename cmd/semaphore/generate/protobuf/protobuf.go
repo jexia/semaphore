@@ -12,6 +12,7 @@ import (
 	"github.com/jexia/semaphore/pkg/broker/providers"
 	"github.com/jexia/semaphore/pkg/codec/proto"
 	"github.com/jexia/semaphore/pkg/functions"
+	"github.com/jexia/semaphore/pkg/transport"
 	"github.com/jexia/semaphore/pkg/transport/grpc"
 	"github.com/jhump/protoreflect/desc/protoprint"
 	"github.com/spf13/cobra"
@@ -61,15 +62,39 @@ func run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	var (
-		services = make(map[string]*proto.Service)
-		// descriptors = make(map[string]*desc.FileDescriptor)
-	)
+	services, err := generate(ctx, transporters)
+	if err != nil {
+		return err
+	}
 
-	for _, endpoint := range transporters {
+	// TODO: configure printer
+	printer := &protoprint.Printer{}
+
+	for key, service := range services {
+		descriptor, err := service.FileDescriptor()
+		if err != nil {
+			return fmt.Errorf("cannot generate file descriptor for %q: %w", key, err)
+		}
+
+		if err := printer.PrintProtoFile(descriptor, os.Stdout); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func generate(ctx *broker.Context, endpoints transport.EndpointList) (map[string]*proto.Service, error) {
+	var services = make(map[string]*proto.Service)
+
+	for _, endpoint := range endpoints {
+		if endpoint.Listener != "grpc" {
+			continue
+		}
+
 		options, err := grpc.ParseEndpointOptions(endpoint)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		protoService := proto.Service{
@@ -91,24 +116,11 @@ func run(cmd *cobra.Command, args []string) error {
 		}
 
 		if err := method.NewCodec(ctx, proto.NewConstructor()); err != nil {
-			return err
+			return nil, err
 		}
 
 		services[service.String()].Methods[method.String()] = method
 	}
 
-	printer := &protoprint.Printer{}
-
-	for key, service := range services {
-		descriptor, err := service.FileDescriptor()
-		if err != nil {
-			return fmt.Errorf("cannot generate file descriptor for %q: %w", key, err)
-		}
-
-		if err := printer.PrintProtoFile(descriptor, os.Stdout); err != nil {
-			return err
-		}
-	}
-
-	return nil
+	return services, nil
 }
