@@ -14,6 +14,7 @@ import (
 
 	"github.com/jhump/protoreflect/codec"
 	"github.com/jhump/protoreflect/desc"
+	"github.com/jhump/protoreflect/internal"
 )
 
 // ErrUnknownTagNumber is an error that is returned when an operation refers
@@ -2060,7 +2061,22 @@ func (m *Message) ConvertTo(target proto.Message) error {
 	}
 
 	target.Reset()
-	return m.mergeInto(target)
+	return m.mergeInto(target, defaultDeterminism)
+}
+
+// ConvertToDeterministic converts this dynamic message into the given message.
+// It is just like ConvertTo, but it attempts to produce deterministic results.
+// That means that if the target is a generated message (not another dynamic
+// message) and the current runtime is unaware of any fields or extensions that
+// are present in m, they will be serialized into the target's unrecognized
+// fields deterministically.
+func (m *Message) ConvertToDeterministic(target proto.Message) error {
+	if err := m.checkType(target); err != nil {
+		return err
+	}
+
+	target.Reset()
+	return m.mergeInto(target, true)
 }
 
 // ConvertFrom converts the given message into this dynamic message. This is
@@ -2089,7 +2105,20 @@ func (m *Message) MergeInto(target proto.Message) error {
 	if err := m.checkType(target); err != nil {
 		return err
 	}
-	return m.mergeInto(target)
+	return m.mergeInto(target, defaultDeterminism)
+}
+
+// MergeIntoDeterministic merges this dynamic message into the given message.
+// It is just like MergeInto, but it attempts to produce deterministic results.
+// That means that if the target is a generated message (not another dynamic
+// message) and the current runtime is unaware of any fields or extensions that
+// are present in m, they will be serialized into the target's unrecognized
+// fields deterministically.
+func (m *Message) MergeIntoDeterministic(target proto.Message) error {
+	if err := m.checkType(target); err != nil {
+		return err
+	}
+	return m.mergeInto(target, true)
 }
 
 // MergeFrom merges the given message into this dynamic message. All field
@@ -2154,7 +2183,7 @@ func (m *Message) checkType(target proto.Message) error {
 	return nil
 }
 
-func (m *Message) mergeInto(pm proto.Message) error {
+func (m *Message) mergeInto(pm proto.Message, deterministic bool) error {
 	if dm, ok := pm.(*Message); ok {
 		return dm.mergeFrom(m)
 	}
@@ -2166,13 +2195,9 @@ func (m *Message) mergeInto(pm proto.Message) error {
 
 	// track tags for which the dynamic message has data but the given
 	// message doesn't know about it
-	u := target.FieldByName("XXX_unrecognized")
-	var unknownTags map[int32]struct{}
-	if u.IsValid() && u.Type() == typeOfBytes {
-		unknownTags = map[int32]struct{}{}
-		for tag := range m.values {
-			unknownTags[tag] = struct{}{}
-		}
+	unknownTags := map[int32]struct{}{}
+	for tag := range m.values {
+		unknownTags[tag] = struct{}{}
 	}
 
 	// check that we can successfully do the merge
@@ -2240,7 +2265,7 @@ func (m *Message) mergeInto(pm proto.Message) error {
 			continue
 		}
 		f := target.FieldByName(prop.Name)
-		if err := mergeVal(reflect.ValueOf(v), f); err != nil {
+		if err := mergeVal(reflect.ValueOf(v), f, deterministic); err != nil {
 			return err
 		}
 	}
@@ -2254,7 +2279,7 @@ func (m *Message) mergeInto(pm proto.Message) error {
 		}
 		oov := reflect.New(oop.Type.Elem())
 		f := oov.Elem().FieldByName(prop.Name)
-		if err := mergeVal(reflect.ValueOf(v), f); err != nil {
+		if err := mergeVal(reflect.ValueOf(v), f, deterministic); err != nil {
 			return err
 		}
 		target.Field(oop.Field).Set(oov)
@@ -2266,7 +2291,7 @@ func (m *Message) mergeInto(pm proto.Message) error {
 			continue
 		}
 		e := reflect.New(reflect.TypeOf(ext.ExtensionType)).Elem()
-		if err := mergeVal(reflect.ValueOf(v), e); err != nil {
+		if err := mergeVal(reflect.ValueOf(v), e, deterministic); err != nil {
 			return err
 		}
 		if err := proto.SetExtension(pm, ext, e.Interface()); err != nil {
@@ -2277,17 +2302,34 @@ func (m *Message) mergeInto(pm proto.Message) error {
 
 	// if we have fields that the given message doesn't know about, add to its unknown fields
 	if len(unknownTags) > 0 {
-		ub := u.Interface().([]byte)
 		var b codec.Buffer
-		b.SetDeterministic(defaultDeterminism)
-		for tag := range unknownTags {
-			fd := m.FindFieldDescriptor(tag)
-			if err := b.EncodeFieldValue(fd, m.values[tag]); err != nil {
-				return err
+		b.SetDeterministic(deterministic)
+		if deterministic {
+			// if we need to emit things deterministically, sort the
+			// extensions by their tag number
+			sortedUnknownTags := make([]int32, 0, len(unknownTags))
+			for tag := range unknownTags {
+				sortedUnknownTags = append(sortedUnknownTags, tag)
+			}
+			sort.Slice(sortedUnknownTags, func(i, j int) bool {
+				return sortedUnknownTags[i] < sortedUnknownTags[j]
+			})
+			for _, tag := range sortedUnknownTags {
+				fd := m.FindFieldDescriptor(tag)
+				if err := b.EncodeFieldValue(fd, m.values[tag]); err != nil {
+					return err
+				}
+			}
+		} else {
+			for tag := range unknownTags {
+				fd := m.FindFieldDescriptor(tag)
+				if err := b.EncodeFieldValue(fd, m.values[tag]); err != nil {
+					return err
+				}
 			}
 		}
-		ub = append(ub, b.Bytes()...)
-		u.Set(reflect.ValueOf(ub))
+
+		internal.SetUnrecognized(pm, b.Bytes())
 	}
 
 	// finally, convey unknown fields into the given message by letting it unmarshal them
@@ -2340,7 +2382,7 @@ func canConvert(src reflect.Value, target reflect.Type) bool {
 	}
 }
 
-func mergeVal(src, target reflect.Value) error {
+func mergeVal(src, target reflect.Value, deterministic bool) error {
 	if src.Kind() == reflect.Interface && !src.IsNil() {
 		src = src.Elem()
 	}
@@ -2377,19 +2419,19 @@ func mergeVal(src, target reflect.Value) error {
 			if dest.Kind() == reflect.Ptr {
 				dest.Set(reflect.New(dest.Type().Elem()))
 			}
-			if err := mergeVal(src.Index(i), dest); err != nil {
+			if err := mergeVal(src.Index(i), dest, deterministic); err != nil {
 				return err
 			}
 		}
 	} else if targetType.Kind() == reflect.Map {
-		return mergeMapVal(src, target, targetType)
+		return mergeMapVal(src, target, targetType, deterministic)
 	} else if srcType == typeOfDynamicMessage && targetType.Implements(typeOfProtoMessage) {
 		dm := src.Interface().(*Message)
 		if target.IsNil() {
 			target.Set(reflect.New(targetType.Elem()))
 		}
 		m := target.Interface().(proto.Message)
-		if err := dm.mergeInto(m); err != nil {
+		if err := dm.mergeInto(m, deterministic); err != nil {
 			return err
 		}
 	} else {
@@ -2516,13 +2558,15 @@ func (m *Message) mergeFrom(pm proto.Message) error {
 
 	// now actually perform the merge
 	for fd, v := range values {
-		mergeField(m, fd, v)
+		if err := mergeField(m, fd, v); err != nil {
+			return err
+		}
 	}
 
-	u := src.FieldByName("XXX_unrecognized")
-	if u.IsValid() && u.Type() == typeOfBytes {
+	data := internal.GetUnrecognized(pm)
+	if len(data) > 0 {
 		// ignore any error returned: pulling in unknown fields is best-effort
-		_ = m.UnmarshalMerge(u.Interface().([]byte))
+		_ = m.UnmarshalMerge(data)
 	}
 
 	// lastly, also extract any unknown extensions the message may have (unknown extensions

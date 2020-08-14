@@ -83,33 +83,30 @@ func (listener *Listener) Handle(ctx *broker.Context, endpoints []*transport.End
 			return err
 		}
 
-		var (
-			service = fmt.Sprintf("%s.%s", options.Package, options.Service)
-			name    = fmt.Sprintf("%s/%s", service, options.Method)
+		protoService := proto.Service{
+			Package: options.Package,
+			Name:    options.Service,
+			Methods: make(proto.Methods),
+		}
 
-			method = &Method{
-				Endpoint: endpoint,
-				fqn:      name,
-				name:     options.Method,
-				flow:     endpoint.Flow,
-			}
-		)
+		service, ok := services[protoService.String()]
+		if !ok {
+			service, services[protoService.String()] = &protoService, &protoService
+		}
+
+		method := &Method{
+			Service:  service,
+			Endpoint: endpoint,
+			Name:     options.Method,
+			Flow:     endpoint.Flow,
+		}
 
 		if err := method.NewCodec(ctx, constructor); err != nil {
 			return err
 		}
 
-		methods[name] = method
-
-		if services[service] == nil {
-			services[service] = &proto.Service{
-				Package: options.Package,
-				Name:    options.Service,
-				Methods: make(proto.Methods),
-			}
-		}
-
-		services[service].Methods[name] = methods[name]
+		methods[method.String()] = method
+		services[service.String()].Methods[method.String()] = method
 	}
 
 	for key, service := range services {
@@ -152,7 +149,7 @@ func (listener *Listener) handler(srv interface{}, stream grpc.ServerStream) err
 		return err
 	}
 
-	store := method.flow.NewStore()
+	store := method.Flow.NewStore()
 
 	if method.Request != nil {
 		header, ok := rpcMeta.FromIncomingContext(stream.Context())
@@ -166,7 +163,7 @@ func (listener *Listener) handler(srv interface{}, stream grpc.ServerStream) err
 		}
 	}
 
-	err = method.flow.Do(stream.Context(), store)
+	err = method.Flow.Do(stream.Context(), store)
 	if err != nil {
 		object := method.Endpoint.Errs.Get(transport.Unwrap(err))
 		if object == nil {

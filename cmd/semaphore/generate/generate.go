@@ -3,6 +3,7 @@ package generate
 import (
 	"github.com/jexia/semaphore/cmd/semaphore/config"
 	"github.com/jexia/semaphore/cmd/semaphore/generate/openapi3"
+	"github.com/jexia/semaphore/cmd/semaphore/generate/protobuf"
 	"github.com/spf13/cobra"
 )
 
@@ -17,4 +18,5 @@ var Command = &cobra.Command{
 
 func init() {
 	Command.AddCommand(openapi3.Command)
+	Command.AddCommand(protobuf.Command)
 }

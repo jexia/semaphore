@@ -1,6 +1,9 @@
 package grpc
 
 import (
+	"fmt"
+
+	"github.com/jexia/semaphore/pkg/codec/proto"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/transport"
 )
@@ -8,13 +11,17 @@ import (
 // Method represents a gRPC endpoint
 type Method struct {
 	*transport.Endpoint
-	fqn  string
-	name string
-	flow transport.Flow
+	Service *proto.Service
+	Name    string
+	Flow    transport.Flow
+}
+
+func (method *Method) String() string {
+	return fmt.Sprintf("%s/%s", method.Service, method.Name)
 }
 
 // GetName returns the method name
-func (method *Method) GetName() string { return method.name }
+func (method *Method) GetName() string { return method.Name }
 
 // References returns the available method references
 func (method *Method) References() []*specs.Property {
