@@ -1,33 +1,20 @@
 package grpc
 
 import (
-	"github.com/golang/protobuf/protoc-gen-go/descriptor"
-	"github.com/jexia/semaphore/pkg/codec"
-	"github.com/jexia/semaphore/pkg/codec/metadata"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/transport"
 )
 
-// Request method request
-type Request struct {
-	param  *specs.ParameterMap
-	header *metadata.Manager
-	codec  codec.Manager
-}
-
 // Method represents a gRPC endpoint
 type Method struct {
 	*transport.Endpoint
-	fqn        string
-	name       string
-	flow       transport.Flow
-	descriptor []byte
+	fqn  string
+	name string
+	flow transport.Flow
 }
 
 // GetName returns the method name
-func (method *Method) GetName() string {
-	return method.name
-}
+func (method *Method) GetName() string { return method.name }
 
 // References returns the available method references
 func (method *Method) References() []*specs.Property {
@@ -50,12 +37,4 @@ func (method *Method) GetResponse() map[string]*specs.Property {
 	}
 
 	return method.Response.Definition.Property.Nested
-}
-
-// Service represents a gRPC service
-type Service struct {
-	pkg     string
-	name    string
-	methods map[string]*Method
-	proto   *descriptor.FileDescriptorProto
 }

@@ -13,12 +13,24 @@ import (
 	"github.com/jexia/semaphore/pkg/codec/proto"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/transport"
+	"github.com/jhump/protoreflect/desc"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	rpcMeta "google.golang.org/grpc/metadata"
 	rpb "google.golang.org/grpc/reflection/grpc_reflection_v1alpha"
 )
+
+// Listener represents a HTTP listener
+type Listener struct {
+	addr        string
+	ctx         *broker.Context
+	server      *grpc.Server
+	methods     map[string]*Method
+	services    map[string]*proto.Service
+	descriptors map[string]*desc.FileDescriptor
+	mutex       sync.RWMutex
+}
 
 // NewListener constructs a new listener for the given addr
 func NewListener(addr string, opts specs.Options) transport.NewListener {
@@ -33,20 +45,8 @@ func NewListener(addr string, opts specs.Options) transport.NewListener {
 	}
 }
 
-// Listener represents a HTTP listener
-type Listener struct {
-	addr     string
-	ctx      *broker.Context
-	server   *grpc.Server
-	methods  map[string]*Method
-	services map[string]*Service
-	mutex    sync.RWMutex
-}
-
 // Name returns the name of the given listener
-func (listener *Listener) Name() string {
-	return "grpc"
-}
+func (listener *Listener) Name() string { return "grpc" }
 
 // Serve opens the HTTP listener and calls the given handler function on reach request
 func (listener *Listener) Serve() error {
@@ -64,21 +64,19 @@ func (listener *Listener) Serve() error {
 		return err
 	}
 
-	err = listener.server.Serve(lis)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return listener.server.Serve(lis)
 }
 
 // Handle parses the given endpoints and constructs route handlers
 func (listener *Listener) Handle(ctx *broker.Context, endpoints []*transport.Endpoint, codecs map[string]codec.Constructor) error {
 	logger.Info(listener.ctx, "gRPC listener received new endpoints")
 
-	constructor := proto.NewConstructor()
-	methods := make(map[string]*Method, len(endpoints))
-	services := map[string]*Service{}
+	var (
+		constructor = proto.NewConstructor()
+		methods     = make(map[string]*Method, len(endpoints))
+		services    = make(map[string]*proto.Service)
+		descriptors = make(map[string]*desc.FileDescriptor)
+	)
 
 	for _, endpoint := range endpoints {
 		options, err := ParseEndpointOptions(endpoint)
@@ -86,60 +84,48 @@ func (listener *Listener) Handle(ctx *broker.Context, endpoints []*transport.End
 			return err
 		}
 
-		service := fmt.Sprintf("%s.%s", options.Package, options.Service)
-		name := fmt.Sprintf("%s/%s", service, options.Method)
+		var (
+			service = fmt.Sprintf("%s.%s", options.Package, options.Service)
+			name    = fmt.Sprintf("%s/%s", service, options.Method)
 
-		method := &Method{
-			Endpoint: endpoint,
-			fqn:      name,
-			name:     options.Method,
-			flow:     endpoint.Flow,
-		}
+			method = &Method{
+				Endpoint: endpoint,
+				fqn:      name,
+				name:     options.Method,
+				flow:     endpoint.Flow,
+			}
+		)
 
-		err = method.NewCodec(ctx, constructor)
-		if err != nil {
+		if err := method.NewCodec(ctx, constructor); err != nil {
 			return err
 		}
 
 		methods[name] = method
 
 		if services[service] == nil {
-			services[service] = &Service{
-				pkg:     options.Package,
-				name:    options.Service,
-				methods: map[string]*Method{},
+			services[service] = &proto.Service{
+				Package: options.Package,
+				Name:    options.Service,
+				Methods: make(proto.Methods),
 			}
 		}
 
-		services[service].methods[name] = methods[name]
+		services[service].Methods[name] = methods[name]
 	}
 
 	for key, service := range services {
-		file := proto.NewFile(key)
-		file.Package = service.pkg
-
-		methods := make(proto.Methods, len(service.methods))
-
-		for key, method := range service.methods {
-			methods[key] = method
-		}
-
-		err := proto.NewServiceDescriptor(file, service.name, methods)
+		descriptor, err := service.FileDescriptor()
 		if err != nil {
-			return err
+			return fmt.Errorf("cannot generate file descriptor for %q: %w", key, err)
 		}
 
-		result, err := file.Build()
-		if err != nil {
-			return err
-		}
-
-		service.proto = result.AsFileDescriptorProto()
+		descriptors[key] = descriptor
 	}
 
 	listener.mutex.Lock()
 	listener.methods = methods
 	listener.services = services
+	listener.descriptors = descriptors
 	listener.mutex.Unlock()
 
 	return nil
@@ -154,7 +140,10 @@ func (listener *Listener) handler(srv interface{}, stream grpc.ServerStream) err
 		return grpc.Errorf(codes.Internal, "low level server stream not exists in context")
 	}
 
+	listener.mutex.RLock()
 	method := listener.methods[fqn[1:]]
+	listener.mutex.RUnlock()
+
 	if method == nil {
 		return grpc.Errorf(codes.Unimplemented, "unknown method: %s", fqn)
 	}

@@ -32,8 +32,13 @@ func (listener *Listener) ServerReflectionInfo(stream rpb.ServerReflection_Serve
 				FileDescriptorResponse: &rpb.FileDescriptorResponse{FileDescriptorProto: [][]byte{}},
 			}
 		case *rpb.ServerReflectionRequest_FileContainingSymbol:
-			service := listener.services[req.FileContainingSymbol]
-			if service == nil {
+			// listener.mutex.RLock()
+			// defer listener.mutex.RUnlock()
+
+			// AsFileDescriptorProto()
+
+			descriptor, ok := listener.descriptors[req.FileContainingSymbol]
+			if !ok {
 				out.MessageResponse = &rpb.ServerReflectionResponse_ErrorResponse{
 					ErrorResponse: &rpb.ErrorResponse{
 						ErrorCode:    int32(codes.NotFound),
@@ -43,7 +48,7 @@ func (listener *Listener) ServerReflectionInfo(stream rpb.ServerReflection_Serve
 				continue
 			}
 
-			bb, err := proto.Marshal(service.proto)
+			bb, err := proto.Marshal(descriptor.AsFileDescriptorProto())
 			if err != nil {
 				out.MessageResponse = &rpb.ServerReflectionResponse_ErrorResponse{
 					ErrorResponse: &rpb.ErrorResponse{
