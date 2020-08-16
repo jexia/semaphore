@@ -11,6 +11,8 @@ import (
 	"github.com/jexia/semaphore/pkg/providers"
 	"github.com/jexia/semaphore/pkg/providers/hcl"
 	"github.com/jexia/semaphore/pkg/providers/mock"
+	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
 const (
@@ -98,6 +100,109 @@ func TestUnmarshalFile(t *testing.T) {
 					t.Fatalf("unexpected error message %s, expected %s", err, collection.Exception.Message)
 				}
 			}
+		})
+	}
+}
+
+func TestScopeNestedReferences(t *testing.T) {
+	t.Parallel()
+
+	type test struct {
+		source *specs.Property
+		target *specs.Property
+	}
+
+	reference := &specs.PropertyReference{
+		Resource: "input",
+	}
+
+	tests := map[string]test{
+		"root": {
+			source: &specs.Property{
+				Nested: map[string]*specs.Property{
+					"key": {
+						Path: "key",
+						Type: types.String,
+					},
+				},
+			},
+			target: &specs.Property{
+				Reference: reference,
+			},
+		},
+		"nested": {
+			source: &specs.Property{
+				Nested: map[string]*specs.Property{
+					"key": {
+						Path: "key",
+						Nested: map[string]*specs.Property{
+							"nested": {
+								Path: "key.nested",
+							},
+						},
+					},
+				},
+			},
+			target: &specs.Property{
+				Nested: map[string]*specs.Property{
+					"key": {
+						Reference: reference,
+					},
+				},
+			},
+		},
+		"partial": {
+			source: &specs.Property{
+				Nested: map[string]*specs.Property{
+					"key": {
+						Path: "key",
+						Nested: map[string]*specs.Property{
+							"first": {
+								Path: "key.first",
+							},
+							"second": {
+								Path: "key.second",
+							},
+						},
+					},
+				},
+			},
+			target: &specs.Property{
+				Nested: map[string]*specs.Property{
+					"key": {
+						Reference: reference,
+						Nested: map[string]*specs.Property{
+							"second": {
+								Reference: reference,
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			ScopeNestedReferences(test.source, test.target)
+
+			var lookup func(source *specs.Property, target *specs.Property)
+			lookup = func(source *specs.Property, target *specs.Property) {
+				if len(target.Nested) != len(source.Nested) {
+					t.Fatalf("unexpected length %d (%+v), expected %d (%s)(%+v).", len(target.Nested), target.Nested, len(source.Nested), source.Path, source.Nested)
+				}
+
+				for key := range source.Nested {
+					_, has := target.Nested[key]
+					if !has {
+						t.Fatalf("target does not have nested key %s", key)
+					}
+
+					lookup(source.Nested[key], target.Nested[key])
+				}
+			}
+
+			lookup(test.source, test.target)
 		})
 	}
 }

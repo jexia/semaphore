@@ -68,8 +68,8 @@ func jwt(args ...*specs.Property) (*specs.Property, functions.Exec, error) {
 		value := input.Default
 
 		if input.Reference != nil {
-			ref := store.Load(input.Reference.Resource, input.Reference.Path)
-			if ref != nil {
+			ref, has := store.Load(input.Reference.Resource, input.Reference.Path)
+			if has {
 				value = ref.Value
 			}
 		}

@@ -26,6 +26,35 @@ func BenchmarkSimpleFetching(b *testing.B) {
 	}
 }
 
+func BenchmarkStoreSingleValue(b *testing.B) {
+	input := "hello world"
+	store := NewReferenceStore(b.N)
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		store.StoreValue("input", ".", input)
+	}
+}
+
+func BenchmarkStoreSingleReference(b *testing.B) {
+	input := "hello world"
+	store := NewReferenceStore(b.N)
+
+	reference := &Reference{
+		Path:  ".",
+		Value: input,
+	}
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		store.StoreReference("input", reference)
+	}
+}
+
 func BenchmarkSimpleUnmarshal(b *testing.B) {
 	input := []byte(`{"message":"hello world"}`)
 
@@ -48,12 +77,13 @@ func BenchmarkRepeatedUnmarshal(b *testing.B) {
 	data := map[string]interface{}{}
 	json.Unmarshal(input, &data)
 
+	store := NewReferenceStore(len(data) * b.N)
+
 	b.SetBytes(int64(len(input)))
 	b.ReportAllocs()
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		store := NewReferenceStore(len(data))
 		store.StoreValues("input", "", data)
 	}
 }
@@ -64,12 +94,13 @@ func BenchmarkNestedUnmarshal(b *testing.B) {
 	data := map[string]interface{}{}
 	json.Unmarshal(input, &data)
 
+	store := NewReferenceStore(len(data) * b.N)
+
 	b.SetBytes(int64(len(input)))
 	b.ReportAllocs()
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		store := NewReferenceStore(len(data))
 		store.StoreValues("input", "", data)
 	}
 }
@@ -80,12 +111,13 @@ func BenchmarkComplexUnmarshal(b *testing.B) {
 	data := map[string]interface{}{}
 	json.Unmarshal(input, &data)
 
+	store := NewReferenceStore(len(data) * b.N)
+
 	b.SetBytes(int64(len(input)))
 	b.ReportAllocs()
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		store := NewReferenceStore(len(data))
 		store.StoreValues("input", "", data)
 	}
 }
@@ -492,7 +524,9 @@ func TestPrefixStoreReference(t *testing.T) {
 	prefix := "prefix"
 	path := "key"
 
-	value := NewReference(path)
+	value := &Reference{
+		Path: path,
+	}
 
 	pstore := NewPrefixStore(store, resource, prefix)
 	pstore.StoreReference("", value)

@@ -9,8 +9,6 @@ import (
 	"github.com/jexia/semaphore/pkg/specs/template"
 )
 
-// var InternalResources = []string{termplate.}
-
 // ResolveReferences resolves all references inside the given manifest by forwarding references.
 // If a reference is referencing another reference the node is marked as a dependency of the
 // references resource and the referenced reference is copied over the the current resource.
@@ -143,7 +141,8 @@ func ResolvePropertyReferences(property *specs.Property, dependencies specs.Depe
 	ScopePropertyReference(property)
 }
 
-// ScopePropertyReference ...
+// ScopePropertyReference ensures that the root property is used inside the
+// property reference.
 func ScopePropertyReference(property *specs.Property) {
 	if property.Reference == nil || property.Reference.Property == nil {
 		return

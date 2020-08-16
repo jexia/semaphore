@@ -75,6 +75,10 @@ func ValidateStore(t *testing.T, prop *specs.Property, resource string, origin s
 		values, is := value.([]interface{})
 		if is {
 			repeating := store.Load(resource, path)
+			if repeating == nil {
+				t.Fatalf("resource not found %s:%s", resource, path)
+			}
+
 			for index, store := range repeating.Repeated {
 				// small wrapper that allows to reuse functionalities
 				wrapper := map[string]interface{}{
@@ -88,7 +92,7 @@ func ValidateStore(t *testing.T, prop *specs.Property, resource string, origin s
 
 		ref := store.Load(resource, path)
 		if ref == nil {
-			t.Fatalf("resource not found '%s'.'%s'", resource, path)
+			t.Fatalf("resource not found %s:%s", resource, path)
 		}
 
 		if ref.Enum != nil && nprop.Enum != nil {
@@ -234,7 +238,7 @@ func BenchmarkSimpleUnmarshal(b *testing.B) {
 	flow := flows.Get("simple")
 	specs := flow.GetNodes().Get("first").Call.Request
 
-	desc, err := NewMessage(specs.Property.Name, specs.Property.Nested)
+	desc, err := NewMessage("MockRequest", specs.Property.Nested)
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -288,7 +292,7 @@ func BenchmarkNestedUnmarshal(b *testing.B) {
 	flow := flows.Get("nested")
 	specs := flow.GetNodes().Get("first").Call.Request
 
-	desc, err := NewMessage(specs.Property.Name, specs.Property.Nested)
+	desc, err := NewMessage("MockRequest", specs.Property.Nested)
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -344,7 +348,7 @@ func BenchmarkRepeatedUnmarshal(b *testing.B) {
 	flow := flows.Get("repeated")
 	specs := flow.GetNodes().Get("first").Call.Request
 
-	desc, err := NewMessage(specs.Property.Name, specs.Property.Nested)
+	desc, err := NewMessage("MockRequest", specs.Property.Nested)
 	if err != nil {
 		b.Fatal(err)
 	}

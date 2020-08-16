@@ -37,7 +37,7 @@ func (object *Object) MarshalJSONObject(encoder *gojay.Encoder) {
 			}
 
 			ref := object.refs.Load(prop.Reference.Resource, prop.Reference.Path)
-			if ref == nil {
+			if ref != nil {
 				continue
 			}
 
@@ -84,7 +84,10 @@ func (object *Object) UnmarshalJSONObject(dec *gojay.Decoder, key string) error 
 	}
 
 	if prop.Label == labels.Repeated {
-		ref := references.NewReference(prop.Path)
+		ref := &references.Reference{
+			Path: prop.Path,
+		}
+
 		array := NewArray(object.resource, prop, ref, nil)
 		err := dec.AddArray(array)
 		if err != nil {
@@ -101,7 +104,9 @@ func (object *Object) UnmarshalJSONObject(dec *gojay.Decoder, key string) error 
 		return err
 	}
 
-	ref := references.NewReference(prop.Path)
+	ref := &references.Reference{
+		Path: prop.Path,
+	}
 
 	if prop.Type == types.Enum {
 		var key string
@@ -168,12 +173,14 @@ func (array *Array) MarshalJSONArray(enc *gojay.Encoder) {
 
 		if array.specs.Reference != nil {
 			ref := store.Load("", "")
-			if ref != nil && ref.Enum != nil && array.specs.Enum != nil {
-				val = array.specs.Enum.Positions[*ref.Enum].Key
-			}
+			if ref != nil {
+				if ref.Enum != nil && array.specs.Enum != nil {
+					val = array.specs.Enum.Positions[*ref.Enum].Key
+				}
 
-			if ref != nil && val == nil {
-				val = ref.Value
+				if val == nil {
+					val = ref.Value
+				}
 			}
 		}
 
