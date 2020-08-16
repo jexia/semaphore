@@ -37,7 +37,7 @@ func (object *Object) MarshalJSONObject(encoder *gojay.Encoder) {
 			}
 
 			ref := object.refs.Load(prop.Reference.Resource, prop.Reference.Path)
-			if ref != nil {
+			if ref == nil {
 				continue
 			}
 
