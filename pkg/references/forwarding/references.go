@@ -11,19 +11,18 @@ import (
 // ResolveReferences resolves all references inside the given manifest by forwarding references.
 // If a reference is referencing another reference the node is marked as a dependency of the
 // references resource and the referenced reference is copied over the the current resource.
-func ResolveReferences(ctx *broker.Context, flows specs.FlowListInterface) {
+func ResolveReferences(ctx *broker.Context, flows specs.FlowListInterface, mem functions.Collection) {
 	logger.Info(ctx, "resolving flow references")
 
 	for _, flow := range flows {
 		for _, node := range flow.GetNodes() {
-			ResolveNodeReferences(node)
+			ResolveNodeReferences(node, mem)
 		}
 
-		// Error and output dependencies could safely be ignored
 		empty := specs.Dependencies{}
 
 		if flow.GetOnError() != nil {
-			ResolveOnError(flow.GetOnError(), empty)
+			ResolveOnErrorReferences(flow.GetOnError(), empty)
 		}
 
 		if flow.GetOutput() != nil {
@@ -31,39 +30,42 @@ func ResolveReferences(ctx *broker.Context, flows specs.FlowListInterface) {
 				flow.GetOutput().DependsOn = specs.Dependencies{}
 			}
 
-			ResolveHeaderReferences(flow.GetOutput().Header, flow.GetOutput().DependsOn)
-			ResolvePropertyReferences(flow.GetOutput().Property, flow.GetOutput().DependsOn)
+			ResolveParameterMapReferences(flow.GetOutput(), empty, mem)
 		}
 	}
 }
 
 // ResolveNodeReferences resolves the node references found inside the request and response property
-func ResolveNodeReferences(node *specs.Node) {
+func ResolveNodeReferences(node *specs.Node, mem functions.Collection) {
 	if node.DependsOn == nil {
 		node.DependsOn = specs.Dependencies{}
 	}
 
 	if node.OnError != nil {
-		ResolveParameterMap(node.OnError.Response, node.DependsOn)
+		ResolveParameterMapReferences(node.OnError.Response, node.DependsOn, mem)
 	}
 
 	if node.Condition != nil {
 		ResolveParamReferences(node.Condition.Params.Params, node.DependsOn)
 	}
 
+	if node.Intermediate != nil {
+		ResolveParameterMapReferences(node.Intermediate, node.DependsOn, mem)
+	}
+
 	if node.Call != nil {
-		ResolveParameterMap(node.Call.Request, node.DependsOn)
-		ResolveParameterMap(node.Call.Response, node.DependsOn)
+		ResolveParameterMapReferences(node.Call.Request, node.DependsOn, mem)
+		ResolveParameterMapReferences(node.Call.Response, node.DependsOn, mem)
 	}
 
 	if node.Rollback != nil {
-		ResolveParameterMap(node.Rollback.Request, node.DependsOn)
-		ResolveParameterMap(node.Rollback.Response, node.DependsOn)
+		ResolveParameterMapReferences(node.Rollback.Request, node.DependsOn, mem)
+		ResolveParameterMapReferences(node.Rollback.Response, node.DependsOn, mem)
 	}
 }
 
-// ResolveParameterMap resolves the params inside the given parameter map
-func ResolveParameterMap(parameters *specs.ParameterMap, dependencies specs.Dependencies) {
+// ResolveParameterMapReferences resolves the params inside the given parameter map
+func ResolveParameterMapReferences(parameters *specs.ParameterMap, dependencies specs.Dependencies, mem functions.Collection) {
 	if parameters == nil {
 		return
 	}
@@ -71,6 +73,9 @@ func ResolveParameterMap(parameters *specs.ParameterMap, dependencies specs.Depe
 	if parameters.DependsOn == nil {
 		parameters.DependsOn = specs.Dependencies{}
 	}
+
+	stack := mem.Load(parameters)
+	ResolveFunctionsReferences(stack, parameters.DependsOn)
 
 	ResolveParamReferences(parameters.Params, parameters.DependsOn)
 	ResolveHeaderReferences(parameters.Header, parameters.DependsOn)
@@ -81,8 +86,8 @@ func ResolveParameterMap(parameters *specs.ParameterMap, dependencies specs.Depe
 	}
 }
 
-// ResolveOnError resolves the params inside the given parameter map
-func ResolveOnError(parameters *specs.OnError, dependencies specs.Dependencies) {
+// ResolveOnErrorReferences resolves the params inside the given parameter map
+func ResolveOnErrorReferences(parameters *specs.OnError, dependencies specs.Dependencies) {
 	if parameters == nil {
 		return
 	}
