@@ -4,7 +4,6 @@ import (
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/functions"
-	"github.com/jexia/semaphore/pkg/lookup"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/template"
 )
@@ -132,11 +131,8 @@ func ResolvePropertyReferences(property *specs.Property, dependencies specs.Depe
 		return
 	}
 
-	resource, _ := lookup.ParseResource(property.Reference.Resource)
-	if !IsInternalResource(resource) {
-		dependency := template.SplitPath(property.Reference.Resource)[0]
-		dependencies[dependency] = nil
-	}
+	dependency := template.SplitPath(property.Reference.Resource)[0]
+	dependencies[dependency] = nil
 
 	ScopePropertyReference(property)
 }
@@ -154,18 +150,4 @@ func ScopePropertyReference(property *specs.Property) {
 
 	property.Reference = property.Reference.Property.Reference
 	ScopePropertyReference(property)
-}
-
-// IsInternalResource returns a boolean that represents whether the given
-// resource is a internal resource such as error, stack and more.
-func IsInternalResource(resource string) bool {
-	var resources = []string{template.InputResource, template.StackResource, template.ErrorResource}
-
-	for _, key := range resources {
-		if resource == key {
-			return true
-		}
-	}
-
-	return false
 }
