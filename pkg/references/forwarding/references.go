@@ -64,9 +64,17 @@ func ResolveParameterMap(parameters *specs.ParameterMap, dependencies specs.Depe
 		return
 	}
 
-	ResolveParamReferences(parameters.Params, dependencies)
-	ResolveHeaderReferences(parameters.Header, dependencies)
-	ResolvePropertyReferences(parameters.Property, dependencies)
+	if parameters.DependsOn == nil {
+		parameters.DependsOn = specs.Dependencies{}
+	}
+
+	ResolveParamReferences(parameters.Params, parameters.DependsOn)
+	ResolveHeaderReferences(parameters.Header, parameters.DependsOn)
+	ResolvePropertyReferences(parameters.Property, parameters.DependsOn)
+
+	for key, val := range parameters.DependsOn {
+		dependencies[key] = val
+	}
 }
 
 // ResolveOnError resolves the params inside the given parameter map

@@ -6,9 +6,10 @@ import (
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/pkg/specs/template"
 )
 
-func TestResolveManifestDependencies(t *testing.T) {
+func TestResolveDependencies(t *testing.T) {
 	flows := specs.FlowListInterface{
 		&specs.Flow{
 			Name: "first",
@@ -27,6 +28,26 @@ func TestResolveManifestDependencies(t *testing.T) {
 					DependsOn: map[string]*specs.Node{
 						"first":  nil,
 						"second": nil,
+					},
+				},
+				{
+					ID: "fourth",
+					Intermediate: &specs.ParameterMap{
+						DependsOn: map[string]*specs.Node{
+							"first":  nil,
+							"second": nil,
+						},
+					},
+				},
+				{
+					ID: "fifth",
+					Call: &specs.Call{
+						Request: &specs.ParameterMap{
+							DependsOn: map[string]*specs.Node{
+								"first":  nil,
+								"second": nil,
+							},
+						},
 					},
 				},
 			},
@@ -70,6 +91,11 @@ func TestResolveManifestDependencies(t *testing.T) {
 						"first":  nil,
 						"second": nil,
 					},
+				},
+			},
+			Output: &specs.ParameterMap{
+				DependsOn: map[string]*specs.Node{
+					"third": nil,
 				},
 			},
 		},
@@ -187,7 +213,7 @@ func TestResolveCallDependencies(t *testing.T) {
 	}
 
 	for _, input := range tests {
-		err := ResolveNode(flow, input, make(map[string]*specs.Node))
+		err := Resolve(flow, input.DependsOn, input.ID, make(Unresolved))
 		if err != nil {
 			t.Fatalf("unexpected error %s", err)
 		}
@@ -218,16 +244,114 @@ func TestCallCircularDependenciesDetection(t *testing.T) {
 		},
 	}
 
-	tests := specs.NodeList{
-		flow.Nodes[0],
-		flow.Nodes[1],
+	tests := map[string]*specs.Node{
+		"first":  flow.Nodes[0],
+		"second": flow.Nodes[1],
 	}
 
-	for _, input := range tests {
-		err := ResolveNode(flow, input, make(map[string]*specs.Node))
-		if err == nil {
-			t.Fatalf("unexpected pass %s", input.ID)
-		}
+	for name, input := range tests {
+		t.Run(name, func(t *testing.T) {
+			err := Resolve(flow, input.DependsOn, input.ID, make(Unresolved))
+			if err == nil {
+				t.Fatalf("unexpected pass %s", input.ID)
+			}
+		})
+	}
+}
+
+func TestFlowCircularDependenciesDetection(t *testing.T) {
+	flows := map[string]specs.FlowListInterface{
+		"simple": {
+			&specs.Flow{
+				Nodes: specs.NodeList{
+					{
+						ID: "first",
+						DependsOn: map[string]*specs.Node{
+							"second": nil,
+						},
+					},
+					{
+						ID: "second",
+						DependsOn: map[string]*specs.Node{
+							"first": nil,
+						},
+					},
+				},
+			},
+		},
+		"intermediate": {
+			&specs.Flow{
+				Nodes: specs.NodeList{
+					{
+						ID: "first",
+						Intermediate: &specs.ParameterMap{
+							DependsOn: map[string]*specs.Node{
+								"second": nil,
+							},
+						},
+					},
+					{
+						ID: "second",
+						Intermediate: &specs.ParameterMap{
+							DependsOn: map[string]*specs.Node{
+								"first": nil,
+							},
+						},
+					},
+				},
+			},
+		},
+		"output": {
+			&specs.Flow{
+				Nodes: specs.NodeList{
+					{
+						ID: "first",
+						Intermediate: &specs.ParameterMap{
+							DependsOn: map[string]*specs.Node{
+								template.OutputResource: nil,
+							},
+						},
+					},
+				},
+				Output: &specs.ParameterMap{
+					DependsOn: map[string]*specs.Node{
+						"first": nil,
+					},
+				},
+			},
+		},
+		"call": {
+			&specs.Flow{
+				Nodes: specs.NodeList{
+					{
+						ID: "first",
+						DependsOn: map[string]*specs.Node{
+							"second": nil,
+						},
+					},
+					{
+						ID: "second",
+						Call: &specs.Call{
+							Request: &specs.ParameterMap{
+								DependsOn: map[string]*specs.Node{
+									"first": nil,
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	for name, input := range flows {
+		t.Run(name, func(t *testing.T) {
+			ctx := logger.WithLogger(broker.NewBackground())
+			err := ResolveFlows(ctx, input)
+			if err == nil {
+				t.Fatalf("unexpected pass")
+			}
+		})
 	}
 }
 
@@ -254,7 +378,7 @@ func TestSelfDependencyDetection(t *testing.T) {
 	}
 
 	for _, input := range tests {
-		err := ResolveNode(flow, input, make(map[string]*specs.Node))
+		err := Resolve(flow, input.DependsOn, input.ID, make(Unresolved))
 		if err != nil {
 			t.Fatalf("unexpected error %s", err)
 		}

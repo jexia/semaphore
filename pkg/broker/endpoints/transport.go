@@ -198,7 +198,7 @@ func service(ctx *broker.Context, manager specs.FlowInterface, node *specs.Node,
 			}
 
 			forwarding.ResolvePropertyReferences(reference, node.DependsOn)
-			err = dependencies.ResolveNode(manager, node, make(specs.Dependencies))
+			err = dependencies.Resolve(manager, node.DependsOn, node.ID, make(dependencies.Unresolved))
 			if err != nil {
 				return nil, err
 			}
