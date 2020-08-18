@@ -217,6 +217,21 @@ var (
 // Dependencies represents a collection of node dependencies
 type Dependencies map[string]*Node
 
+// Append appends the given input to the already existing dependencies and returns the result
+func (dependencies Dependencies) Append(input Dependencies) Dependencies {
+	result := make(Dependencies, len(dependencies)+len(input))
+
+	for key, val := range dependencies {
+		result[key] = val
+	}
+
+	for key, val := range input {
+		result[key] = val
+	}
+
+	return result
+}
+
 // Node represents a point inside a given flow where a request or rollback could be preformed.
 // Nodes could be executed synchronously or asynchronously.
 // All calls are referencing a service method, the service should match the alias defined inside the service.
