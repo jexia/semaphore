@@ -17,6 +17,10 @@ const (
 	TransportOption = "service_transport"
 	// CodecOption represents the Service codec option key
 	CodecOption = "service_codec"
+	// RequestCodecOption represents the Service request codec option key
+	RequestCodecOption = "service_request_codec"
+	// ResponseCodecOption represents the Service response codec option key
+	ResponseCodecOption = "service_response_codec"
 )
 
 // NewServices constructs a new service(s) manifest from the given file descriptors
@@ -42,6 +46,8 @@ func NewService(descriptor *desc.ServiceDescriptor) *specs.Service {
 		options[HostOption] = ext.GetHost()
 		options[TransportOption] = ext.GetTransport()
 		options[CodecOption] = ext.GetCodec()
+		options[RequestCodecOption] = ext.GetRequestCodec()
+		options[ResponseCodecOption] = ext.GetResponseCodec()
 	}
 
 	result := &specs.Service{
@@ -51,8 +57,19 @@ func NewService(descriptor *desc.ServiceDescriptor) *specs.Service {
 		Comment:            descriptor.GetSourceInfo().GetLeadingComments(),
 		Host:               options[HostOption],
 		Transport:          options[TransportOption],
-		Codec:              options[CodecOption],
+		RequestCodec:       options[CodecOption],
+		ResponseCodec:      options[CodecOption],
 		Options:            options,
+	}
+
+	req := options[RequestCodecOption]
+	if req != "" {
+		result.RequestCodec = req
+	}
+
+	res := options[ResponseCodecOption]
+	if res != "" {
+		result.ResponseCodec = res
 	}
 
 	result.Methods = make([]*specs.Method, len(descriptor.GetMethods()))

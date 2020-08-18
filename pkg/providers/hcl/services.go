@@ -43,7 +43,8 @@ func ParseIntermediateService(parent *broker.Context, manifest Service) (*specs.
 		Name:               manifest.Name,
 		Transport:          manifest.Transport,
 		Host:               manifest.Host,
-		Codec:              manifest.Codec,
+		RequestCodec:       manifest.Codec,
+		ResponseCodec:      manifest.Codec,
 		Methods:            methods,
 		Options:            ParseIntermediateDefinitionOptions(manifest.Options),
 	}
