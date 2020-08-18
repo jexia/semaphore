@@ -57,6 +57,10 @@ func ValidateStore(t *testing.T, prop *specs.Property, resource string, origin s
 		repeated, is := value.([]map[string]interface{})
 		if is {
 			repeating := store.Load(resource, path)
+			if repeating == nil {
+				t.Fatalf("resource not found %s:%s", resource, path)
+			}
+
 			for index, store := range repeating.Repeated {
 				ValidateStore(t, nprop, resource, path, repeated[index], store)
 			}
@@ -66,6 +70,10 @@ func ValidateStore(t *testing.T, prop *specs.Property, resource string, origin s
 		values, is := value.([]interface{})
 		if is {
 			repeating := store.Load(resource, path)
+			if repeating == nil {
+				t.Fatalf("resource not found %s:%s", resource, path)
+			}
+
 			for index, store := range repeating.Repeated {
 				// small wrapper that allows to reuse functionalities
 				wrapper := map[string]interface{}{
@@ -79,7 +87,7 @@ func ValidateStore(t *testing.T, prop *specs.Property, resource string, origin s
 
 		ref := store.Load(resource, path)
 		if ref == nil {
-			t.Fatalf("resource not found %s", path)
+			t.Fatalf("resource not found %s:%s", resource, path)
 		}
 
 		if ref.Enum != nil && nprop.Enum != nil {

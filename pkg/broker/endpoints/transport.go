@@ -205,9 +205,9 @@ func service(ctx *broker.Context, manager specs.FlowInterface, node *specs.Node,
 		}
 	}
 
-	codec := options.Codec.Get(service.Codec)
+	codec := options.Codec.Get(service.ResponseCodec)
 	if codec == nil {
-		return nil, trace.New(trace.WithMessage("codec not found '%s'", service.Codec))
+		return nil, trace.New(trace.WithMessage("response codec not found '%s'", service.ResponseCodec))
 	}
 
 	unexpected, err := errorHandler(ctx, node, codec, node.OnError, options)

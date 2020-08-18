@@ -152,12 +152,17 @@ func NewHandle(ctx *broker.Context, endpoint *transport.Endpoint, options *Endpo
 		constructors = make(map[string]codec.Constructor)
 	}
 
-	constructor := constructors[options.Codec]
-	if constructor == nil {
-		return nil, trace.New(trace.WithMessage("codec not found '%s'", options.Codec))
+	req := constructors[options.RequestCodec]
+	if req == nil {
+		return nil, trace.New(trace.WithMessage("request codec not found '%s'", options.RequestCodec))
 	}
 
-	err := endpoint.NewCodec(ctx, constructor)
+	res := constructors[options.ResponseCodec]
+	if req == nil {
+		return nil, trace.New(trace.WithMessage("response codec not found '%s'", options.ResponseCodec))
+	}
+
+	err := endpoint.NewCodec(ctx, req, res)
 	if err != nil {
 		return nil, err
 	}

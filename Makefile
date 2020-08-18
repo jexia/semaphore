@@ -13,7 +13,10 @@ bootstrap:
 proto-build: $(PROTODIR)/annotations.pb.go
 
 test:
-	go test ./... -mod vendor -race -v
+	go test -mod vendor -race ./...
+
+bench:
+	go test -mod vendor -benchmem -run=^$ -bench=. ./...
 
 %.pb.go: %.proto
 	protoc --proto_path=. --proto_path=$(PROTODIR) --go_out=paths=source_relative:. $^

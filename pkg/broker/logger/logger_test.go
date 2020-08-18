@@ -9,7 +9,7 @@ import (
 )
 
 func TestPrintInfo(t *testing.T) {
-	ctx := WithLogger(broker.NewContext())
+	ctx := WithLogger(broker.NewBackground())
 	Info(ctx, "mock message")
 }
 
@@ -21,12 +21,12 @@ func TestPrintInfoNilLogger(t *testing.T) {
 		}
 	}()
 
-	ctx := broker.NewContext()
+	ctx := broker.NewBackground()
 	Info(ctx, "mock message")
 }
 
 func TestPrintWarn(t *testing.T) {
-	ctx := WithLogger(broker.NewContext())
+	ctx := WithLogger(broker.NewBackground())
 	Warn(ctx, "mock message")
 }
 
@@ -38,12 +38,12 @@ func TestPrintWarnNilLogger(t *testing.T) {
 		}
 	}()
 
-	ctx := broker.NewContext()
+	ctx := broker.NewBackground()
 	Warn(ctx, "mock message")
 }
 
 func TestPrintError(t *testing.T) {
-	ctx := WithLogger(broker.NewContext())
+	ctx := WithLogger(broker.NewBackground())
 	Error(ctx, "mock message")
 }
 
@@ -55,12 +55,12 @@ func TestPrintErrorNilLogger(t *testing.T) {
 		}
 	}()
 
-	ctx := broker.NewContext()
+	ctx := broker.NewBackground()
 	Error(ctx, "mock message")
 }
 
 func TestPrintDebug(t *testing.T) {
-	ctx := WithLogger(broker.NewContext())
+	ctx := WithLogger(broker.NewBackground())
 	Debug(ctx, "mock message")
 }
 
@@ -72,13 +72,13 @@ func TestPrintDebugNilLogger(t *testing.T) {
 		}
 	}()
 
-	ctx := broker.NewContext()
+	ctx := broker.NewBackground()
 	Debug(ctx, "mock message")
 }
 
 func TestCopyParentAtomLevel(t *testing.T) {
 	expected := zapcore.ErrorLevel
-	parent := WithLogger(broker.WithModule(broker.NewContext(), "main"))
+	parent := WithLogger(broker.WithModule(broker.NewBackground(), "main"))
 	err := SetLevel(parent, "main", expected)
 	if err != nil {
 		t.Fatal(err)
@@ -92,7 +92,7 @@ func TestCopyParentAtomLevel(t *testing.T) {
 
 func TestSetLevelChildren(t *testing.T) {
 	expected := zapcore.ErrorLevel
-	parent := WithLogger(broker.WithModule(broker.NewContext(), "main"))
+	parent := WithLogger(broker.WithModule(broker.NewBackground(), "main"))
 	child := WithLogger(parent)
 
 	err := SetLevel(parent, "*", expected)
@@ -107,7 +107,7 @@ func TestSetLevelChildren(t *testing.T) {
 
 func TestInvalidPattern(t *testing.T) {
 	expected := zapcore.ErrorLevel
-	parent := WithLogger(broker.WithModule(broker.NewContext(), "main"))
+	parent := WithLogger(broker.WithModule(broker.NewBackground(), "main"))
 	_ = WithLogger(parent)
 
 	err := SetLevel(parent, "[]", expected)
@@ -122,5 +122,5 @@ func TestJSONEncoder(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	WithLogger(broker.NewContext())
+	WithLogger(broker.NewBackground())
 }

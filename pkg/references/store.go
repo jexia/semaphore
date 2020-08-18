@@ -1,7 +1,6 @@
 package references
 
 import (
-	"strconv"
 	"sync"
 
 	"github.com/jexia/semaphore/pkg/specs"
@@ -22,13 +21,6 @@ type Store interface {
 	StoreEnum(resource string, path string, enum int32)
 }
 
-// NewReference constructs a new reference with the given path
-func NewReference(path string) *Reference {
-	return &Reference{
-		Path: path,
-	}
-}
-
 // Reference represents a value reference
 type Reference struct {
 	Path     string
@@ -36,30 +28,6 @@ type Reference struct {
 	Repeated []Store
 	Enum     *int32
 	mutex    sync.Mutex
-}
-
-// EnumVal represents a enum value
-type EnumVal struct {
-	key string
-	pos int32
-}
-
-// MarshalJSON custom marshal implementation mainly used for testing purposes
-func (val *EnumVal) MarshalJSON() ([]byte, error) {
-	return []byte(strconv.Quote(val.key)), nil
-}
-
-// UnmarshalJSON custom unmarshal implementation mainly used for testing purposes
-func (val *EnumVal) UnmarshalJSON([]byte) error {
-	return nil
-}
-
-// Enum value type
-func Enum(key string, pos int32) *EnumVal {
-	return &EnumVal{
-		key: key,
-		pos: pos,
-	}
 }
 
 // Repeating prepares the given reference to store repeating values
@@ -127,7 +95,10 @@ func (store *store) StoreValues(resource string, path string, values map[string]
 
 		repeated, is := val.([]map[string]interface{})
 		if is {
-			reference := NewReference(path)
+			reference := &Reference{
+				Path: path,
+			}
+
 			store.NewRepeatingMessages(resource, path, reference, repeated)
 			store.StoreReference(resource, reference)
 			continue
@@ -135,7 +106,10 @@ func (store *store) StoreValues(resource string, path string, values map[string]
 
 		values, is := val.([]interface{})
 		if is {
-			reference := NewReference(path)
+			reference := &Reference{
+				Path: path,
+			}
+
 			store.NewRepeating(resource, path, reference, values)
 			store.StoreReference(resource, reference)
 			continue
@@ -153,16 +127,20 @@ func (store *store) StoreValues(resource string, path string, values map[string]
 
 // StoreValue stores the given value for the given resource and path
 func (store *store) StoreValue(resource string, path string, value interface{}) {
-	reference := NewReference(path)
-	reference.Value = value
+	reference := &Reference{
+		Path:  path,
+		Value: value,
+	}
 
 	store.StoreReference(resource, reference)
 }
 
 // StoreEnum stores the given enum for the given resource and path
 func (store *store) StoreEnum(resource string, path string, enum int32) {
-	reference := NewReference(path)
-	reference.Enum = &enum
+	reference := &Reference{
+		Path: path,
+		Enum: &enum,
+	}
 
 	store.StoreReference(resource, reference)
 }

@@ -165,11 +165,11 @@ type Endpoint struct {
 
 // NewCodec updates the endpoint request and response codecs and metadata managers.
 // If a forwarding service is set is the request codec ignored.
-func (endpoint *Endpoint) NewCodec(ctx *broker.Context, codec codec.Constructor) (err error) {
+func (endpoint *Endpoint) NewCodec(ctx *broker.Context, request codec.Constructor, response codec.Constructor) (err error) {
 	endpoint.Request.NewMeta(ctx, template.InputResource)
 
-	if endpoint.Forward == nil {
-		err = endpoint.Request.NewCodec(ctx, template.InputResource, codec)
+	if endpoint.Forward == nil && endpoint.Request != nil {
+		err = endpoint.Request.NewCodec(ctx, template.InputResource, request)
 		if err != nil {
 			return err
 		}
@@ -183,7 +183,7 @@ func (endpoint *Endpoint) NewCodec(ctx *broker.Context, codec codec.Constructor)
 		object := NewObject(handle.GetResponse(), handle.GetStatusCode(), handle.GetMessage())
 
 		object.NewMeta(ctx, template.ErrorResource)
-		err = object.NewCodec(ctx, template.ErrorResource, codec)
+		err = object.NewCodec(ctx, template.ErrorResource, response)
 		if err != nil {
 			return err
 		}
@@ -192,7 +192,7 @@ func (endpoint *Endpoint) NewCodec(ctx *broker.Context, codec codec.Constructor)
 	}
 
 	endpoint.Response.NewMeta(ctx, template.OutputResource)
-	err = endpoint.Response.NewCodec(ctx, template.OutputResource, codec)
+	err = endpoint.Response.NewCodec(ctx, template.OutputResource, response)
 	if err != nil {
 		return err
 	}

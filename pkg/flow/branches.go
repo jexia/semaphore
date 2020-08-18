@@ -8,6 +8,10 @@ import (
 func ConstructBranches(nodes []*Node) {
 	for _, node := range nodes {
 		for _, dependency := range node.DependsOn {
+			if dependency == nil {
+				continue
+			}
+
 			ConstructDependency(node, dependency.ID, nodes)
 		}
 

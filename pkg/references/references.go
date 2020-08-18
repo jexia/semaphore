@@ -139,6 +139,33 @@ func ResolveParameterMap(ctx *broker.Context, node *specs.Node, params *specs.Pa
 	return nil
 }
 
+// ResolveOnError resolves references made inside the given on error specs
+func ResolveOnError(ctx *broker.Context, node *specs.Node, params *specs.OnError, flow specs.FlowInterface) (err error) {
+	if params.Response != nil {
+		err = ResolveParameterMap(ctx, node, params.Response, flow)
+		if err != nil {
+			return err
+		}
+	}
+
+	err = ResolveProperty(ctx, node, params.Message, flow)
+	if err != nil {
+		return err
+	}
+
+	err = ResolveProperty(ctx, node, params.Status, flow)
+	if err != nil {
+		return err
+	}
+
+	err = ResolveParams(ctx, node, params.Params, flow)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // ResolveParams resolves all references made within the given parameters
 func ResolveParams(ctx *broker.Context, node *specs.Node, params map[string]*specs.Property, flow specs.FlowInterface) error {
 	for _, param := range params {
@@ -214,6 +241,8 @@ func ResolveProperty(ctx *broker.Context, node *specs.Node, property *specs.Prop
 		property.Enum = reference.Enum
 	}
 
+	ScopeNestedReferences(reference, property)
+
 	return nil
 }
 
@@ -259,29 +288,32 @@ func InsideProperty(source *specs.Property, target *specs.Property) bool {
 	return false
 }
 
-// ResolveOnError resolves references made inside the given on error specs
-func ResolveOnError(ctx *broker.Context, node *specs.Node, params *specs.OnError, flow specs.FlowInterface) (err error) {
-	if params.Response != nil {
-		err = ResolveParameterMap(ctx, node, params.Response, flow)
-		if err != nil {
-			return err
+// ScopeNestedReferences scopes all nested references available inside the reference property
+func ScopeNestedReferences(source *specs.Property, property *specs.Property) {
+	if source == nil || property == nil {
+		return
+	}
+
+	if property.Nested == nil {
+		property.Nested = make(map[string]*specs.Property, len(source.Nested))
+	}
+
+	for key, value := range source.Nested {
+		nested, has := property.Nested[key]
+		if !has {
+			nested = value.Clone()
+			property.Nested[key] = nested
+		}
+
+		if nested.Reference == nil {
+			nested.Reference = &specs.PropertyReference{
+				Resource: property.Reference.Resource,
+				Path:     template.JoinPath(property.Reference.Path, key),
+			}
+		}
+
+		if len(value.Nested) > 0 {
+			ScopeNestedReferences(value, nested)
 		}
 	}
-
-	err = ResolveProperty(ctx, node, params.Message, flow)
-	if err != nil {
-		return err
-	}
-
-	err = ResolveProperty(ctx, node, params.Status, flow)
-	if err != nil {
-		return err
-	}
-
-	err = ResolveParams(ctx, node, params.Params, flow)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }

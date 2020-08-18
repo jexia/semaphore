@@ -97,7 +97,7 @@ func (listener *Listener) Handle(ctx *broker.Context, endpoints []*transport.End
 			return err
 		}
 
-		err = endpoint.NewCodec(ctx, nil)
+		err = endpoint.NewCodec(ctx, nil, nil)
 		if err != nil {
 			return err
 		}

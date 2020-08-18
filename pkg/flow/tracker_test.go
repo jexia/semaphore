@@ -16,3 +16,13 @@ func TestTrackerMark(t *testing.T) {
 		t.Errorf("unexpected result, tracker did not met node after marked")
 	}
 }
+
+func TestTrackerName(t *testing.T) {
+	expected := "MockFlow"
+	tracker := NewTracker(expected, 1)
+
+	flow := tracker.Flow()
+	if flow != expected {
+		t.Fatalf("unexpected flow name %s, expected %s", flow, expected)
+	}
+}
