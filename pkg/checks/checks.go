@@ -38,7 +38,7 @@ func FlowDuplicates(ctx *broker.Context, flows specs.FlowListInterface) error {
 }
 
 // NodeDuplicates checks for duplicate definitions
-func NodeDuplicates(ctx *broker.Context, flow string, nodes []*specs.Node) error {
+func NodeDuplicates(ctx *broker.Context, flow string, nodes specs.NodeList) error {
 	logger.Info(ctx, "checking flow duplicates")
 	calls := sync.Map{}
 
