@@ -101,9 +101,13 @@ func run(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
+type fakeCloser struct{ io.Writer }
+
+func (c fakeCloser) Close() error { return nil }
+
 func getOutput(output, pkg string) (io.WriteCloser, error) {
 	if output == "" {
-		return os.Stdout, nil
+		return fakeCloser{os.Stdout}, nil
 	}
 
 	filePath := path.Join(append([]string{output}, strings.Split(pkg, ".")...)...) + ".proto"
