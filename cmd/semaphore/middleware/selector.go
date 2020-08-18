@@ -46,6 +46,8 @@ func ServiceSelector(path string) config.AfterConstructorHandler {
 								zap.String("host", selector.Host),
 								zap.String("pattern", selector.Pattern),
 								zap.String("codec", selector.Codec),
+								zap.String("request_codec", selector.RequestCodec),
+								zap.String("response_codec", selector.ResponseCodec),
 								zap.String("transport", selector.Transport),
 								zap.String("service", name),
 							)
