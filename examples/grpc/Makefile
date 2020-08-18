@@ -7,7 +7,5 @@ install-dev:
 
 proto-build: $(PROTODIR)/greeter.pb.go
 
-migration: sql-migrate up
-
 %.pb.go: %.proto
 	protoc --proto_path=. --proto_path=$(PROTODIR) --go-grpc_out=paths=source_relative:. --go_out=paths=source_relative:. $^

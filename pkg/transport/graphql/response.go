@@ -17,6 +17,10 @@ func ResponseValue(specs *specs.Property, refs references.Store) (interface{}, e
 	for _, nested := range specs.Nested {
 		if nested.Label == labels.Repeated {
 			store := refs.Load(nested.Reference.Resource, nested.Reference.Path)
+			if store == nil {
+				continue
+			}
+
 			repeating := make([]interface{}, len(store.Repeated))
 
 			for index, store := range store.Repeated {

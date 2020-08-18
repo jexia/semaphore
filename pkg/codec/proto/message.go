@@ -133,6 +133,10 @@ func (manager *Manager) Encode(proto *dynamic.Message, desc *desc.MessageDescrip
 					value = *ref.Enum
 				default:
 					ref := store.Load("", "")
+					if ref == nil {
+						continue
+					}
+
 					value = ref.Value
 				}
 
@@ -218,7 +222,10 @@ func (manager *Manager) Decode(proto *dynamic.Message, properties map[string]*sp
 		if field.IsRepeated() {
 			length := proto.FieldLength(field)
 
-			ref := references.NewReference(prop.Path)
+			ref := &references.Reference{
+				Path: prop.Path,
+			}
+
 			ref.Repeating(length)
 
 			for index := 0; index < length; index++ {
@@ -260,7 +267,9 @@ func (manager *Manager) Decode(proto *dynamic.Message, properties map[string]*sp
 		}
 
 		value := proto.GetField(field)
-		ref := references.NewReference(prop.Path)
+		ref := &references.Reference{
+			Path: prop.Path,
+		}
 
 		if prop.Type == types.Enum {
 			enum, is := value.(int32)
