@@ -12,12 +12,15 @@ func TestParseEndpointOptions(t *testing.T) {
 	duration := time.Second
 	method := "POST"
 	endpoint := "/endpoint"
+	codec := "xml"
 
 	options := specs.Options{
-		MethodOption:       method,
-		EndpointOption:     endpoint,
-		ReadTimeoutOption:  duration.String(),
-		WriteTimeoutOption: duration.String(),
+		MethodOption:        method,
+		EndpointOption:      endpoint,
+		ReadTimeoutOption:   duration.String(),
+		WriteTimeoutOption:  duration.String(),
+		RequestCodecOption:  codec,
+		ResponseCodecOption: codec,
 	}
 
 	result, err := ParseEndpointOptions(options)
@@ -26,19 +29,48 @@ func TestParseEndpointOptions(t *testing.T) {
 	}
 
 	if result.Method != method {
-		t.Fatalf("unexpected method %+v, expected %+v", result.Method, method)
+		t.Errorf("unexpected method %+v, expected %+v", result.Method, method)
 	}
 
 	if result.Endpoint != endpoint {
-		t.Fatalf("unexpected endpoint %+v, expected %+v", result.Endpoint, endpoint)
+		t.Errorf("unexpected endpoint %+v, expected %+v", result.Endpoint, endpoint)
 	}
 
 	if result.ReadTimeout != duration {
-		t.Fatalf("unexpected read timeout %+v, expected %+v", result.ReadTimeout, duration)
+		t.Errorf("unexpected read timeout %+v, expected %+v", result.ReadTimeout, duration)
 	}
 
 	if result.WriteTimeout != duration {
-		t.Fatalf("unexpected write timeout %+v, expected %+v", result.ReadTimeout, duration)
+		t.Errorf("unexpected write timeout %+v, expected %+v", result.ReadTimeout, duration)
+	}
+
+	if result.RequestCodec != codec {
+		t.Errorf("unexepected request codec %+v, expected %+v", result.RequestCodec, codec)
+	}
+
+	if result.ResponseCodec != codec {
+		t.Errorf("unexepected response codec %+v, expected %+v", result.RequestCodec, codec)
+	}
+}
+
+func TestParseEndpointOptionsRequestResponseCodec(t *testing.T) {
+	codec := "xml"
+
+	options := specs.Options{
+		CodecOption: codec,
+	}
+
+	result, err := ParseEndpointOptions(options)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if result.RequestCodec != codec {
+		t.Errorf("unexepected request codec %+v, expected %+v", result.RequestCodec, codec)
+	}
+
+	if result.ResponseCodec != codec {
+		t.Errorf("unexepected response codec %+v, expected %+v", result.RequestCodec, codec)
 	}
 }
 
