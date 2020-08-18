@@ -2,11 +2,13 @@ package formencoded
 
 import (
 	"io"
+	"net/url"
 
 	"github.com/jexia/semaphore/pkg/broker/trace"
 	"github.com/jexia/semaphore/pkg/codec"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
 // Name represents the codec
@@ -57,7 +59,66 @@ func (manager *Manager) Property() *specs.Property {
 // Marshal marshals the given reference store into a www-form-urlencoded message.
 // This method is called during runtime to encode a new message with the values stored inside the given reference store
 func (manager *Manager) Marshal(refs references.Store) (io.Reader, error) {
+	if manager.specs == nil {
+		return nil, nil
+	}
+
+	data := url.Values{}
+	data.Set("name", "foo")
+	data.Add("surname", "bar")
+
 	return nil, nil
+}
+
+func encode(values url.Values, prop *specs.Property) {
+	if prop.Type != types.Message {
+
+	}
+
+	// for _, prop := range prop.Nested {
+	// 	if prop.Label == labels.Repeated {
+	// 		if prop.Reference == nil {
+	// 			continue
+	// 		}
+
+	// 		ref := object.refs.Load(prop.Reference.Resource, prop.Reference.Path)
+	// 		if ref == nil {
+	// 			continue
+	// 		}
+
+	// 		array := NewArray(object.resource, prop, ref, ref.Repeated)
+	// 		encoder.AddArrayKey(prop.Name, array)
+	// 		continue
+	// 	}
+
+	// 	if prop.Type == types.Message {
+	// 		result := NewObject(object.resource, prop.Nested, object.refs)
+	// 		encoder.AddObjectKey(prop.Name, result)
+	// 		continue
+	// 	}
+
+	// 	val := prop.Default
+
+	// 	if prop.Reference != nil {
+	// 		ref := object.refs.Load(prop.Reference.Resource, prop.Reference.Path)
+	// 		if ref != nil {
+	// 			if prop.Type == types.Enum && ref.Enum != nil {
+	// 				enum := prop.Enum.Positions[*ref.Enum]
+	// 				if enum != nil {
+	// 					val = enum.Key
+	// 				}
+	// 			} else if ref.Value != nil {
+	// 				val = ref.Value
+	// 			}
+	// 		}
+	// 	}
+
+	// 	if val == nil {
+	// 		continue
+	// 	}
+
+	// 	AddTypeKey(encoder, prop.Name, prop.Type, val)
+	// }
 }
 
 // Unmarshal unmarshals the given www-form-urlencoded io reader into the given reference store.
