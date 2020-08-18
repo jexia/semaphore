@@ -205,22 +205,27 @@ func service(ctx *broker.Context, manager specs.FlowInterface, node *specs.Node,
 		}
 	}
 
-	codec := options.Codec.Get(service.ResponseCodec)
-	if codec == nil {
+	reqcodec := options.Codec.Get(service.RequestCodec)
+	if reqcodec == nil {
 		return nil, trace.New(trace.WithMessage("response codec not found '%s'", service.ResponseCodec))
 	}
 
-	unexpected, err := errorHandler(ctx, node, codec, node.OnError, options)
+	request, err := messageHandle(ctx, node, reqcodec, call.Request, options)
 	if err != nil {
 		return nil, err
 	}
 
-	request, err := messageHandle(ctx, node, codec, call.Request, options)
+	rescodec := options.Codec.Get(service.ResponseCodec)
+	if rescodec == nil {
+		return nil, trace.New(trace.WithMessage("response codec not found '%s'", service.ResponseCodec))
+	}
+
+	unexpected, err := errorHandler(ctx, node, rescodec, node.OnError, options)
 	if err != nil {
 		return nil, err
 	}
 
-	response, err := messageHandle(ctx, node, codec, call.Response, options)
+	response, err := messageHandle(ctx, node, rescodec, call.Response, options)
 	if err != nil {
 		return nil, err
 	}

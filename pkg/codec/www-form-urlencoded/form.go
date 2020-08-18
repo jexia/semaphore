@@ -1,6 +1,7 @@
 package formencoded
 
 import (
+	"bytes"
 	"io"
 	"net/url"
 
@@ -64,11 +65,11 @@ func (manager *Manager) Marshal(refs references.Store) (io.Reader, error) {
 		return nil, nil
 	}
 
-	data := url.Values{}
-	data.Set("name", "foo")
-	data.Add("surname", "bar")
+	encoder := url.Values{}
+	encode(encoder, refs, manager.specs)
 
-	return nil, nil
+	bb := []byte(encoder.Encode())
+	return bytes.NewReader(bb), nil
 }
 
 func encode(encoder url.Values, refs references.Store, prop *specs.Property) {
