@@ -27,8 +27,12 @@ func ResolveReferences(ctx *broker.Context, flows specs.FlowListInterface) {
 		}
 
 		if flow.GetOutput() != nil {
-			ResolveHeaderReferences(flow.GetOutput().Header, empty)
-			ResolvePropertyReferences(flow.GetOutput().Property, empty)
+			if flow.GetOutput().DependsOn == nil {
+				flow.GetOutput().DependsOn = specs.Dependencies{}
+			}
+
+			ResolveHeaderReferences(flow.GetOutput().Header, flow.GetOutput().DependsOn)
+			ResolvePropertyReferences(flow.GetOutput().Property, flow.GetOutput().DependsOn)
 		}
 	}
 }
