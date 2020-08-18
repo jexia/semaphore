@@ -22,10 +22,11 @@ type ResponseWriter interface {
 
 // Request represents the request object given to a caller implementation used to make calls
 type Request struct {
-	Codec  string
-	Header metadata.MD
-	Method Method
-	Body   io.Reader
+	RequestCodec  string
+	ResponseCodec string
+	Header        metadata.MD
+	Method        Method
+	Body          io.Reader
 }
 
 // Callers represents a collection of callers

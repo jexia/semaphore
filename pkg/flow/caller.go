@@ -111,7 +111,8 @@ func (caller *caller) Do(ctx context.Context, store references.Store) error {
 				return err
 			}
 
-			r.Codec = caller.request.Codec.Name()
+			r.RequestCodec = caller.request.Codec.Name()
+			r.ResponseCodec = caller.response.Codec.Name()
 			r.Body = body
 		}
 	}
