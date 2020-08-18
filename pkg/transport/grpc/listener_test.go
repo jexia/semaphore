@@ -71,11 +71,12 @@ func TestListener(t *testing.T) {
 	caller := constructor(ctx)
 
 	service := &specs.Service{
-		Name:      "mock",
-		Package:   "pkg",
-		Host:      fmt.Sprintf("127.0.0.1:%d", port),
-		Transport: "grpc",
-		Codec:     "proto",
+		Name:          "mock",
+		Package:       "pkg",
+		Host:          fmt.Sprintf("127.0.0.1:%d", port),
+		Transport:     "grpc",
+		RequestCodec:  "proto",
+		ResponseCodec: "proto",
 		Methods: []*specs.Method{
 			{
 				Name:    "simple",
@@ -226,11 +227,12 @@ func TestErrorHandlingListener(t *testing.T) {
 			caller := constructor(ctx)
 
 			service := &specs.Service{
-				Name:      "mock",
-				Package:   "pkg",
-				Host:      fmt.Sprintf("127.0.0.1:%d", port),
-				Transport: "grpc",
-				Codec:     "proto",
+				Name:          "mock",
+				Package:       "pkg",
+				Host:          fmt.Sprintf("127.0.0.1:%d", port),
+				Transport:     "grpc",
+				RequestCodec:  "proto",
+				ResponseCodec: "proto",
 				Methods: []*specs.Method{
 					{
 						Name:    "simple",

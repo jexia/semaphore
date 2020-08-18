@@ -59,7 +59,16 @@ func ServiceSelector(path string) config.AfterConstructorHandler {
 							}
 
 							if selector.Codec != "" {
-								service.Codec = selector.Codec
+								service.RequestCodec = selector.Codec
+								service.ResponseCodec = selector.Codec
+							}
+
+							if selector.RequestCodec != "" {
+								service.RequestCodec = selector.RequestCodec
+							}
+
+							if selector.ResponseCodec != "" {
+								service.ResponseCodec = selector.ResponseCodec
 							}
 
 							attrs, _ := selector.Options.JustAttributes()
