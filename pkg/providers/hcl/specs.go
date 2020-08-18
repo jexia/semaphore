@@ -714,9 +714,9 @@ func ParseIntermediateBefore(ctx *broker.Context, before *Before) (dependencies 
 }
 
 // ParseIntermediateResources parses the given resources to nodes
-func ParseIntermediateResources(ctx *broker.Context, dependencies specs.Dependencies, resources Resources) ([]*specs.Node, error) {
+func ParseIntermediateResources(ctx *broker.Context, dependencies specs.Dependencies, resources Resources) (specs.NodeList, error) {
 	attrs, _ := resources.Properties.JustAttributes()
-	nodes := make([]*specs.Node, 0, len(attrs))
+	nodes := make(specs.NodeList, 0, len(attrs))
 
 	for _, attr := range attrs {
 		prop, err := ParseIntermediateProperty(ctx, "", attr)
@@ -740,7 +740,7 @@ func ParseIntermediateResources(ctx *broker.Context, dependencies specs.Dependen
 }
 
 // ParseIntermediateCondition parses the given intermediate condition and returns the compiled nodes
-func ParseIntermediateCondition(ctx *broker.Context, dependencies specs.Dependencies, condition Condition) ([]*specs.Node, error) {
+func ParseIntermediateCondition(ctx *broker.Context, dependencies specs.Dependencies, condition Condition) (specs.NodeList, error) {
 	expr, err := conditions.NewEvaluableExpression(ctx, condition.Expression)
 	if err != nil {
 		return nil, err
