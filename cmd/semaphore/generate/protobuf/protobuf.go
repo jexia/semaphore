@@ -42,7 +42,7 @@ func init() {
 	Command.PersistentFlags().StringSliceVar(&params.Protobuffers, "proto", []string{}, "If set are all proto definitions found inside the given path passed as schema definitions, all proto definitions are also passed as imports")
 	Command.PersistentFlags().StringSliceVarP(&params.Files, "file", "f", []string{"config.hcl"}, "Parses the given file as a definition file")
 	Command.PersistentFlags().StringVar(&params.LogLevel, "level", "warn", "Global logging level, this value will override the defined log level inside the file definitions")
-	Command.PersistentFlags().StringVarP(&output, "output", "o", "", "Output directory")
+	Command.PersistentFlags().StringVarP(&output, "output", "o", "", "Output directory (all missing directories will be created)")
 }
 
 func run(cmd *cobra.Command, args []string) error {
