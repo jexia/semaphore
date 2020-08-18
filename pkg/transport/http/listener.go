@@ -157,7 +157,7 @@ func NewHandle(ctx *broker.Context, endpoint *transport.Endpoint, options *Endpo
 		return nil, trace.New(trace.WithMessage("codec not found '%s'", options.Codec))
 	}
 
-	err := endpoint.NewCodec(ctx, constructor)
+	err := endpoint.NewCodec(ctx, constructor, constructor)
 	if err != nil {
 		return nil, err
 	}
