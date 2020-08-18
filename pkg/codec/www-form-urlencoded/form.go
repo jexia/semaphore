@@ -8,6 +8,7 @@ import (
 	"github.com/jexia/semaphore/pkg/codec"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/pkg/specs/labels"
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
@@ -70,55 +71,47 @@ func (manager *Manager) Marshal(refs references.Store) (io.Reader, error) {
 	return nil, nil
 }
 
-func encode(values url.Values, prop *specs.Property) {
-	if prop.Type != types.Message {
+func encode(encoder url.Values, refs references.Store, prop *specs.Property) {
+	if prop.Label == labels.Repeated {
+		if prop.Reference == nil {
+			return
+		}
 
+		ref := refs.Load(prop.Reference.Resource, prop.Reference.Path)
+		if ref == nil {
+			return
+		}
+
+		// array := NewArray(object.resource, prop, ref, ref.Repeated)
+		// encoder.AddArrayKey(prop.Name, array)
+		return
 	}
 
-	// for _, prop := range prop.Nested {
-	// 	if prop.Label == labels.Repeated {
-	// 		if prop.Reference == nil {
-	// 			continue
-	// 		}
+	for _, nested := range prop.Nested {
+		encode(encoder, refs, nested)
+	}
 
-	// 		ref := object.refs.Load(prop.Reference.Resource, prop.Reference.Path)
-	// 		if ref == nil {
-	// 			continue
-	// 		}
+	val := prop.Default
 
-	// 		array := NewArray(object.resource, prop, ref, ref.Repeated)
-	// 		encoder.AddArrayKey(prop.Name, array)
-	// 		continue
-	// 	}
+	if prop.Reference != nil {
+		ref := refs.Load(prop.Reference.Resource, prop.Reference.Path)
+		if ref != nil {
+			if prop.Type == types.Enum && ref.Enum != nil {
+				enum := prop.Enum.Positions[*ref.Enum]
+				if enum != nil {
+					val = enum.Key
+				}
+			} else if ref.Value != nil {
+				val = ref.Value
+			}
+		}
+	}
 
-	// 	if prop.Type == types.Message {
-	// 		result := NewObject(object.resource, prop.Nested, object.refs)
-	// 		encoder.AddObjectKey(prop.Name, result)
-	// 		continue
-	// 	}
+	if val == nil {
+		return
+	}
 
-	// 	val := prop.Default
-
-	// 	if prop.Reference != nil {
-	// 		ref := object.refs.Load(prop.Reference.Resource, prop.Reference.Path)
-	// 		if ref != nil {
-	// 			if prop.Type == types.Enum && ref.Enum != nil {
-	// 				enum := prop.Enum.Positions[*ref.Enum]
-	// 				if enum != nil {
-	// 					val = enum.Key
-	// 				}
-	// 			} else if ref.Value != nil {
-	// 				val = ref.Value
-	// 			}
-	// 		}
-	// 	}
-
-	// 	if val == nil {
-	// 		continue
-	// 	}
-
-	// 	AddTypeKey(encoder, prop.Name, prop.Type, val)
-	// }
+	AddTypeKey(encoder, prop.Path, prop.Type, val)
 }
 
 // Unmarshal unmarshals the given www-form-urlencoded io reader into the given reference store.
