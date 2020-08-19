@@ -101,7 +101,7 @@ func (listener *Listener) Handle(ctx *broker.Context, endpoints []*transport.End
 			Flow:     endpoint.Flow,
 		}
 
-		if err := method.NewCodec(ctx, constructor); err != nil {
+		if err := method.NewCodec(ctx, constructor, constructor); err != nil {
 			return err
 		}
 

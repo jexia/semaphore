@@ -150,7 +150,8 @@ func generate(ctx *broker.Context, endpoints transport.EndpointList) (map[string
 			Flow:     endpoint.Flow,
 		}
 
-		if err := method.NewCodec(ctx, proto.NewConstructor()); err != nil {
+		constructor := proto.NewConstructor()
+		if err := method.NewCodec(ctx, constructor, constructor); err != nil {
 			return nil, err
 		}
 
