@@ -74,7 +74,7 @@ func Resolve(ctx *broker.Context, mem functions.Collection, options config.Optio
 		return Collection{}, err
 	}
 
-	forwarding.ResolveReferences(ctx, flows)
+	forwarding.ResolveReferences(ctx, flows, mem)
 
 	err = dependencies.ResolveFlows(ctx, flows)
 	if err != nil {

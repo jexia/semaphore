@@ -129,12 +129,13 @@ type EnumValue struct {
 // ParameterMap is the initial map of parameter names (keys) and their (templated) values (values)
 type ParameterMap struct {
 	*metadata.Meta
-	Schema   string               `json:"schema,omitempty"`
-	Params   map[string]*Property `json:"params,omitempty"`
-	Options  Options              `json:"options,omitempty"`
-	Header   Header               `json:"header,omitempty"`
-	Property *Property            `json:"property,omitempty"`
-	Stack    map[string]*Property `json:"stack,omitempty"`
+	DependsOn Dependencies         `json:"depends_on,omitempty"`
+	Schema    string               `json:"schema,omitempty"`
+	Params    map[string]*Property `json:"params,omitempty"`
+	Options   Options              `json:"options,omitempty"`
+	Header    Header               `json:"header,omitempty"`
+	Property  *Property            `json:"property,omitempty"`
+	Stack     map[string]*Property `json:"stack,omitempty"`
 }
 
 // Clone clones the given parameter map
