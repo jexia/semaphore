@@ -27,20 +27,18 @@ type Tracker interface {
 // NewTracker constructs a new tracker
 func NewTracker(flow string, nodes int) Tracker {
 	return &tracker{
-		flow:    flow,
-		nodes:   make(map[string]int, nodes),
-		skipped: make(map[string]int, nodes),
-		locks:   make(map[*Node]*sync.Mutex, nodes),
+		flow:  flow,
+		nodes: make(map[string]int, nodes),
+		locks: make(map[*Node]*sync.Mutex, nodes),
 	}
 }
 
 // Tracker represents a structure responsible of tracking nodes
 type tracker struct {
-	flow    string
-	mutex   sync.Mutex
-	nodes   map[string]int
-	skipped map[string]int
-	locks   map[*Node]*sync.Mutex
+	flow  string
+	mutex sync.Mutex
+	nodes map[string]int
+	locks map[*Node]*sync.Mutex
 }
 
 // Flow returns the flow name of the assigned tracker
@@ -58,17 +56,16 @@ func (tracker *tracker) Mark(node *Node) {
 // Skip marks the given node as marked and flag the given node as skipped
 func (tracker *tracker) Skip(node *Node) {
 	tracker.mutex.Lock()
-	tracker.nodes[node.Name]++
-	tracker.skipped[node.Name]++
+	tracker.nodes[node.Name] = -1
 	tracker.mutex.Unlock()
 }
 
 // Skip marks the given node as marked and flag the given node as skipped
 func (tracker *tracker) Skipped(node *Node) bool {
 	tracker.mutex.Lock()
-	_, has := tracker.skipped[node.Name]
+	value := tracker.nodes[node.Name]
 	tracker.mutex.Unlock()
-	return has
+	return value < 0
 }
 
 // Reached checks whether the required dependencies counter have been reached
@@ -87,13 +84,8 @@ func (tracker *tracker) Met(nodes ...*Node) bool {
 	tracker.mutex.Lock()
 	defer tracker.mutex.Unlock()
 	for _, node := range nodes {
-		_, skipped := tracker.skipped[node.Name]
-		if skipped {
-			return false
-		}
-
 		value := tracker.nodes[node.Name]
-		if value == 0 {
+		if value <= 0 {
 			return false
 		}
 	}

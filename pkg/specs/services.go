@@ -29,7 +29,8 @@ type Service struct {
 	FullyQualifiedName string    `json:"fully_qualified_name,omitempty"`
 	Name               string    `json:"name,omitempty"`
 	Transport          string    `json:"transport,omitempty"`
-	Codec              string    `json:"codec,omitempty"`
+	RequestCodec       string    `json:"request_codec,omitempty"`
+	ResponseCodec      string    `json:"response_codec,omitempty"`
 	Host               string    `json:"host,omitempty"`
 	Methods            []*Method `json:"methods,omitempty"`
 	Options            Options   `json:"options,omitempty"`
