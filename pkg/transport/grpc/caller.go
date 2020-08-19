@@ -2,13 +2,13 @@ package grpc
 
 import (
 	"context"
-	"fmt"
 	"io/ioutil"
 	"sync"
 
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/broker/trace"
+	"github.com/jexia/semaphore/pkg/codec/proto"
 	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
@@ -57,10 +57,15 @@ func (caller *Caller) Dial(service *specs.Service, functions functions.Custom, o
 
 	methods := make(map[string]*Method, len(service.Methods))
 
+	protoService := proto.Service{
+		Package: service.Package,
+		Name:    service.Name,
+	}
+
 	for _, method := range service.Methods {
 		methods[method.Name] = &Method{
-			name: method.Name,
-			fqn:  fmt.Sprintf("/%s.%s/%s", service.Package, service.Name, method.Name),
+			Service: &protoService,
+			Name:    method.Name,
 		}
 	}
 
@@ -143,7 +148,7 @@ func (call *Call) SendMsg(ctx context.Context, rw transport.ResponseWriter, pr *
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	stream, err := grpc.NewClientStream(ctx, proxy, conn, method.fqn)
+	stream, err := grpc.NewClientStream(ctx, proxy, conn, "/"+method.String())
 	if err != nil {
 		return err
 	}

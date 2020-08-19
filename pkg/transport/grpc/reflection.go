@@ -9,8 +9,11 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// ServerReflectionInfo handles the gRPC reflection v1 alpha implementation
+// ServerReflectionInfo handles the gRPC reflection v1 alpha implementation.
 func (listener *Listener) ServerReflectionInfo(stream rpb.ServerReflection_ServerReflectionInfoServer) error {
+	listener.mutex.RLock()
+	defer listener.mutex.RUnlock()
+
 	for {
 		in, err := stream.Recv()
 		if err == io.EOF {
@@ -32,8 +35,8 @@ func (listener *Listener) ServerReflectionInfo(stream rpb.ServerReflection_Serve
 				FileDescriptorResponse: &rpb.FileDescriptorResponse{FileDescriptorProto: [][]byte{}},
 			}
 		case *rpb.ServerReflectionRequest_FileContainingSymbol:
-			service := listener.services[req.FileContainingSymbol]
-			if service == nil {
+			descriptor, ok := listener.descriptors[req.FileContainingSymbol]
+			if !ok {
 				out.MessageResponse = &rpb.ServerReflectionResponse_ErrorResponse{
 					ErrorResponse: &rpb.ErrorResponse{
 						ErrorCode:    int32(codes.NotFound),
@@ -43,7 +46,7 @@ func (listener *Listener) ServerReflectionInfo(stream rpb.ServerReflection_Serve
 				continue
 			}
 
-			bb, err := proto.Marshal(service.proto)
+			bb, err := proto.Marshal(descriptor.AsFileDescriptorProto())
 			if err != nil {
 				out.MessageResponse = &rpb.ServerReflectionResponse_ErrorResponse{
 					ErrorResponse: &rpb.ErrorResponse{
@@ -60,7 +63,7 @@ func (listener *Listener) ServerReflectionInfo(stream rpb.ServerReflection_Serve
 		case *rpb.ServerReflectionRequest_ListServices:
 			services := []*rpb.ServiceResponse{}
 
-			for key := range listener.services {
+			for key := range listener.descriptors {
 				services = append(services, &rpb.ServiceResponse{
 					Name: key,
 				})
