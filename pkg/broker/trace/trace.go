@@ -3,13 +3,16 @@ package trace
 import (
 	"errors"
 	"fmt"
-
-	"github.com/hashicorp/hcl/v2"
 )
+
+// Expression provides information about expression.
+type Expression interface {
+	Position() string
+}
 
 // Options able to be passed when constructing a tracing error
 type Options struct {
-	expr    hcl.Expression
+	expr    Expression
 	message string
 }
 
@@ -27,14 +30,11 @@ func New(opts ...Option) error {
 		return errors.New(options.message)
 	}
 
-	r := options.expr.Range()
-	position := fmt.Sprintf("%s:%d", r.Filename, r.Start.Line)
-
-	return fmt.Errorf("%s %s", position, options.message)
+	return fmt.Errorf("%s %s", options.expr.Position(), options.message)
 }
 
 // WithExpression sets the given expression as a trace option
-func WithExpression(expr hcl.Expression) Option {
+func WithExpression(expr Expression) Option {
 	return func(options *Options) {
 		options.expr = expr
 	}
