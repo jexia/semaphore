@@ -26,6 +26,6 @@ flow "FetchLatestProject" {
 
 		id = "{{ query:id }}"
 		title = "{{ query:title }}"
-		completed = "{{ query:title }}"
+		completed = "{{ query:completed }}"
 	}
 }
