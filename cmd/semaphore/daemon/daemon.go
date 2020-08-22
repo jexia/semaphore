@@ -5,7 +5,6 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/jexia/semaphore"
 	"github.com/jexia/semaphore/cmd/semaphore/config"
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
@@ -38,7 +37,7 @@ func run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	client, err := semaphore.New(ctx, arguments...)
+	client, err := New(ctx, arguments...)
 	if err != nil {
 		return err
 	}
@@ -53,7 +52,7 @@ func run(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func sigterm(client *semaphore.Client) {
+func sigterm(client *Client) {
 	term := make(chan os.Signal, 1)
 	signal.Notify(term, syscall.SIGINT, syscall.SIGTERM)
 	<-term

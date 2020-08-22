@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/jexia/semaphore"
+	"github.com/jexia/semaphore/cmd/semaphore/daemon"
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/config"
 	"github.com/jexia/semaphore/pkg/broker/logger"
@@ -59,7 +60,7 @@ func TestOpenAPI3Generation(t *testing.T) {
 				arguments = append(arguments, semaphore.WithSchema(protobuffers.SchemaResolver([]string{"./tests"}, proto)))
 			}
 
-			client, err := semaphore.New(ctx, arguments...)
+			client, err := daemon.New(ctx, arguments...)
 
 			if err != nil {
 				t.Fatal(err)

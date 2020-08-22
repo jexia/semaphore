@@ -18,17 +18,17 @@ func TestWithMiddleware(t *testing.T) {
 		return nil, nil
 	}
 
-	client, err := New(ctx, WithMiddleware(middleware), WithMiddleware(middleware))
+	client, err := NewOptions(ctx, WithMiddleware(middleware), WithMiddleware(middleware))
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if client.Options.Middleware == nil {
+	if client.Middleware == nil {
 		t.Fatal("middleware not set")
 	}
 
-	if len(client.Options.Middleware) != 2 {
-		t.Fatalf("unexpected middleware %d, expected 2", len(client.Options.Middleware))
+	if len(client.Middleware) != 2 {
+		t.Fatalf("unexpected middleware %d, expected 2", len(client.Middleware))
 	}
 }
 
@@ -73,12 +73,12 @@ func TestAfterConstructorOption(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			result, options := test.arguments()
-			client, err := New(ctx, options...)
+			client, err := NewOptions(ctx, options...)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			if client.Options.AfterConstructor == nil {
+			if client.AfterConstructor == nil {
 				t.Fatal("unexpected result expected option to be set")
 			}
 
@@ -130,16 +130,16 @@ func TestBeforeManagerDoOption(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			result, options := test.arguments()
-			client, err := New(ctx, options...)
+			client, err := NewOptions(ctx, options...)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			if client.Options.BeforeManagerDo == nil {
+			if client.BeforeManagerDo == nil {
 				t.Fatal("unexpected result expected option to be set")
 			}
 
-			_, err = client.Options.BeforeManagerDo(nil, nil, nil)
+			_, err = client.BeforeManagerDo(nil, nil, nil)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -192,16 +192,16 @@ func TestBeforeManagerRollbackOption(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			result, options := test.arguments()
-			client, err := New(ctx, options...)
+			client, err := NewOptions(ctx, options...)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			if client.Options.BeforeManagerRollback == nil {
+			if client.BeforeManagerRollback == nil {
 				t.Fatal("unexpected result expected option to be set")
 			}
 
-			_, err = client.Options.BeforeManagerRollback(nil, nil, nil)
+			_, err = client.BeforeManagerRollback(nil, nil, nil)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -254,16 +254,16 @@ func TestAfterManagerRollbackOption(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			result, options := test.arguments()
-			client, err := New(ctx, options...)
+			client, err := NewOptions(ctx, options...)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			if client.Options.AfterManagerRollback == nil {
+			if client.AfterManagerRollback == nil {
 				t.Fatal("unexpected result expected option to be set")
 			}
 
-			_, err = client.Options.AfterManagerRollback(nil, nil, nil)
+			_, err = client.AfterManagerRollback(nil, nil, nil)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -316,16 +316,16 @@ func TestAfterManagerDoOption(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			result, options := test.arguments()
-			client, err := New(ctx, options...)
+			client, err := NewOptions(ctx, options...)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			if client.Options.AfterManagerDo == nil {
+			if client.AfterManagerDo == nil {
 				t.Fatal("unexpected result expected option to be set")
 			}
 
-			_, err = client.Options.AfterManagerDo(nil, nil, nil)
+			_, err = client.AfterManagerDo(nil, nil, nil)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -378,16 +378,16 @@ func TestBeforeNodeDoOption(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			result, options := test.arguments()
-			client, err := New(ctx, options...)
+			client, err := NewOptions(ctx, options...)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			if client.Options.BeforeNodeDo == nil {
+			if client.BeforeNodeDo == nil {
 				t.Fatal("unexpected result expected option to be set")
 			}
 
-			_, err = client.Options.BeforeNodeDo(nil, nil, nil, nil, nil)
+			_, err = client.BeforeNodeDo(nil, nil, nil, nil, nil)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -440,16 +440,16 @@ func TestBeforeNodeRollbackOption(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			result, options := test.arguments()
-			client, err := New(ctx, options...)
+			client, err := NewOptions(ctx, options...)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			if client.Options.BeforeNodeRollback == nil {
+			if client.BeforeNodeRollback == nil {
 				t.Fatal("unexpected result expected option to be set")
 			}
 
-			_, err = client.Options.BeforeNodeRollback(nil, nil, nil, nil, nil)
+			_, err = client.BeforeNodeRollback(nil, nil, nil, nil, nil)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -502,16 +502,16 @@ func TestAfterNodeRollbackOption(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			result, options := test.arguments()
-			client, err := New(ctx, options...)
+			client, err := NewOptions(ctx, options...)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			if client.Options.AfterNodeRollback == nil {
+			if client.AfterNodeRollback == nil {
 				t.Fatal("unexpected result expected option to be set")
 			}
 
-			_, err = client.Options.AfterNodeRollback(nil, nil, nil, nil, nil)
+			_, err = client.AfterNodeRollback(nil, nil, nil, nil, nil)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -564,16 +564,16 @@ func TestAfterNodeDoOption(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			result, options := test.arguments()
-			client, err := New(ctx, options...)
+			client, err := NewOptions(ctx, options...)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			if client.Options.AfterNodeDo == nil {
+			if client.AfterNodeDo == nil {
 				t.Fatal("unexpected result expected option to be set")
 			}
 
-			_, err = client.Options.AfterNodeDo(nil, nil, nil, nil, nil)
+			_, err = client.AfterNodeDo(nil, nil, nil, nil, nil)
 			if err != nil {
 				t.Fatal(err)
 			}

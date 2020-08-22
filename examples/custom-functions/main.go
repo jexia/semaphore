@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/jexia/semaphore"
+	"github.com/jexia/semaphore/cmd/semaphore/daemon"
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/codec/json"
@@ -25,7 +26,7 @@ func main() {
 		"jwt": jwt,
 	}
 
-	client, err := semaphore.New(ctx,
+	client, err := daemon.New(ctx,
 		semaphore.WithLogLevel("*", "debug"),
 		semaphore.WithListener(http.NewListener(":8080")),
 		semaphore.WithFlows(hcl.FlowsResolver("./*.hcl")),
