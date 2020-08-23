@@ -7,7 +7,6 @@ import (
 
 	"github.com/jexia/semaphore"
 	"github.com/jexia/semaphore/pkg/broker"
-	"github.com/jexia/semaphore/pkg/broker/config"
 	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/flow"
 	"github.com/jexia/semaphore/pkg/references"
@@ -17,8 +16,8 @@ import (
 )
 
 // New constructs a new prometheus middleware instance
-func New(addr string) config.Middleware {
-	return func(parent *broker.Context) ([]config.Option, error) {
+func New(addr string) semaphore.Middleware {
+	return func(parent *broker.Context) ([]semaphore.Option, error) {
 		ctx := logger.WithLogger(broker.WithModule(parent, "prometheus"))
 		logger.Info(ctx, "setting up", zap.String("addr", addr))
 

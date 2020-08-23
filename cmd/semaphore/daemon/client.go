@@ -6,7 +6,6 @@ import (
 
 	"github.com/jexia/semaphore"
 	"github.com/jexia/semaphore/pkg/broker"
-	"github.com/jexia/semaphore/pkg/broker/config"
 	"github.com/jexia/semaphore/pkg/broker/endpoints"
 	"github.com/jexia/semaphore/pkg/broker/listeners"
 	"github.com/jexia/semaphore/pkg/broker/logger"
@@ -18,7 +17,7 @@ import (
 )
 
 // New constructs a new Semaphore instance
-func New(ctx *broker.Context, opts ...config.Option) (*Client, error) {
+func New(ctx *broker.Context, opts ...semaphore.Option) (*Client, error) {
 	if ctx == nil {
 		return nil, errors.New("nil context")
 	}
@@ -39,7 +38,7 @@ func New(ctx *broker.Context, opts ...config.Option) (*Client, error) {
 
 // Client represents a semaphore instance
 type Client struct {
-	config.Options
+	semaphore.Options
 	ctx       *broker.Context
 	mutex     sync.Mutex
 	listeners transport.ListenerList

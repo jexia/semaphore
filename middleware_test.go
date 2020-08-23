@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/jexia/semaphore/pkg/broker"
-	"github.com/jexia/semaphore/pkg/broker/config"
 	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/flow"
 	"github.com/jexia/semaphore/pkg/references"
@@ -14,7 +13,7 @@ import (
 
 func TestWithMiddleware(t *testing.T) {
 	ctx := logger.WithLogger(broker.NewBackground())
-	middleware := func(*broker.Context) ([]config.Option, error) {
+	middleware := func(*broker.Context) ([]Option, error) {
 		return nil, nil
 	}
 
@@ -35,8 +34,8 @@ func TestWithMiddleware(t *testing.T) {
 func TestAfterConstructorOption(t *testing.T) {
 	ctx := logger.WithLogger(broker.NewBackground())
 
-	fn := func(i *int) config.AfterConstructorHandler {
-		return func(next config.AfterConstructor) config.AfterConstructor {
+	fn := func(i *int) AfterConstructorHandler {
+		return func(next AfterConstructor) AfterConstructor {
 			return func(ctx *broker.Context, flow specs.FlowListInterface, endpoints specs.EndpointList, services specs.ServiceList, schemas specs.Schemas) error {
 				*i++
 				return next(ctx, flow, endpoints, services, schemas)
@@ -46,24 +45,24 @@ func TestAfterConstructorOption(t *testing.T) {
 
 	type test struct {
 		expected  int
-		arguments func() (*int, []config.Option)
+		arguments func() (*int, []Option)
 	}
 
 	tests := map[string]test{
 		"single": {
 			expected: 1,
-			arguments: func() (*int, []config.Option) {
+			arguments: func() (*int, []Option) {
 				result := 0
-				arguments := NewCollection(AfterConstructor(fn(&result)))
+				arguments := NewCollection(WithAfterConstructor(fn(&result)))
 
 				return &result, arguments
 			},
 		},
 		"multiple": {
 			expected: 2,
-			arguments: func() (*int, []config.Option) {
+			arguments: func() (*int, []Option) {
 				result := 0
-				arguments := NewCollection(AfterConstructor(fn(&result)), AfterConstructor(fn(&result)))
+				arguments := NewCollection(WithAfterConstructor(fn(&result)), WithAfterConstructor(fn(&result)))
 
 				return &result, arguments
 			},
@@ -80,6 +79,11 @@ func TestAfterConstructorOption(t *testing.T) {
 
 			if client.AfterConstructor == nil {
 				t.Fatal("unexpected result expected option to be set")
+			}
+
+			err = client.AfterConstructor(nil, nil, nil, nil, nil)
+			if err != nil {
+				t.Fatal(err)
 			}
 
 			if *result != test.expected {
@@ -103,13 +107,13 @@ func TestBeforeManagerDoOption(t *testing.T) {
 
 	type test struct {
 		expected  int
-		arguments func() (*int, []config.Option)
+		arguments func() (*int, []Option)
 	}
 
 	tests := map[string]test{
 		"single": {
 			expected: 1,
-			arguments: func() (*int, []config.Option) {
+			arguments: func() (*int, []Option) {
 				result := 0
 				arguments := NewCollection(BeforeManagerDo(fn(&result)))
 
@@ -118,7 +122,7 @@ func TestBeforeManagerDoOption(t *testing.T) {
 		},
 		"multiple": {
 			expected: 2,
-			arguments: func() (*int, []config.Option) {
+			arguments: func() (*int, []Option) {
 				result := 0
 				arguments := NewCollection(BeforeManagerDo(fn(&result)), BeforeManagerDo(fn(&result)))
 
@@ -165,13 +169,13 @@ func TestBeforeManagerRollbackOption(t *testing.T) {
 
 	type test struct {
 		expected  int
-		arguments func() (*int, []config.Option)
+		arguments func() (*int, []Option)
 	}
 
 	tests := map[string]test{
 		"single": {
 			expected: 1,
-			arguments: func() (*int, []config.Option) {
+			arguments: func() (*int, []Option) {
 				result := 0
 				arguments := NewCollection(BeforeManagerRollback(fn(&result)))
 
@@ -180,7 +184,7 @@ func TestBeforeManagerRollbackOption(t *testing.T) {
 		},
 		"multiple": {
 			expected: 2,
-			arguments: func() (*int, []config.Option) {
+			arguments: func() (*int, []Option) {
 				result := 0
 				arguments := NewCollection(BeforeManagerRollback(fn(&result)), BeforeManagerRollback(fn(&result)))
 
@@ -227,13 +231,13 @@ func TestAfterManagerRollbackOption(t *testing.T) {
 
 	type test struct {
 		expected  int
-		arguments func() (*int, []config.Option)
+		arguments func() (*int, []Option)
 	}
 
 	tests := map[string]test{
 		"single": {
 			expected: 1,
-			arguments: func() (*int, []config.Option) {
+			arguments: func() (*int, []Option) {
 				result := 0
 				arguments := NewCollection(AfterManagerRollback(fn(&result)))
 
@@ -242,7 +246,7 @@ func TestAfterManagerRollbackOption(t *testing.T) {
 		},
 		"multiple": {
 			expected: 2,
-			arguments: func() (*int, []config.Option) {
+			arguments: func() (*int, []Option) {
 				result := 0
 				arguments := NewCollection(AfterManagerRollback(fn(&result)), AfterManagerRollback(fn(&result)))
 
@@ -289,13 +293,13 @@ func TestAfterManagerDoOption(t *testing.T) {
 
 	type test struct {
 		expected  int
-		arguments func() (*int, []config.Option)
+		arguments func() (*int, []Option)
 	}
 
 	tests := map[string]test{
 		"single": {
 			expected: 1,
-			arguments: func() (*int, []config.Option) {
+			arguments: func() (*int, []Option) {
 				result := 0
 				arguments := NewCollection(AfterManagerDo(fn(&result)))
 
@@ -304,7 +308,7 @@ func TestAfterManagerDoOption(t *testing.T) {
 		},
 		"multiple": {
 			expected: 2,
-			arguments: func() (*int, []config.Option) {
+			arguments: func() (*int, []Option) {
 				result := 0
 				arguments := NewCollection(AfterManagerDo(fn(&result)), AfterManagerDo(fn(&result)))
 
@@ -351,13 +355,13 @@ func TestBeforeNodeDoOption(t *testing.T) {
 
 	type test struct {
 		expected  int
-		arguments func() (*int, []config.Option)
+		arguments func() (*int, []Option)
 	}
 
 	tests := map[string]test{
 		"single": {
 			expected: 1,
-			arguments: func() (*int, []config.Option) {
+			arguments: func() (*int, []Option) {
 				result := 0
 				arguments := NewCollection(BeforeNodeDo(fn(&result)))
 
@@ -366,7 +370,7 @@ func TestBeforeNodeDoOption(t *testing.T) {
 		},
 		"multiple": {
 			expected: 2,
-			arguments: func() (*int, []config.Option) {
+			arguments: func() (*int, []Option) {
 				result := 0
 				arguments := NewCollection(BeforeNodeDo(fn(&result)), BeforeNodeDo(fn(&result)))
 
@@ -413,13 +417,13 @@ func TestBeforeNodeRollbackOption(t *testing.T) {
 
 	type test struct {
 		expected  int
-		arguments func() (*int, []config.Option)
+		arguments func() (*int, []Option)
 	}
 
 	tests := map[string]test{
 		"single": {
 			expected: 1,
-			arguments: func() (*int, []config.Option) {
+			arguments: func() (*int, []Option) {
 				result := 0
 				arguments := NewCollection(BeforeNodeRollback(fn(&result)))
 
@@ -428,7 +432,7 @@ func TestBeforeNodeRollbackOption(t *testing.T) {
 		},
 		"multiple": {
 			expected: 2,
-			arguments: func() (*int, []config.Option) {
+			arguments: func() (*int, []Option) {
 				result := 0
 				arguments := NewCollection(BeforeNodeRollback(fn(&result)), BeforeNodeRollback(fn(&result)))
 
@@ -475,13 +479,13 @@ func TestAfterNodeRollbackOption(t *testing.T) {
 
 	type test struct {
 		expected  int
-		arguments func() (*int, []config.Option)
+		arguments func() (*int, []Option)
 	}
 
 	tests := map[string]test{
 		"single": {
 			expected: 1,
-			arguments: func() (*int, []config.Option) {
+			arguments: func() (*int, []Option) {
 				result := 0
 				arguments := NewCollection(AfterNodeRollback(fn(&result)))
 
@@ -490,7 +494,7 @@ func TestAfterNodeRollbackOption(t *testing.T) {
 		},
 		"multiple": {
 			expected: 2,
-			arguments: func() (*int, []config.Option) {
+			arguments: func() (*int, []Option) {
 				result := 0
 				arguments := NewCollection(AfterNodeRollback(fn(&result)), AfterNodeRollback(fn(&result)))
 
@@ -537,13 +541,13 @@ func TestAfterNodeDoOption(t *testing.T) {
 
 	type test struct {
 		expected  int
-		arguments func() (*int, []config.Option)
+		arguments func() (*int, []Option)
 	}
 
 	tests := map[string]test{
 		"single": {
 			expected: 1,
-			arguments: func() (*int, []config.Option) {
+			arguments: func() (*int, []Option) {
 				result := 0
 				arguments := NewCollection(AfterNodeDo(fn(&result)))
 
@@ -552,7 +556,7 @@ func TestAfterNodeDoOption(t *testing.T) {
 		},
 		"multiple": {
 			expected: 2,
-			arguments: func() (*int, []config.Option) {
+			arguments: func() (*int, []Option) {
 				result := 0
 				arguments := NewCollection(AfterNodeDo(fn(&result)), AfterNodeDo(fn(&result)))
 

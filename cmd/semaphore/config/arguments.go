@@ -4,7 +4,6 @@ import (
 	"github.com/jexia/semaphore"
 	"github.com/jexia/semaphore/cmd/semaphore/middleware"
 	"github.com/jexia/semaphore/pkg/broker"
-	"github.com/jexia/semaphore/pkg/broker/config"
 	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/codec/json"
 	"github.com/jexia/semaphore/pkg/codec/proto"
@@ -22,8 +21,8 @@ import (
 )
 
 // ConstructArguments constructs the option arguments from the given parameters
-func ConstructArguments(params *Semaphore) ([]config.Option, error) {
-	arguments := []config.Option{
+func ConstructArguments(params *Semaphore) ([]semaphore.Option, error) {
+	arguments := []semaphore.Option{
 		semaphore.WithCodec(json.NewConstructor()),
 		semaphore.WithCodec(proto.NewConstructor()),
 		semaphore.WithCaller(micro.NewCaller("micro-grpc", microGRPC.NewService())),
@@ -45,7 +44,7 @@ func ConstructArguments(params *Semaphore) ([]config.Option, error) {
 		arguments = append(arguments, semaphore.WithFlows(hcl.FlowsResolver(path)))
 		arguments = append(arguments, semaphore.WithServices(hcl.ServicesResolver(path)))
 		arguments = append(arguments, semaphore.WithEndpoints(hcl.EndpointsResolver(path)))
-		arguments = append(arguments, semaphore.AfterConstructor(middleware.ServiceSelector(path)))
+		arguments = append(arguments, semaphore.WithAfterConstructor(middleware.ServiceSelector(path)))
 
 		options, err := hcl.GetOptions(ctx, path)
 		if err != nil {
@@ -88,7 +87,7 @@ func ConstructArguments(params *Semaphore) ([]config.Option, error) {
 		arguments = append(arguments, semaphore.WithMiddleware(prometheus.New(params.Prometheus.Address)))
 	}
 
-	arguments = append([]config.Option{semaphore.WithLogLevel("*", params.LogLevel)}, arguments...)
+	arguments = append([]semaphore.Option{semaphore.WithLogLevel("*", params.LogLevel)}, arguments...)
 
 	return arguments, nil
 }

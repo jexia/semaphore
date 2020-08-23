@@ -9,10 +9,10 @@ import (
 	"testing"
 
 	"github.com/jexia/semaphore"
-	"github.com/jexia/semaphore/cmd/semaphore/daemon"
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/broker/providers"
+	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/providers/hcl"
 	"github.com/jexia/semaphore/pkg/providers/mock"
 	"github.com/jexia/semaphore/pkg/references"
@@ -27,8 +27,7 @@ func NewMock() (specs.FlowListInterface, error) {
 	}
 
 	ctx := logger.WithLogger(broker.NewBackground())
-
-	client, err := daemon.New(
+	options, err := semaphore.NewOptions(
 		ctx,
 		semaphore.WithFlows(hcl.FlowsResolver("./tests/*.hcl")),
 		semaphore.WithSchema(mock.SchemaResolver(path)),
@@ -39,7 +38,8 @@ func NewMock() (specs.FlowListInterface, error) {
 		return nil, err
 	}
 
-	collection, err := providers.Resolve(ctx, client.Stack, client.Options)
+	stack := functions.Collection{}
+	collection, err := providers.Resolve(ctx, stack, options)
 	if err != nil {
 		return nil, err
 	}

@@ -10,7 +10,6 @@ import (
 	"github.com/jexia/semaphore"
 	"github.com/jexia/semaphore/cmd/semaphore/daemon"
 	"github.com/jexia/semaphore/pkg/broker"
-	"github.com/jexia/semaphore/pkg/broker/config"
 	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/broker/providers"
 	"github.com/jexia/semaphore/pkg/codec/json"
@@ -46,7 +45,7 @@ func TestOpenAPI3Generation(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			arguments := []config.Option{
+			arguments := []semaphore.Option{
 				semaphore.WithFlows(hcl.FlowsResolver(file.Path)),
 				semaphore.WithServices(hcl.ServicesResolver(file.Path)),
 				semaphore.WithEndpoints(hcl.EndpointsResolver(file.Path)),
