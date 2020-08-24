@@ -1,18 +1,19 @@
 package trace
 
-import (
-	"testing"
+import "testing"
 
-	"github.com/hashicorp/hcl/v2"
-	"github.com/zclconf/go-cty/cty"
-)
+type expressionFunc func() string
+
+func (fn expressionFunc) Position() string { return fn() }
 
 func TestNew(t *testing.T) {
+	expr := expressionFunc(func() string { return "file:10" })
+
 	tests := map[string][]Option{
 		"unexpected error":            {WithMessage("unexpected error")},
 		"unexpected error: component": {WithMessage("unexpected error: %s", "component")},
-		"file:10 unexpected error":    {WithMessage("unexpected error"), WithExpression(hcl.StaticExpr(cty.StringVal("prop"), hcl.Range{Filename: "file", Start: hcl.Pos{Line: 10}}))},
-		"file:10 ":                    {WithExpression(hcl.StaticExpr(cty.StringVal("prop"), hcl.Range{Filename: "file", Start: hcl.Pos{Line: 10}}))},
+		"file:10 unexpected error":    {WithMessage("unexpected error"), WithExpression(expr)},
+		"file:10 ":                    {WithExpression(expr)},
 	}
 
 	for expected, options := range tests {
