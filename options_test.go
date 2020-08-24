@@ -40,62 +40,6 @@ func TestWithMultipleFlowsOption(t *testing.T) {
 	}
 }
 
-func TestWithServicesOption(t *testing.T) {
-	ctx := logger.WithLogger(broker.NewBackground())
-	resolver := func(*broker.Context) (specs.ServiceList, error) { return nil, nil }
-
-	result, err := NewOptions(ctx, WithServices(resolver))
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if len(result.ServiceResolvers) != 1 {
-		t.Fatal("unexpected result expected service resolver to be set")
-	}
-}
-
-func TestWithMultipleServicesOption(t *testing.T) {
-	ctx := logger.WithLogger(broker.NewBackground())
-	resolver := func(*broker.Context) (specs.ServiceList, error) { return nil, nil }
-
-	result, err := NewOptions(ctx, WithServices(resolver), WithServices(resolver))
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if len(result.ServiceResolvers) != 2 {
-		t.Fatal("unexpected result expected multiple service resolvers to be set")
-	}
-}
-
-func TestWithEndpointsOption(t *testing.T) {
-	ctx := logger.WithLogger(broker.NewBackground())
-	resolver := func(*broker.Context) (specs.EndpointList, error) { return nil, nil }
-
-	result, err := NewOptions(ctx, WithEndpoints(resolver))
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if len(result.EndpointResolvers) != 1 {
-		t.Fatal("unexpected result expected endpoint resolver to be set")
-	}
-}
-
-func TestWithMultipleEndpointsOption(t *testing.T) {
-	ctx := logger.WithLogger(broker.NewBackground())
-	resolver := func(*broker.Context) (specs.EndpointList, error) { return nil, nil }
-
-	result, err := NewOptions(ctx, WithEndpoints(resolver), WithEndpoints(resolver))
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if len(result.EndpointResolvers) != 2 {
-		t.Fatal("unexpected result expected multiple endpoints resolvers to be set")
-	}
-}
-
 func TestWithLogLevel(t *testing.T) {
 	ctx := logger.WithLogger(broker.NewBackground())
 	_, err := NewOptions(ctx, WithLogLevel("*", "debug"))
@@ -138,23 +82,6 @@ func TestWithCaller(t *testing.T) {
 	}
 }
 
-func TestWithListener(t *testing.T) {
-	ctx := logger.WithLogger(broker.NewBackground())
-	options, err := NewOptions(ctx, WithListener(http.NewListener(":0")))
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if options.Listeners == nil {
-		t.Fatal("listeners not set")
-	}
-
-	listener := options.Listeners.Get("http")
-	if listener == nil {
-		t.Fatal("HTTP listener does not exist")
-	}
-}
-
 func TestWithCodec(t *testing.T) {
 	ctx := logger.WithLogger(broker.NewBackground())
 	options, err := NewOptions(ctx, WithCodec(json.NewConstructor()))
@@ -169,22 +96,6 @@ func TestWithCodec(t *testing.T) {
 	codec := options.Codec.Get("json")
 	if codec == nil {
 		t.Fatal("JSON codec does not exist")
-	}
-}
-
-func TestWithSchema(t *testing.T) {
-	ctx := logger.WithLogger(broker.NewBackground())
-	options, err := NewOptions(ctx, WithSchema(nil))
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if options.SchemaResolvers == nil {
-		t.Fatal("schema resolves not set")
-	}
-
-	if len(options.SchemaResolvers) != 1 {
-		t.Fatal("schema resolver not set")
 	}
 }
 

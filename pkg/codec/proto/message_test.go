@@ -8,9 +8,9 @@ import (
 	"testing"
 
 	"github.com/jexia/semaphore"
+	"github.com/jexia/semaphore/cmd/semaphore/daemon/providers"
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
-	"github.com/jexia/semaphore/pkg/broker/providers"
 	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/providers/hcl"
 	"github.com/jexia/semaphore/pkg/providers/protobuffers"
@@ -22,11 +22,14 @@ import (
 
 func NewMock() (specs.FlowListInterface, error) {
 	ctx := logger.WithLogger(broker.NewBackground())
-	options, err := semaphore.NewOptions(
-		ctx,
+	core, err := semaphore.NewOptions(ctx,
 		semaphore.WithFlows(hcl.FlowsResolver("./tests/*.hcl")),
-		semaphore.WithServices(protobuffers.ServiceResolver([]string{"./tests"}, "./tests/*.proto")),
-		semaphore.WithSchema(protobuffers.SchemaResolver([]string{"./tests"}, "./tests/*.proto")),
+	)
+
+	options, err := providers.NewOptions(ctx,
+		providers.WithCore(core),
+		providers.WithServices(protobuffers.ServiceResolver([]string{"./tests"}, "./tests/*.proto")),
+		providers.WithSchema(protobuffers.SchemaResolver([]string{"./tests"}, "./tests/*.proto")),
 	)
 
 	if err != nil {

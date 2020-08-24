@@ -54,7 +54,7 @@ func WithServices(services specs.ServiceList) EndpointOption {
 }
 
 // WithOptions sets the given options
-func WithOptions(conf semaphore.Options) EndpointOption {
+func WithCore(conf semaphore.Options) EndpointOption {
 	return func(options *Options) {
 		options.Options = conf
 	}

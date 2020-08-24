@@ -5,45 +5,28 @@ import (
 	"sync"
 
 	"github.com/jexia/semaphore"
+	"github.com/jexia/semaphore/cmd/semaphore/daemon/providers"
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/endpoints"
 	"github.com/jexia/semaphore/pkg/broker/listeners"
 	"github.com/jexia/semaphore/pkg/broker/logger"
-	"github.com/jexia/semaphore/pkg/broker/providers"
 	"github.com/jexia/semaphore/pkg/broker/trace"
 	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/transport"
 	"go.uber.org/zap"
 )
 
-// New constructs a new Semaphore instance
-func New(ctx *broker.Context, opts ...semaphore.Option) (*Client, error) {
+// NewClient constructs a new Semaphore instance
+func NewClient(ctx *broker.Context, core semaphore.Options, provider providers.Options) (*Client, error) {
 	if ctx == nil {
 		return nil, errors.New("nil context")
 	}
 
-	// TODO: refactor client
-
-	options, err := semaphore.NewOptions(ctx, opts...)
-	if err != nil {
-		return nil, err
-	}
-
-	mem := functions.Collection{}
-	collection, err := providers.Resolve(ctx, mem, options)
-	if err != nil {
-		return nil, err
-	}
-
 	client := &Client{
-		ctx:     ctx,
-		Options: options,
-		Stack:   mem,
-	}
-
-	err = client.Apply(ctx, collection)
-	if err != nil {
-		return nil, err
+		ctx:       ctx,
+		core:      core,
+		providers: provider,
+		stack:     functions.Collection{},
 	}
 
 	return client, nil
@@ -51,10 +34,12 @@ func New(ctx *broker.Context, opts ...semaphore.Option) (*Client, error) {
 
 // Client represents a semaphore instance
 type Client struct {
-	semaphore.Options
-	ctx   *broker.Context
-	mutex sync.Mutex
-	Stack functions.Collection
+	core      semaphore.Options
+	providers providers.Options
+	ctx       *broker.Context
+	mutex     sync.Mutex
+	stack     functions.Collection
+	listeners transport.ListenerList
 }
 
 // Apply updates the listeners with the given specs collection.
@@ -63,21 +48,26 @@ type Client struct {
 //
 // This method does not perform any checks ensuring that the given
 // specification is valid.
-func (client *Client) Apply(ctx *broker.Context, collection providers.Collection) error {
+func (client *Client) Apply(ctx *broker.Context) error {
 	client.mutex.Lock()
 	defer client.mutex.Unlock()
 
+	collection, err := providers.Resolve(ctx, client.stack, client.providers)
+	if err != nil {
+		return err
+	}
+
 	transporters, err := endpoints.Transporters(ctx, collection.EndpointList, collection.FlowListInterface,
+		endpoints.WithCore(client.core),
 		endpoints.WithServices(collection.ServiceList),
-		endpoints.WithOptions(client.Options),
-		endpoints.WithFunctions(client.Stack),
+		endpoints.WithFunctions(client.stack),
 	)
 
 	if err != nil {
 		return err
 	}
 
-	err = listeners.Apply(ctx, client.Codec, client.Options.Listeners, transporters)
+	err = listeners.Apply(ctx, client.providers.Codec, client.listeners, transporters)
 	if err != nil {
 		return err
 	}
@@ -87,14 +77,14 @@ func (client *Client) Apply(ctx *broker.Context, collection providers.Collection
 
 // Serve opens all listeners inside the given semaphore client
 func (client *Client) Serve() (result error) {
-	if len(client.Options.Listeners) == 0 {
+	if len(client.listeners) == 0 {
 		return trace.New(trace.WithMessage("no listeners configured to serve"))
 	}
 
 	wg := sync.WaitGroup{}
-	wg.Add(len(client.Options.Listeners))
+	wg.Add(len(client.listeners))
 
-	for _, listener := range client.Options.Listeners {
+	for _, listener := range client.listeners {
 		logger.Info(client.ctx, "serving listener", zap.String("listener", listener.Name()))
 
 		go func(listener transport.Listener) {
@@ -112,7 +102,7 @@ func (client *Client) Serve() (result error) {
 
 // Close gracefully closes the given client
 func (client *Client) Close() {
-	for _, listener := range client.Options.Listeners {
+	for _, listener := range client.listeners {
 		listener.Close()
 	}
 }

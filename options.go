@@ -20,11 +20,7 @@ type Option func(*broker.Context, *Options)
 type Options struct {
 	Codec                 codec.Constructors
 	Callers               transport.Callers
-	Listeners             transport.ListenerList
 	FlowResolvers         providers.FlowsResolvers
-	EndpointResolvers     providers.EndpointResolvers
-	ServiceResolvers      providers.ServiceResolvers
-	SchemaResolvers       providers.SchemaResolvers
 	Middleware            []Middleware
 	BeforeConstructor     BeforeConstructor
 	AfterConstructor      AfterConstructor
@@ -64,10 +60,8 @@ type AfterFlowConstructionHandler func(AfterFlowConstruction) AfterFlowConstruct
 // NewOptions constructs a Options object from the given Option constructors
 func NewOptions(ctx *broker.Context, options ...Option) (Options, error) {
 	result := Options{
-		ServiceResolvers: make([]providers.ServicesResolver, 0),
-		FlowResolvers:    make([]providers.FlowsResolver, 0),
-		SchemaResolvers:  make([]providers.SchemaResolver, 0),
-		Codec:            make(map[string]codec.Constructor),
+		FlowResolvers: make([]providers.FlowsResolver, 0),
+		Codec:         make(map[string]codec.Constructor),
 	}
 
 	if options == nil {
@@ -108,27 +102,6 @@ func WithFlows(definition providers.FlowsResolver) Option {
 	}
 }
 
-// WithServices appends the given service resolver to the available service resolvers
-func WithServices(definition providers.ServicesResolver) Option {
-	return func(ctx *broker.Context, options *Options) {
-		options.ServiceResolvers = append(options.ServiceResolvers, definition)
-	}
-}
-
-// WithEndpoints appends the given endpoint resolver to the available endpoint resolvers
-func WithEndpoints(definition providers.EndpointsResolver) Option {
-	return func(ctx *broker.Context, options *Options) {
-		options.EndpointResolvers = append(options.EndpointResolvers, definition)
-	}
-}
-
-// WithSchema appends the schema collection to the schema store
-func WithSchema(resolver providers.SchemaResolver) Option {
-	return func(ctx *broker.Context, options *Options) {
-		options.SchemaResolvers = append(options.SchemaResolvers, resolver)
-	}
-}
-
 // WithCodec appends the given codec to the collection of available codecs
 func WithCodec(codec codec.Constructor) Option {
 	return func(ctx *broker.Context, options *Options) {
@@ -140,13 +113,6 @@ func WithCodec(codec codec.Constructor) Option {
 func WithCaller(caller transport.NewCaller) Option {
 	return func(ctx *broker.Context, options *Options) {
 		options.Callers = append(options.Callers, caller(ctx))
-	}
-}
-
-// WithListener appends the given listener to the collection of available listeners
-func WithListener(listener transport.NewListener) Option {
-	return func(ctx *broker.Context, options *Options) {
-		options.Listeners = append(options.Listeners, listener(ctx))
 	}
 }
 

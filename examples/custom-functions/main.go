@@ -6,6 +6,7 @@ import (
 
 	"github.com/jexia/semaphore"
 	"github.com/jexia/semaphore/cmd/semaphore/daemon"
+	"github.com/jexia/semaphore/cmd/semaphore/daemon/providers"
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/codec/json"
@@ -26,19 +27,31 @@ func main() {
 		"jwt": jwt,
 	}
 
-	client, err := daemon.New(ctx,
+	core, err := semaphore.NewOptions(ctx,
 		semaphore.WithLogLevel("*", "debug"),
-		semaphore.WithListener(http.NewListener(":8080")),
 		semaphore.WithFlows(hcl.FlowsResolver("./*.hcl")),
-		semaphore.WithEndpoints(hcl.EndpointsResolver("./*.hcl")),
-		semaphore.WithSchema(protobuffers.SchemaResolver([]string{"./proto"}, "./proto/*.proto")),
-		semaphore.WithServices(protobuffers.ServiceResolver([]string{"./proto"}, "./proto/*.proto")),
 		semaphore.WithCodec(json.NewConstructor()),
 		semaphore.WithCodec(proto.NewConstructor()),
 		semaphore.WithCaller(http.NewCaller()),
 		semaphore.WithFunctions(functions),
 	)
 
+	if err != nil {
+		panic(err)
+	}
+
+	options, err := providers.NewOptions(ctx,
+		providers.WithEndpoints(hcl.EndpointsResolver("./*.hcl")),
+		providers.WithSchema(protobuffers.SchemaResolver([]string{"./proto"}, "./proto/*.proto")),
+		providers.WithServices(protobuffers.ServiceResolver([]string{"./proto"}, "./proto/*.proto")),
+		providers.WithListener(http.NewListener(":8080")),
+	)
+
+	if err != nil {
+		panic(err)
+	}
+
+	client, err := daemon.NewClient(ctx, core, options)
 	if err != nil {
 		panic(err)
 	}

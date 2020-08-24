@@ -1,7 +1,6 @@
 package providers
 
 import (
-	"github.com/jexia/semaphore"
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/checks"
 	"github.com/jexia/semaphore/pkg/compare"
@@ -26,9 +25,9 @@ type Collection struct {
 // The specifications are received from the providers. The property types are
 // defined and functions are prepared. Once done is a specs collection returned
 // that could be used to update the listeners.
-func Resolve(ctx *broker.Context, mem functions.Collection, options semaphore.Options) (Collection, error) {
+func Resolve(ctx *broker.Context, mem functions.Collection, options Options) (Collection, error) {
 	if options.BeforeConstructor != nil {
-		err := options.BeforeConstructor(ctx, mem, options)
+		err := options.BeforeConstructor(ctx, mem, options.Options)
 		if err != nil {
 			return Collection{}, err
 		}

@@ -8,10 +8,9 @@ import (
 	"testing"
 
 	"github.com/jexia/semaphore"
-	"github.com/jexia/semaphore/cmd/semaphore/daemon"
+	"github.com/jexia/semaphore/cmd/semaphore/daemon/providers"
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
-	"github.com/jexia/semaphore/pkg/broker/providers"
 	"github.com/jexia/semaphore/pkg/codec/json"
 	"github.com/jexia/semaphore/pkg/functions"
 	provider "github.com/jexia/semaphore/pkg/providers"
@@ -45,27 +44,34 @@ func TestOpenAPI3Generation(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			arguments := []semaphore.Option{
+			core, err := semaphore.NewOptions(ctx,
 				semaphore.WithFlows(hcl.FlowsResolver(file.Path)),
-				semaphore.WithServices(hcl.ServicesResolver(file.Path)),
-				semaphore.WithEndpoints(hcl.EndpointsResolver(file.Path)),
 				semaphore.WithCodec(json.NewConstructor()),
-				semaphore.WithListener(http.NewListener(":0")),
-				semaphore.WithListener(grpc.NewListener(":0", nil)),
 				semaphore.WithCaller(http.NewCaller()),
-			}
-
-			for _, proto := range options.Protobuffers {
-				arguments = append(arguments, semaphore.WithSchema(protobuffers.SchemaResolver([]string{"./tests"}, proto)))
-			}
-
-			client, err := daemon.New(ctx, arguments...)
+			)
 
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			collection, err := providers.Resolve(ctx, functions.Collection{}, client.Options)
+			arguments := []providers.Option{
+				providers.WithCore(core),
+				providers.WithServices(hcl.ServicesResolver(file.Path)),
+				providers.WithEndpoints(hcl.EndpointsResolver(file.Path)),
+				providers.WithListener(http.NewListener(":0")),
+				providers.WithListener(grpc.NewListener(":0", nil)),
+			}
+
+			for _, proto := range options.Protobuffers {
+				arguments = append(arguments, providers.WithSchema(protobuffers.SchemaResolver([]string{"./tests"}, proto)))
+			}
+
+			provider, err := providers.NewOptions(ctx, arguments...)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			collection, err := providers.Resolve(ctx, functions.Collection{}, provider)
 			if err != nil {
 				t.Fatal(err)
 			}
