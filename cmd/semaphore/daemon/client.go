@@ -22,7 +22,15 @@ func New(ctx *broker.Context, opts ...semaphore.Option) (*Client, error) {
 		return nil, errors.New("nil context")
 	}
 
+	// TODO: refactor client
+
 	options, err := semaphore.NewOptions(ctx, opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	mem := functions.Collection{}
+	collection, err := providers.Resolve(ctx, mem, options)
 	if err != nil {
 		return nil, err
 	}
@@ -30,7 +38,12 @@ func New(ctx *broker.Context, opts ...semaphore.Option) (*Client, error) {
 	client := &Client{
 		ctx:     ctx,
 		Options: options,
-		Stack:   functions.Collection{},
+		Stack:   mem,
+	}
+
+	err = client.Apply(ctx, collection)
+	if err != nil {
+		return nil, err
 	}
 
 	return client, nil
@@ -39,10 +52,9 @@ func New(ctx *broker.Context, opts ...semaphore.Option) (*Client, error) {
 // Client represents a semaphore instance
 type Client struct {
 	semaphore.Options
-	ctx       *broker.Context
-	mutex     sync.Mutex
-	listeners transport.ListenerList
-	Stack     functions.Collection
+	ctx   *broker.Context
+	mutex sync.Mutex
+	Stack functions.Collection
 }
 
 // Apply updates the listeners with the given specs collection.
@@ -65,7 +77,7 @@ func (client *Client) Apply(ctx *broker.Context, collection providers.Collection
 		return err
 	}
 
-	err = listeners.Apply(ctx, client.Codec, client.listeners, transporters)
+	err = listeners.Apply(ctx, client.Codec, client.Options.Listeners, transporters)
 	if err != nil {
 		return err
 	}
@@ -75,14 +87,14 @@ func (client *Client) Apply(ctx *broker.Context, collection providers.Collection
 
 // Serve opens all listeners inside the given semaphore client
 func (client *Client) Serve() (result error) {
-	if len(client.listeners) == 0 {
+	if len(client.Options.Listeners) == 0 {
 		return trace.New(trace.WithMessage("no listeners configured to serve"))
 	}
 
 	wg := sync.WaitGroup{}
-	wg.Add(len(client.listeners))
+	wg.Add(len(client.Options.Listeners))
 
-	for _, listener := range client.listeners {
+	for _, listener := range client.Options.Listeners {
 		logger.Info(client.ctx, "serving listener", zap.String("listener", listener.Name()))
 
 		go func(listener transport.Listener) {
@@ -100,7 +112,7 @@ func (client *Client) Serve() (result error) {
 
 // Close gracefully closes the given client
 func (client *Client) Close() {
-	for _, listener := range client.listeners {
+	for _, listener := range client.Options.Listeners {
 		listener.Close()
 	}
 }
