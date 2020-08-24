@@ -7,6 +7,7 @@ import (
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/flow"
+	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 )
@@ -578,6 +579,130 @@ func TestAfterNodeDoOption(t *testing.T) {
 			}
 
 			_, err = client.AfterNodeDo(nil, nil, nil, nil, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if *result != test.expected {
+				t.Fatalf("unexpected result %d, expected %d", *result, test.expected)
+			}
+		})
+	}
+}
+
+func TestBeforeConstructor(t *testing.T) {
+	ctx := logger.WithLogger(broker.NewBackground())
+
+	fn := func(i *int) BeforeConstructorHandler {
+		return func(next BeforeConstructor) BeforeConstructor {
+			return func(ctx *broker.Context, fns functions.Collection, options Options) error {
+				*i++
+				return next(ctx, fns, options)
+			}
+		}
+	}
+
+	type test struct {
+		expected  int
+		arguments func() (*int, []Option)
+	}
+
+	tests := map[string]test{
+		"single": {
+			expected: 1,
+			arguments: func() (*int, []Option) {
+				result := 0
+				arguments := NewCollection(WithBeforeConstructor(fn(&result)))
+
+				return &result, arguments
+			},
+		},
+		"multiple": {
+			expected: 2,
+			arguments: func() (*int, []Option) {
+				result := 0
+				arguments := NewCollection(WithBeforeConstructor(fn(&result)), WithBeforeConstructor(fn(&result)))
+
+				return &result, arguments
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			result, input := test.arguments()
+			options, err := NewOptions(ctx, input...)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if options.BeforeConstructor == nil {
+				t.Fatal("unexpected result expected option to be set")
+			}
+
+			err = options.BeforeConstructor(nil, nil, Options{})
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if *result != test.expected {
+				t.Fatalf("unexpected result %d, expected %d", *result, test.expected)
+			}
+		})
+	}
+}
+
+func TestAfterFlowConstructor(t *testing.T) {
+	ctx := logger.WithLogger(broker.NewBackground())
+
+	fn := func(i *int) AfterFlowConstructionHandler {
+		return func(next AfterFlowConstruction) AfterFlowConstruction {
+			return func(ctx *broker.Context, flow specs.FlowInterface, manager *flow.Manager) error {
+				*i++
+				return next(ctx, flow, manager)
+			}
+		}
+	}
+
+	type test struct {
+		expected  int
+		arguments func() (*int, []Option)
+	}
+
+	tests := map[string]test{
+		"single": {
+			expected: 1,
+			arguments: func() (*int, []Option) {
+				result := 0
+				arguments := NewCollection(AfterFlowConstructor(fn(&result)))
+
+				return &result, arguments
+			},
+		},
+		"multiple": {
+			expected: 2,
+			arguments: func() (*int, []Option) {
+				result := 0
+				arguments := NewCollection(AfterFlowConstructor(fn(&result)), AfterFlowConstructor(fn(&result)))
+
+				return &result, arguments
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			result, input := test.arguments()
+			options, err := NewOptions(ctx, input...)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if options.AfterFlowConstruction == nil {
+				t.Fatal("unexpected result expected option to be set")
+			}
+
+			err = options.AfterFlowConstruction(nil, nil, nil)
 			if err != nil {
 				t.Fatal(err)
 			}

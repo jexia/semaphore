@@ -164,7 +164,7 @@ func AfterNodeRollback(wrapper flow.AfterNodeHandler) Option {
 // AfterFlowConstructor the passed function gets called before a flow manager gets constructed
 func AfterFlowConstructor(wrapper AfterFlowConstructionHandler) Option {
 	return func(ctx *broker.Context, options *Options) {
-		if options.AfterNodeRollback == nil {
+		if options.AfterFlowConstruction == nil {
 			options.AfterFlowConstruction = wrapper(func(*broker.Context, specs.FlowInterface, *flow.Manager) error {
 				return nil
 			})
