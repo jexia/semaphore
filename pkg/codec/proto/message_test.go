@@ -8,8 +8,10 @@ import (
 	"testing"
 
 	"github.com/jexia/semaphore"
+	"github.com/jexia/semaphore/cmd/semaphore/daemon/providers"
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
+	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/providers/hcl"
 	"github.com/jexia/semaphore/pkg/providers/protobuffers"
 	"github.com/jexia/semaphore/pkg/references"
@@ -20,19 +22,27 @@ import (
 
 func NewMock() (specs.FlowListInterface, error) {
 	ctx := logger.WithLogger(broker.NewBackground())
-
-	client, err := semaphore.New(
-		ctx,
+	core, err := semaphore.NewOptions(ctx,
 		semaphore.WithFlows(hcl.FlowsResolver("./tests/*.hcl")),
-		semaphore.WithServices(protobuffers.ServiceResolver([]string{"./tests"}, "./tests/*.proto")),
-		semaphore.WithSchema(protobuffers.SchemaResolver([]string{"./tests"}, "./tests/*.proto")),
+	)
+
+	options, err := providers.NewOptions(ctx,
+		providers.WithCore(core),
+		providers.WithServices(protobuffers.ServiceResolver([]string{"./tests"}, "./tests/*.proto")),
+		providers.WithSchema(protobuffers.SchemaResolver([]string{"./tests"}, "./tests/*.proto")),
 	)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return client.GetFlows(), nil
+	stack := functions.Collection{}
+	collection, err := providers.Resolve(ctx, stack, options)
+	if err != nil {
+		return nil, err
+	}
+
+	return collection.FlowListInterface, nil
 }
 
 func FindNode(flow *specs.Flow, name string) *specs.Node {

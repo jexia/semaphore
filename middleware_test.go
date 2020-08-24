@@ -5,87 +5,30 @@ import (
 	"testing"
 
 	"github.com/jexia/semaphore/pkg/broker"
-	"github.com/jexia/semaphore/pkg/broker/config"
 	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/flow"
+	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 )
 
 func TestWithMiddleware(t *testing.T) {
 	ctx := logger.WithLogger(broker.NewBackground())
-	middleware := func(*broker.Context) ([]config.Option, error) {
+	middleware := func(*broker.Context) ([]Option, error) {
 		return nil, nil
 	}
 
-	client, err := New(ctx, WithMiddleware(middleware), WithMiddleware(middleware))
+	client, err := NewOptions(ctx, WithMiddleware(middleware), WithMiddleware(middleware))
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if client.Options.Middleware == nil {
+	if client.Middleware == nil {
 		t.Fatal("middleware not set")
 	}
 
-	if len(client.Options.Middleware) != 2 {
-		t.Fatalf("unexpected middleware %d, expected 2", len(client.Options.Middleware))
-	}
-}
-
-func TestAfterConstructorOption(t *testing.T) {
-	ctx := logger.WithLogger(broker.NewBackground())
-
-	fn := func(i *int) config.AfterConstructorHandler {
-		return func(next config.AfterConstructor) config.AfterConstructor {
-			return func(ctx *broker.Context, flow specs.FlowListInterface, endpoints specs.EndpointList, services specs.ServiceList, schemas specs.Schemas) error {
-				*i++
-				return next(ctx, flow, endpoints, services, schemas)
-			}
-		}
-	}
-
-	type test struct {
-		expected  int
-		arguments func() (*int, []config.Option)
-	}
-
-	tests := map[string]test{
-		"single": {
-			expected: 1,
-			arguments: func() (*int, []config.Option) {
-				result := 0
-				arguments := NewCollection(AfterConstructor(fn(&result)))
-
-				return &result, arguments
-			},
-		},
-		"multiple": {
-			expected: 2,
-			arguments: func() (*int, []config.Option) {
-				result := 0
-				arguments := NewCollection(AfterConstructor(fn(&result)), AfterConstructor(fn(&result)))
-
-				return &result, arguments
-			},
-		},
-	}
-
-	for name, test := range tests {
-		t.Run(name, func(t *testing.T) {
-			result, options := test.arguments()
-			client, err := New(ctx, options...)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			if client.Options.AfterConstructor == nil {
-				t.Fatal("unexpected result expected option to be set")
-			}
-
-			if *result != test.expected {
-				t.Fatalf("unexpected result %d, expected %d", *result, test.expected)
-			}
-		})
+	if len(client.Middleware) != 2 {
+		t.Fatalf("unexpected middleware %d, expected 2", len(client.Middleware))
 	}
 }
 
@@ -103,13 +46,13 @@ func TestBeforeManagerDoOption(t *testing.T) {
 
 	type test struct {
 		expected  int
-		arguments func() (*int, []config.Option)
+		arguments func() (*int, []Option)
 	}
 
 	tests := map[string]test{
 		"single": {
 			expected: 1,
-			arguments: func() (*int, []config.Option) {
+			arguments: func() (*int, []Option) {
 				result := 0
 				arguments := NewCollection(BeforeManagerDo(fn(&result)))
 
@@ -118,7 +61,7 @@ func TestBeforeManagerDoOption(t *testing.T) {
 		},
 		"multiple": {
 			expected: 2,
-			arguments: func() (*int, []config.Option) {
+			arguments: func() (*int, []Option) {
 				result := 0
 				arguments := NewCollection(BeforeManagerDo(fn(&result)), BeforeManagerDo(fn(&result)))
 
@@ -130,16 +73,16 @@ func TestBeforeManagerDoOption(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			result, options := test.arguments()
-			client, err := New(ctx, options...)
+			client, err := NewOptions(ctx, options...)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			if client.Options.BeforeManagerDo == nil {
+			if client.BeforeManagerDo == nil {
 				t.Fatal("unexpected result expected option to be set")
 			}
 
-			_, err = client.Options.BeforeManagerDo(nil, nil, nil)
+			_, err = client.BeforeManagerDo(nil, nil, nil)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -165,13 +108,13 @@ func TestBeforeManagerRollbackOption(t *testing.T) {
 
 	type test struct {
 		expected  int
-		arguments func() (*int, []config.Option)
+		arguments func() (*int, []Option)
 	}
 
 	tests := map[string]test{
 		"single": {
 			expected: 1,
-			arguments: func() (*int, []config.Option) {
+			arguments: func() (*int, []Option) {
 				result := 0
 				arguments := NewCollection(BeforeManagerRollback(fn(&result)))
 
@@ -180,7 +123,7 @@ func TestBeforeManagerRollbackOption(t *testing.T) {
 		},
 		"multiple": {
 			expected: 2,
-			arguments: func() (*int, []config.Option) {
+			arguments: func() (*int, []Option) {
 				result := 0
 				arguments := NewCollection(BeforeManagerRollback(fn(&result)), BeforeManagerRollback(fn(&result)))
 
@@ -192,16 +135,16 @@ func TestBeforeManagerRollbackOption(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			result, options := test.arguments()
-			client, err := New(ctx, options...)
+			client, err := NewOptions(ctx, options...)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			if client.Options.BeforeManagerRollback == nil {
+			if client.BeforeManagerRollback == nil {
 				t.Fatal("unexpected result expected option to be set")
 			}
 
-			_, err = client.Options.BeforeManagerRollback(nil, nil, nil)
+			_, err = client.BeforeManagerRollback(nil, nil, nil)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -227,13 +170,13 @@ func TestAfterManagerRollbackOption(t *testing.T) {
 
 	type test struct {
 		expected  int
-		arguments func() (*int, []config.Option)
+		arguments func() (*int, []Option)
 	}
 
 	tests := map[string]test{
 		"single": {
 			expected: 1,
-			arguments: func() (*int, []config.Option) {
+			arguments: func() (*int, []Option) {
 				result := 0
 				arguments := NewCollection(AfterManagerRollback(fn(&result)))
 
@@ -242,7 +185,7 @@ func TestAfterManagerRollbackOption(t *testing.T) {
 		},
 		"multiple": {
 			expected: 2,
-			arguments: func() (*int, []config.Option) {
+			arguments: func() (*int, []Option) {
 				result := 0
 				arguments := NewCollection(AfterManagerRollback(fn(&result)), AfterManagerRollback(fn(&result)))
 
@@ -254,16 +197,16 @@ func TestAfterManagerRollbackOption(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			result, options := test.arguments()
-			client, err := New(ctx, options...)
+			client, err := NewOptions(ctx, options...)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			if client.Options.AfterManagerRollback == nil {
+			if client.AfterManagerRollback == nil {
 				t.Fatal("unexpected result expected option to be set")
 			}
 
-			_, err = client.Options.AfterManagerRollback(nil, nil, nil)
+			_, err = client.AfterManagerRollback(nil, nil, nil)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -289,13 +232,13 @@ func TestAfterManagerDoOption(t *testing.T) {
 
 	type test struct {
 		expected  int
-		arguments func() (*int, []config.Option)
+		arguments func() (*int, []Option)
 	}
 
 	tests := map[string]test{
 		"single": {
 			expected: 1,
-			arguments: func() (*int, []config.Option) {
+			arguments: func() (*int, []Option) {
 				result := 0
 				arguments := NewCollection(AfterManagerDo(fn(&result)))
 
@@ -304,7 +247,7 @@ func TestAfterManagerDoOption(t *testing.T) {
 		},
 		"multiple": {
 			expected: 2,
-			arguments: func() (*int, []config.Option) {
+			arguments: func() (*int, []Option) {
 				result := 0
 				arguments := NewCollection(AfterManagerDo(fn(&result)), AfterManagerDo(fn(&result)))
 
@@ -316,16 +259,16 @@ func TestAfterManagerDoOption(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			result, options := test.arguments()
-			client, err := New(ctx, options...)
+			client, err := NewOptions(ctx, options...)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			if client.Options.AfterManagerDo == nil {
+			if client.AfterManagerDo == nil {
 				t.Fatal("unexpected result expected option to be set")
 			}
 
-			_, err = client.Options.AfterManagerDo(nil, nil, nil)
+			_, err = client.AfterManagerDo(nil, nil, nil)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -351,13 +294,13 @@ func TestBeforeNodeDoOption(t *testing.T) {
 
 	type test struct {
 		expected  int
-		arguments func() (*int, []config.Option)
+		arguments func() (*int, []Option)
 	}
 
 	tests := map[string]test{
 		"single": {
 			expected: 1,
-			arguments: func() (*int, []config.Option) {
+			arguments: func() (*int, []Option) {
 				result := 0
 				arguments := NewCollection(BeforeNodeDo(fn(&result)))
 
@@ -366,7 +309,7 @@ func TestBeforeNodeDoOption(t *testing.T) {
 		},
 		"multiple": {
 			expected: 2,
-			arguments: func() (*int, []config.Option) {
+			arguments: func() (*int, []Option) {
 				result := 0
 				arguments := NewCollection(BeforeNodeDo(fn(&result)), BeforeNodeDo(fn(&result)))
 
@@ -378,16 +321,16 @@ func TestBeforeNodeDoOption(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			result, options := test.arguments()
-			client, err := New(ctx, options...)
+			client, err := NewOptions(ctx, options...)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			if client.Options.BeforeNodeDo == nil {
+			if client.BeforeNodeDo == nil {
 				t.Fatal("unexpected result expected option to be set")
 			}
 
-			_, err = client.Options.BeforeNodeDo(nil, nil, nil, nil, nil)
+			_, err = client.BeforeNodeDo(nil, nil, nil, nil, nil)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -413,13 +356,13 @@ func TestBeforeNodeRollbackOption(t *testing.T) {
 
 	type test struct {
 		expected  int
-		arguments func() (*int, []config.Option)
+		arguments func() (*int, []Option)
 	}
 
 	tests := map[string]test{
 		"single": {
 			expected: 1,
-			arguments: func() (*int, []config.Option) {
+			arguments: func() (*int, []Option) {
 				result := 0
 				arguments := NewCollection(BeforeNodeRollback(fn(&result)))
 
@@ -428,7 +371,7 @@ func TestBeforeNodeRollbackOption(t *testing.T) {
 		},
 		"multiple": {
 			expected: 2,
-			arguments: func() (*int, []config.Option) {
+			arguments: func() (*int, []Option) {
 				result := 0
 				arguments := NewCollection(BeforeNodeRollback(fn(&result)), BeforeNodeRollback(fn(&result)))
 
@@ -440,16 +383,16 @@ func TestBeforeNodeRollbackOption(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			result, options := test.arguments()
-			client, err := New(ctx, options...)
+			client, err := NewOptions(ctx, options...)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			if client.Options.BeforeNodeRollback == nil {
+			if client.BeforeNodeRollback == nil {
 				t.Fatal("unexpected result expected option to be set")
 			}
 
-			_, err = client.Options.BeforeNodeRollback(nil, nil, nil, nil, nil)
+			_, err = client.BeforeNodeRollback(nil, nil, nil, nil, nil)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -475,13 +418,13 @@ func TestAfterNodeRollbackOption(t *testing.T) {
 
 	type test struct {
 		expected  int
-		arguments func() (*int, []config.Option)
+		arguments func() (*int, []Option)
 	}
 
 	tests := map[string]test{
 		"single": {
 			expected: 1,
-			arguments: func() (*int, []config.Option) {
+			arguments: func() (*int, []Option) {
 				result := 0
 				arguments := NewCollection(AfterNodeRollback(fn(&result)))
 
@@ -490,7 +433,7 @@ func TestAfterNodeRollbackOption(t *testing.T) {
 		},
 		"multiple": {
 			expected: 2,
-			arguments: func() (*int, []config.Option) {
+			arguments: func() (*int, []Option) {
 				result := 0
 				arguments := NewCollection(AfterNodeRollback(fn(&result)), AfterNodeRollback(fn(&result)))
 
@@ -502,16 +445,16 @@ func TestAfterNodeRollbackOption(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			result, options := test.arguments()
-			client, err := New(ctx, options...)
+			client, err := NewOptions(ctx, options...)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			if client.Options.AfterNodeRollback == nil {
+			if client.AfterNodeRollback == nil {
 				t.Fatal("unexpected result expected option to be set")
 			}
 
-			_, err = client.Options.AfterNodeRollback(nil, nil, nil, nil, nil)
+			_, err = client.AfterNodeRollback(nil, nil, nil, nil, nil)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -537,13 +480,13 @@ func TestAfterNodeDoOption(t *testing.T) {
 
 	type test struct {
 		expected  int
-		arguments func() (*int, []config.Option)
+		arguments func() (*int, []Option)
 	}
 
 	tests := map[string]test{
 		"single": {
 			expected: 1,
-			arguments: func() (*int, []config.Option) {
+			arguments: func() (*int, []Option) {
 				result := 0
 				arguments := NewCollection(AfterNodeDo(fn(&result)))
 
@@ -552,7 +495,7 @@ func TestAfterNodeDoOption(t *testing.T) {
 		},
 		"multiple": {
 			expected: 2,
-			arguments: func() (*int, []config.Option) {
+			arguments: func() (*int, []Option) {
 				result := 0
 				arguments := NewCollection(AfterNodeDo(fn(&result)), AfterNodeDo(fn(&result)))
 
@@ -564,16 +507,140 @@ func TestAfterNodeDoOption(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			result, options := test.arguments()
-			client, err := New(ctx, options...)
+			client, err := NewOptions(ctx, options...)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			if client.Options.AfterNodeDo == nil {
+			if client.AfterNodeDo == nil {
 				t.Fatal("unexpected result expected option to be set")
 			}
 
-			_, err = client.Options.AfterNodeDo(nil, nil, nil, nil, nil)
+			_, err = client.AfterNodeDo(nil, nil, nil, nil, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if *result != test.expected {
+				t.Fatalf("unexpected result %d, expected %d", *result, test.expected)
+			}
+		})
+	}
+}
+
+func TestBeforeConstructor(t *testing.T) {
+	ctx := logger.WithLogger(broker.NewBackground())
+
+	fn := func(i *int) BeforeConstructorHandler {
+		return func(next BeforeConstructor) BeforeConstructor {
+			return func(ctx *broker.Context, fns functions.Collection, options Options) error {
+				*i++
+				return next(ctx, fns, options)
+			}
+		}
+	}
+
+	type test struct {
+		expected  int
+		arguments func() (*int, []Option)
+	}
+
+	tests := map[string]test{
+		"single": {
+			expected: 1,
+			arguments: func() (*int, []Option) {
+				result := 0
+				arguments := NewCollection(WithBeforeConstructor(fn(&result)))
+
+				return &result, arguments
+			},
+		},
+		"multiple": {
+			expected: 2,
+			arguments: func() (*int, []Option) {
+				result := 0
+				arguments := NewCollection(WithBeforeConstructor(fn(&result)), WithBeforeConstructor(fn(&result)))
+
+				return &result, arguments
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			result, input := test.arguments()
+			options, err := NewOptions(ctx, input...)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if options.BeforeConstructor == nil {
+				t.Fatal("unexpected result expected option to be set")
+			}
+
+			err = options.BeforeConstructor(nil, nil, Options{})
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if *result != test.expected {
+				t.Fatalf("unexpected result %d, expected %d", *result, test.expected)
+			}
+		})
+	}
+}
+
+func TestAfterFlowConstructor(t *testing.T) {
+	ctx := logger.WithLogger(broker.NewBackground())
+
+	fn := func(i *int) AfterFlowConstructionHandler {
+		return func(next AfterFlowConstruction) AfterFlowConstruction {
+			return func(ctx *broker.Context, flow specs.FlowInterface, manager *flow.Manager) error {
+				*i++
+				return next(ctx, flow, manager)
+			}
+		}
+	}
+
+	type test struct {
+		expected  int
+		arguments func() (*int, []Option)
+	}
+
+	tests := map[string]test{
+		"single": {
+			expected: 1,
+			arguments: func() (*int, []Option) {
+				result := 0
+				arguments := NewCollection(AfterFlowConstructor(fn(&result)))
+
+				return &result, arguments
+			},
+		},
+		"multiple": {
+			expected: 2,
+			arguments: func() (*int, []Option) {
+				result := 0
+				arguments := NewCollection(AfterFlowConstructor(fn(&result)), AfterFlowConstructor(fn(&result)))
+
+				return &result, arguments
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			result, input := test.arguments()
+			options, err := NewOptions(ctx, input...)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if options.AfterFlowConstruction == nil {
+				t.Fatal("unexpected result expected option to be set")
+			}
+
+			err = options.AfterFlowConstruction(nil, nil, nil)
 			if err != nil {
 				t.Fatal(err)
 			}
