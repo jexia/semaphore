@@ -140,13 +140,6 @@ func GetOptions(ctx *broker.Context, path string) (*Options, error) {
 	return options, nil
 }
 
-// Resolve represents a resolve object
-type Resolve struct {
-	File     *providers.FileInfo
-	Manifest Manifest
-	Err      error
-}
-
 // ResolvePath resolves the given path and returns the available manifests.
 // All defined includes are followed and their manifests are included
 func ResolvePath(ctx *broker.Context, ignore []string, path string) ([]Manifest, error) {
