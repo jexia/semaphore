@@ -4,6 +4,7 @@ import (
 	"github.com/jexia/semaphore"
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/providers"
+	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/transport"
 )
 
@@ -43,6 +44,27 @@ type Options struct {
 	EndpointResolvers providers.EndpointResolvers
 	ServiceResolvers  providers.ServiceResolvers
 	SchemaResolvers   providers.SchemaResolvers
+	AfterConstructor  AfterConstructor
+}
+
+// AfterConstructor is called after the specifications is constructored
+type AfterConstructor func(*broker.Context, specs.FlowListInterface, specs.EndpointList, specs.ServiceList, specs.Schemas) error
+
+// AfterConstructorHandler wraps the after constructed function to allow middleware to be chained
+type AfterConstructorHandler func(AfterConstructor) AfterConstructor
+
+// WithAfterConstructor the passed function gets called once all options have been applied
+func WithAfterConstructor(wrapper AfterConstructorHandler) Option {
+	return func(ctx *broker.Context, options *Options) {
+		if options.AfterConstructor == nil {
+			options.AfterConstructor = wrapper(func(*broker.Context, specs.FlowListInterface, specs.EndpointList, specs.ServiceList, specs.Schemas) error {
+				return nil
+			})
+			return
+		}
+
+		options.AfterConstructor = wrapper(options.AfterConstructor)
+	}
 }
 
 // WithCore sets the given semaphore Options

@@ -32,68 +32,6 @@ func TestWithMiddleware(t *testing.T) {
 	}
 }
 
-func TestAfterConstructorOption(t *testing.T) {
-	ctx := logger.WithLogger(broker.NewBackground())
-
-	fn := func(i *int) AfterConstructorHandler {
-		return func(next AfterConstructor) AfterConstructor {
-			return func(ctx *broker.Context, flow specs.FlowListInterface, endpoints specs.EndpointList, services specs.ServiceList, schemas specs.Schemas) error {
-				*i++
-				return next(ctx, flow, endpoints, services, schemas)
-			}
-		}
-	}
-
-	type test struct {
-		expected  int
-		arguments func() (*int, []Option)
-	}
-
-	tests := map[string]test{
-		"single": {
-			expected: 1,
-			arguments: func() (*int, []Option) {
-				result := 0
-				arguments := NewCollection(WithAfterConstructor(fn(&result)))
-
-				return &result, arguments
-			},
-		},
-		"multiple": {
-			expected: 2,
-			arguments: func() (*int, []Option) {
-				result := 0
-				arguments := NewCollection(WithAfterConstructor(fn(&result)), WithAfterConstructor(fn(&result)))
-
-				return &result, arguments
-			},
-		},
-	}
-
-	for name, test := range tests {
-		t.Run(name, func(t *testing.T) {
-			result, options := test.arguments()
-			client, err := NewOptions(ctx, options...)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			if client.AfterConstructor == nil {
-				t.Fatal("unexpected result expected option to be set")
-			}
-
-			err = client.AfterConstructor(nil, nil, nil, nil, nil)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			if *result != test.expected {
-				t.Fatalf("unexpected result %d, expected %d", *result, test.expected)
-			}
-		})
-	}
-}
-
 func TestBeforeManagerDoOption(t *testing.T) {
 	ctx := logger.WithLogger(broker.NewBackground())
 

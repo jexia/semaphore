@@ -3,8 +3,10 @@ package providers
 import (
 	"testing"
 
+	"github.com/jexia/semaphore"
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
+	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/transport/http"
 )
@@ -39,6 +41,22 @@ func TestWithSchema(t *testing.T) {
 
 	if len(options.SchemaResolvers) != 1 {
 		t.Fatal("schema resolver not set")
+	}
+}
+
+func TestWithCoreOption(t *testing.T) {
+	ctx := logger.WithLogger(broker.NewBackground())
+	core := semaphore.Options{
+		Functions: functions.Custom{"make": nil},
+	}
+
+	result, err := NewOptions(ctx, WithCore(core))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(result.Functions) != 1 {
+		t.Fatal("unexpected result expected functions to be set")
 	}
 }
 
@@ -95,5 +113,21 @@ func TestWithMultipleEndpointsOption(t *testing.T) {
 
 	if len(result.EndpointResolvers) != 2 {
 		t.Fatal("unexpected result expected multiple endpoints resolvers to be set")
+	}
+}
+
+func TestNewOptions(t *testing.T) {
+	ctx := logger.WithLogger(broker.NewBackground())
+	_, err := NewOptions(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestNewOptionsNil(t *testing.T) {
+	ctx := logger.WithLogger(broker.NewBackground())
+	_, err := NewOptions(ctx, nil)
+	if err != nil {
+		t.Fatal(err)
 	}
 }

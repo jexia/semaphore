@@ -120,7 +120,6 @@ func NewCore(ctx *broker.Context, flags *Daemon) (semaphore.Options, error) {
 
 	for _, path := range flags.Files {
 		options = append(options, semaphore.WithFlows(hcl.FlowsResolver(path)))
-		options = append(options, semaphore.WithAfterConstructor(middleware.ServiceSelector(path)))
 	}
 
 	if flags.Prometheus.Address != "" {
@@ -141,6 +140,7 @@ func NewProviders(ctx *broker.Context, core semaphore.Options, params *Daemon) (
 	for _, path := range params.Files {
 		options = append(options, providers.WithServices(hcl.ServicesResolver(path)))
 		options = append(options, providers.WithEndpoints(hcl.EndpointsResolver(path)))
+		options = append(options, providers.WithAfterConstructor(middleware.ServiceSelector(path)))
 	}
 
 	for _, path := range params.Protobuffers {

@@ -3,7 +3,7 @@ package middleware
 import (
 	"path/filepath"
 
-	"github.com/jexia/semaphore"
+	"github.com/jexia/semaphore/cmd/semaphore/daemon/providers"
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/providers/hcl"
@@ -14,8 +14,8 @@ import (
 )
 
 // ServiceSelector parses the HCL definition on the given path and manipulates the collected services after constructed
-func ServiceSelector(path string) semaphore.AfterConstructorHandler {
-	return func(next semaphore.AfterConstructor) semaphore.AfterConstructor {
+func ServiceSelector(path string) providers.AfterConstructorHandler {
+	return func(next providers.AfterConstructor) providers.AfterConstructor {
 		return func(ctx *broker.Context, flows specs.FlowListInterface, endpoints specs.EndpointList, services specs.ServiceList, schemas specs.Schemas) error {
 			definitions, err := hcl.ResolvePath(ctx, []string{}, path)
 			if err != nil {

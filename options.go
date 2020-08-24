@@ -23,7 +23,6 @@ type Options struct {
 	FlowResolvers         providers.FlowsResolvers
 	Middleware            []Middleware
 	BeforeConstructor     BeforeConstructor
-	AfterConstructor      AfterConstructor
 	BeforeManagerDo       flow.BeforeManager
 	BeforeManagerRollback flow.BeforeManager
 	AfterManagerDo        flow.AfterManager
@@ -38,12 +37,6 @@ type Options struct {
 
 // Middleware is called once the options have been initialised
 type Middleware func(*broker.Context) ([]Option, error)
-
-// AfterConstructor is called after the specifications is constructored
-type AfterConstructor func(*broker.Context, specs.FlowListInterface, specs.EndpointList, specs.ServiceList, specs.Schemas) error
-
-// AfterConstructorHandler wraps the after constructed function to allow middleware to be chained
-type AfterConstructorHandler func(AfterConstructor) AfterConstructor
 
 // BeforeConstructor is called before the specifications is constructored
 type BeforeConstructor func(*broker.Context, functions.Collection, Options) error

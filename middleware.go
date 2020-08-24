@@ -29,20 +29,6 @@ func WithBeforeConstructor(wrapper BeforeConstructorHandler) Option {
 	}
 }
 
-// WithAfterConstructor the passed function gets called once all options have been applied
-func WithAfterConstructor(wrapper AfterConstructorHandler) Option {
-	return func(ctx *broker.Context, options *Options) {
-		if options.AfterConstructor == nil {
-			options.AfterConstructor = wrapper(func(*broker.Context, specs.FlowListInterface, specs.EndpointList, specs.ServiceList, specs.Schemas) error {
-				return nil
-			})
-			return
-		}
-
-		options.AfterConstructor = wrapper(options.AfterConstructor)
-	}
-}
-
 // BeforeManagerDo the passed function gets called before a request gets handled by a flow manager
 func BeforeManagerDo(wrapper flow.BeforeManagerHandler) Option {
 	return func(ctx *broker.Context, options *Options) {
