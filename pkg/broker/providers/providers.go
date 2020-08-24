@@ -64,12 +64,12 @@ func Resolve(ctx *broker.Context, mem functions.Collection, options semaphore.Op
 		return Collection{}, err
 	}
 
-	err = references.Resolve(ctx, flows)
+	err = functions.PrepareFunctions(ctx, mem, options.Functions, flows)
 	if err != nil {
 		return Collection{}, err
 	}
 
-	err = functions.PrepareManifestFunctions(ctx, mem, options.Functions, flows)
+	err = references.Resolve(ctx, flows)
 	if err != nil {
 		return Collection{}, err
 	}
