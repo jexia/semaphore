@@ -133,9 +133,7 @@ func NewCore(ctx *broker.Context, flags *Daemon) (semaphore.Options, error) {
 
 // NewProviders constructs new providers options from the given parameters
 func NewProviders(ctx *broker.Context, core semaphore.Options, params *Daemon) (providers.Options, error) {
-	options := []providers.Option{
-		providers.WithCore(core),
-	}
+	options := []providers.Option{}
 
 	for _, path := range params.Files {
 		options = append(options, providers.WithServices(hcl.ServicesResolver(path)))
@@ -171,5 +169,5 @@ func NewProviders(ctx *broker.Context, core semaphore.Options, params *Daemon) (
 		options = append(options, providers.WithListener(grpc.NewListener(params.GRPC.Address, specs.Options{})))
 	}
 
-	return providers.NewOptions(ctx, options...)
+	return providers.NewOptions(ctx, core, options...)
 }

@@ -55,7 +55,6 @@ func TestOpenAPI3Generation(t *testing.T) {
 			}
 
 			arguments := []providers.Option{
-				providers.WithCore(core),
 				providers.WithServices(hcl.ServicesResolver(file.Path)),
 				providers.WithEndpoints(hcl.EndpointsResolver(file.Path)),
 				providers.WithListener(http.NewListener(":0")),
@@ -66,7 +65,7 @@ func TestOpenAPI3Generation(t *testing.T) {
 				arguments = append(arguments, providers.WithSchema(protobuffers.SchemaResolver([]string{"./tests"}, proto)))
 			}
 
-			provider, err := providers.NewOptions(ctx, arguments...)
+			provider, err := providers.NewOptions(ctx, core, arguments...)
 			if err != nil {
 				t.Fatal(err)
 			}

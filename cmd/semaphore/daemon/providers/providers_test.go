@@ -149,7 +149,7 @@ func TestAfterConstructorOption(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			result, options := test.arguments()
-			client, err := NewOptions(ctx, options...)
+			client, err := NewOptions(ctx, semaphore.Options{}, options...)
 			if err != nil {
 				t.Fatal(err)
 			}

@@ -26,8 +26,7 @@ func NewMock() (specs.FlowListInterface, error) {
 		semaphore.WithFlows(hcl.FlowsResolver("./tests/*.hcl")),
 	)
 
-	options, err := providers.NewOptions(ctx,
-		providers.WithCore(core),
+	options, err := providers.NewOptions(ctx, core,
 		providers.WithServices(protobuffers.ServiceResolver([]string{"./tests"}, "./tests/*.proto")),
 		providers.WithSchema(protobuffers.SchemaResolver([]string{"./tests"}, "./tests/*.proto")),
 	)

@@ -9,10 +9,9 @@ import (
 )
 
 // NewOptions constructs a Options object from the given Option constructors
-func NewOptions(ctx *broker.Context, options ...Option) (Options, error) {
-	root, _ := semaphore.NewOptions(ctx)
+func NewOptions(ctx *broker.Context, core semaphore.Options, options ...Option) (Options, error) {
 	result := Options{
-		Options:           root,
+		Options:           core,
 		Listeners:         transport.ListenerList{},
 		EndpointResolvers: providers.EndpointResolvers{},
 		ServiceResolvers:  providers.ServiceResolvers{},
@@ -64,13 +63,6 @@ func WithAfterConstructor(wrapper AfterConstructorHandler) Option {
 		}
 
 		options.AfterConstructor = wrapper(options.AfterConstructor)
-	}
-}
-
-// WithCore sets the given semaphore Options
-func WithCore(root semaphore.Options) Option {
-	return func(ctx *broker.Context, options *Options) {
-		options.Options = root
 	}
 }
 

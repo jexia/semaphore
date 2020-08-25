@@ -13,7 +13,7 @@ import (
 
 func TestWithListener(t *testing.T) {
 	ctx := logger.WithLogger(broker.NewBackground())
-	options, err := NewOptions(ctx, WithListener(http.NewListener(":0")))
+	options, err := NewOptions(ctx, semaphore.Options{}, WithListener(http.NewListener(":0")))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -30,7 +30,7 @@ func TestWithListener(t *testing.T) {
 
 func TestWithSchema(t *testing.T) {
 	ctx := logger.WithLogger(broker.NewBackground())
-	options, err := NewOptions(ctx, WithSchema(nil))
+	options, err := NewOptions(ctx, semaphore.Options{}, WithSchema(nil))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -50,7 +50,7 @@ func TestWithCoreOption(t *testing.T) {
 		Functions: functions.Custom{"make": nil},
 	}
 
-	result, err := NewOptions(ctx, WithCore(core))
+	result, err := NewOptions(ctx, core)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -64,7 +64,7 @@ func TestWithServicesOption(t *testing.T) {
 	ctx := logger.WithLogger(broker.NewBackground())
 	resolver := func(*broker.Context) (specs.ServiceList, error) { return nil, nil }
 
-	result, err := NewOptions(ctx, WithServices(resolver))
+	result, err := NewOptions(ctx, semaphore.Options{}, WithServices(resolver))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -78,7 +78,7 @@ func TestWithMultipleServicesOption(t *testing.T) {
 	ctx := logger.WithLogger(broker.NewBackground())
 	resolver := func(*broker.Context) (specs.ServiceList, error) { return nil, nil }
 
-	result, err := NewOptions(ctx, WithServices(resolver), WithServices(resolver))
+	result, err := NewOptions(ctx, semaphore.Options{}, WithServices(resolver), WithServices(resolver))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -92,7 +92,7 @@ func TestWithEndpointsOption(t *testing.T) {
 	ctx := logger.WithLogger(broker.NewBackground())
 	resolver := func(*broker.Context) (specs.EndpointList, error) { return nil, nil }
 
-	result, err := NewOptions(ctx, WithEndpoints(resolver))
+	result, err := NewOptions(ctx, semaphore.Options{}, WithEndpoints(resolver))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -106,7 +106,7 @@ func TestWithMultipleEndpointsOption(t *testing.T) {
 	ctx := logger.WithLogger(broker.NewBackground())
 	resolver := func(*broker.Context) (specs.EndpointList, error) { return nil, nil }
 
-	result, err := NewOptions(ctx, WithEndpoints(resolver), WithEndpoints(resolver))
+	result, err := NewOptions(ctx, semaphore.Options{}, WithEndpoints(resolver), WithEndpoints(resolver))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -118,7 +118,7 @@ func TestWithMultipleEndpointsOption(t *testing.T) {
 
 func TestNewOptions(t *testing.T) {
 	ctx := logger.WithLogger(broker.NewBackground())
-	_, err := NewOptions(ctx)
+	_, err := NewOptions(ctx, semaphore.Options{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -126,7 +126,7 @@ func TestNewOptions(t *testing.T) {
 
 func TestNewOptionsNil(t *testing.T) {
 	ctx := logger.WithLogger(broker.NewBackground())
-	_, err := NewOptions(ctx, nil)
+	_, err := NewOptions(ctx, semaphore.Options{}, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

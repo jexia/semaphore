@@ -1,6 +1,8 @@
 package manager
 
 import (
+	"errors"
+
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/trace"
 	"github.com/jexia/semaphore/pkg/codec"
@@ -14,8 +16,15 @@ import (
 	"github.com/jexia/semaphore/pkg/transport"
 )
 
+// ErrNilFlowManager is thrown when a nil flow manager has been passed
+var ErrNilFlowManager = errors.New("nil flow manager")
+
 // NewFlow constructs a new flow manager from the given configurations
 func NewFlow(ctx *broker.Context, manager specs.FlowInterface, opts ...FlowOption) (*flow.Manager, error) {
+	if manager == nil {
+		return nil, ErrNilFlowManager
+	}
+
 	options := NewFlowOptions(opts...)
 	nodes := make([]*flow.Node, len(manager.GetNodes()))
 

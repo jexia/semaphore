@@ -40,7 +40,7 @@ func main() {
 		panic(err)
 	}
 
-	options, err := providers.NewOptions(ctx,
+	options, err := providers.NewOptions(ctx, core,
 		providers.WithEndpoints(hcl.EndpointsResolver("./*.hcl")),
 		providers.WithSchema(protobuffers.SchemaResolver([]string{"./proto"}, "./proto/*.proto")),
 		providers.WithServices(protobuffers.ServiceResolver([]string{"./proto"}, "./proto/*.proto")),

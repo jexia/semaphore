@@ -11,6 +11,7 @@ import (
 	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/transport"
+	"go.uber.org/zap"
 )
 
 // ErrFlowNotFound is returned when a given flow is not found
@@ -53,7 +54,7 @@ func WithServices(services specs.ServiceList) EndpointOption {
 	}
 }
 
-// WithOptions sets the given options
+// WithCore sets the given core options
 func WithCore(conf semaphore.Options) EndpointOption {
 	return func(options *Options) {
 		options.Options = conf
@@ -68,6 +69,8 @@ func Transporters(ctx *broker.Context, endpoints specs.EndpointList, flows specs
 	logger.Debug(ctx, "constructing endpoints")
 
 	for index, endpoint := range endpoints {
+		logger.Debug(ctx, "constructing flow manager", zap.String("flow", endpoint.Flow))
+
 		selected := flows.Get(endpoint.Flow)
 		manager, err := manager.NewFlow(ctx, selected,
 			manager.WithFlowFunctions(options.stack),

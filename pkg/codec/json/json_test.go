@@ -35,8 +35,7 @@ func NewMock() (specs.FlowListInterface, error) {
 		return nil, err
 	}
 
-	options, err := providers.NewOptions(ctx,
-		providers.WithCore(core),
+	options, err := providers.NewOptions(ctx, core,
 		providers.WithSchema(mock.SchemaResolver(path)),
 		providers.WithServices(mock.ServicesResolver(path)),
 	)
