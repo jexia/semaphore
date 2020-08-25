@@ -9,7 +9,7 @@ func HMAC(secretString string) ReaderFunc {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, errUnexpectedSigningMethod{
 					actual:   token.Header["alg"],
-					expected: "HS265/384/512",
+					expected: "HS265/384/512/...",
 				}
 			}
 

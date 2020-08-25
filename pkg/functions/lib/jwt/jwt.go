@@ -9,16 +9,16 @@ import (
 )
 
 const (
-	claims  = "claims"
-	subject = "subject"
+	paramClaims = "claims"
+	propSubject = "subject"
 )
 
 func outputs() *specs.Property {
 	return &specs.Property{
 		Nested: map[string]*specs.Property{
-			subject: {
-				Name:  subject,
-				Path:  subject,
+			propSubject: {
+				Name:  propSubject,
+				Path:  propSubject,
 				Type:  types.String,
 				Label: labels.Optional,
 			},
@@ -71,7 +71,7 @@ func executable(reader Reader, token *specs.Property, newClaims func() Claims) f
 			return err
 		}
 
-		store.StoreValue(claims, subject, claimsObj.Subject())
+		store.StoreValue(paramClaims, propSubject, claimsObj.Subject())
 
 		return nil
 	}

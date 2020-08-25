@@ -13,7 +13,7 @@ func RSA(publicKey *rsa.PublicKey) ReaderFunc {
 			if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
 				return nil, errUnexpectedSigningMethod{
 					actual:   token.Header["alg"],
-					expected: "RS265/384/512",
+					expected: "RS265/384/512/...",
 				}
 			}
 
