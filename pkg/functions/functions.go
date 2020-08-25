@@ -63,11 +63,11 @@ var (
 )
 
 const (
-	// FunctionArgumentDelimiter represents the character delimiting function arguments
-	FunctionArgumentDelimiter = ","
+	// ArgumentDelimiter represents the character delimiting function arguments
+	ArgumentDelimiter = ","
 )
 
-// PrepareFunctions prepares all function definitions inside the given manifest
+// PrepareFunctions prepares all function definitions inside the given flows
 func PrepareFunctions(ctx *broker.Context, mem Collection, functions Custom, flows specs.FlowListInterface) (err error) {
 	logger.Info(ctx, "preparing manifest functions")
 
@@ -263,7 +263,7 @@ func PrepareFunction(ctx *broker.Context, node *specs.Node, flow specs.FlowInter
 
 	pattern := FunctionPattern.FindStringSubmatch(property.Raw)
 	fn := pattern[1]
-	args := strings.Split(pattern[2], FunctionArgumentDelimiter)
+	args := strings.Split(pattern[2], ArgumentDelimiter)
 
 	if methods[fn] == nil {
 		return trace.New(trace.WithMessage("undefined custom function '%s' in '%s'", fn, property.Raw))
