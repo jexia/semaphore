@@ -290,7 +290,7 @@ func TestPathReferences(t *testing.T) {
 		},
 	}
 
-	listener, port := NewMockListener(t, nodes, nil)
+	listener, host := NewMockListener(t, nodes, nil)
 	defer listener.Close()
 
 	ctx := logger.WithLogger(broker.NewBackground())
@@ -306,8 +306,11 @@ func TestPathReferences(t *testing.T) {
 
 	listener.Handle(ctx, endpoints, nil)
 
-	endpoint := fmt.Sprintf("http://127.0.0.1:%d/"+message, port)
-	http.Get(endpoint)
+	endpoint := host + message
+	_, err := http.Get(endpoint)
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
 func TestStoringParams(t *testing.T) {
@@ -381,7 +384,6 @@ func TestListenerForwarding(t *testing.T) {
 	go http.ListenAndServe(forward, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// set-up a simple forward server which always returns a 200
 		forwarded++
-		return
 	}))
 
 	listener := NewListener(mock)(ctx)

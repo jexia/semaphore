@@ -194,7 +194,7 @@ func HeaderLookup(header specs.Header) PathLookup {
 
 	return func(path string) *specs.Property {
 		for key, header := range header {
-			if strings.ToLower(key) == strings.ToLower(path) {
+			if strings.EqualFold(key, path) {
 				return header
 			}
 		}

@@ -75,7 +75,10 @@ func SetOptions(ctx *broker.Context, flags *Daemon) error {
 		logger.Error(ctx, "unable to unmarshal log level", zap.String("level", flags.LogLevel))
 	}
 
-	logger.SetLevel(ctx, "*", level)
+	err = logger.SetLevel(ctx, "*", level)
+	if err != nil {
+		logger.Error(ctx, "unable to set log level", zap.Error(err))
+	}
 
 	return nil
 }

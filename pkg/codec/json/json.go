@@ -42,7 +42,6 @@ func (constructor *Constructor) New(resource string, specs *specs.ParameterMap) 
 type Manager struct {
 	resource string
 	specs    *specs.Property
-	keys     int
 }
 
 // Name returns the proto codec name

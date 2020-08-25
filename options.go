@@ -131,6 +131,9 @@ func WithLogLevel(pattern string, value string) Option {
 			logger.Error(ctx, "unable to unmarshal log level", zap.String("level", value))
 		}
 
-		logger.SetLevel(ctx, pattern, level)
+		err = logger.SetLevel(ctx, pattern, level)
+		if err != nil {
+			logger.Error(ctx, "unable to set log level", zap.Error(err))
+		}
 	}
 }

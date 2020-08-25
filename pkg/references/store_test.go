@@ -13,7 +13,10 @@ func BenchmarkSimpleFetching(b *testing.B) {
 	input := []byte(`{"message":"hello world"}`)
 
 	data := map[string]interface{}{}
-	json.Unmarshal(input, &data)
+	err := json.Unmarshal(input, &data)
+	if err != nil {
+		b.Fatal(err)
+	}
 
 	store := NewReferenceStore(len(data))
 	store.StoreValues("input", "", data)
@@ -59,7 +62,10 @@ func BenchmarkSimpleUnmarshal(b *testing.B) {
 	input := []byte(`{"message":"hello world"}`)
 
 	data := map[string]interface{}{}
-	json.Unmarshal(input, &data)
+	err := json.Unmarshal(input, &data)
+	if err != nil {
+		b.Fatal(err)
+	}
 
 	b.SetBytes(int64(len(input)))
 	b.ReportAllocs()
@@ -75,7 +81,10 @@ func BenchmarkRepeatedUnmarshal(b *testing.B) {
 	input := []byte(`{"details":[{"message":"hello world"}]}`)
 
 	data := map[string]interface{}{}
-	json.Unmarshal(input, &data)
+	err := json.Unmarshal(input, &data)
+	if err != nil {
+		b.Fatal(err)
+	}
 
 	store := NewReferenceStore(len(data) * b.N)
 
@@ -92,7 +101,10 @@ func BenchmarkNestedUnmarshal(b *testing.B) {
 	input := []byte(`{"details":{"name":"john"}}`)
 
 	data := map[string]interface{}{}
-	json.Unmarshal(input, &data)
+	err := json.Unmarshal(input, &data)
+	if err != nil {
+		b.Fatal(err)
+	}
 
 	store := NewReferenceStore(len(data) * b.N)
 
@@ -109,7 +121,10 @@ func BenchmarkComplexUnmarshal(b *testing.B) {
 	input := []byte(`{"message":"hello","details":{"name":"john"},"collection":[{"name":"john"}]}`)
 
 	data := map[string]interface{}{}
-	json.Unmarshal(input, &data)
+	err := json.Unmarshal(input, &data)
+	if err != nil {
+		b.Fatal(err)
+	}
 
 	store := NewReferenceStore(len(data) * b.N)
 

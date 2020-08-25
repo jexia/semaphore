@@ -40,6 +40,10 @@ func NewMock() (specs.FlowListInterface, error) {
 		providers.WithServices(mock.ServicesResolver(path)),
 	)
 
+	if err != nil {
+		return nil, err
+	}
+
 	stack := functions.Collection{}
 	collection, err := providers.Resolve(ctx, stack, options)
 	if err != nil {
