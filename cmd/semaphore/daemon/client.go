@@ -29,6 +29,11 @@ func NewClient(ctx *broker.Context, core semaphore.Options, provider providers.O
 		stack:     functions.Collection{},
 	}
 
+	err := client.Apply(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	return client, nil
 }
 
@@ -39,7 +44,6 @@ type Client struct {
 	ctx       *broker.Context
 	mutex     sync.Mutex
 	stack     functions.Collection
-	listeners transport.ListenerList
 }
 
 // Apply updates the listeners with the given specs collection.
@@ -67,7 +71,7 @@ func (client *Client) Apply(ctx *broker.Context) error {
 		return err
 	}
 
-	err = listeners.Apply(ctx, client.providers.Codec, client.listeners, transporters)
+	err = listeners.Apply(ctx, client.providers.Codec, client.providers.Listeners, transporters)
 	if err != nil {
 		return err
 	}
@@ -77,14 +81,14 @@ func (client *Client) Apply(ctx *broker.Context) error {
 
 // Serve opens all listeners inside the given semaphore client
 func (client *Client) Serve() (result error) {
-	if len(client.listeners) == 0 {
+	if len(client.providers.Listeners) == 0 {
 		return trace.New(trace.WithMessage("no listeners configured to serve"))
 	}
 
 	wg := sync.WaitGroup{}
-	wg.Add(len(client.listeners))
+	wg.Add(len(client.providers.Listeners))
 
-	for _, listener := range client.listeners {
+	for _, listener := range client.providers.Listeners {
 		logger.Info(client.ctx, "serving listener", zap.String("listener", listener.Name()))
 
 		go func(listener transport.Listener) {
@@ -102,7 +106,7 @@ func (client *Client) Serve() (result error) {
 
 // Close gracefully closes the given client
 func (client *Client) Close() {
-	for _, listener := range client.listeners {
+	for _, listener := range client.providers.Listeners {
 		listener.Close()
 	}
 }
