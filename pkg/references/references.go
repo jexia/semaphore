@@ -309,6 +309,7 @@ func ScopeNestedReferences(source *specs.Property, property *specs.Property) {
 			nested.Reference = &specs.PropertyReference{
 				Resource: property.Reference.Resource,
 				Path:     template.JoinPath(property.Reference.Path, key),
+				Property: value,
 			}
 		}
 

@@ -2,10 +2,14 @@ package json
 
 import (
 	"encoding/base64"
+	"errors"
 
 	"github.com/francoispqt/gojay"
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
+
+// ErrUnkownType is thrown when the given type is unkown
+var ErrUnkownType = errors.New("unkown type")
 
 // AddTypeKey encodes the given value into the given encoder
 func AddTypeKey(encoder *gojay.Encoder, key string, typed types.Type, value interface{}) {
@@ -84,74 +88,74 @@ func AddType(encoder *gojay.Encoder, typed types.Type, value interface{}) {
 }
 
 // DecodeType decodes the given property from the given decoder
-func DecodeType(decoder *gojay.Decoder, prop types.Type) interface{} {
+func DecodeType(decoder *gojay.Decoder, prop types.Type) (interface{}, error) {
 	switch prop {
 	case types.Double:
 		var value float64
-		decoder.AddFloat64(&value)
-		return value
+		err := decoder.AddFloat64(&value)
+		return value, err
 	case types.Float:
 		var value float32
-		decoder.AddFloat32(&value)
-		return value
+		err := decoder.AddFloat32(&value)
+		return value, err
 	case types.Int64:
 		var value int64
-		decoder.AddInt64(&value)
-		return value
+		err := decoder.AddInt64(&value)
+		return value, err
 	case types.Uint64:
 		var value uint64
-		decoder.AddUint64(&value)
-		return value
+		err := decoder.AddUint64(&value)
+		return value, err
 	case types.Fixed64:
 		var value uint64
-		decoder.AddUint64(&value)
-		return value
+		err := decoder.AddUint64(&value)
+		return value, err
 	case types.Int32:
 		var value int32
-		decoder.AddInt32(&value)
-		return value
+		err := decoder.AddInt32(&value)
+		return value, err
 	case types.Uint32:
 		var value uint32
-		decoder.AddUint32(&value)
-		return value
+		err := decoder.AddUint32(&value)
+		return value, err
 	case types.Fixed32:
 		var value uint32
-		decoder.AddUint32(&value)
-		return value
+		err := decoder.AddUint32(&value)
+		return value, err
 	case types.String:
 		var value string
-		decoder.AddString(&value)
-		return value
+		err := decoder.AddString(&value)
+		return value, err
 	case types.Bool:
 		var value bool
-		decoder.AddBool(&value)
-		return value
+		err := decoder.AddBool(&value)
+		return value, err
 	case types.Bytes:
 		var raw string
 		decoder.AddString(&raw)
 
 		value := make([]byte, len(raw))
-		base64.StdEncoding.Decode(value, []byte(raw))
-		return value
+		_, err := base64.StdEncoding.Decode(value, []byte(raw))
+		return value, err
 	case types.Sfixed32:
 		var value int32
-		decoder.AddInt32(&value)
-		return value
+		err := decoder.AddInt32(&value)
+		return value, err
 	case types.Sfixed64:
 		var value int64
-		decoder.AddInt64(&value)
-		return value
+		err := decoder.AddInt64(&value)
+		return value, err
 	case types.Sint32:
 		var value int32
-		decoder.AddInt32(&value)
-		return value
+		err := decoder.AddInt32(&value)
+		return value, err
 	case types.Sint64:
 		var value int64
-		decoder.AddInt64(&value)
-		return value
+		err := decoder.AddInt64(&value)
+		return value, err
 	}
 
-	return nil
+	return nil, ErrUnkownType
 }
 
 // StringEmpty returns the given value as a string or a empty string if the value is nil

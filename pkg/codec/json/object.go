@@ -117,7 +117,12 @@ func (object *Object) UnmarshalJSONObject(dec *gojay.Decoder, key string) error 
 			ref.Enum = &enum.Position
 		}
 	} else {
-		ref.Value = DecodeType(dec, prop.Type)
+		value, err := DecodeType(dec, prop.Type)
+		if err != nil {
+			return err
+		}
+
+		ref.Value = value
 	}
 
 	object.refs.StoreReference(object.resource, ref)
@@ -198,14 +203,21 @@ func (array *Array) UnmarshalJSONArray(dec *gojay.Decoder) error {
 
 	if array.specs.Type == types.Message {
 		object := NewObject(array.resource, array.specs.Nested, store)
-		dec.AddObject(object)
+		err := dec.AddObject(object)
+		if err != nil {
+			return err
+		}
+
 		array.ref.Append(store)
 		return nil
 	}
 
 	if array.specs.Type == types.Enum && array.specs.Enum != nil {
 		var key string
-		dec.AddString(&key)
+		err := dec.AddString(&key)
+		if err != nil {
+			return err
+		}
 
 		enum := array.specs.Enum.Keys[key]
 		if enum != nil {
@@ -216,7 +228,11 @@ func (array *Array) UnmarshalJSONArray(dec *gojay.Decoder) error {
 		return nil
 	}
 
-	val := DecodeType(dec, array.specs.Type)
+	val, err := DecodeType(dec, array.specs.Type)
+	if err != nil {
+		return err
+	}
+
 	store.StoreValue("", "", val)
 	array.ref.Append(store)
 

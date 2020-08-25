@@ -59,7 +59,10 @@ func TestAddTypeKey(t *testing.T) {
 			}
 
 			encoder := gojay.NewEncoder(ioutil.Discard)
-			encoder.Encode(object)
+			err := encoder.Encode(object)
+			if err != nil {
+				t.Fatal(err)
+			}
 		})
 	}
 }
@@ -92,7 +95,10 @@ func TestAddType(t *testing.T) {
 			}
 
 			encoder := gojay.NewEncoder(ioutil.Discard)
-			encoder.Encode(object)
+			err := encoder.Encode(object)
+			if err != nil {
+				t.Fatal(err)
+			}
 		})
 	}
 }
@@ -125,7 +131,10 @@ func TestAddEmptyType(t *testing.T) {
 			}
 
 			encoder := gojay.NewEncoder(ioutil.Discard)
-			encoder.Encode(object)
+			err := encoder.Encode(object)
+			if err != nil {
+				t.Fatal(err)
+			}
 		})
 	}
 }
@@ -153,7 +162,11 @@ func TestDecodeType(t *testing.T) {
 		t.Run(string(typed), func(t *testing.T) {
 			object := &mockObject{
 				dec: func(decoder *gojay.Decoder) {
-					value := DecodeType(decoder, typed)
+					value, err := DecodeType(decoder, typed)
+					if err != nil {
+						t.Fatal(err)
+					}
+
 					if value == nil {
 						t.Fatal("empty value returned, expected decoded value")
 					}
@@ -161,7 +174,10 @@ func TestDecodeType(t *testing.T) {
 			}
 
 			encoder := gojay.NewDecoder(strings.NewReader(value))
-			encoder.Decode(object)
+			err := encoder.Decode(object)
+			if err != nil {
+				t.Fatal(err)
+			}
 		})
 	}
 }

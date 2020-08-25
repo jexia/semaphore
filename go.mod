@@ -10,7 +10,7 @@ require (
 	github.com/golang/protobuf v1.4.1
 	github.com/graphql-go/graphql v0.7.9
 	github.com/hashicorp/hcl/v2 v2.3.0
-	github.com/jhump/protoreflect v1.6.0
+	github.com/jhump/protoreflect v1.7.0
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/micro/go-micro/v2 v2.3.0
 	github.com/mitchellh/go-wordwrap v1.0.0 // indirect

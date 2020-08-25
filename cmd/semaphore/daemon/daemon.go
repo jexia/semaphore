@@ -5,14 +5,13 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/jexia/semaphore"
-	"github.com/jexia/semaphore/cmd/semaphore/config"
+	"github.com/jexia/semaphore/cmd/semaphore/daemon/config"
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/spf13/cobra"
 )
 
-var params = config.New()
+var flags = &config.Daemon{}
 
 // Command represents the semaphore daemon command
 var Command = &cobra.Command{
@@ -23,22 +22,32 @@ var Command = &cobra.Command{
 }
 
 func init() {
-	Command.PersistentFlags().StringVar(&params.HTTP.Address, "http", "", "If set starts the HTTP listener on the given TCP address")
-	Command.PersistentFlags().StringVar(&params.GraphQL.Address, "graphql", "", "If set starts the GraphQL listener on the given TCP address")
-	Command.PersistentFlags().StringVar(&params.GRPC.Address, "grpc", "", "If set starts the gRPC listener on the given TCP address")
-	Command.PersistentFlags().StringSliceVar(&params.Protobuffers, "proto", []string{}, "If set are all proto definitions found inside the given path passed as schema definitions, all proto definitions are also passed as imports")
-	Command.PersistentFlags().StringSliceVarP(&params.Files, "file", "f", []string{"config.hcl"}, "Parses the given file as a definition file")
-	Command.PersistentFlags().StringVar(&params.LogLevel, "level", "", "Global logging level, this value will override the defined log level inside the file definitions")
+	Command.PersistentFlags().StringVar(&flags.HTTP.Address, "http", "", "If set starts the HTTP listener on the given TCP address")
+	Command.PersistentFlags().StringVar(&flags.GraphQL.Address, "graphql", "", "If set starts the GraphQL listener on the given TCP address")
+	Command.PersistentFlags().StringVar(&flags.GRPC.Address, "grpc", "", "If set starts the gRPC listener on the given TCP address")
+	Command.PersistentFlags().StringSliceVar(&flags.Protobuffers, "proto", []string{}, "If set are all proto definitions found inside the given path passed as schema definitions, all proto definitions are also passed as imports")
+	Command.PersistentFlags().StringSliceVarP(&flags.Files, "file", "f", []string{"config.hcl"}, "Parses the given file as a definition file")
+	Command.PersistentFlags().StringVar(&flags.LogLevel, "level", "", "Global logging level, this value will override the defined log level inside the file definitions")
 }
 
 func run(cmd *cobra.Command, args []string) error {
 	ctx := logger.WithLogger(broker.NewContext())
-	arguments, err := config.ConstructArguments(params)
+	err := config.SetOptions(ctx, flags)
 	if err != nil {
 		return err
 	}
 
-	client, err := semaphore.New(ctx, arguments...)
+	core, err := config.NewCore(ctx, flags)
+	if err != nil {
+		return err
+	}
+
+	provider, err := config.NewProviders(ctx, core, flags)
+	if err != nil {
+		return err
+	}
+
+	client, err := NewClient(ctx, core, provider)
 	if err != nil {
 		return err
 	}
@@ -53,7 +62,7 @@ func run(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func sigterm(client *semaphore.Client) {
+func sigterm(client *Client) {
 	term := make(chan os.Signal, 1)
 	signal.Notify(term, syscall.SIGINT, syscall.SIGTERM)
 	<-term

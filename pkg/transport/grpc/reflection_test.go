@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/golang/protobuf/proto"
-	dpb "github.com/golang/protobuf/protoc-gen-go/descriptor"
+	"github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/flow"
@@ -19,11 +19,11 @@ import (
 
 var (
 	// fileDescriptor of each test proto file.
-	fdTest       *dpb.FileDescriptorProto
-	fdTestv3     *dpb.FileDescriptorProto
-	fdProto2     *dpb.FileDescriptorProto
-	fdProto2Ext  *dpb.FileDescriptorProto
-	fdProto2Ext2 *dpb.FileDescriptorProto
+	fdTest       *descriptor.FileDescriptorProto
+	fdTestv3     *descriptor.FileDescriptorProto
+	fdProto2     *descriptor.FileDescriptorProto
+	fdProto2Ext  *descriptor.FileDescriptorProto
+	fdProto2Ext2 *descriptor.FileDescriptorProto
 	// fileDescriptor marshalled.
 	fdTestByte       []byte
 	fdTestv3Byte     []byte
@@ -156,17 +156,17 @@ func TestFileContainingSymbol(t *testing.T) {
 
 	type test struct {
 		symbol string
-		want   *Service
+		want   *descriptor.FileDescriptorProto
 	}
 
 	tests := map[string]test{
 		"first": {
 			symbol: "com.mock.first",
-			want:   listener.services["com.mock.first"],
+			want:   listener.descriptors["com.mock.first"].AsFileDescriptorProto(),
 		},
 		"second": {
 			symbol: "com.mock.second",
-			want:   listener.services["com.mock.second"],
+			want:   listener.descriptors["com.mock.second"].AsFileDescriptorProto(),
 		},
 	}
 
@@ -188,7 +188,7 @@ func TestFileContainingSymbol(t *testing.T) {
 				t.Fatalf("failed to recv response: %v", err)
 			}
 
-			expected, err := proto.Marshal(test.want.proto)
+			expected, err := proto.Marshal(test.want)
 			if err != nil {
 				t.Fatal(err)
 			}
