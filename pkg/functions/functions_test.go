@@ -3,12 +3,15 @@ package functions
 import (
 	"errors"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
+	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/labels"
+	"github.com/jexia/semaphore/pkg/specs/template"
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
@@ -587,7 +590,7 @@ func TestPrepareFunctions(t *testing.T) {
 			ctx := logger.WithLogger(broker.NewBackground())
 			mem := Collection{}
 
-			err := PrepareManifestFunctions(ctx, mem, functions, test.flows)
+			err := PrepareFunctions(ctx, mem, functions, test.flows)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -605,15 +608,11 @@ func TestPrepareFunctions(t *testing.T) {
 
 func TestPrepareFunctionsErr(t *testing.T) {
 	type test struct {
-		expected    int
-		collections int
-		flows       specs.FlowListInterface
+		flows specs.FlowListInterface
 	}
 
 	tests := map[string]test{
 		"flow": {
-			expected:    3,
-			collections: 3,
 			flows: specs.FlowListInterface{
 				&specs.Flow{
 					Nodes: specs.NodeList{
@@ -665,8 +664,6 @@ func TestPrepareFunctionsErr(t *testing.T) {
 			},
 		},
 		"flow rollback": {
-			expected:    6,
-			collections: 2,
 			flows: specs.FlowListInterface{
 				&specs.Flow{
 					Nodes: specs.NodeList{
@@ -719,8 +716,6 @@ func TestPrepareFunctionsErr(t *testing.T) {
 			},
 		},
 		"flow header": {
-			expected:    4,
-			collections: 2,
 			flows: specs.FlowListInterface{
 				&specs.Flow{
 					Nodes: specs.NodeList{
@@ -751,8 +746,6 @@ func TestPrepareFunctionsErr(t *testing.T) {
 			},
 		},
 		"proxy": {
-			expected:    2,
-			collections: 2,
 			flows: specs.FlowListInterface{
 				&specs.Proxy{
 					Nodes: specs.NodeList{
@@ -791,8 +784,6 @@ func TestPrepareFunctionsErr(t *testing.T) {
 			},
 		},
 		"proxy rollback": {
-			expected:    6,
-			collections: 2,
 			flows: specs.FlowListInterface{
 				&specs.Proxy{
 					Nodes: specs.NodeList{
@@ -845,8 +836,6 @@ func TestPrepareFunctionsErr(t *testing.T) {
 			},
 		},
 		"proxy header": {
-			expected:    4,
-			collections: 2,
 			flows: specs.FlowListInterface{
 				&specs.Proxy{
 					Nodes: specs.NodeList{
@@ -879,8 +868,6 @@ func TestPrepareFunctionsErr(t *testing.T) {
 			},
 		},
 		"condition": {
-			expected:    1,
-			collections: 1,
 			flows: specs.FlowListInterface{
 				&specs.Flow{
 					Nodes: specs.NodeList{
@@ -906,8 +893,6 @@ func TestPrepareFunctionsErr(t *testing.T) {
 			},
 		},
 		"intermediate": {
-			expected:    1,
-			collections: 1,
 			flows: specs.FlowListInterface{
 				&specs.Flow{
 					Nodes: specs.NodeList{
@@ -931,8 +916,6 @@ func TestPrepareFunctionsErr(t *testing.T) {
 			},
 		},
 		"call response": {
-			expected:    1,
-			collections: 1,
 			flows: specs.FlowListInterface{
 				&specs.Flow{
 					Nodes: specs.NodeList{
@@ -954,8 +937,6 @@ func TestPrepareFunctionsErr(t *testing.T) {
 			},
 		},
 		"params": {
-			expected:    2,
-			collections: 1,
 			flows: specs.FlowListInterface{
 				&specs.Flow{
 					Nodes: specs.NodeList{
@@ -977,8 +958,6 @@ func TestPrepareFunctionsErr(t *testing.T) {
 			},
 		},
 		"output": {
-			expected:    1,
-			collections: 1,
 			flows: specs.FlowListInterface{
 				&specs.Flow{
 					Output: &specs.ParameterMap{
@@ -994,8 +973,6 @@ func TestPrepareFunctionsErr(t *testing.T) {
 			},
 		},
 		"forward": {
-			expected:    1,
-			collections: 1,
 			flows: specs.FlowListInterface{
 				&specs.Proxy{
 					Forward: &specs.Call{
@@ -1027,7 +1004,7 @@ func TestPrepareFunctionsErr(t *testing.T) {
 			ctx := logger.WithLogger(broker.NewBackground())
 			mem := Collection{}
 
-			err := PrepareManifestFunctions(ctx, mem, functions, test.flows)
+			err := PrepareFunctions(ctx, mem, functions, test.flows)
 			if err == nil {
 				t.Fatal("unexpected pass expected prepare to fail")
 			}
@@ -1150,5 +1127,59 @@ func TestPrepareFunctionNil(t *testing.T) {
 	err := PrepareFunction(nil, nil, nil, nil, nil, nil)
 	if err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestFunctionsNestedReferences(t *testing.T) {
+	result := &specs.Property{
+		Type:  types.Message,
+		Label: labels.Optional,
+		Nested: map[string]*specs.Property{
+			"id": {
+				Type:    types.String,
+				Label:   labels.Optional,
+				Default: "abc",
+			},
+		},
+	}
+
+	functions := Custom{
+		"mock": func(args ...*specs.Property) (*specs.Property, Exec, error) {
+			return result, func(references.Store) error { return nil }, nil
+		},
+	}
+
+	property := &specs.Property{
+		Raw: "mock()",
+	}
+
+	ctx := logger.WithLogger(broker.NewBackground())
+	stack := Stack{}
+
+	err := PrepareFunction(ctx, nil, nil, property, stack, functions)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if property.Reference == nil || property.Reference.Property == nil {
+		t.Fatal("property reference not set")
+	}
+
+	if len(property.Nested) != len(result.Nested) {
+		t.Fatal("property reference nested is not equal to result")
+	}
+
+	for _, nested := range property.Nested {
+		if nested.Reference == nil {
+			t.Fatal("nested reference not set")
+		}
+
+		if !strings.HasPrefix(nested.Reference.Resource, template.StackResource) {
+			t.Errorf("nested does not reference stack, %+v", nested.Reference.Resource)
+		}
+
+		if nested.Reference.Property == nil {
+			t.Error("nested property is not set")
+		}
 	}
 }

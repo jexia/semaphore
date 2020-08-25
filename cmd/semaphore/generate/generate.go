@@ -1,13 +1,10 @@
 package generate
 
 import (
-	"github.com/jexia/semaphore/cmd/semaphore/config"
 	"github.com/jexia/semaphore/cmd/semaphore/generate/openapi3"
 	"github.com/jexia/semaphore/cmd/semaphore/generate/protobuf"
 	"github.com/spf13/cobra"
 )
-
-var params = config.New()
 
 // Command represents the semaphore daemon command
 var Command = &cobra.Command{

@@ -1,7 +1,6 @@
 package specs
 
 import (
-	"github.com/hashicorp/hcl/v2"
 	"github.com/jexia/semaphore/pkg/specs/labels"
 	"github.com/jexia/semaphore/pkg/specs/metadata"
 	"github.com/jexia/semaphore/pkg/specs/types"
@@ -60,6 +59,11 @@ func (objects Schemas) Append(arg Schemas) {
 	}
 }
 
+// Expression provides information about expression.
+type Expression interface {
+	Position() string
+}
+
 // Property represents a value property.
 // A value property could contain a constant value or a value reference.
 type Property struct {
@@ -73,7 +77,7 @@ type Property struct {
 	Label     labels.Label         `json:"label,omitempty"`
 	Reference *PropertyReference   `json:"reference,omitempty"`
 	Nested    map[string]*Property `json:"nested,omitempty"`
-	Expr      hcl.Expression       `json:"-"` // TODO: replace this with a custom solution
+	Expr      Expression           `json:"-"`
 	Raw       string               `json:"raw,omitempty"`
 	Options   Options              `json:"options,omitempty"`
 	Enum      *Enum                `json:"enum,omitempty"`

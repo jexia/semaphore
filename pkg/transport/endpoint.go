@@ -179,16 +179,18 @@ func (endpoint *Endpoint) NewCodec(ctx *broker.Context, request codec.Constructo
 		endpoint.Errs = Errs{}
 	}
 
-	for _, handle := range endpoint.Flow.Errors() {
-		object := NewObject(handle.GetResponse(), handle.GetStatusCode(), handle.GetMessage())
+	if endpoint.Flow != nil {
+		for _, handle := range endpoint.Flow.Errors() {
+			object := NewObject(handle.GetResponse(), handle.GetStatusCode(), handle.GetMessage())
 
-		object.NewMeta(ctx, template.ErrorResource)
-		err = object.NewCodec(ctx, template.ErrorResource, response)
-		if err != nil {
-			return err
+			object.NewMeta(ctx, template.ErrorResource)
+			err = object.NewCodec(ctx, template.ErrorResource, response)
+			if err != nil {
+				return err
+			}
+
+			endpoint.Errs.Set(handle, object)
 		}
-
-		endpoint.Errs.Set(handle, object)
 	}
 
 	endpoint.Response.NewMeta(ctx, template.OutputResource)

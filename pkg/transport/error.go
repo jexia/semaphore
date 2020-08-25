@@ -38,11 +38,7 @@ type wrapper struct {
 }
 
 func (w *wrapper) String() string {
-	if w.err == nil {
-		return ""
-	}
-
-	return w.err.Error()
+	return w.Error()
 }
 
 // Error returns the underlaying error as a string

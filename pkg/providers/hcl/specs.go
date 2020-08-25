@@ -674,7 +674,7 @@ func ParseIntermediateProperty(ctx *broker.Context, path string, property *hcl.A
 	result := &specs.Property{
 		Name:  property.Name,
 		Path:  template.JoinPath(path, property.Name),
-		Expr:  property.Expr,
+		Expr:  &Expression{property.Expr},
 		Label: labels.Optional,
 	}
 

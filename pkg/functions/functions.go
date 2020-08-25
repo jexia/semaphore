@@ -63,12 +63,12 @@ var (
 )
 
 const (
-	// FunctionArgumentDelimiter represents the character delimiting function arguments
-	FunctionArgumentDelimiter = ","
+	// ArgumentDelimiter represents the character delimiting function arguments
+	ArgumentDelimiter = ","
 )
 
-// PrepareManifestFunctions prepares all function definitions inside the given manifest
-func PrepareManifestFunctions(ctx *broker.Context, mem Collection, functions Custom, flows specs.FlowListInterface) (err error) {
+// PrepareFunctions prepares all function definitions inside the given flows
+func PrepareFunctions(ctx *broker.Context, mem Collection, functions Custom, flows specs.FlowListInterface) (err error) {
 	logger.Info(ctx, "preparing manifest functions")
 
 	for _, flow := range flows {
@@ -192,6 +192,11 @@ func PrepareParameterMapFunctions(ctx *broker.Context, node *specs.Node, flow sp
 		}
 	}
 
+	params.Stack = make(map[string]*specs.Property, len(stack))
+	for ref, fn := range stack {
+		params.Stack[ref] = fn.Returns
+	}
+
 	return nil
 }
 
@@ -258,7 +263,7 @@ func PrepareFunction(ctx *broker.Context, node *specs.Node, flow specs.FlowInter
 
 	pattern := FunctionPattern.FindStringSubmatch(property.Raw)
 	fn := pattern[1]
-	args := strings.Split(pattern[2], FunctionArgumentDelimiter)
+	args := strings.Split(pattern[2], ArgumentDelimiter)
 
 	if methods[fn] == nil {
 		return trace.New(trace.WithMessage("undefined custom function '%s' in '%s'", fn, property.Raw))
@@ -308,6 +313,7 @@ func PrepareFunction(ctx *broker.Context, node *specs.Node, flow specs.FlowInter
 		Property: returns,
 	}
 
+	references.ScopeNestedReferences(returns, property)
 	return nil
 }
 
