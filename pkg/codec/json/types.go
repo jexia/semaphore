@@ -196,7 +196,7 @@ func Int64Empty(val interface{}) int64 {
 		return 0
 	}
 
-	return val.(int64)
+	return int64(val.(float64))
 }
 
 // Uint64Empty returns the given value as a uint64 or a empty uint64 if the value is nil
