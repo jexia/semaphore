@@ -1,6 +1,7 @@
 package specs
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/jexia/semaphore/pkg/specs/labels"
@@ -17,13 +18,21 @@ func TestPropertyUnmarshalFail(t *testing.T) {
 	}
 }
 func TestPropertyUnmarshal(t *testing.T) {
-	payload := `{"position":1,"name":"com.semaphore.products.Product","type":"message","label":"optional","nested":{"pcode":{"position":2,"name":"pcode","path":"pcode","type":"int64","label":"optional"},"pcode2":{"position":2,"name":"pcode2","path":"pcode2","type":"uint64","label":"optional"},"product":{"position":1,"name":"product","path":"product","type":"string","label":"optional"}}}`
+	payload := `{"position":1,"name":"com.semaphore.products.Product","type":"message","label":"optional","nested":{"pcode":{"position":2,"name":"pcode","path":"pcode","type":"int64","label":"optional", "default": 100},"pcode2":{"position":2,"name":"pcode2","path":"pcode2","type":"uint64","label":"optional", "default":20},"product":{"position":1,"name":"product","path":"product","type":"string","label":"optional"}}}`
 
 	prop := Property{}
 	err := prop.UnmarshalJSON([]byte(payload))
 
 	if err != nil {
 		t.Errorf("unexpected error %+v", err)
+	}
+
+	if reflect.TypeOf(prop.Nested["pcode"].Default).String() != "int64" {
+		t.Error("expected int64")
+	}
+
+	if reflect.TypeOf(prop.Nested["pcode2"].Default).String() != "uint64" {
+		t.Error("expected uint64")
 	}
 }
 
