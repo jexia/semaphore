@@ -608,15 +608,11 @@ func TestPrepareFunctions(t *testing.T) {
 
 func TestPrepareFunctionsErr(t *testing.T) {
 	type test struct {
-		expected    int
-		collections int
-		flows       specs.FlowListInterface
+		flows specs.FlowListInterface
 	}
 
 	tests := map[string]test{
 		"flow": {
-			expected:    3,
-			collections: 3,
 			flows: specs.FlowListInterface{
 				&specs.Flow{
 					Nodes: specs.NodeList{
@@ -668,8 +664,6 @@ func TestPrepareFunctionsErr(t *testing.T) {
 			},
 		},
 		"flow rollback": {
-			expected:    6,
-			collections: 2,
 			flows: specs.FlowListInterface{
 				&specs.Flow{
 					Nodes: specs.NodeList{
@@ -722,8 +716,6 @@ func TestPrepareFunctionsErr(t *testing.T) {
 			},
 		},
 		"flow header": {
-			expected:    4,
-			collections: 2,
 			flows: specs.FlowListInterface{
 				&specs.Flow{
 					Nodes: specs.NodeList{
@@ -754,8 +746,6 @@ func TestPrepareFunctionsErr(t *testing.T) {
 			},
 		},
 		"proxy": {
-			expected:    2,
-			collections: 2,
 			flows: specs.FlowListInterface{
 				&specs.Proxy{
 					Nodes: specs.NodeList{
@@ -794,8 +784,6 @@ func TestPrepareFunctionsErr(t *testing.T) {
 			},
 		},
 		"proxy rollback": {
-			expected:    6,
-			collections: 2,
 			flows: specs.FlowListInterface{
 				&specs.Proxy{
 					Nodes: specs.NodeList{
@@ -848,8 +836,6 @@ func TestPrepareFunctionsErr(t *testing.T) {
 			},
 		},
 		"proxy header": {
-			expected:    4,
-			collections: 2,
 			flows: specs.FlowListInterface{
 				&specs.Proxy{
 					Nodes: specs.NodeList{
@@ -882,8 +868,6 @@ func TestPrepareFunctionsErr(t *testing.T) {
 			},
 		},
 		"condition": {
-			expected:    1,
-			collections: 1,
 			flows: specs.FlowListInterface{
 				&specs.Flow{
 					Nodes: specs.NodeList{
@@ -909,8 +893,6 @@ func TestPrepareFunctionsErr(t *testing.T) {
 			},
 		},
 		"intermediate": {
-			expected:    1,
-			collections: 1,
 			flows: specs.FlowListInterface{
 				&specs.Flow{
 					Nodes: specs.NodeList{
@@ -934,8 +916,6 @@ func TestPrepareFunctionsErr(t *testing.T) {
 			},
 		},
 		"call response": {
-			expected:    1,
-			collections: 1,
 			flows: specs.FlowListInterface{
 				&specs.Flow{
 					Nodes: specs.NodeList{
@@ -957,8 +937,6 @@ func TestPrepareFunctionsErr(t *testing.T) {
 			},
 		},
 		"params": {
-			expected:    2,
-			collections: 1,
 			flows: specs.FlowListInterface{
 				&specs.Flow{
 					Nodes: specs.NodeList{
@@ -980,8 +958,6 @@ func TestPrepareFunctionsErr(t *testing.T) {
 			},
 		},
 		"output": {
-			expected:    1,
-			collections: 1,
 			flows: specs.FlowListInterface{
 				&specs.Flow{
 					Output: &specs.ParameterMap{
@@ -997,8 +973,6 @@ func TestPrepareFunctionsErr(t *testing.T) {
 			},
 		},
 		"forward": {
-			expected:    1,
-			collections: 1,
 			flows: specs.FlowListInterface{
 				&specs.Proxy{
 					Forward: &specs.Call{

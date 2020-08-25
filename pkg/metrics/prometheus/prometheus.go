@@ -177,7 +177,7 @@ func (collector *collector) AfterDo(next flow.AfterManager) flow.AfterManager {
 			})
 
 			start := value.(time.Time)
-			diff := time.Now().Sub(start)
+			diff := time.Since(start)
 
 			duration.Observe(diff.Seconds())
 		}
@@ -212,7 +212,7 @@ func (collector *collector) AfterRollback(next flow.AfterManager) flow.AfterMana
 			})
 
 			start := value.(time.Time)
-			diff := time.Now().Sub(start)
+			diff := time.Since(start)
 
 			duration.Observe(diff.Seconds())
 		}
@@ -249,7 +249,7 @@ func (collector *collector) AfterNode(next flow.AfterNode) flow.AfterNode {
 			})
 
 			start := value.(time.Time)
-			diff := time.Now().Sub(start)
+			diff := time.Since(start)
 
 			duration.Observe(diff.Seconds())
 		}

@@ -26,6 +26,10 @@ func NewMock() (specs.FlowListInterface, error) {
 		semaphore.WithFlows(hcl.FlowsResolver("./tests/*.hcl")),
 	)
 
+	if err != nil {
+		return nil, err
+	}
+
 	options, err := providers.NewOptions(ctx, core,
 		providers.WithServices(protobuffers.ServiceResolver([]string{"./tests"}, "./tests/*.proto")),
 		providers.WithSchema(protobuffers.SchemaResolver([]string{"./tests"}, "./tests/*.proto")),
@@ -42,16 +46,6 @@ func NewMock() (specs.FlowListInterface, error) {
 	}
 
 	return collection.FlowListInterface, nil
-}
-
-func FindNode(flow *specs.Flow, name string) *specs.Node {
-	for _, node := range flow.GetNodes() {
-		if node.ID == name {
-			return node
-		}
-	}
-
-	return nil
 }
 
 func ValidateStore(t *testing.T, prop *specs.Property, resource string, origin string, input map[string]interface{}, store references.Store) {

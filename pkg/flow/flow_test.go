@@ -3,7 +3,6 @@ package flow
 import (
 	"context"
 	"errors"
-	"io"
 	"sync"
 	"testing"
 
@@ -14,16 +13,6 @@ import (
 	"github.com/jexia/semaphore/pkg/specs"
 	"go.uber.org/zap"
 )
-
-type MockCodec struct{}
-
-func (codec *MockCodec) Marshal(references.Store) (io.Reader, error) {
-	return nil, nil
-}
-
-func (codec *MockCodec) Unmarshal(io.Reader, references.Store) error {
-	return nil
-}
 
 type mocker struct {
 	name    string
@@ -358,8 +347,7 @@ func TestAfterManagerFunctions(t *testing.T) {
 
 func TestAfterManagerFunctionsError(t *testing.T) {
 	type test struct {
-		expected int
-		stack    functions.Stack
+		stack functions.Stack
 	}
 
 	expected := errors.New("unexpected error")
@@ -374,7 +362,6 @@ func TestAfterManagerFunctionsError(t *testing.T) {
 
 	tests := map[string]test{
 		"single": {
-			expected: 1,
 			stack: functions.Stack{
 				"first": &functions.Function{
 					Arguments: []*specs.Property{},
@@ -384,7 +371,6 @@ func TestAfterManagerFunctionsError(t *testing.T) {
 			},
 		},
 		"multiple": {
-			expected: 3,
 			stack: functions.Stack{
 				"first": &functions.Function{
 					Arguments: []*specs.Property{},
