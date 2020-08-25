@@ -18,7 +18,7 @@ func TestPropertyUnmarshalFail(t *testing.T) {
 	}
 }
 func TestPropertyUnmarshal(t *testing.T) {
-	payload := `{"position":1,"name":"com.semaphore.products.Product","type":"message","label":"optional","nested":{"pcode":{"position":2,"name":"pcode","path":"pcode","type":"int64","label":"optional", "default": 100},"pcode2":{"position":2,"name":"pcode2","path":"pcode2","type":"uint64","label":"optional", "default":20},"product":{"position":1,"name":"product","path":"product","type":"string","label":"optional"}}}`
+	payload := `{"position":1,"name":"com.semaphore.products.Product","type":"message","label":"optional","nested":{"pcode":{"position":2,"name":"pcode","path":"pcode","type":"int64","label":"optional", "default": 100},"pcode2":{"position":2,"name":"pcode2","path":"pcode2","type":"uint64","label":"optional", "default":20},"pcode3":{"position":2,"name":"pcode3","path":"pcode3","type":"uint32","label":"optional", "default":20},"pcode4":{"position":2,"name":"pcode4","path":"pcode4","type":"int32","label":"optional", "default":20},"product":{"position":1,"name":"product","path":"product","type":"string","label":"optional"}}}`
 
 	prop := Property{}
 	err := prop.UnmarshalJSON([]byte(payload))
@@ -33,6 +33,14 @@ func TestPropertyUnmarshal(t *testing.T) {
 
 	if reflect.TypeOf(prop.Nested["pcode2"].Default).String() != "uint64" {
 		t.Error("expected uint64")
+	}
+
+	if reflect.TypeOf(prop.Nested["pcode3"].Default).String() != "uint32" {
+		t.Error("expected uint32")
+	}
+
+	if reflect.TypeOf(prop.Nested["pcode4"].Default).String() != "int32" {
+		t.Error("expected int32")
 	}
 }
 

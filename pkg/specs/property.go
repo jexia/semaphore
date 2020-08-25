@@ -118,6 +118,16 @@ func (prop *Property) Clean() {
 			if !ok {
 				prop.Default = uint64(prop.Default.(float64))
 			}
+		case types.Int32, types.Sint32, types.Sfixed32:
+			_, ok := prop.Default.(int32)
+			if !ok {
+				prop.Default = int32(prop.Default.(float64))
+			}
+		case types.Uint32:
+			_, ok := prop.Default.(uint32)
+			if !ok {
+				prop.Default = uint32(prop.Default.(float64))
+			}
 		}
 	}
 }
