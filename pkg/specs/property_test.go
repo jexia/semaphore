@@ -8,8 +8,16 @@ import (
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
+func TestPropertyUnmarshalFail(t *testing.T) {
+	payload := "non json string"
+	prop := Property{}
+	err := prop.UnmarshalJSON([]byte(payload))
+	if err == nil {
+		t.Error("expected error got nil")
+	}
+}
 func TestPropertyUnmarshal(t *testing.T) {
-	payload := `{"property":{"position":1,"name":"com.semaphore.products.Product","type":"message","label":"optional","nested":{"pcode":{"position":2,"name":"pcode","path":"pcode","type":"int64","label":"optional"},"pcode2":{"position":2,"name":"pcode2","path":"pcode2","type":"uint64","label":"optional"},"product":{"position":1,"name":"product","path":"product","type":"string","label":"optional"}}}}`
+	payload := `{"position":1,"name":"com.semaphore.products.Product","type":"message","label":"optional","nested":{"pcode":{"position":2,"name":"pcode","path":"pcode","type":"int64","label":"optional"},"pcode2":{"position":2,"name":"pcode2","path":"pcode2","type":"uint64","label":"optional"},"product":{"position":1,"name":"product","path":"product","type":"string","label":"optional"}}}`
 
 	prop := Property{}
 	err := prop.UnmarshalJSON([]byte(payload))
