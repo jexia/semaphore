@@ -16,7 +16,7 @@ var label string
 
 var cmd = &cobra.Command{
 	Use:     "semaphore",
-	Version: fmt.Sprintf("%s, build: %s", version, build),
+	Version: fmt.Sprintf("%s, build: %s %s", version, build, label),
 	Short:   "A straightforward micro-service conductor",
 	Long: `Semaphore is a feature-rich service orchestrator.
 Create advanced data flows and expose them through endpoints. Have full control over your exposed endpoints,

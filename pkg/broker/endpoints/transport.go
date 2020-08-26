@@ -34,7 +34,6 @@ type Options struct {
 	semaphore.Options
 	stack    functions.Collection
 	services specs.ServiceList
-	flows    specs.FlowListInterface
 }
 
 // EndpointOption applies the given options to the apply options object.

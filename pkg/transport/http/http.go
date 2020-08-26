@@ -54,7 +54,6 @@ func NewTransportResponseWriter(ctx context.Context, rw transport.ResponseWriter
 type TransportResponseWriter struct {
 	header    http.Header
 	transport transport.ResponseWriter
-	status    int
 	once      sync.Once
 	mutex     sync.RWMutex
 }

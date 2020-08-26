@@ -13,7 +13,6 @@ import (
 	"github.com/jexia/semaphore/pkg/references/forwarding"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/template"
-	"github.com/jexia/semaphore/pkg/transport"
 )
 
 // ErrNilFlowManager is thrown when a nil flow manager has been passed
@@ -197,28 +196,6 @@ func messageHandle(ctx *broker.Context, node *specs.Node, constructor codec.Cons
 	}
 
 	return request, nil
-}
-
-// newForward constructs a flow caller for the given call.
-func forwarder(call *specs.Call, options FlowOptions) (*transport.Forward, error) {
-	if call == nil {
-		return nil, nil
-	}
-
-	service := options.services.Get(call.Service)
-	if service == nil {
-		return nil, trace.New(trace.WithMessage("the service for '%s' was not found", call.Method))
-	}
-
-	result := &transport.Forward{
-		Service: service,
-	}
-
-	if call.Request != nil {
-		result.Schema = call.Request.Header
-	}
-
-	return result, nil
 }
 
 // errorHandler constructs a new error object from the given parameter map and codec
