@@ -33,5 +33,6 @@ jobs:
     
     - name: Git changes
       run: |
+        echo "check if linters resulted in any changes:"
         git status --porcelain
         test -z "$(git status --porcelain)"
