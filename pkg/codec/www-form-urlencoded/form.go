@@ -2,6 +2,7 @@ package formencoded
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"net/url"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/labels"
+	"github.com/jexia/semaphore/pkg/specs/template"
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
@@ -62,17 +64,19 @@ func (manager *Manager) Property() *specs.Property {
 // This method is called during runtime to encode a new message with the values stored inside the given reference store
 func (manager *Manager) Marshal(refs references.Store) (io.Reader, error) {
 	if manager.specs == nil {
-		return nil, nil
+		return bytes.NewReader([]byte{}), nil
 	}
 
 	encoder := url.Values{}
-	encode(encoder, refs, manager.specs)
+	encode(encoder, "", refs, manager.specs)
 
 	bb := []byte(encoder.Encode())
 	return bytes.NewReader(bb), nil
 }
 
-func encode(encoder url.Values, refs references.Store, prop *specs.Property) {
+func encode(encoder url.Values, root string, refs references.Store, prop *specs.Property) {
+	path := template.JoinPath(root, prop.Name)
+
 	if prop.Label == labels.Repeated {
 		if prop.Reference == nil {
 			return
@@ -83,13 +87,16 @@ func encode(encoder url.Values, refs references.Store, prop *specs.Property) {
 			return
 		}
 
-		// array := NewArray(object.resource, prop, ref, ref.Repeated)
-		// encoder.AddArrayKey(prop.Name, array)
+		for index, repeated := range ref.Repeated {
+			current := fmt.Sprintf("%s[%d]", path, index)
+			array(encoder, current, repeated, prop)
+		}
+
 		return
 	}
 
 	for _, nested := range prop.Nested {
-		encode(encoder, refs, nested)
+		encode(encoder, path, refs, nested)
 	}
 
 	val := prop.Default
@@ -112,7 +119,35 @@ func encode(encoder url.Values, refs references.Store, prop *specs.Property) {
 		return
 	}
 
-	AddTypeKey(encoder, prop.Path, prop.Type, val)
+	AddTypeKey(encoder, path, prop.Type, val)
+}
+
+func array(encoder url.Values, root string, refs references.Store, prop *specs.Property) {
+	for _, nested := range prop.Nested {
+		encode(encoder, root, refs, nested)
+	}
+
+	val := prop.Default
+
+	if prop.Reference != nil {
+		ref := refs.Load("", "")
+		if ref != nil {
+			if prop.Type == types.Enum && ref.Enum != nil {
+				enum := prop.Enum.Positions[*ref.Enum]
+				if enum != nil {
+					val = enum.Key
+				}
+			} else if ref.Value != nil {
+				val = ref.Value
+			}
+		}
+	}
+
+	if val == nil {
+		return
+	}
+
+	AddTypeKey(encoder, root, prop.Type, val)
 }
 
 // Unmarshal unmarshals the given www-form-urlencoded io reader into the given reference store.

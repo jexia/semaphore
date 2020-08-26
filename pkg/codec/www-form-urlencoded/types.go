@@ -26,7 +26,7 @@ func AddTypeKey(encoder url.Values, key string, typed types.Type, value interfac
 	case types.Uint32:
 		encoded = Uint32Empty(value)
 	case types.Fixed32:
-		encoded = Uint64Empty(value)
+		encoded = Uint32Empty(value)
 	case types.Float:
 		encoded = Float32Empty(value)
 	case types.String:
@@ -60,7 +60,7 @@ func DecodeType(decoder url.Values, key string, typed types.Type) (interface{}, 
 		return value, err
 	case types.Float:
 		value, err := strconv.ParseFloat(raw, 64)
-		return float32(value), err
+		return float64(value), err
 	case types.Int64:
 		value, err := strconv.ParseInt(raw, 10, 64)
 		return value, err
