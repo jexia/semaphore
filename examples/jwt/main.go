@@ -30,7 +30,7 @@ func main() {
 		reader    = jwt.HMAC("very-strong-secret")
 		ctx       = logger.WithLogger(broker.NewContext())
 		functions = functions.Custom{
-			"jwt": jwt.JWT(reader, NewClaims),
+			"jwt": jwt.New(reader, NewClaims),
 		}
 	)
 
