@@ -17,8 +17,8 @@ func TestPropertyUnmarshalFail(t *testing.T) {
 		t.Error("expected error got nil")
 	}
 }
-func TestPropertyUnmarshal(t *testing.T) {
-	payload := `{"position":1,"name":"com.semaphore.products.Product","type":"message","label":"optional","nested":{"pcode":{"position":2,"name":"pcode","path":"pcode","type":"int64","label":"optional", "default": 100},"pcode2":{"position":2,"name":"pcode2","path":"pcode2","type":"uint64","label":"optional", "default":20},"pcode3":{"position":2,"name":"pcode3","path":"pcode3","type":"uint32","label":"optional", "default":20},"pcode4":{"position":2,"name":"pcode4","path":"pcode4","type":"int32","label":"optional", "default":20},"product":{"position":1,"name":"product","path":"product","type":"string","label":"optional"}}}`
+func TestPropertyUnmarshalCheckInt64(t *testing.T) {
+	payload := `{"position":1,"name":"com.semaphore.products.Product","type":"message","label":"optional","nested":{"pcode":{"position":2,"name":"pcode","path":"pcode","type":"int64","label":"optional","default":100},"pcode2":{"position":2,"name":"pcode2","path":"pcode2","type":"sint64","label":"optional","default":200},"pcode3":{"position":2,"name":"pcode3","path":"pcode3","type":"sfixed64","label":"optional","default":200}}}`
 
 	prop := Property{}
 	err := prop.UnmarshalJSON([]byte(payload))
@@ -27,20 +27,61 @@ func TestPropertyUnmarshal(t *testing.T) {
 		t.Errorf("unexpected error %+v", err)
 	}
 
-	if reflect.TypeOf(prop.Nested["pcode"].Default).String() != "int64" {
-		t.Error("expected int64")
+	for _, value := range prop.Nested {
+		if reflect.TypeOf(value.Default).String() != "int64" {
+			t.Error("expected int64")
+		}
+	}
+}
+
+func TestPropertyUnmarshalCheckUint64(t *testing.T) {
+	payload := `{"position":1,"name":"com.semaphore.products.Product","type":"message","label":"optional","nested":{"pcode":{"position":2,"name":"pcode","path":"pcode","type":"uint64","label":"optional","default":100},"pcode2":{"position":2,"name":"pcode2","path":"pcode2","type":"fixed64","label":"optional","default":200},"pcode3":{"position":2,"name":"pcode3","path":"pcode3","type":"fixed32","label":"optional","default":200}}}`
+
+	prop := Property{}
+	err := prop.UnmarshalJSON([]byte(payload))
+
+	if err != nil {
+		t.Errorf("unexpected error %+v", err)
 	}
 
-	if reflect.TypeOf(prop.Nested["pcode2"].Default).String() != "uint64" {
-		t.Error("expected uint64")
+	for _, value := range prop.Nested {
+		if reflect.TypeOf(value.Default).String() != "uint64" {
+			t.Error("expected uint64")
+		}
+	}
+}
+
+func TestPropertyUnmarshalCheckInt32(t *testing.T) {
+	payload := `{"position":1,"name":"com.semaphore.products.Product","type":"message","label":"optional","nested":{"pcode":{"position":2,"name":"pcode","path":"pcode","type":"int32","label":"optional","default":100},"pcode2":{"position":2,"name":"pcode2","path":"pcode2","type":"sint32","label":"optional","default":200},"pcode3":{"position":2,"name":"pcode3","path":"pcode3","type":"sfixed32","label":"optional","default":200}}}`
+
+	prop := Property{}
+	err := prop.UnmarshalJSON([]byte(payload))
+
+	if err != nil {
+		t.Errorf("unexpected error %+v", err)
 	}
 
-	if reflect.TypeOf(prop.Nested["pcode3"].Default).String() != "uint32" {
-		t.Error("expected uint32")
+	for _, value := range prop.Nested {
+		if reflect.TypeOf(value.Default).String() != "int32" {
+			t.Error("expected int32")
+		}
+	}
+}
+
+func TestPropertyUnmarshalCheckUint32(t *testing.T) {
+	payload := `{"position":1,"name":"com.semaphore.products.Product","type":"message","label":"optional","nested":{"pcode":{"position":2,"name":"pcode","path":"pcode","type":"uint32","label":"optional","default":100}}}`
+
+	prop := Property{}
+	err := prop.UnmarshalJSON([]byte(payload))
+
+	if err != nil {
+		t.Errorf("unexpected error %+v", err)
 	}
 
-	if reflect.TypeOf(prop.Nested["pcode4"].Default).String() != "int32" {
-		t.Error("expected int32")
+	for _, value := range prop.Nested {
+		if reflect.TypeOf(value.Default).String() != "uint32" {
+			t.Error("expected uint32")
+		}
 	}
 }
 
