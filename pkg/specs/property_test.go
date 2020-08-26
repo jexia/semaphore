@@ -1,6 +1,7 @@
 package specs
 
 import (
+	"encoding/json"
 	"reflect"
 	"testing"
 
@@ -17,20 +18,113 @@ func TestPropertyUnmarshalFail(t *testing.T) {
 		t.Error("expected error got nil")
 	}
 }
-func TestPropertyUnmarshalCheckInt64(t *testing.T) {
-	payload := `{"position":1,"name":"com.semaphore.products.Product","type":"message","label":"optional","nested":{"pcode":{"position":2,"name":"pcode","path":"pcode","type":"int64","label":"optional","default":100},"pcode2":{"position":2,"name":"pcode2","path":"pcode2","type":"sint64","label":"optional","default":200},"pcode3":{"position":2,"name":"pcode3","path":"pcode3","type":"sfixed64","label":"optional","default":200}}}`
-
-	prop := Property{}
-	err := prop.UnmarshalJSON([]byte(payload))
-
-	if err != nil {
-		t.Errorf("unexpected error %+v", err)
+func TestPropertyUnmarshalDefaultProperty(t *testing.T) {
+	type test struct {
+		input    *Property
+		expected reflect.Kind
 	}
 
-	for _, value := range prop.Nested {
-		if reflect.TypeOf(value.Default).String() != "int64" {
-			t.Error("expected int64")
-		}
+	tests := map[string]test{
+		"int64": {
+			input: &Property{
+				Type:    types.Int64,
+				Label:   labels.Optional,
+				Default: 100,
+			},
+			expected: reflect.Int64,
+		},
+		"sint64": {
+			input: &Property{
+				Type:    types.Sint64,
+				Label:   labels.Optional,
+				Default: 100,
+			},
+			expected: reflect.Int64,
+		},
+		"sfixed64": {
+			input: &Property{
+				Type:    types.Sfixed64,
+				Label:   labels.Optional,
+				Default: 100,
+			},
+			expected: reflect.Int64,
+		},
+		"uint64": {
+			input: &Property{
+				Type:    types.Uint64,
+				Label:   labels.Optional,
+				Default: 100,
+			},
+			expected: reflect.Uint64,
+		},
+		"fixed64": {
+			input: &Property{
+				Type:    types.Fixed64,
+				Label:   labels.Optional,
+				Default: 100,
+			},
+			expected: reflect.Uint64,
+		},
+		"int32": {
+			input: &Property{
+				Type:    types.Int32,
+				Label:   labels.Optional,
+				Default: 100,
+			},
+			expected: reflect.Int32,
+		},
+		"sint32": {
+			input: &Property{
+				Type:    types.Sint32,
+				Label:   labels.Optional,
+				Default: 100,
+			},
+			expected: reflect.Int32,
+		},
+		"sfixed32": {
+			input: &Property{
+				Type:    types.Sfixed32,
+				Label:   labels.Optional,
+				Default: 100,
+			},
+			expected: reflect.Int32,
+		},
+		"uint32": {
+			input: &Property{
+				Type:    types.Uint32,
+				Label:   labels.Optional,
+				Default: 100,
+			},
+			expected: reflect.Uint32,
+		},
+		"fixed32": {
+			input: &Property{
+				Type:    types.Fixed32,
+				Label:   labels.Optional,
+				Default: 100,
+			},
+			expected: reflect.Uint32,
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			input, err := json.Marshal(test.input)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			prop := Property{}
+			err = prop.UnmarshalJSON(input)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			kind := reflect.TypeOf(prop.Default).Kind()
+			if kind != test.expected {
+				t.Errorf("unexpected type %+v, expected %+v", kind, test.expected)
+			}
+		})
 	}
 }
 
