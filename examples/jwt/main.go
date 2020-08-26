@@ -1,7 +1,7 @@
 package main
 
 import (
-	dgrijalva "github.com/dgrijalva/jwt-go"
+	jwtgo "github.com/dgrijalva/jwt-go"
 	"github.com/jexia/semaphore"
 	"github.com/jexia/semaphore/cmd/semaphore/daemon"
 	"github.com/jexia/semaphore/cmd/semaphore/daemon/providers"
@@ -17,7 +17,7 @@ import (
 )
 
 // Claims is a custom implementation of lib/jwt.Claims interface.
-type Claims struct{ dgrijalva.StandardClaims }
+type Claims struct{ jwtgo.StandardClaims }
 
 // Subject is a method returning subject (to satisfy Claims interface).
 func (c Claims) Subject() string { return c.StandardClaims.Subject }

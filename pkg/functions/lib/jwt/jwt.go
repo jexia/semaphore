@@ -28,8 +28,8 @@ func outputs() *specs.Property {
 	}
 }
 
-// JWT creates custom function to validate JWT with provided validator.
-func JWT(reader Reader, newClaims func() Claims) functions.Intermediate {
+// New creates custom function to validate JWT with provided validator.
+func New(reader Reader, newClaims func() Claims) functions.Intermediate {
 	return func(args ...*specs.Property) (*specs.Property, functions.Exec, error) {
 		if len(args) != 1 {
 			return nil, nil, errInvalidNumberOfArguments{

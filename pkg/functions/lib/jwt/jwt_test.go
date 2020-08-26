@@ -69,8 +69,8 @@ func TestExecutable(t *testing.T) {
 	})
 }
 
-func TestJWT(t *testing.T) {
-	var fn = JWT(nil, nil)
+func TestNew(t *testing.T) {
+	var fn = New(nil, nil)
 
 	t.Run("should return an error when invalid number of argumets provided", func(t *testing.T) {
 		_, _, err := fn()
