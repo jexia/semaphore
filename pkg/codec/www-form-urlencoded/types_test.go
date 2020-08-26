@@ -115,10 +115,13 @@ func TestAddEmptyType(t *testing.T) {
 	for typed, value := range tests {
 		t.Run(string(typed), func(t *testing.T) {
 			encoder := url.Values{}
-			AddTypeKey(encoder, "", typed, value)
+			key := "key"
+			expected := key + "="
+
+			AddTypeKey(encoder, key, typed, value)
 
 			result := encoder.Encode()
-			if result != "" {
+			if result != expected {
 				t.Errorf("unexpected result %s", result)
 			}
 		})
