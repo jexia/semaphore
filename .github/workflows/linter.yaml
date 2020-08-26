@@ -33,5 +33,5 @@ jobs:
     
     - name: Git changes
       run: |
-        test -z "$(git status --porcelain)"
         git status --porcelain
+        test -z "$(git status --porcelain)"
