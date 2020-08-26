@@ -1,12 +1,132 @@
 package specs
 
 import (
+	"encoding/json"
+	"reflect"
 	"testing"
 
 	"github.com/jexia/semaphore/pkg/specs/labels"
 	"github.com/jexia/semaphore/pkg/specs/metadata"
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
+
+func TestPropertyUnmarshalFail(t *testing.T) {
+	payload := "non json string"
+	prop := Property{}
+	err := prop.UnmarshalJSON([]byte(payload))
+	if err == nil {
+		t.Error("expected error got nil")
+	}
+}
+func TestPropertyUnmarshalDefaultProperty(t *testing.T) {
+	type test struct {
+		input    *Property
+		expected reflect.Kind
+	}
+
+	tests := map[string]test{
+		"int64": {
+			input: &Property{
+				Type:    types.Int64,
+				Label:   labels.Optional,
+				Default: 100,
+			},
+			expected: reflect.Int64,
+		},
+		"sint64": {
+			input: &Property{
+				Type:    types.Sint64,
+				Label:   labels.Optional,
+				Default: 100,
+			},
+			expected: reflect.Int64,
+		},
+		"sfixed64": {
+			input: &Property{
+				Type:    types.Sfixed64,
+				Label:   labels.Optional,
+				Default: 100,
+			},
+			expected: reflect.Int64,
+		},
+		"uint64": {
+			input: &Property{
+				Type:    types.Uint64,
+				Label:   labels.Optional,
+				Default: 100,
+			},
+			expected: reflect.Uint64,
+		},
+		"fixed64": {
+			input: &Property{
+				Type:    types.Fixed64,
+				Label:   labels.Optional,
+				Default: 100,
+			},
+			expected: reflect.Uint64,
+		},
+		"int32": {
+			input: &Property{
+				Type:    types.Int32,
+				Label:   labels.Optional,
+				Default: 100,
+			},
+			expected: reflect.Int32,
+		},
+		"sint32": {
+			input: &Property{
+				Type:    types.Sint32,
+				Label:   labels.Optional,
+				Default: 100,
+			},
+			expected: reflect.Int32,
+		},
+		"sfixed32": {
+			input: &Property{
+				Type:    types.Sfixed32,
+				Label:   labels.Optional,
+				Default: 100,
+			},
+			expected: reflect.Int32,
+		},
+		"uint32": {
+			input: &Property{
+				Type:    types.Uint32,
+				Label:   labels.Optional,
+				Default: 100,
+			},
+			expected: reflect.Uint32,
+		},
+		"fixed32": {
+			input: &Property{
+				Type:    types.Fixed32,
+				Label:   labels.Optional,
+				Default: 100,
+			},
+			expected: reflect.Uint32,
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			input, err := json.Marshal(test.input)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			prop := Property{}
+			err = prop.UnmarshalJSON(input)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			kind := reflect.TypeOf(prop.Default).Kind()
+			if kind != test.expected {
+				t.Errorf("unexpected type %+v, expected %+v", kind, test.expected)
+			}
+		})
+	}
+}
 
 func TestPropertyReferenceClone(t *testing.T) {
 	reference := &PropertyReference{

@@ -1,6 +1,8 @@
 package specs
 
 import (
+	"encoding/json"
+
 	"github.com/jexia/semaphore/pkg/specs/labels"
 	"github.com/jexia/semaphore/pkg/specs/metadata"
 	"github.com/jexia/semaphore/pkg/specs/types"
@@ -81,6 +83,53 @@ type Property struct {
 	Raw       string               `json:"raw,omitempty"`
 	Options   Options              `json:"options,omitempty"`
 	Enum      *Enum                `json:"enum,omitempty"`
+}
+
+// UnmarshalJSON corrects the 64bit data types in accordance with golang
+func (prop *Property) UnmarshalJSON(data []byte) error {
+	type property Property
+	p := property{}
+	err := json.Unmarshal(data, &p)
+	if err != nil {
+		return err
+	}
+
+	*prop = Property(p)
+	prop.Clean()
+
+	for _, nested := range prop.Nested {
+		nested.Clean()
+	}
+
+	return nil
+}
+
+// Clean fixes the type casting issue of unmarshal
+func (prop *Property) Clean() {
+	if prop.Default != nil {
+		switch prop.Type {
+		case types.Int64, types.Sint64, types.Sfixed64:
+			_, ok := prop.Default.(int64)
+			if !ok {
+				prop.Default = int64(prop.Default.(float64))
+			}
+		case types.Uint64, types.Fixed64:
+			_, ok := prop.Default.(uint64)
+			if !ok {
+				prop.Default = uint64(prop.Default.(float64))
+			}
+		case types.Int32, types.Sint32, types.Sfixed32:
+			_, ok := prop.Default.(int32)
+			if !ok {
+				prop.Default = int32(prop.Default.(float64))
+			}
+		case types.Uint32, types.Fixed32:
+			_, ok := prop.Default.(uint32)
+			if !ok {
+				prop.Default = uint32(prop.Default.(float64))
+			}
+		}
+	}
 }
 
 // Clone makes a deep clone of the given property
