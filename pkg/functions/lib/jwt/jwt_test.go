@@ -16,53 +16,105 @@ type claims struct{ jwt.StandardClaims }
 func (c claims) Subject() string { return c.StandardClaims.Subject }
 
 func TestExecutable(t *testing.T) {
-	var (
-		reader = ReaderFunc(func(token string, recv jwt.Claims) error {
-			if token != "expected.jwt" {
-				return errors.New("unexpected token")
+	t.Run("run executable", func(t *testing.T) {
+		var (
+			reader = ReaderFunc(func(token string, recv jwt.Claims) error {
+				if token != "expected.jwt" {
+					return errors.New("unexpected token")
+				}
+
+				casted, ok := recv.(*claims)
+				if !ok {
+					return errors.New("invalid receiver")
+				}
+
+				casted.StandardClaims.Subject = "expected subject"
+
+				return nil
+			})
+
+			token = &specs.Property{
+				Name: "claims",
+				Path: "claims",
+				Reference: &specs.PropertyReference{
+					Resource: "input",
+					Path:     "authorization",
+				},
+				Type:  types.String,
+				Label: labels.Required,
 			}
 
-			casted, ok := recv.(*claims)
-			if !ok {
-				return errors.New("invalid receiver")
-			}
+			store = references.NewReferenceStore(1)
 
-			casted.StandardClaims.Subject = "expected subject"
+			fn = executable(reader, token, func() Claims { return new(claims) })
+		)
 
-			return nil
+		store.StoreReference("input", &references.Reference{
+			Path:  "authorization",
+			Value: "Bearer expected.jwt",
 		})
 
-		token = &specs.Property{
-			Name: "claims",
-			Path: "claims",
-			Reference: &specs.PropertyReference{
-				Resource: "input",
-				Path:     "authorization",
-			},
-			Type:  types.String,
-			Label: labels.Required,
+		if err := fn(store); err != nil {
+			t.Errorf("uexpected error: %s", err)
 		}
 
-		store = references.NewReferenceStore(1)
+		subject := store.Load(paramClaims, propSubject)
+		if subject == nil {
+			t.Error("subject must be stored")
+		}
 
-		fn = executable(reader, token, func() Claims { return new(claims) })
-	)
+		if subject.Value != "expected subject" {
+			t.Errorf("unexpected subject: %v", subject.Value)
+		}
+	})
+}
 
-	store.StoreReference("input", &references.Reference{
-		Path:  "authorization",
-		Value: "Bearer expected.jwt",
+func TestJWT(t *testing.T) {
+	var fn = JWT(nil, nil)
+
+	t.Run("should return an error when invalid number of argumets provided", func(t *testing.T) {
+		_, _, err := fn()
+
+		if !errors.As(err, new(errInvalidNumberOfArguments)) {
+			t.Errorf("unexpected error: %T", err)
+		}
 	})
 
-	if err := fn(store); err != nil {
-		t.Errorf("uexpected error: %s", err)
-	}
+	t.Run("should return an error providing invalid argument", func(t *testing.T) {
+		var (
+			arg = &specs.Property{
+				Type:  types.Message,
+				Label: labels.Required,
+			}
 
-	subject := store.Load(paramClaims, propSubject)
-	if subject == nil {
-		t.Error("subject must be stored")
-	}
+			_, _, err = fn(arg)
+		)
 
-	if subject.Value != "expected subject" {
-		t.Errorf("unexpected subject: %v", subject.Value)
-	}
+		if !errors.As(err, new(errInvalidArgumentType)) {
+			t.Errorf("unexpected error: %T", err)
+		}
+	})
+
+	t.Run("should return outputs and executable when input argument is valid", func(t *testing.T) {
+		var (
+			arg = &specs.Property{
+				Type:  types.String,
+				Label: labels.Required,
+			}
+
+			outputs, executable, err = fn(arg)
+		)
+
+		if err != nil {
+			t.Errorf("unexpected error: %s", err)
+		}
+
+		if outputs == nil {
+			t.Error("outputs was expected to be set")
+		}
+
+		if executable == nil {
+			t.Error("executable was expected to be set")
+		}
+	})
 }
