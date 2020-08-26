@@ -113,7 +113,7 @@ func (prop *Property) Clean() {
 			if !ok {
 				prop.Default = int64(prop.Default.(float64))
 			}
-		case types.Uint64, types.Fixed64, types.Fixed32:
+		case types.Uint64, types.Fixed64:
 			_, ok := prop.Default.(uint64)
 			if !ok {
 				prop.Default = uint64(prop.Default.(float64))
@@ -123,7 +123,7 @@ func (prop *Property) Clean() {
 			if !ok {
 				prop.Default = int32(prop.Default.(float64))
 			}
-		case types.Uint32:
+		case types.Uint32, types.Fixed32:
 			_, ok := prop.Default.(uint32)
 			if !ok {
 				prop.Default = uint32(prop.Default.(float64))
