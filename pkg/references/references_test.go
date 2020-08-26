@@ -60,7 +60,7 @@ func TestUnmarshalFile(t *testing.T) {
 			}
 
 			err = func() (err error) {
-				err = providers.Resolve(ctx, services, schemas, flows)
+				err = providers.ResolveSchemas(ctx, services, schemas, flows)
 				if err != nil {
 					return err
 				}

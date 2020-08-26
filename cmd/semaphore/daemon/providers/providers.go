@@ -58,7 +58,7 @@ func Resolve(ctx *broker.Context, mem functions.Collection, options Options) (Co
 		return Collection{}, err
 	}
 
-	err = providers.Resolve(ctx, services, schemas, flows)
+	err = providers.ResolveSchemas(ctx, services, schemas, flows)
 	if err != nil {
 		return Collection{}, err
 	}
