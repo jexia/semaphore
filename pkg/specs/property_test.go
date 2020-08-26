@@ -128,57 +128,6 @@ func TestPropertyUnmarshalDefaultProperty(t *testing.T) {
 	}
 }
 
-func TestPropertyUnmarshalCheckUint64(t *testing.T) {
-	payload := `{"position":1,"name":"com.semaphore.products.Product","type":"message","label":"optional","nested":{"pcode":{"position":2,"name":"pcode","path":"pcode","type":"uint64","label":"optional","default":100},"pcode2":{"position":2,"name":"pcode2","path":"pcode2","type":"fixed64","label":"optional","default":200},"pcode3":{"position":2,"name":"pcode3","path":"pcode3","type":"fixed32","label":"optional","default":200}}}`
-
-	prop := Property{}
-	err := prop.UnmarshalJSON([]byte(payload))
-
-	if err != nil {
-		t.Errorf("unexpected error %+v", err)
-	}
-
-	for _, value := range prop.Nested {
-		if reflect.TypeOf(value.Default).String() != "uint64" {
-			t.Error("expected uint64")
-		}
-	}
-}
-
-func TestPropertyUnmarshalCheckInt32(t *testing.T) {
-	payload := `{"position":1,"name":"com.semaphore.products.Product","type":"message","label":"optional","nested":{"pcode":{"position":2,"name":"pcode","path":"pcode","type":"int32","label":"optional","default":100},"pcode2":{"position":2,"name":"pcode2","path":"pcode2","type":"sint32","label":"optional","default":200},"pcode3":{"position":2,"name":"pcode3","path":"pcode3","type":"sfixed32","label":"optional","default":200}}}`
-
-	prop := Property{}
-	err := prop.UnmarshalJSON([]byte(payload))
-
-	if err != nil {
-		t.Errorf("unexpected error %+v", err)
-	}
-
-	for _, value := range prop.Nested {
-		if reflect.TypeOf(value.Default).String() != "int32" {
-			t.Error("expected int32")
-		}
-	}
-}
-
-func TestPropertyUnmarshalCheckUint32(t *testing.T) {
-	payload := `{"position":1,"name":"com.semaphore.products.Product","type":"message","label":"optional","nested":{"pcode":{"position":2,"name":"pcode","path":"pcode","type":"uint32","label":"optional","default":100}}}`
-
-	prop := Property{}
-	err := prop.UnmarshalJSON([]byte(payload))
-
-	if err != nil {
-		t.Errorf("unexpected error %+v", err)
-	}
-
-	for _, value := range prop.Nested {
-		if reflect.TypeOf(value.Default).String() != "uint32" {
-			t.Error("expected uint32")
-		}
-	}
-}
-
 func TestPropertyReferenceClone(t *testing.T) {
 	reference := &PropertyReference{
 		Meta:     metadata.WithValue(nil, nil, nil),
