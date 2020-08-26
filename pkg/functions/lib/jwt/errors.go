@@ -26,7 +26,7 @@ type errInvalidNumberOfArguments struct {
 }
 
 func (e errInvalidNumberOfArguments) Error() string {
-	return fmt.Sprintf("invalid number of arguments %d, expected %d", e.actual, e.expected)
+	return fmt.Sprintf("invalid number of arguments (%d), expected (%d)", e.actual, e.expected)
 }
 
 type errInvalidArgumentType struct {

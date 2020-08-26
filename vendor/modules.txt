@@ -24,9 +24,6 @@ github.com/francoispqt/gojay
 github.com/fsnotify/fsnotify
 # github.com/ghodss/yaml v1.0.0
 github.com/ghodss/yaml
-# github.com/gofrs/uuid v3.2.0+incompatible
-## explicit
-github.com/gofrs/uuid
 # github.com/gogo/protobuf v1.2.2-0.20190723190241-65acae22fc9d
 ## explicit
 # github.com/golang/protobuf v1.4.1

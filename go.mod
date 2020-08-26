@@ -7,7 +7,6 @@ require (
 	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/francoispqt/gojay v1.2.13
-	github.com/gofrs/uuid v3.2.0+incompatible
 	github.com/gogo/protobuf v1.2.2-0.20190723190241-65acae22fc9d // indirect
 	github.com/golang/protobuf v1.4.1
 	github.com/graphql-go/graphql v0.7.9

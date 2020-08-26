@@ -16,7 +16,63 @@ type claims struct{ jwt.StandardClaims }
 func (c claims) Subject() string { return c.StandardClaims.Subject }
 
 func TestExecutable(t *testing.T) {
-	t.Run("run executable", func(t *testing.T) {
+	var (
+		token = &specs.Property{
+			Name: "claims",
+			Path: "claims",
+			Reference: &specs.PropertyReference{
+				Resource: "input",
+				Path:     "authorization",
+			},
+			Type:  types.String,
+			Label: labels.Required,
+		}
+
+		store = references.NewReferenceStore(1)
+	)
+
+	t.Run("should propagate Reader error", func(t *testing.T) {
+		store.StoreReference("input", &references.Reference{
+			Path:  "authorization",
+			Value: "Bearer expected.jwt",
+		})
+
+		var (
+			errExpected = errors.New("expected error")
+
+			reader = ReaderFunc(func(token string, recv jwt.Claims) error { return errExpected })
+
+			fn = executable(reader, token, func() Claims { return new(claims) })
+		)
+
+		if err := fn(store); !errors.Is(err, errExpected) {
+			t.Errorf("uexpected error: %s", err)
+		}
+	})
+
+	t.Run("should return an error when unable to get authorization value", func(t *testing.T) {
+		store.StoreReference("input", &references.Reference{
+			Path:  "authorization",
+			Value: "invalid.jwt",
+		})
+
+		var (
+			reader = ReaderFunc(func(token string, recv jwt.Claims) error { return nil })
+
+			fn = executable(reader, token, func() Claims { return new(claims) })
+		)
+
+		if err := fn(store); !errors.Is(err, errMalformedAuthValue) {
+			t.Errorf("uexpected error: %s", err)
+		}
+	})
+
+	t.Run("should save the subject to the reference store", func(t *testing.T) {
+		store.StoreReference("input", &references.Reference{
+			Path:  "authorization",
+			Value: "Bearer expected.jwt",
+		})
+
 		var (
 			reader = ReaderFunc(func(token string, recv jwt.Claims) error {
 				if token != "expected.jwt" {
@@ -33,26 +89,8 @@ func TestExecutable(t *testing.T) {
 				return nil
 			})
 
-			token = &specs.Property{
-				Name: "claims",
-				Path: "claims",
-				Reference: &specs.PropertyReference{
-					Resource: "input",
-					Path:     "authorization",
-				},
-				Type:  types.String,
-				Label: labels.Required,
-			}
-
-			store = references.NewReferenceStore(1)
-
 			fn = executable(reader, token, func() Claims { return new(claims) })
 		)
-
-		store.StoreReference("input", &references.Reference{
-			Path:  "authorization",
-			Value: "Bearer expected.jwt",
-		})
 
 		if err := fn(store); err != nil {
 			t.Errorf("uexpected error: %s", err)
