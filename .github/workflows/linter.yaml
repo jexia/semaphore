@@ -25,3 +25,13 @@ jobs:
 
     - name: Vet
       run: go vet ./...
+    
+    - name: Go modules
+      run: |
+        go mod tidy -v
+        go mod vendor
+    
+    - name: Git changes
+      run: |
+        git status --porcelain
+        test -z "$(git status --porcelain)"
