@@ -26,4 +26,5 @@ message Item {
     int32 id = 2;
     string title = 3;
     bool completed = 4;
+    repeated string item = 5;
 }

@@ -78,6 +78,7 @@ type Property struct {
 	Type      types.Type           `json:"type,omitempty"`
 	Label     labels.Label         `json:"label,omitempty"`
 	Reference *PropertyReference   `json:"reference,omitempty"`
+	Repeated  []*Property          `json:"repeated,omitempty"`
 	Nested    map[string]*Property `json:"nested,omitempty"`
 	Expr      Expression           `json:"-"`
 	Raw       string               `json:"raw,omitempty"`

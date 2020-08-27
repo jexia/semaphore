@@ -1,6 +1,8 @@
 package hcl
 
 import (
+	"log"
+
 	"github.com/hashicorp/hcl/v2"
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
@@ -678,7 +680,16 @@ func ParseIntermediateProperty(ctx *broker.Context, path string, property *hcl.A
 		Label: labels.Optional,
 	}
 
-	if value.Type() != cty.String || !template.Is(value.AsString()) {
+	typed := value.Type()
+	if typed.IsTupleType() {
+		result.Repeated = make([]*specs.Property, typed.Length())
+		value.ForEachElement(func(key cty.Value, val cty.Value) (stop bool) {
+			log.Println(key.Type().GoString(), val.Type().GoString())
+			return false
+		})
+	}
+
+	if typed != cty.String || !template.Is(value.AsString()) {
 		SetDefaultValue(ctx, result, value)
 		return result, nil
 	}
