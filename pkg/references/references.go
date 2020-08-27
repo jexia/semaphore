@@ -3,7 +3,6 @@ package references
 import (
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
-	"github.com/jexia/semaphore/pkg/broker/trace"
 	"github.com/jexia/semaphore/pkg/lookup"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/template"
@@ -17,7 +16,10 @@ func Resolve(ctx *broker.Context, flows specs.FlowListInterface) (err error) {
 	for _, flow := range flows {
 		err := ResolveFlow(logger.WithFields(ctx, zap.String("flow", flow.GetName())), flow)
 		if err != nil {
-			return err
+			return ErrUnresolvedFlow{
+				WrapError: WrapError{err},
+				Name:      flow.GetName(),
+			}
 		}
 	}
 
@@ -31,21 +33,30 @@ func ResolveFlow(ctx *broker.Context, flow specs.FlowInterface) (err error) {
 	if flow.GetOnError() != nil {
 		err = ResolveOnError(ctx, nil, flow.GetOnError(), flow)
 		if err != nil {
-			return err
+			return ErrUnresolvedOnError{
+				WrapError: WrapError{err},
+				OnError:   flow.GetOnError(),
+			}
 		}
 	}
 
 	for _, node := range flow.GetNodes() {
 		err = ResolveNode(ctx, node, flow)
 		if err != nil {
-			return err
+			return ErrUnresolvedNode{
+				WrapError: WrapError{err},
+				Node:      node,
+			}
 		}
 	}
 
 	if flow.GetOutput() != nil {
 		err = ResolveParameterMap(ctx, nil, flow.GetOutput(), flow)
 		if err != nil {
-			return err
+			return ErrUnresolvedParameterMap{
+				WrapError: WrapError{err},
+				Parameter: flow.GetOutput(),
+			}
 		}
 	}
 
@@ -53,7 +64,10 @@ func ResolveFlow(ctx *broker.Context, flow specs.FlowInterface) (err error) {
 		for _, header := range flow.GetForward().Request.Header {
 			err = ResolveProperty(ctx, nil, header, flow)
 			if err != nil {
-				return err
+				return ErrUnresolvedProperty{
+					WrapError: WrapError{err},
+					Property:  header,
+				}
 			}
 		}
 	}
@@ -66,28 +80,40 @@ func ResolveNode(ctx *broker.Context, node *specs.Node, flow specs.FlowInterface
 	if node.Condition != nil {
 		err = ResolveParameterMap(ctx, node, node.Condition.Params, flow)
 		if err != nil {
-			return err
+			return ErrUnresolvedParameterMap{
+				WrapError: WrapError{err},
+				Parameter: node.Condition.Params,
+			}
 		}
 	}
 
 	if node.Call != nil {
 		err = ResolveCall(ctx, node, node.Call, flow)
 		if err != nil {
-			return err
+			return ErrUnresolvedCall{
+				WrapError: WrapError{err},
+				Call:      node.Call,
+			}
 		}
 	}
 
 	if node.Rollback != nil {
 		err = ResolveCall(ctx, node, node.Rollback, flow)
 		if err != nil {
-			return err
+			return ErrUnresolvedCall{
+				WrapError: WrapError{err},
+				Call:      node.Rollback,
+			}
 		}
 	}
 
 	if node.OnError != nil {
 		err = ResolveOnError(ctx, node, node.OnError, flow)
 		if err != nil {
-			return err
+			return ErrUnresolvedOnError{
+				WrapError: WrapError{err},
+				OnError:   node.OnError,
+			}
 		}
 	}
 
@@ -99,14 +125,20 @@ func ResolveCall(ctx *broker.Context, node *specs.Node, call *specs.Call, flow s
 	if call.Request != nil {
 		err = ResolveParameterMap(ctx, node, call.Request, flow)
 		if err != nil {
-			return err
+			return ErrUnresolvedParameterMap{
+				WrapError: WrapError{err},
+				Parameter: call.Request,
+			}
 		}
 	}
 
 	if call.Response != nil {
 		err = ResolveParameterMap(ctx, node, call.Response, flow)
 		if err != nil {
-			return err
+			return ErrUnresolvedParameterMap{
+				WrapError: WrapError{err},
+				Parameter: call.Response,
+			}
 		}
 	}
 
@@ -118,21 +150,30 @@ func ResolveParameterMap(ctx *broker.Context, node *specs.Node, params *specs.Pa
 	for _, header := range params.Header {
 		err = ResolveProperty(ctx, node, header, flow)
 		if err != nil {
-			return err
+			return ErrUnresolvedProperty{
+				WrapError: WrapError{err},
+				Property:  header,
+			}
 		}
 	}
 
 	if params.Params != nil {
 		err = ResolveParams(ctx, node, params.Params, flow)
 		if err != nil {
-			return err
+			return ErrUnresolvedParams{
+				WrapError: WrapError{err},
+				Params:    params.Params,
+			}
 		}
 	}
 
 	if params.Property != nil {
 		err = ResolveProperty(ctx, node, params.Property, flow)
 		if err != nil {
-			return err
+			return ErrUnresolvedProperty{
+				WrapError: WrapError{err},
+				Property:  params.Property,
+			}
 		}
 	}
 
@@ -144,23 +185,35 @@ func ResolveOnError(ctx *broker.Context, node *specs.Node, params *specs.OnError
 	if params.Response != nil {
 		err = ResolveParameterMap(ctx, node, params.Response, flow)
 		if err != nil {
-			return err
+			return ErrUnresolvedParameterMap{
+				WrapError: WrapError{err},
+				Parameter: params.Response,
+			}
 		}
 	}
 
 	err = ResolveProperty(ctx, node, params.Message, flow)
 	if err != nil {
-		return err
+		return ErrUnresolvedProperty{
+			WrapError: WrapError{err},
+			Property:  params.Message,
+		}
 	}
 
 	err = ResolveProperty(ctx, node, params.Status, flow)
 	if err != nil {
-		return err
+		return ErrUnresolvedProperty{
+			WrapError: WrapError{err},
+			Property:  params.Status,
+		}
 	}
 
 	err = ResolveParams(ctx, node, params.Params, flow)
 	if err != nil {
-		return err
+		return ErrUnresolvedParams{
+			WrapError: WrapError{err},
+			Params:    params.Params,
+		}
 	}
 
 	return nil
@@ -175,7 +228,10 @@ func ResolveParams(ctx *broker.Context, node *specs.Node, params map[string]*spe
 
 		err := ResolveProperty(ctx, node, param, flow)
 		if err != nil {
-			return err
+			return ErrUnresolvedProperty{
+				WrapError: WrapError{err},
+				Property:  param,
+			}
 		}
 	}
 
@@ -192,7 +248,10 @@ func ResolveProperty(ctx *broker.Context, node *specs.Node, property *specs.Prop
 		for _, nested := range property.Nested {
 			err := ResolveProperty(ctx, node, nested, flow)
 			if err != nil {
-				return err
+				return ErrUnresolvedProperty{
+					WrapError: WrapError{err},
+					Property:  nested,
+				}
 			}
 		}
 	}
@@ -216,13 +275,22 @@ func ResolveProperty(ctx *broker.Context, node *specs.Node, property *specs.Prop
 	reference, err := LookupReference(ctx, breakpoint, property.Reference, flow)
 	if err != nil {
 		logger.Error(ctx, "unable to lookup reference", zap.Error(err))
-		return trace.New(trace.WithExpression(property.Expr), trace.WithMessage("undefined reference '%s' in '%s.%s.%s'", property.Reference, flow.GetName(), breakpoint, property.Path))
+		return ErrUndefinedReference{
+			WrapError:  WrapError{err},
+			Expression: property.Expr,
+			Reference:  property.Reference,
+			Breakpoint: breakpoint,
+			Path:       property.Path,
+		}
 	}
 
 	if reference.Reference != nil && reference.Reference.Property == nil {
 		err := ResolveProperty(ctx, node, reference, flow)
 		if err != nil {
-			return err
+			return ErrUnresolvedProperty{
+				WrapError: WrapError{err},
+				Property:  reference,
+			}
 		}
 	}
 
@@ -258,7 +326,11 @@ func LookupReference(ctx *broker.Context, breakpoint string, reference *specs.Pr
 	references := lookup.GetAvailableResources(flow, breakpoint)
 	result := lookup.GetResourceReference(reference, references, breakpoint)
 	if result == nil {
-		return nil, trace.New(trace.WithMessage("undefined resource '%s' in '%s'.'%s'", reference, flow.GetName(), breakpoint))
+		return nil, ErrUndefinedResource{
+			Reference:           reference,
+			Breakpoint:          breakpoint,
+			AvailableReferences: references,
+		}
 	}
 
 	logger.Debug(ctx, "lookup references result",
