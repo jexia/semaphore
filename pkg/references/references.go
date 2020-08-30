@@ -17,8 +17,8 @@ func Resolve(ctx *broker.Context, flows specs.FlowListInterface) (err error) {
 		err := ResolveFlow(logger.WithFields(ctx, zap.String("flow", flow.GetName())), flow)
 		if err != nil {
 			return ErrUnresolvedFlow{
-				WrapError: WrapError{err},
-				Name:      flow.GetName(),
+				wrapErr: wrapErr{err},
+				Name:    flow.GetName(),
 			}
 		}
 	}
@@ -28,14 +28,12 @@ func Resolve(ctx *broker.Context, flows specs.FlowListInterface) (err error) {
 
 // ResolveFlow all references made within the given flow
 func ResolveFlow(ctx *broker.Context, flow specs.FlowInterface) (err error) {
-	logger.Info(ctx, "defining flow types")
-
 	if flow.GetOnError() != nil {
 		err = ResolveOnError(ctx, nil, flow.GetOnError(), flow)
 		if err != nil {
 			return ErrUnresolvedOnError{
-				WrapError: WrapError{err},
-				OnError:   flow.GetOnError(),
+				wrapErr: wrapErr{err},
+				OnError: flow.GetOnError(),
 			}
 		}
 	}
@@ -44,8 +42,8 @@ func ResolveFlow(ctx *broker.Context, flow specs.FlowInterface) (err error) {
 		err = ResolveNode(ctx, node, flow)
 		if err != nil {
 			return ErrUnresolvedNode{
-				WrapError: WrapError{err},
-				Node:      node,
+				wrapErr: wrapErr{err},
+				Node:    node,
 			}
 		}
 	}
@@ -54,7 +52,7 @@ func ResolveFlow(ctx *broker.Context, flow specs.FlowInterface) (err error) {
 		err = ResolveParameterMap(ctx, nil, flow.GetOutput(), flow)
 		if err != nil {
 			return ErrUnresolvedParameterMap{
-				WrapError: WrapError{err},
+				wrapErr:   wrapErr{err},
 				Parameter: flow.GetOutput(),
 			}
 		}
@@ -65,8 +63,8 @@ func ResolveFlow(ctx *broker.Context, flow specs.FlowInterface) (err error) {
 			err = ResolveProperty(ctx, nil, header, flow)
 			if err != nil {
 				return ErrUnresolvedProperty{
-					WrapError: WrapError{err},
-					Property:  header,
+					wrapErr:  wrapErr{err},
+					Property: header,
 				}
 			}
 		}
@@ -81,7 +79,7 @@ func ResolveNode(ctx *broker.Context, node *specs.Node, flow specs.FlowInterface
 		err = ResolveParameterMap(ctx, node, node.Condition.Params, flow)
 		if err != nil {
 			return ErrUnresolvedParameterMap{
-				WrapError: WrapError{err},
+				wrapErr:   wrapErr{err},
 				Parameter: node.Condition.Params,
 			}
 		}
@@ -91,8 +89,8 @@ func ResolveNode(ctx *broker.Context, node *specs.Node, flow specs.FlowInterface
 		err = ResolveCall(ctx, node, node.Call, flow)
 		if err != nil {
 			return ErrUnresolvedCall{
-				WrapError: WrapError{err},
-				Call:      node.Call,
+				wrapErr: wrapErr{err},
+				Call:    node.Call,
 			}
 		}
 	}
@@ -101,8 +99,8 @@ func ResolveNode(ctx *broker.Context, node *specs.Node, flow specs.FlowInterface
 		err = ResolveCall(ctx, node, node.Rollback, flow)
 		if err != nil {
 			return ErrUnresolvedCall{
-				WrapError: WrapError{err},
-				Call:      node.Rollback,
+				wrapErr: wrapErr{err},
+				Call:    node.Rollback,
 			}
 		}
 	}
@@ -111,8 +109,8 @@ func ResolveNode(ctx *broker.Context, node *specs.Node, flow specs.FlowInterface
 		err = ResolveOnError(ctx, node, node.OnError, flow)
 		if err != nil {
 			return ErrUnresolvedOnError{
-				WrapError: WrapError{err},
-				OnError:   node.OnError,
+				wrapErr: wrapErr{err},
+				OnError: node.OnError,
 			}
 		}
 	}
@@ -126,7 +124,7 @@ func ResolveCall(ctx *broker.Context, node *specs.Node, call *specs.Call, flow s
 		err = ResolveParameterMap(ctx, node, call.Request, flow)
 		if err != nil {
 			return ErrUnresolvedParameterMap{
-				WrapError: WrapError{err},
+				wrapErr:   wrapErr{err},
 				Parameter: call.Request,
 			}
 		}
@@ -136,7 +134,7 @@ func ResolveCall(ctx *broker.Context, node *specs.Node, call *specs.Call, flow s
 		err = ResolveParameterMap(ctx, node, call.Response, flow)
 		if err != nil {
 			return ErrUnresolvedParameterMap{
-				WrapError: WrapError{err},
+				wrapErr:   wrapErr{err},
 				Parameter: call.Response,
 			}
 		}
@@ -151,8 +149,8 @@ func ResolveParameterMap(ctx *broker.Context, node *specs.Node, params *specs.Pa
 		err = ResolveProperty(ctx, node, header, flow)
 		if err != nil {
 			return ErrUnresolvedProperty{
-				WrapError: WrapError{err},
-				Property:  header,
+				wrapErr:  wrapErr{err},
+				Property: header,
 			}
 		}
 	}
@@ -161,8 +159,8 @@ func ResolveParameterMap(ctx *broker.Context, node *specs.Node, params *specs.Pa
 		err = ResolveParams(ctx, node, params.Params, flow)
 		if err != nil {
 			return ErrUnresolvedParams{
-				WrapError: WrapError{err},
-				Params:    params.Params,
+				wrapErr: wrapErr{err},
+				Params:  params.Params,
 			}
 		}
 	}
@@ -171,8 +169,8 @@ func ResolveParameterMap(ctx *broker.Context, node *specs.Node, params *specs.Pa
 		err = ResolveProperty(ctx, node, params.Property, flow)
 		if err != nil {
 			return ErrUnresolvedProperty{
-				WrapError: WrapError{err},
-				Property:  params.Property,
+				wrapErr:  wrapErr{err},
+				Property: params.Property,
 			}
 		}
 	}
@@ -186,7 +184,7 @@ func ResolveOnError(ctx *broker.Context, node *specs.Node, params *specs.OnError
 		err = ResolveParameterMap(ctx, node, params.Response, flow)
 		if err != nil {
 			return ErrUnresolvedParameterMap{
-				WrapError: WrapError{err},
+				wrapErr:   wrapErr{err},
 				Parameter: params.Response,
 			}
 		}
@@ -195,24 +193,24 @@ func ResolveOnError(ctx *broker.Context, node *specs.Node, params *specs.OnError
 	err = ResolveProperty(ctx, node, params.Message, flow)
 	if err != nil {
 		return ErrUnresolvedProperty{
-			WrapError: WrapError{err},
-			Property:  params.Message,
+			wrapErr:  wrapErr{err},
+			Property: params.Message,
 		}
 	}
 
 	err = ResolveProperty(ctx, node, params.Status, flow)
 	if err != nil {
 		return ErrUnresolvedProperty{
-			WrapError: WrapError{err},
-			Property:  params.Status,
+			wrapErr:  wrapErr{err},
+			Property: params.Status,
 		}
 	}
 
 	err = ResolveParams(ctx, node, params.Params, flow)
 	if err != nil {
 		return ErrUnresolvedParams{
-			WrapError: WrapError{err},
-			Params:    params.Params,
+			wrapErr: wrapErr{err},
+			Params:  params.Params,
 		}
 	}
 
@@ -229,8 +227,8 @@ func ResolveParams(ctx *broker.Context, node *specs.Node, params map[string]*spe
 		err := ResolveProperty(ctx, node, param, flow)
 		if err != nil {
 			return ErrUnresolvedProperty{
-				WrapError: WrapError{err},
-				Property:  param,
+				wrapErr:  wrapErr{err},
+				Property: param,
 			}
 		}
 	}
@@ -249,8 +247,8 @@ func ResolveProperty(ctx *broker.Context, node *specs.Node, property *specs.Prop
 			err := ResolveProperty(ctx, node, nested, flow)
 			if err != nil {
 				return ErrUnresolvedProperty{
-					WrapError: WrapError{err},
-					Property:  nested,
+					wrapErr:  wrapErr{err},
+					Property: nested,
 				}
 			}
 		}
@@ -274,9 +272,8 @@ func ResolveProperty(ctx *broker.Context, node *specs.Node, property *specs.Prop
 
 	reference, err := LookupReference(ctx, breakpoint, property.Reference, flow)
 	if err != nil {
-		logger.Error(ctx, "unable to lookup reference", zap.Error(err))
 		return ErrUndefinedReference{
-			WrapError:  WrapError{err},
+			wrapErr:    wrapErr{err},
 			Expression: property.Expr,
 			Reference:  property.Reference,
 			Breakpoint: breakpoint,
@@ -288,8 +285,8 @@ func ResolveProperty(ctx *broker.Context, node *specs.Node, property *specs.Prop
 		err := ResolveProperty(ctx, node, reference, flow)
 		if err != nil {
 			return ErrUnresolvedProperty{
-				WrapError: WrapError{err},
-				Property:  reference,
+				wrapErr:  wrapErr{err},
+				Property: reference,
 			}
 		}
 	}

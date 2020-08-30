@@ -49,7 +49,7 @@ func run(cmd *cobra.Command, args []string) error {
 
 	client, err := NewClient(ctx, core, provider)
 	if err != nil {
-		return err
+		return NewNiceError(err)
 	}
 
 	go sigterm(client)

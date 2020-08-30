@@ -7,99 +7,102 @@ import (
 	"github.com/jexia/semaphore/pkg/specs"
 )
 
-type WrapError struct {
+type wrapErr struct {
 	Inner error
 }
 
-func (i WrapError) Unwrap() error {
+func (i wrapErr) Unwrap() error {
 	return i.Inner
 }
 
-// ErrUndefinedReference occurs when resolving meets unknown reference.
-type ErrUndefinedReference struct {
-	WrapError
-	Expression specs.Expression
-	// Reference points to the reference which caused the error
-	Reference  *specs.PropertyReference
-	Breakpoint string
-	Path       string
-}
+type (
+	// ErrUnresolvedFlow occurs when the whole flow cannot be resolved. It's the root error in this package.
+	ErrUnresolvedFlow struct {
+		wrapErr
+		Name string
+	}
+
+	// ErrUndefinedReference occurs when resolving meets unknown reference.
+	ErrUndefinedReference struct {
+		wrapErr
+		Expression specs.Expression
+		// Reference points to the reference which caused the error
+		Reference  *specs.PropertyReference
+		Breakpoint string
+		Path       string
+	}
+
+	// ErrUndefinedResource occurs when resolving meets unknown resource
+	ErrUndefinedResource struct {
+		wrapErr
+		// Reference points to the reference which caused the error
+		Reference  *specs.PropertyReference
+		Breakpoint string
+		// AvailableReferences contains the whole list of known references
+		AvailableReferences map[string]lookup.ReferenceMap
+	}
+
+	ErrUnresolvedOnError struct {
+		wrapErr
+		OnError *specs.OnError
+	}
+
+	ErrUnresolvedNode struct {
+		wrapErr
+		Node *specs.Node
+	}
+
+	ErrUnresolvedParameterMap struct {
+		wrapErr
+		Parameter *specs.ParameterMap
+	}
+
+	ErrUnresolvedProperty struct {
+		wrapErr
+		Property *specs.Property
+	}
+
+	ErrUnresolvedParams struct {
+		wrapErr
+		Params map[string]*specs.Property
+	}
+
+	ErrUnresolvedCall struct {
+		wrapErr
+		Call *specs.Call
+	}
+)
 
 func (e ErrUndefinedReference) Error() string {
 	return fmt.Sprintf("undefined reference '%s' in '%s.%s'", e.Reference, e.Breakpoint, e.Path)
-}
-
-// ErrUndefinedResource occurs when resolving meets unknown resource
-type ErrUndefinedResource struct {
-	WrapError
-	// Reference points to the reference which caused the error
-	Reference  *specs.PropertyReference
-	Breakpoint string
-	// AvailableReferences contains the whole list of known references
-	AvailableReferences map[string]lookup.ReferenceMap
 }
 
 func (e ErrUndefinedResource) Error() string {
 	return fmt.Sprintf("undefined resource '%s' in '%s'", e.Reference, e.Breakpoint)
 }
 
-type ErrUnresolvedFlow struct {
-	WrapError
-	Name string
-}
-
 func (e ErrUnresolvedFlow) Error() string {
 	return fmt.Sprintf("failed to resolve flow '%s'", e.Name)
-}
-
-type ErrUnresolvedOnError struct {
-	WrapError
-	OnError *specs.OnError
 }
 
 func (e ErrUnresolvedOnError) Error() string {
 	return "failed to resolve OnError"
 }
 
-type ErrUnresolvedNode struct {
-	WrapError
-	Node *specs.Node
-}
-
 func (e ErrUnresolvedNode) Error() string {
 	return "failed to resovle node"
 }
 
-type ErrUnresolvedParameterMap struct {
-	WrapError
-	Parameter *specs.ParameterMap
-}
-
 func (e ErrUnresolvedParameterMap) Error() string {
-	return "failed to resolve map parameter"
-}
-
-type ErrUnresolvedProperty struct {
-	WrapError
-	Property *specs.Property
+	return "failed to resolve map parameter %s"
 }
 
 func (e ErrUnresolvedProperty) Error() string {
 	return "failed to resolve property"
 }
 
-type ErrUnresolvedCall struct {
-	WrapError
-	Call *specs.Call
-}
-
 func (e ErrUnresolvedCall) Error() string {
 	return "failed to resolve call"
-}
-
-type ErrUnresolvedParams struct {
-	WrapError
-	Params map[string]*specs.Property
 }
 
 func (e ErrUnresolvedParams) Error() string {
