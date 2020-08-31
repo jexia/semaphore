@@ -1,6 +1,11 @@
 package formencoded
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
+
+var errNilSchema = errors.New("nil schema")
 
 type errUndefinedProperty string
 

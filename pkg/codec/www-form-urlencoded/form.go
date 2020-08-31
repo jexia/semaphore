@@ -185,6 +185,10 @@ func (manager *Manager) Unmarshal(reader io.Reader, refs references.Store) error
 func decodeElement(resource string, pos int, path []string, values []string, schema map[string]*specs.Property, refs references.Store) error {
 	propName := path[pos]
 
+	if schema == nil {
+		return errNilSchema
+	}
+
 	prop, has := schema[propName]
 	if !has {
 		return errUndefinedProperty(propName)

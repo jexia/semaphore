@@ -48,6 +48,12 @@ var schema = &specs.ParameterMap{
 				Type:  types.String,
 				Label: "unsupported",
 			},
+			"no_nested_schema": {
+				Name:  "bad_label",
+				Path:  "bad_label",
+				Type:  types.Message,
+				Label: labels.Optional,
+			},
 			"numeric": {
 				Name:  "bad_label",
 				Path:  "bad_label",
@@ -409,6 +415,10 @@ func TestUnmarshal(t *testing.T) {
 		"type mismatch": {
 			input: strings.NewReader("numeric=foo"),
 			error: errors.New(""), // error returned by ParseInt()
+		},
+		"empty nested schema": {
+			input: strings.NewReader("no_nested_schema.value=foo"),
+			error: errNilSchema,
 		},
 		"empty reader": {
 			input: strings.NewReader(""),
