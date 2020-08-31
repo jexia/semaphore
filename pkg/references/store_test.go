@@ -667,33 +667,33 @@ func TestParameterMapReferences(t *testing.T) {
 
 func TestStoreString(t *testing.T) {
 	type test struct {
-		reference Reference
+		reference *Reference
 		expected  string
 	}
 
 	var tests = map[string]test{
 		"empty reference to string": {
-			reference: Reference{
+			reference: &Reference{
 				Path: "test",
 			},
 			expected: "test:<empty>",
 		},
 		"value to string": {
-			reference: Reference{
+			reference: &Reference{
 				Path:  "test",
 				Value: 42,
 			},
 			expected: "test:<int(42)>",
 		},
 		"enum to string": {
-			reference: Reference{
+			reference: &Reference{
 				Path: "test",
 				Enum: func() *int32 { i := int32(1); return &i }(),
 			},
 			expected: "test:<enum(1)>",
 		},
 		"repeated to string": {
-			reference: Reference{
+			reference: &Reference{
 				Path: "test",
 				Repeated: []Store{
 					func() Store {
