@@ -657,7 +657,6 @@ func TestParameterMapReferences(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			ref := ParameterReferences(test.params)
-			t.Log(ref)
 			if len(ref) != test.count {
 				t.Fatalf("unexpected amount of references %d, expected %d", len(ref), test.count)
 			}

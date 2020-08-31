@@ -357,8 +357,6 @@ func TestStoringParams(t *testing.T) {
 	query.Add(path, expected)
 	uri.RawQuery = query.Encode()
 
-	t.Log(uri.String())
-
 	res, err := http.Post(uri.String(), "", nil)
 	if err != nil {
 		t.Fatal(err)
@@ -749,8 +747,6 @@ func TestListenerErrorHandling(t *testing.T) {
 			}
 
 			uri.RawQuery = query.Encode()
-
-			t.Log(uri.String())
 
 			res, err := http.Post(uri.String(), "", nil)
 			if err != nil {

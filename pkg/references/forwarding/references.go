@@ -165,6 +165,10 @@ func ScopePropertyReference(property *specs.Property) {
 		return
 	}
 
+	if property.Reference.Property == property {
+		return
+	}
+
 	property.Reference = property.Reference.Property.Reference
 	ScopePropertyReference(property)
 }

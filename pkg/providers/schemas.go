@@ -8,8 +8,8 @@ import (
 	"go.uber.org/zap"
 )
 
-// Resolve ensures that all schema properties are defined inside the given flows
-func Resolve(ctx *broker.Context, services specs.ServiceList, schemas specs.Schemas, flows specs.FlowListInterface) (err error) {
+// ResolveSchemas ensures that all schema properties are defined inside the given flows
+func ResolveSchemas(ctx *broker.Context, services specs.ServiceList, schemas specs.Schemas, flows specs.FlowListInterface) (err error) {
 	logger.Info(ctx, "defining manifest types")
 
 	for _, flow := range flows {
@@ -33,7 +33,7 @@ func ResolveFlow(parent *broker.Context, services specs.ServiceList, schemas spe
 			return trace.New(trace.WithMessage("object '%s', is unavailable inside the schema collection", flow.GetInput().Schema))
 		}
 
-		flow.GetInput().Property = input
+		flow.GetInput().Property = input.Clone()
 	}
 
 	if flow.GetOnError() != nil {
@@ -126,7 +126,7 @@ func DefineCall(ctx *broker.Context, services specs.ServiceList, schemas specs.S
 
 		call.Descriptor = method
 		call.Response = &specs.ParameterMap{
-			Property: output,
+			Property: output.Clone(),
 		}
 
 		call.Request.Schema = method.Input
@@ -146,7 +146,7 @@ func DefineCall(ctx *broker.Context, services specs.ServiceList, schemas specs.S
 // ResolveProperty ensures that all schema properties are defined inside the given property
 func ResolveProperty(property *specs.Property, schema *specs.Property, flow specs.FlowInterface) error {
 	if property == nil {
-		property = schema
+		property = schema.Clone()
 		return nil
 	}
 
@@ -156,14 +156,15 @@ func ResolveProperty(property *specs.Property, schema *specs.Property, flow spec
 			return trace.New(trace.WithMessage("undefined schema nested message property '%s' in flow '%s'", key, flow.GetName()))
 		}
 
-		err := ResolveProperty(nested, object, flow)
+		err := ResolveProperty(nested, object.Clone(), flow)
 		if err != nil {
 			return err
 		}
 	}
 
 	if property.Nested == nil && schema.Nested != nil {
-		property.Nested = schema.Nested
+		clone := schema.Clone()
+		property.Nested = clone.Nested
 		return nil
 	}
 
@@ -174,7 +175,7 @@ func ResolveProperty(property *specs.Property, schema *specs.Property, flow spec
 			continue
 		}
 
-		property.Nested[prop.Name] = prop
+		property.Nested[prop.Name] = prop.Clone()
 	}
 
 	return nil
@@ -191,7 +192,7 @@ func ResolveParameterMap(ctx *broker.Context, schemas specs.Schemas, params *spe
 		return trace.New(trace.WithMessage("object '%s', is unavailable inside the schema collection", params.Schema))
 	}
 
-	err = ResolveProperty(params.Property, schema, flow)
+	err = ResolveProperty(params.Property, schema.Clone(), flow)
 	if err != nil {
 		return err
 	}

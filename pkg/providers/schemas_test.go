@@ -186,7 +186,7 @@ func TestDefineSchemas(t *testing.T) {
 			services := NewMockServices()
 			schemas := NewMockSchemas()
 
-			err := Resolve(ctx, services, schemas, flows)
+			err := ResolveSchemas(ctx, services, schemas, flows)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -349,7 +349,7 @@ func TestDefineSchemasUnknown(t *testing.T) {
 			services := NewMockServices()
 			schemas := NewMockSchemas()
 
-			err := Resolve(ctx, services, schemas, flows)
+			err := ResolveSchemas(ctx, services, schemas, flows)
 			if err == nil {
 				t.Fatal("unexpected pass")
 			}

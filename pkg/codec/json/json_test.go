@@ -613,8 +613,6 @@ func TestUnmarshal(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			t.Log(store)
-
 			ValidateStore(t, req.Property, "input", "", input, store)
 		})
 	}
