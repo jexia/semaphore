@@ -48,6 +48,12 @@ var schema = &specs.ParameterMap{
 				Type:  types.String,
 				Label: "unsupported",
 			},
+			"numeric": {
+				Name:  "bad_label",
+				Path:  "bad_label",
+				Type:  types.Int32,
+				Label: labels.Optional,
+			},
 			"message": {
 				Name:  "message",
 				Path:  "message",
@@ -399,6 +405,13 @@ func TestUnmarshal(t *testing.T) {
 				},
 			),
 			error: errors.New("failed"),
+		},
+		"type mismatch": {
+			input: strings.NewReader("numeric=foo"),
+			error: errors.New(""), // error returned by ParseInt()
+		},
+		"empty reader": {
+			input: strings.NewReader(""),
 		},
 		"error with undefined property": {
 			input: strings.NewReader(
