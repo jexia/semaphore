@@ -1,6 +1,7 @@
 package formencoded
 
 import (
+	"errors"
 	"net/url"
 	"testing"
 
@@ -132,9 +133,15 @@ func TestDecodeType(t *testing.T) {
 	type test struct {
 		input    string
 		expected interface{}
+		error    error
 	}
 
 	tests := map[types.Type]test{
+		"unknown": {
+			input:    `value`,
+			expected: nil,
+			error:    errUnknownType("unknown"),
+		},
 		types.Double: {
 			input:    `10`,
 			expected: float64(10),
@@ -200,12 +207,9 @@ func TestDecodeType(t *testing.T) {
 	for typed, test := range tests {
 		t.Run(string(typed), func(t *testing.T) {
 			val, err := DecodeType(test.input, typed)
-			if err != nil {
-				t.Fatal(err)
-			}
 
-			if val == nil {
-				t.Fatal("unexpected nil value")
+			if !errors.Is(err, test.error) {
+				t.Fatal(err)
 			}
 
 			switch val.(type) {

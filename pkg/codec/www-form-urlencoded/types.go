@@ -2,7 +2,6 @@ package formencoded
 
 import (
 	"encoding/base64"
-	"fmt"
 	"net/url"
 	"strconv"
 
@@ -91,7 +90,7 @@ func DecodeType(raw string, typed types.Type) (interface{}, error) {
 	case types.Sint64:
 		return strconv.ParseInt(raw, 10, 64)
 	default:
-		return nil, fmt.Errorf("unkown type %+v", typed)
+		return nil, errUnknownType(typed)
 	}
 }
 

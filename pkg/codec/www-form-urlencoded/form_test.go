@@ -2,6 +2,7 @@ package formencoded
 
 import (
 	"errors"
+	"io"
 	"io/ioutil"
 	"strings"
 	"testing"
@@ -379,24 +380,42 @@ func TestMarshal(t *testing.T) {
 	}
 }
 
+type readerFunc func([]byte) (int, error)
+
+func (fn readerFunc) Read(p []byte) (int, error) { return fn(p) }
+
 func TestUnmarshal(t *testing.T) {
 	type test struct {
-		input    string
+		input    io.Reader
 		expected map[string]expect
 		error    error
 	}
 
 	tests := map[string]test{
+		"reader error": {
+			input: readerFunc(
+				func([]byte) (int, error) {
+					return 0, errors.New("failed")
+				},
+			),
+			error: errors.New("failed"),
+		},
 		"error with undefined property": {
-			input: "undefined=hello+world",
+			input: strings.NewReader(
+				"undefined=hello+world",
+			),
 			error: errUndefinedProperty(""),
 		},
 		"error with unknown label": {
-			input: "bad_label=hello+world",
+			input: strings.NewReader(
+				"bad_label=hello+world",
+			),
 			error: errUnknownLabel(""),
 		},
 		"simple": {
-			input: "message=hello+world",
+			input: strings.NewReader(
+				"message=hello+world",
+			),
 			expected: map[string]expect{
 				"message": {
 					value: "hello world",
@@ -404,7 +423,9 @@ func TestUnmarshal(t *testing.T) {
 			},
 		},
 		"nested": {
-			input: "nested.first=nested+first&nested.second=nested+second",
+			input: strings.NewReader(
+				"nested.first=nested+first&nested.second=nested+second",
+			),
 			expected: map[string]expect{
 				"nested.first": {
 					value: "nested first",
@@ -415,7 +436,9 @@ func TestUnmarshal(t *testing.T) {
 			},
 		},
 		"enum": {
-			input: "status=PENDING",
+			input: strings.NewReader(
+				"status=PENDING",
+			),
 			expected: map[string]expect{
 				"status": {
 					enum: func() *int32 { i := int32(1); return &i }(),
@@ -423,7 +446,9 @@ func TestUnmarshal(t *testing.T) {
 			},
 		},
 		"repeated string": {
-			input: "repeating_string=repeating+one&repeating_string=repeating+two",
+			input: strings.NewReader(
+				"repeating_string=repeating+one&repeating_string=repeating+two",
+			),
 			expected: map[string]expect{
 				"repeating_string": {
 					repeated: []expect{
@@ -438,7 +463,9 @@ func TestUnmarshal(t *testing.T) {
 			},
 		},
 		"repeated nested": {
-			input: "repeating.value=repeating+one&repeating.value=repeating+two",
+			input: strings.NewReader(
+				"repeating.value=repeating+one&repeating.value=repeating+two",
+			),
 			expected: map[string]expect{
 				"repeating": {
 					repeated: []expect{
@@ -461,7 +488,9 @@ func TestUnmarshal(t *testing.T) {
 			},
 		},
 		"repeated enum": {
-			input: "repeating_enum=PENDING&repeating_enum=UNKOWN",
+			input: strings.NewReader(
+				"repeating_enum=PENDING&repeating_enum=UNKOWN",
+			),
 			expected: map[string]expect{
 				"repeating_enum": {
 					repeated: []expect{
@@ -476,7 +505,9 @@ func TestUnmarshal(t *testing.T) {
 			},
 		},
 		"complex": {
-			input: "message=hello+world&nested.first=nested+value&repeating.value=repeating+value",
+			input: strings.NewReader(
+				"message=hello+world&nested.first=nested+value&repeating.value=repeating+value",
+			),
 			expected: map[string]expect{
 				"message": {
 					value: "hello world",
@@ -511,12 +542,8 @@ func TestUnmarshal(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			var (
-				refs   = references.NewReferenceStore(0)
-				reader = strings.NewReader(test.input)
-			)
-
-			err = manager.Unmarshal(reader, refs)
+			var refs = references.NewReferenceStore(0)
+			err = manager.Unmarshal(test.input, refs)
 
 			if test.error != nil {
 				if !errors.As(err, &test.error) {
