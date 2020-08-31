@@ -28,7 +28,7 @@ flow "FetchLatestProject" {
 		title = "{{ query:title }}"
 		completed = "{{ query:completed }}"
 		item = [
-			"{{ input:repeated }}"
+			"{{ input.header:Authorization }}"
 		]
 	}
 }
