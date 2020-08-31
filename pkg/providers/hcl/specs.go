@@ -1,8 +1,6 @@
 package hcl
 
 import (
-	"log"
-
 	"github.com/hashicorp/hcl/v2"
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
@@ -680,11 +678,38 @@ func ParseIntermediateProperty(ctx *broker.Context, path string, property *hcl.A
 		Label: labels.Optional,
 	}
 
+	/*
+		TODO: handle properties that set a object
+
+		key = {
+			"message": "world",
+			"ref": "{{ input:id }}"
+		}
+	*/
+
 	typed := value.Type()
 	if typed.IsTupleType() {
-		result.Repeated = make([]*specs.Property, typed.Length())
-		value.ForEachElement(func(key cty.Value, val cty.Value) (stop bool) {
-			log.Println(key.Type().GoString(), val.Type().GoString())
+		result.Repeated = make([]*specs.Property, 0, typed.Length())
+		value.ForEachElement(func(key cty.Value, value cty.Value) (stop bool) {
+			typed := value.Type()
+			item := &specs.Property{
+				Path:  result.Path,
+				Expr:  &Expression{property.Expr},
+				Label: labels.Optional,
+			}
+
+			if typed != cty.String || !template.Is(value.AsString()) {
+				SetDefaultValue(ctx, item, value)
+				result.Repeated = append(result.Repeated, item)
+				return false
+			}
+
+			item, err := template.Parse(ctx, path, item.Name, value.AsString())
+			if err != nil {
+				return false
+			}
+
+			result.Repeated = append(result.Repeated, item)
 			return false
 		})
 	}
@@ -694,12 +719,11 @@ func ParseIntermediateProperty(ctx *broker.Context, path string, property *hcl.A
 		return result, nil
 	}
 
-	result, err := template.Parse(ctx, path, property.Name, value.AsString())
+	result, err := template.Parse(ctx, path, result.Name, value.AsString())
 	if err != nil {
 		return nil, err
 	}
 
-	result.Name = property.Name
 	return result, nil
 }
 

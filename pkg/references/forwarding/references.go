@@ -140,6 +140,10 @@ func ResolvePropertyReferences(property *specs.Property, dependencies specs.Depe
 		return
 	}
 
+	for _, repeated := range property.Repeated {
+		ResolvePropertyReferences(repeated, dependencies)
+	}
+
 	for _, nested := range property.Nested {
 		ResolvePropertyReferences(nested, dependencies)
 	}

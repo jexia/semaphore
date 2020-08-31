@@ -162,6 +162,12 @@ func ResolveProperty(property *specs.Property, schema *specs.Property, flow spec
 		}
 	}
 
+	if property.Repeated != nil {
+		clone := schema.Clone()
+		property.Type = clone.Type
+		property.Label = clone.Label
+	}
+
 	if property.Nested == nil && schema.Nested != nil {
 		clone := schema.Clone()
 		property.Nested = clone.Nested

@@ -187,6 +187,17 @@ func CheckPropertyTypes(property *specs.Property, schema *specs.Property, flow s
 		return trace.New(trace.WithExpression(property.Expr), trace.WithMessage("cannot use label (%s) for '%s', expected (%s)", property.Label, property.Path, schema.Label))
 	}
 
+	for _, repeated := range property.Repeated {
+		// FIXME: schema should not be cloned
+		clone := schema.Clone()
+		clone.Label = repeated.Label
+
+		err = CheckPropertyTypes(repeated, clone, flow)
+		if err != nil {
+			return err
+		}
+	}
+
 	if len(property.Nested) > 0 {
 		if len(schema.Nested) == 0 {
 			return trace.New(trace.WithExpression(property.Expr), trace.WithMessage("property '%s' has a nested object but schema does not '%s'", property.Path, schema.Name))

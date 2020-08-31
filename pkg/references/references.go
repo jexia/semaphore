@@ -197,6 +197,15 @@ func ResolveProperty(ctx *broker.Context, node *specs.Node, property *specs.Prop
 		}
 	}
 
+	if len(property.Repeated) > 0 {
+		for _, repeated := range property.Repeated {
+			err := ResolveProperty(ctx, node, repeated, flow)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
 	if property.Reference == nil {
 		return nil
 	}
