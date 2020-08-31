@@ -99,9 +99,9 @@ func (object *Object) UnmarshalJSONObject(dec *gojay.Decoder, key string) error 
 	}
 
 	if prop.Type == types.Message {
-		dynamic := NewObject(object.resource, prop.Nested, object.refs)
-		err := dec.AddObject(dynamic)
-		return err
+		return dec.AddObject(
+			NewObject(object.resource, prop.Nested, object.refs),
+		)
 	}
 
 	ref := &references.Reference{

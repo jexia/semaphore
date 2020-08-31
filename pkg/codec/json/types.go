@@ -119,8 +119,8 @@ func DecodeType(decoder *gojay.Decoder, prop types.Type) (interface{}, error) {
 		err := decoder.AddUint32(&value)
 		return value, err
 	case types.Fixed32:
-		var value uint64
-		err := decoder.AddUint64(&value)
+		var value uint32
+		err := decoder.AddUint32(&value)
 		return value, err
 	case types.String:
 		var value string
