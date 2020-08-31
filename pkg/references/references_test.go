@@ -104,6 +104,10 @@ func TestUnmarshalFile(t *testing.T) {
 	}
 }
 
+func TestScopeNestedReferencesNil(t *testing.T) {
+	ScopeNestedReferences(nil, nil)
+}
+
 func TestScopeNestedReferences(t *testing.T) {
 	t.Parallel()
 

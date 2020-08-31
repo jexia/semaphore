@@ -180,6 +180,14 @@ func TestStoreReference(t *testing.T) {
 	}
 }
 
+func TestStoreLoadUnkownReference(t *testing.T) {
+	store := NewReferenceStore(0)
+	result := store.Load("", "")
+	if result != nil {
+		t.Fatal("unexpected result")
+	}
+}
+
 func TestStoreValues(t *testing.T) {
 	store := NewReferenceStore(1)
 
@@ -664,7 +672,7 @@ func TestParameterMapReferences(t *testing.T) {
 	}
 }
 
-func TestStoreString(t *testing.T) {
+func TestReferenceString(t *testing.T) {
 	type test struct {
 		reference *Reference
 		expected  string
@@ -718,6 +726,51 @@ func TestStoreString(t *testing.T) {
 	for title, test := range tests {
 		t.Run(title, func(t *testing.T) {
 			if actual := test.reference.String(); actual != test.expected {
+				t.Errorf("output %q was expected to be %s", actual, test.expected)
+			}
+		})
+	}
+
+}
+
+func TestStoreString(t *testing.T) {
+	type test struct {
+		store    *store
+		expected string
+	}
+
+	var tests = map[string]test{
+		"multiple values": {
+			store: &store{
+				values: map[string]*Reference{
+					"first": {
+						Path:  "key",
+						Value: "value",
+					},
+					"second": {
+						Path:  "key",
+						Value: "value",
+					},
+				},
+			},
+			expected: "first:[key:<string(value)>], second:[key:<string(value)>]",
+		},
+		"single value": {
+			store: &store{
+				values: map[string]*Reference{
+					"first": {
+						Path:  "key",
+						Value: "value",
+					},
+				},
+			},
+			expected: "first:[key:<string(value)>]",
+		},
+	}
+
+	for title, test := range tests {
+		t.Run(title, func(t *testing.T) {
+			if actual := test.store.String(); actual != test.expected {
 				t.Errorf("output %q was expected to be %s", actual, test.expected)
 			}
 		})
