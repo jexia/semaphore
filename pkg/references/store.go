@@ -1,6 +1,8 @@
 package references
 
 import (
+	"fmt"
+	"strings"
 	"sync"
 
 	"github.com/jexia/semaphore/pkg/specs"
@@ -28,6 +30,19 @@ type Reference struct {
 	Repeated []Store
 	Enum     *int32
 	mutex    sync.Mutex
+}
+
+func (reference *Reference) String() string {
+	switch {
+	case reference.Value != nil:
+		return fmt.Sprintf("%s:%v", reference.Path, reference.Value)
+	case reference.Repeated != nil:
+		return fmt.Sprintf("%s:<ARR:%s>", reference.Path, reference.Repeated)
+	case reference.Enum != nil:
+		return fmt.Sprintf("%s:%d", reference.Path, *reference.Enum)
+	default:
+		return fmt.Sprintf("%s:<empty>", reference.Path)
+	}
 }
 
 // Repeating prepares the given reference to store repeating values
@@ -60,6 +75,16 @@ func NewReferenceStore(size int) Store {
 type store struct {
 	values map[string]*Reference
 	mutex  sync.Mutex
+}
+
+func (store *store) String() string {
+	var builder strings.Builder
+
+	for key, ref := range store.values {
+		builder.WriteString(fmt.Sprintf("%s:[%s]", key, ref))
+	}
+
+	return builder.String()
 }
 
 // StoreReference stores the given resource, path and value inside the references store
