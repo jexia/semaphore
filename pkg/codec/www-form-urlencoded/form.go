@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/url"
+	"strings"
 
 	"github.com/jexia/semaphore/pkg/broker/trace"
 	"github.com/jexia/semaphore/pkg/codec"
@@ -153,5 +155,101 @@ func array(encoder url.Values, root string, refs references.Store, prop *specs.P
 // Unmarshal unmarshals the given www-form-urlencoded io reader into the given reference store.
 // This method is called during runtime to decode a new message and store it inside the given reference store
 func (manager *Manager) Unmarshal(reader io.Reader, refs references.Store) error {
+	if manager.specs == nil {
+		return nil
+	}
+
+	bb, err := ioutil.ReadAll(reader)
+	if err != nil {
+		return err
+	}
+
+	if len(bb) == 0 {
+		return nil
+	}
+
+	values, err := url.ParseQuery(string(bb))
+	if err != nil {
+		return err
+	}
+
+	for key, values := range values {
+		if err := decodeElement(manager.resource, 0, strings.Split(key, "."), values, manager.specs.Nested, refs); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func decodeElement(resource string, pos int, path []string, values []string, schema map[string]*specs.Property, refs references.Store) error {
+	propName := path[pos]
+
+	if schema == nil {
+		return errNilSchema
+	}
+
+	prop, has := schema[propName]
+	if !has {
+		return errUndefinedProperty(propName)
+	}
+
+	ref := &references.Reference{
+		Path: prop.Path,
+	}
+
+	switch prop.Label {
+	case labels.Repeated:
+		for _, raw := range values {
+			store := references.NewReferenceStore(0)
+
+			switch prop.Type {
+			case types.Message:
+				if len(path) > pos+1 {
+					if err := decodeElement(resource, pos+1, path, []string{raw}, prop.Nested, store); err != nil {
+						return err
+					}
+				}
+			case types.Enum:
+				enum := prop.Enum.Keys[raw]
+				if enum != nil {
+					store.StoreEnum("", "", enum.Position)
+				}
+			default:
+				value, err := DecodeType(raw, prop.Type)
+				if err != nil {
+					return err
+				}
+
+				store.StoreValue("", "", value)
+			}
+
+			ref.Append(store)
+		}
+	case labels.Optional, labels.Required:
+		switch prop.Type {
+		case types.Message:
+			if len(path) > pos+1 {
+				return decodeElement(resource, pos+1, path, values, prop.Nested, refs)
+			}
+		case types.Enum:
+			enum := prop.Enum.Keys[values[0]]
+			if enum != nil {
+				ref.Enum = &enum.Position
+			}
+		default:
+			value, err := DecodeType(values[0], prop.Type)
+			if err != nil {
+				return err
+			}
+
+			ref.Value = value
+		}
+	default:
+		return errUnknownLabel(prop.Label)
+	}
+
+	refs.StoreReference(resource, ref)
+
 	return nil
 }
