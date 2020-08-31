@@ -664,3 +664,64 @@ func TestParameterMapReferences(t *testing.T) {
 		})
 	}
 }
+
+func TestStoreString(t *testing.T) {
+	type test struct {
+		reference Reference
+		expected  string
+	}
+
+	var tests = map[string]test{
+		"empty reference to string": {
+			reference: Reference{
+				Path: "test",
+			},
+			expected: "test:<empty>",
+		},
+		"value to string": {
+			reference: Reference{
+				Path:  "test",
+				Value: 42,
+			},
+			expected: "test:<int(42)>",
+		},
+		"enum to string": {
+			reference: Reference{
+				Path: "test",
+				Enum: func() *int32 { i := int32(1); return &i }(),
+			},
+			expected: "test:<enum(1)>",
+		},
+		"repeated to string": {
+			reference: Reference{
+				Path: "test",
+				Repeated: []Store{
+					func() Store {
+						var store = NewReferenceStore(0)
+
+						store.StoreValue("four", "two", 42)
+
+						return store
+					}(),
+					func() Store {
+						var store = NewReferenceStore(0)
+
+						store.StoreValue("four", "three", 43)
+
+						return store
+					}(),
+				},
+			},
+			expected: "test:<array([fourtwo:[two:<int(42)>] fourthree:[three:<int(43)>]])>",
+		},
+	}
+
+	for title, test := range tests {
+		t.Run(title, func(t *testing.T) {
+			if actual := test.reference.String(); actual != test.expected {
+				t.Errorf("output %q was expected to be %s", actual, test.expected)
+			}
+		})
+	}
+
+}

@@ -35,11 +35,11 @@ type Reference struct {
 func (reference *Reference) String() string {
 	switch {
 	case reference.Value != nil:
-		return fmt.Sprintf("%s:%v", reference.Path, reference.Value)
+		return fmt.Sprintf("%s:<%T(%v)>", reference.Path, reference.Value, reference.Value)
 	case reference.Repeated != nil:
-		return fmt.Sprintf("%s:<ARR:%s>", reference.Path, reference.Repeated)
+		return fmt.Sprintf("%s:<array(%s)>", reference.Path, reference.Repeated)
 	case reference.Enum != nil:
-		return fmt.Sprintf("%s:%d", reference.Path, *reference.Enum)
+		return fmt.Sprintf("%s:<enum(%d)>", reference.Path, *reference.Enum)
 	default:
 		return fmt.Sprintf("%s:<empty>", reference.Path)
 	}
@@ -78,9 +78,18 @@ type store struct {
 }
 
 func (store *store) String() string {
-	var builder strings.Builder
+	var (
+		separated bool
+		builder   strings.Builder
+	)
 
 	for key, ref := range store.values {
+		if separated {
+			builder.WriteString(", ")
+		} else {
+			separated = true
+		}
+
 		builder.WriteString(fmt.Sprintf("%s:[%s]", key, ref))
 	}
 
