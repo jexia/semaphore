@@ -21,6 +21,8 @@ type Error struct {
 	// Code is a constant error code to let consumers referring to the rror by its code.
 	// The message might be changed, but the code should not
 	Code string `json:"code"`
+	// Suggestion is the advise to users how to fix the error.
+	Suggestion string `json:"suggestion"`
 }
 
 func (e Error) Error() string {
