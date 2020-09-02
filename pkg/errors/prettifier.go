@@ -1,4 +1,4 @@
-package pretty_errors
+package errors
 
 // Prettifier builds Error
 type Prettifier interface {

@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/jexia/semaphore/pkg/lookup"
-	"github.com/jexia/semaphore/pkg/pretty_errors"
+	"github.com/jexia/semaphore/pkg/errors"
 	"github.com/jexia/semaphore/pkg/specs"
 )
 
@@ -77,7 +77,7 @@ type (
 func (e ErrUndefinedReference) Error() string {
 	return fmt.Sprintf("undefined reference '%s' in '%s.%s'", e.Reference, e.Breakpoint, e.Path)
 }
-func (e ErrUndefinedReference) Prettify() pretty_errors.Error {
+func (e ErrUndefinedReference) Prettify() errors.Error {
 	details := map[string]interface{}{
 		"Reference":  e.Reference,
 		"Breakpoint": e.Breakpoint,
@@ -88,7 +88,7 @@ func (e ErrUndefinedReference) Prettify() pretty_errors.Error {
 		details["Expression"] = e.Expression.Position()
 	}
 
-	return pretty_errors.Error{
+	return errors.Error{
 		Code:    "UndefinedReference",
 		Message: e.Error(),
 		Details: details,
@@ -98,13 +98,13 @@ func (e ErrUndefinedReference) Prettify() pretty_errors.Error {
 func (e ErrUndefinedResource) Error() string {
 	return fmt.Sprintf("undefined resource '%s' in '%s'", e.Reference, e.Breakpoint)
 }
-func (e ErrUndefinedResource) Prettify() pretty_errors.Error {
+func (e ErrUndefinedResource) Prettify() errors.Error {
 	var availableRefs []string
 	for k, _ := range e.AvailableReferences {
 		availableRefs = append(availableRefs, k)
 	}
 
-	return pretty_errors.Error{
+	return errors.Error{
 		Code:    "UndefinedResource",
 		Message: e.Error(),
 		Details: map[string]interface{}{
@@ -118,8 +118,8 @@ func (e ErrUndefinedResource) Prettify() pretty_errors.Error {
 func (e ErrUnresolvedFlow) Error() string {
 	return fmt.Sprintf("failed to resolve flow '%s'", e.Name)
 }
-func (e ErrUnresolvedFlow) Prettify() pretty_errors.Error {
-	return pretty_errors.Error{
+func (e ErrUnresolvedFlow) Prettify() errors.Error {
+	return errors.Error{
 		Code:    "UnresolvedFlow",
 		Message: e.Error(),
 		Details: map[string]interface{}{
@@ -131,8 +131,8 @@ func (e ErrUnresolvedFlow) Prettify() pretty_errors.Error {
 func (e ErrUnresolvedOnError) Error() string {
 	return "failed to resolve OnError"
 }
-func (e ErrUnresolvedOnError) Prettify() pretty_errors.Error {
-	return pretty_errors.Error{
+func (e ErrUnresolvedOnError) Prettify() errors.Error {
+	return errors.Error{
 		Code:    "UnresolvedOnError",
 		Message: e.Error(),
 		Details: map[string]interface{}{
@@ -144,8 +144,8 @@ func (e ErrUnresolvedOnError) Prettify() pretty_errors.Error {
 func (e ErrUnresolvedNode) Error() string {
 	return "failed to resolve node"
 }
-func (e ErrUnresolvedNode) Prettify() pretty_errors.Error {
-	return pretty_errors.Error{
+func (e ErrUnresolvedNode) Prettify() errors.Error {
+	return errors.Error{
 		Code:    "UnresolvedNode",
 		Message: e.Error(),
 		Details: map[string]interface{}{
@@ -157,8 +157,8 @@ func (e ErrUnresolvedNode) Prettify() pretty_errors.Error {
 func (e ErrUnresolvedParameterMap) Error() string {
 	return "failed to resolve map parameter %s"
 }
-func (e ErrUnresolvedParameterMap) Prettify() pretty_errors.Error {
-	return pretty_errors.Error{
+func (e ErrUnresolvedParameterMap) Prettify() errors.Error {
+	return errors.Error{
 		Code:    "UnresolvedParameterMap",
 		Message: e.Error(),
 		Details: map[string]interface{}{
@@ -170,8 +170,8 @@ func (e ErrUnresolvedParameterMap) Prettify() pretty_errors.Error {
 func (e ErrUnresolvedProperty) Error() string {
 	return "failed to resolve property"
 }
-func (e ErrUnresolvedProperty) Prettify() pretty_errors.Error {
-	return pretty_errors.Error{
+func (e ErrUnresolvedProperty) Prettify() errors.Error {
+	return errors.Error{
 		Code:    "UnresolvedProperty",
 		Message: e.Error(),
 		Details: map[string]interface{}{
@@ -183,8 +183,8 @@ func (e ErrUnresolvedProperty) Prettify() pretty_errors.Error {
 func (e ErrUnresolvedCall) Error() string {
 	return "failed to resolve call"
 }
-func (e ErrUnresolvedCall) Prettify() pretty_errors.Error {
-	return pretty_errors.Error{
+func (e ErrUnresolvedCall) Prettify() errors.Error {
+	return errors.Error{
 		Code:    "UnresolvedCall",
 		Message: e.Error(),
 		Details: map[string]interface{}{
@@ -196,8 +196,8 @@ func (e ErrUnresolvedCall) Prettify() pretty_errors.Error {
 func (e ErrUnresolvedParams) Error() string {
 	return "failed to resolve params"
 }
-func (e ErrUnresolvedParams) Prettify() pretty_errors.Error {
-	return pretty_errors.Error{
+func (e ErrUnresolvedParams) Prettify() errors.Error {
+	return errors.Error{
 		Code:    "UnresolvedParams",
 		Message: e.Error(),
 		Details: map[string]interface{}{
