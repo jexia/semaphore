@@ -1,4 +1,4 @@
-package pretty_errors
+package prettyerr
 
 import (
 	"errors"
@@ -12,14 +12,14 @@ func TestNewStack(t *testing.T) {
 		errOne := errors.New("missing everything")
 		errTwo := fmt.Errorf("failed to do One: %w", errOne)
 
-		stack, err := NewStack(errTwo)
+		stack, err := Prettify(errTwo)
 
 		if err != nil {
-			t.Errorf("NewStack() is not expected to return an error")
+			t.Errorf("Prettify() is not expected to return an error")
 		}
 
 		if len(stack) != 2 {
-			t.Errorf("NewStack() is expected to return 3 elements, got: %v", len(stack))
+			t.Errorf("Prettify() is expected to return 3 elements, got: %v", len(stack))
 		}
 
 		prettyOne := Error{
@@ -37,11 +37,11 @@ func TestNewStack(t *testing.T) {
 		}
 
 		if !reflect.DeepEqual(stack[0], prettyTwo) {
-			t.Errorf("NewStack()[0] = %v, want %v", stack[0], prettyTwo)
+			t.Errorf("Prettify()[0] = %v, want %v", stack[0], prettyTwo)
 		}
 
 		if !reflect.DeepEqual(stack[1], prettyOne) {
-			t.Errorf("NewStack()[1] = %v, want %v", stack[1], prettyOne)
+			t.Errorf("Prettify()[1] = %v, want %v", stack[1], prettyOne)
 		}
 	})
 }

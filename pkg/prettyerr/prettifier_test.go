@@ -1,4 +1,4 @@
-package pretty_errors
+package prettyerr
 
 import (
 	"errors"

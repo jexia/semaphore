@@ -1,4 +1,4 @@
-package pretty_errors
+package prettyerr
 
 import (
 	"errors"
@@ -35,7 +35,7 @@ func (e Error) Unwrap() error {
 
 type Stack []Error
 
-// NoPrettifierErr occurs when NewStack or NewStackWithStrategy cannot match a prettifier to the given error.
+// NoPrettifierErr occurs when Prettify or NewStackWithStrategy cannot match a prettifier to the given error.
 var NoPrettifierErr = errors.New("prettifier is not defined")
 
 type StackOptions struct {
@@ -44,13 +44,13 @@ type StackOptions struct {
 
 type StackOptionFn func(*StackOptions)
 
-// NewStack builds a Stack from the given error and all the wrapped errors: prettify, unwrap, prettify, repeat.
+// Prettify builds a Stack from the given error and all the wrapped errors: prettify, unwrap, prettify, repeat.
 // By default, PrettifierStrategy is used. You can override the strategy using the options:
-// NewStack(err, func(o *StackOptions) { o.Strategy = SomeStrategy{} })
+// Prettify(err, func(o *StackOptions) { o.Strategy = SomeStrategy{} })
 //
 // The function expects the strategy returns a prettifier for each error.
-// NoPrettifierErr is returned if strategy does not match a prettifier for the root error or any wrapped error.
-func NewStack(root error, opts ...StackOptionFn) (Stack, error) {
+// NoPrettifierErr is returned if strategy does not match a prettifier for the error or any wrapped error.
+func Prettify(err error, opts ...StackOptionFn) (Stack, error) {
 	options := &StackOptions{
 		Strategy: PrettifierStrategy{},
 	}
@@ -59,7 +59,7 @@ func NewStack(root error, opts ...StackOptionFn) (Stack, error) {
 		fn(options)
 	}
 
-	next := root
+	next := err
 	stack := Stack{}
 
 	for next != nil {
