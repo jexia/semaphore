@@ -103,6 +103,51 @@ func (manager *Manager) Encode(proto *dynamic.Message, desc *desc.MessageDescrip
 		}
 
 		if field.IsRepeated() {
+			if prop.Repeated != nil {
+				for _, repeated := range prop.Repeated {
+					if repeated.Type == types.Message {
+						dynamic := dynamic.NewMessage(field.GetMessageType())
+						err = manager.Encode(dynamic, field.GetMessageType(), repeated.Nested, store)
+						if err != nil {
+							return err
+						}
+
+						err = proto.TrySetField(field, dynamic)
+						if err != nil {
+							return err
+						}
+
+						continue
+					}
+
+					value := repeated.Default
+
+					if repeated.Reference != nil {
+						ref := store.Load(repeated.Reference.Resource, repeated.Reference.Path)
+						if ref != nil {
+							if prop.Type == types.Enum && ref.Enum != nil {
+								value = ref.Enum
+							}
+
+							if value == nil {
+								value = ref.Value
+							}
+						}
+					}
+
+					if value == nil {
+						continue
+					}
+
+					err = proto.TryAddRepeatedField(field, value)
+					if err != nil {
+						return err
+					}
+				}
+
+				continue
+			}
+
 			if prop.Reference == nil {
 				continue
 			}
