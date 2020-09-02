@@ -1,5 +1,5 @@
 exception:
-    message: undefined reference 'input:unknown' in 'echo.output.Authorization'
+    message: failed to resolve flow 'echo'
 properties:
     com.input:
         type: "message"

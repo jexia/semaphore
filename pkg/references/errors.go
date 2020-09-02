@@ -142,7 +142,7 @@ func (e ErrUnresolvedOnError) Prettify() pretty_errors.Error {
 }
 
 func (e ErrUnresolvedNode) Error() string {
-	return "failed to resovle node"
+	return "failed to resolve node"
 }
 func (e ErrUnresolvedNode) Prettify() pretty_errors.Error {
 	return pretty_errors.Error{
