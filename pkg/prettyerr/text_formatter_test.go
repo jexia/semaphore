@@ -22,7 +22,7 @@ func TestTextFormatter(t *testing.T) {
 		"\tfilename: /etc/foo/config.yml\n"+
 		"Something happened, I'm sorry.\n"
 
-	stack := Stack{missingConfig, genericError}
+	stack := Errors{missingConfig, genericError}
 	format := "{{ .Message }}\n{{ range $key, $value := .Details }}\t{{ $key }}: {{ $value }}\n{{ end }}"
 
 	got, err := TextFormatter(stack, format)

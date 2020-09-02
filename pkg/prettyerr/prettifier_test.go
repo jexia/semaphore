@@ -55,3 +55,26 @@ func TestPrettifierStrategy_Match(t *testing.T) {
 		}
 	})
 }
+
+func TestPrettyfierFunc_Prettify(t *testing.T) {
+	tests := []struct {
+		name string
+		f    PrettyfierFunc
+		want Error
+	}{
+		{
+			"runs the defined prettifier",
+			func() Error {
+				return Error{Code: "SomeErr",}
+			},
+			Error{Code: "SomeErr"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.f.Prettify(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Prettify() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

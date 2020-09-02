@@ -9,11 +9,11 @@ import (
 
 const DefaultTextFormat = "{{ .Message }}\n{{ range $key, $value := .Details }}\t{{ $key }}: {{ JSON $value }}\n{{ end }}"
 
-// TextFormatter represents Stack as a text.
+// TextFormatter represents Errors as a text.
 // - stack is the Error stack
 // - nodeTemplate is the template for a single stack element.
 // Example: "({{.Code}}) {{.Message}}\n"
-func TextFormatter(stack Stack, nodeTemplate string) (string, error) {
+func TextFormatter(stack Errors, nodeTemplate string) (string, error) {
 	funcs := template.FuncMap{
 		"JSON": func(val interface{}) string {
 			bytes, err := json.Marshal(val)
