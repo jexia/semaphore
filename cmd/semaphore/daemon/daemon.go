@@ -9,7 +9,7 @@ import (
 	"github.com/jexia/semaphore/cmd/semaphore/daemon/config"
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
-	"github.com/jexia/semaphore/pkg/errors"
+	"github.com/jexia/semaphore/pkg/pretty_errors"
 	"github.com/spf13/cobra"
 )
 
@@ -33,10 +33,10 @@ func init() {
 }
 
 func prettyErrors(err error) error {
-	stack, err := errors.NewStack(err)
+	stack, err := pretty_errors.NewStack(err)
 	if err != nil { return err }
 
-	msg, err := errors.TextFormatter(stack, errors.DefaultTextFormat)
+	msg, err := pretty_errors.TextFormatter(stack, pretty_errors.DefaultTextFormat)
 	if err != nil { return err }
 
 	return errors.New("\n" + msg)

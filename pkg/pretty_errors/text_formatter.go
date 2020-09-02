@@ -1,4 +1,4 @@
-package errors
+package pretty_errors
 
 import (
 	"bytes"
@@ -18,7 +18,7 @@ func TextFormatter(stack Stack, nodeTemplate string) (string, error) {
 		"JSON": func(val interface{}) string {
 			bytes, err := json.Marshal(val)
 			if err != nil {
-				return "<errors: could not marshal the value>"
+				return "<pretty_errors: could not marshal the value>"
 			}
 
 			return string(bytes)
