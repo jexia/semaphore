@@ -123,6 +123,26 @@ func TestManagerUnmarshal(t *testing.T) {
 
 			return params, input, expected
 		},
+		"case insensitive": func() (specs.Header, MD, MD) {
+			params := specs.Header{
+				"Example": &specs.Property{
+					Name:  "example",
+					Path:  "example",
+					Type:  types.String,
+					Label: labels.Optional,
+				},
+			}
+
+			input := MD{
+				"example": "hello",
+			}
+
+			expected := MD{
+				"example": "hello",
+			}
+
+			return params, input, expected
+		},
 		"unnessasery allocation": func() (specs.Header, MD, MD) {
 			params := specs.Header{
 				"example": &specs.Property{
