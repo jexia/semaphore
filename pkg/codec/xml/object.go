@@ -2,9 +2,9 @@ package xml
 
 import (
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"io"
-	"log"
 	"sort"
 
 	"github.com/jexia/semaphore/pkg/references"
@@ -67,106 +67,176 @@ func (object *Object) encodeElement(encoder *xml.Encoder, prop *specs.Property) 
 	return encodeValue(encoder, prop, object.refs, true)
 }
 
-type decodeState int
+// UnmarshalXML decodes XML input into the reference store.
+func (object *Object) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
+	var refs = make(map[string]*references.Reference)
 
-const (
-	waitForStart decodeState = iota
-	waitForValue
-	waitForClose
-)
+	defer func() {
+		for _, reference := range refs {
+			object.refs.StoreReference(object.resource, reference)
+		}
+	}()
 
-func spaces(i int) string {
-	var str string
+	return object.unmarshalXML(decoder, refs)
+}
 
-	for j := 0; j < i; j++ {
-		str += "   "
+// <mock>
+//   <repeating>
+//     <value>repeating one</value>
+//   </repeating>
+//   <repeating>
+//     <value>repeating two</value>
+//   </repeating>
+// </mock>
+
+func (object *Object) unmarshalXML(decoder *xml.Decoder, refs map[string]*references.Reference) error {
+	tok, err := decoder.Token()
+	if err == io.EOF {
+		return nil
 	}
 
-	return str
+	if err != nil {
+		return err
+	}
+
+	return object.startElement(decoder, tok, refs)
 }
 
-func (object *Object) UnmarshalXML(decoder *xml.Decoder, _ xml.StartElement) error {
-	return object.unmarshalXML(decoder, nil, waitForStart, 0)
-}
-
-// <mock><repeating><value>repeating one</value></repeating><repeating><value>repeating two</value></repeating></mock>
-
-func (object *Object) unmarshalXML(decoder *xml.Decoder, prop *specs.Property, state decodeState, level int) error {
-	for {
-		tok, err := decoder.Token()
-		if err == io.EOF {
-			break
+func (object *Object) startElement(decoder *xml.Decoder, tok xml.Token, refs map[string]*references.Reference) error {
+	switch t := tok.(type) {
+	case xml.StartElement:
+		var prop = object.specs[t.Name.Local]
+		if prop == nil {
+			return fmt.Errorf("unknown property %q", t.Name.Local)
 		}
 
+		if prop.Label == labels.Repeated {
+			return object.repeated(decoder, prop, refs)
+		}
+
+		return object.propertyValue(decoder, prop, refs)
+	case xml.EndElement:
+		// object is closed
+		return nil
+	default:
+		return fmt.Errorf("start: unexpected token type %T", t)
+	}
+}
+
+func (object *Object) repeated(decoder *xml.Decoder, prop *specs.Property, refs map[string]*references.Reference) error {
+	tok, err := decoder.Token()
+	if err != nil {
+		return err
+	}
+
+	// log.Println(tok)
+	//
+	// return errors.New("stop")
+
+	switch t := tok.(type) {
+	case xml.CharData:
+		store := references.NewReferenceStore(0)
+
+		ref, ok := refs[prop.Path]
+		if !ok {
+			ref = &references.Reference{
+				Path: prop.Path,
+			}
+
+			refs[prop.Path] = ref
+		}
+
+		if prop.Type == types.Enum {
+			enum, ok := prop.Enum.Keys[string(t)]
+			if !ok {
+				return fmt.Errorf("unknown enum %s", t)
+			}
+
+			store.StoreEnum("", "", enum.Position)
+		} else {
+			value, err := DecodeType(string(t), prop.Type)
+			if err != nil {
+				return err
+			}
+
+			store.StoreValue("", "", value)
+		}
+
+		ref.Append(store)
+
+		return object.closeElement(decoder, prop, refs)
+	case xml.StartElement:
+		// repeated nested
+		return errors.New("not implemented")
+	case xml.EndElement:
+		return object.unmarshalXML(decoder, refs)
+	default:
+		return fmt.Errorf("repeated: unexpected token type %T", t)
+	}
+}
+
+func (object *Object) propertyValue(decoder *xml.Decoder, prop *specs.Property, refs map[string]*references.Reference) error {
+	tok, err := decoder.Token()
+	if err != nil {
+		return err
+	}
+
+	switch t := tok.(type) {
+	case xml.StartElement:
+		if prop.Type == types.Message {
+			var nested = NewObject(object.resource, prop.Nested, object.refs)
+
+			if err := nested.startElement(decoder, t, refs); err != nil {
+				return err
+			}
+
+			return object.unmarshalXML(decoder, refs)
+		}
+
+		return fmt.Errorf("not an object")
+	case xml.EndElement:
+		return object.unmarshalXML(decoder, refs)
+	case xml.CharData:
+		var ref = &references.Reference{
+			Path: prop.Path,
+		}
+
+		if prop.Type == types.Enum {
+			enum, ok := prop.Enum.Keys[string(t)]
+			if !ok {
+				return fmt.Errorf("unknown enum %s", t)
+			}
+
+			ref.Enum = &enum.Position
+			object.refs.StoreReference(object.resource, ref)
+
+			return object.closeElement(decoder, prop, refs)
+		}
+
+		value, err := DecodeType(string(t), prop.Type)
 		if err != nil {
 			return err
 		}
 
-		log.Printf("%sOBJ[%d]: %T: %s", spaces(level), state, tok, tok)
+		ref.Value = value
+		object.refs.StoreReference(object.resource, ref)
 
-		switch state {
-		case waitForStart:
-			switch t := tok.(type) {
-			case xml.StartElement:
-				var ok bool
-				prop, ok = object.specs[t.Name.Local]
-				if !ok {
-					return fmt.Errorf("unknown property %q", t.Name.Local)
-				}
+		return object.closeElement(decoder, prop, refs)
+	default:
+		return fmt.Errorf("value: unexpected token type %T", t)
+	}
+}
 
-				if prop.Label == labels.Repeated {
-					var ref = &references.Reference{ // TODO
-						Path: prop.Path,
-					}
-
-					var array = NewArray(object.resource, prop, ref, nil)
-					if err := array.unmarshalXML(decoder, waitForValue, level+1); err != nil {
-						return err
-					}
-
-					object.refs.StoreReference(object.resource, ref)
-
-					continue
-				}
-
-				if prop.Type == types.Message {
-					var nested = NewObject(object.resource, prop.Nested, object.refs)
-
-					if err := nested.unmarshalXML(decoder, nil, waitForStart, level+1); err != nil {
-						return err
-					}
-
-					continue
-				}
-
-				state = waitForValue
-			case xml.EndElement:
-				// object is closed
-				return nil
-			default:
-				return fmt.Errorf("unexpected token type %T", t)
-			}
-		case waitForValue:
-			switch t := tok.(type) {
-			case xml.CharData:
-				if err := decodeValue(prop, object.resource, t, object.refs); err != nil {
-					return err
-				}
-
-				state = waitForClose
-			default:
-				return fmt.Errorf("unexpected token type %T", t)
-			}
-		case waitForClose:
-			switch t := tok.(type) {
-			case xml.EndElement:
-				state = waitForStart
-			default:
-				return fmt.Errorf("unexpected token type %T", t)
-			}
-		}
-
+func (object *Object) closeElement(decoder *xml.Decoder, prop *specs.Property, refs map[string]*references.Reference) error {
+	tok, err := decoder.Token()
+	if err != nil {
+		return err
 	}
 
-	return nil
+	switch t := tok.(type) {
+	case xml.EndElement:
+		return object.unmarshalXML(decoder, refs)
+	default:
+		return fmt.Errorf("close: unexpected token type %T", t)
+	}
 }

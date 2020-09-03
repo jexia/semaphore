@@ -41,6 +41,16 @@ var (
 						Path:     "message",
 					},
 				},
+				"another_message": {
+					Name:  "another_message",
+					Path:  "another_message",
+					Type:  types.String,
+					Label: labels.Optional,
+					Reference: &specs.PropertyReference{
+						Resource: template.InputResource,
+						Path:     "another_message",
+					},
+				},
 				"status": {
 					Name:  "status",
 					Path:  "status",
@@ -50,6 +60,17 @@ var (
 					Reference: &specs.PropertyReference{
 						Resource: template.InputResource,
 						Path:     "status",
+					},
+				},
+				"another_status": {
+					Name:  "another_status",
+					Path:  "another_status",
+					Type:  types.Enum,
+					Label: labels.Optional,
+					Enum:  enum,
+					Reference: &specs.PropertyReference{
+						Resource: template.InputResource,
+						Path:     "another_status",
 					},
 				},
 				"nested": {

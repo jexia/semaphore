@@ -2,6 +2,7 @@ package xml
 
 import (
 	"io/ioutil"
+	"log"
 	"strings"
 	"testing"
 
@@ -130,63 +131,69 @@ func TestUnmarshal(t *testing.T) {
 	}
 
 	tests := map[string]test{
-		// "simple": {
-		// 	input: "<mock><message>hello world</message></mock>",
-		// 	expected: map[string]expect{
-		// 		"message": {
-		// 			value: "hello world",
-		// 		},
-		// 	},
-		// },
-		// "enum": {
-		// 	input: "<mock><status>PENDING</status></mock>",
-		// 	expected: map[string]expect{
-		// 		"status": {
-		// 			enum: func() *int32 { i := int32(1); return &i }(),
-		// 		},
-		// 	},
-		// },
-		// "nested": {
-		// 	input: "<mock><nested><first>foo</first><second>bar</second></nested></mock>",
-		// 	expected: map[string]expect{
-		// 		"nested.first": {
-		// 			value: "foo",
-		// 		},
-		// 		"nested.second": {
-		// 			value: "bar",
-		// 		},
-		// 	},
-		// },
-		// "repeated string": {
-		// 	input: "<mock><repeating_string>repeating one</repeating_string><repeating_string>repeating two</repeating_string></mock>",
-		// 	expected: map[string]expect{
-		// 		"repeating_string": {
-		// 			repeated: []expect{
-		// 				{
-		// 					value: "repeating one",
-		// 				},
-		// 				{
-		// 					value: "repeating two",
-		// 				},
-		// 			},
-		// 		},
-		// 	},
-		// },
-		// "repeated enum": {
-		// 	input: "<mock><repeating_enum>UNKNOWN</repeating_enum><repeating_enum>PENDING</repeating_enum></mock>",
-		// 	expected: map[string]expect{
-		// 		"repeating_enum": {
-		// 			repeated: []expect{
-		// 				{
-		// 					enum: func() *int32 { i := int32(0); return &i }(),
-		// 				},
-		// 				{
-		// 					enum: func() *int32 { i := int32(1); return &i }(),
-		// 				},
-		// 			},
-		// 		},
-		// 	},
-		// },
+		"simple": {
+			input: "<mock><nested></nested><message>hello world</message><another_message>dlrow olleh</another_message></mock>",
+			expected: map[string]expect{
+				"message": {
+					value: "hello world",
+				},
+				"another_message": {
+					value: "dlrow olleh",
+				},
+			},
+		},
+		"enum": {
+			input: "<mock><status>PENDING</status><another_status>UNKNOWN</another_status></mock>",
+			expected: map[string]expect{
+				"status": {
+					enum: func() *int32 { i := int32(1); return &i }(),
+				},
+				"another_status": {
+					enum: func() *int32 { i := int32(0); return &i }(),
+				},
+			},
+		},
+		"nested": {
+			input: "<mock><nested><first>foo</first><second>bar</second></nested></mock>",
+			expected: map[string]expect{
+				"nested.first": {
+					value: "foo",
+				},
+				"nested.second": {
+					value: "bar",
+				},
+			},
+		},
+		"repeated string": {
+			input: "<mock><repeating_string>repeating one</repeating_string><repeating_string>repeating two</repeating_string></mock>", //  TODO: "<mock><repeating_string>repeating one</repeating_string><repeating_string></repeating_string><repeating_string>repeating two</repeating_string></mock>"
+			expected: map[string]expect{
+				"repeating_string": {
+					repeated: []expect{
+						{
+							value: "repeating one",
+						},
+						{
+							value: "repeating two",
+						},
+					},
+				},
+			},
+		},
+		"repeated enum": {
+			input: "<mock><repeating_enum>UNKNOWN</repeating_enum><repeating_enum>PENDING</repeating_enum></mock>",
+			expected: map[string]expect{
+				"repeating_enum": {
+					repeated: []expect{
+						{
+							enum: func() *int32 { i := int32(0); return &i }(),
+						},
+						{
+							enum: func() *int32 { i := int32(1); return &i }(),
+						},
+					},
+				},
+			},
+		},
 		"repeated nested": {
 			input: "<mock><repeating><value>repeating one</value></repeating><repeating><value>repeating two</value></repeating></mock>",
 			expected: map[string]expect{
@@ -211,25 +218,35 @@ func TestUnmarshal(t *testing.T) {
 			},
 		},
 		// "complex": {
-		// 	input: "<mock><message>hello world</message><nested><first>foo</first><second>bar</second></nested><repeating><value>repeating one</value></repeating><repeating><value>repeating two</value></repeating></mock>",
+		// 	input: "<mock><repeating_string>repeating one</repeating_string><repeating_string>repeating two</repeating_string><message>hello world</message></mock>", // "<mock><repeating_string>repeating one</repeating_string><repeating_string>repeating two</repeating_string><message>hello world</message><nested><first>foo</first><second>bar</second></nested><repeating><value>repeating one</value></repeating><repeating><value>repeating two</value></repeating></mock>",
 		// 	expected: map[string]expect{
-		// 		"message": {
-		// 			value: "hello world",
-		// 		},
-		// 		"nested.first": {
-		// 			value: "nested value",
-		// 		},
-		// 		"repeating": {
+		// 		"repeating_string": {
 		// 			repeated: []expect{
 		// 				{
-		// 					nested: map[string]expect{
-		// 						"repeating.value": {
-		// 							value: "repeating value",
-		// 						},
-		// 					},
+		// 					value: "repeating one",
+		// 				},
+		// 				{
+		// 					value: "repeating two",
 		// 				},
 		// 			},
 		// 		},
+		// 		"message": {
+		// 			value: "hello world",
+		// 		},
+		// 		// "nested.first": {
+		// 		// 	value: "nested value",
+		// 		// },
+		// 		// "repeating": {
+		// 		// 	repeated: []expect{
+		// 		// 		{
+		// 		// 			nested: map[string]expect{
+		// 		// 				"repeating.value": {
+		// 		// 					value: "repeating value",
+		// 		// 				},
+		// 		// 			},
+		// 		// 		},
+		// 		// 	},
+		// 		// },
 		// 	},
 		// },
 	}
@@ -254,6 +271,12 @@ func TestUnmarshal(t *testing.T) {
 			if err := manager.Unmarshal(reader, refs); err != nil {
 				t.Fatal(err)
 			}
+
+			log.Println()
+			log.Printf("REFS: %s", refs)
+			log.Println()
+
+			// REFS: mockrepeating_string:[repeating_string:<array([:[:<string(repeating one)>] :[:<string(repeating two)>]])>]
 
 			// if test.error != nil {
 			// 	if !errors.As(err, &test.error) {
