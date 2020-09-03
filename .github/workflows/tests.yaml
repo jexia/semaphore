@@ -24,7 +24,7 @@ jobs:
           ${{ runner.os }}-go-
 
     - name: Test
-      run: go test -mod vendor -v -race -coverprofile=coverage.txt -covermode=atomic ./...
+      run: go test -mod vendor -race -coverprofile=coverage.txt -covermode=atomic ./...
 
     - name: Build
       run: go build -mod vendor -o semaphore
