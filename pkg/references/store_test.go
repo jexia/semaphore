@@ -3,6 +3,7 @@ package references
 import (
 	"encoding/json"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/jexia/semaphore/pkg/specs"
@@ -736,7 +737,7 @@ func TestReferenceString(t *testing.T) {
 func TestStoreString(t *testing.T) {
 	type test struct {
 		store    *store
-		expected string
+		expected []string
 	}
 
 	var tests = map[string]test{
@@ -753,7 +754,7 @@ func TestStoreString(t *testing.T) {
 					},
 				},
 			},
-			expected: "first:[key:<string(value)>], second:[key:<string(value)>]",
+			expected: []string{"first:[key:<string(value)>]", "second:[key:<string(value)>]"},
 		},
 		"single value": {
 			store: &store{
@@ -764,14 +765,23 @@ func TestStoreString(t *testing.T) {
 					},
 				},
 			},
-			expected: "first:[key:<string(value)>]",
+			expected: []string{"first:[key:<string(value)>]"},
 		},
 	}
 
 	for title, test := range tests {
 		t.Run(title, func(t *testing.T) {
-			if actual := test.store.String(); actual != test.expected {
-				t.Errorf("output %q was expected to be %s", actual, test.expected)
+			result := test.store.String()
+
+		lookup:
+			for _, key := range strings.Split(result, ", ") {
+				for _, expected := range test.expected {
+					if key == expected {
+						continue lookup
+					}
+				}
+
+				t.Errorf("output %q was expected to be %s", result, test.expected)
 			}
 		})
 	}

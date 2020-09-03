@@ -8,6 +8,7 @@ import (
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/compare"
+	"github.com/jexia/semaphore/pkg/prettyerr"
 	"github.com/jexia/semaphore/pkg/providers"
 	"github.com/jexia/semaphore/pkg/providers/hcl"
 	"github.com/jexia/semaphore/pkg/providers/mock"
@@ -78,8 +79,17 @@ func TestUnmarshalFile(t *testing.T) {
 			}
 
 			if strings.HasSuffix(clean, fail) && err != nil {
+				stack, perr := prettyerr.Prettify(err)
+				if perr != nil {
+					t.Fatal(perr)
+				}
+
+				if _, err := prettyerr.TextFormatter(stack, prettyerr.DefaultTextFormat); err != nil {
+					t.Fatal(err)
+				}
+
 				if err.Error() != collection.Exception.Message {
-					t.Fatalf("unexpected error message %s, expected %s", err, collection.Exception.Message)
+					t.Fatalf("unexpected error message %s, expected %s", err.Error(), collection.Exception.Message)
 				}
 
 				return
@@ -96,8 +106,17 @@ func TestUnmarshalFile(t *testing.T) {
 			}
 
 			if strings.HasSuffix(clean, fail) {
+				stack, perr := prettyerr.Prettify(err)
+				if perr != nil {
+					t.Fatal(perr)
+				}
+
+				if _, err := prettyerr.TextFormatter(stack, prettyerr.DefaultTextFormat); err != nil {
+					t.Fatal(err)
+				}
+
 				if err.Error() != collection.Exception.Message {
-					t.Fatalf("unexpected error message %s, expected %s", err, collection.Exception.Message)
+					t.Fatalf("unexpected error message %s, expected %s", err.Error(), collection.Exception.Message)
 				}
 			}
 		})

@@ -1,7 +1,6 @@
 package references
 
 import (
-	"reflect"
 	"testing"
 
 	"github.com/jexia/semaphore/pkg/prettyerr"
@@ -55,7 +54,7 @@ func TestErrUndefinedReference_Prettify(t *testing.T) {
 		got := err.Prettify()
 
 		want := prettyerr.Error{
-			Message:  err.Error(),
+			Message: err.Error(),
 			Details: map[string]interface{}{
 				"Reference":  err.Reference,
 				"Breakpoint": err.Breakpoint,
@@ -65,7 +64,7 @@ func TestErrUndefinedReference_Prettify(t *testing.T) {
 			Suggestion: "",
 		}
 
-		if !reflect.DeepEqual(got, want) {
+		if got.Error() != want.Error() {
 			t.Fatalf("Pretty() = %#v, want %#v", got, want)
 		}
 	})
