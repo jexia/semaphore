@@ -129,8 +129,8 @@ var (
 
 	enum = &specs.Enum{
 		Keys: map[string]*specs.EnumValue{
-			"UNKOWN": {
-				Key:      "UNKOWN",
+			"UNKNOWN": {
+				Key:      "UNKNOWN",
 				Position: 0,
 			},
 			"PENDING": {
@@ -140,7 +140,7 @@ var (
 		},
 		Positions: map[int32]*specs.EnumValue{
 			0: {
-				Key:      "UNKOWN",
+				Key:      "UNKNOWN",
 				Position: 0,
 			},
 			1: {

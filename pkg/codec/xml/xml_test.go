@@ -2,6 +2,7 @@ package xml
 
 import (
 	"io/ioutil"
+	"strings"
 	"testing"
 
 	"github.com/jexia/semaphore/pkg/references"
@@ -119,5 +120,213 @@ func TestMarshal(t *testing.T) {
 				t.Errorf("output %q was expectetd to be %q", actual, test.expected)
 			}
 		})
+	}
+}
+
+func TestUnmarshal(t *testing.T) {
+	type test struct {
+		input    string
+		expected map[string]expect
+	}
+
+	tests := map[string]test{
+		// "simple": {
+		// 	input: "<mock><message>hello world</message></mock>",
+		// 	expected: map[string]expect{
+		// 		"message": {
+		// 			value: "hello world",
+		// 		},
+		// 	},
+		// },
+		// "enum": {
+		// 	input: "<mock><status>PENDING</status></mock>",
+		// 	expected: map[string]expect{
+		// 		"status": {
+		// 			enum: func() *int32 { i := int32(1); return &i }(),
+		// 		},
+		// 	},
+		// },
+		// "nested": {
+		// 	input: "<mock><nested><first>foo</first><second>bar</second></nested></mock>",
+		// 	expected: map[string]expect{
+		// 		"nested.first": {
+		// 			value: "foo",
+		// 		},
+		// 		"nested.second": {
+		// 			value: "bar",
+		// 		},
+		// 	},
+		// },
+		// "repeated string": {
+		// 	input: "<mock><repeating_string>repeating one</repeating_string><repeating_string>repeating two</repeating_string></mock>",
+		// 	expected: map[string]expect{
+		// 		"repeating_string": {
+		// 			repeated: []expect{
+		// 				{
+		// 					value: "repeating one",
+		// 				},
+		// 				{
+		// 					value: "repeating two",
+		// 				},
+		// 			},
+		// 		},
+		// 	},
+		// },
+		// "repeated enum": {
+		// 	input: "<mock><repeating_enum>UNKNOWN</repeating_enum><repeating_enum>PENDING</repeating_enum></mock>",
+		// 	expected: map[string]expect{
+		// 		"repeating_enum": {
+		// 			repeated: []expect{
+		// 				{
+		// 					enum: func() *int32 { i := int32(0); return &i }(),
+		// 				},
+		// 				{
+		// 					enum: func() *int32 { i := int32(1); return &i }(),
+		// 				},
+		// 			},
+		// 		},
+		// 	},
+		// },
+		"repeated nested": {
+			input: "<mock><repeating><value>repeating one</value></repeating><repeating><value>repeating two</value></repeating></mock>",
+			expected: map[string]expect{
+				"repeating": {
+					repeated: []expect{
+						{
+							nested: map[string]expect{
+								"repeating.value": {
+									value: "repeating one",
+								},
+							},
+						},
+						{
+							nested: map[string]expect{
+								"repeating.value": {
+									value: "repeating two",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		// "complex": {
+		// 	input: "<mock><message>hello world</message><nested><first>foo</first><second>bar</second></nested><repeating><value>repeating one</value></repeating><repeating><value>repeating two</value></repeating></mock>",
+		// 	expected: map[string]expect{
+		// 		"message": {
+		// 			value: "hello world",
+		// 		},
+		// 		"nested.first": {
+		// 			value: "nested value",
+		// 		},
+		// 		"repeating": {
+		// 			repeated: []expect{
+		// 				{
+		// 					nested: map[string]expect{
+		// 						"repeating.value": {
+		// 							value: "repeating value",
+		// 						},
+		// 					},
+		// 				},
+		// 			},
+		// 		},
+		// 	},
+		// },
+	}
+
+	for title, test := range tests {
+		t.Run(title, func(t *testing.T) {
+			xml := NewConstructor()
+			if xml == nil {
+				t.Fatal("unexpected nil")
+			}
+
+			manager, err := xml.New("mock", schema)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			var (
+				reader = strings.NewReader(test.input)
+				refs   = references.NewReferenceStore(0)
+			)
+
+			if err := manager.Unmarshal(reader, refs); err != nil {
+				t.Fatal(err)
+			}
+
+			// if test.error != nil {
+			// 	if !errors.As(err, &test.error) {
+			// 		t.Errorf("error [%s] was expected to be [%s]", err, test.error)
+			// 	}
+			// } else if err != nil {
+			// 	t.Errorf("error was not expected: %s", err)
+			// }
+
+			for path, output := range test.expected {
+				assert(t, "mock", path, refs, output)
+			}
+		})
+	}
+}
+
+type expect struct {
+	value    interface{}
+	enum     *int32
+	repeated []expect
+	nested   map[string]expect
+}
+
+func assert(t *testing.T, resource string, path string, store references.Store, output expect) {
+	ref := store.Load(resource, path)
+
+	if ref == nil {
+		t.Errorf("reference %q was expected to be set", path)
+	}
+
+	if output.value != nil {
+		if ref.Value != output.value {
+			t.Errorf("reference %q was expected to have value [%v], not [%v]", path, output.value, ref.Value)
+		}
+
+		return
+	}
+
+	if output.enum != nil {
+		if ref.Enum == nil {
+			t.Errorf("reference %q was expected to have a enum value", path)
+		}
+
+		if *output.enum != *ref.Enum {
+			t.Errorf("reference %q was expected to have enum value [%d], not [%d]", path, *output.enum, *ref.Enum)
+		}
+
+		return
+	}
+
+	if output.repeated != nil {
+		if ref.Repeated == nil {
+			t.Errorf("reference %q was expected to have a repeated value", path)
+		}
+
+		if expected, actual := len(ref.Repeated), len(ref.Repeated); actual != expected {
+			t.Errorf("invalid number of repeated values, expected %d, got %d", expected, actual)
+		}
+
+		for index, expected := range output.repeated {
+			if expected.value != nil || expected.enum != nil {
+				assert(t, "", "", ref.Repeated[index], expected)
+
+				continue
+			}
+
+			if expected.nested != nil {
+				for key, expected := range expected.nested {
+					assert(t, resource, key, ref.Repeated[index], expected)
+				}
+
+				continue
+			}
+		}
 	}
 }

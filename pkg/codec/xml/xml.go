@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/xml"
 	"io"
+	"io/ioutil"
 
 	"github.com/jexia/semaphore/pkg/broker/trace"
 	"github.com/jexia/semaphore/pkg/codec"
@@ -71,7 +72,16 @@ func (manager *Manager) Unmarshal(reader io.Reader, refs references.Store) error
 		return nil
 	}
 
-	// TODO: implement decoder
+	bb, err := ioutil.ReadAll(reader)
+	if err != nil {
+		return err
+	}
 
-	return nil
+	if len(bb) == 0 {
+		return nil
+	}
+
+	var object = NewObject(manager.resource, manager.specs.Nested, refs)
+
+	return xml.Unmarshal(bb, object)
 }
