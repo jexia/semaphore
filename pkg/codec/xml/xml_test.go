@@ -2,6 +2,7 @@ package xml
 
 import (
 	"errors"
+	"io"
 	"io/ioutil"
 	"strings"
 	"testing"
@@ -11,7 +12,7 @@ import (
 )
 
 func TestMarshal(t *testing.T) {
-	xml := NewConstructor()
+	var xml = NewConstructor()
 	if xml == nil {
 		t.Fatal("unexpected nil")
 	}
@@ -124,32 +125,57 @@ func TestMarshal(t *testing.T) {
 	}
 }
 
+type readerFunc func([]byte) (int, error)
+
+func (fn readerFunc) Read(p []byte) (int, error) { return fn(p) }
+
 func TestUnmarshal(t *testing.T) {
 	type test struct {
-		input    string
+		input    io.Reader
 		expected map[string]expect
 		error    error
 	}
 
 	tests := map[string]test{
+		"reader error": {
+			input: readerFunc(
+				func([]byte) (int, error) {
+					return 0, errors.New("failed")
+				},
+			),
+			error: errors.New("failed"),
+		},
 		"unknown enum value": {
-			input: "<mock><status>PENDING</status><another_status>DONE</another_status></mock>",
+			input: strings.NewReader(
+				"<mock><status>PENDING</status><another_status>DONE</another_status></mock>",
+			),
 			error: errUnknownEnum("DONE"),
 		},
 		"unknown enum value (repeated)": {
-			input: "<mock><repeating_enum>DONE</repeating_enum></mock>",
+			input: strings.NewReader(
+				"<mock><repeating_enum>DONE</repeating_enum></mock>",
+			),
 			error: errUnknownEnum("DONE"),
 		},
 		"type mismatch": {
-			input: "<mock><numeric>not a number</numeric></mock>",
+			input: strings.NewReader(
+				"<mock><numeric>not a number</numeric></mock>",
+			),
 			error: errors.New(""), // error returned by ParseInt()
 		},
 		"type mismatch (repeated)": {
-			input: "<mock><repeating_numeric>not a number</repeating_numeric></mock>",
+			input: strings.NewReader(
+				"<mock><repeating_numeric>not a number</repeating_numeric></mock>",
+			),
 			error: errors.New(""), // error returned by ParseInt()
 		},
+		"empty reader": {
+			input: strings.NewReader(""),
+		},
 		"simple (+ignore empty)": {
-			input: "<mock><nested></nested><message>hello world</message><another_message>dlrow olleh</another_message></mock>",
+			input: strings.NewReader(
+				"<mock><nested></nested><message>hello world</message><another_message>dlrow olleh</another_message></mock>",
+			),
 			expected: map[string]expect{
 				"message": {
 					value: "hello world",
@@ -160,7 +186,9 @@ func TestUnmarshal(t *testing.T) {
 			},
 		},
 		"enum": {
-			input: "<mock><status>PENDING</status><another_status>UNKNOWN</another_status></mock>",
+			input: strings.NewReader(
+				"<mock><status>PENDING</status><another_status>UNKNOWN</another_status></mock>",
+			),
 			expected: map[string]expect{
 				"status": {
 					enum: func() *int32 { i := int32(1); return &i }(),
@@ -171,7 +199,9 @@ func TestUnmarshal(t *testing.T) {
 			},
 		},
 		"nested": {
-			input: "<mock><nested><first>foo</first><second>bar</second></nested></mock>",
+			input: strings.NewReader(
+				"<mock><nested><first>foo</first><second>bar</second></nested></mock>",
+			),
 			expected: map[string]expect{
 				"nested.first": {
 					value: "foo",
@@ -184,7 +214,9 @@ func TestUnmarshal(t *testing.T) {
 		"repeated string": {
 			//  TODO: support empty blocks
 			// "<mock><repeating_string>repeating one</repeating_string><repeating_string></repeating_string><repeating_string>repeating two</repeating_string></mock>"
-			input: "<mock><repeating_string>repeating one</repeating_string><repeating_string>repeating two</repeating_string></mock>",
+			input: strings.NewReader(
+				"<mock><repeating_string>repeating one</repeating_string><repeating_string>repeating two</repeating_string></mock>",
+			),
 			expected: map[string]expect{
 				"repeating_string": {
 					repeated: []expect{
@@ -199,7 +231,9 @@ func TestUnmarshal(t *testing.T) {
 			},
 		},
 		"repeated enum": {
-			input: "<mock><repeating_enum>UNKNOWN</repeating_enum><repeating_enum>PENDING</repeating_enum></mock>",
+			input: strings.NewReader(
+				"<mock><repeating_enum>UNKNOWN</repeating_enum><repeating_enum>PENDING</repeating_enum></mock>",
+			),
 			expected: map[string]expect{
 				"repeating_enum": {
 					repeated: []expect{
@@ -214,7 +248,9 @@ func TestUnmarshal(t *testing.T) {
 			},
 		},
 		"repeated nested": {
-			input: "<mock><repeating><value>repeating one</value></repeating><repeating><value>repeating two</value></repeating></mock>",
+			input: strings.NewReader(
+				"<mock><repeating><value>repeating one</value></repeating><repeating><value>repeating two</value></repeating></mock>",
+			),
 			expected: map[string]expect{
 				"repeating": {
 					repeated: []expect{
@@ -237,7 +273,9 @@ func TestUnmarshal(t *testing.T) {
 			},
 		},
 		"complex": {
-			input: "<mock><repeating_string>repeating one</repeating_string><repeating_string>repeating two</repeating_string><message>hello world</message><nested><first>foo</first><second>bar</second></nested><repeating><value>repeating one</value></repeating><repeating><value>repeating two</value></repeating></mock>",
+			input: strings.NewReader(
+				"<mock><repeating_string>repeating one</repeating_string><repeating_string>repeating two</repeating_string><message>hello world</message><nested><first>foo</first><second>bar</second></nested><repeating><value>repeating one</value></repeating><repeating><value>repeating two</value></repeating></mock>",
+			),
 			expected: map[string]expect{
 				"repeating_string": {
 					repeated: []expect{
@@ -292,12 +330,8 @@ func TestUnmarshal(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			var (
-				reader = strings.NewReader(test.input)
-				refs   = references.NewReferenceStore(0)
-			)
-
-			err = manager.Unmarshal(reader, refs)
+			var refs = references.NewReferenceStore(0)
+			err = manager.Unmarshal(test.input, refs)
 
 			if test.error != nil {
 				if !errors.As(err, &test.error) {
