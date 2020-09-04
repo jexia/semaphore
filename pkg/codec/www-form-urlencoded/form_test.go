@@ -4,7 +4,6 @@ import (
 	"errors"
 	"io"
 	"io/ioutil"
-	"log"
 	"strings"
 	"testing"
 
@@ -576,10 +575,6 @@ func TestUnmarshal(t *testing.T) {
 			} else if err != nil {
 				t.Errorf("error was not expected: %s", err)
 			}
-
-			log.Println()
-			log.Printf("[%s] REFS: %s", title, refs)
-			log.Println()
 
 			for path, output := range test.expected {
 				assert(t, "mock", path, refs, output)

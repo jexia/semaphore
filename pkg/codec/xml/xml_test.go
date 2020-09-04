@@ -2,7 +2,6 @@ package xml
 
 import (
 	"io/ioutil"
-	"log"
 	"strings"
 	"testing"
 
@@ -165,7 +164,9 @@ func TestUnmarshal(t *testing.T) {
 			},
 		},
 		"repeated string": {
-			input: "<mock><repeating_string>repeating one</repeating_string><repeating_string>repeating two</repeating_string></mock>", //  TODO: "<mock><repeating_string>repeating one</repeating_string><repeating_string></repeating_string><repeating_string>repeating two</repeating_string></mock>"
+			//  TODO: support empty blocks
+			// "<mock><repeating_string>repeating one</repeating_string><repeating_string></repeating_string><repeating_string>repeating two</repeating_string></mock>"
+			input: "<mock><repeating_string>repeating one</repeating_string><repeating_string>repeating two</repeating_string></mock>",
 			expected: map[string]expect{
 				"repeating_string": {
 					repeated: []expect{
@@ -217,38 +218,48 @@ func TestUnmarshal(t *testing.T) {
 				},
 			},
 		},
-		// "complex": {
-		// 	input: "<mock><repeating_string>repeating one</repeating_string><repeating_string>repeating two</repeating_string><message>hello world</message></mock>", // "<mock><repeating_string>repeating one</repeating_string><repeating_string>repeating two</repeating_string><message>hello world</message><nested><first>foo</first><second>bar</second></nested><repeating><value>repeating one</value></repeating><repeating><value>repeating two</value></repeating></mock>",
-		// 	expected: map[string]expect{
-		// 		"repeating_string": {
-		// 			repeated: []expect{
-		// 				{
-		// 					value: "repeating one",
-		// 				},
-		// 				{
-		// 					value: "repeating two",
-		// 				},
-		// 			},
-		// 		},
-		// 		"message": {
-		// 			value: "hello world",
-		// 		},
-		// 		// "nested.first": {
-		// 		// 	value: "nested value",
-		// 		// },
-		// 		// "repeating": {
-		// 		// 	repeated: []expect{
-		// 		// 		{
-		// 		// 			nested: map[string]expect{
-		// 		// 				"repeating.value": {
-		// 		// 					value: "repeating value",
-		// 		// 				},
-		// 		// 			},
-		// 		// 		},
-		// 		// 	},
-		// 		// },
-		// 	},
-		// },
+		"complex": {
+			input: "<mock><repeating_string>repeating one</repeating_string><repeating_string>repeating two</repeating_string><message>hello world</message><nested><first>foo</first><second>bar</second></nested><repeating><value>repeating one</value></repeating><repeating><value>repeating two</value></repeating></mock>",
+			expected: map[string]expect{
+				"repeating_string": {
+					repeated: []expect{
+						{
+							value: "repeating one",
+						},
+						{
+							value: "repeating two",
+						},
+					},
+				},
+				"message": {
+					value: "hello world",
+				},
+				"nested.first": {
+					value: "foo",
+				},
+				"nested.second": {
+					value: "bar",
+				},
+				"repeating": {
+					repeated: []expect{
+						{
+							nested: map[string]expect{
+								"repeating.value": {
+									value: "repeating one",
+								},
+							},
+						},
+						{
+							nested: map[string]expect{
+								"repeating.value": {
+									value: "repeating two",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 
 	for title, test := range tests {
@@ -271,12 +282,6 @@ func TestUnmarshal(t *testing.T) {
 			if err := manager.Unmarshal(reader, refs); err != nil {
 				t.Fatal(err)
 			}
-
-			log.Println()
-			log.Printf("REFS: %s", refs)
-			log.Println()
-
-			// REFS: mockrepeating_string:[repeating_string:<array([:[:<string(repeating one)>] :[:<string(repeating two)>]])>]
 
 			// if test.error != nil {
 			// 	if !errors.As(err, &test.error) {

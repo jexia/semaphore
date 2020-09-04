@@ -46,24 +46,3 @@ func (array *Array) encodeElement(encoder *xml.Encoder, store references.Store) 
 
 	return encodeValue(encoder, array.specs, store, false)
 }
-
-// // UnmarshalXML unmarshals the given specs into the configured reference store.
-// func (array *Array) UnmarshalXML(decoder *xml.Decoder, _ xml.StartElement) error {
-// 	return array.unmarshalXML(decoder)
-// }
-//
-// func (array *Array) unmarshalXML(decoder *xml.Decoder) error {
-// 	for {
-// 		_, err := decoder.Token()
-// 		if err == io.EOF {
-// 			break
-// 		}
-//
-// 		if err != nil {
-// 			return err
-// 		}
-//
-// 	}
-//
-// 	return nil
-// }

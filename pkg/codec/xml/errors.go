@@ -1,11 +1,13 @@
 package xml
 
 import (
+	"encoding/xml"
 	"errors"
 	"fmt"
+	"strings"
 )
 
-var errNilSchema = errors.New("nil schema")
+var errNotAnObject = errors.New("not an object")
 
 type errUndefinedProperty string
 
@@ -13,14 +15,31 @@ func (e errUndefinedProperty) Error() string {
 	return fmt.Sprintf("undefined property %q", string(e))
 }
 
-type errUnknownLabel string
+type errUnknownEnum string
 
-func (e errUnknownLabel) Error() string {
-	return fmt.Sprintf("unknown label %q", string(e))
+func (e errUnknownEnum) Error() string {
+	return fmt.Sprintf("unrecognized enum value %q", string(e))
 }
 
-type errUnknownType string
+type errUnexpectedToken struct {
+	actual   xml.Token
+	expected []xml.Token
+}
 
-func (e errUnknownType) Error() string {
-	return fmt.Sprintf("unknown data type %q", string(e))
+func (e errUnexpectedToken) printExpected() string {
+	var builder strings.Builder
+
+	for index, token := range e.expected {
+		if index > 0 {
+			builder.WriteString(", ")
+		}
+
+		builder.WriteString(fmt.Sprintf(`"%T"`, token))
+	}
+
+	return builder.String()
+}
+
+func (e errUnexpectedToken) Error() string {
+	return fmt.Sprintf(`unexpected element "%T", expected one of [%s]`, e.actual, e.printExpected())
 }
