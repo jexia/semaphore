@@ -3,6 +3,7 @@ package references
 import (
 	"encoding/json"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/jexia/semaphore/pkg/specs"
@@ -177,6 +178,14 @@ func TestStoreReference(t *testing.T) {
 
 	if result.Value != ref.Value {
 		t.Fatalf("unexpected value %+v, expected %+v", result.Value, ref.Value)
+	}
+}
+
+func TestStoreLoadUnkownReference(t *testing.T) {
+	store := NewReferenceStore(0)
+	result := store.Load("", "")
+	if result != nil {
+		t.Fatal("unexpected result")
 	}
 }
 
@@ -662,4 +671,119 @@ func TestParameterMapReferences(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestReferenceString(t *testing.T) {
+	type test struct {
+		reference *Reference
+		expected  string
+	}
+
+	var tests = map[string]test{
+		"empty reference to string": {
+			reference: &Reference{
+				Path: "test",
+			},
+			expected: "test:<empty>",
+		},
+		"value to string": {
+			reference: &Reference{
+				Path:  "test",
+				Value: 42,
+			},
+			expected: "test:<int(42)>",
+		},
+		"enum to string": {
+			reference: &Reference{
+				Path: "test",
+				Enum: func() *int32 { i := int32(1); return &i }(),
+			},
+			expected: "test:<enum(1)>",
+		},
+		"repeated to string": {
+			reference: &Reference{
+				Path: "test",
+				Repeated: []Store{
+					func() Store {
+						var store = NewReferenceStore(0)
+
+						store.StoreValue("four", "two", 42)
+
+						return store
+					}(),
+					func() Store {
+						var store = NewReferenceStore(0)
+
+						store.StoreValue("four", "three", 43)
+
+						return store
+					}(),
+				},
+			},
+			expected: "test:<array([fourtwo:[two:<int(42)>] fourthree:[three:<int(43)>]])>",
+		},
+	}
+
+	for title, test := range tests {
+		t.Run(title, func(t *testing.T) {
+			if actual := test.reference.String(); actual != test.expected {
+				t.Errorf("output %q was expected to be %s", actual, test.expected)
+			}
+		})
+	}
+
+}
+
+func TestStoreString(t *testing.T) {
+	type test struct {
+		store    *store
+		expected []string
+	}
+
+	var tests = map[string]test{
+		"multiple values": {
+			store: &store{
+				values: map[string]*Reference{
+					"first": {
+						Path:  "key",
+						Value: "value",
+					},
+					"second": {
+						Path:  "key",
+						Value: "value",
+					},
+				},
+			},
+			expected: []string{"first:[key:<string(value)>]", "second:[key:<string(value)>]"},
+		},
+		"single value": {
+			store: &store{
+				values: map[string]*Reference{
+					"first": {
+						Path:  "key",
+						Value: "value",
+					},
+				},
+			},
+			expected: []string{"first:[key:<string(value)>]"},
+		},
+	}
+
+	for title, test := range tests {
+		t.Run(title, func(t *testing.T) {
+			result := test.store.String()
+
+		lookup:
+			for _, key := range strings.Split(result, ", ") {
+				for _, expected := range test.expected {
+					if key == expected {
+						continue lookup
+					}
+				}
+
+				t.Errorf("output %q was expected to be %s", result, test.expected)
+			}
+		})
+	}
+
 }

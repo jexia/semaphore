@@ -148,7 +148,7 @@ func ResolvePropertyReferences(property *specs.Property, dependencies specs.Depe
 		ResolvePropertyReferences(nested, dependencies)
 	}
 
-	if property.Reference == nil || property.Reference.Property == nil {
+	if property.Reference == nil {
 		return
 	}
 

@@ -167,10 +167,8 @@ func (call *Call) SendMsg(ctx context.Context, rw transport.ResponseWriter, pr *
 	}
 
 	req.Header = CopyMetadataHeader(pr.Header)
-
-	if ContentTypes[pr.Codec] != "" {
-		req.Header.Add("Content-Type", ContentTypes[pr.Codec])
-	}
+	req.Header.Add(ContentTypeHeaderKey, ContentTypes[pr.RequestCodec])
+	req.Header.Add(AcceptHeaderKey, ContentTypes[pr.ResponseCodec])
 
 	res := NewTransportResponseWriter(ctx, rw)
 
