@@ -2,7 +2,6 @@ package xml
 
 import (
 	"encoding/xml"
-	"fmt"
 	"io"
 	"sort"
 
@@ -12,14 +11,14 @@ import (
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
-// Object represents a JSON object
+// Object represents an XML object.
 type Object struct {
 	resource string
 	specs    map[string]*specs.Property
 	refs     references.Store
 }
 
-// NewObject constructs a new object encoder/decoder for the given specs
+// NewObject constructs a new object encoder/decoder for the given specs.
 func NewObject(resource string, specs map[string]*specs.Property, refs references.Store) *Object {
 	return &Object{
 		resource: resource,
@@ -109,7 +108,13 @@ func (object *Object) startElement(decoder *xml.Decoder, tok xml.Token, refs map
 		// object is closed
 		return nil
 	default:
-		return fmt.Errorf("start: unexpected token type %T", t)
+		return errUnexpectedToken{
+			actual: t,
+			expected: []xml.Token{
+				xml.StartElement{},
+				xml.EndElement{},
+			},
+		}
 	}
 }
 
@@ -121,33 +126,15 @@ func (object *Object) repeated(decoder *xml.Decoder, prop *specs.Property, refs 
 
 	switch t := tok.(type) {
 	case xml.CharData:
-		if err := decodeRepeatedValue(prop, t, refs); err != nil {
+		if err := decodeRepeatedValue(t, prop, refs); err != nil {
 			return err
 		}
 
 		return object.closeElement(decoder, prop, refs)
 	case xml.StartElement:
-		if prop.Type != types.Message {
-			return errNotAnObject
-		}
-
-		store := references.NewReferenceStore(1)
-
-		ref, ok := refs[prop.Path]
-		if !ok {
-			ref = &references.Reference{
-				Path: prop.Path,
-			}
-
-			refs[prop.Path] = ref
-		}
-
-		var nested = NewObject(object.resource, prop.Nested, store)
-		if err := nested.startElement(decoder, t, refs); err != nil {
+		if err := decodeRepeatedNested(decoder, t, prop, object.resource, refs); err != nil {
 			return err
 		}
-
-		ref.Append(store)
 
 		return object.unmarshalXML(decoder, refs)
 	case xml.EndElement:
@@ -171,12 +158,7 @@ func (object *Object) propertyValue(decoder *xml.Decoder, prop *specs.Property, 
 
 	switch t := tok.(type) {
 	case xml.StartElement:
-		if prop.Type != types.Message {
-			return errNotAnObject
-		}
-
-		var nested = NewObject(object.resource, prop.Nested, object.refs)
-		if err := nested.startElement(decoder, t, refs); err != nil {
+		if err := decodeNested(decoder, t, prop, object.resource, object.refs, refs); err != nil {
 			return err
 		}
 
@@ -184,7 +166,7 @@ func (object *Object) propertyValue(decoder *xml.Decoder, prop *specs.Property, 
 	case xml.EndElement:
 		return object.unmarshalXML(decoder, refs)
 	case xml.CharData:
-		if err := decodeValue(prop, object.resource, t, object.refs); err != nil {
+		if err := decodeValue(t, prop, object.resource, object.refs); err != nil {
 			return err
 		}
 

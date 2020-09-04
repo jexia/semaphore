@@ -8,7 +8,43 @@ import (
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
-func decodeRepeatedValue(prop *specs.Property, raw xml.CharData, refs map[string]*references.Reference) error {
+func decodeNested(decoder *xml.Decoder, start xml.StartElement, prop *specs.Property, resource string, store references.Store, refs map[string]*references.Reference) error {
+	if prop.Type != types.Message {
+		return errNotAnObject
+	}
+
+	var nested = NewObject(resource, prop.Nested, store)
+
+	return nested.startElement(decoder, start, refs)
+}
+
+func decodeRepeatedNested(decoder *xml.Decoder, start xml.StartElement, prop *specs.Property, resource string, refs map[string]*references.Reference) error {
+	if prop.Type != types.Message {
+		return errNotAnObject
+	}
+
+	var store = references.NewReferenceStore(1)
+
+	ref, ok := refs[prop.Path]
+	if !ok {
+		ref = &references.Reference{
+			Path: prop.Path,
+		}
+
+		refs[prop.Path] = ref
+	}
+
+	var nested = NewObject(resource, prop.Nested, store)
+	if err := nested.startElement(decoder, start, refs); err != nil {
+		return err
+	}
+
+	ref.Append(store)
+
+	return nil
+}
+
+func decodeRepeatedValue(raw xml.CharData, prop *specs.Property, refs map[string]*references.Reference) error {
 	var store = references.NewReferenceStore(1)
 
 	ref, ok := refs[prop.Path]
@@ -43,7 +79,7 @@ func decodeRepeatedValue(prop *specs.Property, raw xml.CharData, refs map[string
 	return nil
 }
 
-func decodeValue(prop *specs.Property, resource string, raw xml.CharData, store references.Store) error {
+func decodeValue(raw xml.CharData, prop *specs.Property, resource string, store references.Store) error {
 	var ref = &references.Reference{
 		Path: prop.Path,
 	}
