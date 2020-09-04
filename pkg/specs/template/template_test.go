@@ -6,6 +6,8 @@ import (
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/pkg/specs/labels"
+	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
 func CompareProperties(t *testing.T, left specs.Property, right specs.Property) {
@@ -52,6 +54,81 @@ func TestGetTemplateContent(t *testing.T) {
 		if result != expected {
 			t.Errorf("unexpected result %s, expected %s", result, expected)
 		}
+	}
+}
+
+func TestParseTemplateContent(t *testing.T) {
+	name := ""
+	path := "message"
+
+	tests := map[string]specs.Property{
+		"'prefix'": {
+			Name:    name,
+			Path:    path,
+			Type:    types.String,
+			Label:   labels.Optional,
+			Default: "prefix",
+		},
+		"'edge''": {
+			Name:    name,
+			Path:    path,
+			Type:    types.String,
+			Label:   labels.Optional,
+			Default: "edge'",
+		},
+		"input:message": {
+			Name: name,
+			Path: path,
+			Reference: &specs.PropertyReference{
+				Resource: "input",
+				Path:     "message",
+			},
+		},
+		"input:user-id": {
+			Name: name,
+			Path: path,
+			Reference: &specs.PropertyReference{
+				Resource: "input",
+				Path:     "user-id",
+			},
+		},
+		"input.header:Authorization": {
+			Name: name,
+			Path: path,
+			Reference: &specs.PropertyReference{
+				Resource: "input.header",
+				Path:     "authorization",
+			},
+		},
+		"input.header:User-Id": {
+			Name: name,
+			Path: path,
+			Reference: &specs.PropertyReference{
+				Resource: "input.header",
+				Path:     "user-id",
+			},
+		},
+		"input.header:": {
+			Path: path,
+			Reference: &specs.PropertyReference{
+				Resource: "input.header",
+			},
+		},
+	}
+
+	for input, expected := range tests {
+		t.Run(input, func(t *testing.T) {
+			property, err := ParseContent(path, name, input)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if property.Path != expected.Path {
+				t.Errorf("unexpected path '%s', expected '%s'", property.Path, expected.Path)
+			}
+
+			CompareProperties(t, *property, expected)
+		})
 	}
 }
 
@@ -166,7 +243,7 @@ func TestUnknownReferencePattern(t *testing.T) {
 	}
 }
 
-func TestParseTemplate(t *testing.T) {
+func TestParseReferenceTemplates(t *testing.T) {
 	name := ""
 
 	tests := map[string]specs.Property{
