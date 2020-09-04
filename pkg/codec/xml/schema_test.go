@@ -122,6 +122,17 @@ var (
 						Path:     "repeating_enum",
 					},
 				},
+				"repeating_numeric": {
+					Name:  "repeating_numeric",
+					Path:  "repeating_numeric",
+					Type:  types.Int32,
+					Label: labels.Repeated,
+					Enum:  enum,
+					Reference: &specs.PropertyReference{
+						Resource: template.InputResource,
+						Path:     "repeating_numeric",
+					},
+				},
 				"repeating": {
 					Name:  "repeating",
 					Path:  "repeating",

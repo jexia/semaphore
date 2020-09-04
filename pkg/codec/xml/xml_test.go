@@ -1,6 +1,7 @@
 package xml
 
 import (
+	"errors"
 	"io/ioutil"
 	"strings"
 	"testing"
@@ -127,10 +128,27 @@ func TestUnmarshal(t *testing.T) {
 	type test struct {
 		input    string
 		expected map[string]expect
+		error    error
 	}
 
 	tests := map[string]test{
-		"simple": {
+		"unknown enum value": {
+			input: "<mock><status>PENDING</status><another_status>DONE</another_status></mock>",
+			error: errUnknownEnum("DONE"),
+		},
+		"unknown enum value (repeated)": {
+			input: "<mock><repeating_enum>DONE</repeating_enum></mock>",
+			error: errUnknownEnum("DONE"),
+		},
+		"type mismatch": {
+			input: "<mock><numeric>not a number</numeric></mock>",
+			error: errors.New(""), // error returned by ParseInt()
+		},
+		"type mismatch (repeated)": {
+			input: "<mock><repeating_numeric>not a number</repeating_numeric></mock>",
+			error: errors.New(""), // error returned by ParseInt()
+		},
+		"simple (+ignore empty)": {
 			input: "<mock><nested></nested><message>hello world</message><another_message>dlrow olleh</another_message></mock>",
 			expected: map[string]expect{
 				"message": {
@@ -279,17 +297,15 @@ func TestUnmarshal(t *testing.T) {
 				refs   = references.NewReferenceStore(0)
 			)
 
-			if err := manager.Unmarshal(reader, refs); err != nil {
-				t.Fatal(err)
-			}
+			err = manager.Unmarshal(reader, refs)
 
-			// if test.error != nil {
-			// 	if !errors.As(err, &test.error) {
-			// 		t.Errorf("error [%s] was expected to be [%s]", err, test.error)
-			// 	}
-			// } else if err != nil {
-			// 	t.Errorf("error was not expected: %s", err)
-			// }
+			if test.error != nil {
+				if !errors.As(err, &test.error) {
+					t.Errorf("error [%s] was expected to be [%s]", err, test.error)
+				}
+			} else if err != nil {
+				t.Errorf("error was not expected: %s", err)
+			}
 
 			for path, output := range test.expected {
 				assert(t, "mock", path, refs, output)
