@@ -474,6 +474,32 @@ func NewMockFlow(name string) *specs.Flow {
 		Input: &specs.ParameterMap{
 			Property: NewInputMockProperty(),
 		},
+		OnError: &specs.OnError{
+			Response: &specs.ParameterMap{
+				Property: NewResultMockProperty(),
+				Params: map[string]*specs.Property{
+					"message": {
+						Path:    "message",
+						Default: "hello world",
+						Type:    types.String,
+						Label:   labels.Optional,
+					},
+					"name": {
+						Path:    "message",
+						Default: "hello world",
+						Type:    types.String,
+						Label:   labels.Optional,
+					},
+					"reference": {
+						Path: "reference",
+						Reference: &specs.PropertyReference{
+							Resource: name,
+							Path:     "message",
+						},
+					},
+				},
+			},
+		},
 		Nodes: specs.NodeList{
 			NewMockCall("first"),
 			NewMockCall("second"),
@@ -504,6 +530,23 @@ func TestGetAvailableResources(t *testing.T) {
 		"output": func() ([]string, map[string]ReferenceMap) {
 			flow := NewMockFlow("first")
 			expected := []string{template.StackResource, template.ErrorResource, "input", "first", "second", "third"}
+
+			result := GetAvailableResources(flow, "output")
+			return expected, result
+		},
+		"output only": func() ([]string, map[string]ReferenceMap) {
+			flow := NewMockFlow("first")
+
+			flow.OnError = nil
+			flow.Input = nil
+			flow.Nodes = nil
+			flow.Output = &specs.ParameterMap{
+				Stack: map[string]*specs.Property{
+					"hash": NewResultMockProperty(),
+				},
+			}
+
+			expected := []string{template.StackResource}
 
 			result := GetAvailableResources(flow, "output")
 			return expected, result
