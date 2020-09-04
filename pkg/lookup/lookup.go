@@ -77,12 +77,11 @@ func GetAvailableResources(flow specs.FlowInterface, breakpoint string) map[stri
 	}
 
 	if breakpoint == template.OutputResource {
-		references[template.ErrorResource] = ReferenceMap{
-			template.ResponseResource: OnErrLookup(template.OutputResource, flow.GetOnError()),
-		}
-
 		if flow.GetOnError() != nil {
-			references[template.ErrorResource][template.ParamsResource] = ParamsLookup(flow.GetOnError().Params, flow, "")
+			references[template.ErrorResource] = ReferenceMap{
+				template.ResponseResource: OnErrLookup(template.OutputResource, flow.GetOnError()),
+				template.ParamsResource:   ParamsLookup(flow.GetOnError().Params, flow, ""),
+			}
 		}
 	}
 
@@ -134,6 +133,14 @@ func GetAvailableResources(flow specs.FlowInterface, breakpoint string) map[stri
 				if node.GetOnError().Response != nil {
 					references[node.ID][template.ErrorResource] = PropertyLookup(node.GetOnError().Response.Property)
 				}
+			}
+		}
+	}
+
+	if flow.GetOutput() != nil {
+		if flow.GetOutput().Stack != nil {
+			for key, returns := range flow.GetOutput().Stack {
+				references[template.StackResource][key] = PropertyLookup(returns)
 			}
 		}
 	}
