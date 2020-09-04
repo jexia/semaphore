@@ -10,8 +10,6 @@ import (
 
 // Array represents an array of values/references.
 type Array struct {
-	// parent Entry
-
 	resource string
 	specs    *specs.Property
 	items    []references.Store
