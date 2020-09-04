@@ -11,6 +11,34 @@ import (
 	"github.com/jexia/semaphore/pkg/specs/template"
 )
 
+func TestName(t *testing.T) {
+	var (
+		xml      = NewConstructor()
+		expected = "xml"
+	)
+
+	if xml == nil {
+		t.Fatal("unexpected nil")
+	}
+
+	t.Run("check constuctor name", func(t *testing.T) {
+		if actual := xml.Name(); actual != expected {
+			t.Errorf("constructor name %q was expected to be %s", actual, expected)
+		}
+	})
+
+	manager, err := xml.New("mock", schema)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Run("check manager name", func(t *testing.T) {
+		if actual := manager.Name(); actual != expected {
+			t.Errorf("manager name %q was expected to be %s", actual, expected)
+		}
+	})
+}
+
 func TestMarshal(t *testing.T) {
 	var xml = NewConstructor()
 	if xml == nil {
@@ -212,10 +240,9 @@ func TestUnmarshal(t *testing.T) {
 			},
 		},
 		"repeated string": {
-			//  TODO: support empty blocks
-			// "<mock><repeating_string>repeating one</repeating_string><repeating_string></repeating_string><repeating_string>repeating two</repeating_string></mock>"
+			//  TODO: do not ignore empty blocks
 			input: strings.NewReader(
-				"<mock><repeating_string>repeating one</repeating_string><repeating_string>repeating two</repeating_string></mock>",
+				"<mock><repeating_string>repeating one</repeating_string><repeating_string></repeating_string><repeating_string>repeating two</repeating_string></mock>",
 			),
 			expected: map[string]expect{
 				"repeating_string": {
