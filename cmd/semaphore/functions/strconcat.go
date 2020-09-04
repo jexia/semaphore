@@ -1,6 +1,8 @@
 package functions
 
 import (
+	"strings"
+
 	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
@@ -28,7 +30,7 @@ func Strconcat(args ...*specs.Property) (*specs.Property, functions.Exec, error)
 	}
 
 	handle := func(store references.Store) error {
-		var result string
+		result := strings.Builder{}
 
 		for _, arg := range args {
 			var value string
@@ -44,10 +46,13 @@ func Strconcat(args ...*specs.Property) (*specs.Property, functions.Exec, error)
 				}
 			}
 
-			result += value
+			_, err := result.WriteString(value)
+			if err != nil {
+				return err
+			}
 		}
 
-		store.StoreValue("", ".", result)
+		store.StoreValue("", ".", result.String())
 		return nil
 	}
 
