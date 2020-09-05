@@ -76,26 +76,36 @@ func NewOptions(ctx *broker.Context, options ...Option) (Options, error) {
 		return result, nil
 	}
 
+	err := SetOptions(ctx, &result, options...)
+	if err != nil {
+		return result, err
+	}
+
+	return result, nil
+}
+
+// SetOptions sets the given options in the given parent
+func SetOptions(ctx *broker.Context, parent *Options, options ...Option) error {
 	for _, option := range options {
 		if option == nil {
 			continue
 		}
 
-		option(ctx, &result)
+		option(ctx, parent)
 	}
 
-	for _, middleware := range result.Middleware {
+	for _, middleware := range parent.Middleware {
 		options, err := middleware.Use(ctx)
 		if err != nil {
-			return result, err
+			return err
 		}
 
 		for _, option := range options {
-			option(ctx, &result)
+			option(ctx, parent)
 		}
 	}
 
-	return result, nil
+	return nil
 }
 
 // NewCollection constructs a new options collection
