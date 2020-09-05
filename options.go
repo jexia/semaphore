@@ -36,7 +36,22 @@ type Options struct {
 }
 
 // Middleware is called once the options have been initialised
-type Middleware func(*broker.Context) ([]Option, error)
+type Middleware interface {
+	Use(*broker.Context) ([]Option, error)
+}
+
+type middleware struct {
+	handle func(*broker.Context) ([]Option, error)
+}
+
+func (m *middleware) Use(ctx *broker.Context) ([]Option, error) {
+	return m.handle(ctx)
+}
+
+// MiddlewareFunc wraps the given handle inside a middleware implementation
+func MiddlewareFunc(handle func(*broker.Context) ([]Option, error)) Middleware {
+	return &middleware{handle}
+}
 
 // BeforeConstructor is called before the specifications is constructored
 type BeforeConstructor func(*broker.Context, functions.Collection, Options) error
@@ -70,7 +85,7 @@ func NewOptions(ctx *broker.Context, options ...Option) (Options, error) {
 	}
 
 	for _, middleware := range result.Middleware {
-		options, err := middleware(ctx)
+		options, err := middleware.Use(ctx)
 		if err != nil {
 			return result, err
 		}

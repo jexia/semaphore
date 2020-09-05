@@ -14,9 +14,9 @@ import (
 
 func TestWithMiddleware(t *testing.T) {
 	ctx := logger.WithLogger(broker.NewBackground())
-	middleware := func(*broker.Context) ([]Option, error) {
+	middleware := MiddlewareFunc(func(*broker.Context) ([]Option, error) {
 		return nil, nil
-	}
+	})
 
 	client, err := NewOptions(ctx, WithMiddleware(middleware), WithMiddleware(middleware))
 	if err != nil {
