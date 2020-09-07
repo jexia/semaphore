@@ -216,7 +216,7 @@ func decodeElement(resource string, pos int, path []string, values []string, sch
 					store.StoreEnum("", "", enum.Position)
 				}
 			default:
-				value, err := DecodeType(raw, prop.Type)
+				value, err := types.DecodeFromString(raw, prop.Type)
 				if err != nil {
 					return err
 				}
@@ -238,7 +238,7 @@ func decodeElement(resource string, pos int, path []string, values []string, sch
 				ref.Enum = &enum.Position
 			}
 		default:
-			value, err := DecodeType(values[0], prop.Type)
+			value, err := types.DecodeFromString(values[0], prop.Type)
 			if err != nil {
 				return err
 			}

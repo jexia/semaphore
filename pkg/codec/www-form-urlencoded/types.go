@@ -49,51 +49,6 @@ func AddTypeKey(encoder url.Values, key string, typed types.Type, value interfac
 	encoder.Add(key, encoded)
 }
 
-// DecodeType decodes the given property from the given decoder
-func DecodeType(raw string, typed types.Type) (interface{}, error) {
-	switch typed {
-	case types.Double:
-		return strconv.ParseFloat(raw, 64)
-	case types.Float:
-		value, err := strconv.ParseFloat(raw, 64)
-		return float64(value), err
-	case types.Int64:
-		return strconv.ParseInt(raw, 10, 64)
-	case types.Uint64:
-		return strconv.ParseUint(raw, 10, 64)
-	case types.Fixed64:
-		return strconv.ParseUint(raw, 10, 64)
-	case types.Int32:
-		value, err := strconv.ParseInt(raw, 10, 32)
-		return int32(value), err
-	case types.Uint32:
-		value, err := strconv.ParseUint(raw, 10, 32)
-		return uint32(value), err
-	case types.Fixed32:
-		value, err := strconv.ParseUint(raw, 10, 32)
-		return uint32(value), err
-	case types.String:
-		return raw, nil
-	case types.Bool:
-		return strconv.ParseBool(raw)
-	case types.Bytes:
-		return base64.StdEncoding.DecodeString(raw)
-	case types.Sfixed32:
-		value, err := strconv.ParseInt(raw, 10, 32)
-		return int32(value), err
-	case types.Sfixed64:
-		value, err := strconv.ParseInt(raw, 10, 64)
-		return value, err
-	case types.Sint32:
-		value, err := strconv.ParseInt(raw, 10, 32)
-		return int32(value), err
-	case types.Sint64:
-		return strconv.ParseInt(raw, 10, 64)
-	default:
-		return nil, errUnknownType(typed)
-	}
-}
-
 // StringEmpty returns the given value as a string or a empty string if the value is nil
 func StringEmpty(val interface{}) string {
 	if val == nil {
