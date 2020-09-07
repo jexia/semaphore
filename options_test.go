@@ -124,13 +124,13 @@ func TestNewOptionsNil(t *testing.T) {
 }
 
 func TestNewOptionsMiddleware(t *testing.T) {
-	middleware := func(*broker.Context) ([]Option, error) {
+	middleware := MiddlewareFunc(func(*broker.Context) ([]Option, error) {
 		options := []Option{
 			WithLogLevel("*", "warn"),
 		}
 
 		return options, nil
-	}
+	})
 
 	ctx := logger.WithLogger(broker.NewBackground())
 	_, err := NewOptions(ctx, WithMiddleware(middleware))
@@ -141,9 +141,9 @@ func TestNewOptionsMiddleware(t *testing.T) {
 
 func TestNewOptionsMiddlewareErr(t *testing.T) {
 	expected := errors.New("unexpected err")
-	middleware := func(*broker.Context) ([]Option, error) {
+	middleware := MiddlewareFunc(func(*broker.Context) ([]Option, error) {
 		return nil, expected
-	}
+	})
 
 	ctx := logger.WithLogger(broker.NewBackground())
 	_, err := NewOptions(ctx, WithMiddleware(middleware))

@@ -8,12 +8,16 @@ import (
 	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/broker/trace"
 	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/pkg/specs/labels"
+	"github.com/jexia/semaphore/pkg/specs/types"
 	"go.uber.org/zap"
 )
 
 var (
 	// ReferencePattern is the matching pattern for references
 	ReferencePattern = regexp.MustCompile(`^[a-zA-Z0-9_\-\.]*:[a-zA-Z0-9\^\&\%\$@_\-\.]*$`)
+	// StringPattern is the matching pattern for strings
+	StringPattern = regexp.MustCompile(`^\'(.+)\'$`)
 )
 
 const (
@@ -115,6 +119,18 @@ func ParseReference(path string, name string, value string) (*specs.Property, er
 func ParseContent(path string, name string, content string) (*specs.Property, error) {
 	if ReferencePattern.MatchString(content) {
 		return ParseReference(path, name, content)
+	}
+
+	if StringPattern.MatchString(content) {
+		matched := StringPattern.FindStringSubmatch(content)
+
+		return &specs.Property{
+			Name:    name,
+			Path:    path,
+			Type:    types.String,
+			Label:   labels.Optional,
+			Default: matched[1],
+		}, nil
 	}
 
 	return &specs.Property{
