@@ -17,7 +17,7 @@ import (
 
 // New constructs a new prometheus middleware instance
 func New(addr string) semaphore.Middleware {
-	return func(parent *broker.Context) ([]semaphore.Option, error) {
+	return semaphore.MiddlewareFunc(func(parent *broker.Context) ([]semaphore.Option, error) {
 		ctx := logger.WithLogger(broker.WithModule(parent, "prometheus"))
 		logger.Info(ctx, "setting up", zap.String("addr", addr))
 
@@ -50,7 +50,7 @@ func New(addr string) semaphore.Middleware {
 		)
 
 		return handles, nil
-	}
+	})
 }
 
 // CtxKey context key type
