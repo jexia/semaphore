@@ -688,7 +688,11 @@ func ParseIntermediateProperty(ctx *broker.Context, path string, property *hcl.A
 	*/
 
 	typed := value.Type()
-	if typed.IsTupleType() {
+
+	switch {
+	case typed.IsTupleType():
+		result.Type = types.String
+		result.Label = labels.Repeated
 		result.Repeated = make([]*specs.Property, 0, typed.Length())
 		value.ForEachElement(func(key cty.Value, value cty.Value) (stop bool) {
 			typed := value.Type()
@@ -710,21 +714,52 @@ func ParseIntermediateProperty(ctx *broker.Context, path string, property *hcl.A
 			}
 
 			result.Repeated = append(result.Repeated, item)
+
 			return false
 		})
-	}
 
-	if typed != cty.String || !template.Is(value.AsString()) {
+		return result, nil
+	case typed.IsObjectType():
+		result.Type = types.Message
+		result.Nested = make(map[string]*specs.Property)
+		value.ForEachElement(func(key cty.Value, value cty.Value) (stop bool) {
+			typed := value.Type()
+			item := &specs.Property{
+				Name:  key.AsString(),
+				Path:  result.Path,
+				Expr:  &Expression{property.Expr},
+				Label: labels.Optional,
+			}
+
+			if typed != cty.String || !template.Is(value.AsString()) {
+				SetDefaultValue(ctx, item, value)
+				result.Nested[key.AsString()] = item
+				return false
+			}
+
+			item, err := template.Parse(ctx, path, item.Name, value.AsString())
+			if err != nil {
+				return false
+			}
+
+			result.Nested[key.AsString()] = item
+
+			return false
+		})
+
+		return result, nil
+	case typed == cty.String && template.Is(value.AsString()):
+		result, err := template.Parse(ctx, path, result.Name, value.AsString())
+		if err != nil {
+			return nil, err
+		}
+
+		return result, nil
+	default:
 		SetDefaultValue(ctx, result, value)
+
 		return result, nil
 	}
-
-	result, err := template.Parse(ctx, path, result.Name, value.AsString())
-	if err != nil {
-		return nil, err
-	}
-
-	return result, nil
 }
 
 // ParseIntermediateBefore parses the given before into a collection of dependencies
