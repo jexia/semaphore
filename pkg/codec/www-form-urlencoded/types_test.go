@@ -1,7 +1,6 @@
 package formencoded
 
 import (
-	"errors"
 	"net/url"
 	"testing"
 
@@ -124,106 +123,6 @@ func TestAddEmptyType(t *testing.T) {
 			result := encoder.Encode()
 			if result != expected {
 				t.Errorf("unexpected result %s", result)
-			}
-		})
-	}
-}
-
-func TestDecodeType(t *testing.T) {
-	type test struct {
-		input    string
-		expected interface{}
-		error    error
-	}
-
-	tests := map[types.Type]test{
-		"unknown": {
-			input:    `value`,
-			expected: nil,
-			error:    errUnknownType("unknown"),
-		},
-		types.Double: {
-			input:    `10`,
-			expected: float64(10),
-		},
-		types.Int64: {
-			input:    `10`,
-			expected: int64(10),
-		},
-		types.Uint64: {
-			input:    `10`,
-			expected: uint64(10),
-		},
-		types.Fixed64: {
-			input:    `10`,
-			expected: uint64(10),
-		},
-		types.Int32: {
-			input:    `10`,
-			expected: int32(10),
-		},
-		types.Uint32: {
-			input:    `10`,
-			expected: uint32(10),
-		},
-		types.Fixed32: {
-			input:    `10`,
-			expected: uint32(10),
-		},
-		types.Float: {
-			input:    `10`,
-			expected: float64(10),
-		},
-		types.String: {
-			input:    `msg`,
-			expected: "msg",
-		},
-		types.Bool: {
-			input:    `true`,
-			expected: true,
-		},
-		types.Bytes: {
-			input:    "aGVsbG83",
-			expected: []byte{104, 101, 108, 108, 111, 55},
-		},
-		types.Sfixed32: {
-			input:    `10`,
-			expected: int32(10),
-		},
-		types.Sfixed64: {
-			input:    `10`,
-			expected: int64(10),
-		},
-		types.Sint32: {
-			input:    `10`,
-			expected: int32(10),
-		},
-		types.Sint64: {
-			input:    `10`,
-			expected: int64(10),
-		},
-	}
-
-	for typed, test := range tests {
-		t.Run(string(typed), func(t *testing.T) {
-			val, err := DecodeType(test.input, typed)
-
-			if !errors.Is(err, test.error) {
-				t.Fatal(err)
-			}
-
-			switch val.(type) {
-			case []byte:
-				bb := val.([]byte)
-				expected := test.expected.([]byte)
-
-				if len(bb) != len(expected) {
-					t.Errorf("unexpected result %+v, expected %+v", bb, expected)
-				}
-			default:
-				if val != test.expected {
-					t.Errorf("unexpected result %+v, expected %+v", val, test.expected)
-				}
 			}
 		})
 	}
