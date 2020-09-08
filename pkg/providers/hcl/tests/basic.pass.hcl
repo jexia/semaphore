@@ -1,8 +1,7 @@
 flow "echo" {
-    input "object" {
-    }
+  input "object" {}
 
-    output "object" {
-        message = "{{ input:message }}"
-    }
+  output "object" {
+    message = "{{ input:message }}"
+  }
 }

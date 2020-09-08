@@ -1,3 +1,2 @@
-// No resourceer defined
-service "com.semaphore" {
-}
+// No resources defined
+service "com.semaphore" {}

@@ -1,10 +1,18 @@
 package hcl
 
 import (
+	"fmt"
+
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/labels"
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
+
+type errUnknownPopertyType string
+
+func (e errUnknownPopertyType) Error() string {
+	return fmt.Sprintf("unsupported property type %q", string(e))
+}
 
 // DefaultOnError sets the default values for not defined properties
 func DefaultOnError(err *specs.OnError) {

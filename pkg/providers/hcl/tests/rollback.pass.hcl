@@ -1,6 +1,5 @@
 flow "echo" {
-    resource "get" {
-        rollback "getter" "Remove" {
-        }
-    }
+  resource "get" {
+    rollback "getter" "Remove" {}
+  }
 }

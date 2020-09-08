@@ -1,8 +1,6 @@
 package hcl
 
 import (
-	"fmt"
-
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/specs"
@@ -33,7 +31,7 @@ func SetDefaultValue(ctx *broker.Context, property *specs.Property, value cty.Va
 		property.Default = def
 		property.Type = types.Bool
 	default:
-		return fmt.Errorf("unknown property type: %T", value.Type())
+		return errUnknownPopertyType(value.Type().FriendlyName())
 	}
 
 	return nil
