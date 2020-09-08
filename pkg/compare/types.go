@@ -179,9 +179,12 @@ func CheckPropertyTypes(property *specs.Property, schema *specs.Property, flow s
 		return trace.New(trace.WithExpression(property.Expr), trace.WithMessage("unable to check types for '%s' no schema given", property.Path))
 	}
 
+	// TODO: fix the panic
+	// if property.Label != labels.Repeated {
 	if property.Type != schema.Type {
 		return trace.New(trace.WithExpression(property.Expr), trace.WithMessage("cannot use type (%s) for '%s', expected (%s)", property.Type, property.Path, schema.Type))
 	}
+	// }
 
 	if property.Label != schema.Label {
 		return trace.New(trace.WithExpression(property.Expr), trace.WithMessage("cannot use label (%s) for '%s', expected (%s)", property.Label, property.Path, schema.Label))

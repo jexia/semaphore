@@ -11,7 +11,7 @@ import (
 )
 
 // SetDefaultValue sets the given value as default value inside the given property
-func SetDefaultValue(ctx *broker.Context, property *specs.Property, value cty.Value) {
+func SetDefaultValue(ctx *broker.Context, property *specs.Property, value cty.Value) error {
 	logger.Debug(ctx, "set default value for property", zap.String("path", property.Path), zap.Any("value", value))
 
 	switch value.Type() {
@@ -30,5 +30,9 @@ func SetDefaultValue(ctx *broker.Context, property *specs.Property, value cty.Va
 
 		property.Default = def
 		property.Type = types.Bool
+	default:
+		return errUnknownPopertyType(value.Type().FriendlyName())
 	}
+
+	return nil
 }

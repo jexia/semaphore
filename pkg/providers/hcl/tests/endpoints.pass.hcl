@@ -1,9 +1,9 @@
 endpoint "echo" "http" {
-    random = "value"
+  random = "value"
 }
 
 endpoint "ping" "http" {
-    message "random" {
-        value = "message"
-    }
+  message "random" {
+    value = "message"
+  }
 }

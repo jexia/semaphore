@@ -1,7 +1,7 @@
 flow "input" {
-    input "com.schema" {
-        options {
-            sample = ""
-        }
+  input "com.schema" {
+    options {
+      sample = ""
     }
+  }
 }

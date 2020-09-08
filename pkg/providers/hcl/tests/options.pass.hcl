@@ -1,14 +1,15 @@
 log_level = "debug"
+
 protobuffers = ["$PROTO_IMPORT"]
 
 grpc {
-    address = "$GRPC"
+  address = "$GRPC"
 }
 
 http {
-    address = "$HTTP"
+  address = "$HTTP"
 }
 
 graphql {
-    address = "$GRAPHQL"
+  address = "$GRAPHQL"
 }

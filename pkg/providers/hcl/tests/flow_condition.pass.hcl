@@ -1,14 +1,13 @@
 flow "condition" {
-    resource "first" {
+  resource "first" {}
+
+  if "{{ first:id }} == {{ first:name }}" {
+    if "condition" {
+      resource "" {}
     }
 
-    if "{{ first:id }} == {{ first:name }}" {
-        if "condition" {
-            resource "" {}
-        }
-
-        resources {
-            sample = ""
-        }
+    resources {
+      sample = ""
     }
+  }
 }
