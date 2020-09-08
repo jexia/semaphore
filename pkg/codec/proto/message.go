@@ -105,41 +105,7 @@ func (manager *Manager) Encode(proto *dynamic.Message, desc *desc.MessageDescrip
 		if field.IsRepeated() {
 			if prop.Repeated != nil {
 				for _, repeated := range prop.Repeated {
-					if repeated.Type == types.Message {
-						dynamic := dynamic.NewMessage(field.GetMessageType())
-						err = manager.Encode(dynamic, field.GetMessageType(), repeated.Nested, store)
-						if err != nil {
-							return err
-						}
-
-						err = proto.TrySetField(field, dynamic)
-						if err != nil {
-							return err
-						}
-
-						continue
-					}
-
-					value := repeated.Default
-
-					if repeated.Reference != nil {
-						ref := store.Load(repeated.Reference.Resource, repeated.Reference.Path)
-						if ref != nil {
-							if prop.Type == types.Enum && ref.Enum != nil {
-								value = ref.Enum
-							}
-
-							if value == nil {
-								value = ref.Value
-							}
-						}
-					}
-
-					if value == nil {
-						continue
-					}
-
-					err = proto.TryAddRepeatedField(field, value)
+					err = manager.setField(proto.TryAddRepeatedField, repeated, field, store)
 					if err != nil {
 						return err
 					}
@@ -158,6 +124,10 @@ func (manager *Manager) Encode(proto *dynamic.Message, desc *desc.MessageDescrip
 			}
 
 			for _, store := range ref.Repeated {
+				err = manager.setField(proto.TryAddRepeatedField, prop, field, store)
+				if err != nil {
+					return err
+				}
 				var value interface{}
 
 				switch prop.Type {
@@ -194,47 +164,48 @@ func (manager *Manager) Encode(proto *dynamic.Message, desc *desc.MessageDescrip
 			continue
 		}
 
-		if prop.Type == types.Message {
-			dynamic := dynamic.NewMessage(field.GetMessageType())
-			err = manager.Encode(dynamic, field.GetMessageType(), prop.Nested, store)
-			if err != nil {
-				return err
-			}
-
-			err = proto.TrySetField(field, dynamic)
-			if err != nil {
-				return err
-			}
-
-			continue
-		}
-
-		value := prop.Default
-
-		if prop.Reference != nil {
-			ref := store.Load(prop.Reference.Resource, prop.Reference.Path)
-			if ref != nil {
-				if prop.Type == types.Enum && ref.Enum != nil {
-					value = ref.Enum
-				}
-
-				if value == nil {
-					value = ref.Value
-				}
-			}
-		}
-
-		if value == nil {
-			continue
-		}
-
-		err = proto.TrySetField(field, value)
+		err = manager.setField(proto.TrySetField, prop, field, store)
 		if err != nil {
 			return err
 		}
 	}
 
 	return nil
+}
+
+type trySetProto func(fd *desc.FieldDescriptor, val interface{}) error
+
+func (manager *Manager) setField(setter trySetProto, prop *specs.Property, field *desc.FieldDescriptor, store references.Store) error {
+	if prop.Type == types.Message {
+		dynamic := dynamic.NewMessage(field.GetMessageType())
+		err := manager.Encode(dynamic, field.GetMessageType(), prop.Nested, store)
+		if err != nil {
+			return err
+		}
+
+		return setter(field, dynamic)
+	}
+
+	value := prop.Default
+
+	if prop.Reference != nil {
+		ref := store.Load(prop.Reference.Resource, prop.Reference.Path)
+		if ref != nil {
+			if prop.Type == types.Enum && ref.Enum != nil {
+				value = ref.Enum
+			}
+
+			if value == nil {
+				value = ref.Value
+			}
+		}
+	}
+
+	if value == nil {
+		return nil
+	}
+
+	return setter(field, value)
 }
 
 // Unmarshal unmarshals the given io reader into the given reference store.
