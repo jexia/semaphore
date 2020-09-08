@@ -15,7 +15,7 @@ flow "echo" {
     object = {
       "message": "hello world",
       "meta": {
-        "id": "{{ input:params[0] }}"
+        "id": "{{ getter:output }}"
       }
     }
   }

@@ -689,7 +689,7 @@ func ParseIntermediateProperty(ctx *broker.Context, path string, property *hcl.A
 
 	switch {
 	case typed.IsTupleType():
-		result.Type = types.String
+		result.Type = types.String // TODO: get rid of hardcoded type
 		result.Label = labels.Repeated
 		result.Repeated = make([]*specs.Property, 0, typed.Length())
 
