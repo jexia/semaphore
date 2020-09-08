@@ -9,6 +9,8 @@ import (
 	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/codec/json"
 	"github.com/jexia/semaphore/pkg/codec/proto"
+	formencoded "github.com/jexia/semaphore/pkg/codec/www-form-urlencoded"
+	"github.com/jexia/semaphore/pkg/codec/xml"
 	"github.com/jexia/semaphore/pkg/metrics/prometheus"
 	"github.com/jexia/semaphore/pkg/providers/hcl"
 	"github.com/jexia/semaphore/pkg/providers/protobuffers"
@@ -117,6 +119,8 @@ func NewCore(ctx *broker.Context, flags *Daemon) (semaphore.Options, error) {
 	options := []semaphore.Option{
 		semaphore.WithCodec(json.NewConstructor()),
 		semaphore.WithCodec(proto.NewConstructor()),
+		semaphore.WithCodec(formencoded.NewConstructor()),
+		semaphore.WithCodec(xml.NewConstructor()),
 		semaphore.WithCaller(micro.NewCaller("micro-grpc", microGRPC.NewService())),
 		semaphore.WithCaller(grpc.NewCaller()),
 		semaphore.WithCaller(http.NewCaller()),

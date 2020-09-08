@@ -310,7 +310,6 @@ func (node *Node) Skip(ctx context.Context, tracker Tracker) {
 	for _, node := range node.Next {
 		if node.Condition != nil {
 			node.Skip(ctx, tracker)
-			continue
 		}
 
 		tracker.Skip(node)
