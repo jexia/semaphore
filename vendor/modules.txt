@@ -60,6 +60,11 @@ github.com/graphql-go/graphql/language/printer
 github.com/graphql-go/graphql/language/source
 github.com/graphql-go/graphql/language/typeInfo
 github.com/graphql-go/graphql/language/visitor
+# github.com/hashicorp/go-immutable-radix v1.2.0
+## explicit
+github.com/hashicorp/go-immutable-radix
+# github.com/hashicorp/golang-lru v0.5.3
+github.com/hashicorp/golang-lru/simplelru
 # github.com/hashicorp/hcl v1.0.0
 github.com/hashicorp/hcl
 github.com/hashicorp/hcl/hcl/ast
