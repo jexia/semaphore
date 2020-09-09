@@ -16,12 +16,14 @@ type DefaultScanner struct {
 	FormatterDetector
 }
 
+// NewDefaultScanner creates a default scanner with provided formatter detector.
 func NewDefaultScanner(detector FormatterDetector) *DefaultScanner {
 	return &DefaultScanner{
 		FormatterDetector: detector,
 	}
 }
 
+// Scan the input for tokens.
 func (s *DefaultScanner) Scan(input string) ([]Token, error) {
 	var (
 		pos    = 0
@@ -63,9 +65,7 @@ func (s *DefaultScanner) scanConstant(input string, start int) (Token, int, stat
 	var curr = start
 
 	for ; curr < len(input); curr++ {
-		var ch = rune(input[curr])
-
-		if ch == '%' {
+		if rune(input[curr]) == '%' {
 			break
 		}
 	}

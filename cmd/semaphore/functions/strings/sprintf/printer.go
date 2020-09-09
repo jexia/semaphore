@@ -8,6 +8,7 @@ import (
 	"github.com/jexia/semaphore/pkg/specs"
 )
 
+// Printer compiles the output using argument values.
 type Printer interface {
 	Print(store references.Store, args ...*specs.Property) (string, error)
 }
@@ -35,7 +36,7 @@ func (p *defaultPrinter) Print(store references.Store, args ...*specs.Property) 
 				return "", err
 			}
 		case Verb:
-			str, err := t.Print(store, args[verbPos])
+			str, err := t.formatter.Format(store, args[verbPos])
 			if err != nil {
 				return "", err
 			}

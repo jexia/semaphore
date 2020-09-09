@@ -2,18 +2,13 @@ package sprintf
 
 import (
 	"fmt"
+
+	"github.com/jexia/semaphore/pkg/references"
+	"github.com/jexia/semaphore/pkg/specs"
 )
 
 type Formatter interface {
 	fmt.Stringer
 
-	Format(v interface{}) (string, error)
+	Format(store references.Store, argument *specs.Property) (string, error)
 }
-
-// type Validator interface {
-// 	Validate(args ...*specs.Property) error
-// }
-//
-// type Builder interface {
-// 	Build() string
-// }

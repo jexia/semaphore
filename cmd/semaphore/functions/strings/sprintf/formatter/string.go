@@ -1,12 +1,19 @@
 package formatter
 
-import "fmt"
+import (
+	"errors"
 
+	"github.com/jexia/semaphore/pkg/references"
+	"github.com/jexia/semaphore/pkg/specs"
+)
+
+// String formatter.
 type String struct{}
 
 func (String) String() string { return "s" }
 
-func (String) Format(store references.Store, v interface{}) (string, error) {
+// Format provided argument as a string.
+func (String) Format(store references.Store, argument *specs.Property) (string, error) {
 	var value interface{}
 
 	if argument.Default != nil {
@@ -19,5 +26,15 @@ func (String) Format(store references.Store, v interface{}) (string, error) {
 		}
 	}
 
-	return fmt.Sprint(v), nil
+	// TODO: maybe return an empty string
+	if value == nil {
+		return "", errors.New("not set")
+	}
+
+	casted, ok := value.(string)
+	if !ok {
+		return "", errors.New("not a string")
+	}
+
+	return casted, nil
 }

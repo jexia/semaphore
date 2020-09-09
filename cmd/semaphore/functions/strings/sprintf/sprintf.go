@@ -2,7 +2,6 @@ package sprintf
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/references"
@@ -21,29 +20,13 @@ func sprintfOutputs() *specs.Property {
 
 func sprintfExecutable(printer Printer, args ...*specs.Property) func(store references.Store) error {
 	return func(store references.Store) error {
-		result := strings.Builder{}
-
-		for _, arg := range args {
-			var value string
-
-			if arg.Default != nil {
-				value = arg.Default.(string)
-			}
-
-			if arg.Reference != nil {
-				ref := store.Load(arg.Reference.Resource, arg.Reference.Path)
-				if ref != nil {
-					value = ref.Value.(string)
-				}
-			}
-
-			_, err := result.WriteString(value)
-			if err != nil {
-				return err
-			}
+		result, err := printer.Print(store, args[1:]...)
+		if err != nil {
+			return err
 		}
 
-		store.StoreValue("", ".", result.String())
+		store.StoreValue("", ".", result)
+
 		return nil
 	}
 }
