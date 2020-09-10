@@ -51,12 +51,12 @@ func (v Verb) String() string { return v.Verb }
 
 // Precision is a token which describes the precision and used to create a verb.
 type Precision struct {
-	Width int
-	Scale int
+	Width int64
+	Scale int64
 }
 
 func (Precision) isTokenInterface() {}
 
 func (p Precision) String() string {
-	return "%" + strconv.Itoa(p.Width) + "." + strconv.Itoa(p.Scale)
+	return "%" + strconv.FormatInt(p.Width, 10) + "." + strconv.FormatInt(p.Scale, 10)
 }

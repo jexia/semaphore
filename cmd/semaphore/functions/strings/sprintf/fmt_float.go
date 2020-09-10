@@ -2,6 +2,7 @@ package sprintf
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
@@ -47,12 +48,16 @@ func FormatFloat(precision Precision) Formatter {
 			return "", nil
 		}
 
-		fmt.Println()
-		fmt.Println(precision.String())
-		fmt.Printf("%T", value)
-		fmt.Println()
-		fmt.Println()
+		var format string
 
-		return fmt.Sprintf(precision.String()+"f", value), nil
+		if precision.Width > 0 {
+			format = strconv.FormatInt(precision.Width, 10)
+		}
+
+		if precision.Scale > 0 {
+			format += "." + strconv.FormatInt(precision.Scale, 10)
+		}
+
+		return fmt.Sprintf("%"+format+"f", value), nil
 	}
 }

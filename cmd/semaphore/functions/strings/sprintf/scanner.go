@@ -118,19 +118,17 @@ LOOP:
 			}
 			state = waitScale
 		default:
-			int64Width, err := strconv.ParseInt(string(width), 10, 64)
+			var err error
+
+			precision.Width, err = strconv.ParseInt(string(width), 10, 64)
 			if err != nil {
 				return nil, curr, nil, err
 			}
 
-			precision.Width = int(int64Width)
-
-			int64Scale, err := strconv.ParseInt(string(scale), 10, 64)
+			precision.Scale, err = strconv.ParseInt(string(scale), 10, 64)
 			if err != nil {
 				return nil, curr, nil, err
 			}
-
-			precision.Scale = int(int64Scale)
 
 			state = allDone
 
