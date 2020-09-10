@@ -2,8 +2,10 @@ package sprintf
 
 import (
 	"fmt"
+	"strconv"
 )
 
+// Token represents one of the available tokens.
 type Token interface {
 	fmt.Stringer
 
@@ -20,14 +22,41 @@ func countVerbs(tokens []Token) (total int) {
 	return
 }
 
+func onlyVerbs(tokens []Token) (verbs []Verb) {
+	for _, token := range tokens {
+		if verb, ok := token.(Verb); ok {
+			verbs = append(verbs, verb)
+		}
+	}
+
+	return
+}
+
+// Constant is a token that does not need any formatting.
 type Constant string
 
-func (c Constant) isTokenInterface() {}
+func (Constant) isTokenInterface() {}
 
 func (c Constant) String() string { return string(c) }
 
-type Verb struct{ formatter Formatter }
+// Verb is a token that is used to print a single input argument.
+type Verb struct {
+	Verb      string
+	Formatter Formatter
+}
 
-func (v Verb) isTokenInterface() {}
+func (Verb) isTokenInterface() {}
 
-func (v Verb) String() string { return "%" + v.formatter.String() }
+func (v Verb) String() string { return v.Verb }
+
+// Precision is a token which describes the precision and used to create a verb.
+type Precision struct {
+	Width int
+	Scale int
+}
+
+func (Precision) isTokenInterface() {}
+
+func (p Precision) String() string {
+	return "%" + strconv.Itoa(p.Width) + "." + strconv.Itoa(p.Scale)
+}

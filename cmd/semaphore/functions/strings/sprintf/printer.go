@@ -17,6 +17,7 @@ type defaultPrinter struct {
 	tokens []Token
 }
 
+// NewPrinter returns a Printer for provided tokens.
 func NewPrinter(tokens []Token) Printer {
 	return &defaultPrinter{
 		tokens: tokens,
@@ -31,12 +32,14 @@ func (p *defaultPrinter) Print(store references.Store, args ...*specs.Property) 
 
 	for _, token := range p.tokens {
 		switch t := token.(type) {
+		case Precision:
+			// just ignore
 		case Constant:
 			if _, err := builder.WriteString(string(t)); err != nil {
 				return "", err
 			}
 		case Verb:
-			str, err := t.formatter.Format(store, args[verbPos])
+			str, err := t.Formatter(store, args[verbPos])
 			if err != nil {
 				return "", err
 			}

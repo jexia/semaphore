@@ -8,7 +8,7 @@ import (
 
 // FormatterDetector detects formatter (if possible) from provided input.
 type FormatterDetector interface {
-	Detect(input string) (Formatter, bool)
+	Detect(input string) (Constructor, bool)
 }
 
 // Radix tree based implementation of Formatter registry.
@@ -24,23 +24,23 @@ func NewRadix() *Radix {
 }
 
 // Register provided Formatter.
-func (r *Radix) Register(formatter Formatter) error {
+func (r *Radix) Register(constructor Constructor) error {
 	var ok bool
 
-	r.tree, _, ok = r.tree.Insert([]byte(formatter.String()), formatter)
+	r.tree, _, ok = r.tree.Insert([]byte(constructor.String()), constructor)
 	if ok {
-		return fmt.Errorf("formatter %q is already registered", formatter)
+		return fmt.Errorf("verv %q is already in use", constructor)
 	}
 
 	return nil
 }
 
 // Detect if input string starts with one of the registered Formatters.
-func (r *Radix) Detect(input string) (Formatter, bool) {
+func (r *Radix) Detect(input string) (Constructor, bool) {
 	_, v, ok := r.tree.Root().LongestPrefix([]byte(input))
 	if !ok {
 		return nil, false
 	}
 
-	return v.(Formatter), true
+	return v.(Constructor), true
 }

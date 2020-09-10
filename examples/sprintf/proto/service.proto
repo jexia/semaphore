@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+import "api/annotations.proto";
+
+package com.semaphore;
+
+message WTFRequest {
+  string name = 1;
+  string subject = 2;
+}
+
+message AgeRequest {
+  string name = 1;
+  int32 age = 2;
+}
+
+message GenericResponse {
+    string message = 1;
+}
