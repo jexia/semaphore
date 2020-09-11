@@ -1,6 +1,9 @@
 package sprintf
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+)
 
 var (
 	errUnknownFormatter   = errors.New("unable to detect the formatter")
@@ -12,3 +15,11 @@ var (
 	errNonStringType      = errors.New("not a string")
 	errNonFloatType       = errors.New("not a float")
 )
+
+type errVerbConflict struct {
+	fmt.Stringer
+}
+
+func (e errVerbConflict) Error() string {
+	return fmt.Sprintf("verb %q is already in use", e.Stringer)
+}

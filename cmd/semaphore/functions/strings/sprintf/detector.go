@@ -1,10 +1,6 @@
 package sprintf
 
-import (
-	"fmt"
-
-	iradix "github.com/hashicorp/go-immutable-radix"
-)
+import iradix "github.com/hashicorp/go-immutable-radix"
 
 // FormatterDetector detects formatter (if possible) from provided input.
 type FormatterDetector interface {
@@ -29,13 +25,13 @@ func (r *Radix) Register(constructor Constructor) error {
 
 	r.tree, _, ok = r.tree.Insert([]byte(constructor.String()), constructor)
 	if ok {
-		return fmt.Errorf("verv %q is already in use", constructor)
+		return errVerbConflict{constructor}
 	}
 
 	return nil
 }
 
-// Detect if input string starts with one of the registered Formatters.
+// Detect if input string starts with one of the registered verbs.
 func (r *Radix) Detect(input string) (Constructor, bool) {
 	_, v, ok := r.tree.Root().LongestPrefix([]byte(input))
 	if !ok {
