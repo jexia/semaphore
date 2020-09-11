@@ -47,9 +47,7 @@ func strtoa(precision Precision, value interface{}) (string, error) {
 
 	var builder strings.Builder
 	for i := int64(0); i < precision.Width; i++ {
-		if err := builder.WriteByte(casted[i]); err != nil {
-			return "", err
-		}
+		builder.WriteByte(casted[i])
 	}
 
 	return builder.String(), nil

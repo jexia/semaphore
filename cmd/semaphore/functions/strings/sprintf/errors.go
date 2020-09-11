@@ -23,3 +23,26 @@ type errVerbConflict struct {
 func (e errVerbConflict) Error() string {
 	return fmt.Sprintf("verb %q is already in use", e.Stringer)
 }
+
+type errFormatScan struct {
+	inner    error
+	format   string
+	position int
+}
+
+func (e errFormatScan) Error() string {
+	var msg = e.inner.Error()
+	msg += ":\n"
+	for i := 0; i < e.position; i++ {
+		msg += " "
+	}
+	msg += "↓\n"
+	msg += e.format
+	msg += "\n"
+
+	return msg
+}
+
+func (e errFormatScan) Unwrap() error {
+	return e.inner
+}

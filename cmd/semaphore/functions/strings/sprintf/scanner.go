@@ -39,8 +39,11 @@ func (s *defaultScanner) Scan(input string) ([]Token, error) {
 		token, pos, next, err = next(token, input, pos)
 
 		if err != nil {
-			// TODO: use the position to provide more info
-			return nil, err
+			return nil, errFormatScan{
+				inner:    err,
+				position: pos,
+				format:   input,
+			}
 		}
 
 		tokens = append(tokens, token)
