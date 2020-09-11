@@ -36,6 +36,6 @@ flow "json" {
   input "com.semaphore.MsgRequest" {}
 
   output "com.semaphore.GenericResponse" {
-    message = "{{ sprintf('Hey %s! We have got your personal info: %json!', input:name, input:info) }}"
+    message = "{{ sprintf('Hey %s! We have got your personal info in JSON: %json!', input:name, input:info) }}"
   }
 }

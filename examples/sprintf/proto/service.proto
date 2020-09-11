@@ -22,6 +22,7 @@ message MsgRequest {
     string sex = 1;
     int32 age = 2;
     bool married = 3;
+    repeated int32 numbers = 4;
   }
 }
 

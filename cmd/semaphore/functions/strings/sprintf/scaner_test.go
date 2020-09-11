@@ -2,7 +2,6 @@ package sprintf
 
 import (
 	"errors"
-	"log"
 	"testing"
 )
 
@@ -85,8 +84,6 @@ func TestStatefulScanner(t *testing.T) {
 					t.Errorf("unexpected error %q", err)
 				}
 			}
-
-			log.Println(tokens)
 
 			if actual, expected := len(tokens), len(test.tokens); actual != expected {
 				t.Errorf("got %d tokens but expected %d", actual, expected)

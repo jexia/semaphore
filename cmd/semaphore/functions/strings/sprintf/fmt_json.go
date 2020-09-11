@@ -1,15 +1,17 @@
 package sprintf
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
-	"strings"
 
-	"github.com/francoispqt/gojay"
-	"github.com/jexia/semaphore/pkg/codec/json"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/pkg/specs/labels"
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
+
+var null = []byte("null")
 
 // JSON formatter.
 type JSON struct{}
@@ -30,33 +32,124 @@ func (json JSON) Formatter(precision Precision) (Formatter, error) {
 
 // FormatJSON prints provided argument in a JSON format.
 func FormatJSON(store references.Store, argument *specs.Property) (string, error) {
-	var (
-		builder  strings.Builder
-		property = &encoder{
-			resource: "",
-			refs:     store,
-			property: argument,
-		}
-		encoder = gojay.NewEncoder(&builder)
-	)
+	var property = encoder{refs: store, property: argument}
 
-	if err := encoder.Encode(property); err != nil {
+	bb, err := json.Marshal(property)
+	if err != nil {
 		return "", err
 	}
 
-	return builder.String(), nil
+	return string(bb), nil
 }
 
 type encoder struct {
-	resource string
 	property *specs.Property
 	refs     references.Store
 }
 
-func (enc *encoder) MarshalJSONObject(encoder *gojay.Encoder) {
-	json.MarshalProperty(enc.refs, enc.resource, enc.property, encoder)
+func (enc encoder) MarshalJSON() ([]byte, error) {
+	if enc.property.Label == labels.Repeated {
+		return repeated{property: enc.property, refs: enc.refs}.MarshalJSON()
+	}
+
+	if enc.property.Type == types.Message {
+		return message{property: enc.property, refs: enc.refs}.MarshalJSON()
+	}
+
+	if enc.property.Reference == nil {
+		return json.Marshal(enc.property.Default)
+	}
+
+	var reference = enc.refs.Load(enc.property.Reference.Resource, enc.property.Reference.Path)
+	if reference == nil {
+		return json.Marshal(enc.property.Default)
+	}
+
+	if enc.property.Type != types.Enum {
+		return json.Marshal(reference.Value)
+	}
+
+	if reference.Enum == nil {
+		return null, nil
+	}
+
+	var enum = enc.property.Enum.Positions[*reference.Enum]
+	if enum == nil {
+		return json.Marshal(*reference.Enum)
+	}
+
+	return json.Marshal(enum.Key)
 }
 
-func (enc *encoder) IsNil() bool {
-	return enc.property == nil
+type repeated struct {
+	property *specs.Property
+	refs     references.Store
+}
+
+func (r repeated) MarshalJSON() ([]byte, error) {
+	if r.property.Reference == nil {
+		return null, nil
+	}
+
+	var reference = r.refs.Load(r.property.Reference.Resource, r.property.Reference.Path)
+	if reference == nil || reference.Repeated == nil {
+		return null, nil
+	}
+
+	var buff = bytes.NewBufferString("[")
+
+	for index, store := range reference.Repeated {
+		if index > 0 {
+			buff.WriteString(",")
+		}
+
+		var item = &specs.Property{Reference: &specs.PropertyReference{}}
+
+		bb, err := encoder{property: item, refs: store}.MarshalJSON()
+		if err != nil {
+			return nil, err
+		}
+
+		buff.Write(bb)
+	}
+
+	buff.WriteString("]")
+
+	return buff.Bytes(), nil
+}
+
+type message struct {
+	property *specs.Property
+	refs     references.Store
+}
+
+func (m message) MarshalJSON() ([]byte, error) {
+	if m.property.Nested == nil {
+		return null, nil
+	}
+
+	var (
+		buff     = bytes.NewBufferString("{")
+		firstKey = true
+	)
+
+	for key, prop := range m.property.Nested {
+		bb, err := (&encoder{property: prop, refs: m.refs}).MarshalJSON()
+		if err != nil {
+			return nil, err
+		}
+
+		if !firstKey {
+			buff.WriteString(",")
+		}
+
+		buff.WriteString(`"` + key + `":`)
+		buff.Write(bb)
+
+		firstKey = false
+	}
+
+	buff.WriteString("}")
+
+	return buff.Bytes(), nil
 }
