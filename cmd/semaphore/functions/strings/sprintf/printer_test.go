@@ -1,7 +1,6 @@
 package sprintf
 
 import (
-	"log"
 	"testing"
 
 	"github.com/jexia/semaphore/pkg/references"
@@ -18,6 +17,36 @@ func TestPrinter(t *testing.T) {
 	}
 
 	var tests = map[string]test{
+		"test with string arguments": {
+			format:   "note that a %s of the policeman + another %s of the policeman != the %s policeman",
+			expected: "note that a half of the policeman + another half of the policeman != the whole policeman",
+			store: map[string]interface{}{
+				"half": "half",
+			},
+			args: []*specs.Property{
+				{
+					Name: "half",
+					Path: "half",
+					Reference: &specs.PropertyReference{
+						Resource: template.InputResource,
+						Path:     "half",
+					},
+				},
+				{
+					Name: "half",
+					Path: "half",
+					Reference: &specs.PropertyReference{
+						Resource: template.InputResource,
+						Path:     "half",
+					},
+				},
+				{
+					Name:    "whole",
+					Path:    "whole",
+					Default: "whole",
+				},
+			},
+		},
 		"test with numeric arguments": {
 			format:   "note that %.1f policeman + %.1f policeman != %d policemen",
 			expected: "note that 1.5 policeman + 0.5 policeman != 2 policemen",
@@ -60,8 +89,6 @@ func TestPrinter(t *testing.T) {
 			)
 
 			refs.StoreValues(template.InputResource, "", test.store)
-
-			log.Printf("store: %s", refs)
 
 			actual, err := printer.Print(refs, test.args...)
 			if err != nil {

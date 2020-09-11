@@ -2,7 +2,10 @@ package sprintf
 
 import (
 	"fmt"
+	"strings"
 
+	"github.com/francoispqt/gojay"
+	"github.com/jexia/semaphore/pkg/codec/json"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/types"
@@ -27,5 +30,33 @@ func (json JSON) Formatter(precision Precision) (Formatter, error) {
 
 // FormatJSON prints provided argument in a JSON format.
 func FormatJSON(store references.Store, argument *specs.Property) (string, error) {
-	panic("not implemented")
+	var (
+		builder  strings.Builder
+		property = &encoder{
+			resource: "",
+			refs:     store,
+			property: argument,
+		}
+		encoder = gojay.NewEncoder(&builder)
+	)
+
+	if err := encoder.Encode(property); err != nil {
+		return "", err
+	}
+
+	return builder.String(), nil
+}
+
+type encoder struct {
+	resource string
+	property *specs.Property
+	refs     references.Store
+}
+
+func (enc *encoder) MarshalJSONObject(encoder *gojay.Encoder) {
+	json.MarshalProperty(enc.refs, enc.resource, enc.property, encoder)
+}
+
+func (enc *encoder) IsNil() bool {
+	return enc.property == nil
 }

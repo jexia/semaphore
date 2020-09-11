@@ -34,6 +34,7 @@ func init() {
 // Formatter is a function to be called in order to format the argument value.
 type Formatter func(store references.Store, argument *specs.Property) (string, error)
 
+// TypeChecker determines if the provided type can be formatted by the formatter.
 type TypeChecker interface {
 	CanFormat(types.Type) bool
 }

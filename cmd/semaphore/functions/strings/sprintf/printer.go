@@ -40,24 +40,14 @@ func (tokens Tokens) Print(store references.Store, args ...*specs.Property) (str
 
 			verbPos++
 		default:
-			// ignore the rest of tokens
+			// ignore the rest of the tokens
 		}
 	}
 
 	return builder.String(), nil
 }
 
-// Count tokens of the certain type in the list.
-func (tokens Tokens) Count(kind Kind) (total int) {
-	for _, token := range tokens {
-		if token.Kind() == kind {
-			total++
-		}
-	}
-
-	return
-}
-
+// Verbs filters and returs tokens of type Verb only.
 func (tokens Tokens) Verbs() (verbs []Verb) {
 	for _, token := range tokens {
 		if verb, ok := token.(Verb); ok {

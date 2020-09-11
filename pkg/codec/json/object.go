@@ -28,51 +28,58 @@ type Object struct {
 	keys     int
 }
 
+// MarshalProperty encodes a single property
+func MarshalProperty(refs references.Store, resource string, prop *specs.Property, encoder *gojay.Encoder) {
+	if prop.Label == labels.Repeated {
+		if prop.Reference == nil {
+			return
+		}
+
+		ref := refs.Load(prop.Reference.Resource, prop.Reference.Path)
+		if ref == nil {
+			return
+		}
+
+		array := NewArray(resource, prop, ref, ref.Repeated)
+		encoder.AddArrayKey(prop.Name, array)
+
+		return
+	}
+
+	if prop.Type == types.Message {
+		result := NewObject(resource, prop.Nested, refs)
+		encoder.AddObjectKey(prop.Name, result)
+
+		return
+	}
+
+	val := prop.Default
+
+	if prop.Reference != nil {
+		ref := refs.Load(prop.Reference.Resource, prop.Reference.Path)
+		if ref != nil {
+			if prop.Type == types.Enum && ref.Enum != nil {
+				enum := prop.Enum.Positions[*ref.Enum]
+				if enum != nil {
+					val = enum.Key
+				}
+			} else if ref.Value != nil {
+				val = ref.Value
+			}
+		}
+	}
+
+	if val == nil {
+		return
+	}
+
+	AddTypeKey(encoder, prop.Name, prop.Type, val)
+}
+
 // MarshalJSONObject encodes the given specs object into the given gojay encoder
 func (object *Object) MarshalJSONObject(encoder *gojay.Encoder) {
 	for _, prop := range object.specs {
-		if prop.Label == labels.Repeated {
-			if prop.Reference == nil {
-				continue
-			}
-
-			ref := object.refs.Load(prop.Reference.Resource, prop.Reference.Path)
-			if ref == nil {
-				continue
-			}
-
-			array := NewArray(object.resource, prop, ref, ref.Repeated)
-			encoder.AddArrayKey(prop.Name, array)
-			continue
-		}
-
-		if prop.Type == types.Message {
-			result := NewObject(object.resource, prop.Nested, object.refs)
-			encoder.AddObjectKey(prop.Name, result)
-			continue
-		}
-
-		val := prop.Default
-
-		if prop.Reference != nil {
-			ref := object.refs.Load(prop.Reference.Resource, prop.Reference.Path)
-			if ref != nil {
-				if prop.Type == types.Enum && ref.Enum != nil {
-					enum := prop.Enum.Positions[*ref.Enum]
-					if enum != nil {
-						val = enum.Key
-					}
-				} else if ref.Value != nil {
-					val = ref.Value
-				}
-			}
-		}
-
-		if val == nil {
-			continue
-		}
-
-		AddTypeKey(encoder, prop.Name, prop.Type, val)
+		MarshalProperty(object.refs, object.resource, prop, encoder)
 	}
 }
 
