@@ -7,7 +7,7 @@ import (
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
-func TestFloatCanFormat(t *testing.T) {
+func TestIntCanFormat(t *testing.T) {
 	var tests = map[types.Type]bool{
 		types.Bool:     false,
 		types.Bytes:    false,
@@ -15,20 +15,20 @@ func TestFloatCanFormat(t *testing.T) {
 		types.Enum:     false,
 		types.Fixed32:  false,
 		types.Fixed64:  false,
-		types.Float:    true,
-		types.Int32:    false,
-		types.Int64:    false,
+		types.Float:    false,
+		types.Int32:    true,
+		types.Int64:    true,
 		types.Message:  false,
 		types.Sfixed32: false,
 		types.Sfixed64: false,
 		types.Sint32:   false,
 		types.Sint64:   false,
 		types.String:   false,
-		types.Uint32:   false,
-		types.Uint64:   false,
+		types.Uint32:   true,
+		types.Uint64:   true,
 	}
 
-	var constructor Float
+	var constructor Int
 
 	for dataType, expected := range tests {
 		t.Run(string(dataType), func(t *testing.T) {
@@ -39,7 +39,7 @@ func TestFloatCanFormat(t *testing.T) {
 	}
 }
 
-func TestFtoa(t *testing.T) {
+func TestItoa(t *testing.T) {
 	type test struct {
 		value     interface{}
 		precision Precision
@@ -48,15 +48,19 @@ func TestFtoa(t *testing.T) {
 	}
 
 	var tests = map[string]test{
-		"nil value":          {error: errNoValue},
-		"not a float type":   {value: int(42), error: errNonFloatType},
-		"float32 with scale": {value: float32(3.14159265), precision: Precision{Scale: 2}, expected: "3.14"},
-		"float64 with width": {value: float32(3.14159265), precision: Precision{Width: 7}, expected: "3.141593"},
+		"nil value":           {error: errNoValue},
+		"not an integer type": {value: true, error: errNonIntegerType},
+		"int":                 {value: int(42), expected: "42"},
+		"int32":               {value: int32(42), expected: "42"},
+		"int64":               {value: int64(42), expected: "42"},
+		"uint":                {value: uint(42), expected: "42"},
+		"uint32":              {value: uint32(42), expected: "42"},
+		"uint64":              {value: uint64(42), expected: "42"},
 	}
 
 	for title, test := range tests {
 		t.Run(title, func(t *testing.T) {
-			actual, err := ftoa(test.precision, test.value)
+			actual, err := itoa(test.precision, test.value)
 
 			if !errors.Is(err, test.error) {
 				t.Errorf("unexpected error '%s', expected '%s'", err, test.error)

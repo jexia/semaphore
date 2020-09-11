@@ -47,3 +47,27 @@ type Constructor interface {
 
 	Formatter(Precision) (Formatter, error)
 }
+
+// ValueFormatter formats a scalar value with provided precision.
+type ValueFormatter func(Precision, interface{}) (string, error)
+
+// FormatWithFunc does common operations (e.g. retrieves scalar value from the reference store).
+func FormatWithFunc(valueFormatter ValueFormatter) func(Precision) Formatter {
+	return func(precision Precision) Formatter {
+		return func(store references.Store, argument *specs.Property) (string, error) {
+			var value interface{}
+
+			if argument.Default != nil {
+				value = argument.Default
+			}
+
+			if argument.Reference != nil {
+				if ref := store.Load(argument.Reference.Resource, argument.Reference.Path); ref != nil {
+					value = ref.Value
+				}
+			}
+
+			return valueFormatter(precision, value)
+		}
+	}
+}

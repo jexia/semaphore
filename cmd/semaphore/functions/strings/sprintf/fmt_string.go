@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/jexia/semaphore/pkg/references"
-	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
@@ -30,44 +28,29 @@ func (str String) Formatter(precision Precision) (Formatter, error) {
 		return nil, fmt.Errorf("%q formatter does not support scale", str)
 	}
 
-	return FormatString(precision.Width), nil
+	return FormatWithFunc(strtoa)(precision), nil
 }
 
-// FormatString prints provided argument as a string.
-func FormatString(length int64) Formatter {
-	return func(store references.Store, argument *specs.Property) (string, error) {
-		var value interface{}
-
-		if argument.Default != nil {
-			value = argument.Default
-		}
-
-		if argument.Reference != nil {
-			if ref := store.Load(argument.Reference.Resource, argument.Reference.Path); ref != nil {
-				value = ref.Value
-			}
-		}
-
-		if value == nil {
-			return "", nil
-		}
-
-		casted, ok := value.(string)
-		if !ok {
-			return "", errNonStringType
-		}
-
-		if length == 0 {
-			return casted, nil
-		}
-
-		var builder strings.Builder
-		for i := int64(0); i < length; i++ {
-			if err := builder.WriteByte(casted[i]); err != nil {
-				return "", err
-			}
-		}
-
-		return builder.String(), nil
+func strtoa(precision Precision, value interface{}) (string, error) {
+	if value == nil {
+		return "", errNoValue
 	}
+
+	casted, ok := value.(string)
+	if !ok {
+		return "", errNonStringType
+	}
+
+	if precision.Width == 0 {
+		return casted, nil
+	}
+
+	var builder strings.Builder
+	for i := int64(0); i < precision.Width; i++ {
+		if err := builder.WriteByte(casted[i]); err != nil {
+			return "", err
+		}
+	}
+
+	return builder.String(), nil
 }

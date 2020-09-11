@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/jexia/semaphore/pkg/references"
-	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
@@ -30,27 +28,10 @@ func (i Int) Formatter(precision Precision) (Formatter, error) {
 		return nil, fmt.Errorf("%q formatter does not support precision", i)
 	}
 
-	return FormatInt, nil
+	return FormatWithFunc(itoa)(precision), nil
 }
 
-// FormatInt prints provided argument as an integer.
-func FormatInt(store references.Store, argument *specs.Property) (string, error) {
-	var value interface{}
-
-	if argument.Default != nil {
-		value = argument.Default
-	}
-
-	if argument.Reference != nil {
-		if ref := store.Load(argument.Reference.Resource, argument.Reference.Path); ref != nil {
-			value = ref.Value
-		}
-	}
-
-	return itoa(value)
-}
-
-func itoa(value interface{}) (string, error) {
+func itoa(_ Precision, value interface{}) (string, error) {
 	switch t := value.(type) {
 	case nil:
 		return "", errNoValue
@@ -60,6 +41,12 @@ func itoa(value interface{}) (string, error) {
 		return strconv.FormatInt(int64(t), 10), nil
 	case int64:
 		return strconv.FormatInt(t, 10), nil
+	case uint:
+		return strconv.FormatUint(uint64(t), 10), nil
+	case uint32:
+		return strconv.FormatUint(uint64(t), 10), nil
+	case uint64:
+		return strconv.FormatUint(t, 10), nil
 	default:
 		return "", errNonIntegerType
 	}

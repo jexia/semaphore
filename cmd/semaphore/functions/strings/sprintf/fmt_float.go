@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/jexia/semaphore/pkg/references"
-	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
@@ -26,22 +24,7 @@ func (Float) CanFormat(dataType types.Type) bool {
 
 // Formatter creates new float formatter.
 func (fl Float) Formatter(precision Precision) (Formatter, error) {
-	return FormatFloat(precision), nil
-}
-
-// FormatFloat prints provided argument as a float.
-func FormatFloat(precision Precision) Formatter {
-	return func(store references.Store, argument *specs.Property) (string, error) {
-		var value = argument.Default
-
-		if argument.Reference != nil {
-			if ref := store.Load(argument.Reference.Resource, argument.Reference.Path); ref != nil {
-				value = ref.Value
-			}
-		}
-
-		return ftoa(precision, value)
-	}
+	return FormatWithFunc(ftoa)(precision), nil
 }
 
 func ftoa(precision Precision, value interface{}) (string, error) {
