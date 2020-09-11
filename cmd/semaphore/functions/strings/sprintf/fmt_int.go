@@ -1,7 +1,6 @@
 package sprintf
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
 
@@ -62,6 +61,6 @@ func itoa(value interface{}) (string, error) {
 	case int64:
 		return strconv.FormatInt(t, 10), nil
 	default:
-		return "", errors.New("not an integer")
+		return "", errNonIntegerType
 	}
 }

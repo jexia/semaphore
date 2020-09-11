@@ -1,7 +1,6 @@
 package sprintf
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
 
@@ -72,6 +71,6 @@ func ftoa(format string, value interface{}) (string, error) {
 	case float64:
 		return fmt.Sprintf(format, t), nil
 	default:
-		return "", errors.New("not a float")
+		return "", errNonFloatType
 	}
 }

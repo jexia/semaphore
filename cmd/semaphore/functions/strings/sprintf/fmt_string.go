@@ -1,7 +1,6 @@
 package sprintf
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
@@ -55,7 +54,7 @@ func FormatString(length int64) Formatter {
 
 		casted, ok := value.(string)
 		if !ok {
-			return "", errors.New("not a string")
+			return "", errNonStringType
 		}
 
 		if length == 0 {
