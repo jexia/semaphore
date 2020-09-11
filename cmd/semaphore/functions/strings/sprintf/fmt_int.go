@@ -54,7 +54,7 @@ func FormatInt(store references.Store, argument *specs.Property) (string, error)
 func itoa(value interface{}) (string, error) {
 	switch t := value.(type) {
 	case nil:
-		return "", errors.New("not set")
+		return "", errNoValue
 	case int:
 		return strconv.FormatInt(int64(t), 10), nil
 	case int32:

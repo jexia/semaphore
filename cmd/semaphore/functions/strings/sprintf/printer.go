@@ -1,7 +1,6 @@
 package sprintf
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/jexia/semaphore/pkg/references"
@@ -13,27 +12,18 @@ type Printer interface {
 	Print(store references.Store, args ...*specs.Property) (string, error)
 }
 
-type defaultPrinter struct {
-	tokens []Token
-}
+// Tokens is a list of tokens (implements Printer interface).
+type Tokens []Token
 
-// NewPrinter returns a Printer for provided tokens.
-func NewPrinter(tokens []Token) Printer {
-	return &defaultPrinter{
-		tokens: tokens,
-	}
-}
-
-func (p *defaultPrinter) Print(store references.Store, args ...*specs.Property) (string, error) {
+// Print the tokens formatting provided arguments according to the format string.
+func (tokens Tokens) Print(store references.Store, args ...*specs.Property) (string, error) {
 	var (
 		verbPos int
 		builder strings.Builder
 	)
 
-	for _, token := range p.tokens {
+	for _, token := range tokens {
 		switch t := token.(type) {
-		case Precision:
-			// just ignore
 		case Constant:
 			if _, err := builder.WriteString(string(t)); err != nil {
 				return "", err
@@ -50,9 +40,30 @@ func (p *defaultPrinter) Print(store references.Store, args ...*specs.Property) 
 
 			verbPos++
 		default:
-			return "", fmt.Errorf("unexpected token %T", t)
+			// ignore the rest of tokens
 		}
 	}
 
 	return builder.String(), nil
+}
+
+// Count tokens of the certain type in the list.
+func (tokens Tokens) Count(kind Kind) (total int) {
+	for _, token := range tokens {
+		if token.Kind() == kind {
+			total++
+		}
+	}
+
+	return
+}
+
+func (tokens Tokens) Verbs() (verbs []Verb) {
+	for _, token := range tokens {
+		if verb, ok := token.(Verb); ok {
+			verbs = append(verbs, verb)
+		}
+	}
+
+	return
 }

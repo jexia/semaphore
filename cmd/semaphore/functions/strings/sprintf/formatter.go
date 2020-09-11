@@ -34,11 +34,15 @@ func init() {
 // Formatter is a function to be called in order to format the argument value.
 type Formatter func(store references.Store, argument *specs.Property) (string, error)
 
+type TypeChecker interface {
+	CanFormat(types.Type) bool
+}
+
 // Constructor is a formatter constructor.
 type Constructor interface {
 	fmt.Stringer
 
-	Formatter(Precision) (Formatter, error)
+	TypeChecker
 
-	CanFormat(types.Type) bool
+	Formatter(Precision) (Formatter, error)
 }

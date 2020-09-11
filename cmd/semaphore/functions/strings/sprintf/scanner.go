@@ -17,7 +17,7 @@ type defaultScanner struct {
 }
 
 // NewScanner creates a stateful scanner with provided formatter detector.
-// Note that the instance can be used only once.
+// Current implementation does not have a state so it can be used concurrently.
 func NewScanner(detector FormatterDetector) Scanner {
 	return &defaultScanner{
 		FormatterDetector: detector,
@@ -73,8 +73,9 @@ func (s *defaultScanner) scanVerb(prev Token, input string, start int) (Token, i
 	}
 
 	var token = Verb{
-		Verb:      constructor.String(),
-		Formatter: formatter,
+		TypeChecker: constructor,
+		Verb:        constructor.String(),
+		Formatter:   formatter,
 	}
 
 	return token, start + len(constructor.String()), s.scanConstant, nil
@@ -137,7 +138,7 @@ LOOP:
 	}
 
 	if state != allDone {
-		return nil, curr, nil, errMissingFormat
+		return nil, curr, nil, errIncomplete
 	}
 
 	return precision, curr, s.scanVerb, nil

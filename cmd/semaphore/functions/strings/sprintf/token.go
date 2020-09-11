@@ -5,47 +5,42 @@ import (
 	"strconv"
 )
 
+const (
+	// TConstant is a constant token which should be printed as is.
+	TConstant Kind = iota
+	// TPrecision is a token that is not printed itself but is a part of verb.
+	TPrecision
+	// TVerb is a token which contains the format verb.
+	TVerb
+)
+
+// Kind represents token kind.
+type Kind int
+
 // Token represents one of the available tokens.
 type Token interface {
 	fmt.Stringer
 
-	isTokenInterface()
-}
-
-func countVerbs(tokens []Token) (total int) {
-	for _, token := range tokens {
-		if _, ok := token.(Verb); ok {
-			total++
-		}
-	}
-
-	return
-}
-
-func onlyVerbs(tokens []Token) (verbs []Verb) {
-	for _, token := range tokens {
-		if verb, ok := token.(Verb); ok {
-			verbs = append(verbs, verb)
-		}
-	}
-
-	return
+	Kind() Kind
 }
 
 // Constant is a token that does not need any formatting.
 type Constant string
 
-func (Constant) isTokenInterface() {}
+// Kind returns token kind.
+func (Constant) Kind() Kind { return TConstant }
 
 func (c Constant) String() string { return string(c) }
 
 // Verb is a token that is used to print a single input argument.
 type Verb struct {
+	TypeChecker
 	Verb      string
 	Formatter Formatter
 }
 
-func (Verb) isTokenInterface() {}
+// Kind returns token kind.
+func (Verb) Kind() Kind { return TVerb }
 
 func (v Verb) String() string { return v.Verb }
 
@@ -55,7 +50,8 @@ type Precision struct {
 	Scale int64
 }
 
-func (Precision) isTokenInterface() {}
+// Kind returns token kind.
+func (Precision) Kind() Kind { return TPrecision }
 
 func (p Precision) String() string {
 	return "%" + strconv.FormatInt(p.Width, 10) + "." + strconv.FormatInt(p.Scale, 10)

@@ -18,26 +18,30 @@ func TestPrinter(t *testing.T) {
 	}
 
 	var tests = map[string]test{
-		"": {
-			format: "note that %.1f policeman + %.1f policeman != %d policemen", //"%s%s%s",
+		"test with numeric arguments": {
+			format:   "note that %.1f policeman + %.1f policeman != %d policemen",
+			expected: "note that 1.5 policeman + 0.5 policeman != 2 policemen",
 			store: map[string]interface{}{
-				"message": "hello world",
+				"second": 0.5,
 			},
 			args: []*specs.Property{
 				{
-					Name:    "message",
-					Path:    "input.message",
+					Name:    "first",
+					Path:    "first",
 					Default: 1.5,
 				},
 				{
-					Name:      "message",
-					Path:      "message",
-					Reference: nil, // TODO
+					Name: "second",
+					Path: "second",
+					Reference: &specs.PropertyReference{
+						Resource: template.InputResource,
+						Path:     "second",
+					},
 				},
 				{
 					Name:    "message",
 					Path:    "message",
-					Default: 42,
+					Default: 2,
 				},
 			},
 		},
@@ -51,7 +55,7 @@ func TestPrinter(t *testing.T) {
 			}
 
 			var (
-				printer = NewPrinter(tokens)
+				printer = Tokens(tokens)
 				refs    = references.NewReferenceStore(len(test.store))
 			)
 

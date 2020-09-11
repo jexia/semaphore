@@ -1,6 +1,7 @@
 package sprintf
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 
@@ -58,6 +59,19 @@ func FormatFloat(precision Precision) Formatter {
 			format += "." + strconv.FormatInt(precision.Scale, 10)
 		}
 
-		return fmt.Sprintf("%"+format+"f", value), nil
+		return ftoa("%"+format+"f", value)
+	}
+}
+
+func ftoa(format string, value interface{}) (string, error) {
+	switch t := value.(type) {
+	case nil:
+		return "", errNoValue
+	case float32:
+		return fmt.Sprintf(format, t), nil
+	case float64:
+		return fmt.Sprintf(format, t), nil
+	default:
+		return "", errors.New("not a float")
 	}
 }

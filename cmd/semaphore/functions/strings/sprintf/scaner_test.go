@@ -18,7 +18,7 @@ func TestStatefulScanner(t *testing.T) {
 		"missing verb": {
 			input:        "%.2",
 			constructors: []Constructor{},
-			error:        errMissingFormat,
+			error:        errIncomplete,
 		},
 		"unknown verb": {
 			input:        "%.2unknown",

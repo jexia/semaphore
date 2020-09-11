@@ -22,6 +22,6 @@ flow "age" {
   input "com.semaphore.AgeRequest" {}
 
   output "com.semaphore.GenericResponse" {
-    message = "{{ sprintf('Hey %s! I know you are %d years old!', input:name, input:age) }}"
+    message = "{{ sprintf('Hey %s! I know you are %d years old!', input:name, input:name) }}"
   }
 }

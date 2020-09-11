@@ -55,11 +55,20 @@ func Sprintf(args ...*specs.Property) (*specs.Property, functions.Exec, error) {
 
 	args = args[1:]
 
-	if actual, expected := len(args), countVerbs(tokens); actual != expected {
+	var (
+		printer = Tokens(tokens)
+		verbs   = printer.Verbs()
+	)
+
+	if actual, expected := len(args), len(verbs); actual != expected {
 		return nil, nil, fmt.Errorf("invalid number of input arguments %d, expected %d", actual, expected)
 	}
 
-	// forsindex
+	for index, verb := range printer.Verbs() {
+		if !verb.CanFormat(args[index].Type) {
+			return nil, nil, fmt.Errorf("cannot use '%%%s' formatter for argument '%s' of type '%s'", verb, args[index].Name, args[index].Type)
+		}
+	}
 
-	return sprintfOutputs(), sprintfExecutable(NewPrinter(tokens), args...), nil
+	return sprintfOutputs(), sprintfExecutable(printer, args...), nil
 }
