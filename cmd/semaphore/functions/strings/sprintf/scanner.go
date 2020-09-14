@@ -39,7 +39,7 @@ func (s *defaultScanner) Scan(input string) ([]Token, error) {
 		token, pos, next, err = next(token, input, pos)
 
 		if err != nil {
-			return nil, errFormatScan{
+			return nil, errScanFormat{
 				inner:    err,
 				position: pos,
 				format:   input,

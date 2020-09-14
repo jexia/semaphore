@@ -1,14 +1,17 @@
 package sprintf
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/pkg/specs/labels"
 	"github.com/jexia/semaphore/pkg/specs/template"
+	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
-func TestPrinter(t *testing.T) {
+func TestTokensPrint(t *testing.T) {
 	type test struct {
 		format   string
 		args     []*specs.Property
@@ -74,6 +77,52 @@ func TestPrinter(t *testing.T) {
 				},
 			},
 		},
+		"test with json formatter": {
+			format:   `{"array":%json,"object":%json}`,
+			expected: `{"array":[3.14159265,6.62607015],"object":{"e":2.71828182}}`,
+			store: map[string]interface{}{
+				"object": map[string]interface{}{
+					"e": float64(2.71828182),
+				},
+				"array": []interface{}{
+					float64(3.14159265),
+					float64(6.62607015),
+				},
+			},
+			args: []*specs.Property{
+				{
+					Name:  "array",
+					Path:  "array",
+					Type:  types.Float,
+					Label: labels.Repeated,
+					Reference: &specs.PropertyReference{
+						Resource: template.InputResource,
+						Path:     "array",
+					},
+				},
+				{
+					Name: "object",
+					Path: "object",
+					Type: types.Message,
+					Nested: map[string]*specs.Property{
+						"e": {
+							Name:  "e",
+							Path:  "object.e",
+							Type:  types.Float,
+							Label: labels.Optional,
+							Reference: &specs.PropertyReference{
+								Resource: template.InputResource,
+								Path:     "object.e",
+							},
+						},
+					},
+					Reference: &specs.PropertyReference{
+						Resource: template.InputResource,
+						Path:     "object",
+					},
+				},
+			},
+		},
 	}
 
 	for title, test := range tests {
@@ -99,5 +148,17 @@ func TestPrinter(t *testing.T) {
 				t.Errorf("output %q does not match expected %q", actual, test.expected)
 			}
 		})
+	}
+}
+
+func TestTokensVerbs(t *testing.T) {
+	var (
+		tokens   = Tokens{Constant("a"), Verb{Verb: "b"}, Precision{}, Constant("c"), Verb{Verb: "d"}}
+		expected = []Verb{{Verb: "b"}, {Verb: "d"}}
+		actual   = tokens.Verbs()
+	)
+
+	if !reflect.DeepEqual(actual, expected) {
+		t.Errorf("the output '%v' does not match expected '%v'", actual, expected)
 	}
 }
