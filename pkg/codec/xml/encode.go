@@ -25,12 +25,12 @@ func encodeRepeated(encoder *xml.Encoder, resource string, prop *specs.Property,
 
 func encodeNested(encoder *xml.Encoder, prop *specs.Property, store references.Store) error {
 	// ignore malformed objects
-	if prop.Nested == nil {
+	if prop.Repeated == nil {
 		return nil
 	}
 
 	var (
-		nested = NewObject(prop.Name, prop.Nested, store)
+		nested = NewObject(prop.Name, prop.Repeated, store)
 		start  = xml.StartElement{Name: xml.Name{Local: prop.Name}}
 	)
 

@@ -43,7 +43,7 @@ func (constructor *Constructor) New(resource string, specs *specs.ParameterMap) 
 		return nil, trace.New(trace.WithMessage("a proto message always requires a root message"))
 	}
 
-	desc, err := NewMessage(resource, prop.Nested)
+	desc, err := NewMessage(resource, prop.Repeated)
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +80,7 @@ func (manager *Manager) Marshal(refs references.Store) (io.Reader, error) {
 	}
 
 	result := dynamic.NewMessage(manager.desc)
-	err := manager.Encode(result, manager.desc, manager.specs.Nested, refs)
+	err := manager.Encode(result, manager.desc, manager.specs.Repeated, refs)
 	if err != nil {
 		return nil, err
 	}
@@ -95,15 +95,15 @@ func (manager *Manager) Marshal(refs references.Store) (io.Reader, error) {
 
 // Encode encodes the given specs object into the given dynamic proto message.
 // References inside the specs are attempted to be fetched from the reference store.
-func (manager *Manager) Encode(proto *dynamic.Message, desc *desc.MessageDescriptor, specs map[string]*specs.Property, store references.Store) (err error) {
+func (manager *Manager) Encode(proto *dynamic.Message, desc *desc.MessageDescriptor, specs specs.PropertyList, store references.Store) (err error) {
 	for _, field := range desc.GetFields() {
-		prop, has := specs[field.GetName()]
-		if !has {
+		prop := specs.Get(field.GetName())
+		if prop == nil {
 			continue
 		}
 
 		if field.IsRepeated() {
-			if prop.Repeated != nil {
+			if prop.Reference == nil {
 				for _, repeated := range prop.Repeated {
 					err = manager.setField(proto.TryAddRepeatedField, repeated, field, store)
 					if err != nil {
@@ -114,26 +114,18 @@ func (manager *Manager) Encode(proto *dynamic.Message, desc *desc.MessageDescrip
 				continue
 			}
 
-			if prop.Reference == nil {
-				continue
-			}
-
 			ref := store.Load(prop.Reference.Resource, prop.Reference.Path)
 			if ref == nil {
 				continue
 			}
 
 			for _, store := range ref.Repeated {
-				err = manager.setField(proto.TryAddRepeatedField, prop, field, store)
-				if err != nil {
-					return err
-				}
 				var value interface{}
 
 				switch prop.Type {
 				case types.Message:
 					item := dynamic.NewMessage(field.GetMessageType())
-					err = manager.Encode(item, field.GetMessageType(), prop.Nested, store)
+					err = manager.Encode(item, field.GetMessageType(), prop.Repeated, store)
 					if err != nil {
 						return err
 					}
@@ -178,7 +170,7 @@ type trySetProto func(fd *desc.FieldDescriptor, val interface{}) error
 func (manager *Manager) setField(setter trySetProto, prop *specs.Property, field *desc.FieldDescriptor, store references.Store) error {
 	if prop.Type == types.Message {
 		dynamic := dynamic.NewMessage(field.GetMessageType())
-		err := manager.Encode(dynamic, field.GetMessageType(), prop.Nested, store)
+		err := manager.Encode(dynamic, field.GetMessageType(), prop.Repeated, store)
 		if err != nil {
 			return err
 		}
@@ -226,14 +218,15 @@ func (manager *Manager) Unmarshal(reader io.Reader, refs references.Store) error
 		return err
 	}
 
-	manager.Decode(result, manager.specs.Nested, refs)
+	manager.Decode(result, manager.specs.Repeated, refs)
 	return nil
 }
 
 // Decode decodes the given proto message into the given reference store.
-func (manager *Manager) Decode(proto *dynamic.Message, properties map[string]*specs.Property, store references.Store) {
+func (manager *Manager) Decode(proto *dynamic.Message, properties specs.PropertyList, store references.Store) {
 	for _, field := range proto.GetKnownFields() {
-		prop := properties[field.GetName()]
+		// TODO: check overhead for loop
+		prop := properties.Get(field.GetName())
 
 		if field.IsRepeated() {
 			length := proto.FieldLength(field)
@@ -250,7 +243,7 @@ func (manager *Manager) Decode(proto *dynamic.Message, properties map[string]*sp
 				if prop.Type == types.Message {
 					message := value.(*dynamic.Message)
 					store := references.NewReferenceStore(len(message.GetKnownFields()))
-					manager.Decode(message, prop.Nested, store)
+					manager.Decode(message, prop.Repeated, store)
 					ref.Set(index, store)
 					continue
 				}
@@ -278,7 +271,7 @@ func (manager *Manager) Decode(proto *dynamic.Message, properties map[string]*sp
 
 		if prop.Type == types.Message {
 			nested := proto.GetField(field).(*dynamic.Message)
-			manager.Decode(nested, prop.Nested, store)
+			manager.Decode(nested, prop.Repeated, store)
 			continue
 		}
 

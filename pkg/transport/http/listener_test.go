@@ -452,8 +452,8 @@ func TestListenerErrorHandling(t *testing.T) {
 					Property: &specs.Property{
 						Type:  types.Message,
 						Label: labels.Optional,
-						Nested: map[string]*specs.Property{
-							"status": {
+						Repeated: []*specs.Property{
+							{
 								Name:  "status",
 								Path:  "status",
 								Type:  types.Int64,
@@ -463,7 +463,7 @@ func TestListenerErrorHandling(t *testing.T) {
 									Path:     "status",
 								},
 							},
-							"message": {
+							{
 								Name:  "message",
 								Path:  "message",
 								Type:  types.String,
@@ -507,8 +507,8 @@ func TestListenerErrorHandling(t *testing.T) {
 					Property: &specs.Property{
 						Type:  types.Message,
 						Label: labels.Optional,
-						Nested: map[string]*specs.Property{
-							"status": {
+						Repeated: []*specs.Property{
+							{
 								Name:  "status",
 								Path:  "status",
 								Type:  types.Int64,
@@ -518,7 +518,7 @@ func TestListenerErrorHandling(t *testing.T) {
 									Path:     "status",
 								},
 							},
-							"message": {
+							{
 								Name:  "message",
 								Path:  "message",
 								Type:  types.String,
@@ -562,8 +562,8 @@ func TestListenerErrorHandling(t *testing.T) {
 					Property: &specs.Property{
 						Type:  types.Message,
 						Label: labels.Optional,
-						Nested: map[string]*specs.Property{
-							"status": {
+						Repeated: []*specs.Property{
+							{
 								Name:  "status",
 								Path:  "status",
 								Type:  types.Int64,
@@ -573,7 +573,7 @@ func TestListenerErrorHandling(t *testing.T) {
 									Path:     "status",
 								},
 							},
-							"message": {
+							{
 								Name:  "message",
 								Path:  "message",
 								Type:  types.String,
@@ -617,14 +617,14 @@ func TestListenerErrorHandling(t *testing.T) {
 					Property: &specs.Property{
 						Type:  types.Message,
 						Label: labels.Optional,
-						Nested: map[string]*specs.Property{
-							"meta": {
+						Repeated: []*specs.Property{
+							{
 								Name:  "meta",
 								Path:  "meta",
 								Type:  types.Message,
 								Label: labels.Optional,
-								Nested: map[string]*specs.Property{
-									"status": {
+								Repeated: []*specs.Property{
+									{
 										Name:  "status",
 										Path:  "meta.status",
 										Type:  types.Int64,
@@ -634,7 +634,7 @@ func TestListenerErrorHandling(t *testing.T) {
 											Path:     "status",
 										},
 									},
-									"message": {
+									{
 										Name:  "message",
 										Path:  "meta.message",
 										Type:  types.String,
@@ -646,7 +646,7 @@ func TestListenerErrorHandling(t *testing.T) {
 									},
 								},
 							},
-							"const": {
+							{
 								Name:    "const",
 								Path:    "const",
 								Type:    types.String,

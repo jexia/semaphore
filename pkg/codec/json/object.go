@@ -9,23 +9,29 @@ import (
 )
 
 // NewObject constructs a new object encoder/decoder for the given specs
-func NewObject(resource string, specs map[string]*specs.Property, refs references.Store) *Object {
-	keys := len(specs)
+func NewObject(resource string, items []*specs.Property, refs references.Store) *Object {
+	// TODO: check overhead of initialization
+	keys := make(map[string]*specs.Property, len(items))
+	for _, spec := range items {
+		keys[spec.Name] = spec
+	}
 
 	return &Object{
 		resource: resource,
-		keys:     keys,
+		length:   len(items),
 		refs:     refs,
-		specs:    specs,
+		specs:    items,
+		keys:     keys,
 	}
 }
 
 // Object represents a JSON object
 type Object struct {
 	resource string
-	specs    map[string]*specs.Property
+	specs    []*specs.Property
 	refs     references.Store
-	keys     int
+	length   int
+	keys     map[string]*specs.Property
 }
 
 // MarshalJSONObject encodes the given specs object into the given gojay encoder
@@ -47,7 +53,7 @@ func (object *Object) MarshalJSONObject(encoder *gojay.Encoder) {
 		}
 
 		if prop.Type == types.Message {
-			result := NewObject(object.resource, prop.Nested, object.refs)
+			result := NewObject(object.resource, prop.Repeated, object.refs)
 			encoder.AddObjectKey(prop.Name, result)
 			continue
 		}
@@ -78,7 +84,7 @@ func (object *Object) MarshalJSONObject(encoder *gojay.Encoder) {
 
 // UnmarshalJSONObject unmarshals the given specs into the configured reference store
 func (object *Object) UnmarshalJSONObject(dec *gojay.Decoder, key string) error {
-	prop, has := object.specs[key]
+	prop, has := object.keys[key]
 	if !has {
 		return nil
 	}
@@ -100,7 +106,7 @@ func (object *Object) UnmarshalJSONObject(dec *gojay.Decoder, key string) error 
 
 	if prop.Type == types.Message {
 		return dec.AddObject(
-			NewObject(object.resource, prop.Nested, object.refs),
+			NewObject(object.resource, prop.Repeated, object.refs),
 		)
 	}
 
@@ -131,7 +137,7 @@ func (object *Object) UnmarshalJSONObject(dec *gojay.Decoder, key string) error 
 
 // NKeys returns the amount of available keys inside the given object
 func (object *Object) NKeys() int {
-	return object.keys
+	return object.length
 }
 
 // IsNil returns whether the given object is null or not

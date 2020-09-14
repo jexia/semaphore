@@ -8,4 +8,5 @@ const (
 	Optional Label = "optional"
 	Required Label = "required"
 	Repeated Label = "repeated"
+	OneOf    Label = "one_of"
 )

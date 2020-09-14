@@ -46,8 +46,8 @@ func TestDefineFunction(t *testing.T) {
 								Property: &specs.Property{
 									Type:  types.Message,
 									Label: labels.Optional,
-									Nested: map[string]*specs.Property{
-										"name": {
+									Repeated: []*specs.Property{
+										{
 											Name:  "name",
 											Path:  "name",
 											Type:  types.String,
@@ -87,8 +87,8 @@ func TestDefineFunction(t *testing.T) {
 								Property: &specs.Property{
 									Type:  types.Message,
 									Label: labels.Optional,
-									Nested: map[string]*specs.Property{
-										"name": {
+									Repeated: []*specs.Property{
+										{
 											Name:  "name",
 											Path:  "name",
 											Type:  types.String,

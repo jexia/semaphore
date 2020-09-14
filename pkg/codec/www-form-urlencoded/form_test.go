@@ -41,26 +41,26 @@ var schema = &specs.ParameterMap{
 	Property: &specs.Property{
 		Type:  types.Message,
 		Label: labels.Optional,
-		Nested: map[string]*specs.Property{
-			"bad_label": {
+		Repeated: []*specs.Property{
+			{
 				Name:  "bad_label",
 				Path:  "bad_label",
 				Type:  types.String,
 				Label: "unsupported",
 			},
-			"no_nested_schema": {
-				Name:  "bad_label",
-				Path:  "bad_label",
+			{
+				Name:  "no_nested_schema",
+				Path:  "no_nested_schema",
 				Type:  types.Message,
 				Label: labels.Optional,
 			},
-			"numeric": {
-				Name:  "bad_label",
-				Path:  "bad_label",
+			{
+				Name:  "numeric",
+				Path:  "numeric",
 				Type:  types.Int32,
 				Label: labels.Optional,
 			},
-			"message": {
+			{
 				Name:  "message",
 				Path:  "message",
 				Type:  types.String,
@@ -70,7 +70,7 @@ var schema = &specs.ParameterMap{
 					Path:     "message",
 				},
 			},
-			"status": {
+			{
 				Name:  "status",
 				Path:  "status",
 				Type:  types.Enum,
@@ -81,13 +81,13 @@ var schema = &specs.ParameterMap{
 					Path:     "status",
 				},
 			},
-			"nested": {
+			{
 				Name:  "nested",
 				Path:  "nested",
 				Type:  types.Message,
 				Label: labels.Optional,
-				Nested: map[string]*specs.Property{
-					"first": {
+				Repeated: []*specs.Property{
+					{
 						Name:  "first",
 						Path:  "nested.first",
 						Type:  types.String,
@@ -97,7 +97,7 @@ var schema = &specs.ParameterMap{
 							Path:     "nested.first",
 						},
 					},
-					"second": {
+					{
 						Name:  "second",
 						Path:  "nested.second",
 						Type:  types.String,
@@ -109,7 +109,7 @@ var schema = &specs.ParameterMap{
 					},
 				},
 			},
-			"repeating_string": {
+			{
 				Name:  "repeating_string",
 				Path:  "repeating_string",
 				Type:  types.String,
@@ -119,7 +119,7 @@ var schema = &specs.ParameterMap{
 					Path:     "repeating_string",
 				},
 			},
-			"repeating_enum": {
+			{
 				Name:  "repeating_enum",
 				Path:  "repeating_enum",
 				Type:  types.Enum,
@@ -130,13 +130,13 @@ var schema = &specs.ParameterMap{
 					Path:     "repeating_enum",
 				},
 			},
-			"repeating": {
+			{
 				Name:  "repeating",
 				Path:  "repeating",
 				Type:  types.Message,
 				Label: labels.Repeated,
-				Nested: map[string]*specs.Property{
-					"value": {
+				Repeated: []*specs.Property{
+					{
 						Name:  "value",
 						Path:  "repeating.value",
 						Type:  types.String,

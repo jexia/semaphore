@@ -37,8 +37,10 @@ func NewMockOnError() *specs.OnError {
 			Property: &specs.Property{
 				Type:  types.Message,
 				Label: labels.Optional,
-				Nested: map[string]*specs.Property{
-					"status": {
+				Repeated: []*specs.Property{
+					{
+						Name:  "status",
+						Path:  "status",
 						Type:  types.Int64,
 						Label: labels.Optional,
 						Reference: &specs.PropertyReference{
@@ -46,7 +48,9 @@ func NewMockOnError() *specs.OnError {
 							Path:     "status",
 						},
 					},
-					"message": {
+					{
+						Name:  "message",
+						Path:  "message",
 						Type:  types.String,
 						Label: labels.Optional,
 						Reference: &specs.PropertyReference{
@@ -78,8 +82,8 @@ func BenchmarkSingleNodeCallingJSONCodecParallel(b *testing.B) {
 		Property: &specs.Property{
 			Type:  types.Message,
 			Label: labels.Optional,
-			Nested: map[string]*specs.Property{
-				"key": {
+			Repeated: []*specs.Property{
+				{
 					Name:    "key",
 					Path:    "key",
 					Type:    types.String,
@@ -98,8 +102,8 @@ func BenchmarkSingleNodeCallingJSONCodecParallel(b *testing.B) {
 		Property: &specs.Property{
 			Type:  types.Message,
 			Label: labels.Optional,
-			Nested: map[string]*specs.Property{
-				"key": {
+			Repeated: []*specs.Property{
+				{
 					Name:    "key",
 					Path:    "key",
 					Type:    types.String,
@@ -149,8 +153,8 @@ func BenchmarkSingleNodeCallingJSONCodecSerial(b *testing.B) {
 		Property: &specs.Property{
 			Type:  types.Message,
 			Label: labels.Optional,
-			Nested: map[string]*specs.Property{
-				"key": {
+			Repeated: []*specs.Property{
+				{
 					Name:    "key",
 					Path:    "key",
 					Type:    types.String,
@@ -169,8 +173,8 @@ func BenchmarkSingleNodeCallingJSONCodecSerial(b *testing.B) {
 		Property: &specs.Property{
 			Type:  types.Message,
 			Label: labels.Optional,
-			Nested: map[string]*specs.Property{
-				"key": {
+			Repeated: []*specs.Property{
+				{
 					Name:    "key",
 					Path:    "key",
 					Type:    types.String,
@@ -315,14 +319,18 @@ func TestConstructingNode(t *testing.T) {
 				Call: &specs.Call{
 					Request: &specs.ParameterMap{
 						Property: &specs.Property{
-							Nested: map[string]*specs.Property{
-								"first": {
+							Repeated: []*specs.Property{
+								{
+									Name: "first",
+									Path: "first",
 									Reference: &specs.PropertyReference{
 										Resource: "input",
 										Path:     "first",
 									},
 								},
-								"second": {
+								{
+									Name: "second",
+									Path: "second",
 									Reference: &specs.PropertyReference{
 										Resource: "input",
 										Path:     "second",
@@ -340,14 +348,18 @@ func TestConstructingNode(t *testing.T) {
 				Call: &specs.Call{
 					Request: &specs.ParameterMap{
 						Property: &specs.Property{
-							Nested: map[string]*specs.Property{
-								"first": {
+							Repeated: []*specs.Property{
+								{
+									Name: "first",
+									Path: "first",
 									Reference: &specs.PropertyReference{
 										Resource: "input",
 										Path:     "first",
 									},
 								},
-								"second": {
+								{
+									Name: "second",
+									Path: "second",
 									Reference: &specs.PropertyReference{
 										Resource: "input",
 										Path:     "first",

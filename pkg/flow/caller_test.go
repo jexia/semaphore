@@ -410,8 +410,8 @@ func TestTransportErrorSchemaDecoding(t *testing.T) {
 				Property: &specs.Property{
 					Type:  types.Message,
 					Label: labels.Optional,
-					Nested: map[string]*specs.Property{
-						"message": {
+					Repeated: []*specs.Property{
+						{
 							Path:  "message",
 							Type:  types.String,
 							Label: labels.Optional,
@@ -443,13 +443,15 @@ func TestTransportErrorSchemaDecoding(t *testing.T) {
 				Property: &specs.Property{
 					Type:  types.Message,
 					Label: labels.Optional,
-					Nested: map[string]*specs.Property{
-						"meta": {
+					Repeated: []*specs.Property{
+						{
+							Name:  "meta",
 							Path:  "meta",
 							Type:  types.Message,
 							Label: labels.Optional,
-							Nested: map[string]*specs.Property{
-								"message": {
+							Repeated: []*specs.Property{
+								{
+									Name:  "message",
 									Path:  "meta.message",
 									Type:  types.String,
 									Label: labels.Optional,

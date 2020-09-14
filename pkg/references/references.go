@@ -242,8 +242,8 @@ func ResolveProperty(ctx *broker.Context, node *specs.Node, property *specs.Prop
 		return nil
 	}
 
-	if len(property.Nested) > 0 {
-		for _, nested := range property.Nested {
+	if len(property.Repeated) > 0 {
+		for _, nested := range property.Repeated {
 			err := ResolveProperty(ctx, node, nested, flow)
 			if err != nil {
 				return ErrUnresolvedProperty{
@@ -354,8 +354,8 @@ func InsideProperty(source *specs.Property, target *specs.Property) bool {
 		return true
 	}
 
-	if len(source.Nested) > 0 {
-		for _, nested := range source.Nested {
+	if len(source.Repeated) > 0 {
+		for _, nested := range source.Repeated {
 			is := InsideProperty(nested, target)
 			if is {
 				return is
@@ -372,27 +372,23 @@ func ScopeNestedReferences(source *specs.Property, property *specs.Property) {
 		return
 	}
 
-	if property.Nested == nil {
-		property.Nested = make(map[string]*specs.Property, len(source.Nested))
-	}
-
-	for key, value := range source.Nested {
-		nested, has := property.Nested[key]
-		if !has {
-			nested = value.Clone()
-			property.Nested[key] = nested
+	for _, item := range source.Repeated {
+		nested := property.Repeated.Get(item.Name)
+		if nested == nil {
+			nested = item.Clone()
+			property.Repeated = append(property.Repeated, nested)
 		}
 
 		if nested.Reference == nil {
 			nested.Reference = &specs.PropertyReference{
 				Resource: property.Reference.Resource,
-				Path:     template.JoinPath(property.Reference.Path, key),
-				Property: value,
+				Path:     template.JoinPath(property.Reference.Path, item.Name),
+				Property: item,
 			}
 		}
 
-		if len(value.Nested) > 0 {
-			ScopeNestedReferences(value, nested)
+		if len(item.Repeated) > 0 {
+			ScopeNestedReferences(item, nested)
 		}
 	}
 }

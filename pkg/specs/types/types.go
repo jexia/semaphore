@@ -19,6 +19,7 @@ const (
 	Fixed32  Type = "fixed32"
 	Bool     Type = "bool"
 	String   Type = "string"
+	Array    Type = "array"
 	Message  Type = "message"
 	Bytes    Type = "bytes"
 	Uint32   Type = "uint32"

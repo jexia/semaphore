@@ -70,20 +70,37 @@ type Expression interface {
 // A value property could contain a constant value or a value reference.
 type Property struct {
 	*metadata.Meta
-	Position  int32                `json:"position,omitempty"`
-	Comment   string               `json:"comment,omitempty"`
-	Name      string               `json:"name,omitempty"`
-	Path      string               `json:"path,omitempty"`
-	Default   interface{}          `json:"default,omitempty"`
-	Type      types.Type           `json:"type,omitempty"`
-	Label     labels.Label         `json:"label,omitempty"`
-	Reference *PropertyReference   `json:"reference,omitempty"`
-	Repeated  []*Property          `json:"repeated,omitempty"`
-	Nested    map[string]*Property `json:"nested,omitempty"`
-	Expr      Expression           `json:"-"`
-	Raw       string               `json:"raw,omitempty"`
-	Options   Options              `json:"options,omitempty"`
-	Enum      *Enum                `json:"enum,omitempty"`
+	Position  int32              `json:"position,omitempty"`
+	Comment   string             `json:"comment,omitempty"`
+	Name      string             `json:"name,omitempty"`
+	Path      string             `json:"path,omitempty"`
+	Default   interface{}        `json:"default,omitempty"`
+	Type      types.Type         `json:"type,omitempty"`
+	Label     labels.Label       `json:"label,omitempty"`
+	Reference *PropertyReference `json:"reference,omitempty"`
+	Repeated  PropertyList       `json:"repeated,omitempty"`
+	Expr      Expression         `json:"-"`
+	Raw       string             `json:"raw,omitempty"`
+	Options   Options            `json:"options,omitempty"`
+	Enum      *Enum              `json:"enum,omitempty"`
+}
+
+// PropertyList represents a list of properties
+type PropertyList []*Property
+
+// Get attempts to return a property inside the given list with the given name
+func (nested PropertyList) Get(key string) *Property {
+	for _, item := range nested {
+		if item == nil {
+			continue
+		}
+
+		if item.Name == key {
+			return item
+		}
+	}
+
+	return nil
 }
 
 // UnmarshalJSON corrects the 64bit data types in accordance with golang
@@ -98,7 +115,7 @@ func (prop *Property) UnmarshalJSON(data []byte) error {
 	*prop = Property(p)
 	prop.Clean()
 
-	for _, nested := range prop.Nested {
+	for _, nested := range prop.Repeated {
 		nested.Clean()
 	}
 
@@ -153,11 +170,11 @@ func (prop *Property) Clone() *Property {
 		Raw:       prop.Raw,
 		Options:   prop.Options,
 		Enum:      prop.Enum,
-		Nested:    make(map[string]*Property, len(prop.Nested)),
+		Repeated:  make([]*Property, len(prop.Repeated)),
 	}
 
-	for key, nested := range prop.Nested {
-		result.Nested[key] = nested.Clone()
+	for index, nested := range prop.Repeated {
+		result.Repeated[index] = nested.Clone()
 	}
 
 	return result

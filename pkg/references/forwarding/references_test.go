@@ -566,8 +566,8 @@ func TestResolveNodeReferences(t *testing.T) {
 					Resource: "expected",
 					Path:     "expected",
 				},
-				Nested: map[string]*specs.Property{
-					"example": {
+				Repeated: []*specs.Property{
+					{
 						Name: "example",
 						Path: "example",
 					},
@@ -575,6 +575,8 @@ func TestResolveNodeReferences(t *testing.T) {
 			}
 
 			target := &specs.Property{
+				Name: "example",
+				Path: "example",
 				Reference: &specs.PropertyReference{
 					Resource: "mock",
 					Path:     "",
@@ -586,8 +588,8 @@ func TestResolveNodeReferences(t *testing.T) {
 				Rollback: &specs.Call{
 					Response: &specs.ParameterMap{
 						Property: &specs.Property{
-							Nested: map[string]*specs.Property{
-								"example": target,
+							Repeated: []*specs.Property{
+								target,
 							},
 						},
 					},
@@ -679,8 +681,8 @@ func TestResolveOutputReferences(t *testing.T) {
 					Resource: "expected",
 					Path:     "expected",
 				},
-				Nested: map[string]*specs.Property{
-					"example": {
+				Repeated: []*specs.Property{
+					{
 						Name: "example",
 						Path: "example",
 					},

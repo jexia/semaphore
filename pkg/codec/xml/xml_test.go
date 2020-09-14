@@ -62,7 +62,7 @@ func TestMarshal(t *testing.T) {
 				"nested": map[string]interface{}{},
 				"status": references.Enum("PENDING", 1),
 			},
-			expected: "<mock><nested></nested><status>PENDING</status></mock>",
+			expected: "<mock><status>PENDING</status><nested></nested></mock>",
 		},
 		"nested": {
 			input: map[string]interface{}{

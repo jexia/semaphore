@@ -23,39 +23,6 @@ func Types(ctx *broker.Context, services specs.ServiceList, objects specs.Schema
 	return nil
 }
 
-// ProxyTypes compares the given proxy against the configured schema types
-func ProxyTypes(ctx *broker.Context, services specs.ServiceList, objects specs.Schemas, proxy *specs.Proxy) (err error) {
-	logger.Info(ctx, "Compare proxy flow types", zap.String("proxy", proxy.GetName()))
-
-	if proxy.OnError != nil {
-		err = CheckParameterMapTypes(ctx, proxy.OnError.Response, objects, proxy)
-		if err != nil {
-			return err
-		}
-	}
-
-	for _, node := range proxy.Nodes {
-		err = CallTypes(ctx, services, objects, node, node.Call, proxy)
-		if err != nil {
-			return err
-		}
-
-		err = CallTypes(ctx, services, objects, node, node.Rollback, proxy)
-		if err != nil {
-			return err
-		}
-	}
-
-	if proxy.Forward.Request.Header != nil {
-		err = CheckHeader(proxy.Forward.Request.Header, proxy)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
 // FlowTypes compares the flow types against the configured schema types
 func FlowTypes(ctx *broker.Context, services specs.ServiceList, objects specs.Schemas, flow specs.FlowInterface) (err error) {
 	logger.Info(ctx, "Comparing flow types", zap.String("flow", flow.GetName()))
@@ -179,35 +146,21 @@ func CheckPropertyTypes(property *specs.Property, schema *specs.Property, flow s
 		return trace.New(trace.WithExpression(property.Expr), trace.WithMessage("unable to check types for '%s' no schema given", property.Path))
 	}
 
-	// TODO: fix the panic
-	// if property.Label != labels.Repeated {
 	if property.Type != schema.Type {
 		return trace.New(trace.WithExpression(property.Expr), trace.WithMessage("cannot use type (%s) for '%s', expected (%s)", property.Type, property.Path, schema.Type))
 	}
-	// }
 
 	if property.Label != schema.Label {
 		return trace.New(trace.WithExpression(property.Expr), trace.WithMessage("cannot use label (%s) for '%s', expected (%s)", property.Label, property.Path, schema.Label))
 	}
 
-	for _, repeated := range property.Repeated {
-		// FIXME: schema should not be cloned
-		clone := schema.Clone()
-		clone.Label = repeated.Label
-
-		err = CheckPropertyTypes(repeated, clone, flow)
-		if err != nil {
-			return err
-		}
-	}
-
-	if len(property.Nested) > 0 {
-		if len(schema.Nested) == 0 {
+	if len(property.Repeated) > 0 {
+		if len(schema.Repeated) == 0 {
 			return trace.New(trace.WithExpression(property.Expr), trace.WithMessage("property '%s' has a nested object but schema does not '%s'", property.Path, schema.Name))
 		}
 
-		for key, nested := range property.Nested {
-			object := schema.Nested[key]
+		for _, nested := range property.Repeated {
+			object := schema.Repeated.Get(nested.Name)
 			if object == nil {
 				return trace.New(trace.WithExpression(nested.Expr), trace.WithMessage("undefined schema nested message property '%s' in flow '%s'", nested.Path, flow.GetName()))
 			}

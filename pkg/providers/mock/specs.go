@@ -49,10 +49,10 @@ func SpecsProperty(path string, property *Property) *specs.Property {
 	}
 
 	if property.Nested != nil {
-		result.Nested = make(map[string]*specs.Property, len(property.Nested))
+		result.Repeated = make([]*specs.Property, 0, len(property.Nested))
 
 		for key, nested := range property.GetNested() {
-			result.Nested[key] = SpecsProperty(template.JoinPath(path, key), nested)
+			result.Repeated = append(result.Repeated, SpecsProperty(template.JoinPath(path, key), nested))
 		}
 	}
 

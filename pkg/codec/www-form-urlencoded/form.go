@@ -97,7 +97,7 @@ func encode(encoder url.Values, root string, refs references.Store, prop *specs.
 		return
 	}
 
-	for _, nested := range prop.Nested {
+	for _, nested := range prop.Repeated {
 		encode(encoder, path, refs, nested)
 	}
 
@@ -125,7 +125,7 @@ func encode(encoder url.Values, root string, refs references.Store, prop *specs.
 }
 
 func array(encoder url.Values, root string, refs references.Store, prop *specs.Property) {
-	for _, nested := range prop.Nested {
+	for _, nested := range prop.Repeated {
 		encode(encoder, root, refs, nested)
 	}
 
@@ -174,7 +174,7 @@ func (manager *Manager) Unmarshal(reader io.Reader, refs references.Store) error
 	}
 
 	for key, values := range values {
-		if err := decodeElement(manager.resource, 0, strings.Split(key, "."), values, manager.specs.Nested, refs); err != nil {
+		if err := decodeElement(manager.resource, 0, strings.Split(key, "."), values, manager.specs.Repeated, refs); err != nil {
 			return err
 		}
 	}
@@ -182,15 +182,15 @@ func (manager *Manager) Unmarshal(reader io.Reader, refs references.Store) error
 	return nil
 }
 
-func decodeElement(resource string, pos int, path []string, values []string, schema map[string]*specs.Property, refs references.Store) error {
+func decodeElement(resource string, pos int, path []string, values []string, schema specs.PropertyList, refs references.Store) error {
 	propName := path[pos]
 
 	if schema == nil {
 		return errNilSchema
 	}
 
-	prop, has := schema[propName]
-	if !has {
+	prop := schema.Get(propName)
+	if prop == nil {
 		return errUndefinedProperty(propName)
 	}
 
@@ -206,7 +206,7 @@ func decodeElement(resource string, pos int, path []string, values []string, sch
 			switch prop.Type {
 			case types.Message:
 				if len(path) > pos+1 {
-					if err := decodeElement(resource, pos+1, path, []string{raw}, prop.Nested, store); err != nil {
+					if err := decodeElement(resource, pos+1, path, []string{raw}, prop.Repeated, store); err != nil {
 						return err
 					}
 				}
@@ -230,7 +230,7 @@ func decodeElement(resource string, pos int, path []string, values []string, sch
 		switch prop.Type {
 		case types.Message:
 			if len(path) > pos+1 {
-				return decodeElement(resource, pos+1, path, values, prop.Nested, refs)
+				return decodeElement(resource, pos+1, path, values, prop.Repeated, refs)
 			}
 		case types.Enum:
 			enum := prop.Enum.Keys[values[0]]

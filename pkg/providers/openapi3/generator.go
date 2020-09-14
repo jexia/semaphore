@@ -186,15 +186,15 @@ func GenerateSchema(property *specs.Property) *Schema {
 		Type:        types.Open(property.Type),
 	}
 
-	if property.Nested != nil {
-		result.Properties = make(map[string]*Schema, len(property.Nested))
+	if property.Repeated != nil {
+		result.Properties = make(map[string]*Schema, len(property.Repeated))
 	}
 
-	for key, nested := range property.Nested {
-		result.Properties[key] = GenerateSchema(nested)
+	for _, nested := range property.Repeated {
+		result.Properties[nested.Name] = GenerateSchema(nested)
 
 		if nested.Label == labels.Required {
-			result.Required = append(result.Required, key)
+			result.Required = append(result.Required, nested.Name)
 		}
 	}
 

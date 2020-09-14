@@ -176,8 +176,8 @@ func TestPrepareFunctions(t *testing.T) {
 									Property: &specs.Property{
 										Type:  types.Message,
 										Label: labels.Optional,
-										Nested: map[string]*specs.Property{
-											"fn": {
+										Repeated: []*specs.Property{
+											{
 												Name: "fn",
 												Path: "fn",
 												Raw:  "mock()",
@@ -189,8 +189,8 @@ func TestPrepareFunctions(t *testing.T) {
 									Property: &specs.Property{
 										Type:  types.Message,
 										Label: labels.Optional,
-										Nested: map[string]*specs.Property{
-											"fn": {
+										Repeated: []*specs.Property{
+											{
 												Name: "fn",
 												Path: "fn",
 												Raw:  "mock()",
@@ -205,8 +205,8 @@ func TestPrepareFunctions(t *testing.T) {
 						Property: &specs.Property{
 							Type:  types.Message,
 							Label: labels.Optional,
-							Nested: map[string]*specs.Property{
-								"fn": {
+							Repeated: []*specs.Property{
+								{
 									Name: "fn",
 									Path: "fn",
 									Raw:  "mock()",
@@ -236,8 +236,8 @@ func TestPrepareFunctions(t *testing.T) {
 									Property: &specs.Property{
 										Type:  types.Message,
 										Label: labels.Optional,
-										Nested: map[string]*specs.Property{
-											"fn": {
+										Repeated: []*specs.Property{
+											{
 												Name: "fn",
 												Path: "fn",
 												Raw:  "mock()",
@@ -256,8 +256,8 @@ func TestPrepareFunctions(t *testing.T) {
 									Property: &specs.Property{
 										Type:  types.Message,
 										Label: labels.Optional,
-										Nested: map[string]*specs.Property{
-											"fn": {
+										Repeated: []*specs.Property{
+											{
 												Name: "fn",
 												Path: "fn",
 												Raw:  "mock()",
@@ -315,8 +315,8 @@ func TestPrepareFunctions(t *testing.T) {
 									Property: &specs.Property{
 										Type:  types.Message,
 										Label: labels.Optional,
-										Nested: map[string]*specs.Property{
-											"fn": {
+										Repeated: []*specs.Property{
+											{
 												Name: "fn",
 												Path: "fn",
 												Raw:  "mock()",
@@ -328,8 +328,8 @@ func TestPrepareFunctions(t *testing.T) {
 									Property: &specs.Property{
 										Type:  types.Message,
 										Label: labels.Optional,
-										Nested: map[string]*specs.Property{
-											"fn": {
+										Repeated: []*specs.Property{
+											{
 												Name: "fn",
 												Path: "fn",
 												Raw:  "mock()",
@@ -362,8 +362,8 @@ func TestPrepareFunctions(t *testing.T) {
 									Property: &specs.Property{
 										Type:  types.Message,
 										Label: labels.Optional,
-										Nested: map[string]*specs.Property{
-											"fn": {
+										Repeated: []*specs.Property{
+											{
 												Name: "fn",
 												Path: "fn",
 												Raw:  "mock()",
@@ -382,8 +382,8 @@ func TestPrepareFunctions(t *testing.T) {
 									Property: &specs.Property{
 										Type:  types.Message,
 										Label: labels.Optional,
-										Nested: map[string]*specs.Property{
-											"fn": {
+										Repeated: []*specs.Property{
+											{
 												Name: "fn",
 												Path: "fn",
 												Raw:  "mock()",
@@ -515,8 +515,8 @@ func TestPrepareFunctions(t *testing.T) {
 									Property: &specs.Property{
 										Type:  types.Message,
 										Label: labels.Optional,
-										Nested: map[string]*specs.Property{
-											"fn": {
+										Repeated: []*specs.Property{
+											{
 												Name: "fn",
 												Path: "fn",
 												Raw:  "mock()",
@@ -541,8 +541,8 @@ func TestPrepareFunctions(t *testing.T) {
 								Property: &specs.Property{
 									Type:  types.Message,
 									Label: labels.Optional,
-									Nested: map[string]*specs.Property{
-										"fn": {
+									Repeated: []*specs.Property{
+										{
 											Name: "fn",
 											Path: "fn",
 											Raw:  "mock()",
@@ -622,8 +622,8 @@ func TestPrepareFunctionsErr(t *testing.T) {
 									Property: &specs.Property{
 										Type:  types.Message,
 										Label: labels.Optional,
-										Nested: map[string]*specs.Property{
-											"fn": {
+										Repeated: []*specs.Property{
+											{
 												Name: "fn",
 												Path: "fn",
 												Raw:  "mock()",
@@ -635,8 +635,8 @@ func TestPrepareFunctionsErr(t *testing.T) {
 									Property: &specs.Property{
 										Type:  types.Message,
 										Label: labels.Optional,
-										Nested: map[string]*specs.Property{
-											"fn": {
+										Repeated: []*specs.Property{
+											{
 												Name: "fn",
 												Path: "fn",
 												Raw:  "mock()",
@@ -651,8 +651,8 @@ func TestPrepareFunctionsErr(t *testing.T) {
 						Property: &specs.Property{
 							Type:  types.Message,
 							Label: labels.Optional,
-							Nested: map[string]*specs.Property{
-								"fn": {
+							Repeated: []*specs.Property{
+								{
 									Name: "fn",
 									Path: "fn",
 									Raw:  "mock()",
@@ -680,8 +680,8 @@ func TestPrepareFunctionsErr(t *testing.T) {
 									Property: &specs.Property{
 										Type:  types.Message,
 										Label: labels.Optional,
-										Nested: map[string]*specs.Property{
-											"fn": {
+										Repeated: []*specs.Property{
+											{
 												Name: "fn",
 												Path: "fn",
 												Raw:  "mock()",
@@ -700,8 +700,8 @@ func TestPrepareFunctionsErr(t *testing.T) {
 									Property: &specs.Property{
 										Type:  types.Message,
 										Label: labels.Optional,
-										Nested: map[string]*specs.Property{
-											"fn": {
+										Repeated: []*specs.Property{
+											{
 												Name: "fn",
 												Path: "fn",
 												Raw:  "mock()",
@@ -755,8 +755,8 @@ func TestPrepareFunctionsErr(t *testing.T) {
 									Property: &specs.Property{
 										Type:  types.Message,
 										Label: labels.Optional,
-										Nested: map[string]*specs.Property{
-											"fn": {
+										Repeated: []*specs.Property{
+											{
 												Name: "fn",
 												Path: "fn",
 												Raw:  "mock()",
@@ -768,8 +768,8 @@ func TestPrepareFunctionsErr(t *testing.T) {
 									Property: &specs.Property{
 										Type:  types.Message,
 										Label: labels.Optional,
-										Nested: map[string]*specs.Property{
-											"fn": {
+										Repeated: []*specs.Property{
+											{
 												Name: "fn",
 												Path: "fn",
 												Raw:  "mock()",
@@ -800,8 +800,8 @@ func TestPrepareFunctionsErr(t *testing.T) {
 									Property: &specs.Property{
 										Type:  types.Message,
 										Label: labels.Optional,
-										Nested: map[string]*specs.Property{
-											"fn": {
+										Repeated: []*specs.Property{
+											{
 												Name: "fn",
 												Path: "fn",
 												Raw:  "mock()",
@@ -820,8 +820,8 @@ func TestPrepareFunctionsErr(t *testing.T) {
 									Property: &specs.Property{
 										Type:  types.Message,
 										Label: labels.Optional,
-										Nested: map[string]*specs.Property{
-											"fn": {
+										Repeated: []*specs.Property{
+											{
 												Name: "fn",
 												Path: "fn",
 												Raw:  "mock()",
@@ -877,8 +877,8 @@ func TestPrepareFunctionsErr(t *testing.T) {
 									Property: &specs.Property{
 										Type:  types.Message,
 										Label: labels.Optional,
-										Nested: map[string]*specs.Property{
-											"fn": {
+										Repeated: []*specs.Property{
+											{
 												Name: "fn",
 												Path: "fn",
 												Raw:  "mock()",
@@ -901,8 +901,8 @@ func TestPrepareFunctionsErr(t *testing.T) {
 								Property: &specs.Property{
 									Type:  types.Message,
 									Label: labels.Optional,
-									Nested: map[string]*specs.Property{
-										"fn": {
+									Repeated: []*specs.Property{
+										{
 											Name: "fn",
 											Path: "fn",
 											Raw:  "mock()",
@@ -1025,8 +1025,8 @@ func TestPrepareParameterMapFunctions(t *testing.T) {
 				Property: &specs.Property{
 					Type:  types.Message,
 					Label: labels.Optional,
-					Nested: map[string]*specs.Property{
-						"fn": {
+					Repeated: []*specs.Property{
+						{
 							Name: "fn",
 							Path: "fn",
 							Raw:  "mock()",
@@ -1053,14 +1053,16 @@ func TestPrepareParameterMapFunctions(t *testing.T) {
 				Property: &specs.Property{
 					Type:  types.Message,
 					Label: labels.Optional,
-					Nested: map[string]*specs.Property{
-						"nested": {
+					Repeated: []*specs.Property{
+						{
+							Name:  "nested",
+							Path:  "nested",
 							Type:  types.Message,
 							Label: labels.Optional,
-							Nested: map[string]*specs.Property{
-								"fn": {
+							Repeated: []*specs.Property{
+								{
 									Name: "fn",
-									Path: "fn",
+									Path: "nested.fn",
 									Raw:  "mock()",
 								},
 							},
@@ -1075,8 +1077,8 @@ func TestPrepareParameterMapFunctions(t *testing.T) {
 				Property: &specs.Property{
 					Type:  types.Message,
 					Label: labels.Optional,
-					Nested: map[string]*specs.Property{
-						"fn": {
+					Repeated: []*specs.Property{
+						{
 							Name: "fn",
 							Path: "fn",
 							Raw:  "mock(mock(mock()))",
@@ -1134,8 +1136,10 @@ func TestFunctionsNestedReferences(t *testing.T) {
 	result := &specs.Property{
 		Type:  types.Message,
 		Label: labels.Optional,
-		Nested: map[string]*specs.Property{
-			"id": {
+		Repeated: []*specs.Property{
+			{
+				Name:    "id",
+				Path:    "id",
 				Type:    types.String,
 				Label:   labels.Optional,
 				Default: "abc",
@@ -1165,11 +1169,11 @@ func TestFunctionsNestedReferences(t *testing.T) {
 		t.Fatal("property reference not set")
 	}
 
-	if len(property.Nested) != len(result.Nested) {
+	if len(property.Repeated) != len(result.Repeated) {
 		t.Fatal("property reference nested is not equal to result")
 	}
 
-	for _, nested := range property.Nested {
+	for _, nested := range property.Repeated {
 		if nested.Reference == nil {
 			t.Fatal("nested reference not set")
 		}

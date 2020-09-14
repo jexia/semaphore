@@ -15,24 +15,6 @@ import (
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
-const (
-	hclV2array = `array = [
-		"foo",
-		42,
-		{
-			"id": "{{ getter:output }}",
-		}
-	]`
-
-	hclV2object = `object = {
-		"message": "hello world",
-		"meta": {
-			"id": "{{ getter:output }}",
-			"foo": 42
-		}
-	}`
-)
-
 func parseTestAttribute(t *testing.T, config string) *hcl.Attribute {
 	bb := []byte(os.ExpandEnv(config))
 
@@ -58,55 +40,166 @@ func parseTestAttribute(t *testing.T, config string) *hcl.Attribute {
 	return nil
 }
 
-type output struct {
-	name         string
-	path         string
-	dataType     types.Type
-	label        labels.Label
-	nested       map[string]output
-	repeated     []output
-	reference    *specs.PropertyReference
-	defaultValue interface{}
-}
-
-func TestParseIntermediateProperty(t *testing.T) {
+func TestParseIntermediateStaticProperty(t *testing.T) {
 	type test struct {
-		input  string
-		output *output
+		template string
+		expected *specs.Property
 	}
 
 	var tests = map[string]test{
-		"HCL2 array": {
-			input: hclV2array,
-			output: &output{
-				name:     "array",
-				path:     "array",
-				dataType: types.String, // TODO: get rid of hardcoded type
-				label:    labels.Repeated,
-				repeated: []output{
+		"array single": {
+			template: `
+				array = [
+					"foo",
+				]`,
+			expected: &specs.Property{
+				Name:  "array",
+				Path:  "array",
+				Type:  types.String,
+				Label: labels.Repeated,
+				Repeated: []*specs.Property{
 					{
-						path:         "array",
-						dataType:     types.String,
-						label:        labels.Optional,
-						defaultValue: "foo",
+						Path:    "array",
+						Type:    types.String,
+						Label:   labels.Optional,
+						Default: "foo",
+					},
+				},
+			},
+		},
+		"array reference": {
+			template: `
+				array = [
+					"{{ input:message }}",
+				]`,
+			expected: &specs.Property{
+				Name:  "array",
+				Path:  "array",
+				Type:  types.String,
+				Label: labels.Repeated,
+				Repeated: []*specs.Property{
+					{
+						Path: "array",
+						Reference: &specs.PropertyReference{
+							Resource: "input",
+							Path:     "message",
+						},
+					},
+				},
+			},
+		},
+		"array ints": {
+			template: `
+				array = [
+					10,
+					42
+				]`,
+			expected: &specs.Property{
+				Name:  "array",
+				Path:  "array",
+				Type:  types.String,
+				Label: labels.Repeated,
+				Repeated: []*specs.Property{
+					{
+						Path:    "array",
+						Type:    types.Int64,
+						Label:   labels.Optional,
+						Default: int64(10),
 					},
 					{
-						path:         "array",
-						dataType:     types.Int64,
-						label:        labels.Optional,
-						defaultValue: int64(42),
+						Path:    "array",
+						Type:    types.Int64,
+						Label:   labels.Optional,
+						Default: int64(42),
+					},
+				},
+			},
+		},
+		"array objects": {
+			template: `
+				array = [
+					{
+						"action": "create",
 					},
 					{
-						path:     "array",
-						dataType: types.Message,
-						label:    labels.Optional,
-						nested: map[string]output{
-							"id": {
-								name: "id",
-								path: "array.id",
-								reference: &specs.PropertyReference{
-									Resource: "getter",
-									Path:     "output",
+						"action": "update",
+					}
+				]`,
+			expected: &specs.Property{
+				Name:  "array",
+				Path:  "array",
+				Type:  types.String,
+				Label: labels.Repeated,
+				Repeated: []*specs.Property{
+					{
+						Path:  "array",
+						Type:  types.Message,
+						Label: labels.Optional,
+						Repeated: []*specs.Property{
+							{
+								Name:    "action",
+								Path:    "array.action",
+								Type:    types.String,
+								Label:   labels.Optional,
+								Default: "create",
+							},
+						},
+					},
+					{
+						Path:  "array",
+						Type:  types.Message,
+						Label: labels.Optional,
+						Repeated: []*specs.Property{
+							{
+								Name:    "action",
+								Path:    "array.action",
+								Type:    types.String,
+								Label:   labels.Optional,
+								Default: "update",
+							},
+						},
+					},
+				},
+			},
+		},
+		"array complex": {
+			template: `
+				array = [
+					"foo",
+					42,
+					{
+						"id": "{{ input:id }}",
+					}
+				]`,
+			expected: &specs.Property{
+				Name:  "array",
+				Path:  "array",
+				Type:  types.String,
+				Label: labels.Repeated,
+				Repeated: []*specs.Property{
+					{
+						Path:    "array",
+						Type:    types.String,
+						Label:   labels.Optional,
+						Default: "foo",
+					},
+					{
+						Path:    "array",
+						Type:    types.Int64,
+						Label:   labels.Optional,
+						Default: int64(42),
+					},
+					{
+						Path:  "array",
+						Type:  types.Message,
+						Label: labels.Optional,
+						Repeated: []*specs.Property{
+							{
+								Name: "id",
+								Path: "array.id",
+								Reference: &specs.PropertyReference{
+									Resource: "input",
+									Path:     "id",
 								},
 							},
 						},
@@ -114,41 +207,86 @@ func TestParseIntermediateProperty(t *testing.T) {
 				},
 			},
 		},
-		"HCL2 object": {
-			input: hclV2object,
-			output: &output{
-				name:     "object",
-				path:     "object",
-				dataType: types.Message,
-				label:    labels.Optional,
-				nested: map[string]output{
-					"message": {
-						name:         "message",
-						path:         "object.message",
-						dataType:     types.String,
-						label:        labels.Optional,
-						defaultValue: "hello world",
-					},
+		"object complex": {
+			template: `
+				object = {
+					"message": "hello world",
 					"meta": {
-						name:     "meta",
-						path:     "object.meta",
-						dataType: types.Message,
-						label:    labels.Optional,
-						nested: map[string]output{
-							"id": {
-								name: "id",
-								path: "object.meta.id",
-								reference: &specs.PropertyReference{
-									Resource: "getter",
-									Path:     "output",
+						"id": "{{ input:id }}",
+						"foo": 42
+					}
+				}`,
+			expected: &specs.Property{
+				Name:  "object",
+				Path:  "object",
+				Type:  types.Message,
+				Label: labels.Optional,
+				Repeated: []*specs.Property{
+					{
+						Name:    "message",
+						Path:    "object.message",
+						Type:    types.String,
+						Label:   labels.Optional,
+						Default: "hello world",
+					},
+					{
+						Name:  "meta",
+						Path:  "object.meta",
+						Type:  types.Message,
+						Label: labels.Optional,
+						Repeated: []*specs.Property{
+							{
+								Name: "id",
+								Path: "object.meta.id",
+								Reference: &specs.PropertyReference{
+									Resource: "input",
+									Path:     "id",
 								},
 							},
-							"foo": {
-								name:         "foo",
-								path:         "object.meta.foo",
-								label:        labels.Optional,
-								dataType:     types.Int64,
-								defaultValue: int64(42),
+							{
+								Name:    "foo",
+								Path:    "object.meta.foo",
+								Label:   labels.Optional,
+								Type:    types.Int64,
+								Default: int64(42),
+							},
+						},
+					},
+				},
+			},
+		},
+		"object array": {
+			template: `
+				object = {
+					"message": [
+						"hello world",
+						"{{ input:message }}"
+					],
+				}`,
+			expected: &specs.Property{
+				Name:  "object",
+				Path:  "object",
+				Type:  types.Message,
+				Label: labels.Optional,
+				Repeated: []*specs.Property{
+					{
+						Name:  "message",
+						Path:  "object.message",
+						Type:  types.String,
+						Label: labels.Repeated,
+						Repeated: []*specs.Property{
+							{
+								Path:    "object.message",
+								Type:    types.String,
+								Label:   labels.Optional,
+								Default: "hello world",
+							},
+							{
+								Path: "object.message",
+								Reference: &specs.PropertyReference{
+									Resource: "input",
+									Path:     "message",
+								},
 							},
 						},
 					},
@@ -160,74 +298,61 @@ func TestParseIntermediateProperty(t *testing.T) {
 	for title, test := range tests {
 		t.Run(title, func(t *testing.T) {
 			var (
-				attr   = parseTestAttribute(t, test.input)
+				attr   = parseTestAttribute(t, test.template)
 				ctx    = logger.WithLogger(broker.NewBackground())
 				val, _ = attr.Expr.Value(nil)
 			)
 
-			prop, err := ParseIntermediateProperty(ctx, "", attr, val)
+			result, err := ParseIntermediateProperty(ctx, "", attr, val)
 			if err != nil {
-				t.Errorf("unexpected error: %s", err)
-
-				return
+				t.Fatalf("unexpected error: %s", err)
 			}
 
-			assertProperties(t, prop, test.output)
+			ValidateProperties(t, result, test.expected)
 		})
 	}
 }
 
-func assertProperties(t *testing.T, prop *specs.Property, output *output) {
-	if output == nil {
-		return
+func ValidateProperties(t *testing.T, result *specs.Property, expected *specs.Property) {
+	if result.Path != expected.Path {
+		t.Errorf("property path %q was expected to be %q", result.Path, expected.Path)
 	}
 
-	if prop.Name != output.name {
-		t.Errorf("property name %q was expected to be %q", prop.Name, output.name)
+	if result.Name != expected.Name {
+		t.Errorf("property (%q) name %q was expected to be %q", result.Path, result.Name, expected.Name)
 	}
 
-	if prop.Path != output.path {
-		t.Errorf("property path %q was expected to be %q", prop.Path, output.path)
+	if result.Label != expected.Label {
+		t.Errorf("property (%q) label %q was expected to be %q", result.Path, result.Label, expected.Label)
 	}
 
-	if prop.Label != output.label {
-		t.Errorf("property label %q was expected to be %q", prop.Label, output.label)
+	if result.Type != expected.Type {
+		t.Errorf("property (%q) type %q was expected to be %q", result.Path, result.Type, expected.Type)
 	}
 
-	if prop.Type != output.dataType {
-		t.Errorf("property type %q was expected to be %q", prop.Type, output.dataType)
+	if !reflect.DeepEqual(result.Reference, expected.Reference) {
+		t.Errorf("property (%q) reference \"%v\" was expected to be \"%v\"", result.Path, result.Reference, expected.Reference)
 	}
 
-	if !reflect.DeepEqual(prop.Reference, output.reference) {
-		t.Errorf("property reference \"%v\" was expected to be \"%v\"", prop.Reference, output.reference)
+	if !reflect.DeepEqual(result.Default, expected.Default) {
+		t.Errorf("property (%q) default value \"%v\" was expected to be \"%v\"", result.Path, result.Default, expected.Default)
 	}
 
-	if !reflect.DeepEqual(prop.Default, output.defaultValue) {
-		t.Errorf("default value \"%v\" was expected to be \"%v\"", prop.Default, output.defaultValue)
+	if len(result.Repeated) != len(expected.Repeated) {
+		t.Fatalf("unexpected repeated %+v, expected %+v", result.Repeated, expected.Repeated)
 	}
 
-	if actual, expected := len(prop.Repeated), len(output.repeated); actual != expected {
-		t.Errorf("got %d repeated values, expected %d", actual, expected)
-
-		return
-	}
-
-	for index, repeated := range prop.Repeated {
-		assertProperties(t, repeated, &output.repeated[index])
-	}
-
-	if actual, expected := len(prop.Nested), len(output.nested); actual != expected {
-		t.Errorf("got %d nested values, expected %d", actual, expected)
-
-		return
-	}
-
-	for key, expected := range output.nested {
-		actual, ok := prop.Nested[key]
-		if !ok {
-			t.Errorf("was expected to contain nested property %q", key)
+	for index, schema := range expected.Repeated {
+		// if array order matters
+		nested := result.Repeated[index]
+		if expected.Type == types.Message {
+			nested = result.Repeated.Get(schema.Name)
 		}
 
-		assertProperties(t, actual, &expected)
+		if nested == nil {
+			t.Fatalf("was expected to contain nested property %q inside %q", schema.Name, result.Path)
+		}
+
+		ValidateProperties(t, nested, schema)
 	}
 }

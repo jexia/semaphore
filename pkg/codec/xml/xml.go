@@ -54,7 +54,7 @@ func (manager *Manager) Marshal(refs references.Store) (io.Reader, error) {
 		return nil, nil
 	}
 
-	var object = NewObject(manager.resource, manager.specs.Nested, refs)
+	var object = NewObject(manager.resource, manager.specs.Repeated, refs)
 
 	bb, err := xml.Marshal(object)
 	if err != nil {
@@ -81,7 +81,7 @@ func (manager *Manager) Unmarshal(reader io.Reader, refs references.Store) error
 		return nil
 	}
 
-	var object = NewObject(manager.resource, manager.specs.Nested, refs)
+	var object = NewObject(manager.resource, manager.specs.Repeated, refs)
 
 	return xml.Unmarshal(bb, object)
 }

@@ -3,7 +3,6 @@ package xml
 import (
 	"encoding/xml"
 	"io"
-	"sort"
 
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
@@ -14,12 +13,12 @@ import (
 // Object represents an XML object.
 type Object struct {
 	resource string
-	specs    map[string]*specs.Property
+	specs    specs.PropertyList
 	refs     references.Store
 }
 
 // NewObject constructs a new object encoder/decoder for the given specs.
-func NewObject(resource string, specs map[string]*specs.Property, refs references.Store) *Object {
+func NewObject(resource string, specs []*specs.Property, refs references.Store) *Object {
 	return &Object{
 		resource: resource,
 		refs:     refs,
@@ -35,16 +34,8 @@ func (object *Object) MarshalXML(encoder *xml.Encoder, _ xml.StartElement) error
 		return err
 	}
 
-	keys := make([]string, 0, len(object.specs))
-	for key := range object.specs {
-		keys = append(keys, key)
-	}
-
-	// sort properties by name
-	sort.Strings(keys)
-
-	for _, key := range keys {
-		if err := object.encodeElement(encoder, object.specs[key]); err != nil {
+	for _, spec := range object.specs {
+		if err := object.encodeElement(encoder, spec); err != nil {
 			return err
 		}
 	}
@@ -94,7 +85,7 @@ func (object *Object) unmarshalXML(decoder *xml.Decoder, refs map[string]*refere
 func (object *Object) startElement(decoder *xml.Decoder, tok xml.Token, refs map[string]*references.Reference) error {
 	switch t := tok.(type) {
 	case xml.StartElement:
-		var prop = object.specs[t.Name.Local]
+		var prop = object.specs.Get(t.Name.Local)
 		if prop == nil {
 			return errUndefinedProperty(t.Name.Local)
 		}

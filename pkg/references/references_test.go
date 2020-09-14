@@ -142,8 +142,9 @@ func TestScopeNestedReferences(t *testing.T) {
 	tests := map[string]test{
 		"root": {
 			source: &specs.Property{
-				Nested: map[string]*specs.Property{
-					"key": {
+				Repeated: []*specs.Property{
+					{
+						Name: "key",
 						Path: "key",
 						Type: types.String,
 					},
@@ -155,11 +156,13 @@ func TestScopeNestedReferences(t *testing.T) {
 		},
 		"nested": {
 			source: &specs.Property{
-				Nested: map[string]*specs.Property{
-					"key": {
+				Repeated: []*specs.Property{
+					{
+						Name: "key",
 						Path: "key",
-						Nested: map[string]*specs.Property{
-							"nested": {
+						Repeated: []*specs.Property{
+							{
+								Name: "nested",
 								Path: "key.nested",
 							},
 						},
@@ -167,8 +170,10 @@ func TestScopeNestedReferences(t *testing.T) {
 				},
 			},
 			target: &specs.Property{
-				Nested: map[string]*specs.Property{
-					"key": {
+				Repeated: []*specs.Property{
+					{
+						Name:      "key",
+						Path:      "key",
 						Reference: reference,
 					},
 				},
@@ -176,14 +181,17 @@ func TestScopeNestedReferences(t *testing.T) {
 		},
 		"partial": {
 			source: &specs.Property{
-				Nested: map[string]*specs.Property{
-					"key": {
+				Repeated: []*specs.Property{
+					{
+						Name: "key",
 						Path: "key",
-						Nested: map[string]*specs.Property{
-							"first": {
+						Repeated: []*specs.Property{
+							{
+								Name: "first",
 								Path: "key.first",
 							},
-							"second": {
+							{
+								Name: "second",
 								Path: "key.second",
 							},
 						},
@@ -191,11 +199,15 @@ func TestScopeNestedReferences(t *testing.T) {
 				},
 			},
 			target: &specs.Property{
-				Nested: map[string]*specs.Property{
-					"key": {
+				Repeated: []*specs.Property{
+					{
+						Name:      "key",
+						Path:      "key",
 						Reference: reference,
-						Nested: map[string]*specs.Property{
-							"second": {
+						Repeated: []*specs.Property{
+							{
+								Name:      "second",
+								Path:      "key.second",
 								Reference: reference,
 							},
 						},
@@ -211,17 +223,17 @@ func TestScopeNestedReferences(t *testing.T) {
 
 			var lookup func(source *specs.Property, target *specs.Property)
 			lookup = func(source *specs.Property, target *specs.Property) {
-				if len(target.Nested) != len(source.Nested) {
-					t.Fatalf("unexpected length %d (%+v), expected %d (%s)(%+v).", len(target.Nested), target.Nested, len(source.Nested), source.Path, source.Nested)
+				if len(target.Repeated) != len(source.Repeated) {
+					t.Fatalf("unexpected length %d (%+v), expected %d (%s)(%+v).", len(target.Repeated), target.Repeated, len(source.Repeated), source.Path, source.Repeated)
 				}
 
-				for key := range source.Nested {
-					_, has := target.Nested[key]
-					if !has {
-						t.Fatalf("target does not have nested key %s", key)
+				for _, item := range source.Repeated {
+					target := target.Repeated.Get(item.Name)
+					if target == nil {
+						t.Fatalf("target does not have nested key %s", item.Name)
 					}
 
-					lookup(source.Nested[key], target.Nested[key])
+					lookup(item, target)
 				}
 			}
 

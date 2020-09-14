@@ -37,16 +37,22 @@ func NewMockSchemas() specs.Schemas {
 		"com.mock.message": &specs.Property{
 			Type:  types.Message,
 			Label: labels.Optional,
-			Nested: map[string]*specs.Property{
-				"value": {
+			Repeated: []*specs.Property{
+				{
+					Name:  "value",
+					Path:  "value",
 					Type:  types.String,
 					Label: labels.Optional,
 				},
-				"meta": {
+				{
+					Name:  "meta",
+					Path:  "meta",
 					Type:  types.Message,
 					Label: labels.Optional,
-					Nested: map[string]*specs.Property{
-						"id": {
+					Repeated: []*specs.Property{
+						{
+							Name:  "id",
+							Path:  "meta.id",
 							Type:  types.String,
 							Label: labels.Optional,
 						},
@@ -364,18 +370,20 @@ func TestUndefinedNestedSchemaProperty(t *testing.T) {
 		"single": {
 			Schema: "com.mock.message",
 			Property: &specs.Property{
-				Nested: map[string]*specs.Property{
-					"nil": nil,
+				Repeated: []*specs.Property{
+					nil,
 				},
 			},
 		},
 		"nested": {
 			Schema: "com.mock.message",
 			Property: &specs.Property{
-				Nested: map[string]*specs.Property{
-					"meta": {
-						Nested: map[string]*specs.Property{
-							"nil": nil,
+				Repeated: []*specs.Property{
+					{
+						Name: "meta",
+						Path: "meta",
+						Repeated: []*specs.Property{
+							nil,
 						},
 					},
 				},
@@ -393,8 +401,8 @@ func TestUndefinedNestedSchemaProperty(t *testing.T) {
 			}
 
 			err := ResolveParameterMap(ctx, schemas, test, flow)
-			if err == nil {
-				t.Fatal("unexpected pass")
+			if err != nil {
+				t.Fatal(err)
 			}
 		})
 	}

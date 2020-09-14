@@ -243,8 +243,8 @@ func TestPropertyClone(t *testing.T) {
 		Type:      types.String,
 		Label:     labels.Optional,
 		Reference: &PropertyReference{},
-		Nested: map[string]*Property{
-			"first": {},
+		Repeated: []*Property{
+			{Path: "first"},
 		},
 		Raw: "first",
 		Options: Options{
@@ -294,8 +294,8 @@ func TestPropertyClone(t *testing.T) {
 		t.Errorf("unexpected reference %+v", result.Reference)
 	}
 
-	if result.Nested == nil || len(result.Nested) != len(property.Nested) {
-		t.Errorf("unexpected nested %+v", result.Nested)
+	if result.Repeated == nil || len(result.Repeated) != len(property.Repeated) {
+		t.Errorf("unexpected repeated %+v", result.Repeated)
 	}
 
 	if result.Raw != property.Raw {
@@ -308,10 +308,6 @@ func TestPropertyClone(t *testing.T) {
 
 	if result.Enum != property.Enum {
 		t.Errorf("unexpected enum %+v", result.Enum)
-	}
-
-	if len(result.Nested) != len(property.Nested) {
-		t.Errorf("unexpected nested %+v", result.Nested)
 	}
 }
 

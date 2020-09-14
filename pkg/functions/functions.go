@@ -234,8 +234,8 @@ func PreparePropertyFunctions(ctx *broker.Context, node *specs.Node, flow specs.
 		return nil
 	}
 
-	if prop.Nested != nil {
-		for _, nested := range prop.Nested {
+	if prop.Repeated != nil {
+		for _, nested := range prop.Repeated {
 			err := PreparePropertyFunctions(ctx, node, flow, stack, nested, functions)
 			if err != nil {
 				return err

@@ -225,11 +225,11 @@ func PropertyLookup(param *specs.Property) PathLookup {
 			return param
 		}
 
-		if param.Nested == nil {
+		if param.Repeated == nil {
 			return nil
 		}
 
-		for _, param := range param.Nested {
+		for _, param := range param.Repeated {
 			lookup := PropertyLookup(param)(path)
 			if lookup != nil {
 				return lookup
@@ -260,8 +260,12 @@ func ParamsLookup(params map[string]*specs.Property, flow specs.FlowInterface, b
 				}
 
 				result := reference.Clone()
-				result.Reference = param.Reference
-				return result
+
+				param.Type = result.Type
+				param.Label = result.Label
+				param.Reference.Property = result
+
+				return param
 			}
 		}
 

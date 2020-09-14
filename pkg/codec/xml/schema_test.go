@@ -12,26 +12,26 @@ var (
 		Property: &specs.Property{
 			Type:  types.Message,
 			Label: labels.Optional,
-			Nested: map[string]*specs.Property{
-				"bad_label": {
+			Repeated: []*specs.Property{
+				{
 					Name:  "bad_label",
 					Path:  "bad_label",
 					Type:  types.String,
 					Label: "unsupported",
 				},
-				"no_nested_schema": {
-					Name:  "bad_label",
-					Path:  "bad_label",
+				{
+					Name:  "no_nested_schema",
+					Path:  "no_nested_schema",
 					Type:  types.Message,
 					Label: labels.Optional,
 				},
-				"numeric": {
+				{
 					Name:  "numeric",
 					Path:  "numeric",
 					Type:  types.Int32,
 					Label: labels.Optional,
 				},
-				"message": {
+				{
 					Name:  "message",
 					Path:  "message",
 					Type:  types.String,
@@ -41,7 +41,7 @@ var (
 						Path:     "message",
 					},
 				},
-				"another_message": {
+				{
 					Name:  "another_message",
 					Path:  "another_message",
 					Type:  types.String,
@@ -51,7 +51,7 @@ var (
 						Path:     "another_message",
 					},
 				},
-				"status": {
+				{
 					Name:  "status",
 					Path:  "status",
 					Type:  types.Enum,
@@ -62,7 +62,7 @@ var (
 						Path:     "status",
 					},
 				},
-				"another_status": {
+				{
 					Name:  "another_status",
 					Path:  "another_status",
 					Type:  types.Enum,
@@ -73,13 +73,13 @@ var (
 						Path:     "another_status",
 					},
 				},
-				"nested": {
+				{
 					Name:  "nested",
 					Path:  "nested",
 					Type:  types.Message,
 					Label: labels.Optional,
-					Nested: map[string]*specs.Property{
-						"first": {
+					Repeated: []*specs.Property{
+						{
 							Name:  "first",
 							Path:  "nested.first",
 							Type:  types.String,
@@ -89,7 +89,7 @@ var (
 								Path:     "nested.first",
 							},
 						},
-						"second": {
+						{
 							Name:  "second",
 							Path:  "nested.second",
 							Type:  types.String,
@@ -101,7 +101,7 @@ var (
 						},
 					},
 				},
-				"repeating_string": {
+				{
 					Name:  "repeating_string",
 					Path:  "repeating_string",
 					Type:  types.String,
@@ -111,7 +111,7 @@ var (
 						Path:     "repeating_string",
 					},
 				},
-				"repeating_enum": {
+				{
 					Name:  "repeating_enum",
 					Path:  "repeating_enum",
 					Type:  types.Enum,
@@ -122,7 +122,7 @@ var (
 						Path:     "repeating_enum",
 					},
 				},
-				"repeating_numeric": {
+				{
 					Name:  "repeating_numeric",
 					Path:  "repeating_numeric",
 					Type:  types.Int32,
@@ -133,13 +133,13 @@ var (
 						Path:     "repeating_numeric",
 					},
 				},
-				"repeating": {
+				{
 					Name:  "repeating",
 					Path:  "repeating",
 					Type:  types.Message,
 					Label: labels.Repeated,
-					Nested: map[string]*specs.Property{
-						"value": {
+					Repeated: []*specs.Property{
+						{
 							Name:  "value",
 							Path:  "repeating.value",
 							Type:  types.String,

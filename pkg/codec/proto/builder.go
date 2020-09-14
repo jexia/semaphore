@@ -9,7 +9,7 @@ import (
 )
 
 // NewMessage attempts to construct a new proto message descriptor for the given specs property
-func NewMessage(resource string, specs map[string]*specs.Property) (*desc.MessageDescriptor, error) {
+func NewMessage(resource string, specs []*specs.Property) (*desc.MessageDescriptor, error) {
 	msg := builder.NewMessage(resource)
 	err := ConstructMessage(msg, specs)
 	if err != nil {
@@ -20,12 +20,14 @@ func NewMessage(resource string, specs map[string]*specs.Property) (*desc.Messag
 }
 
 // ConstructMessage constructs a proto message of the given specs into the given message builders
-func ConstructMessage(msg *builder.MessageBuilder, specs map[string]*specs.Property) (err error) {
-	for key, prop := range specs {
+func ConstructMessage(msg *builder.MessageBuilder, specs []*specs.Property) (err error) {
+	for _, prop := range specs {
+		key := prop.Name
+
 		if prop.Type == types.Message {
 			// TODO: appending a fixed prefix is probably not a good idea.
 			nested := builder.NewMessage(key + "Nested")
-			err = ConstructMessage(nested, prop.Nested)
+			err = ConstructMessage(nested, prop.Repeated)
 			if err != nil {
 				return err
 			}
