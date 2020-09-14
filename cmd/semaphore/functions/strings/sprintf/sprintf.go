@@ -1,9 +1,6 @@
 package sprintf
 
 import (
-	"errors"
-	"fmt"
-
 	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
@@ -34,18 +31,22 @@ func sprintfExecutable(printer Printer, args ...*specs.Property) func(store refe
 
 // Sprintf formats and returns a string without printing it anywhere.
 func Sprintf(args ...*specs.Property) (*specs.Property, functions.Exec, error) {
-	if actual := len(args); actual < 1 {
-		return nil, nil, fmt.Errorf("at least 1 argument is expected, provided %d", actual)
+	if len(args) < 1 {
+		return nil, nil, errNoArguments
 	}
 
 	var format = args[0]
 
 	if format.Type != types.String {
-		return nil, nil, errors.New("format must be a string")
+		return nil, nil, errInvalidFormat
+	}
+
+	if format.Reference != nil {
+		return nil, nil, errNoReferenceSupport
 	}
 
 	if format.Default == nil {
-		return nil, nil, fmt.Errorf("invalid format")
+		return nil, nil, errNoFormat
 	}
 
 	tokens, err := scanner.Scan(format.Default.(string))
@@ -61,12 +62,18 @@ func Sprintf(args ...*specs.Property) (*specs.Property, functions.Exec, error) {
 	)
 
 	if actual, expected := len(args), len(verbs); actual != expected {
-		return nil, nil, fmt.Errorf("invalid number of input arguments %d, expected %d", actual, expected)
+		return nil, nil, errInvalidArguments{
+			actual:   actual,
+			expected: expected,
+		}
 	}
 
 	for index, verb := range printer.Verbs() {
 		if !verb.CanFormat(args[index].Type) {
-			return nil, nil, fmt.Errorf("cannot use '%%%s' formatter for argument '%s' of type '%s'", verb, args[index].Name, args[index].Type)
+			return nil, nil, errCannotFormat{
+				formatter: verb,
+				argument:  args[index],
+			}
 		}
 	}
 

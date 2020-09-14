@@ -3,9 +3,15 @@ package sprintf
 import (
 	"errors"
 	"fmt"
+
+	"github.com/jexia/semaphore/pkg/specs"
 )
 
 var (
+	errNoArguments        = errors.New("at least 1 argument is expected")
+	errNoReferenceSupport = errors.New("cannot use reference as a format")
+	errNoFormat           = errors.New("format is not set")
+	errInvalidFormat      = errors.New("format must be a string")
 	errUnknownFormatter   = errors.New("unable to detect the formatter")
 	errIncomplete         = errors.New("verb is missing")
 	errMalformedPrecision = errors.New("malformed precision")
@@ -15,6 +21,23 @@ var (
 	errNonStringType      = errors.New("not a string")
 	errNonFloatType       = errors.New("not a float")
 )
+
+type errInvalidArguments struct {
+	actual, expected int
+}
+
+func (e errInvalidArguments) Error() string {
+	return fmt.Sprintf("invalid number of input arguments %d, expected %d", e.actual, e.expected)
+}
+
+type errCannotFormat struct {
+	formatter fmt.Stringer
+	argument  *specs.Property
+}
+
+func (e errCannotFormat) Error() string {
+	return fmt.Sprintf("cannot use '%%%s' formatter for argument '%s' of type '%s'", e.formatter, e.argument.Name, e.argument.Type)
+}
 
 type errVerbConflict struct {
 	fmt.Stringer

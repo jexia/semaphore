@@ -3,21 +3,57 @@ package sprintf
 import (
 	"errors"
 	"testing"
+
+	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
 type stringer string
 
 func (s stringer) String() string { return string(s) }
 
-func TestErrVerbConflict(t *testing.T) {
-	var err = errVerbConflict{stringer("foo")}
+func TestErrInvalidArguments(t *testing.T) {
+	var (
+		expected = `invalid number of input arguments 1, expected 2`
+		err      = errInvalidArguments{actual: 1, expected: 2}
+	)
 
 	t.Run("build error message", func(t *testing.T) {
-		var (
-			expected = `verb "foo" is already in use`
-			actual   = err.Error()
-		)
+		var actual = err.Error()
+		if actual != expected {
+			t.Errorf("error '%s' was expected to be '%s'", actual, expected)
+		}
+	})
+}
 
+func TestErrCannotFormat(t *testing.T) {
+	var (
+		expected = `cannot use '%foo' formatter for argument 'bar' of type 'bool'`
+		err      = errCannotFormat{
+			formatter: stringer("foo"),
+			argument: &specs.Property{
+				Name: "bar",
+				Type: types.Bool,
+			},
+		}
+	)
+
+	t.Run("build error message", func(t *testing.T) {
+		var actual = err.Error()
+		if actual != expected {
+			t.Errorf("error '%s' was expected to be '%s'", actual, expected)
+		}
+	})
+}
+
+func TestErrVerbConflict(t *testing.T) {
+	var (
+		expected = `verb "foo" is already in use`
+		err      = errVerbConflict{stringer("foo")}
+	)
+
+	t.Run("build error message", func(t *testing.T) {
+		var actual = err.Error()
 		if actual != expected {
 			t.Errorf("error '%s' was expected to be '%s'", actual, expected)
 		}
@@ -26,8 +62,9 @@ func TestErrVerbConflict(t *testing.T) {
 
 func TestErrScanFormat(t *testing.T) {
 	var (
-		inner = errors.New("something went wrong")
-		err   = errScanFormat{
+		expected = "something went wrong:\n               ↓\ndevelop %s not %h\n"
+		inner    = errors.New("something went wrong")
+		err      = errScanFormat{
 			inner:    inner,
 			format:   "develop %s not %h",
 			position: 15,
@@ -35,11 +72,7 @@ func TestErrScanFormat(t *testing.T) {
 	)
 
 	t.Run("build error message", func(t *testing.T) {
-		var (
-			expected = "something went wrong:\n               ↓\ndevelop %s not %h\n"
-			actual   = err.Error()
-		)
-
+		var actual = err.Error()
 		if actual != expected {
 			t.Errorf("message\n%s\n was expected to be%s", actual, expected)
 		}
