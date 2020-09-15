@@ -1,8 +1,6 @@
 package sprintf
 
-import (
-	"strconv"
-)
+import "strconv"
 
 // Scanner scans provided string splitting it up by tokens.
 type Scanner interface {
