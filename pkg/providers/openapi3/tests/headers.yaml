@@ -37,6 +37,9 @@ components:
           type: string
         id:
           type: integer
+        interests:
+          items:
+            type: string
         name:
           type: string
         status:
