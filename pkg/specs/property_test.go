@@ -10,6 +10,126 @@ import (
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
+func TestPropertyUnmarshalDefaultPropertyRepeated(t *testing.T) {
+	type test struct {
+		input    *Property
+		expected reflect.Kind
+	}
+
+	tests := map[string]test{
+		"int64": {
+			input: &Property{
+				Type:    types.Int64,
+				Label:   labels.Optional,
+				Default: 100,
+			},
+			expected: reflect.Int64,
+		},
+		"sint64": {
+			input: &Property{
+				Type:    types.Sint64,
+				Label:   labels.Optional,
+				Default: 100,
+			},
+			expected: reflect.Int64,
+		},
+		"sfixed64": {
+			input: &Property{
+				Type:    types.Sfixed64,
+				Label:   labels.Optional,
+				Default: 100,
+			},
+			expected: reflect.Int64,
+		},
+		"uint64": {
+			input: &Property{
+				Type:    types.Uint64,
+				Label:   labels.Optional,
+				Default: 100,
+			},
+			expected: reflect.Uint64,
+		},
+		"fixed64": {
+			input: &Property{
+				Type:    types.Fixed64,
+				Label:   labels.Optional,
+				Default: 100,
+			},
+			expected: reflect.Uint64,
+		},
+		"int32": {
+			input: &Property{
+				Type:    types.Int32,
+				Label:   labels.Optional,
+				Default: 100,
+			},
+			expected: reflect.Int32,
+		},
+		"sint32": {
+			input: &Property{
+				Type:    types.Sint32,
+				Label:   labels.Optional,
+				Default: 100,
+			},
+			expected: reflect.Int32,
+		},
+		"sfixed32": {
+			input: &Property{
+				Type:    types.Sfixed32,
+				Label:   labels.Optional,
+				Default: 100,
+			},
+			expected: reflect.Int32,
+		},
+		"uint32": {
+			input: &Property{
+				Type:    types.Uint32,
+				Label:   labels.Optional,
+				Default: 100,
+			},
+			expected: reflect.Uint32,
+		},
+		"fixed32": {
+			input: &Property{
+				Type:    types.Fixed32,
+				Label:   labels.Optional,
+				Default: 100,
+			},
+			expected: reflect.Uint32,
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			input := &Property{
+				Type:     test.input.Type,
+				Label:    labels.Repeated,
+				Repeated: PropertyList{test.input},
+			}
+
+			encoded, err := json.Marshal(input)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			prop := Property{}
+			err = prop.UnmarshalJSON(encoded)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if prop.Repeated == nil || len(prop.Repeated) != 1 {
+				t.Fatalf("unexpected prop repeated %+v", prop.Repeated)
+			}
+
+			kind := reflect.TypeOf(prop.Repeated[0].Default).Kind()
+			if kind != test.expected {
+				t.Errorf("unexpected type %+v, expected %+v", kind, test.expected)
+			}
+		})
+	}
+}
+
 func TestPropertyUnmarshalFail(t *testing.T) {
 	payload := "non json string"
 	prop := Property{}
@@ -18,6 +138,7 @@ func TestPropertyUnmarshalFail(t *testing.T) {
 		t.Error("expected error got nil")
 	}
 }
+
 func TestPropertyUnmarshalDefaultProperty(t *testing.T) {
 	type test struct {
 		input    *Property
@@ -167,6 +288,8 @@ func TestPropertyReferenceCloneNilValue(t *testing.T) {
 }
 
 func TestPropertyReferenceString(t *testing.T) {
+	t.Parallel()
+
 	tests := map[string]*PropertyReference{
 		"resource:path": {
 			Resource: "resource",
@@ -180,12 +303,12 @@ func TestPropertyReferenceString(t *testing.T) {
 			Resource: "resource.prop",
 			Path:     "path",
 		},
+		":": {},
+		"":  nil,
 	}
 
 	for expected, reference := range tests {
 		t.Run(expected, func(t *testing.T) {
-			t.Parallel()
-
 			result := reference.String()
 			if result != expected {
 				t.Fatalf("unexpected result %s, expected %s", result, expected)
@@ -308,6 +431,43 @@ func TestPropertyClone(t *testing.T) {
 
 	if result.Enum != property.Enum {
 		t.Errorf("unexpected enum %+v", result.Enum)
+	}
+}
+
+func TestPropertyListGet(t *testing.T) {
+	list := PropertyList{
+		&Property{Name: "first"},
+		&Property{Name: "second"},
+	}
+
+	result := list.Get("second")
+	if result == nil {
+		t.Fatal("unexpected empty result when looking up second")
+	}
+
+	unexpected := list.Get("unexpected")
+	if unexpected != nil {
+		t.Fatal("unexpected lookup returned a unexpected property")
+	}
+}
+
+func TestPropertyListGetNil(t *testing.T) {
+	list := PropertyList{
+		nil,
+		&Property{Name: "first"},
+		nil,
+		&Property{Name: "second"},
+		nil,
+	}
+
+	result := list.Get("second")
+	if result == nil {
+		t.Fatal("unexpected empty result when looking up second")
+	}
+
+	unexpected := list.Get("unexpected")
+	if unexpected != nil {
+		t.Fatal("unexpected lookup returned a unexpected property")
 	}
 }
 
