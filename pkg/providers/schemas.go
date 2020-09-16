@@ -182,7 +182,7 @@ func ResolveProperty(property *specs.Property, schema *specs.Property, flow spec
 	// Set any properties not defined inside the flow but available inside the schema
 	for _, prop := range schema.Nested {
 		result := property.Nested.Get(prop.Name)
-		if result == nil {
+		if result != nil {
 			continue
 		}
 
