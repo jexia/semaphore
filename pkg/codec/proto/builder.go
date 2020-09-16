@@ -27,7 +27,7 @@ func ConstructMessage(msg *builder.MessageBuilder, specs []*specs.Property) (err
 		if prop.Type == types.Message {
 			// TODO: appending a fixed prefix is probably not a good idea.
 			nested := builder.NewMessage(key + "Nested")
-			err = ConstructMessage(nested, prop.Repeated)
+			err = ConstructMessage(nested, prop.Nested)
 			if err != nil {
 				return err
 			}

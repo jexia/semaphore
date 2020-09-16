@@ -57,7 +57,7 @@ func TestParseIntermediateStaticProperty(t *testing.T) {
 				Path:  "array",
 				Type:  types.String,
 				Label: labels.Repeated,
-				Repeated: []*specs.Property{
+				Nested: []*specs.Property{
 					{
 						Path:    "array",
 						Type:    types.String,
@@ -77,7 +77,7 @@ func TestParseIntermediateStaticProperty(t *testing.T) {
 				Path:  "array",
 				Type:  types.String,
 				Label: labels.Repeated,
-				Repeated: []*specs.Property{
+				Nested: []*specs.Property{
 					{
 						Path: "array",
 						Reference: &specs.PropertyReference{
@@ -99,7 +99,7 @@ func TestParseIntermediateStaticProperty(t *testing.T) {
 				Path:  "array",
 				Type:  types.String,
 				Label: labels.Repeated,
-				Repeated: []*specs.Property{
+				Nested: []*specs.Property{
 					{
 						Path:    "array",
 						Type:    types.Int64,
@@ -130,12 +130,12 @@ func TestParseIntermediateStaticProperty(t *testing.T) {
 				Path:  "array",
 				Type:  types.String,
 				Label: labels.Repeated,
-				Repeated: []*specs.Property{
+				Nested: []*specs.Property{
 					{
 						Path:  "array",
 						Type:  types.Message,
 						Label: labels.Optional,
-						Repeated: []*specs.Property{
+						Nested: []*specs.Property{
 							{
 								Name:    "action",
 								Path:    "array.action",
@@ -149,7 +149,7 @@ func TestParseIntermediateStaticProperty(t *testing.T) {
 						Path:  "array",
 						Type:  types.Message,
 						Label: labels.Optional,
-						Repeated: []*specs.Property{
+						Nested: []*specs.Property{
 							{
 								Name:    "action",
 								Path:    "array.action",
@@ -176,7 +176,7 @@ func TestParseIntermediateStaticProperty(t *testing.T) {
 				Path:  "array",
 				Type:  types.String,
 				Label: labels.Repeated,
-				Repeated: []*specs.Property{
+				Nested: []*specs.Property{
 					{
 						Path:    "array",
 						Type:    types.String,
@@ -193,7 +193,7 @@ func TestParseIntermediateStaticProperty(t *testing.T) {
 						Path:  "array",
 						Type:  types.Message,
 						Label: labels.Optional,
-						Repeated: []*specs.Property{
+						Nested: []*specs.Property{
 							{
 								Name: "id",
 								Path: "array.id",
@@ -221,7 +221,7 @@ func TestParseIntermediateStaticProperty(t *testing.T) {
 				Path:  "object",
 				Type:  types.Message,
 				Label: labels.Optional,
-				Repeated: []*specs.Property{
+				Nested: []*specs.Property{
 					{
 						Name:    "message",
 						Path:    "object.message",
@@ -234,7 +234,7 @@ func TestParseIntermediateStaticProperty(t *testing.T) {
 						Path:  "object.meta",
 						Type:  types.Message,
 						Label: labels.Optional,
-						Repeated: []*specs.Property{
+						Nested: []*specs.Property{
 							{
 								Name: "id",
 								Path: "object.meta.id",
@@ -268,13 +268,13 @@ func TestParseIntermediateStaticProperty(t *testing.T) {
 				Path:  "object",
 				Type:  types.Message,
 				Label: labels.Optional,
-				Repeated: []*specs.Property{
+				Nested: []*specs.Property{
 					{
 						Name:  "message",
 						Path:  "object.message",
 						Type:  types.String,
 						Label: labels.Repeated,
-						Repeated: []*specs.Property{
+						Nested: []*specs.Property{
 							{
 								Path:    "object.message",
 								Type:    types.String,
@@ -338,15 +338,15 @@ func ValidateProperties(t *testing.T, result *specs.Property, expected *specs.Pr
 		t.Errorf("property (%q) default value \"%v\" was expected to be \"%v\"", result.Path, result.Default, expected.Default)
 	}
 
-	if len(result.Repeated) != len(expected.Repeated) {
-		t.Fatalf("unexpected repeated %+v, expected %+v", result.Repeated, expected.Repeated)
+	if len(result.Nested) != len(expected.Nested) {
+		t.Fatalf("unexpected repeated %+v, expected %+v", result.Nested, expected.Nested)
 	}
 
-	for index, schema := range expected.Repeated {
+	for index, schema := range expected.Nested {
 		// if array order matters
-		nested := result.Repeated[index]
+		nested := result.Nested[index]
 		if expected.Type == types.Message {
-			nested = result.Repeated.Get(schema.Name)
+			nested = result.Nested.Get(schema.Name)
 		}
 
 		if nested == nil {

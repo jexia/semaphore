@@ -225,11 +225,11 @@ func PropertyLookup(param *specs.Property) PathLookup {
 			return param
 		}
 
-		if param.Repeated == nil {
+		if param.Nested == nil {
 			return nil
 		}
 
-		for _, param := range param.Repeated {
+		for _, param := range param.Nested {
 			lookup := PropertyLookup(param)(path)
 			if lookup != nil {
 				return lookup

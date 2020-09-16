@@ -15,7 +15,7 @@ const (
 
 func outputs() *specs.Property {
 	return &specs.Property{
-		Repeated: []*specs.Property{
+		Nested: []*specs.Property{
 			{
 				Name:  propSubject,
 				Path:  propSubject,

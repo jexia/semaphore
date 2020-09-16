@@ -176,7 +176,7 @@ func TestPrepareFunctions(t *testing.T) {
 									Property: &specs.Property{
 										Type:  types.Message,
 										Label: labels.Optional,
-										Repeated: []*specs.Property{
+										Nested: []*specs.Property{
 											{
 												Name: "fn",
 												Path: "fn",
@@ -189,7 +189,7 @@ func TestPrepareFunctions(t *testing.T) {
 									Property: &specs.Property{
 										Type:  types.Message,
 										Label: labels.Optional,
-										Repeated: []*specs.Property{
+										Nested: []*specs.Property{
 											{
 												Name: "fn",
 												Path: "fn",
@@ -205,7 +205,7 @@ func TestPrepareFunctions(t *testing.T) {
 						Property: &specs.Property{
 							Type:  types.Message,
 							Label: labels.Optional,
-							Repeated: []*specs.Property{
+							Nested: []*specs.Property{
 								{
 									Name: "fn",
 									Path: "fn",
@@ -236,7 +236,7 @@ func TestPrepareFunctions(t *testing.T) {
 									Property: &specs.Property{
 										Type:  types.Message,
 										Label: labels.Optional,
-										Repeated: []*specs.Property{
+										Nested: []*specs.Property{
 											{
 												Name: "fn",
 												Path: "fn",
@@ -256,7 +256,7 @@ func TestPrepareFunctions(t *testing.T) {
 									Property: &specs.Property{
 										Type:  types.Message,
 										Label: labels.Optional,
-										Repeated: []*specs.Property{
+										Nested: []*specs.Property{
 											{
 												Name: "fn",
 												Path: "fn",
@@ -315,7 +315,7 @@ func TestPrepareFunctions(t *testing.T) {
 									Property: &specs.Property{
 										Type:  types.Message,
 										Label: labels.Optional,
-										Repeated: []*specs.Property{
+										Nested: []*specs.Property{
 											{
 												Name: "fn",
 												Path: "fn",
@@ -328,7 +328,7 @@ func TestPrepareFunctions(t *testing.T) {
 									Property: &specs.Property{
 										Type:  types.Message,
 										Label: labels.Optional,
-										Repeated: []*specs.Property{
+										Nested: []*specs.Property{
 											{
 												Name: "fn",
 												Path: "fn",
@@ -362,7 +362,7 @@ func TestPrepareFunctions(t *testing.T) {
 									Property: &specs.Property{
 										Type:  types.Message,
 										Label: labels.Optional,
-										Repeated: []*specs.Property{
+										Nested: []*specs.Property{
 											{
 												Name: "fn",
 												Path: "fn",
@@ -382,7 +382,7 @@ func TestPrepareFunctions(t *testing.T) {
 									Property: &specs.Property{
 										Type:  types.Message,
 										Label: labels.Optional,
-										Repeated: []*specs.Property{
+										Nested: []*specs.Property{
 											{
 												Name: "fn",
 												Path: "fn",
@@ -515,7 +515,7 @@ func TestPrepareFunctions(t *testing.T) {
 									Property: &specs.Property{
 										Type:  types.Message,
 										Label: labels.Optional,
-										Repeated: []*specs.Property{
+										Nested: []*specs.Property{
 											{
 												Name: "fn",
 												Path: "fn",
@@ -541,7 +541,7 @@ func TestPrepareFunctions(t *testing.T) {
 								Property: &specs.Property{
 									Type:  types.Message,
 									Label: labels.Optional,
-									Repeated: []*specs.Property{
+									Nested: []*specs.Property{
 										{
 											Name: "fn",
 											Path: "fn",
@@ -622,7 +622,7 @@ func TestPrepareFunctionsErr(t *testing.T) {
 									Property: &specs.Property{
 										Type:  types.Message,
 										Label: labels.Optional,
-										Repeated: []*specs.Property{
+										Nested: []*specs.Property{
 											{
 												Name: "fn",
 												Path: "fn",
@@ -635,7 +635,7 @@ func TestPrepareFunctionsErr(t *testing.T) {
 									Property: &specs.Property{
 										Type:  types.Message,
 										Label: labels.Optional,
-										Repeated: []*specs.Property{
+										Nested: []*specs.Property{
 											{
 												Name: "fn",
 												Path: "fn",
@@ -651,7 +651,7 @@ func TestPrepareFunctionsErr(t *testing.T) {
 						Property: &specs.Property{
 							Type:  types.Message,
 							Label: labels.Optional,
-							Repeated: []*specs.Property{
+							Nested: []*specs.Property{
 								{
 									Name: "fn",
 									Path: "fn",
@@ -680,7 +680,7 @@ func TestPrepareFunctionsErr(t *testing.T) {
 									Property: &specs.Property{
 										Type:  types.Message,
 										Label: labels.Optional,
-										Repeated: []*specs.Property{
+										Nested: []*specs.Property{
 											{
 												Name: "fn",
 												Path: "fn",
@@ -700,7 +700,7 @@ func TestPrepareFunctionsErr(t *testing.T) {
 									Property: &specs.Property{
 										Type:  types.Message,
 										Label: labels.Optional,
-										Repeated: []*specs.Property{
+										Nested: []*specs.Property{
 											{
 												Name: "fn",
 												Path: "fn",
@@ -755,7 +755,7 @@ func TestPrepareFunctionsErr(t *testing.T) {
 									Property: &specs.Property{
 										Type:  types.Message,
 										Label: labels.Optional,
-										Repeated: []*specs.Property{
+										Nested: []*specs.Property{
 											{
 												Name: "fn",
 												Path: "fn",
@@ -768,7 +768,7 @@ func TestPrepareFunctionsErr(t *testing.T) {
 									Property: &specs.Property{
 										Type:  types.Message,
 										Label: labels.Optional,
-										Repeated: []*specs.Property{
+										Nested: []*specs.Property{
 											{
 												Name: "fn",
 												Path: "fn",
@@ -800,7 +800,7 @@ func TestPrepareFunctionsErr(t *testing.T) {
 									Property: &specs.Property{
 										Type:  types.Message,
 										Label: labels.Optional,
-										Repeated: []*specs.Property{
+										Nested: []*specs.Property{
 											{
 												Name: "fn",
 												Path: "fn",
@@ -820,7 +820,7 @@ func TestPrepareFunctionsErr(t *testing.T) {
 									Property: &specs.Property{
 										Type:  types.Message,
 										Label: labels.Optional,
-										Repeated: []*specs.Property{
+										Nested: []*specs.Property{
 											{
 												Name: "fn",
 												Path: "fn",
@@ -877,7 +877,7 @@ func TestPrepareFunctionsErr(t *testing.T) {
 									Property: &specs.Property{
 										Type:  types.Message,
 										Label: labels.Optional,
-										Repeated: []*specs.Property{
+										Nested: []*specs.Property{
 											{
 												Name: "fn",
 												Path: "fn",
@@ -901,7 +901,7 @@ func TestPrepareFunctionsErr(t *testing.T) {
 								Property: &specs.Property{
 									Type:  types.Message,
 									Label: labels.Optional,
-									Repeated: []*specs.Property{
+									Nested: []*specs.Property{
 										{
 											Name: "fn",
 											Path: "fn",
@@ -1025,7 +1025,7 @@ func TestPrepareParameterMapFunctions(t *testing.T) {
 				Property: &specs.Property{
 					Type:  types.Message,
 					Label: labels.Optional,
-					Repeated: []*specs.Property{
+					Nested: []*specs.Property{
 						{
 							Name: "fn",
 							Path: "fn",
@@ -1053,13 +1053,13 @@ func TestPrepareParameterMapFunctions(t *testing.T) {
 				Property: &specs.Property{
 					Type:  types.Message,
 					Label: labels.Optional,
-					Repeated: []*specs.Property{
+					Nested: []*specs.Property{
 						{
 							Name:  "nested",
 							Path:  "nested",
 							Type:  types.Message,
 							Label: labels.Optional,
-							Repeated: []*specs.Property{
+							Nested: []*specs.Property{
 								{
 									Name: "fn",
 									Path: "nested.fn",
@@ -1077,7 +1077,7 @@ func TestPrepareParameterMapFunctions(t *testing.T) {
 				Property: &specs.Property{
 					Type:  types.Message,
 					Label: labels.Optional,
-					Repeated: []*specs.Property{
+					Nested: []*specs.Property{
 						{
 							Name: "fn",
 							Path: "fn",
@@ -1136,7 +1136,7 @@ func TestFunctionsNestedReferences(t *testing.T) {
 	result := &specs.Property{
 		Type:  types.Message,
 		Label: labels.Optional,
-		Repeated: []*specs.Property{
+		Nested: []*specs.Property{
 			{
 				Name:    "id",
 				Path:    "id",
@@ -1169,11 +1169,11 @@ func TestFunctionsNestedReferences(t *testing.T) {
 		t.Fatal("property reference not set")
 	}
 
-	if len(property.Repeated) != len(result.Repeated) {
+	if len(property.Nested) != len(result.Nested) {
 		t.Fatal("property reference nested is not equal to result")
 	}
 
-	for _, nested := range property.Repeated {
+	for _, nested := range property.Nested {
 		if nested.Reference == nil {
 			t.Fatal("nested reference not set")
 		}

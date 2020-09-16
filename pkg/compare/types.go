@@ -154,13 +154,13 @@ func CheckPropertyTypes(property *specs.Property, schema *specs.Property, flow s
 		return trace.New(trace.WithExpression(property.Expr), trace.WithMessage("cannot use label (%s) for '%s', expected (%s)", property.Label, property.Path, schema.Label))
 	}
 
-	if len(property.Repeated) > 0 {
-		if len(schema.Repeated) == 0 {
+	if len(property.Nested) > 0 {
+		if len(schema.Nested) == 0 {
 			return trace.New(trace.WithExpression(property.Expr), trace.WithMessage("property '%s' has a nested object but schema does not '%s'", property.Path, schema.Name))
 		}
 
-		for _, nested := range property.Repeated {
-			object := schema.Repeated.Get(nested.Name)
+		for _, nested := range property.Nested {
+			object := schema.Nested.Get(nested.Name)
 			if object == nil {
 				return trace.New(trace.WithExpression(nested.Expr), trace.WithMessage("undefined schema nested message property '%s' in flow '%s'", nested.Path, flow.GetName()))
 			}

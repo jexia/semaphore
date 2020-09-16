@@ -21,7 +21,7 @@ func NewObject(name string, prop *specs.Property) (*graphql.Object, error) {
 	}
 
 	fields := graphql.Fields{}
-	for _, nested := range prop.Repeated {
+	for _, nested := range prop.Nested {
 		if nested.Type == types.Message {
 			field := &graphql.Field{
 				Description: nested.Comment,

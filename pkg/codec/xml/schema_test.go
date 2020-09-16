@@ -12,7 +12,7 @@ var (
 		Property: &specs.Property{
 			Type:  types.Message,
 			Label: labels.Optional,
-			Repeated: []*specs.Property{
+			Nested: []*specs.Property{
 				{
 					Name:  "bad_label",
 					Path:  "bad_label",
@@ -78,7 +78,7 @@ var (
 					Path:  "nested",
 					Type:  types.Message,
 					Label: labels.Optional,
-					Repeated: []*specs.Property{
+					Nested: []*specs.Property{
 						{
 							Name:  "first",
 							Path:  "nested.first",
@@ -138,7 +138,7 @@ var (
 					Path:  "repeating",
 					Type:  types.Message,
 					Label: labels.Repeated,
-					Repeated: []*specs.Property{
+					Nested: []*specs.Property{
 						{
 							Name:  "value",
 							Path:  "repeating.value",

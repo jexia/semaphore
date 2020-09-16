@@ -55,7 +55,7 @@ func NewMock() (specs.FlowListInterface, error) {
 
 func ValidateStore(t *testing.T, prop *specs.Property, resource string, origin string, input map[string]interface{}, store references.Store) {
 	for key, value := range input {
-		nprop := prop.Repeated.Get(key)
+		nprop := prop.Nested.Get(key)
 		if nprop == nil {
 			nprop = prop
 		}

@@ -28,6 +28,9 @@ components:
           type: integer
         name:
           type: string
+        interests:
+          items:
+            type: string
         status:
           type: string
           enum:

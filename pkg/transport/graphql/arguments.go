@@ -25,11 +25,11 @@ func NewArgs(props *specs.ParameterMap) (graphql.FieldConfigArgument, error) {
 		return nil, trace.New(trace.WithMessage("arguments must be a object, received '%s'", prop.Type))
 	}
 
-	if len(prop.Repeated) == 0 {
+	if len(prop.Nested) == 0 {
 		return args, nil
 	}
 
-	for _, nested := range prop.Repeated {
+	for _, nested := range prop.Nested {
 		typ := gtypes[nested.Type]
 		if nested.Type == types.Message {
 			result, err := NewInputArgObject(nested)
@@ -81,7 +81,7 @@ func NewInputArgObject(prop *specs.Property) (*graphql.InputObject, error) {
 
 	fields := graphql.InputObjectConfigFieldMap{}
 
-	for _, nested := range prop.Repeated {
+	for _, nested := range prop.Nested {
 		typ := gtypes[nested.Type]
 		if nested.Type == types.Message {
 			result, err := NewInputArgObject(nested)

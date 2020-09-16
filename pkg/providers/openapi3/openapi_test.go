@@ -3,10 +3,10 @@ package openapi3
 import (
 	"io/ioutil"
 	"path/filepath"
-	"reflect"
 	"strings"
 	"testing"
 
+	"github.com/go-test/deep"
 	"github.com/jexia/semaphore"
 	"github.com/jexia/semaphore/cmd/semaphore/daemon/providers"
 	"github.com/jexia/semaphore/pkg/broker"
@@ -93,15 +93,14 @@ func TestOpenAPI3Generation(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			expected := Object{}
-
-			err = yaml.Unmarshal(bb, &expected)
+			expected := &Object{}
+			err = yaml.Unmarshal(bb, expected)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			if reflect.DeepEqual(result, expected) {
-				t.Fatal("unexpected result")
+			if diff := deep.Equal(result, expected); diff != nil {
+				t.Fatal(diff)
 			}
 		})
 	}

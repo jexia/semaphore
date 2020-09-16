@@ -34,7 +34,7 @@ func (method *Method) GetRequest() []*specs.Property {
 		return make([]*specs.Property, 0)
 	}
 
-	return method.Request.Definition.Property.Repeated
+	return method.Request.Definition.Property.Nested
 }
 
 // GetResponse returns the request output parameter map
@@ -43,5 +43,5 @@ func (method *Method) GetResponse() []*specs.Property {
 		return make([]*specs.Property, 0)
 	}
 
-	return method.Response.Definition.Property.Repeated
+	return method.Response.Definition.Property.Nested
 }

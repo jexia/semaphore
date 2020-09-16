@@ -296,8 +296,8 @@ func PropertyReferences(property *specs.Property) Collection {
 		result[property.Reference.String()] = property.Reference
 	}
 
-	if property.Repeated != nil {
-		for _, nested := range property.Repeated {
+	if property.Nested != nil {
+		for _, nested := range property.Nested {
 			for key, ref := range PropertyReferences(nested) {
 				result[key] = ref
 			}

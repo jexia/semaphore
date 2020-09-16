@@ -623,7 +623,7 @@ func TestParameterMapReferences(t *testing.T) {
 			count: 2,
 			params: &specs.ParameterMap{
 				Property: &specs.Property{
-					Repeated: []*specs.Property{
+					Nested: []*specs.Property{
 						{
 							Name: "first",
 							Path: "first",
@@ -646,7 +646,7 @@ func TestParameterMapReferences(t *testing.T) {
 			count: 1,
 			params: &specs.ParameterMap{
 				Property: &specs.Property{
-					Repeated: []*specs.Property{
+					Nested: []*specs.Property{
 						{
 							Name: "first",
 							Path: "first",

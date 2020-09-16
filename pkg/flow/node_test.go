@@ -37,7 +37,7 @@ func NewMockOnError() *specs.OnError {
 			Property: &specs.Property{
 				Type:  types.Message,
 				Label: labels.Optional,
-				Repeated: []*specs.Property{
+				Nested: []*specs.Property{
 					{
 						Name:  "status",
 						Path:  "status",
@@ -82,7 +82,7 @@ func BenchmarkSingleNodeCallingJSONCodecParallel(b *testing.B) {
 		Property: &specs.Property{
 			Type:  types.Message,
 			Label: labels.Optional,
-			Repeated: []*specs.Property{
+			Nested: []*specs.Property{
 				{
 					Name:    "key",
 					Path:    "key",
@@ -102,7 +102,7 @@ func BenchmarkSingleNodeCallingJSONCodecParallel(b *testing.B) {
 		Property: &specs.Property{
 			Type:  types.Message,
 			Label: labels.Optional,
-			Repeated: []*specs.Property{
+			Nested: []*specs.Property{
 				{
 					Name:    "key",
 					Path:    "key",
@@ -153,7 +153,7 @@ func BenchmarkSingleNodeCallingJSONCodecSerial(b *testing.B) {
 		Property: &specs.Property{
 			Type:  types.Message,
 			Label: labels.Optional,
-			Repeated: []*specs.Property{
+			Nested: []*specs.Property{
 				{
 					Name:    "key",
 					Path:    "key",
@@ -173,7 +173,7 @@ func BenchmarkSingleNodeCallingJSONCodecSerial(b *testing.B) {
 		Property: &specs.Property{
 			Type:  types.Message,
 			Label: labels.Optional,
-			Repeated: []*specs.Property{
+			Nested: []*specs.Property{
 				{
 					Name:    "key",
 					Path:    "key",
@@ -319,7 +319,7 @@ func TestConstructingNode(t *testing.T) {
 				Call: &specs.Call{
 					Request: &specs.ParameterMap{
 						Property: &specs.Property{
-							Repeated: []*specs.Property{
+							Nested: []*specs.Property{
 								{
 									Name: "first",
 									Path: "first",
@@ -348,7 +348,7 @@ func TestConstructingNode(t *testing.T) {
 				Call: &specs.Call{
 					Request: &specs.ParameterMap{
 						Property: &specs.Property{
-							Repeated: []*specs.Property{
+							Nested: []*specs.Property{
 								{
 									Name: "first",
 									Path: "first",

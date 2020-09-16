@@ -452,7 +452,7 @@ func TestListenerErrorHandling(t *testing.T) {
 					Property: &specs.Property{
 						Type:  types.Message,
 						Label: labels.Optional,
-						Repeated: []*specs.Property{
+						Nested: []*specs.Property{
 							{
 								Name:  "status",
 								Path:  "status",
@@ -507,7 +507,7 @@ func TestListenerErrorHandling(t *testing.T) {
 					Property: &specs.Property{
 						Type:  types.Message,
 						Label: labels.Optional,
-						Repeated: []*specs.Property{
+						Nested: []*specs.Property{
 							{
 								Name:  "status",
 								Path:  "status",
@@ -562,7 +562,7 @@ func TestListenerErrorHandling(t *testing.T) {
 					Property: &specs.Property{
 						Type:  types.Message,
 						Label: labels.Optional,
-						Repeated: []*specs.Property{
+						Nested: []*specs.Property{
 							{
 								Name:  "status",
 								Path:  "status",
@@ -617,13 +617,13 @@ func TestListenerErrorHandling(t *testing.T) {
 					Property: &specs.Property{
 						Type:  types.Message,
 						Label: labels.Optional,
-						Repeated: []*specs.Property{
+						Nested: []*specs.Property{
 							{
 								Name:  "meta",
 								Path:  "meta",
 								Type:  types.Message,
 								Label: labels.Optional,
-								Repeated: []*specs.Property{
+								Nested: []*specs.Property{
 									{
 										Name:  "status",
 										Path:  "meta.status",

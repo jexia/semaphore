@@ -53,7 +53,7 @@ func (object *Object) MarshalJSONObject(encoder *gojay.Encoder) {
 		}
 
 		if prop.Type == types.Message {
-			result := NewObject(object.resource, prop.Repeated, object.refs)
+			result := NewObject(object.resource, prop.Nested, object.refs)
 			encoder.AddObjectKey(prop.Name, result)
 			continue
 		}
@@ -106,7 +106,7 @@ func (object *Object) UnmarshalJSONObject(dec *gojay.Decoder, key string) error 
 
 	if prop.Type == types.Message {
 		return dec.AddObject(
-			NewObject(object.resource, prop.Repeated, object.refs),
+			NewObject(object.resource, prop.Nested, object.refs),
 		)
 	}
 

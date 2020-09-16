@@ -242,8 +242,8 @@ func ResolveProperty(ctx *broker.Context, node *specs.Node, property *specs.Prop
 		return nil
 	}
 
-	if len(property.Repeated) > 0 {
-		for _, nested := range property.Repeated {
+	if len(property.Nested) > 0 {
+		for _, nested := range property.Nested {
 			err := ResolveProperty(ctx, node, nested, flow)
 			if err != nil {
 				return ErrUnresolvedProperty{
@@ -254,8 +254,8 @@ func ResolveProperty(ctx *broker.Context, node *specs.Node, property *specs.Prop
 		}
 	}
 
-	if len(property.Repeated) > 0 {
-		for _, repeated := range property.Repeated {
+	if len(property.Nested) > 0 {
+		for _, repeated := range property.Nested {
 			err := ResolveProperty(ctx, node, repeated, flow)
 			if err != nil {
 				return err
@@ -354,8 +354,8 @@ func InsideProperty(source *specs.Property, target *specs.Property) bool {
 		return true
 	}
 
-	if len(source.Repeated) > 0 {
-		for _, nested := range source.Repeated {
+	if len(source.Nested) > 0 {
+		for _, nested := range source.Nested {
 			is := InsideProperty(nested, target)
 			if is {
 				return is
@@ -372,11 +372,11 @@ func ScopeNestedReferences(source *specs.Property, property *specs.Property) {
 		return
 	}
 
-	for _, item := range source.Repeated {
-		nested := property.Repeated.Get(item.Name)
+	for _, item := range source.Nested {
+		nested := property.Nested.Get(item.Name)
 		if nested == nil {
 			nested = item.Clone()
-			property.Repeated = append(property.Repeated, nested)
+			property.Nested = append(property.Nested, nested)
 		}
 
 		if nested.Reference == nil {
@@ -387,7 +387,7 @@ func ScopeNestedReferences(source *specs.Property, property *specs.Property) {
 			}
 		}
 
-		if len(item.Repeated) > 0 {
+		if len(item.Nested) > 0 {
 			ScopeNestedReferences(item, nested)
 		}
 	}

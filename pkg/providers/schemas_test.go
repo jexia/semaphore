@@ -37,7 +37,7 @@ func NewMockSchemas() specs.Schemas {
 		"com.mock.message": &specs.Property{
 			Type:  types.Message,
 			Label: labels.Optional,
-			Repeated: []*specs.Property{
+			Nested: []*specs.Property{
 				{
 					Name:  "value",
 					Path:  "value",
@@ -49,7 +49,7 @@ func NewMockSchemas() specs.Schemas {
 					Path:  "meta",
 					Type:  types.Message,
 					Label: labels.Optional,
-					Repeated: []*specs.Property{
+					Nested: []*specs.Property{
 						{
 							Name:  "id",
 							Path:  "meta.id",
@@ -370,7 +370,7 @@ func TestUndefinedNestedSchemaProperty(t *testing.T) {
 		"single": {
 			Schema: "com.mock.message",
 			Property: &specs.Property{
-				Repeated: []*specs.Property{
+				Nested: []*specs.Property{
 					nil,
 				},
 			},
@@ -378,11 +378,11 @@ func TestUndefinedNestedSchemaProperty(t *testing.T) {
 		"nested": {
 			Schema: "com.mock.message",
 			Property: &specs.Property{
-				Repeated: []*specs.Property{
+				Nested: []*specs.Property{
 					{
 						Name: "meta",
 						Path: "meta",
-						Repeated: []*specs.Property{
+						Nested: []*specs.Property{
 							nil,
 						},
 					},

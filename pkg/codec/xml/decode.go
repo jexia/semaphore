@@ -13,7 +13,7 @@ func decodeNested(decoder *xml.Decoder, start xml.StartElement, prop *specs.Prop
 		return errNotAnObject
 	}
 
-	var nested = NewObject(resource, prop.Repeated, store)
+	var nested = NewObject(resource, prop.Nested, store)
 
 	return nested.startElement(decoder, start, refs)
 }
@@ -34,7 +34,7 @@ func decodeRepeatedNested(decoder *xml.Decoder, start xml.StartElement, prop *sp
 		refs[prop.Path] = ref
 	}
 
-	var nested = NewObject(resource, prop.Repeated, store)
+	var nested = NewObject(resource, prop.Nested, store)
 	if err := nested.startElement(decoder, start, refs); err != nil {
 		return err
 	}

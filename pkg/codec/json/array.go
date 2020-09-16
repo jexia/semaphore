@@ -11,8 +11,8 @@ import (
 func NewArray(resource string, object *specs.Property, ref *references.Reference, refs []references.Store) *Array {
 	keys := 0
 
-	if object.Repeated != nil {
-		keys = len(object.Repeated)
+	if object.Nested != nil {
+		keys = len(object.Nested)
 	}
 
 	return &Array{
@@ -37,7 +37,7 @@ type Array struct {
 func (array *Array) MarshalJSONArray(enc *gojay.Encoder) {
 	for _, store := range array.items {
 		if array.specs.Type == types.Message {
-			object := NewObject(array.resource, array.specs.Repeated, store)
+			object := NewObject(array.resource, array.specs.Nested, store)
 			enc.AddObject(object)
 			continue
 		}
@@ -70,7 +70,7 @@ func (array *Array) UnmarshalJSONArray(dec *gojay.Decoder) error {
 	store := references.NewReferenceStore(array.keys)
 
 	if array.specs.Type == types.Message {
-		object := NewObject(array.resource, array.specs.Repeated, store)
+		object := NewObject(array.resource, array.specs.Nested, store)
 		err := dec.AddObject(object)
 		if err != nil {
 			return err

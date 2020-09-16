@@ -32,12 +32,12 @@ func NewMessage(path string, descriptor *desc.MessageDescriptor) *specs.Property
 		Position: 1,
 		Type:     types.Message,
 		Label:    labels.Optional,
-		Repeated: make([]*specs.Property, len(fields)),
+		Nested:   make([]*specs.Property, len(fields)),
 		Options:  specs.Options{},
 	}
 
 	for index, field := range fields {
-		result.Repeated[index] = NewProperty(template.JoinPath(path, field.GetName()), field)
+		result.Nested[index] = NewProperty(template.JoinPath(path, field.GetName()), field)
 	}
 
 	return result
@@ -84,10 +84,10 @@ func NewProperty(path string, descriptor *desc.FieldDescriptor) *specs.Property 
 	}
 
 	fields := descriptor.GetMessageType().GetFields()
-	result.Repeated = make([]*specs.Property, len(fields))
+	result.Nested = make([]*specs.Property, len(fields))
 
 	for index, field := range fields {
-		result.Repeated[index] = NewProperty(template.JoinPath(path, field.GetName()), field)
+		result.Nested[index] = NewProperty(template.JoinPath(path, field.GetName()), field)
 	}
 
 	return result

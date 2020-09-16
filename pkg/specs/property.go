@@ -78,7 +78,7 @@ type Property struct {
 	Type      types.Type         `json:"type,omitempty"`
 	Label     labels.Label       `json:"label,omitempty"`
 	Reference *PropertyReference `json:"reference,omitempty"`
-	Repeated  PropertyList       `json:"repeated,omitempty"`
+	Nested    PropertyList       `json:"repeated,omitempty"`
 	Expr      Expression         `json:"-"`
 	Raw       string             `json:"raw,omitempty"`
 	Options   Options            `json:"options,omitempty"`
@@ -115,7 +115,7 @@ func (prop *Property) UnmarshalJSON(data []byte) error {
 	*prop = Property(p)
 	prop.Clean()
 
-	for _, nested := range prop.Repeated {
+	for _, nested := range prop.Nested {
 		nested.Clean()
 	}
 
@@ -170,11 +170,11 @@ func (prop *Property) Clone() *Property {
 		Raw:       prop.Raw,
 		Options:   prop.Options,
 		Enum:      prop.Enum,
-		Repeated:  make([]*Property, len(prop.Repeated)),
+		Nested:    make([]*Property, len(prop.Nested)),
 	}
 
-	for index, nested := range prop.Repeated {
-		result.Repeated[index] = nested.Clone()
+	for index, nested := range prop.Nested {
+		result.Nested[index] = nested.Clone()
 	}
 
 	return result

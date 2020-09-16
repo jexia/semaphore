@@ -150,12 +150,12 @@ func ResolveProperty(property *specs.Property, schema *specs.Property, flow spec
 		return nil
 	}
 
-	for _, nested := range property.Repeated {
+	for _, nested := range property.Nested {
 		if nested == nil {
 			continue
 		}
 
-		object := schema.Repeated.Get(nested.Name)
+		object := schema.Nested.Get(nested.Name)
 		if object == nil {
 			return trace.New(trace.WithMessage("undefined schema nested message property '%s' in flow '%s'", nested.Name, flow.GetName()))
 		}
@@ -167,26 +167,26 @@ func ResolveProperty(property *specs.Property, schema *specs.Property, flow spec
 	}
 
 	// TODO: check whether this implementation is correct
-	if property.Repeated != nil {
+	if property.Nested != nil {
 		clone := schema.Clone()
 		property.Type = clone.Type
 		property.Label = clone.Label
 	}
 
-	if property.Repeated == nil && schema.Repeated != nil {
+	if property.Nested == nil && schema.Nested != nil {
 		clone := schema.Clone()
-		property.Repeated = clone.Repeated
+		property.Nested = clone.Nested
 		return nil
 	}
 
 	// Set any properties not defined inside the flow but available inside the schema
-	for _, prop := range schema.Repeated {
-		result := property.Repeated.Get(prop.Name)
+	for _, prop := range schema.Nested {
+		result := property.Nested.Get(prop.Name)
 		if result == nil {
 			continue
 		}
 
-		property.Repeated = append(property.Repeated, prop.Clone())
+		property.Nested = append(property.Nested, prop.Clone())
 	}
 
 	return nil

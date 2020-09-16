@@ -142,7 +142,7 @@ func TestScopeNestedReferences(t *testing.T) {
 	tests := map[string]test{
 		"root": {
 			source: &specs.Property{
-				Repeated: []*specs.Property{
+				Nested: []*specs.Property{
 					{
 						Name: "key",
 						Path: "key",
@@ -156,11 +156,11 @@ func TestScopeNestedReferences(t *testing.T) {
 		},
 		"nested": {
 			source: &specs.Property{
-				Repeated: []*specs.Property{
+				Nested: []*specs.Property{
 					{
 						Name: "key",
 						Path: "key",
-						Repeated: []*specs.Property{
+						Nested: []*specs.Property{
 							{
 								Name: "nested",
 								Path: "key.nested",
@@ -170,7 +170,7 @@ func TestScopeNestedReferences(t *testing.T) {
 				},
 			},
 			target: &specs.Property{
-				Repeated: []*specs.Property{
+				Nested: []*specs.Property{
 					{
 						Name:      "key",
 						Path:      "key",
@@ -181,11 +181,11 @@ func TestScopeNestedReferences(t *testing.T) {
 		},
 		"partial": {
 			source: &specs.Property{
-				Repeated: []*specs.Property{
+				Nested: []*specs.Property{
 					{
 						Name: "key",
 						Path: "key",
-						Repeated: []*specs.Property{
+						Nested: []*specs.Property{
 							{
 								Name: "first",
 								Path: "key.first",
@@ -199,12 +199,12 @@ func TestScopeNestedReferences(t *testing.T) {
 				},
 			},
 			target: &specs.Property{
-				Repeated: []*specs.Property{
+				Nested: []*specs.Property{
 					{
 						Name:      "key",
 						Path:      "key",
 						Reference: reference,
-						Repeated: []*specs.Property{
+						Nested: []*specs.Property{
 							{
 								Name:      "second",
 								Path:      "key.second",
@@ -223,12 +223,12 @@ func TestScopeNestedReferences(t *testing.T) {
 
 			var lookup func(source *specs.Property, target *specs.Property)
 			lookup = func(source *specs.Property, target *specs.Property) {
-				if len(target.Repeated) != len(source.Repeated) {
-					t.Fatalf("unexpected length %d (%+v), expected %d (%s)(%+v).", len(target.Repeated), target.Repeated, len(source.Repeated), source.Path, source.Repeated)
+				if len(target.Nested) != len(source.Nested) {
+					t.Fatalf("unexpected length %d (%+v), expected %d (%s)(%+v).", len(target.Nested), target.Nested, len(source.Nested), source.Path, source.Nested)
 				}
 
-				for _, item := range source.Repeated {
-					target := target.Repeated.Get(item.Name)
+				for _, item := range source.Nested {
+					target := target.Nested.Get(item.Name)
 					if target == nil {
 						t.Fatalf("target does not have nested key %s", item.Name)
 					}

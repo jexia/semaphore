@@ -28,4 +28,5 @@ message User {
     string username = 3;
     string email = 4;
     Status status = 5;
+    repeated string interests = 6;
 }

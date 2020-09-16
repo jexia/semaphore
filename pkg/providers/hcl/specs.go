@@ -326,9 +326,9 @@ func ParseIntermediateParameterMap(ctx *broker.Context, params *ParameterMap) (*
 		Schema:  params.Schema,
 		Options: make(specs.Options),
 		Property: &specs.Property{
-			Type:     types.Message,
-			Label:    labels.Optional,
-			Repeated: []*specs.Property{},
+			Type:   types.Message,
+			Label:  labels.Optional,
+			Nested: []*specs.Property{},
 		},
 	}
 
@@ -352,7 +352,7 @@ func ParseIntermediateParameterMap(ctx *broker.Context, params *ParameterMap) (*
 			return nil, err
 		}
 
-		result.Property.Repeated = append(result.Property.Repeated, results)
+		result.Property.Nested = append(result.Property.Nested, results)
 	}
 
 	for _, nested := range params.Nested {
@@ -361,7 +361,7 @@ func ParseIntermediateParameterMap(ctx *broker.Context, params *ParameterMap) (*
 			return nil, err
 		}
 
-		result.Property.Repeated = append(result.Property.Repeated, results)
+		result.Property.Nested = append(result.Property.Nested, results)
 	}
 
 	for _, repeated := range params.Repeated {
@@ -370,7 +370,7 @@ func ParseIntermediateParameterMap(ctx *broker.Context, params *ParameterMap) (*
 			return nil, err
 		}
 
-		result.Property.Repeated = append(result.Property.Repeated, results)
+		result.Property.Nested = append(result.Property.Nested, results)
 	}
 
 	return &result, nil
@@ -380,11 +380,11 @@ func ParseIntermediateParameterMap(ctx *broker.Context, params *ParameterMap) (*
 func ParseIntermediateNestedParameterMap(ctx *broker.Context, params NestedParameterMap, path string) (*specs.Property, error) {
 	properties, _ := params.Properties.JustAttributes()
 	result := specs.Property{
-		Name:     params.Name,
-		Path:     path,
-		Type:     types.Message,
-		Label:    labels.Optional,
-		Repeated: []*specs.Property{},
+		Name:   params.Name,
+		Path:   path,
+		Type:   types.Message,
+		Label:  labels.Optional,
+		Nested: []*specs.Property{},
 	}
 
 	for _, nested := range params.Nested {
@@ -393,7 +393,7 @@ func ParseIntermediateNestedParameterMap(ctx *broker.Context, params NestedParam
 			return nil, err
 		}
 
-		result.Repeated = append(result.Repeated, returns)
+		result.Nested = append(result.Nested, returns)
 	}
 
 	for _, repeated := range params.Repeated {
@@ -402,7 +402,7 @@ func ParseIntermediateNestedParameterMap(ctx *broker.Context, params NestedParam
 			return nil, err
 		}
 
-		result.Repeated = append(result.Repeated, returns)
+		result.Nested = append(result.Nested, returns)
 	}
 
 	for _, attr := range properties {
@@ -412,7 +412,7 @@ func ParseIntermediateNestedParameterMap(ctx *broker.Context, params NestedParam
 			return nil, err
 		}
 
-		result.Repeated = append(result.Repeated, returns)
+		result.Nested = append(result.Nested, returns)
 	}
 
 	return &result, nil
@@ -427,7 +427,7 @@ func ParseIntermediateRepeatedParameterMap(ctx *broker.Context, params RepeatedP
 		Reference: template.ParsePropertyReference(params.Template),
 		Type:      types.Message,
 		Label:     labels.Optional,
-		Repeated:  []*specs.Property{},
+		Nested:    []*specs.Property{},
 	}
 
 	for _, nested := range params.Nested {
@@ -436,7 +436,7 @@ func ParseIntermediateRepeatedParameterMap(ctx *broker.Context, params RepeatedP
 			return nil, err
 		}
 
-		result.Repeated = append(result.Repeated, returns)
+		result.Nested = append(result.Nested, returns)
 	}
 
 	for _, repeated := range params.Repeated {
@@ -445,7 +445,7 @@ func ParseIntermediateRepeatedParameterMap(ctx *broker.Context, params RepeatedP
 			return nil, err
 		}
 
-		result.Repeated = append(result.Repeated, returns)
+		result.Nested = append(result.Nested, returns)
 	}
 
 	for _, attr := range properties {
@@ -455,7 +455,7 @@ func ParseIntermediateRepeatedParameterMap(ctx *broker.Context, params RepeatedP
 			return nil, err
 		}
 
-		result.Repeated = append(result.Repeated, returns)
+		result.Nested = append(result.Nested, returns)
 	}
 
 	return &result, nil
@@ -607,9 +607,9 @@ func ParseIntermediateCallParameterMap(ctx *broker.Context, params *Call) (*spec
 	result := specs.ParameterMap{
 		Options: make(specs.Options),
 		Property: &specs.Property{
-			Type:     types.Message,
-			Label:    labels.Optional,
-			Repeated: []*specs.Property{},
+			Type:   types.Message,
+			Label:  labels.Optional,
+			Nested: []*specs.Property{},
 		},
 	}
 
@@ -644,7 +644,7 @@ func ParseIntermediateCallParameterMap(ctx *broker.Context, params *Call) (*spec
 			return nil, err
 		}
 
-		result.Property.Repeated = append(result.Property.Repeated, results)
+		result.Property.Nested = append(result.Property.Nested, results)
 	}
 
 	for _, nested := range params.Nested {
@@ -653,7 +653,7 @@ func ParseIntermediateCallParameterMap(ctx *broker.Context, params *Call) (*spec
 			return nil, err
 		}
 
-		result.Property.Repeated = append(result.Property.Repeated, results)
+		result.Property.Nested = append(result.Property.Nested, results)
 	}
 
 	for _, repeated := range params.Repeated {
@@ -662,7 +662,7 @@ func ParseIntermediateCallParameterMap(ctx *broker.Context, params *Call) (*spec
 			return nil, err
 		}
 
-		result.Property.Repeated = append(result.Property.Repeated, results)
+		result.Property.Nested = append(result.Property.Nested, results)
 	}
 
 	return &result, nil
@@ -691,7 +691,7 @@ func ParseIntermediateProperty(ctx *broker.Context, path string, property *hcl.A
 	case typed.IsTupleType():
 		result.Type = types.String // TODO: get rid of hardcoded type
 		result.Label = labels.Repeated
-		result.Repeated = make([]*specs.Property, 0, typed.Length())
+		result.Nested = make([]*specs.Property, 0, typed.Length())
 
 		value.ForEachElement(func(key cty.Value, value cty.Value) (stop bool) {
 			var item *specs.Property
@@ -702,13 +702,13 @@ func ParseIntermediateProperty(ctx *broker.Context, path string, property *hcl.A
 				return true
 			}
 
-			result.Repeated = append(result.Repeated, item)
+			result.Nested = append(result.Nested, item)
 
 			return false
 		})
 	case typed.IsObjectType():
 		result.Type = types.Message
-		result.Repeated = []*specs.Property{}
+		result.Nested = []*specs.Property{}
 
 		value.ForEachElement(func(key cty.Value, value cty.Value) (stop bool) {
 			var item *specs.Property
@@ -720,7 +720,7 @@ func ParseIntermediateProperty(ctx *broker.Context, path string, property *hcl.A
 				return true
 			}
 
-			result.Repeated = append(result.Repeated, item)
+			result.Nested = append(result.Nested, item)
 
 			return false
 		})
