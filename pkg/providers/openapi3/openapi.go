@@ -52,6 +52,7 @@ type Schema struct {
 	Type        types.Type         `json:"type,omitempty" yaml:"type,omitempty"`
 	Description string             `json:"description,omitempty" yaml:"description,omitempty"`
 	Required    []string           `json:"required,omitempty" yaml:"required,omitempty"`
+	Items       *Schema            `json:"items,omitempty" yaml:"items,omitempty"`
 	Properties  map[string]*Schema `json:"properties,omitempty" yaml:"properties,omitempty"`
 	Default     interface{}        `json:"default,omitempty" yaml:"default,omitempty"`
 	Enum        []interface{}      `json:"enum,omitempty" yaml:"enum,omitempty"`

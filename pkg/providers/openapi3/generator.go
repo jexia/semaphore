@@ -3,6 +3,7 @@ package openapi3
 import (
 	"fmt"
 	"net/http"
+	"sort"
 	"strings"
 
 	"github.com/jexia/semaphore/pkg/providers/openapi3/types"
@@ -50,6 +51,7 @@ func IncludeEndpoint(object *Object, endpoint *specs.Endpoint, flow specs.FlowIn
 
 	path := options.Endpoint
 	params := transport.RawNamedParameters(options.Endpoint)
+
 	for _, param := range params {
 		single := transport.NamedParameters(param)
 		template := fmt.Sprintf("{%s}", single[0])
@@ -91,12 +93,24 @@ func GenerateOperation(object *Object, endpoint *specs.Endpoint, options *transp
 	output := flow.GetOutput()
 	result := &Operation{}
 
-	for _, key := range transport.NamedParameters(options.Endpoint) {
+	params := transport.NamedParameters(options.Endpoint)
+	sort.Strings(params)
+
+	for _, key := range params {
 		result.Parameters = append(result.Parameters, GenerateParameter(key, true, ParameterPath, nil))
 	}
 
 	if input != nil {
-		for key, prop := range flow.GetInput().Header {
+		// ensure header order
+		headers := make([]string, 0, len(flow.GetInput().Header))
+		for key := range flow.GetInput().Header {
+			headers = append(headers, key)
+		}
+
+		sort.Strings(headers)
+
+		for _, key := range headers {
+			prop := flow.GetInput().Header[key]
 			result.Parameters = append(result.Parameters, GenerateParameter(key, false, ParameterHeader, prop))
 		}
 
@@ -186,7 +200,7 @@ func GenerateSchema(property *specs.Property) *Schema {
 		Type:        types.Open(property.Type),
 	}
 
-	if property.Nested != nil {
+	if len(property.Nested) > 0 {
 		result.Properties = make(map[string]*Schema, len(property.Nested))
 	}
 
@@ -199,10 +213,24 @@ func GenerateSchema(property *specs.Property) *Schema {
 	}
 
 	if property.Enum != nil {
-		result.Enum = make([]interface{}, 0, len(property.Enum.Keys))
+		// ensure property enum order
+		result.Enum = make([]interface{}, len(property.Enum.Keys))
+		keys := make([]int, 0, len(property.Enum.Positions))
 
-		for key := range property.Enum.Keys {
-			result.Enum = append(result.Enum, key)
+		for key := range property.Enum.Positions {
+			keys = append(keys, int(key))
+		}
+
+		sort.Ints(keys)
+
+		for pos, key := range keys {
+			result.Enum[pos] = property.Enum.Positions[int32(key)].Key
+		}
+	}
+
+	if property.Label == labels.Repeated {
+		result = &Schema{
+			Items: result,
 		}
 	}
 
