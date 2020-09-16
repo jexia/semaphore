@@ -102,9 +102,9 @@ func TestPropertyUnmarshalDefaultPropertyRepeated(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			input := &Property{
-				Type:     test.input.Type,
-				Label:    labels.Repeated,
-				Repeated: PropertyList{test.input},
+				Type:   test.input.Type,
+				Label:  labels.Repeated,
+				Nested: PropertyList{test.input},
 			}
 
 			encoded, err := json.Marshal(input)
@@ -118,11 +118,11 @@ func TestPropertyUnmarshalDefaultPropertyRepeated(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			if prop.Repeated == nil || len(prop.Repeated) != 1 {
-				t.Fatalf("unexpected prop repeated %+v", prop.Repeated)
+			if prop.Nested == nil || len(prop.Nested) != 1 {
+				t.Fatalf("unexpected prop.Nested %+v", prop.Nested)
 			}
 
-			kind := reflect.TypeOf(prop.Repeated[0].Default).Kind()
+			kind := reflect.TypeOf(prop.Nested[0].Default).Kind()
 			if kind != test.expected {
 				t.Errorf("unexpected type %+v, expected %+v", kind, test.expected)
 			}
@@ -366,7 +366,7 @@ func TestPropertyClone(t *testing.T) {
 		Type:      types.String,
 		Label:     labels.Optional,
 		Reference: &PropertyReference{},
-		Repeated: []*Property{
+		Nested: []*Property{
 			{Path: "first"},
 		},
 		Raw: "first",
@@ -417,8 +417,8 @@ func TestPropertyClone(t *testing.T) {
 		t.Errorf("unexpected reference %+v", result.Reference)
 	}
 
-	if result.Repeated == nil || len(result.Repeated) != len(property.Repeated) {
-		t.Errorf("unexpected repeated %+v", result.Repeated)
+	if result.Nested == nil || len(result.Nested) != len(property.Nested) {
+		t.Errorf("unexpected repeated %+v", result.Nested)
 	}
 
 	if result.Raw != property.Raw {
