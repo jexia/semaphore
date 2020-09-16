@@ -43,12 +43,14 @@ func (object *Object) MarshalJSONObject(encoder *gojay.Encoder) {
 
 			array := NewArray(object.resource, prop, ref, ref.Repeated)
 			encoder.AddArrayKey(prop.Name, array)
+
 			continue
 		}
 
 		if prop.Type == types.Message {
 			result := NewObject(object.resource, prop.Nested, object.refs)
 			encoder.AddObjectKey(prop.Name, result)
+
 			continue
 		}
 
