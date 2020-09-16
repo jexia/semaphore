@@ -12,9 +12,9 @@ import (
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
-func TestSprintf(t *testing.T) {
+func TestFunction(t *testing.T) {
 	t.Run("should return an error when no arguments provided", func(t *testing.T) {
-		var _, _, err = Sprintf()
+		var _, _, err = Function()
 
 		if !errors.Is(err, errNoArguments) {
 			t.Errorf("error '%s' was expected", errNoArguments)
@@ -22,7 +22,7 @@ func TestSprintf(t *testing.T) {
 	})
 
 	t.Run("should return an error when the format has invalid type", func(t *testing.T) {
-		var _, _, err = Sprintf(&specs.Property{
+		var _, _, err = Function(&specs.Property{
 			Type: types.Bool,
 		})
 
@@ -32,7 +32,7 @@ func TestSprintf(t *testing.T) {
 	})
 
 	t.Run("should return an error when the format is a reference", func(t *testing.T) {
-		var _, _, err = Sprintf(&specs.Property{
+		var _, _, err = Function(&specs.Property{
 			Type: types.String,
 			Reference: &specs.PropertyReference{
 				Resource: template.InputResource,
@@ -46,7 +46,7 @@ func TestSprintf(t *testing.T) {
 	})
 
 	t.Run("should return an error when the format is missing", func(t *testing.T) {
-		var _, _, err = Sprintf(&specs.Property{
+		var _, _, err = Function(&specs.Property{
 			Type: types.String,
 		})
 
@@ -56,7 +56,7 @@ func TestSprintf(t *testing.T) {
 	})
 
 	t.Run("should propagate scanner error", func(t *testing.T) {
-		var _, _, err = Sprintf(&specs.Property{
+		var _, _, err = Function(&specs.Property{
 			Type:    types.String,
 			Default: "%z",
 		})
@@ -67,7 +67,7 @@ func TestSprintf(t *testing.T) {
 	})
 
 	t.Run("should return an error when the number of arguments does not match the number of verbs", func(t *testing.T) {
-		var _, _, err = Sprintf(&specs.Property{
+		var _, _, err = Function(&specs.Property{
 			Type:    types.String,
 			Default: "%s",
 		})
@@ -78,7 +78,7 @@ func TestSprintf(t *testing.T) {
 	})
 
 	t.Run("should return an error when the type of provided argument does not match expected", func(t *testing.T) {
-		var _, _, err = Sprintf(
+		var _, _, err = Function(
 			&specs.Property{
 				Type:    types.String,
 				Default: "%s",
@@ -96,7 +96,7 @@ func TestSprintf(t *testing.T) {
 
 	t.Run("should return outputs and executable with no error", func(t *testing.T) {
 		var (
-			outputs, executable, err = Sprintf(
+			outputs, executable, err = Function(
 				&specs.Property{
 					Type:    types.String,
 					Default: "develop %s, not hard!",

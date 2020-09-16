@@ -8,6 +8,6 @@ import (
 
 // Default represents the default functions collection
 var Default = functions.Custom{
-	"sprintf":   sprintf.Sprintf,
-	"strconcat": strconcat.Strconcat,
+	"sprintf":   sprintf.Function,
+	"strconcat": strconcat.Function,
 }

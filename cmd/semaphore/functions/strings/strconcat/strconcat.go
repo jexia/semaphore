@@ -10,9 +10,9 @@ import (
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
-// Strconcat compiles the given arguments and constructs a new executable
+// Function compiles the given arguments and constructs a new executable
 // function for the given arguments.
-func Strconcat(args ...*specs.Property) (*specs.Property, functions.Exec, error) {
+func Function(args ...*specs.Property) (*specs.Property, functions.Exec, error) {
 	result := &specs.Property{
 		Name:  "concat",
 		Type:  types.String,

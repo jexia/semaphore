@@ -29,8 +29,8 @@ func sprintfExecutable(printer Printer, args ...*specs.Property) func(store refe
 	}
 }
 
-// Sprintf formats and returns a string without printing it anywhere.
-func Sprintf(args ...*specs.Property) (*specs.Property, functions.Exec, error) {
+// Function formats and returns a string without printing it anywhere.
+func Function(args ...*specs.Property) (*specs.Property, functions.Exec, error) {
 	if len(args) < 1 {
 		return nil, nil, errNoArguments
 	}
