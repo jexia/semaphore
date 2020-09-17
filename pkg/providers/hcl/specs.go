@@ -694,16 +694,15 @@ func ParseIntermediateProperty(ctx *broker.Context, path string, property *hcl.A
 		result.Nested = make([]*specs.Property, 0, typed.Length())
 
 		value.ForEachElement(func(key cty.Value, value cty.Value) (stop bool) {
-			var item *specs.Property
-
-			if item, err = ParseIntermediateProperty(ctx, result.Path, &hcl.Attribute{
+			item, err := ParseIntermediateProperty(ctx, result.Path, &hcl.Attribute{
 				Expr: property.Expr,
-			}, value); err != nil {
+			}, value)
+
+			if err != nil {
 				return true
 			}
 
 			result.Nested = append(result.Nested, item)
-
 			return false
 		})
 	case typed.IsObjectType():
