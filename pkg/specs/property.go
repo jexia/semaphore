@@ -1,42 +1,10 @@
 package specs
 
 import (
-	"encoding/json"
-
 	"github.com/jexia/semaphore/pkg/specs/labels"
 	"github.com/jexia/semaphore/pkg/specs/metadata"
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
-
-// PropertyReference represents a mustach template reference
-type PropertyReference struct {
-	*metadata.Meta
-	Resource string    `json:"resource,omitempty"`
-	Path     string    `json:"path,omitempty"`
-	Property *Property `json:"-"`
-}
-
-// Clone clones the given property reference
-func (reference *PropertyReference) Clone() *PropertyReference {
-	if reference == nil {
-		return nil
-	}
-
-	return &PropertyReference{
-		Meta:     reference.Meta,
-		Resource: reference.Resource,
-		Path:     reference.Path,
-		Property: nil,
-	}
-}
-
-func (reference *PropertyReference) String() string {
-	if reference == nil {
-		return ""
-	}
-
-	return reference.Resource + ":" + reference.Path
-}
 
 // Schemas represents a map string collection of properties
 type Schemas map[string]*Property
@@ -66,23 +34,138 @@ type Expression interface {
 	Position() string
 }
 
-// Property represents a value property.
-// A value property could contain a constant value or a value reference.
-type Property struct {
-	*metadata.Meta
-	Position  int32              `json:"position,omitempty"`
-	Comment   string             `json:"comment,omitempty"`
-	Name      string             `json:"name,omitempty"`
-	Path      string             `json:"path,omitempty"`
+// Scalar value.
+type Scalar struct {
 	Default   interface{}        `json:"default,omitempty"`
 	Type      types.Type         `json:"type,omitempty"`
 	Label     labels.Label       `json:"label,omitempty"`
 	Reference *PropertyReference `json:"reference,omitempty"`
-	Nested    PropertyList       `json:"nested,omitempty"`
-	Expr      Expression         `json:"-"`
-	Raw       string             `json:"raw,omitempty"`
-	Options   Options            `json:"options,omitempty"`
-	Enum      *Enum              `json:"enum,omitempty"`
+}
+
+// Clone scalar value.
+func (s Scalar) Clone() *Scalar {
+	return &Scalar{
+		Default:   s.Default,
+		Type:      s.Type,
+		Label:     s.Label,
+		Reference: s.Reference.Clone(),
+	}
+}
+
+// Enum represents a enum configuration
+type Enum struct {
+	*metadata.Meta
+	Name        string                `json:"name,omitempty"`
+	Keys        map[string]*EnumValue `json:"keys,omitempty"`
+	Positions   map[int32]*EnumValue  `json:"positions,omitempty"`
+	Description string                `json:"description,omitempty"`
+}
+
+// Clone enum schema.
+func (e Enum) Clone() *Enum { return &e }
+
+// EnumValue represents a enum configuration
+type EnumValue struct {
+	*metadata.Meta
+	Key         string `json:"key,omitempty"`
+	Position    int32  `json:"position,omitempty"`
+	Description string `json:"description,omitempty"`
+}
+
+// Repeated represents an array type.
+type Repeated struct {
+	// Template contains the type of repeated values
+	Template Template
+
+	// Default contains the static values for certain indexes
+	Default map[uint]*Property
+}
+
+// Clone repeated.
+func (e Repeated) Clone() *Repeated {
+	var clone = &Repeated{
+		Template: *e.Template.Clone(),
+		Default:  make(map[uint]*Property, len(e.Default)),
+	}
+
+	for index, prop := range e.Default {
+		clone.Default[index] = prop
+	}
+
+	return clone
+}
+
+// Message represents an object which keeps the original order of keys.
+type Message struct {
+	Keys       []string
+	Properties []*Property
+}
+
+// Clone the message.
+func (m Message) Clone() *Message {
+	var clone = &Message{
+		Keys:       make([]string, 0, len(m.Keys)),
+		Properties: make([]*Property, 0, len(m.Properties)),
+	}
+
+	for index := 0; index < len(m.Keys); index++ {
+		clone.Keys[index] = m.Keys[index]
+		clone.Properties[index] = m.Properties[index].Clone()
+	}
+
+	return clone
+}
+
+// Template contains property schema. This is a union type (Only one field must be set).
+type Template struct {
+	Scalar   *Scalar   `json:"scalar,omitempty"`
+	Enum     *Enum     `json:"enum,omitempty"`
+	Repeated *Repeated `json:"repeated,omitempty"`
+	Message  *Message  `json:"message,omitempty"`
+	// TODO: OneOf OneOf
+}
+
+// Clone internal value.
+func (o Template) Clone() *Template {
+	var clone = new(Template)
+
+	switch {
+	case o.Scalar != nil:
+		clone.Scalar = o.Scalar.Clone()
+
+		break
+	case o.Enum != nil:
+		clone.Enum = o.Enum.Clone()
+
+		break
+	case o.Repeated != nil:
+		clone.Repeated = o.Repeated.Clone()
+
+		break
+	case o.Message != nil:
+		clone.Message = o.Message.Clone()
+
+		break
+	}
+
+	return clone
+}
+
+// Property represents a value property.
+type Property struct {
+	*metadata.Meta
+	Name        string `json:"name,omitempty"`
+	Path        string `json:"path,omitempty"`
+	Description string `json:"description,omitempty"`
+
+	Position int32 `json:"position,omitempty"` // what is this?
+
+	Options Options    `json:"options,omitempty"`
+	Expr    Expression `json:"-"`
+
+	Raw string `json:"raw,omitempty"`
+
+	Template // contains property schema
 }
 
 // PropertyList represents a list of properties
@@ -105,49 +188,49 @@ func (nested PropertyList) Get(key string) *Property {
 
 // UnmarshalJSON corrects the 64bit data types in accordance with golang
 func (prop *Property) UnmarshalJSON(data []byte) error {
-	type property Property
-	p := property{}
-	err := json.Unmarshal(data, &p)
-	if err != nil {
-		return err
-	}
-
-	*prop = Property(p)
-	prop.Clean()
-
-	for _, nested := range prop.Nested {
-		nested.Clean()
-	}
+	// type property Property
+	// p := property{}
+	// err := json.Unmarshal(data, &p)
+	// if err != nil {
+	// 	return err
+	// }
+	//
+	// *prop = Property(p)
+	// prop.Clean()
+	//
+	// for _, nested := range prop.Nested {
+	// 	nested.Clean()
+	// }
 
 	return nil
 }
 
 // Clean fixes the type casting issue of unmarshal
 func (prop *Property) Clean() {
-	if prop.Default != nil {
-		switch prop.Type {
-		case types.Int64, types.Sint64, types.Sfixed64:
-			_, ok := prop.Default.(int64)
-			if !ok {
-				prop.Default = int64(prop.Default.(float64))
-			}
-		case types.Uint64, types.Fixed64:
-			_, ok := prop.Default.(uint64)
-			if !ok {
-				prop.Default = uint64(prop.Default.(float64))
-			}
-		case types.Int32, types.Sint32, types.Sfixed32:
-			_, ok := prop.Default.(int32)
-			if !ok {
-				prop.Default = int32(prop.Default.(float64))
-			}
-		case types.Uint32, types.Fixed32:
-			_, ok := prop.Default.(uint32)
-			if !ok {
-				prop.Default = uint32(prop.Default.(float64))
-			}
-		}
-	}
+	// if prop.Default != nil {
+	// 	switch prop.Type {
+	// 	case types.Int64, types.Sint64, types.Sfixed64:
+	// 		_, ok := prop.Default.(int64)
+	// 		if !ok {
+	// 			prop.Default = int64(prop.Default.(float64))
+	// 		}
+	// 	case types.Uint64, types.Fixed64:
+	// 		_, ok := prop.Default.(uint64)
+	// 		if !ok {
+	// 			prop.Default = uint64(prop.Default.(float64))
+	// 		}
+	// 	case types.Int32, types.Sint32, types.Sfixed32:
+	// 		_, ok := prop.Default.(int32)
+	// 		if !ok {
+	// 			prop.Default = int32(prop.Default.(float64))
+	// 		}
+	// 	case types.Uint32, types.Fixed32:
+	// 		_, ok := prop.Default.(uint32)
+	// 		if !ok {
+	// 			prop.Default = uint32(prop.Default.(float64))
+	// 		}
+	// 	}
+	// }
 }
 
 // Clone makes a deep clone of the given property
@@ -156,45 +239,19 @@ func (prop *Property) Clone() *Property {
 		return &Property{}
 	}
 
-	result := &Property{
-		Meta:      prop.Meta,
-		Position:  prop.Position,
-		Reference: prop.Reference.Clone(),
-		Comment:   prop.Comment,
-		Name:      prop.Name,
-		Path:      prop.Path,
-		Default:   prop.Default,
-		Type:      prop.Type,
-		Label:     prop.Label,
-		Expr:      prop.Expr,
-		Raw:       prop.Raw,
-		Options:   prop.Options,
-		Enum:      prop.Enum,
-		Nested:    make([]*Property, len(prop.Nested)),
+	return &Property{
+		Meta:        prop.Meta,
+		Position:    prop.Position,
+		Description: prop.Description,
+		Name:        prop.Name,
+		Path:        prop.Path,
+
+		Expr:    prop.Expr,
+		Raw:     prop.Raw,
+		Options: prop.Options,
+
+		Template: *prop.Template.Clone(),
 	}
-
-	for index, nested := range prop.Nested {
-		result.Nested[index] = nested.Clone()
-	}
-
-	return result
-}
-
-// Enum represents a enum configuration
-type Enum struct {
-	*metadata.Meta
-	Name        string                `json:"name,omitempty"`
-	Keys        map[string]*EnumValue `json:"keys,omitempty"`
-	Positions   map[int32]*EnumValue  `json:"positions,omitempty"`
-	Description string                `json:"description,omitempty"`
-}
-
-// EnumValue represents a enum configuration
-type EnumValue struct {
-	*metadata.Meta
-	Key         string `json:"key,omitempty"`
-	Position    int32  `json:"position,omitempty"`
-	Description string `json:"description,omitempty"`
 }
 
 // ParameterMap is the initial map of parameter names (keys) and their (templated) values (values)
