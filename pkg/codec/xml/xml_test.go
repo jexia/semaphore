@@ -165,184 +165,191 @@ func TestUnmarshal(t *testing.T) {
 	}
 
 	tests := map[string]test{
-		"reader error": {
-			input: readerFunc(
-				func([]byte) (int, error) {
-					return 0, errors.New("failed")
-				},
-			),
-			error: errors.New("failed"),
+		"real": {
+			input: strings.NewReader(`<?xml version="1.0" encoding="utf-8"?>
+<wb:mock page="1" pages="1" per_page="50" total="1" xmlns:wb="http://www.worldbank.org">
+  <wb:numeric id="NLD">42</wb:numeric>
+</wb:mock>`),
 		},
-		"unknown enum value": {
-			input: strings.NewReader(
-				"<mock><status>PENDING</status><another_status>DONE</another_status></mock>",
-			),
-			error: errUnknownEnum("DONE"),
-		},
-		"unknown enum value (repeated)": {
-			input: strings.NewReader(
-				"<mock><repeating_enum>DONE</repeating_enum></mock>",
-			),
-			error: errUnknownEnum("DONE"),
-		},
-		"type mismatch": {
-			input: strings.NewReader(
-				"<mock><numeric>not a number</numeric></mock>",
-			),
-			error: errors.New(""), // error returned by ParseInt()
-		},
-		"type mismatch (repeated)": {
-			input: strings.NewReader(
-				"<mock><repeating_numeric>not a number</repeating_numeric></mock>",
-			),
-			error: errors.New(""), // error returned by ParseInt()
-		},
-		"empty reader": {
-			input: strings.NewReader(""),
-		},
-		"simple (+ignore empty)": {
-			input: strings.NewReader(
-				"<mock><nested></nested><message>hello world</message><another_message>dlrow olleh</another_message></mock>",
-			),
-			expected: map[string]expect{
-				"message": {
-					value: "hello world",
-				},
-				"another_message": {
-					value: "dlrow olleh",
-				},
-			},
-		},
-		"enum": {
-			input: strings.NewReader(
-				"<mock><status>PENDING</status><another_status>UNKNOWN</another_status></mock>",
-			),
-			expected: map[string]expect{
-				"status": {
-					enum: func() *int32 { i := int32(1); return &i }(),
-				},
-				"another_status": {
-					enum: func() *int32 { i := int32(0); return &i }(),
-				},
-			},
-		},
-		"nested": {
-			input: strings.NewReader(
-				"<mock><nested><first>foo</first><second>bar</second></nested></mock>",
-			),
-			expected: map[string]expect{
-				"nested.first": {
-					value: "foo",
-				},
-				"nested.second": {
-					value: "bar",
-				},
-			},
-		},
-		"repeated string": {
-			//  TODO: do not ignore empty blocks
-			input: strings.NewReader(
-				"<mock><repeating_string>repeating one</repeating_string><repeating_string></repeating_string><repeating_string>repeating two</repeating_string></mock>",
-			),
-			expected: map[string]expect{
-				"repeating_string": {
-					repeated: []expect{
-						{
-							value: "repeating one",
-						},
-						{
-							value: "repeating two",
-						},
-					},
-				},
-			},
-		},
-		"repeated enum": {
-			input: strings.NewReader(
-				"<mock><repeating_enum>UNKNOWN</repeating_enum><repeating_enum>PENDING</repeating_enum></mock>",
-			),
-			expected: map[string]expect{
-				"repeating_enum": {
-					repeated: []expect{
-						{
-							enum: func() *int32 { i := int32(0); return &i }(),
-						},
-						{
-							enum: func() *int32 { i := int32(1); return &i }(),
-						},
-					},
-				},
-			},
-		},
-		"repeated nested": {
-			input: strings.NewReader(
-				"<mock><repeating><value>repeating one</value></repeating><repeating><value>repeating two</value></repeating></mock>",
-			),
-			expected: map[string]expect{
-				"repeating": {
-					repeated: []expect{
-						{
-							nested: map[string]expect{
-								"repeating.value": {
-									value: "repeating one",
-								},
-							},
-						},
-						{
-							nested: map[string]expect{
-								"repeating.value": {
-									value: "repeating two",
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-		"complex": {
-			input: strings.NewReader(
-				"<mock><repeating_string>repeating one</repeating_string><repeating_string>repeating two</repeating_string><message>hello world</message><nested><first>foo</first><second>bar</second></nested><repeating><value>repeating one</value></repeating><repeating><value>repeating two</value></repeating></mock>",
-			),
-			expected: map[string]expect{
-				"repeating_string": {
-					repeated: []expect{
-						{
-							value: "repeating one",
-						},
-						{
-							value: "repeating two",
-						},
-					},
-				},
-				"message": {
-					value: "hello world",
-				},
-				"nested.first": {
-					value: "foo",
-				},
-				"nested.second": {
-					value: "bar",
-				},
-				"repeating": {
-					repeated: []expect{
-						{
-							nested: map[string]expect{
-								"repeating.value": {
-									value: "repeating one",
-								},
-							},
-						},
-						{
-							nested: map[string]expect{
-								"repeating.value": {
-									value: "repeating two",
-								},
-							},
-						},
-					},
-				},
-			},
-		},
+		//
+		// "reader error": {
+		// 	input: readerFunc(
+		// 		func([]byte) (int, error) {
+		// 			return 0, errors.New("failed")
+		// 		},
+		// 	),
+		// 	error: errors.New("failed"),
+		// },
+		// "unknown enum value": {
+		// 	input: strings.NewReader(
+		// 		"<mock><status>PENDING</status><another_status>DONE</another_status></mock>",
+		// 	),
+		// 	error: errUnknownEnum("DONE"),
+		// },
+		// "unknown enum value (repeated)": {
+		// 	input: strings.NewReader(
+		// 		"<mock><repeating_enum>DONE</repeating_enum></mock>",
+		// 	),
+		// 	error: errUnknownEnum("DONE"),
+		// },
+		// "type mismatch": {
+		// 	input: strings.NewReader(
+		// 		"<mock><numeric>not a number</numeric></mock>",
+		// 	),
+		// 	error: errors.New(""), // error returned by ParseInt()
+		// },
+		// "type mismatch (repeated)": {
+		// 	input: strings.NewReader(
+		// 		"<mock><repeating_numeric>not a number</repeating_numeric></mock>",
+		// 	),
+		// 	error: errors.New(""), // error returned by ParseInt()
+		// },
+		// "empty reader": {
+		// 	input: strings.NewReader(""),
+		// },
+		// "simple (+ignore empty)": {
+		// 	input: strings.NewReader(
+		// 		"<mock><nested></nested><message>hello world</message><another_message>dlrow olleh</another_message></mock>",
+		// 	),
+		// 	expected: map[string]expect{
+		// 		"message": {
+		// 			value: "hello world",
+		// 		},
+		// 		"another_message": {
+		// 			value: "dlrow olleh",
+		// 		},
+		// 	},
+		// },
+		// "enum": {
+		// 	input: strings.NewReader(
+		// 		"<mock><status>PENDING</status><another_status>UNKNOWN</another_status></mock>",
+		// 	),
+		// 	expected: map[string]expect{
+		// 		"status": {
+		// 			enum: func() *int32 { i := int32(1); return &i }(),
+		// 		},
+		// 		"another_status": {
+		// 			enum: func() *int32 { i := int32(0); return &i }(),
+		// 		},
+		// 	},
+		// },
+		// "nested": {
+		// 	input: strings.NewReader(
+		// 		"<mock><nested><first>foo</first><second>bar</second></nested></mock>",
+		// 	),
+		// 	expected: map[string]expect{
+		// 		"nested.first": {
+		// 			value: "foo",
+		// 		},
+		// 		"nested.second": {
+		// 			value: "bar",
+		// 		},
+		// 	},
+		// },
+		// "repeated string": {
+		// 	//  TODO: do not ignore empty blocks
+		// 	input: strings.NewReader(
+		// 		"<mock><repeating_string>repeating one</repeating_string><repeating_string></repeating_string><repeating_string>repeating two</repeating_string></mock>",
+		// 	),
+		// 	expected: map[string]expect{
+		// 		"repeating_string": {
+		// 			repeated: []expect{
+		// 				{
+		// 					value: "repeating one",
+		// 				},
+		// 				{
+		// 					value: "repeating two",
+		// 				},
+		// 			},
+		// 		},
+		// 	},
+		// },
+		// "repeated enum": {
+		// 	input: strings.NewReader(
+		// 		"<mock><repeating_enum>UNKNOWN</repeating_enum><repeating_enum>PENDING</repeating_enum></mock>",
+		// 	),
+		// 	expected: map[string]expect{
+		// 		"repeating_enum": {
+		// 			repeated: []expect{
+		// 				{
+		// 					enum: func() *int32 { i := int32(0); return &i }(),
+		// 				},
+		// 				{
+		// 					enum: func() *int32 { i := int32(1); return &i }(),
+		// 				},
+		// 			},
+		// 		},
+		// 	},
+		// },
+		// "repeated nested": {
+		// 	input: strings.NewReader(
+		// 		"<mock><repeating><value>repeating one</value></repeating><repeating><value>repeating two</value></repeating></mock>",
+		// 	),
+		// 	expected: map[string]expect{
+		// 		"repeating": {
+		// 			repeated: []expect{
+		// 				{
+		// 					nested: map[string]expect{
+		// 						"repeating.value": {
+		// 							value: "repeating one",
+		// 						},
+		// 					},
+		// 				},
+		// 				{
+		// 					nested: map[string]expect{
+		// 						"repeating.value": {
+		// 							value: "repeating two",
+		// 						},
+		// 					},
+		// 				},
+		// 			},
+		// 		},
+		// 	},
+		// },
+		// "complex": {
+		// 	input: strings.NewReader(
+		// 		"<mock><repeating_string>repeating one</repeating_string><repeating_string>repeating two</repeating_string><message>hello world</message><nested><first>foo</first><second>bar</second></nested><repeating><value>repeating one</value></repeating><repeating><value>repeating two</value></repeating></mock>",
+		// 	),
+		// 	expected: map[string]expect{
+		// 		"repeating_string": {
+		// 			repeated: []expect{
+		// 				{
+		// 					value: "repeating one",
+		// 				},
+		// 				{
+		// 					value: "repeating two",
+		// 				},
+		// 			},
+		// 		},
+		// 		"message": {
+		// 			value: "hello world",
+		// 		},
+		// 		"nested.first": {
+		// 			value: "foo",
+		// 		},
+		// 		"nested.second": {
+		// 			value: "bar",
+		// 		},
+		// 		"repeating": {
+		// 			repeated: []expect{
+		// 				{
+		// 					nested: map[string]expect{
+		// 						"repeating.value": {
+		// 							value: "repeating one",
+		// 						},
+		// 					},
+		// 				},
+		// 				{
+		// 					nested: map[string]expect{
+		// 						"repeating.value": {
+		// 							value: "repeating two",
+		// 						},
+		// 					},
+		// 				},
+		// 			},
+		// 		},
+		// 	},
+		// },
 	}
 
 	for title, test := range tests {
