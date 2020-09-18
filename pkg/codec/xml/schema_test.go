@@ -13,6 +13,20 @@ var (
 			Type:  types.Message,
 			Label: labels.Optional,
 			Nested: map[string]*specs.Property{
+				"country": {
+					Name:  "country",
+					Path:  "country",
+					Type:  types.Message,
+					Label: labels.Optional,
+					Nested: map[string]*specs.Property{
+						"iso2Code": {
+							Name:  "iso2Code",
+							Path:  "country.iso2Code",
+							Type:  types.String,
+							Label: labels.Optional,
+						},
+					},
+				},
 				"bad_label": {
 					Name:  "bad_label",
 					Path:  "bad_label",
