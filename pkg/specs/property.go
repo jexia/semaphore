@@ -43,6 +43,7 @@ type Message struct {
 	Properties []*Property
 }
 
+// Clone the message.
 func (m Message) Clone() *Message {
 	var clone = &Message{
 		Keys:       make([]string, 0, len(m.Keys)),
@@ -57,12 +58,14 @@ func (m Message) Clone() *Message {
 	return clone
 }
 
+// Scalar value.
 type Scalar struct {
 	Default interface{}  `json:"default,omitempty"`
 	Type    types.Type   `json:"type,omitempty"`
 	Label   labels.Label `json:"label,omitempty"`
 }
 
+// Clone scalar value.
 func (s Scalar) Clone() *Scalar {
 	return &Scalar{
 		Default: s.Default,
@@ -71,6 +74,7 @@ func (s Scalar) Clone() *Scalar {
 	}
 }
 
+// OneOf contains property schema. This is a union type (Only one field must be set).
 type OneOf struct {
 	Scalar   *Scalar  `json:"scalar,omitempty"`
 	Enum     *Enum    `json:"enum,omitempty"`
@@ -78,29 +82,31 @@ type OneOf struct {
 	Message  *Message `json:"message,omitempty"`
 }
 
+// Clone internal value.
 func (o OneOf) Clone() *OneOf {
 	var clone = new(OneOf)
 
 	switch {
 	case o.Scalar != nil:
 		clone.Scalar = o.Scalar.Clone()
+
+		break
 	case o.Enum != nil:
 		clone.Enum = o.Enum.Clone()
+
+		break
 	case o.Repeated != nil:
 		clone.Repeated = o.Repeated.Clone()
+
+		break
 	case o.Message != nil:
 		clone.Message = o.Message.Clone()
+
+		break
 	}
 
 	return clone
 }
-
-// Default:     prop.Default,
-// Type:        prop.Type,
-// Label:       prop.Label,
-//
-// Enum:        prop.Enum,
-// Nested:      make([]*Property, len(prop.Nested)),
 
 // Property represents a value property.
 type Property struct {
@@ -118,7 +124,7 @@ type Property struct {
 
 	Raw string `json:"raw,omitempty"`
 
-	OneOf
+	OneOf // contains property schema
 }
 
 // PropertyList represents a list of properties
