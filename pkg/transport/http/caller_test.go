@@ -61,12 +61,17 @@ func TestCaller(t *testing.T) {
 
 	refs := references.NewReferenceStore(1)
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		want := "/Path?query=value"
+		got := r.URL.String()
+		if got != want {
+			t.Errorf("expected server addressed by %s, but got %s", want, got)
+		}
 		w.Write([]byte(`{"message":"` + message + `"}`))
 	}))
 
 	defer server.Close()
 
-	service := NewMockService(server.URL, "GET", "/")
+	service := NewMockService(server.URL, "GET", "/Path?query=value")
 	caller, err := NewMockCaller().Dial(service, nil, nil)
 	if err != nil {
 		t.Fatal(err)
