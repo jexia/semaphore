@@ -34,8 +34,66 @@ type Expression interface {
 	Position() string
 }
 
-// Repeated represents arrays.
-type Repeated []OneOf
+// Scalar value.
+type Scalar struct {
+	Default   interface{}        `json:"default,omitempty"`
+	Type      types.Type         `json:"type,omitempty"`
+	Label     labels.Label       `json:"label,omitempty"`
+	Reference *PropertyReference `json:"reference,omitempty"`
+}
+
+// Clone scalar value.
+func (s Scalar) Clone() *Scalar {
+	return &Scalar{
+		Default:   s.Default,
+		Type:      s.Type,
+		Label:     s.Label,
+		Reference: s.Reference.Clone(),
+	}
+}
+
+// Enum represents a enum configuration
+type Enum struct {
+	*metadata.Meta
+	Name        string                `json:"name,omitempty"`
+	Keys        map[string]*EnumValue `json:"keys,omitempty"`
+	Positions   map[int32]*EnumValue  `json:"positions,omitempty"`
+	Description string                `json:"description,omitempty"`
+}
+
+// Clone enum schema.
+func (e Enum) Clone() *Enum { return &e }
+
+// EnumValue represents a enum configuration
+type EnumValue struct {
+	*metadata.Meta
+	Key         string `json:"key,omitempty"`
+	Position    int32  `json:"position,omitempty"`
+	Description string `json:"description,omitempty"`
+}
+
+// Repeated represents an array type.
+type Repeated struct {
+	// Template contains the type of repeated values
+	Template Template
+
+	// Default contains the static values for certain indexes
+	Default map[uint]*Property
+}
+
+// Clone repeated.
+func (e Repeated) Clone() *Repeated {
+	var clone = &Repeated{
+		Template: *e.Template.Clone(),
+		Default:  make(map[uint]*Property, len(e.Default)),
+	}
+
+	for index, prop := range e.Default {
+		clone.Default[index] = prop
+	}
+
+	return clone
+}
 
 // Message represents an object which keeps the original order of keys.
 type Message struct {
@@ -58,33 +116,18 @@ func (m Message) Clone() *Message {
 	return clone
 }
 
-// Scalar value.
-type Scalar struct {
-	Default interface{}  `json:"default,omitempty"`
-	Type    types.Type   `json:"type,omitempty"`
-	Label   labels.Label `json:"label,omitempty"`
-}
-
-// Clone scalar value.
-func (s Scalar) Clone() *Scalar {
-	return &Scalar{
-		Default: s.Default,
-		Type:    s.Type,
-		Label:   s.Label,
-	}
-}
-
-// OneOf contains property schema. This is a union type (Only one field must be set).
-type OneOf struct {
-	Scalar   *Scalar  `json:"scalar,omitempty"`
-	Enum     *Enum    `json:"enum,omitempty"`
-	Repeated *OneOf   `json:"repeated,omitempty"` // or Repeated
-	Message  *Message `json:"message,omitempty"`
+// Template contains property schema. This is a union type (Only one field must be set).
+type Template struct {
+	Scalar   *Scalar   `json:"scalar,omitempty"`
+	Enum     *Enum     `json:"enum,omitempty"`
+	Repeated *Repeated `json:"repeated,omitempty"`
+	Message  *Message  `json:"message,omitempty"`
+	// TODO: OneOf OneOf
 }
 
 // Clone internal value.
-func (o OneOf) Clone() *OneOf {
-	var clone = new(OneOf)
+func (o Template) Clone() *Template {
+	var clone = new(Template)
 
 	switch {
 	case o.Scalar != nil:
@@ -120,11 +163,9 @@ type Property struct {
 	Options Options    `json:"options,omitempty"`
 	Expr    Expression `json:"-"`
 
-	Reference *PropertyReference `json:"reference,omitempty"`
-
 	Raw string `json:"raw,omitempty"`
 
-	OneOf // contains property schema
+	Template // contains property schema
 }
 
 // PropertyList represents a list of properties
@@ -201,7 +242,6 @@ func (prop *Property) Clone() *Property {
 	return &Property{
 		Meta:        prop.Meta,
 		Position:    prop.Position,
-		Reference:   prop.Reference.Clone(),
 		Description: prop.Description,
 		Name:        prop.Name,
 		Path:        prop.Path,
@@ -210,27 +250,8 @@ func (prop *Property) Clone() *Property {
 		Raw:     prop.Raw,
 		Options: prop.Options,
 
-		OneOf: *prop.OneOf.Clone(),
+		Template: *prop.Template.Clone(),
 	}
-}
-
-// Enum represents a enum configuration
-type Enum struct {
-	*metadata.Meta
-	Name        string                `json:"name,omitempty"`
-	Keys        map[string]*EnumValue `json:"keys,omitempty"`
-	Positions   map[int32]*EnumValue  `json:"positions,omitempty"`
-	Description string                `json:"description,omitempty"`
-}
-
-func (e Enum) Clone() *Enum { return &e }
-
-// EnumValue represents a enum configuration
-type EnumValue struct {
-	*metadata.Meta
-	Key         string `json:"key,omitempty"`
-	Position    int32  `json:"position,omitempty"`
-	Description string `json:"description,omitempty"`
 }
 
 // ParameterMap is the initial map of parameter names (keys) and their (templated) values (values)
