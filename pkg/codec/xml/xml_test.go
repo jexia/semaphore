@@ -55,14 +55,14 @@ func TestMarshal(t *testing.T) {
 			input: map[string]interface{}{
 				"message": "hello world",
 			},
-			expected: "<mock><message>hello world</message><nested></nested></mock>",
+			expected: "<mock><country></country><message>hello world</message><nested></nested></mock>",
 		},
 		"enum": {
 			input: map[string]interface{}{
 				"nested": map[string]interface{}{},
 				"status": references.Enum("PENDING", 1),
 			},
-			expected: "<mock><nested></nested><status>PENDING</status></mock>",
+			expected: "<mock><country></country><nested></nested><status>PENDING</status></mock>",
 		},
 		"nested": {
 			input: map[string]interface{}{
@@ -71,7 +71,7 @@ func TestMarshal(t *testing.T) {
 					"second": "bar",
 				},
 			},
-			expected: "<mock><nested><first>foo</first><second>bar</second></nested></mock>",
+			expected: "<mock><country></country><nested><first>foo</first><second>bar</second></nested></mock>",
 		},
 		"repeating string": {
 			input: map[string]interface{}{
@@ -81,7 +81,7 @@ func TestMarshal(t *testing.T) {
 					nil, // TODO: nil (null) values should not be ignored
 				},
 			},
-			expected: "<mock><nested></nested><repeating_string>repeating one</repeating_string><repeating_string>repeating two</repeating_string></mock>",
+			expected: "<mock><country></country><nested></nested><repeating_string>repeating one</repeating_string><repeating_string>repeating two</repeating_string></mock>",
 		},
 		"repeating enum": {
 			input: map[string]interface{}{
@@ -90,7 +90,7 @@ func TestMarshal(t *testing.T) {
 					"PENDING",
 				},
 			},
-			expected: "<mock><nested></nested><repeating_enum>UNKNOWN</repeating_enum><repeating_enum>PENDING</repeating_enum></mock>",
+			expected: "<mock><country></country><nested></nested><repeating_enum>UNKNOWN</repeating_enum><repeating_enum>PENDING</repeating_enum></mock>",
 		},
 		"repeating nested": {
 			input: map[string]interface{}{
@@ -103,7 +103,7 @@ func TestMarshal(t *testing.T) {
 					},
 				},
 			},
-			expected: "<mock><nested></nested><repeating><value>repeating one</value></repeating><repeating><value>repeating two</value></repeating></mock>",
+			expected: "<mock><country></country><nested></nested><repeating><value>repeating one</value></repeating><repeating><value>repeating two</value></repeating></mock>",
 		},
 		"complex": {
 			input: map[string]interface{}{
@@ -122,7 +122,7 @@ func TestMarshal(t *testing.T) {
 					},
 				},
 			},
-			expected: "<mock><message>hello world</message><nested><first>foo</first><second>bar</second></nested><repeating><value>repeating one</value></repeating><repeating><value>repeating two</value></repeating></mock>",
+			expected: "<mock><country></country><message>hello world</message><nested><first>foo</first><second>bar</second></nested><repeating><value>repeating one</value></repeating><repeating><value>repeating two</value></repeating></mock>",
 		},
 	}
 
@@ -229,7 +229,7 @@ func TestUnmarshal(t *testing.T) {
 		"empty reader": {
 			input: strings.NewReader(""),
 		},
-		"simple (+ignore empty)": {
+		"simple": {
 			input: strings.NewReader(
 				"<mock><nested></nested><message>hello world</message><another_message>dlrow olleh</another_message></mock>",
 			),
@@ -416,6 +416,8 @@ func assert(t *testing.T, resource string, path string, store references.Store, 
 
 	if ref == nil {
 		t.Errorf("reference %q was expected to be set", path)
+
+		return
 	}
 
 	if output.value != nil {
@@ -441,10 +443,14 @@ func assert(t *testing.T, resource string, path string, store references.Store, 
 	if output.repeated != nil {
 		if ref.Repeated == nil {
 			t.Errorf("reference %q was expected to have a repeated value", path)
+
+			return
 		}
 
 		if expected, actual := len(ref.Repeated), len(ref.Repeated); actual != expected {
 			t.Errorf("invalid number of repeated values, expected %d, got %d", expected, actual)
+
+			return
 		}
 
 		for index, expected := range output.repeated {

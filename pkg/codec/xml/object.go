@@ -92,22 +92,16 @@ func (object *Object) unmarshalXML(decoder *xml.Decoder, refs map[string]*refere
 }
 
 func (object *Object) startElement(decoder *xml.Decoder, tok xml.Token, refs map[string]*references.Reference) error {
+
 	switch t := tok.(type) {
 	case xml.StartElement:
 		var prop = object.specs[t.Name.Local]
 		if prop == nil {
-			err := decoder.Skip()
-			if err != nil {
+			if err := decoder.Skip(); err != nil {
 				return err
 			}
 
-			// read until we get start/end element (skip spaces between XML tags)
-			tok, err := decoder.Token()
-			if err != nil {
-				return err
-			}
-
-			return object.startElement(decoder, tok, refs)
+			return object.unmarshalXML(decoder, refs)
 		}
 
 		if prop.Label == labels.Repeated {
@@ -120,12 +114,7 @@ func (object *Object) startElement(decoder *xml.Decoder, tok xml.Token, refs map
 		return nil
 	case xml.CharData:
 		// read until we get start/end element (skip spaces between XML tags)
-		tok, err := decoder.Token()
-		if err != nil {
-			return err
-		}
-
-		return object.startElement(decoder, tok, refs)
+		return object.unmarshalXML(decoder, refs)
 	default:
 		return errUnexpectedToken{
 			actual: t,
