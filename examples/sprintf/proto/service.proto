@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+import "api/annotations.proto";
+
+package com.semaphore;
+
+message GreetRequest {
+  string name = 1;
+  string subject = 2;
+}
+
+message AgeRequest {
+  string name = 1;
+  int32 age = 2;
+}
+
+message MsgRequest {
+  string name = 1;
+  Info info = 2;
+
+  message Info {
+    string sex = 1;
+    int32 age = 2;
+    bool married = 3;
+    repeated int32 numbers = 4;
+  }
+}
+
+message GenericResponse {
+    string message = 1;
+}

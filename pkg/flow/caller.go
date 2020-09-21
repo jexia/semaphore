@@ -3,6 +3,7 @@ package flow
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 
 	"github.com/jexia/semaphore/pkg/broker"
@@ -150,7 +151,7 @@ func (caller *caller) Do(ctx context.Context, store references.Store) error {
 		if caller.response.Codec != nil {
 			err := caller.response.Codec.Unmarshal(reader, store)
 			if err != nil {
-				return err
+				return fmt.Errorf("failed to unmarshal response into the store: %w", err)
 			}
 		}
 

@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -137,7 +138,7 @@ func (call *Call) GetMethod(name string) transport.Method {
 // SendMsg calls the configured host and attempts to call the given endpoint with the given headers and stream
 func (call *Call) SendMsg(ctx context.Context, rw transport.ResponseWriter, pr *transport.Request, refs references.Store) error {
 	request := http.MethodGet
-	url, err := url.Parse(call.host)
+	uri, err := url.Parse(call.host)
 	if err != nil {
 		return err
 	}
@@ -150,18 +151,24 @@ func (call *Call) SendMsg(ctx context.Context, rw transport.ResponseWriter, pr *
 
 		endpoint := LookupEndpointReferences(method, refs)
 		if endpoint != "" {
-			url.Path = endpoint
+			endpointUri, err := url.Parse(endpoint)
+			if err != nil {
+				return fmt.Errorf("failed to parse endpoint: %w", err)
+			}
+
+			uri.Path = endpointUri.Path
+			uri.RawQuery = endpointUri.RawQuery
 		}
 
 		request = method.request
 	}
 
 	logger.Debug(call.ctx, "calling HTTP caller",
-		zap.String("url", url.String()),
+		zap.String("uri", uri.String()),
 		zap.String("method", request),
 	)
 
-	req, err := http.NewRequestWithContext(ctx, request, url.String(), pr.Body)
+	req, err := http.NewRequestWithContext(ctx, request, uri.String(), pr.Body)
 	if err != nil {
 		return err
 	}
