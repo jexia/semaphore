@@ -25,6 +25,12 @@ var (
 							Type:  types.String,
 							Label: labels.Optional,
 						},
+						"name": {
+							Name:  "name",
+							Path:  "country.name",
+							Type:  types.String,
+							Label: labels.Optional,
+						},
 					},
 				},
 				"bad_label": {

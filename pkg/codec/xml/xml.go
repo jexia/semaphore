@@ -82,5 +82,6 @@ func (manager *Manager) Unmarshal(reader io.Reader, refs references.Store) error
 	}
 
 	var object = NewObject(manager.resource, manager.specs.Nested, refs)
+
 	return xml.Unmarshal(bb, object)
 }

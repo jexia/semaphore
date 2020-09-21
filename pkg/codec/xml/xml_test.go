@@ -165,35 +165,6 @@ func TestUnmarshal(t *testing.T) {
 	}
 
 	tests := map[string]test{
-		"worldbank": {
-			input: strings.NewReader(
-				`<?xml version="1.0" encoding="utf-8"?>
-<wb:countries page="1" pages="7" per_page="50" total="304" xmlns:wb="http://www.worldbank.org">
-  <wb:country id="ABW">
-    <wb:iso2Code>AW</wb:iso2Code>
-    <wb:name>Aruba</wb:name>
-    <wb:region id="LCN" iso2code="ZJ">Latin America &amp; Caribbean </wb:region>
-    <wb:adminregion id="" iso2code="" />
-    <wb:incomeLevel id="HIC" iso2code="XD">High income</wb:incomeLevel>
-    <wb:lendingType id="LNX" iso2code="XX">Not classified</wb:lendingType>
-    <wb:capitalCity>Oranjestad</wb:capitalCity>
-    <wb:longitude>-70.0167</wb:longitude>
-    <wb:latitude>12.5167</wb:latitude>
-  </wb:country>
-  <wb:country id="AFG">
-    <wb:iso2Code>AF</wb:iso2Code>
-    <wb:name>Afghanistan</wb:name>
-    <wb:region id="SAS" iso2code="8S">South Asia</wb:region>
-    <wb:adminregion id="SAS" iso2code="8S">South Asia</wb:adminregion>
-    <wb:incomeLevel id="LIC" iso2code="XM">Low income</wb:incomeLevel>
-    <wb:lendingType id="IDX" iso2code="XI">IDA</wb:lendingType>
-    <wb:capitalCity>Kabul</wb:capitalCity>
-    <wb:longitude>69.1761</wb:longitude>
-    <wb:latitude>34.5228</wb:latitude>
-  </wb:country>
-</wb:countries>`,
-			),
-		},
 		"reader error": {
 			input: readerFunc(
 				func([]byte) (int, error) {
@@ -367,6 +338,41 @@ func TestUnmarshal(t *testing.T) {
 									value: "repeating two",
 								},
 							},
+						},
+					},
+				},
+			},
+		},
+		"formatted XML": {
+			input: strings.NewReader(
+				`<?xml version="1.0" encoding="utf-8"?>
+<wb:countries page="1" pages="7" per_page="50" total="304" xmlns:wb="http://www.example.com">
+	<wb:country id="ABW">
+		<wb:iso2Code>AW</wb:iso2Code>
+		<wb:name>Aruba</wb:name>
+		<wb:region id="LCN" iso2code="ZJ">Latin America &amp; Caribbean </wb:region>
+		<wb:capitalCity>Oranjestad</wb:capitalCity>
+		<wb:longitude>-70.0167</wb:longitude>
+		<wb:latitude>12.5167</wb:latitude>
+	</wb:country>
+	<wb:country id="AFG">
+		<wb:iso2Code>AF</wb:iso2Code>
+		<wb:name>Afghanistan</wb:name>
+		<wb:region id="SAS" iso2code="8S">South Asia</wb:region>
+		<wb:capitalCity>Kabul</wb:capitalCity>
+		<wb:longitude>69.1761</wb:longitude>
+		<wb:latitude>34.5228</wb:latitude>
+	</wb:country>
+</wb:countries>`,
+			),
+			expected: map[string]expect{
+				"country": {
+					repeated: []expect{
+						{
+							value: "repeating one",
+						},
+						{
+							value: "repeating two",
 						},
 					},
 				},
