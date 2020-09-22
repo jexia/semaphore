@@ -9,9 +9,9 @@ import (
 )
 
 // NewMessage attempts to construct a new proto message descriptor for the given specs property
-func NewMessage(resource string, specs []*specs.Property) (*desc.MessageDescriptor, error) {
+func NewMessage(resource string, specs *specs.Property) (*desc.MessageDescriptor, error) {
 	msg := builder.NewMessage(resource)
-	err := ConstructMessage(msg, specs)
+	err := ConstructMessage(msg, spec)
 	if err != nil {
 		return nil, err
 	}
@@ -20,7 +20,7 @@ func NewMessage(resource string, specs []*specs.Property) (*desc.MessageDescript
 }
 
 // ConstructMessage constructs a proto message of the given specs into the given message builders
-func ConstructMessage(msg *builder.MessageBuilder, specs []*specs.Property) (err error) {
+func ConstructMessage(msg *builder.MessageBuilder, spec *specs.Property) (err error) {
 	for _, prop := range specs {
 		key := prop.Name
 

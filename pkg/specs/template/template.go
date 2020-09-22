@@ -123,14 +123,19 @@ func ParseContent(path string, name string, content string) (*specs.Property, er
 
 	if StringPattern.MatchString(content) {
 		matched := StringPattern.FindStringSubmatch(content)
+		result := &specs.Property{
+			Name: name,
+			Path: path,
+			Template: specs.Template{
+				Scalar: &specs.Scalar{
+					Type:    types.String,
+					Label:   labels.Optional,
+					Default: matched[1],
+				},
+			},
+		}
 
-		return &specs.Property{
-			Name:    name,
-			Path:    path,
-			Type:    types.String,
-			Label:   labels.Optional,
-			Default: matched[1],
-		}, nil
+		return result, nil
 	}
 
 	return &specs.Property{
@@ -152,8 +157,8 @@ func Parse(ctx *broker.Context, path string, name string, value string) (*specs.
 
 	logger.Debug(ctx, "template results in property with type",
 		zap.String("path", path),
-		zap.String("type", string(result.Type)),
-		zap.Any("default", result.Default),
+		zap.String("type", string(result.Scalar.Type)),
+		zap.Any("default", result.Scalar.Default),
 		zap.String("reference", result.Reference.String()),
 	)
 

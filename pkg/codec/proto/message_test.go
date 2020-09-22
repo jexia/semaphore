@@ -49,8 +49,12 @@ func NewMock() (specs.FlowListInterface, error) {
 }
 
 func ValidateStore(t *testing.T, prop *specs.Property, resource string, origin string, input map[string]interface{}, store references.Store) {
+	if prop.Message == nil {
+		t.Fatalf("%s, undefined property message", prop.Path)
+	}
+
 	for key, value := range input {
-		nprop := prop.Nested.Get(key)
+		nprop := prop.Message.Properties[key]
 		if nprop == nil {
 			nprop = prop
 		}
@@ -241,7 +245,7 @@ func BenchmarkSimpleUnmarshal(b *testing.B) {
 	flow := flows.Get("simple")
 	specs := flow.GetNodes().Get("first").Call.Request
 
-	desc, err := NewMessage("MockRequest", specs.Property.Nested)
+	desc, err := NewMessage("MockRequest", specs.Property)
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -295,7 +299,7 @@ func BenchmarkNestedUnmarshal(b *testing.B) {
 	flow := flows.Get("nested")
 	specs := flow.GetNodes().Get("first").Call.Request
 
-	desc, err := NewMessage("MockRequest", specs.Property.Nested)
+	desc, err := NewMessage("MockRequest", specs.Property)
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -351,7 +355,7 @@ func BenchmarkRepeatedUnmarshal(b *testing.B) {
 	flow := flows.Get("repeated")
 	specs := flow.GetNodes().Get("first").Call.Request
 
-	desc, err := NewMessage("MockRequest", specs.Property.Nested)
+	desc, err := NewMessage("MockRequest", specs.Property)
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -392,7 +396,7 @@ func TestMarshal(t *testing.T) {
 
 	flow := flows.Get("complete")
 	req := flow.GetNodes().Get("first").Call.Request
-	desc, err := NewMessage("marshal", req.Property.Nested)
+	desc, err := NewMessage("marshal", req.Property)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -571,7 +575,7 @@ func TestUnmarshal(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			desc, err := NewMessage("input", req.Property.Nested)
+			desc, err := NewMessage("input", req.Property)
 			if err != nil {
 				t.Fatal(err)
 			}

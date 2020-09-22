@@ -450,41 +450,59 @@ func TestListenerErrorHandling(t *testing.T) {
 			err: &specs.OnError{
 				Response: &specs.ParameterMap{
 					Property: &specs.Property{
-						Type:  types.Message,
-						Label: labels.Optional,
-						Nested: []*specs.Property{
-							{
-								Name:  "status",
-								Path:  "status",
-								Type:  types.Int64,
-								Label: labels.Optional,
-								Reference: &specs.PropertyReference{
-									Resource: "error",
-									Path:     "status",
-								},
-							},
-							{
-								Name:  "message",
-								Path:  "message",
-								Type:  types.String,
-								Label: labels.Optional,
-								Reference: &specs.PropertyReference{
-									Resource: "error",
-									Path:     "message",
+						Template: specs.Template{
+							Message: &specs.Message{
+								Properties: []*specs.Property{
+									{
+										Name: "status",
+										Path: "status",
+										Template: specs.Template{
+											Scalar: &specs.Scalar{
+												Type:  types.Int64,
+												Label: labels.Optional,
+											},
+										},
+										Reference: &specs.PropertyReference{
+											Resource: "error",
+											Path:     "status",
+										},
+									},
+									{
+										Name: "message",
+										Path: "message",
+										Template: specs.Template{
+											Scalar: &specs.Scalar{
+												Type:  types.String,
+												Label: labels.Optional,
+											},
+										},
+										Reference: &specs.PropertyReference{
+											Resource: "error",
+											Path:     "message",
+										},
+									},
 								},
 							},
 						},
 					},
 				},
 				Status: &specs.Property{
-					Type:    types.Int64,
-					Label:   labels.Optional,
-					Default: int64(500),
+					Template: specs.Template{
+						Scalar: &specs.Scalar{
+							Type:    types.Int64,
+							Label:   labels.Optional,
+							Default: int64(500),
+						},
+					},
 				},
 				Message: &specs.Property{
-					Type:    types.String,
-					Label:   labels.Optional,
-					Default: "value",
+					Template: specs.Template{
+						Scalar: &specs.Scalar{
+							Type:    types.String,
+							Label:   labels.Optional,
+							Default: "value",
+						},
+					},
 				},
 			},
 			expected: 500,
@@ -505,41 +523,59 @@ func TestListenerErrorHandling(t *testing.T) {
 			err: &specs.OnError{
 				Response: &specs.ParameterMap{
 					Property: &specs.Property{
-						Type:  types.Message,
-						Label: labels.Optional,
-						Nested: []*specs.Property{
-							{
-								Name:  "status",
-								Path:  "status",
-								Type:  types.Int64,
-								Label: labels.Optional,
-								Reference: &specs.PropertyReference{
-									Resource: "input",
-									Path:     "status",
-								},
-							},
-							{
-								Name:  "message",
-								Path:  "message",
-								Type:  types.String,
-								Label: labels.Optional,
-								Reference: &specs.PropertyReference{
-									Resource: "error",
-									Path:     "message",
+						Template: specs.Template{
+							Message: &specs.Message{
+								Properties: []*specs.Property{
+									{
+										Name: "status",
+										Path: "status",
+										Template: specs.Template{
+											Scalar: &specs.Scalar{
+												Type:  types.Int64,
+												Label: labels.Optional,
+											},
+										},
+										Reference: &specs.PropertyReference{
+											Resource: "input",
+											Path:     "status",
+										},
+									},
+									{
+										Name: "message",
+										Path: "message",
+										Template: specs.Template{
+											Scalar: &specs.Scalar{
+												Type:  types.String,
+												Label: labels.Optional,
+											},
+										},
+										Reference: &specs.PropertyReference{
+											Resource: "error",
+											Path:     "message",
+										},
+									},
 								},
 							},
 						},
 					},
 				},
 				Status: &specs.Property{
-					Type:    types.Int64,
-					Label:   labels.Optional,
-					Default: int64(401),
+					Template: specs.Template{
+						Scalar: &specs.Scalar{
+							Type:    types.Int64,
+							Label:   labels.Optional,
+							Default: int64(401),
+						},
+					},
 				},
 				Message: &specs.Property{
-					Type:    types.String,
-					Label:   labels.Optional,
-					Default: "value",
+					Template: specs.Template{
+						Scalar: &specs.Scalar{
+							Type:    types.String,
+							Label:   labels.Optional,
+							Default: "value",
+						},
+					},
 				},
 			},
 
@@ -560,41 +596,59 @@ func TestListenerErrorHandling(t *testing.T) {
 			err: &specs.OnError{
 				Response: &specs.ParameterMap{
 					Property: &specs.Property{
-						Type:  types.Message,
-						Label: labels.Optional,
-						Nested: []*specs.Property{
-							{
-								Name:  "status",
-								Path:  "status",
-								Type:  types.Int64,
-								Label: labels.Optional,
-								Reference: &specs.PropertyReference{
-									Resource: "error",
-									Path:     "status",
-								},
-							},
-							{
-								Name:  "message",
-								Path:  "message",
-								Type:  types.String,
-								Label: labels.Optional,
-								Reference: &specs.PropertyReference{
-									Resource: "error",
-									Path:     "message",
+						Template: specs.Template{
+							Message: &specs.Message{
+								Properties: []*specs.Property{
+									{
+										Name: "status",
+										Path: "status",
+										Template: specs.Template{
+											Scalar: &specs.Scalar{
+												Type:  types.Int64,
+												Label: labels.Optional,
+											},
+										},
+										Reference: &specs.PropertyReference{
+											Resource: "error",
+											Path:     "status",
+										},
+									},
+									{
+										Name: "message",
+										Path: "message",
+										Template: specs.Template{
+											Scalar: &specs.Scalar{
+												Type:  types.String,
+												Label: labels.Optional,
+											},
+										},
+										Reference: &specs.PropertyReference{
+											Resource: "error",
+											Path:     "message",
+										},
+									},
 								},
 							},
 						},
 					},
 				},
 				Status: &specs.Property{
-					Type:    types.Int64,
-					Label:   labels.Optional,
-					Default: int64(404),
+					Template: specs.Template{
+						Scalar: &specs.Scalar{
+							Type:    types.Int64,
+							Label:   labels.Optional,
+							Default: int64(404),
+						},
+					},
 				},
 				Message: &specs.Property{
-					Type:    types.String,
-					Label:   labels.Optional,
-					Default: "value",
+					Template: specs.Template{
+						Scalar: &specs.Scalar{
+							Type:    types.String,
+							Label:   labels.Optional,
+							Default: "value",
+						},
+					},
 				},
 			},
 
@@ -615,56 +669,80 @@ func TestListenerErrorHandling(t *testing.T) {
 			err: &specs.OnError{
 				Response: &specs.ParameterMap{
 					Property: &specs.Property{
-						Type:  types.Message,
-						Label: labels.Optional,
-						Nested: []*specs.Property{
-							{
-								Name:  "meta",
-								Path:  "meta",
-								Type:  types.Message,
-								Label: labels.Optional,
-								Nested: []*specs.Property{
+						Template: specs.Template{
+							Message: &specs.Message{
+								Properties: []*specs.Property{
 									{
-										Name:  "status",
-										Path:  "meta.status",
-										Type:  types.Int64,
-										Label: labels.Optional,
-										Reference: &specs.PropertyReference{
-											Resource: "error",
-											Path:     "status",
+										Name: "meta",
+										Path: "meta",
+										Template: specs.Template{
+											Message: &specs.Message{
+												Properties: []*specs.Property{
+													{
+														Name: "status",
+														Path: "meta.status",
+														Template: specs.Template{
+															Scalar: &specs.Scalar{
+																Type:  types.Int64,
+																Label: labels.Optional,
+															},
+														},
+														Reference: &specs.PropertyReference{
+															Resource: "error",
+															Path:     "status",
+														},
+													},
+													{
+														Name: "message",
+														Path: "meta.message",
+														Template: specs.Template{
+															Scalar: &specs.Scalar{
+																Type:  types.String,
+																Label: labels.Optional,
+															},
+														},
+														Reference: &specs.PropertyReference{
+															Resource: "error",
+															Path:     "message",
+														},
+													},
+												},
+											},
 										},
 									},
 									{
-										Name:  "message",
-										Path:  "meta.message",
-										Type:  types.String,
-										Label: labels.Optional,
-										Reference: &specs.PropertyReference{
-											Resource: "error",
-											Path:     "message",
+										Name: "const",
+										Path: "const",
+										Template: specs.Template{
+											Scalar: &specs.Scalar{
+												Type:    types.String,
+												Label:   labels.Optional,
+												Default: "custom message",
+											},
 										},
 									},
 								},
-							},
-							{
-								Name:    "const",
-								Path:    "const",
-								Type:    types.String,
-								Label:   labels.Optional,
-								Default: "custom message",
 							},
 						},
 					},
 				},
 				Status: &specs.Property{
-					Type:    types.Int64,
-					Label:   labels.Optional,
-					Default: int64(404),
+					Template: specs.Template{
+						Scalar: &specs.Scalar{
+							Type:    types.Int64,
+							Label:   labels.Optional,
+							Default: int64(404),
+						},
+					},
 				},
 				Message: &specs.Property{
-					Type:    types.String,
-					Label:   labels.Optional,
-					Default: "value",
+					Template: specs.Template{
+						Scalar: &specs.Scalar{
+							Type:    types.String,
+							Label:   labels.Optional,
+							Default: "value",
+						},
+					},
 				},
 			},
 
@@ -688,14 +766,22 @@ func TestListenerErrorHandling(t *testing.T) {
 			err: &specs.OnError{
 				Response: nil,
 				Status: &specs.Property{
-					Type:    types.Int64,
-					Label:   labels.Optional,
-					Default: int64(404),
+					Template: specs.Template{
+						Scalar: &specs.Scalar{
+							Type:    types.Int64,
+							Label:   labels.Optional,
+							Default: int64(404),
+						},
+					},
 				},
 				Message: &specs.Property{
-					Type:    types.String,
-					Label:   labels.Optional,
-					Default: "value",
+					Template: specs.Template{
+						Scalar: &specs.Scalar{
+							Type:    types.String,
+							Label:   labels.Optional,
+							Default: "value",
+						},
+					},
 				},
 			},
 

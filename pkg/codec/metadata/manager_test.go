@@ -15,10 +15,14 @@ func TestNewManager(t *testing.T) {
 	resource := "mock"
 	params := specs.Header{
 		"example": &specs.Property{
-			Name:  "example",
-			Path:  "example",
-			Type:  types.String,
-			Label: labels.Optional,
+			Name: "example",
+			Path: "example",
+			Template: specs.Template{
+				Scalar: &specs.Scalar{
+					Type:  types.String,
+					Label: labels.Optional,
+				},
+			},
 		},
 	}
 
@@ -36,11 +40,15 @@ func TestManagerMarshal(t *testing.T) {
 		"simple": func() (specs.Header, references.Store, MD) {
 			header := specs.Header{
 				"example": &specs.Property{
-					Name:    "example",
-					Path:    "example",
-					Default: "hello",
-					Type:    types.String,
-					Label:   labels.Optional,
+					Name: "example",
+					Path: "example",
+					Template: specs.Template{
+						Scalar: &specs.Scalar{
+							Default: "hello",
+							Type:    types.String,
+							Label:   labels.Optional,
+						},
+					},
 				},
 			}
 
@@ -55,10 +63,14 @@ func TestManagerMarshal(t *testing.T) {
 		"reference": func() (specs.Header, references.Store, MD) {
 			header := specs.Header{
 				"example": &specs.Property{
-					Name:  "example",
-					Path:  "example",
-					Type:  types.String,
-					Label: labels.Optional,
+					Name: "example",
+					Path: "example",
+					Template: specs.Template{
+						Scalar: &specs.Scalar{
+							Type:  types.String,
+							Label: labels.Optional,
+						},
+					},
 					Reference: &specs.PropertyReference{
 						Resource: "input",
 						Path:     "value",
@@ -106,10 +118,14 @@ func TestManagerUnmarshal(t *testing.T) {
 		"simple": func() (specs.Header, MD, MD) {
 			params := specs.Header{
 				"example": &specs.Property{
-					Name:  "example",
-					Path:  "example",
-					Type:  types.String,
-					Label: labels.Optional,
+					Name: "example",
+					Path: "example",
+					Template: specs.Template{
+						Scalar: &specs.Scalar{
+							Type:  types.String,
+							Label: labels.Optional,
+						},
+					},
 				},
 			}
 
@@ -126,10 +142,14 @@ func TestManagerUnmarshal(t *testing.T) {
 		"case insensitive": func() (specs.Header, MD, MD) {
 			params := specs.Header{
 				"Example": &specs.Property{
-					Name:  "example",
-					Path:  "example",
-					Type:  types.String,
-					Label: labels.Optional,
+					Name: "example",
+					Path: "example",
+					Template: specs.Template{
+						Scalar: &specs.Scalar{
+							Type:  types.String,
+							Label: labels.Optional,
+						},
+					},
 				},
 			}
 
@@ -146,10 +166,14 @@ func TestManagerUnmarshal(t *testing.T) {
 		"unnessasery allocation": func() (specs.Header, MD, MD) {
 			params := specs.Header{
 				"example": &specs.Property{
-					Name:  "example",
-					Path:  "example",
-					Type:  types.String,
-					Label: labels.Optional,
+					Name: "example",
+					Path: "example",
+					Template: specs.Template{
+						Scalar: &specs.Scalar{
+							Type:  types.String,
+							Label: labels.Optional,
+						},
+					},
 				},
 			}
 

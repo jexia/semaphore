@@ -49,7 +49,7 @@ func (object *Object) ResolveStatusCode(store references.Store) int {
 		return StatusInternalErr
 	}
 
-	result := object.StatusCode.Default
+	result := object.StatusCode.Scalar.Default
 	if object.StatusCode.Reference != nil {
 		ref := store.Load(object.StatusCode.Reference.Resource, object.StatusCode.Reference.Path)
 		if ref != nil && ref.Value != nil {
@@ -72,7 +72,7 @@ func (object *Object) ResolveMessage(store references.Store) string {
 		return StatusMessage(StatusInternalErr)
 	}
 
-	result := object.Message.Default
+	result := object.Message.Scalar.Default
 	if object.Message.Reference != nil {
 		ref := store.Load(object.Message.Reference.Resource, object.Message.Reference.Path)
 		if ref != nil && ref.Value != nil {

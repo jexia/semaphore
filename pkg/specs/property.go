@@ -1,6 +1,9 @@
 package specs
 
 import (
+	"encoding/json"
+	"sort"
+
 	"github.com/jexia/semaphore/pkg/specs/labels"
 	"github.com/jexia/semaphore/pkg/specs/metadata"
 	"github.com/jexia/semaphore/pkg/specs/types"
@@ -36,19 +39,65 @@ type Expression interface {
 
 // Scalar value.
 type Scalar struct {
-	Default   interface{}        `json:"default,omitempty"`
-	Type      types.Type         `json:"type,omitempty"`
-	Label     labels.Label       `json:"label,omitempty"`
-	Reference *PropertyReference `json:"reference,omitempty"`
+	Default interface{}  `json:"default,omitempty"`
+	Type    types.Type   `json:"type,omitempty"`
+	Label   labels.Label `json:"label,omitempty"`
+}
+
+// UnmarshalJSON corrects the 64bit data types in accordance with golang
+func (scalar *Scalar) UnmarshalJSON(data []byte) error {
+	if scalar == nil {
+		return nil
+	}
+
+	type sc Scalar
+	t := sc{}
+
+	err := json.Unmarshal(data, &t)
+	if err != nil {
+		return err
+	}
+
+	*scalar = Scalar(t)
+	scalar.Clean()
+
+	return nil
+}
+
+// Clean fixes the type casting issue of unmarshal
+func (scalar *Scalar) Clean() {
+	if scalar.Default != nil {
+		switch scalar.Type {
+		case types.Int64, types.Sint64, types.Sfixed64:
+			_, ok := scalar.Default.(int64)
+			if !ok {
+				scalar.Default = int64(scalar.Default.(float64))
+			}
+		case types.Uint64, types.Fixed64:
+			_, ok := scalar.Default.(uint64)
+			if !ok {
+				scalar.Default = uint64(scalar.Default.(float64))
+			}
+		case types.Int32, types.Sint32, types.Sfixed32:
+			_, ok := scalar.Default.(int32)
+			if !ok {
+				scalar.Default = int32(scalar.Default.(float64))
+			}
+		case types.Uint32, types.Fixed32:
+			_, ok := scalar.Default.(uint32)
+			if !ok {
+				scalar.Default = uint32(scalar.Default.(float64))
+			}
+		}
+	}
 }
 
 // Clone scalar value.
-func (s Scalar) Clone() *Scalar {
+func (scalar Scalar) Clone() *Scalar {
 	return &Scalar{
-		Default:   s.Default,
-		Type:      s.Type,
-		Label:     s.Label,
-		Reference: s.Reference.Clone(),
+		Default: scalar.Default,
+		Type:    scalar.Type,
+		Label:   scalar.Label,
 	}
 }
 
@@ -56,9 +105,9 @@ func (s Scalar) Clone() *Scalar {
 type Enum struct {
 	*metadata.Meta
 	Name        string                `json:"name,omitempty"`
+	Description string                `json:"description,omitempty"`
 	Keys        map[string]*EnumValue `json:"keys,omitempty"`
 	Positions   map[int32]*EnumValue  `json:"positions,omitempty"`
-	Description string                `json:"description,omitempty"`
 }
 
 // Clone enum schema.
@@ -75,20 +124,21 @@ type EnumValue struct {
 // Repeated represents an array type.
 type Repeated struct {
 	// Template contains the type of repeated values
-	Template Template
+	Template
 
 	// Default contains the static values for certain indexes
-	Default map[uint]*Property
+	Default   map[uint]*Property `json:"default,omitempty"`
+	Reference *PropertyReference `json:"reference,omitempty"`
 }
 
 // Clone repeated.
-func (e Repeated) Clone() *Repeated {
+func (repeated Repeated) Clone() *Repeated {
 	var clone = &Repeated{
-		Template: *e.Template.Clone(),
-		Default:  make(map[uint]*Property, len(e.Default)),
+		Template: *repeated.Template.Clone(),
+		Default:  make(map[uint]*Property, len(repeated.Default)),
 	}
 
-	for index, prop := range e.Default {
+	for index, prop := range repeated.Default {
 		clone.Default[index] = prop
 	}
 
@@ -97,20 +147,30 @@ func (e Repeated) Clone() *Repeated {
 
 // Message represents an object which keeps the original order of keys.
 type Message struct {
-	Keys       []string
-	Properties []*Property
+	Properties map[string]*Property `json:"properties,omitempty"`
+}
+
+// SortedProperties returns the available properties as a properties list
+// ordered base on the properties position.
+func (message Message) SortedProperties() PropertyList {
+	result := make(PropertyList, 0, len(message.Properties))
+
+	for _, property := range message.Properties {
+		result = append(result, property)
+	}
+
+	sort.Sort(result)
+	return result
 }
 
 // Clone the message.
-func (m Message) Clone() *Message {
+func (message Message) Clone() *Message {
 	var clone = &Message{
-		Keys:       make([]string, 0, len(m.Keys)),
-		Properties: make([]*Property, 0, len(m.Properties)),
+		Properties: make(map[string]*Property, len(message.Properties)),
 	}
 
-	for index := 0; index < len(m.Keys); index++ {
-		clone.Keys[index] = m.Keys[index]
-		clone.Properties[index] = m.Properties[index].Clone()
+	for key := range message.Properties {
+		clone.Properties[key] = message.Properties[key].Clone()
 	}
 
 	return clone
@@ -122,58 +182,62 @@ type Template struct {
 	Enum     *Enum     `json:"enum,omitempty"`
 	Repeated *Repeated `json:"repeated,omitempty"`
 	Message  *Message  `json:"message,omitempty"`
-	// TODO: OneOf OneOf
+}
+
+// Type returns the type of the given template
+func (template Template) Type() types.Type {
+	if template.Message != nil {
+		return types.Message
+	}
+
+	if template.Repeated != nil {
+		return types.Array
+	}
+
+	if template.Enum != nil {
+		return types.Enum
+	}
+
+	if template.Scalar != nil {
+		return template.Scalar.Type
+	}
+
+	return types.Unknown
 }
 
 // Clone internal value.
-func (o Template) Clone() *Template {
+func (template Template) Clone() *Template {
 	var clone = new(Template)
 
-	switch {
-	case o.Scalar != nil:
-		clone.Scalar = o.Scalar.Clone()
+	if template.Scalar != nil {
+		clone.Scalar = template.Scalar.Clone()
+	}
 
-		break
-	case o.Enum != nil:
-		clone.Enum = o.Enum.Clone()
+	if template.Enum != nil {
+		clone.Enum = template.Enum.Clone()
+	}
 
-		break
-	case o.Repeated != nil:
-		clone.Repeated = o.Repeated.Clone()
+	if template.Repeated != nil {
+		clone.Repeated = template.Repeated.Clone()
+	}
 
-		break
-	case o.Message != nil:
-		clone.Message = o.Message.Clone()
-
-		break
+	if template.Message != nil {
+		clone.Message = template.Message.Clone()
 	}
 
 	return clone
 }
 
-// Property represents a value property.
-type Property struct {
-	*metadata.Meta
-	Name        string `json:"name,omitempty"`
-	Path        string `json:"path,omitempty"`
-	Description string `json:"description,omitempty"`
-
-	Position int32 `json:"position,omitempty"` // what is this?
-
-	Options Options    `json:"options,omitempty"`
-	Expr    Expression `json:"-"`
-
-	Raw string `json:"raw,omitempty"`
-
-	Template // contains property schema
-}
-
 // PropertyList represents a list of properties
 type PropertyList []*Property
 
+func (list PropertyList) Len() int           { return len(list) }
+func (list PropertyList) Swap(i, j int)      { list[i], list[j] = list[j], list[i] }
+func (list PropertyList) Less(i, j int) bool { return list[i].Position < list[j].Position }
+
 // Get attempts to return a property inside the given list with the given name
-func (nested PropertyList) Get(key string) *Property {
-	for _, item := range nested {
+func (list PropertyList) Get(key string) *Property {
+	for _, item := range list {
 		if item == nil {
 			continue
 		}
@@ -186,51 +250,22 @@ func (nested PropertyList) Get(key string) *Property {
 	return nil
 }
 
-// UnmarshalJSON corrects the 64bit data types in accordance with golang
-func (prop *Property) UnmarshalJSON(data []byte) error {
-	// type property Property
-	// p := property{}
-	// err := json.Unmarshal(data, &p)
-	// if err != nil {
-	// 	return err
-	// }
-	//
-	// *prop = Property(p)
-	// prop.Clean()
-	//
-	// for _, nested := range prop.Nested {
-	// 	nested.Clean()
-	// }
+// Property represents a value property.
+type Property struct {
+	*metadata.Meta
+	Name        string `json:"name,omitempty"`        // Name represents the name of the given property
+	Path        string `json:"path,omitempty"`        // Path represents the full path to the given property
+	Description string `json:"description,omitempty"` // Description holds the description of the given property used to describe its use
 
-	return nil
-}
+	Position int32 `json:"position,omitempty"` // Position of the given property
 
-// Clean fixes the type casting issue of unmarshal
-func (prop *Property) Clean() {
-	// if prop.Default != nil {
-	// 	switch prop.Type {
-	// 	case types.Int64, types.Sint64, types.Sfixed64:
-	// 		_, ok := prop.Default.(int64)
-	// 		if !ok {
-	// 			prop.Default = int64(prop.Default.(float64))
-	// 		}
-	// 	case types.Uint64, types.Fixed64:
-	// 		_, ok := prop.Default.(uint64)
-	// 		if !ok {
-	// 			prop.Default = uint64(prop.Default.(float64))
-	// 		}
-	// 	case types.Int32, types.Sint32, types.Sfixed32:
-	// 		_, ok := prop.Default.(int32)
-	// 		if !ok {
-	// 			prop.Default = int32(prop.Default.(float64))
-	// 		}
-	// 	case types.Uint32, types.Fixed32:
-	// 		_, ok := prop.Default.(uint32)
-	// 		if !ok {
-	// 			prop.Default = uint32(prop.Default.(float64))
-	// 		}
-	// 	}
-	// }
+	Options Options    `json:"options,omitempty"`    // Options holds variable options used inside single modules or components
+	Expr    Expression `json:"expression,omitempty"` // Expr represents the position on where the given property is defined
+
+	Reference *PropertyReference `json:"reference,omitempty"` // Reference represents a property reference made inside the given property
+	Raw       string             `json:"raw,omitempty"`       // Raw holds the raw template string used to define the given property
+
+	Template
 }
 
 // Clone makes a deep clone of the given property
@@ -246,9 +281,10 @@ func (prop *Property) Clone() *Property {
 		Name:        prop.Name,
 		Path:        prop.Path,
 
-		Expr:    prop.Expr,
-		Raw:     prop.Raw,
-		Options: prop.Options,
+		Expr:      prop.Expr,
+		Raw:       prop.Raw,
+		Options:   prop.Options,
+		Reference: prop.Reference.Clone(),
 
 		Template: *prop.Template.Clone(),
 	}

@@ -54,8 +54,12 @@ func NewMock() (specs.FlowListInterface, error) {
 }
 
 func ValidateStore(t *testing.T, prop *specs.Property, resource string, origin string, input map[string]interface{}, store references.Store) {
+	if prop.Message == nil {
+		t.Fatalf("%s, property message not set", prop.Path)
+	}
+
 	for key, value := range input {
-		nprop := prop.Nested.Get(key)
+		nprop := prop.Message.Properties[key]
 		if nprop == nil {
 			nprop = prop
 		}

@@ -144,8 +144,10 @@ func ResolvePropertyReferences(property *specs.Property, dependencies specs.Depe
 		ResolvePropertyReferences(repeated, dependencies)
 	}
 
-	for _, nested := range property.Nested {
-		ResolvePropertyReferences(nested, dependencies)
+	if property.Message != nil {
+		for _, nested := range property.Message.Properties {
+			ResolvePropertyReferences(nested, dependencies)
+		}
 	}
 
 	if property.Reference == nil {

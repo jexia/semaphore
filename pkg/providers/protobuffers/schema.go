@@ -3,9 +3,7 @@ package protobuffers
 import (
 	protobuf "github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/labels"
 	"github.com/jexia/semaphore/pkg/specs/template"
-	"github.com/jexia/semaphore/pkg/specs/types"
 	"github.com/jhump/protoreflect/desc"
 )
 
@@ -26,18 +24,20 @@ func NewSchema(descriptors []*desc.FileDescriptor) specs.Schemas {
 func NewMessage(path string, descriptor *desc.MessageDescriptor) *specs.Property {
 	fields := descriptor.GetFields()
 	result := &specs.Property{
-		Path:     path,
-		Name:     descriptor.GetFullyQualifiedName(),
-		Comment:  descriptor.GetSourceInfo().GetLeadingComments(),
-		Position: 1,
-		Type:     types.Message,
-		Label:    labels.Optional,
-		Nested:   make([]*specs.Property, len(fields)),
-		Options:  specs.Options{},
+		Path:        path,
+		Name:        descriptor.GetFullyQualifiedName(),
+		Description: descriptor.GetSourceInfo().GetLeadingComments(),
+		Position:    1,
+		Template: specs.Template{
+			Message: &specs.Message{
+				Properties: make(map[string]*specs.Property, len(fields)),
+			},
+		},
+		Options: specs.Options{},
 	}
 
-	for index, field := range fields {
-		result.Nested[index] = NewProperty(template.JoinPath(path, field.GetName()), field)
+	for _, field := range fields {
+		result.Message.Properties[field.GetName()] = NewProperty(template.JoinPath(path, field.GetName()), field)
 	}
 
 	return result
@@ -46,13 +46,11 @@ func NewMessage(path string, descriptor *desc.MessageDescriptor) *specs.Property
 // NewProperty constructs a schema Property with the given field descriptor
 func NewProperty(path string, descriptor *desc.FieldDescriptor) *specs.Property {
 	result := &specs.Property{
-		Path:     path,
-		Name:     descriptor.GetName(),
-		Comment:  descriptor.GetSourceInfo().GetLeadingComments(),
-		Position: descriptor.GetNumber(),
-		Type:     Types[descriptor.GetType()],
-		Label:    Labels[descriptor.GetLabel()],
-		Options:  specs.Options{},
+		Path:        path,
+		Name:        descriptor.GetName(),
+		Description: descriptor.GetSourceInfo().GetLeadingComments(),
+		Position:    descriptor.GetNumber(),
+		Options:     specs.Options{},
 	}
 
 	if descriptor.GetType() == protobuf.FieldDescriptorProto_TYPE_ENUM {
@@ -77,17 +75,26 @@ func NewProperty(path string, descriptor *desc.FieldDescriptor) *specs.Property 
 			Keys:        keys,
 			Positions:   positions,
 		}
-	}
 
-	if descriptor.GetType() != protobuf.FieldDescriptorProto_TYPE_MESSAGE {
 		return result
 	}
 
-	fields := descriptor.GetMessageType().GetFields()
-	result.Nested = make([]*specs.Property, len(fields))
+	if descriptor.GetType() == protobuf.FieldDescriptorProto_TYPE_MESSAGE {
+		fields := descriptor.GetMessageType().GetFields()
+		result.Message = &specs.Message{
+			Properties: make(map[string]*specs.Property, len(fields)),
+		}
 
-	for index, field := range fields {
-		result.Nested[index] = NewProperty(template.JoinPath(path, field.GetName()), field)
+		for _, field := range fields {
+			result.Message.Properties[field.GetName()] = NewProperty(template.JoinPath(path, field.GetName()), field)
+		}
+
+		return result
+	}
+
+	result.Scalar = &specs.Scalar{
+		Type:  Types[descriptor.GetType()],
+		Label: Labels[descriptor.GetLabel()],
 	}
 
 	return result

@@ -142,11 +142,19 @@ func TestScopeNestedReferences(t *testing.T) {
 	tests := map[string]test{
 		"root": {
 			source: &specs.Property{
-				Nested: []*specs.Property{
-					{
-						Name: "key",
-						Path: "key",
-						Type: types.String,
+				Template: specs.Template{
+					Message: &specs.Message{
+						Properties: map[string]*specs.Property{
+							"key": {
+								Name: "key",
+								Path: "key",
+								Template: specs.Template{
+									Scalar: &specs.Scalar{
+										Type: types.String,
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -156,59 +164,87 @@ func TestScopeNestedReferences(t *testing.T) {
 		},
 		"nested": {
 			source: &specs.Property{
-				Nested: []*specs.Property{
-					{
-						Name: "key",
-						Path: "key",
-						Nested: []*specs.Property{
-							{
-								Name: "nested",
-								Path: "key.nested",
+				Template: specs.Template{
+					Message: &specs.Message{
+						Properties: map[string]*specs.Property{
+							"key": {
+								Name: "key",
+								Path: "key",
+								Template: specs.Template{
+									Message: &specs.Message{
+										Properties: map[string]*specs.Property{
+											"nested": {
+												Name: "nested",
+												Path: "key.nested",
+											},
+										},
+									},
+								},
 							},
 						},
 					},
 				},
 			},
 			target: &specs.Property{
-				Nested: []*specs.Property{
-					{
-						Name:      "key",
-						Path:      "key",
-						Reference: reference,
+				Template: specs.Template{
+					Message: &specs.Message{
+						Properties: map[string]*specs.Property{
+							"key": {
+								Name:      "key",
+								Path:      "key",
+								Reference: reference,
+							},
+						},
 					},
 				},
 			},
 		},
 		"partial": {
 			source: &specs.Property{
-				Nested: []*specs.Property{
-					{
-						Name: "key",
-						Path: "key",
-						Nested: []*specs.Property{
-							{
-								Name: "first",
-								Path: "key.first",
-							},
-							{
-								Name: "second",
-								Path: "key.second",
+				Template: specs.Template{
+					Message: &specs.Message{
+						Properties: map[string]*specs.Property{
+							"key": {
+								Name: "key",
+								Path: "key",
+								Template: specs.Template{
+									Message: &specs.Message{
+										Properties: map[string]*specs.Property{
+											"first": {
+												Name: "first",
+												Path: "key.first",
+											},
+											"second": {
+												Name: "second",
+												Path: "key.second",
+											},
+										},
+									},
+								},
 							},
 						},
 					},
 				},
 			},
 			target: &specs.Property{
-				Nested: []*specs.Property{
-					{
-						Name:      "key",
-						Path:      "key",
-						Reference: reference,
-						Nested: []*specs.Property{
-							{
-								Name:      "second",
-								Path:      "key.second",
+				Template: specs.Template{
+					Message: &specs.Message{
+						Properties: map[string]*specs.Property{
+							"key": {
+								Name:      "key",
+								Path:      "key",
 								Reference: reference,
+								Template: specs.Template{
+									Message: &specs.Message{
+										Properties: map[string]*specs.Property{
+											"second": {
+												Name:      "second",
+												Path:      "key.second",
+												Reference: reference,
+											},
+										},
+									},
+								},
 							},
 						},
 					},
@@ -223,12 +259,12 @@ func TestScopeNestedReferences(t *testing.T) {
 
 			var lookup func(source *specs.Property, target *specs.Property)
 			lookup = func(source *specs.Property, target *specs.Property) {
-				if len(target.Nested) != len(source.Nested) {
-					t.Fatalf("unexpected length %d (%+v), expected %d (%s)(%+v).", len(target.Nested), target.Nested, len(source.Nested), source.Path, source.Nested)
+				if len(target.Message.Properties) != len(source.Message.Properties) {
+					t.Fatalf("unexpected length %d (%+v), expected %d (%s)(%+v).", len(target.Message.Properties), target.Message.Properties, len(source.Message.Properties), source.Path, source.Message.Properties)
 				}
 
-				for _, item := range source.Nested {
-					target := target.Nested.Get(item.Name)
+				for _, item := range source.Message.Properties {
+					target := target.Message.Properties[item.Name]
 					if target == nil {
 						t.Fatalf("target does not have nested key %s", item.Name)
 					}

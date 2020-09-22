@@ -566,10 +566,14 @@ func TestResolveNodeReferences(t *testing.T) {
 					Resource: "expected",
 					Path:     "expected",
 				},
-				Nested: []*specs.Property{
-					{
-						Name: "example",
-						Path: "example",
+				Template: specs.Template{
+					Message: &specs.Message{
+						Properties: map[string]*specs.Property{
+							"example": {
+								Name: "example",
+								Path: "example",
+							},
+						},
 					},
 				},
 			}
@@ -588,8 +592,12 @@ func TestResolveNodeReferences(t *testing.T) {
 				Rollback: &specs.Call{
 					Response: &specs.ParameterMap{
 						Property: &specs.Property{
-							Nested: []*specs.Property{
-								target,
+							Template: specs.Template{
+								Message: &specs.Message{
+									Properties: map[string]*specs.Property{
+										target.Name: target,
+									},
+								},
 							},
 						},
 					},
@@ -681,10 +689,14 @@ func TestResolveOutputReferences(t *testing.T) {
 					Resource: "expected",
 					Path:     "expected",
 				},
-				Nested: []*specs.Property{
-					{
-						Name: "example",
-						Path: "example",
+				Template: specs.Template{
+					Message: &specs.Message{
+						Properties: map[string]*specs.Property{
+							"example": {
+								Name: "example",
+								Path: "example",
+							},
+						},
 					},
 				},
 			}

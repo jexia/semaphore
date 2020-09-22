@@ -12,7 +12,6 @@ import (
 	"github.com/jexia/semaphore/pkg/flow"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/labels"
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
@@ -53,13 +52,19 @@ func NewSimpleMockSpecs() *specs.ParameterMap {
 			"Timestamp":     &specs.Property{},
 		},
 		Property: &specs.Property{
-			Type:  types.Message,
-			Label: labels.Optional,
-			Nested: []*specs.Property{
-				{
-					Name: "message",
-					Path: "message",
-					Type: types.String,
+			Template: specs.Template{
+				Message: &specs.Message{
+					Properties: []*specs.Property{
+						{
+							Name: "message",
+							Path: "message",
+							Template: specs.Template{
+								Scalar: &specs.Scalar{
+									Type: types.String,
+								},
+							},
+						},
+					},
 				},
 			},
 		},

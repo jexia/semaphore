@@ -623,19 +623,23 @@ func TestParameterMapReferences(t *testing.T) {
 			count: 2,
 			params: &specs.ParameterMap{
 				Property: &specs.Property{
-					Nested: []*specs.Property{
-						{
-							Name: "first",
-							Path: "first",
-							Reference: &specs.PropertyReference{
-								Path: "key",
-							},
-						},
-						{
-							Name: "second",
-							Path: "second",
-							Reference: &specs.PropertyReference{
-								Path: "else",
+					Template: specs.Template{
+						Message: &specs.Message{
+							Properties: map[string]*specs.Property{
+								"first": {
+									Name: "first",
+									Path: "first",
+									Reference: &specs.PropertyReference{
+										Path: "key",
+									},
+								},
+								"second": {
+									Name: "second",
+									Path: "second",
+									Reference: &specs.PropertyReference{
+										Path: "else",
+									},
+								},
 							},
 						},
 					},
@@ -646,19 +650,23 @@ func TestParameterMapReferences(t *testing.T) {
 			count: 1,
 			params: &specs.ParameterMap{
 				Property: &specs.Property{
-					Nested: []*specs.Property{
-						{
-							Name: "first",
-							Path: "first",
-							Reference: &specs.PropertyReference{
-								Path: "key",
-							},
-						},
-						{
-							Name: "second",
-							Path: "second",
-							Reference: &specs.PropertyReference{
-								Path: "key",
+					Template: specs.Template{
+						Message: &specs.Message{
+							Properties: map[string]*specs.Property{
+								"first": {
+									Name: "first",
+									Path: "first",
+									Reference: &specs.PropertyReference{
+										Path: "key",
+									},
+								},
+								"second": {
+									Name: "second",
+									Path: "second",
+									Reference: &specs.PropertyReference{
+										Path: "key",
+									},
+								},
 							},
 						},
 					},

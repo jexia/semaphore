@@ -28,6 +28,7 @@ const (
 	Sfixed64 Type = "sfixed64"
 	Sint32   Type = "sint32"
 	Sint64   Type = "sint64"
+	Unknown  Type = "unknown"
 )
 
 // DecodeFromString decodes the given property from string.

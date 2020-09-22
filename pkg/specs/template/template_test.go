@@ -11,16 +11,20 @@ import (
 )
 
 func CompareProperties(t *testing.T, left specs.Property, right specs.Property) {
-	if left.Default != right.Default {
-		t.Errorf("unexpected default '%s', expected '%s'", left.Default, right.Default)
+	if left.Scalar == nil || right.Scalar == nil {
+		t.Fatalf("scalar not set left (%+v) right (%+v)", left.Scalar, right.Scalar)
 	}
 
-	if left.Type != right.Type {
-		t.Errorf("unexpected type '%s', expected '%s'", left.Type, right.Type)
+	if left.Scalar.Default != right.Scalar.Default {
+		t.Errorf("unexpected default '%s', expected '%s'", left.Scalar.Default, right.Scalar.Default)
 	}
 
-	if left.Label != right.Label {
-		t.Errorf("unexpected label '%s', expected '%s'", left.Label, right.Label)
+	if left.Scalar.Type != right.Scalar.Type {
+		t.Errorf("unexpected type '%s', expected '%s'", left.Scalar.Type, right.Scalar.Type)
+	}
+
+	if left.Scalar.Label != right.Scalar.Label {
+		t.Errorf("unexpected label '%s', expected '%s'", left.Scalar.Label, right.Scalar.Label)
 	}
 
 	if right.Reference != nil && left.Reference == nil {
@@ -63,18 +67,26 @@ func TestParseTemplateContent(t *testing.T) {
 
 	tests := map[string]specs.Property{
 		"'prefix'": {
-			Name:    name,
-			Path:    path,
-			Type:    types.String,
-			Label:   labels.Optional,
-			Default: "prefix",
+			Name: name,
+			Path: path,
+			Template: specs.Template{
+				Scalar: &specs.Scalar{
+					Type:    types.String,
+					Label:   labels.Optional,
+					Default: "prefix",
+				},
+			},
 		},
 		"'edge''": {
-			Name:    name,
-			Path:    path,
-			Type:    types.String,
-			Label:   labels.Optional,
-			Default: "edge'",
+			Name: name,
+			Path: path,
+			Template: specs.Template{
+				Scalar: &specs.Scalar{
+					Type:    types.String,
+					Label:   labels.Optional,
+					Default: "edge'",
+				},
+			},
 		},
 		"input:message": {
 			Name: name,
