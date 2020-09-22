@@ -4,7 +4,6 @@ import (
 	"errors"
 	"io"
 	"io/ioutil"
-	"log"
 	"strings"
 	"testing"
 
@@ -56,14 +55,14 @@ func TestMarshal(t *testing.T) {
 			input: map[string]interface{}{
 				"message": "hello world",
 			},
-			expected: "<mock><country></country><message>hello world</message><nested></nested></mock>",
+			expected: "<mock><message>hello world</message><nested></nested></mock>",
 		},
 		"enum": {
 			input: map[string]interface{}{
 				"nested": map[string]interface{}{},
 				"status": references.Enum("PENDING", 1),
 			},
-			expected: "<mock><country></country><nested></nested><status>PENDING</status></mock>",
+			expected: "<mock><nested></nested><status>PENDING</status></mock>",
 		},
 		"nested": {
 			input: map[string]interface{}{
@@ -72,7 +71,7 @@ func TestMarshal(t *testing.T) {
 					"second": "bar",
 				},
 			},
-			expected: "<mock><country></country><nested><first>foo</first><second>bar</second></nested></mock>",
+			expected: "<mock><nested><first>foo</first><second>bar</second></nested></mock>",
 		},
 		"repeating string": {
 			input: map[string]interface{}{
@@ -82,7 +81,7 @@ func TestMarshal(t *testing.T) {
 					nil, // TODO: nil (null) values should not be ignored
 				},
 			},
-			expected: "<mock><country></country><nested></nested><repeating_string>repeating one</repeating_string><repeating_string>repeating two</repeating_string></mock>",
+			expected: "<mock><nested></nested><repeating_string>repeating one</repeating_string><repeating_string>repeating two</repeating_string></mock>",
 		},
 		"repeating enum": {
 			input: map[string]interface{}{
@@ -91,7 +90,7 @@ func TestMarshal(t *testing.T) {
 					"PENDING",
 				},
 			},
-			expected: "<mock><country></country><nested></nested><repeating_enum>UNKNOWN</repeating_enum><repeating_enum>PENDING</repeating_enum></mock>",
+			expected: "<mock><nested></nested><repeating_enum>UNKNOWN</repeating_enum><repeating_enum>PENDING</repeating_enum></mock>",
 		},
 		"repeating nested": {
 			input: map[string]interface{}{
@@ -104,7 +103,7 @@ func TestMarshal(t *testing.T) {
 					},
 				},
 			},
-			expected: "<mock><country></country><nested></nested><repeating><value>repeating one</value></repeating><repeating><value>repeating two</value></repeating></mock>",
+			expected: "<mock><nested></nested><repeating><value>repeating one</value></repeating><repeating><value>repeating two</value></repeating></mock>",
 		},
 		"complex": {
 			input: map[string]interface{}{
@@ -123,7 +122,7 @@ func TestMarshal(t *testing.T) {
 					},
 				},
 			},
-			expected: "<mock><country></country><message>hello world</message><nested><first>foo</first><second>bar</second></nested><repeating><value>repeating one</value></repeating><repeating><value>repeating two</value></repeating></mock>",
+			expected: "<mock><message>hello world</message><nested><first>foo</first><second>bar</second></nested><repeating><value>repeating one</value></repeating><repeating><value>repeating two</value></repeating></mock>",
 		},
 	}
 
@@ -358,45 +357,6 @@ func TestUnmarshal(t *testing.T) {
 				},
 			},
 		},
-		"formatted XML": {
-			resource: "countries",
-			input: strings.NewReader(
-				`<?xml version="1.0" encoding="utf-8"?>
-<wb:countries page="1" pages="7" per_page="50" total="304" xmlns:wb="http://www.example.com">
-	<wb:country id="ABW">
-		<wb:iso2Code>AW</wb:iso2Code>
-		<wb:name>Aruba</wb:name>
-		<wb:region id="LCN" iso2code="ZJ">Latin America &amp; Caribbean </wb:region>
-		<wb:capitalCity>Oranjestad</wb:capitalCity>
-		<wb:longitude>-70.0167</wb:longitude>
-		<wb:latitude>12.5167</wb:latitude>
-	</wb:country>
-	<wb:country id="AFG">
-		<wb:iso2Code>AF</wb:iso2Code>
-		<wb:name>Afghanistan</wb:name>
-		<wb:region id="SAS" iso2code="8S">South Asia</wb:region>
-		<wb:capitalCity>Kabul</wb:capitalCity>
-		<wb:longitude>69.1761</wb:longitude>
-		<wb:latitude>34.5228</wb:latitude>
-	</wb:country>
-</wb:countries>`,
-			),
-			expected: map[string]expect{
-				"countries": {},
-				// "country.iso2Code": {
-				// 	value: "AW",
-				// },
-				// "country.name": {
-				// 	value: "Aruba",
-				// },
-				// "country.latitude": {
-				// 	value: float64(12.5167),
-				// },
-				// "country.longitude": {
-				// 	value: float64(-70.0167),
-				// },
-			},
-		},
 	}
 
 	for title, test := range tests {
@@ -413,8 +373,6 @@ func TestUnmarshal(t *testing.T) {
 
 			var refs = references.NewReferenceStore(0)
 			err = manager.Unmarshal(test.input, refs)
-
-			log.Printf("%s", refs)
 
 			if test.error != nil {
 				if !errors.As(err, &test.error) {
