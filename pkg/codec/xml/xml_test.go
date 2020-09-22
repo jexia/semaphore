@@ -4,6 +4,7 @@ import (
 	"errors"
 	"io"
 	"io/ioutil"
+	"log"
 	"strings"
 	"testing"
 
@@ -159,6 +160,7 @@ func (fn readerFunc) Read(p []byte) (int, error) { return fn(p) }
 
 func TestUnmarshal(t *testing.T) {
 	type test struct {
+		resource string
 		input    io.Reader
 		expected map[string]expect
 		error    error
@@ -166,6 +168,7 @@ func TestUnmarshal(t *testing.T) {
 
 	tests := map[string]test{
 		"reader error": {
+			resource: "mock",
 			input: readerFunc(
 				func([]byte) (int, error) {
 					return 0, errors.New("failed")
@@ -174,33 +177,39 @@ func TestUnmarshal(t *testing.T) {
 			error: errors.New("failed"),
 		},
 		"unknown enum value": {
+			resource: "mock",
 			input: strings.NewReader(
 				"<mock><status>PENDING</status><another_status>DONE</another_status></mock>",
 			),
 			error: errUnknownEnum("DONE"),
 		},
 		"unknown enum value (repeated)": {
+			resource: "mock",
 			input: strings.NewReader(
 				"<mock><repeating_enum>DONE</repeating_enum></mock>",
 			),
 			error: errUnknownEnum("DONE"),
 		},
 		"type mismatch": {
+			resource: "mock",
 			input: strings.NewReader(
 				"<mock><numeric>not a number</numeric></mock>",
 			),
 			error: errors.New(""), // error returned by ParseInt()
 		},
 		"type mismatch (repeated)": {
+			resource: "mock",
 			input: strings.NewReader(
 				"<mock><repeating_numeric>not a number</repeating_numeric></mock>",
 			),
 			error: errors.New(""), // error returned by ParseInt()
 		},
 		"empty reader": {
-			input: strings.NewReader(""),
+			resource: "mock",
+			input:    strings.NewReader(""),
 		},
 		"simple": {
+			resource: "mock",
 			input: strings.NewReader(
 				"<mock><nested></nested><message>hello world</message><another_message>dlrow olleh</another_message></mock>",
 			),
@@ -214,6 +223,7 @@ func TestUnmarshal(t *testing.T) {
 			},
 		},
 		"enum": {
+			resource: "mock",
 			input: strings.NewReader(
 				"<mock><status>PENDING</status><another_status>UNKNOWN</another_status></mock>",
 			),
@@ -227,6 +237,7 @@ func TestUnmarshal(t *testing.T) {
 			},
 		},
 		"nested": {
+			resource: "mock",
 			input: strings.NewReader(
 				"<mock><nested><first>foo</first><second>bar</second></nested></mock>",
 			),
@@ -240,6 +251,7 @@ func TestUnmarshal(t *testing.T) {
 			},
 		},
 		"repeated string": {
+			resource: "mock",
 			//  TODO: do not ignore empty blocks
 			input: strings.NewReader(
 				"<mock><repeating_string>repeating one</repeating_string><repeating_string></repeating_string><repeating_string>repeating two</repeating_string></mock>",
@@ -258,6 +270,7 @@ func TestUnmarshal(t *testing.T) {
 			},
 		},
 		"repeated enum": {
+			resource: "mock",
 			input: strings.NewReader(
 				"<mock><repeating_enum>UNKNOWN</repeating_enum><repeating_enum>PENDING</repeating_enum></mock>",
 			),
@@ -275,6 +288,7 @@ func TestUnmarshal(t *testing.T) {
 			},
 		},
 		"repeated nested": {
+			resource: "mock",
 			input: strings.NewReader(
 				"<mock><repeating><value>repeating one</value></repeating><repeating><value>repeating two</value></repeating></mock>",
 			),
@@ -300,6 +314,7 @@ func TestUnmarshal(t *testing.T) {
 			},
 		},
 		"complex": {
+			resource: "mock",
 			input: strings.NewReader(
 				"<mock><repeating_string>repeating one</repeating_string><repeating_string>repeating two</repeating_string><message>hello world</message><nested><first>foo</first><second>bar</second></nested><repeating><value>repeating one</value></repeating><repeating><value>repeating two</value></repeating></mock>",
 			),
@@ -344,6 +359,7 @@ func TestUnmarshal(t *testing.T) {
 			},
 		},
 		"formatted XML": {
+			resource: "countries",
 			input: strings.NewReader(
 				`<?xml version="1.0" encoding="utf-8"?>
 <wb:countries page="1" pages="7" per_page="50" total="304" xmlns:wb="http://www.example.com">
@@ -366,16 +382,19 @@ func TestUnmarshal(t *testing.T) {
 </wb:countries>`,
 			),
 			expected: map[string]expect{
-				"country": {
-					repeated: []expect{
-						{
-							value: "repeating one",
-						},
-						{
-							value: "repeating two",
-						},
-					},
-				},
+				"countries": {},
+				// "country.iso2Code": {
+				// 	value: "AW",
+				// },
+				// "country.name": {
+				// 	value: "Aruba",
+				// },
+				// "country.latitude": {
+				// 	value: float64(12.5167),
+				// },
+				// "country.longitude": {
+				// 	value: float64(-70.0167),
+				// },
 			},
 		},
 	}
@@ -387,13 +406,15 @@ func TestUnmarshal(t *testing.T) {
 				t.Fatal("unexpected nil")
 			}
 
-			manager, err := xml.New("mock", schema)
+			manager, err := xml.New(test.resource, schema)
 			if err != nil {
 				t.Fatal(err)
 			}
 
 			var refs = references.NewReferenceStore(0)
 			err = manager.Unmarshal(test.input, refs)
+
+			log.Printf("%s", refs)
 
 			if test.error != nil {
 				if !errors.As(err, &test.error) {
@@ -404,7 +425,7 @@ func TestUnmarshal(t *testing.T) {
 			}
 
 			for path, output := range test.expected {
-				assert(t, "mock", path, refs, output)
+				assert(t, test.resource, path, refs, output)
 			}
 		})
 	}
@@ -418,7 +439,7 @@ type expect struct {
 }
 
 func assert(t *testing.T, resource string, path string, store references.Store, output expect) {
-	ref := store.Load(resource, path)
+	var ref = store.Load(resource, path)
 
 	if ref == nil {
 		t.Errorf("reference %q was expected to be set", path)
@@ -428,7 +449,7 @@ func assert(t *testing.T, resource string, path string, store references.Store, 
 
 	if output.value != nil {
 		if ref.Value != output.value {
-			t.Errorf("reference %q was expected to have value [%v], not [%v]", path, output.value, ref.Value)
+			t.Errorf("reference %q [%v] was expected to have value [%v]", path, output.value, ref.Value)
 		}
 
 		return
