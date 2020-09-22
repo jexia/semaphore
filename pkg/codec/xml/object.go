@@ -3,6 +3,7 @@ package xml
 import (
 	"encoding/xml"
 	"io"
+	"log"
 	"sort"
 
 	"github.com/jexia/semaphore/pkg/references"
@@ -95,7 +96,14 @@ func (object *Object) startElement(decoder *xml.Decoder, tok xml.Token, refs map
 	switch t := tok.(type) {
 	case xml.StartElement:
 		var prop = object.specs[t.Name.Local]
+
+		log.Println(t.Name.Local)
+
 		if prop == nil {
+			// if prop.Label == labels.Repeated{
+			//
+			// }
+
 			// ignore unknown properties
 			if err := decoder.Skip(); err != nil {
 				return err
