@@ -159,7 +159,6 @@ func (fn readerFunc) Read(p []byte) (int, error) { return fn(p) }
 
 func TestUnmarshal(t *testing.T) {
 	type test struct {
-		resource string
 		input    io.Reader
 		expected map[string]expect
 		error    error
@@ -167,7 +166,6 @@ func TestUnmarshal(t *testing.T) {
 
 	tests := map[string]test{
 		"reader error": {
-			resource: "mock",
 			input: readerFunc(
 				func([]byte) (int, error) {
 					return 0, errors.New("failed")
@@ -176,39 +174,33 @@ func TestUnmarshal(t *testing.T) {
 			error: errors.New("failed"),
 		},
 		"unknown enum value": {
-			resource: "mock",
 			input: strings.NewReader(
 				"<mock><status>PENDING</status><another_status>DONE</another_status></mock>",
 			),
 			error: errUnknownEnum("DONE"),
 		},
 		"unknown enum value (repeated)": {
-			resource: "mock",
 			input: strings.NewReader(
 				"<mock><repeating_enum>DONE</repeating_enum></mock>",
 			),
 			error: errUnknownEnum("DONE"),
 		},
 		"type mismatch": {
-			resource: "mock",
 			input: strings.NewReader(
 				"<mock><numeric>not a number</numeric></mock>",
 			),
 			error: errors.New(""), // error returned by ParseInt()
 		},
 		"type mismatch (repeated)": {
-			resource: "mock",
 			input: strings.NewReader(
 				"<mock><repeating_numeric>not a number</repeating_numeric></mock>",
 			),
 			error: errors.New(""), // error returned by ParseInt()
 		},
 		"empty reader": {
-			resource: "mock",
-			input:    strings.NewReader(""),
+			input: strings.NewReader(""),
 		},
 		"simple": {
-			resource: "mock",
 			input: strings.NewReader(
 				"<mock><nested></nested><message>hello world</message><another_message>dlrow olleh</another_message></mock>",
 			),
@@ -222,7 +214,6 @@ func TestUnmarshal(t *testing.T) {
 			},
 		},
 		"enum": {
-			resource: "mock",
 			input: strings.NewReader(
 				"<mock><status>PENDING</status><another_status>UNKNOWN</another_status></mock>",
 			),
@@ -236,7 +227,6 @@ func TestUnmarshal(t *testing.T) {
 			},
 		},
 		"nested": {
-			resource: "mock",
 			input: strings.NewReader(
 				"<mock><nested><first>foo</first><second>bar</second></nested></mock>",
 			),
@@ -250,7 +240,6 @@ func TestUnmarshal(t *testing.T) {
 			},
 		},
 		"repeated string": {
-			resource: "mock",
 			//  TODO: do not ignore empty blocks
 			input: strings.NewReader(
 				"<mock><repeating_string>repeating one</repeating_string><repeating_string></repeating_string><repeating_string>repeating two</repeating_string></mock>",
@@ -269,7 +258,6 @@ func TestUnmarshal(t *testing.T) {
 			},
 		},
 		"repeated enum": {
-			resource: "mock",
 			input: strings.NewReader(
 				"<mock><repeating_enum>UNKNOWN</repeating_enum><repeating_enum>PENDING</repeating_enum></mock>",
 			),
@@ -287,7 +275,6 @@ func TestUnmarshal(t *testing.T) {
 			},
 		},
 		"repeated nested": {
-			resource: "mock",
 			input: strings.NewReader(
 				"<mock><repeating><value>repeating one</value></repeating><repeating><value>repeating two</value></repeating></mock>",
 			),
@@ -313,7 +300,6 @@ func TestUnmarshal(t *testing.T) {
 			},
 		},
 		"complex": {
-			resource: "mock",
 			input: strings.NewReader(
 				"<mock><repeating_string>repeating one</repeating_string><repeating_string>repeating two</repeating_string><message>hello world</message><nested><first>foo</first><second>bar</second></nested><repeating><value>repeating one</value></repeating><repeating><value>repeating two</value></repeating></mock>",
 			),
@@ -366,7 +352,7 @@ func TestUnmarshal(t *testing.T) {
 				t.Fatal("unexpected nil")
 			}
 
-			manager, err := xml.New(test.resource, schema)
+			manager, err := xml.New("mock", schema)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -383,7 +369,7 @@ func TestUnmarshal(t *testing.T) {
 			}
 
 			for path, output := range test.expected {
-				assert(t, test.resource, path, refs, output)
+				assert(t, "mock", path, refs, output)
 			}
 		})
 	}
