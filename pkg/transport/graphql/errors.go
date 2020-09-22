@@ -87,7 +87,7 @@ func (e ErrFieldAlreadySet) Prettify() prettyerr.Error {
 	}
 }
 
-// ErrDuplicateObject occurs when field has already being set
+// ErrDuplicateObject occurs when a duplicate object is provided
 type ErrDuplicateObject struct {
 	wrapErr
 	Name string
@@ -109,7 +109,7 @@ func (e ErrDuplicateObject) Prettify() prettyerr.Error {
 	}
 }
 
-// ErrUnknownBase occurs when field has already being set
+// ErrUnknownBase occurs when an unknown base is provided
 type ErrUnknownBase struct {
 	wrapErr
 	Base string

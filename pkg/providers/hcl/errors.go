@@ -115,7 +115,7 @@ func (e ErrMultiValueReource) Prettify() prettyerr.Error {
 	}
 }
 
-// ErrPathNotFound occurs when resource has more than one request and or flow
+// ErrPathNotFound occurs when path cannot be resolved
 type ErrPathNotFound struct {
 	wrapErr
 	Path string

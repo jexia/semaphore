@@ -14,7 +14,7 @@ func (i wrapErr) Unwrap() error {
 	return i.Inner
 }
 
-// ErrPathNotFound occurs when resource has more than one request and or flow
+// ErrPathNotFound occurs when path cannot be resolved
 type ErrPathNotFound struct {
 	wrapErr
 	Path string

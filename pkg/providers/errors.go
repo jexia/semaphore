@@ -60,7 +60,7 @@ func (e ErrUndefinedService) Prettify() prettyerr.Error {
 	}
 }
 
-// ErrUndefinedMethod occurs when Service is not defined in a flow
+// ErrUndefinedMethod occurs when method is not defined in a flow
 type ErrUndefinedMethod struct {
 	wrapErr
 	Method string
@@ -84,7 +84,7 @@ func (e ErrUndefinedMethod) Prettify() prettyerr.Error {
 	}
 }
 
-// ErrUndefinedOutput occurs when Service is not defined in a flow
+// ErrUndefinedOutput occurs when output is not defined in a flow
 type ErrUndefinedOutput struct {
 	wrapErr
 	Output string
@@ -108,7 +108,7 @@ func (e ErrUndefinedOutput) Prettify() prettyerr.Error {
 	}
 }
 
-// ErrUndefinedProperty occurs when Service is not defined in a flow
+// ErrUndefinedProperty occurs when property is not defined in a flow
 type ErrUndefinedProperty struct {
 	wrapErr
 	Property string
