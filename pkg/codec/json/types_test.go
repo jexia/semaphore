@@ -48,7 +48,7 @@ func TestAddTypeKey(t *testing.T) {
 		string(types.Uint32):  {types.Uint32, uint32(10)},
 		string(types.Fixed32): {types.Fixed32, uint64(10)},
 		fmt.Sprintf("%s from float32", string(types.Float)): {types.Float, float32(10)},
-		fmt.Sprintf("%s from float75", string(types.Float)): {types.Float, float64(10)},
+		fmt.Sprintf("%s from float64", string(types.Float)): {types.Float, float64(10)},
 		string(types.Float):    {types.Float, float32(10)},
 		string(types.String):   {types.String, string("msg")},
 		string(types.Bool):     {types.Bool, true},
