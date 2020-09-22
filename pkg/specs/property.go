@@ -39,9 +39,8 @@ type Expression interface {
 
 // Scalar value.
 type Scalar struct {
-	Default interface{}  `json:"default,omitempty"`
-	Type    types.Type   `json:"type,omitempty"`
-	Label   labels.Label `json:"label,omitempty"`
+	Default interface{} `json:"default,omitempty"`
+	Type    types.Type  `json:"type,omitempty"`
 }
 
 // UnmarshalJSON corrects the 64bit data types in accordance with golang
@@ -97,7 +96,6 @@ func (scalar Scalar) Clone() *Scalar {
 	return &Scalar{
 		Default: scalar.Default,
 		Type:    scalar.Type,
-		Label:   scalar.Label,
 	}
 }
 
@@ -178,6 +176,7 @@ func (message Message) Clone() *Message {
 
 // Template contains property schema. This is a union type (Only one field must be set).
 type Template struct {
+	// Only one of the following fields should be set
 	Scalar   *Scalar   `json:"scalar,omitempty"`
 	Enum     *Enum     `json:"enum,omitempty"`
 	Repeated *Repeated `json:"repeated,omitempty"`
@@ -265,6 +264,9 @@ type Property struct {
 	Reference *PropertyReference `json:"reference,omitempty"` // Reference represents a property reference made inside the given property
 	Raw       string             `json:"raw,omitempty"`       // Raw holds the raw template string used to define the given property
 
+	// Label is the set of field attributes/properties. E.g. label describes that the property is optional.
+	Label labels.Label `json:"label,omitempty"`
+
 	Template
 }
 
@@ -285,6 +287,7 @@ func (prop *Property) Clone() *Property {
 		Raw:       prop.Raw,
 		Options:   prop.Options,
 		Reference: prop.Reference.Clone(),
+		Label:     prop.Label,
 
 		Template: *prop.Template.Clone(),
 	}

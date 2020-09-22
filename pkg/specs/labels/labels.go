@@ -5,8 +5,6 @@ import "strings"
 var labels = map[Label]string{
 	Optional: "optional",
 	Required: "required",
-	Static:   "static",
-	OneOf:    "one_of",
 }
 
 // Label represents a value label
@@ -36,9 +34,6 @@ func (label Label) Has(key Label) bool {
 const (
 	Optional Label = 1 << iota
 	Required
-	Repeated
-	Static
-	OneOf
 )
 
 func Compatible(pattern, value Label) bool {
