@@ -6,7 +6,6 @@ import (
 
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
-	"github.com/jexia/semaphore/pkg/broker/trace"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/labels"
 	"github.com/jexia/semaphore/pkg/specs/types"
@@ -102,7 +101,9 @@ func ParsePropertyReference(value string) *specs.PropertyReference {
 func ParseReference(path string, name string, value string) (*specs.Property, error) {
 	// TODO: check values
 	if strings.Count(value, "..") > 0 {
-		return nil, trace.New(trace.WithMessage("invalid path, path cannot contain two dots"))
+		return nil, ErrPathNotFound{
+			Path: value,
+		}
 	}
 
 	prop := &specs.Property{

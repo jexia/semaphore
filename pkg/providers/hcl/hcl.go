@@ -12,7 +12,6 @@ import (
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
-	"github.com/jexia/semaphore/pkg/broker/trace"
 	"github.com/jexia/semaphore/pkg/providers"
 	"github.com/jexia/semaphore/pkg/specs"
 	"go.uber.org/zap"
@@ -158,7 +157,9 @@ func ResolvePath(ctx *broker.Context, ignore []string, path string) ([]Manifest,
 	}
 
 	if len(files) == 0 {
-		return nil, trace.New(trace.WithMessage("unable to resolve path, no files found '%s'", path))
+		return nil, ErrPathNotFound{
+			Path: path,
+		}
 	}
 
 	logger.Debug(ctx, "files found", zap.String("path", path), zap.Int("files", len(files)))
@@ -198,7 +199,10 @@ func ResolvePath(ctx *broker.Context, ignore []string, path string) ([]Manifest,
 			logger.Info(ctx, "including HCL file", zap.String("path", path))
 			results, err := ResolvePath(ctx, ignore, path)
 			if err != nil {
-				return nil, trace.New(trace.WithMessage("unable to read include %s: %s", include, err))
+				return nil, ErrPathNotFound{
+					wrapErr: wrapErr{err},
+					Path:    include,
+				}
 			}
 
 			manifests = append(manifests, results...)
