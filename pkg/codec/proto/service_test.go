@@ -10,19 +10,19 @@ import (
 
 type mockMethod struct {
 	name     string
-	request  []*specs.Property
-	response []*specs.Property
+	request  *specs.Message
+	response *specs.Message
 }
 
 func (method *mockMethod) GetName() string {
 	return method.name
 }
 
-func (method *mockMethod) GetRequest() []*specs.Property {
+func (method *mockMethod) GetRequest() *specs.Message {
 	return method.request
 }
 
-func (method *mockMethod) GetResponse() []*specs.Property {
+func (method *mockMethod) GetResponse() *specs.Message {
 	return method.response
 }
 
@@ -31,24 +31,36 @@ func TestServiceDescriptor(t *testing.T) {
 		"simple": {
 			"append": &mockMethod{
 				name: "append",
-				request: []*specs.Property{
-					{
-						Name:     "key",
-						Path:     "key",
-						Type:     types.String,
-						Label:    labels.Optional,
-						Comment:  "",
-						Position: 1,
+				request: &specs.Message{
+					Properties: map[string]*specs.Property{
+						"key": {
+							Name:        "key",
+							Path:        "key",
+							Label:       labels.Optional,
+							Description: "",
+							Position:    1,
+							Template: specs.Template{
+								Scalar: &specs.Scalar{
+									Type: types.String,
+								},
+							},
+						},
 					},
 				},
-				response: []*specs.Property{
-					{
-						Name:     "key",
-						Path:     "key",
-						Type:     types.String,
-						Label:    labels.Required,
-						Comment:  "",
-						Position: 1,
+				response: &specs.Message{
+					Properties: map[string]*specs.Property{
+						"key": {
+							Name:        "key",
+							Path:        "key",
+							Label:       labels.Optional,
+							Description: "",
+							Position:    1,
+							Template: specs.Template{
+								Scalar: &specs.Scalar{
+									Type: types.String,
+								},
+							},
+						},
 					},
 				},
 			},

@@ -44,10 +44,10 @@ func TestPropertyUnmarshalDefault(t *testing.T) {
 	tests := map[string]test{
 		"int64": {
 			input: &Property{
+				Label: labels.Optional,
 				Template: Template{
 					Scalar: &Scalar{
 						Type:    types.Int64,
-						Label:   labels.Optional,
 						Default: 100,
 					},
 				},
@@ -56,10 +56,10 @@ func TestPropertyUnmarshalDefault(t *testing.T) {
 		},
 		"sint64": {
 			input: &Property{
+				Label: labels.Optional,
 				Template: Template{
 					Scalar: &Scalar{
 						Type:    types.Sint64,
-						Label:   labels.Optional,
 						Default: 100,
 					},
 				},
@@ -68,10 +68,10 @@ func TestPropertyUnmarshalDefault(t *testing.T) {
 		},
 		"sfixed64": {
 			input: &Property{
+				Label: labels.Optional,
 				Template: Template{
 					Scalar: &Scalar{
 						Type:    types.Sfixed64,
-						Label:   labels.Optional,
 						Default: 100,
 					},
 				},
@@ -80,10 +80,10 @@ func TestPropertyUnmarshalDefault(t *testing.T) {
 		},
 		"uint64": {
 			input: &Property{
+				Label: labels.Optional,
 				Template: Template{
 					Scalar: &Scalar{
 						Type:    types.Uint64,
-						Label:   labels.Optional,
 						Default: 100,
 					},
 				},
@@ -92,10 +92,10 @@ func TestPropertyUnmarshalDefault(t *testing.T) {
 		},
 		"fixed64": {
 			input: &Property{
+				Label: labels.Optional,
 				Template: Template{
 					Scalar: &Scalar{
 						Type:    types.Fixed64,
-						Label:   labels.Optional,
 						Default: 100,
 					},
 				},
@@ -104,10 +104,10 @@ func TestPropertyUnmarshalDefault(t *testing.T) {
 		},
 		"int32": {
 			input: &Property{
+				Label: labels.Optional,
 				Template: Template{
 					Scalar: &Scalar{
 						Type:    types.Int32,
-						Label:   labels.Optional,
 						Default: 100,
 					},
 				},
@@ -116,10 +116,10 @@ func TestPropertyUnmarshalDefault(t *testing.T) {
 		},
 		"sint32": {
 			input: &Property{
+				Label: labels.Optional,
 				Template: Template{
 					Scalar: &Scalar{
 						Type:    types.Sint32,
-						Label:   labels.Optional,
 						Default: 100,
 					},
 				},
@@ -128,10 +128,10 @@ func TestPropertyUnmarshalDefault(t *testing.T) {
 		},
 		"sfixed32": {
 			input: &Property{
+				Label: labels.Optional,
 				Template: Template{
 					Scalar: &Scalar{
 						Type:    types.Sfixed32,
-						Label:   labels.Optional,
 						Default: 100,
 					},
 				},
@@ -140,10 +140,10 @@ func TestPropertyUnmarshalDefault(t *testing.T) {
 		},
 		"uint32": {
 			input: &Property{
+				Label: labels.Optional,
 				Template: Template{
 					Scalar: &Scalar{
 						Type:    types.Uint32,
-						Label:   labels.Optional,
 						Default: 100,
 					},
 				},
@@ -152,10 +152,10 @@ func TestPropertyUnmarshalDefault(t *testing.T) {
 		},
 		"fixed32": {
 			input: &Property{
+				Label: labels.Optional,
 				Template: Template{
 					Scalar: &Scalar{
 						Type:    types.Fixed32,
-						Label:   labels.Optional,
 						Default: 100,
 					},
 				},
@@ -380,11 +380,11 @@ func TestPropertyClone(t *testing.T) {
 		Description: "sample",
 		Name:        "first",
 		Path:        "path",
+		Label:       labels.Optional,
 		Template: Template{
 			Scalar: &Scalar{
 				Default: false,
 				Type:    types.String,
-				Label:   labels.Optional,
 			},
 			Repeated: &Repeated{
 				Default: map[uint]*Property{},
@@ -442,8 +442,8 @@ func TestPropertyClone(t *testing.T) {
 		t.Errorf("unexpected type %+v", result.Scalar.Type)
 	}
 
-	if result.Scalar.Label != property.Scalar.Label {
-		t.Errorf("unexpected label %+v", result.Scalar.Label)
+	if result.Label != property.Label {
+		t.Errorf("unexpected label %+v", result.Label)
 	}
 
 	if result.Reference == nil || result.Reference == property.Reference {

@@ -70,86 +70,56 @@ func (manager *Manager) Marshal(refs references.Store) (io.Reader, error) {
 	}
 
 	encoder := url.Values{}
-	encode(encoder, "", refs, manager.specs)
+	encode(encoder, "", manager.specs.Name, refs, manager.specs)
 
 	bb := []byte(encoder.Encode())
 	return bytes.NewReader(bb), nil
 }
 
-func encode(encoder url.Values, root string, refs references.Store, prop *specs.Property) {
-	path := template.JoinPath(root, prop.Name)
+func encode(encoder url.Values, root string, name string, refs references.Store, prop *specs.Property) {
+	path := template.JoinPath(root, name)
 
-	if prop.Label == labels.Repeated {
+	switch {
+	case prop.Message != nil:
+		for key, nested := range prop.Message.Properties {
+			encode(encoder, path, key, refs, nested)
+		}
+	case prop.Repeated != nil:
 		if prop.Reference == nil {
 			return
 		}
 
 		ref := refs.Load(prop.Reference.Resource, prop.Reference.Path)
 		if ref == nil {
-			return
+			break
 		}
 
 		for index, repeated := range ref.Repeated {
 			current := fmt.Sprintf("%s[%d]", path, index)
-			array(encoder, current, repeated, prop)
+			encode(encoder, current, "", repeated, prop.Repeated.Property)
+		}
+	case prop.Enum != nil:
+		ref := refs.Load(prop.Reference.Resource, prop.Reference.Path)
+		if ref == nil {
+			break
 		}
 
-		return
-	}
+		key := prop.Enum.Positions[*ref.Enum]
+		AddTypeKey(encoder, path, types.Enum, key)
+	case prop.Scalar != nil:
+		val := prop.Scalar.Default
 
-	for _, nested := range prop.Nested {
-		encode(encoder, path, refs, nested)
-	}
-
-	val := prop.Default
-
-	if prop.Reference != nil {
 		ref := refs.Load(prop.Reference.Resource, prop.Reference.Path)
 		if ref != nil {
-			if prop.Type == types.Enum && ref.Enum != nil {
-				enum := prop.Enum.Positions[*ref.Enum]
-				if enum != nil {
-					val = enum.Key
-				}
-			} else if ref.Value != nil {
-				val = ref.Value
-			}
+			val = ref.Value
 		}
-	}
 
-	if val == nil {
-		return
-	}
-
-	AddTypeKey(encoder, path, prop.Type, val)
-}
-
-func array(encoder url.Values, root string, refs references.Store, prop *specs.Property) {
-	for _, nested := range prop.Nested {
-		encode(encoder, root, refs, nested)
-	}
-
-	val := prop.Default
-
-	if prop.Reference != nil {
-		ref := refs.Load("", "")
-		if ref != nil {
-			if prop.Type == types.Enum && ref.Enum != nil {
-				enum := prop.Enum.Positions[*ref.Enum]
-				if enum != nil {
-					val = enum.Key
-				}
-			} else if ref.Value != nil {
-				val = ref.Value
-			}
+		if val == nil {
+			break
 		}
-	}
 
-	if val == nil {
-		return
+		AddTypeKey(encoder, path, prop.Scalar.Type, val)
 	}
-
-	AddTypeKey(encoder, root, prop.Type, val)
 }
 
 // Unmarshal unmarshals the given www-form-urlencoded io reader into the given reference store.

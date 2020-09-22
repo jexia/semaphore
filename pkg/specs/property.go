@@ -121,8 +121,7 @@ type EnumValue struct {
 
 // Repeated represents an array type.
 type Repeated struct {
-	// Template contains the type of repeated values
-	Template
+	*Property
 
 	// Default contains the static values for certain indexes
 	Default   map[uint]*Property `json:"default,omitempty"`
@@ -132,7 +131,7 @@ type Repeated struct {
 // Clone repeated.
 func (repeated Repeated) Clone() *Repeated {
 	var clone = &Repeated{
-		Template: *repeated.Template.Clone(),
+		Property: *repeated.Property.Clone(),
 		Default:  make(map[uint]*Property, len(repeated.Default)),
 	}
 

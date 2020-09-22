@@ -42,7 +42,11 @@ func (manager *Manager) Marshal(store references.Store) MD {
 
 	result := make(MD, len(manager.Params))
 	for key, property := range manager.Params {
-		value := property.Default
+		if property.Scalar == nil {
+			continue
+		}
+
+		value := property.Scalar.Default
 
 		if property.Reference != nil {
 			ref := store.Load(property.Reference.Resource, property.Reference.Path)
