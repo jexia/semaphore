@@ -179,6 +179,12 @@ func TestUnmarshal(t *testing.T) {
 			),
 			error: errUnknownEnum("DONE"),
 		},
+		"unexpected token enum value": {
+			input: strings.NewReader(
+				"<mock><repeating_numeric><oops></oops></repeating_numeric></mock>",
+			),
+			error: errNotAnObject,
+		},
 		"unknown enum value (repeated)": {
 			input: strings.NewReader(
 				"<mock><repeating_enum>DONE</repeating_enum></mock>",
@@ -203,6 +209,19 @@ func TestUnmarshal(t *testing.T) {
 		"simple": {
 			input: strings.NewReader(
 				"<mock><nested></nested><message>hello world</message><another_message>dlrow olleh</another_message></mock>",
+			),
+			expected: map[string]expect{
+				"message": {
+					value: "hello world",
+				},
+				"another_message": {
+					value: "dlrow olleh",
+				},
+			},
+		},
+		"simple with unknown property": {
+			input: strings.NewReader(
+				"<mock><unknown></unknown><message>hello world</message><another_message>dlrow olleh</another_message></mock>",
 			),
 			expected: map[string]expect{
 				"message": {
@@ -301,7 +320,20 @@ func TestUnmarshal(t *testing.T) {
 		},
 		"complex": {
 			input: strings.NewReader(
-				"<mock><repeating_string>repeating one</repeating_string><repeating_string>repeating two</repeating_string><message>hello world</message><nested><first>foo</first><second>bar</second></nested><repeating><value>repeating one</value></repeating><repeating><value>repeating two</value></repeating></mock>",
+				`<mock>
+				<repeating_string>repeating one</repeating_string>
+				<repeating_string>repeating two</repeating_string>
+				<message>hello world</message>
+					<nested>
+						<first>foo</first>
+						<second>bar</second>
+					</nested><repeating>
+				<value>repeating one</value>
+				</repeating>
+				<repeating>  
+					<value>repeating two</value>
+				</repeating>
+			</mock>`,
 			),
 			expected: map[string]expect{
 				"repeating_string": {
