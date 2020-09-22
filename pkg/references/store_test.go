@@ -720,7 +720,7 @@ func TestReferenceString(t *testing.T) {
 					}(),
 				},
 			},
-			expected: "test:<array([fourtwo:[two:<int(42)>] fourthree:[three:<int(43)>]])>",
+			expected: "test:<array[2]([fourtwo:[two:<int(42)>] fourthree:[three:<int(43)>]])>",
 		},
 	}
 

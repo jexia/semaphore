@@ -7,7 +7,10 @@ import (
 	"strings"
 )
 
-var errNotAnObject = errors.New("not an object")
+var (
+	errEOS         = errors.New("endOfStream")
+	errNotAnObject = errors.New("not an object")
+)
 
 type errUnknownEnum string
 

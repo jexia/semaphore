@@ -37,7 +37,7 @@ func (reference *Reference) String() string {
 	case reference.Value != nil:
 		return fmt.Sprintf("%s:<%T(%v)>", reference.Path, reference.Value, reference.Value)
 	case reference.Repeated != nil:
-		return fmt.Sprintf("%s:<array(%s)>", reference.Path, reference.Repeated)
+		return fmt.Sprintf("%s:<array[%d](%s)>", reference.Path, len(reference.Repeated), reference.Repeated)
 	case reference.Enum != nil:
 		return fmt.Sprintf("%s:<enum(%d)>", reference.Path, *reference.Enum)
 	default:
@@ -82,6 +82,10 @@ func (store *store) String() string {
 		separated bool
 		builder   strings.Builder
 	)
+
+	if len(store.values) == 0 {
+		return "<empty>"
+	}
 
 	for key, ref := range store.values {
 		if separated {

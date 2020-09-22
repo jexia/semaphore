@@ -18,7 +18,7 @@ func encodeRepeated(encoder *xml.Encoder, resource string, prop *specs.Property,
 		return nil
 	}
 
-	var array = NewArray(resource, prop, ref, ref.Repeated)
+	var array = NewArray(resource, prop, ref.Repeated)
 
 	return array.MarshalXML(encoder, xml.StartElement{})
 }
@@ -30,7 +30,7 @@ func encodeNested(encoder *xml.Encoder, prop *specs.Property, store references.S
 	}
 
 	var (
-		nested = NewObject(prop.Name, prop.Nested, store)
+		nested = NewObject(prop.Name, prop, store)
 		start  = xml.StartElement{Name: xml.Name{Local: prop.Name}}
 	)
 

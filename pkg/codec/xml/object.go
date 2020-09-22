@@ -3,7 +3,6 @@ package xml
 import (
 	"encoding/xml"
 	"io"
-	"log"
 	"sort"
 
 	"github.com/jexia/semaphore/pkg/references"
@@ -15,16 +14,16 @@ import (
 // Object represents an XML object.
 type Object struct {
 	resource string
-	specs    map[string]*specs.Property
+	property *specs.Property
 	refs     references.Store
 }
 
 // NewObject constructs a new object encoder/decoder for the given specs.
-func NewObject(resource string, specs map[string]*specs.Property, refs references.Store) *Object {
+func NewObject(resource string, property *specs.Property, refs references.Store) *Object {
 	return &Object{
 		resource: resource,
+		property: property,
 		refs:     refs,
-		specs:    specs,
 	}
 }
 
@@ -36,8 +35,8 @@ func (object *Object) MarshalXML(encoder *xml.Encoder, _ xml.StartElement) error
 		return err
 	}
 
-	keys := make([]string, 0, len(object.specs))
-	for key := range object.specs {
+	keys := make([]string, 0, len(object.property.Nested))
+	for key := range object.property.Nested {
 		keys = append(keys, key)
 	}
 
@@ -45,7 +44,7 @@ func (object *Object) MarshalXML(encoder *xml.Encoder, _ xml.StartElement) error
 	sort.Strings(keys)
 
 	for _, key := range keys {
-		if err := object.encodeElement(encoder, object.specs[key]); err != nil {
+		if err := object.encodeElement(encoder, object.property.Nested[key]); err != nil {
 			return err
 		}
 	}
@@ -68,15 +67,20 @@ func (object *Object) encodeElement(encoder *xml.Encoder, prop *specs.Property) 
 
 // UnmarshalXML decodes XML input into the reference store.
 func (object *Object) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
-	var refs = make(map[string]*references.Reference)
+	var (
+		refs = make(map[string]*references.Reference)
+		err  = object.unmarshalXML(decoder, refs)
+	)
 
-	defer func() {
-		for _, reference := range refs {
-			object.refs.StoreReference(object.resource, reference)
-		}
-	}()
+	if err != nil && err != errEOS {
+		return err
+	}
 
-	return object.unmarshalXML(decoder, refs)
+	for _, reference := range refs {
+		object.refs.StoreReference(object.resource, reference)
+	}
+
+	return nil
 }
 
 func (object *Object) unmarshalXML(decoder *xml.Decoder, refs map[string]*references.Reference) error {
@@ -95,15 +99,13 @@ func (object *Object) unmarshalXML(decoder *xml.Decoder, refs map[string]*refere
 func (object *Object) startElement(decoder *xml.Decoder, tok xml.Token, refs map[string]*references.Reference) error {
 	switch t := tok.(type) {
 	case xml.StartElement:
-		var prop = object.specs[t.Name.Local]
+		if object.property.Label == labels.Repeated {
+			return object.repeated(decoder, object.property, refs)
+		}
 
-		log.Println(t.Name.Local)
+		var prop = object.property.Nested[t.Name.Local]
 
 		if prop == nil {
-			// if prop.Label == labels.Repeated{
-			//
-			// }
-
 			// ignore unknown properties
 			if err := decoder.Skip(); err != nil {
 				return err
@@ -119,7 +121,7 @@ func (object *Object) startElement(decoder *xml.Decoder, tok xml.Token, refs map
 		return object.propertyValue(decoder, prop, refs)
 	case xml.EndElement:
 		// object is closed
-		return nil
+		return nil // errEOS // nil
 	case xml.CharData:
 		// read until we get start/end element (skip spaces between XML tags)
 		return object.unmarshalXML(decoder, refs)

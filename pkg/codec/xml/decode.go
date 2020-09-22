@@ -2,6 +2,7 @@ package xml
 
 import (
 	"encoding/xml"
+	"log"
 
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
@@ -13,7 +14,7 @@ func decodeNested(decoder *xml.Decoder, start xml.StartElement, prop *specs.Prop
 		return errNotAnObject
 	}
 
-	var nested = NewObject(resource, prop.Nested, store)
+	var nested = NewObject(resource, prop, store)
 
 	return nested.startElement(decoder, start, refs)
 }
@@ -34,10 +35,14 @@ func decodeRepeatedNested(decoder *xml.Decoder, start xml.StartElement, prop *sp
 		refs[prop.Path] = ref
 	}
 
-	var nested = NewObject(resource, prop.Nested, store)
+	log.Println("TOKEN", start)
+
+	var nested = NewObject(resource, prop, store)
 	if err := nested.startElement(decoder, start, refs); err != nil {
 		return err
 	}
+
+	log.Printf("STORE XXX: %s\n", store)
 
 	ref.Append(store)
 

@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/jexia/semaphore/pkg/references"
+	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/template"
 )
 
@@ -160,7 +161,7 @@ func (fn readerFunc) Read(p []byte) (int, error) { return fn(p) }
 
 func TestUnmarshal(t *testing.T) {
 	type test struct {
-		resource string
+		schema   *specs.ParameterMap
 		input    io.Reader
 		expected map[string]expect
 		error    error
@@ -168,7 +169,7 @@ func TestUnmarshal(t *testing.T) {
 
 	tests := map[string]test{
 		// "reader error": {
-		// 	resource: "mock",
+		// 	schema: schema,
 		// 	input: readerFunc(
 		// 		func([]byte) (int, error) {
 		// 			return 0, errors.New("failed")
@@ -177,39 +178,39 @@ func TestUnmarshal(t *testing.T) {
 		// 	error: errors.New("failed"),
 		// },
 		// "unknown enum value": {
-		// 	resource: "mock",
+		// 	schema: schema,
 		// 	input: strings.NewReader(
 		// 		"<mock><status>PENDING</status><another_status>DONE</another_status></mock>",
 		// 	),
 		// 	error: errUnknownEnum("DONE"),
 		// },
 		// "unknown enum value (repeated)": {
-		// 	resource: "mock",
+		// 	schema: schema,
 		// 	input: strings.NewReader(
 		// 		"<mock><repeating_enum>DONE</repeating_enum></mock>",
 		// 	),
 		// 	error: errUnknownEnum("DONE"),
 		// },
 		// "type mismatch": {
-		// 	resource: "mock",
+		// 	schema: schema,
 		// 	input: strings.NewReader(
 		// 		"<mock><numeric>not a number</numeric></mock>",
 		// 	),
 		// 	error: errors.New(""), // error returned by ParseInt()
 		// },
 		// "type mismatch (repeated)": {
-		// 	resource: "mock",
+		// 	schema: schema,
 		// 	input: strings.NewReader(
 		// 		"<mock><repeating_numeric>not a number</repeating_numeric></mock>",
 		// 	),
 		// 	error: errors.New(""), // error returned by ParseInt()
 		// },
 		// "empty reader": {
-		// 	resource: "mock",
-		// 	input:    strings.NewReader(""),
+		// 	schema: schema,
+		// 	input:  strings.NewReader(""),
 		// },
 		// "simple": {
-		// 	resource: "mock",
+		// 	schema: schema,
 		// 	input: strings.NewReader(
 		// 		"<mock><nested></nested><message>hello world</message><another_message>dlrow olleh</another_message></mock>",
 		// 	),
@@ -223,7 +224,7 @@ func TestUnmarshal(t *testing.T) {
 		// 	},
 		// },
 		// "enum": {
-		// 	resource: "mock",
+		// 	schema: schema,
 		// 	input: strings.NewReader(
 		// 		"<mock><status>PENDING</status><another_status>UNKNOWN</another_status></mock>",
 		// 	),
@@ -237,7 +238,7 @@ func TestUnmarshal(t *testing.T) {
 		// 	},
 		// },
 		// "nested": {
-		// 	resource: "mock",
+		// 	schema: schema,
 		// 	input: strings.NewReader(
 		// 		"<mock><nested><first>foo</first><second>bar</second></nested></mock>",
 		// 	),
@@ -251,7 +252,7 @@ func TestUnmarshal(t *testing.T) {
 		// 	},
 		// },
 		// "repeated string": {
-		// 	resource: "mock",
+		// 	schema: schema,
 		// 	//  TODO: do not ignore empty blocks
 		// 	input: strings.NewReader(
 		// 		"<mock><repeating_string>repeating one</repeating_string><repeating_string></repeating_string><repeating_string>repeating two</repeating_string></mock>",
@@ -270,7 +271,7 @@ func TestUnmarshal(t *testing.T) {
 		// 	},
 		// },
 		// "repeated enum": {
-		// 	resource: "mock",
+		// 	schema: schema,
 		// 	input: strings.NewReader(
 		// 		"<mock><repeating_enum>UNKNOWN</repeating_enum><repeating_enum>PENDING</repeating_enum></mock>",
 		// 	),
@@ -288,7 +289,7 @@ func TestUnmarshal(t *testing.T) {
 		// 	},
 		// },
 		// "repeated nested": {
-		// 	resource: "mock",
+		// 	schema: schema,
 		// 	input: strings.NewReader(
 		// 		"<mock><repeating><value>repeating one</value></repeating><repeating><value>repeating two</value></repeating></mock>",
 		// 	),
@@ -314,7 +315,7 @@ func TestUnmarshal(t *testing.T) {
 		// 	},
 		// },
 		// "complex": {
-		// 	resource: "mock",
+		// 	schema: schema,
 		// 	input: strings.NewReader(
 		// 		"<mock><repeating_string>repeating one</repeating_string><repeating_string>repeating two</repeating_string><message>hello world</message><nested><first>foo</first><second>bar</second></nested><repeating><value>repeating one</value></repeating><repeating><value>repeating two</value></repeating></mock>",
 		// 	),
@@ -359,7 +360,7 @@ func TestUnmarshal(t *testing.T) {
 		// 	},
 		// },
 		"formatted XML": {
-			resource: "countries",
+			schema: worldbank,
 			input: strings.NewReader(
 				`<?xml version="1.0" encoding="utf-8"?>
 <wb:countries page="1" pages="7" per_page="50" total="304" xmlns:wb="http://www.example.com">
@@ -405,7 +406,7 @@ func TestUnmarshal(t *testing.T) {
 				t.Fatal("unexpected nil")
 			}
 
-			manager, err := xml.New(test.resource, schema)
+			manager, err := xml.New("input", test.schema)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -413,7 +414,20 @@ func TestUnmarshal(t *testing.T) {
 			var refs = references.NewReferenceStore(0)
 			err = manager.Unmarshal(test.input, refs)
 
-			log.Printf("%s", refs)
+			log.Println()
+			log.Println()
+			log.Printf("RRR: %s", refs)
+			log.Println()
+			log.Println()
+
+			// 2020/09/22 16:28:14 countries:<array[2](
+			// [countriescountry.iso2Code:[country.iso2Code:<string(AW)>], countriescountry.name:[country.name:<string(Aruba)>], countriescountry.longitude:[country.longitude:<float64(-70.0167)>], countriescountry.latitude:[country.latitude:<float64(12.5167)>]
+			// countriescountry.longitude:[country.longitude:<float64(69.1761)>], countriescountry.latitude:[country.latitude:<float64(34.5228)>], countriescountry.iso2Code:[country.iso2Code:<string(AF)>], countriescountry.name:[country.name:<string(Afghanistan)>]])>
+
+			// 2020/09/22 16:37:40 RRR:
+			// countriescountries:[countries:<array[2](
+			// [countriescountry.iso2Code:[country.iso2Code:<string(AW)>], countriescountry.name:[country.name:<string(Aruba)>], countriescountry.longitude:[country.longitude:<float64(-70.0167)>], countriescountry.latitude:[country.latitude:<float64(12.5167)>]
+			// countriescountry.iso2Code:[country.iso2Code:<string(AF)>], countriescountry.name:[country.name:<string(Afghanistan)>], countriescountry.longitude:[country.longitude:<float64(69.1761)>], countriescountry.latitude:[country.latitude:<float64(34.5228)>]])>]
 
 			if test.error != nil {
 				if !errors.As(err, &test.error) {
@@ -424,7 +438,7 @@ func TestUnmarshal(t *testing.T) {
 			}
 
 			for path, output := range test.expected {
-				assert(t, test.resource, path, refs, output)
+				assert(t, "input", path, refs, output)
 			}
 		})
 	}
