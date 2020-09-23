@@ -3,7 +3,6 @@ package listeners
 import (
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
-	"github.com/jexia/semaphore/pkg/broker/trace"
 	"github.com/jexia/semaphore/pkg/codec"
 	"github.com/jexia/semaphore/pkg/transport"
 	"go.uber.org/zap"
@@ -31,7 +30,7 @@ func Apply(ctx *broker.Context, codec codec.Constructors, listeners transport.Li
 		listener := listeners.Get(key)
 		if listener == nil {
 			logger.Error(ctx, "listener not found", zap.String("listener", key))
-			return trace.New(trace.WithMessage("unknown listener %s", key))
+			return ErrNoListener{Listener: key}
 		}
 
 		err := listener.Handle(ctx, collection, codec)

@@ -214,20 +214,26 @@ func Uint64Empty(val interface{}) uint64 {
 
 // Float64Empty returns the given value as a float64 or a empty float64 if the value is nil
 func Float64Empty(val interface{}) float64 {
-	if val == nil {
+	switch t := val.(type) {
+	case float32:
+		return float64(t)
+	case float64:
+		return t
+	default:
 		return 0
 	}
-
-	return val.(float64)
 }
 
 // Float32Empty returns the given value as a float32 or a empty float32 if the value is nil
 func Float32Empty(val interface{}) float32 {
-	if val == nil {
+	switch t := val.(type) {
+	case float32:
+		return t
+	case float64:
+		return float32(t)
+	default:
 		return 0
 	}
-
-	return val.(float32)
 }
 
 // BytesBase64Empty returns the given bytes buffer as a base64 string or a empty string if the value is nil

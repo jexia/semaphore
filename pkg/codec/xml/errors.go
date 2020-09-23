@@ -9,12 +9,6 @@ import (
 
 var errNotAnObject = errors.New("not an object")
 
-type errUndefinedProperty string
-
-func (e errUndefinedProperty) Error() string {
-	return fmt.Sprintf("undefined property %q", string(e))
-}
-
 type errUnknownEnum string
 
 func (e errUnknownEnum) Error() string {

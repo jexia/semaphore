@@ -179,6 +179,12 @@ func TestUnmarshal(t *testing.T) {
 			),
 			error: errUnknownEnum("DONE"),
 		},
+		"unexpected token enum value": {
+			input: strings.NewReader(
+				"<mock><repeating_numeric><oops></oops></repeating_numeric></mock>",
+			),
+			error: errNotAnObject,
+		},
 		"unknown enum value (repeated)": {
 			input: strings.NewReader(
 				"<mock><repeating_enum>DONE</repeating_enum></mock>",
@@ -200,9 +206,22 @@ func TestUnmarshal(t *testing.T) {
 		"empty reader": {
 			input: strings.NewReader(""),
 		},
-		"simple (+ignore empty)": {
+		"simple": {
 			input: strings.NewReader(
 				"<mock><nested></nested><message>hello world</message><another_message>dlrow olleh</another_message></mock>",
+			),
+			expected: map[string]expect{
+				"message": {
+					value: "hello world",
+				},
+				"another_message": {
+					value: "dlrow olleh",
+				},
+			},
+		},
+		"simple with unknown property": {
+			input: strings.NewReader(
+				"<mock><unknown></unknown><message>hello world</message><another_message>dlrow olleh</another_message></mock>",
 			),
 			expected: map[string]expect{
 				"message": {
@@ -301,7 +320,20 @@ func TestUnmarshal(t *testing.T) {
 		},
 		"complex": {
 			input: strings.NewReader(
-				"<mock><repeating_string>repeating one</repeating_string><repeating_string>repeating two</repeating_string><message>hello world</message><nested><first>foo</first><second>bar</second></nested><repeating><value>repeating one</value></repeating><repeating><value>repeating two</value></repeating></mock>",
+				`<mock>
+				<repeating_string>repeating one</repeating_string>
+				<repeating_string>repeating two</repeating_string>
+				<message>hello world</message>
+					<nested>
+						<first>foo</first>
+						<second>bar</second>
+					</nested><repeating>
+				<value>repeating one</value>
+				</repeating>
+				<repeating>  
+					<value>repeating two</value>
+				</repeating>
+			</mock>`,
 			),
 			expected: map[string]expect{
 				"repeating_string": {
@@ -383,15 +415,17 @@ type expect struct {
 }
 
 func assert(t *testing.T, resource string, path string, store references.Store, output expect) {
-	ref := store.Load(resource, path)
+	var ref = store.Load(resource, path)
 
 	if ref == nil {
 		t.Errorf("reference %q was expected to be set", path)
+
+		return
 	}
 
 	if output.value != nil {
 		if ref.Value != output.value {
-			t.Errorf("reference %q was expected to have value [%v], not [%v]", path, output.value, ref.Value)
+			t.Errorf("reference %q [%v] was expected to have value [%v]", path, output.value, ref.Value)
 		}
 
 		return
@@ -412,10 +446,14 @@ func assert(t *testing.T, resource string, path string, store references.Store, 
 	if output.repeated != nil {
 		if ref.Repeated == nil {
 			t.Errorf("reference %q was expected to have a repeated value", path)
+
+			return
 		}
 
 		if expected, actual := len(ref.Repeated), len(ref.Repeated); actual != expected {
 			t.Errorf("invalid number of repeated values, expected %d, got %d", expected, actual)
+
+			return
 		}
 
 		for index, expected := range output.repeated {

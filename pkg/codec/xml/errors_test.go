@@ -5,17 +5,6 @@ import (
 	"testing"
 )
 
-func TestErrUndefinedProperty(t *testing.T) {
-	var (
-		err      = errUndefinedProperty("foo")
-		expected = `undefined property "foo"`
-	)
-
-	if actual := err.Error(); actual != expected {
-		t.Errorf("error %q was expected to be %q", actual, expected)
-	}
-}
-
 func TestErrUnknownEnum(t *testing.T) {
 	var (
 		err      = errUnknownEnum("pending")

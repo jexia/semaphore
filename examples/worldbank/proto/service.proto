@@ -1,0 +1,37 @@
+syntax = "proto3";
+import "api/annotations.proto";
+
+package com.semaphore;
+
+service WorldBank {
+    option (semaphore.api.service) = {
+        transport: "http"
+        codec: "xml"
+    };
+
+    rpc GetCountries(Query) returns (Countries) {
+        option (semaphore.api.http) = {
+            endpoint: "/v2/country"
+            method: "GET"
+        };
+    };
+}
+
+message Query {
+}
+
+message Countries {
+  repeated Country country = 1;
+}
+
+message Country {
+  string iso2Code = 1;
+  string name = 2;
+  string region = 3;
+  float latitude = 4;
+  float longitude = 5;
+}
+
+message CountriesResponse {
+  repeated Country countries = 1;
+}

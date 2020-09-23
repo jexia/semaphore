@@ -5,7 +5,6 @@ import (
 
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
-	"github.com/jexia/semaphore/pkg/broker/trace"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/template"
 )
@@ -25,7 +24,7 @@ func FlowDuplicates(ctx *broker.Context, flows specs.FlowListInterface) error {
 	for _, flow := range flows {
 		_, duplicate := tracker.LoadOrStore(flow.GetName(), flow)
 		if duplicate {
-			return trace.New(trace.WithMessage("duplicate flow '%s'", flow.GetName()))
+			return ErrFlowDuplicate{Flow: flow.GetName()}
 		}
 
 		err := NodeDuplicates(ctx, flow.GetName(), flow.GetNodes())
@@ -45,7 +44,7 @@ func NodeDuplicates(ctx *broker.Context, flow string, nodes specs.NodeList) erro
 	for _, node := range nodes {
 		_, duplicate := calls.LoadOrStore(node.ID, node)
 		if duplicate {
-			return trace.New(trace.WithMessage("duplicate resource '%s' in flow '%s'", node.ID, flow))
+			return ErrResourceDuplicate{Resource: node.ID, Flow: flow}
 		}
 
 		for _, key := range ReservedKeywords {
@@ -53,7 +52,7 @@ func NodeDuplicates(ctx *broker.Context, flow string, nodes specs.NodeList) erro
 				continue
 			}
 
-			return trace.New(trace.WithMessage("flow with the name '%s' is a reserved keyword", node.ID))
+			return ErrReservedKeyword{Flow: node.ID}
 		}
 	}
 

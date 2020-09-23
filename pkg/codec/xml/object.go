@@ -96,7 +96,12 @@ func (object *Object) startElement(decoder *xml.Decoder, tok xml.Token, refs map
 	case xml.StartElement:
 		var prop = object.specs[t.Name.Local]
 		if prop == nil {
-			return errUndefinedProperty(t.Name.Local)
+			// ignore unknown properties
+			if err := decoder.Skip(); err != nil {
+				return err
+			}
+
+			return object.unmarshalXML(decoder, refs)
 		}
 
 		if prop.Label == labels.Repeated {
@@ -107,6 +112,9 @@ func (object *Object) startElement(decoder *xml.Decoder, tok xml.Token, refs map
 	case xml.EndElement:
 		// object is closed
 		return nil
+	case xml.CharData:
+		// read until we get start/end element (skip spaces between XML tags)
+		return object.unmarshalXML(decoder, refs)
 	default:
 		return errUnexpectedToken{
 			actual: t,
@@ -119,66 +127,78 @@ func (object *Object) startElement(decoder *xml.Decoder, tok xml.Token, refs map
 }
 
 func (object *Object) repeated(decoder *xml.Decoder, prop *specs.Property, refs map[string]*references.Reference) error {
-	tok, err := decoder.Token()
-	if err != nil {
-		return err
-	}
-
-	switch t := tok.(type) {
-	case xml.CharData:
-		if err := decodeRepeatedValue(t, prop, refs); err != nil {
+	for {
+		tok, err := decoder.Token()
+		if err != nil {
 			return err
 		}
 
-		return object.closeElement(decoder, prop, refs)
-	case xml.StartElement:
-		if err := decodeRepeatedNested(decoder, t, prop, object.resource, refs); err != nil {
-			return err
-		}
+		switch t := tok.(type) {
+		case xml.CharData:
+			if prop.Type == types.Message {
+				continue
+			}
 
-		return object.unmarshalXML(decoder, refs)
-	case xml.EndElement:
-		return object.unmarshalXML(decoder, refs)
-	default:
-		return errUnexpectedToken{
-			actual: t,
-			expected: []xml.Token{
-				xml.StartElement{},
-				xml.EndElement{},
-			},
+			if err := decodeRepeatedValue(t, prop, refs); err != nil {
+				return err
+			}
+
+			return object.closeElement(decoder, prop, refs)
+		case xml.StartElement:
+			if err := decodeRepeatedNested(decoder, t, prop, object.resource, refs); err != nil {
+				return err
+			}
+
+			return object.unmarshalXML(decoder, refs)
+		case xml.EndElement:
+			return object.unmarshalXML(decoder, refs)
+		default:
+			return errUnexpectedToken{
+				actual: t,
+				expected: []xml.Token{
+					xml.StartElement{},
+					xml.EndElement{},
+				},
+			}
 		}
 	}
 }
 
 func (object *Object) propertyValue(decoder *xml.Decoder, prop *specs.Property, refs map[string]*references.Reference) error {
-	tok, err := decoder.Token()
-	if err != nil {
-		return err
-	}
-
-	switch t := tok.(type) {
-	case xml.StartElement:
-		if err := decodeNested(decoder, t, prop, object.resource, object.refs, refs); err != nil {
+	for {
+		tok, err := decoder.Token()
+		if err != nil {
 			return err
 		}
 
-		return object.unmarshalXML(decoder, refs)
-	case xml.EndElement:
-		return object.unmarshalXML(decoder, refs)
-	case xml.CharData:
-		if err := decodeValue(t, prop, object.resource, object.refs); err != nil {
-			return err
-		}
+		switch t := tok.(type) {
+		case xml.StartElement:
+			if err := decodeNested(decoder, t, prop, object.resource, object.refs, refs); err != nil {
+				return err
+			}
 
-		return object.closeElement(decoder, prop, refs)
-	default:
-		return errUnexpectedToken{
-			actual: t,
-			expected: []xml.Token{
-				xml.StartElement{},
-				xml.CharData{},
-				xml.EndElement{},
-			},
+			return object.unmarshalXML(decoder, refs)
+		case xml.EndElement:
+			return object.unmarshalXML(decoder, refs)
+		case xml.CharData:
+			if prop.Type == types.Message || prop.Label == labels.Repeated {
+				continue
+			}
+
+			if err := decodeValue(t, prop, object.resource, object.refs); err != nil {
+				return err
+			}
+
+			return object.closeElement(decoder, prop, refs)
+		default:
+			return errUnexpectedToken{
+				actual: t,
+				expected: []xml.Token{
+					xml.StartElement{},
+					xml.CharData{},
+					xml.EndElement{},
+				},
+			}
 		}
 	}
 }
