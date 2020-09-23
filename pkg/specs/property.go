@@ -65,28 +65,30 @@ func (scalar *Scalar) UnmarshalJSON(data []byte) error {
 
 // Clean fixes the type casting issue of unmarshal
 func (scalar *Scalar) Clean() {
-	if scalar.Default != nil {
-		switch scalar.Type {
-		case types.Int64, types.Sint64, types.Sfixed64:
-			_, ok := scalar.Default.(int64)
-			if !ok {
-				scalar.Default = int64(scalar.Default.(float64))
-			}
-		case types.Uint64, types.Fixed64:
-			_, ok := scalar.Default.(uint64)
-			if !ok {
-				scalar.Default = uint64(scalar.Default.(float64))
-			}
-		case types.Int32, types.Sint32, types.Sfixed32:
-			_, ok := scalar.Default.(int32)
-			if !ok {
-				scalar.Default = int32(scalar.Default.(float64))
-			}
-		case types.Uint32, types.Fixed32:
-			_, ok := scalar.Default.(uint32)
-			if !ok {
-				scalar.Default = uint32(scalar.Default.(float64))
-			}
+	if scalar.Default == nil {
+		return
+	}
+
+	switch scalar.Type {
+	case types.Int64, types.Sint64, types.Sfixed64:
+		_, ok := scalar.Default.(int64)
+		if !ok {
+			scalar.Default = int64(scalar.Default.(float64))
+		}
+	case types.Uint64, types.Fixed64:
+		_, ok := scalar.Default.(uint64)
+		if !ok {
+			scalar.Default = uint64(scalar.Default.(float64))
+		}
+	case types.Int32, types.Sint32, types.Sfixed32:
+		_, ok := scalar.Default.(int32)
+		if !ok {
+			scalar.Default = int32(scalar.Default.(float64))
+		}
+	case types.Uint32, types.Fixed32:
+		_, ok := scalar.Default.(uint32)
+		if !ok {
+			scalar.Default = uint32(scalar.Default.(float64))
 		}
 	}
 }
@@ -178,45 +180,45 @@ type Template struct {
 	Message  Message   `json:"message,omitempty"`
 }
 
-// Type returns the type of the given template
-func (template Template) Type() types.Type {
-	if template.Message != nil {
+// Type returns the type of the given template.
+func (t Template) Type() types.Type {
+	if t.Message != nil {
 		return types.Message
 	}
 
-	if template.Repeated != nil {
+	if t.Repeated != nil {
 		return types.Array
 	}
 
-	if template.Enum != nil {
+	if t.Enum != nil {
 		return types.Enum
 	}
 
-	if template.Scalar != nil {
-		return template.Scalar.Type
+	if t.Scalar != nil {
+		return t.Scalar.Type
 	}
 
 	return types.Unknown
 }
 
 // Clone internal value.
-func (template Template) Clone() *Template {
+func (t Template) Clone() *Template {
 	var clone = new(Template)
 
-	if template.Scalar != nil {
-		clone.Scalar = template.Scalar.Clone()
+	if t.Scalar != nil {
+		clone.Scalar = t.Scalar.Clone()
 	}
 
-	if template.Enum != nil {
-		clone.Enum = template.Enum.Clone()
+	if t.Enum != nil {
+		clone.Enum = t.Enum.Clone()
 	}
 
-	if template.Repeated != nil {
-		clone.Repeated = template.Repeated.Clone()
+	if t.Repeated != nil {
+		clone.Repeated = t.Repeated.Clone()
 	}
 
-	if template.Message != nil {
-		clone.Message = template.Message.Clone()
+	if t.Message != nil {
+		clone.Message = t.Message.Clone()
 	}
 
 	return clone
@@ -263,6 +265,11 @@ type Property struct {
 	Label labels.Label `json:"label,omitempty"`
 
 	Template
+}
+
+// Empty checks if the property has any defined type
+func (prop *Property) Empty() bool {
+	return prop.Template.Type() == types.Unknown
 }
 
 // Clone makes a deep clone of the given property

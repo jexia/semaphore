@@ -1,6 +1,8 @@
 package compare
 
 import (
+	"fmt"
+
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/broker/trace"
@@ -132,48 +134,69 @@ func CheckParameterMapTypes(ctx *broker.Context, parameters *specs.ParameterMap,
 		}
 	}
 
-	err := CheckPropertyTypes(parameters.Property, objects.Get(parameters.Schema), flow)
+	err := CheckPropertyTypes(parameters.Property, objects.Get(parameters.Schema))
 	if err != nil {
-		return err
+		return fmt.Errorf("flow '%s' mismatch: %w", flow.GetName(), err)
 	}
 
 	return nil
 }
 
 // CheckPropertyTypes checks the given schema against the given schema method types
-func CheckPropertyTypes(property *specs.Property, schema *specs.Property, flow specs.FlowInterface) (err error) {
+func CheckPropertyTypes(property *specs.Property, schema *specs.Property) (err error) {
 	if schema == nil {
 		return trace.New(trace.WithExpression(property.Expr), trace.WithMessage("unable to check types for '%s' no schema given", property.Path))
 	}
 
-	if property.Type != schema.Type {
-		return trace.New(trace.WithExpression(property.Expr), trace.WithMessage("cannot use type (%s) for '%s', expected (%s)", property.Type, property.Path, schema.Type))
+	if property.Template.Type() != schema.Type() {
+		return trace.New(trace.WithExpression(property.Expr), trace.WithMessage("cannot use type (%s) for '%s', expected (%s)", property.Type(), property.Path, schema.Type()))
 	}
 
 	if property.Label != schema.Label {
 		return trace.New(trace.WithExpression(property.Expr), trace.WithMessage("cannot use label (%s) for '%s', expected (%s)", property.Label, property.Path, schema.Label))
 	}
 
-	if len(property.Nested) > 0 {
-		if len(schema.Nested) == 0 {
-			return trace.New(trace.WithExpression(property.Expr), trace.WithMessage("property '%s' has a nested object but schema does not '%s'", property.Path, schema.Name))
-		}
-
-		for _, nested := range property.Nested {
-			object := schema.Nested.Get(nested.Name)
-			if object == nil {
-				return trace.New(trace.WithExpression(nested.Expr), trace.WithMessage("undefined schema nested message property '%s' in flow '%s'", nested.Path, flow.GetName()))
-			}
-
-			err := CheckPropertyTypes(nested, object, flow)
-			if err != nil {
-				return err
-			}
-		}
+	if !property.Empty() && schema.Empty() {
+		return trace.New(trace.WithExpression(property.Expr), trace.WithMessage("property '%s' has a nested object but schema does not '%s'", property.Path, schema.Name))
 	}
 
-	// ensure the property position
-	property.Position = schema.Position
+	if !schema.Empty() && property.Empty() {
+		return trace.New(trace.WithExpression(property.Expr), trace.WithMessage("schema '%s' has a nested object but property does not '%s'", schema.Name, property.Path))
+	}
+
+	if err := checkTemplate(&schema.Template, &property.Template); err != nil {
+		return fmt.Errorf("nested schema mismatch under property '%s': %w", property.Path, err)
+	}
+
+	return nil
+}
+
+func checkTemplate(expected *specs.Template, given *specs.Template) error {
+	var (
+		err error
+	)
+
+	switch {
+	case expected.Repeated != nil:
+		err = CompareRepeated(expected.Repeated, given.Repeated)
+		break
+
+	case expected.Scalar != nil:
+		err = CompareScalars(expected.Scalar, given.Scalar)
+		break
+
+	case expected.Message != nil:
+		err = CompareMessages(expected.Message, given.Message)
+		break
+
+	case expected.Enum != nil:
+		err = CompareEnums(expected.Enum, given.Enum)
+		break
+	}
+
+	if err != nil {
+		return fmt.Errorf("type mismatch: %w", err)
+	}
 
 	return nil
 }
@@ -181,8 +204,8 @@ func CheckPropertyTypes(property *specs.Property, schema *specs.Property, flow s
 // CheckHeader compares the given header types
 func CheckHeader(header specs.Header, flow specs.FlowInterface) error {
 	for _, header := range header {
-		if header.Type != types.String {
-			return trace.New(trace.WithMessage("cannot use type (%s) for 'header.%s' in flow '%s', expected (%s)", header.Type, header.Path, flow.GetName(), types.String))
+		if header.Type() != types.String {
+			return trace.New(trace.WithMessage("cannot use type (%s) for 'header.%s' in flow '%s', expected (%s)", header.Type(), header.Path, flow.GetName(), types.String))
 		}
 	}
 
