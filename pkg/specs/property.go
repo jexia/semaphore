@@ -131,7 +131,7 @@ type Repeated struct {
 // Clone repeated.
 func (repeated Repeated) Clone() *Repeated {
 	var clone = &Repeated{
-		Property: *repeated.Property.Clone(),
+		Property: repeated.Property.Clone(),
 		Default:  make(map[uint]*Property, len(repeated.Default)),
 	}
 
@@ -143,16 +143,14 @@ func (repeated Repeated) Clone() *Repeated {
 }
 
 // Message represents an object which keeps the original order of keys.
-type Message struct {
-	Properties map[string]*Property `json:"properties,omitempty"`
-}
+type Message map[string]*Property
 
 // SortedProperties returns the available properties as a properties list
 // ordered base on the properties position.
 func (message Message) SortedProperties() PropertyList {
-	result := make(PropertyList, 0, len(message.Properties))
+	result := make(PropertyList, 0, len(message))
 
-	for _, property := range message.Properties {
+	for _, property := range message {
 		result = append(result, property)
 	}
 
@@ -161,13 +159,11 @@ func (message Message) SortedProperties() PropertyList {
 }
 
 // Clone the message.
-func (message Message) Clone() *Message {
-	var clone = &Message{
-		Properties: make(map[string]*Property, len(message.Properties)),
-	}
+func (message Message) Clone() Message {
+	var clone = make(map[string]*Property, len(message))
 
-	for key := range message.Properties {
-		clone.Properties[key] = message.Properties[key].Clone()
+	for key := range message {
+		clone[key] = message[key].Clone()
 	}
 
 	return clone
@@ -179,7 +175,7 @@ type Template struct {
 	Scalar   *Scalar   `json:"scalar,omitempty"`
 	Enum     *Enum     `json:"enum,omitempty"`
 	Repeated *Repeated `json:"repeated,omitempty"`
-	Message  *Message  `json:"message,omitempty"`
+	Message  Message   `json:"message,omitempty"`
 }
 
 // Type returns the type of the given template

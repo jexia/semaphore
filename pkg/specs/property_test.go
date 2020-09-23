@@ -193,10 +193,8 @@ func TestPropertyUnmarshalDefault(t *testing.T) {
 			t.Run("message", func(t *testing.T) {
 				message := &Property{
 					Template: Template{
-						Message: &Message{
-							Properties: map[string]*Property{
-								name: test.input,
-							},
+						Message: Message{
+							name: test.input,
 						},
 					},
 				}
@@ -216,7 +214,7 @@ func TestPropertyUnmarshalDefault(t *testing.T) {
 					t.Fatalf("result message is not set")
 				}
 
-				property := result.Message.Properties[name]
+				property := result.Message[name]
 				if property == nil {
 					t.Fatalf("result message property %s is not set", name)
 				}
@@ -389,10 +387,8 @@ func TestPropertyClone(t *testing.T) {
 			Repeated: &Repeated{
 				Default: map[uint]*Property{},
 			},
-			Message: &Message{
-				Properties: map[string]*Property{
-					"first": {Name: "first", Path: "first"},
-				},
+			Message: Message{
+				"first": {Name: "first", Path: "first"},
 			},
 			Enum: &Enum{
 				Name: "unknown",
@@ -454,7 +450,7 @@ func TestPropertyClone(t *testing.T) {
 		t.Fatalf("message not set")
 	}
 
-	if len(result.Message.Properties) != len(property.Message.Properties) {
+	if len(result.Message) != len(property.Message) {
 		t.Errorf("unexpected message properties %+v", result.Message)
 	}
 
