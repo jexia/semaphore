@@ -28,6 +28,33 @@ func (d *DiscardWriter) Close() error {
 	return nil
 }
 
+func TestUnknownMethod(t *testing.T) {
+	type fields struct {
+		Method string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			"return the formatted error",
+			fields{Method: "get"},
+			"unknown service method get",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			e := ErrUnknownMethod{
+				Method: "get",
+			}
+			if got := e.Prettify(); got.Message != tt.want {
+				t.Errorf("Error() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestCaller(t *testing.T) {
 	ctx := logger.WithLogger(broker.NewBackground())
 	node := &specs.Node{

@@ -114,6 +114,60 @@ func TestListenerRouteConflict(t *testing.T) {
 	})
 }
 
+func TestErrUndefinedCodec(t *testing.T) {
+	type fields struct {
+		Codec string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			"return the formatted error",
+			fields{Codec: "json"},
+			"request codec not found 'json'",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			e := ErrUndefinedCodec{
+				Codec: "json",
+			}
+			if got := e.Prettify(); got.Message != tt.want {
+				t.Errorf("Error() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestErrInvalidHost(t *testing.T) {
+	type fields struct {
+		Host string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			"return the formatted error",
+			fields{Host: "127.0.0.1"},
+			"unable to parse the proxy forward host '127.0.0.1'",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			e := ErrInvalidHost{
+				Host: "127.0.0.1",
+			}
+			if got := e.Prettify(); got.Message != tt.want && got.Unwrap().Error() != tt.want {
+				t.Errorf("Error() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestCORS(t *testing.T) {
 	type test struct {
 		headers          map[string]string

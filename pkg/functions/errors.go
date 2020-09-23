@@ -6,17 +6,8 @@ import (
 	"github.com/jexia/semaphore/pkg/prettyerr"
 )
 
-type wrapErr struct {
-	Inner error
-}
-
-func (i wrapErr) Unwrap() error {
-	return i.Inner
-}
-
 // ErrUndefinedFunction occurs when custom function is not defined in property but referenced
 type ErrUndefinedFunction struct {
-	wrapErr
 	Function string
 	Property string
 }

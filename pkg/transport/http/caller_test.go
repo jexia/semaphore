@@ -129,6 +129,35 @@ func TestCallerUnknownMethod(t *testing.T) {
 	}
 }
 
+func TestErrUnknownMethod(t *testing.T) {
+	type fields struct {
+		Method  string
+		Service string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			"return the formatted error",
+			fields{Method: "get", Service: "getsources"},
+			"unknown method 'get' for service 'getsources'",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			e := ErrUnknownMethod{
+				Method:  "get",
+				Service: "getsources",
+			}
+			if got := e.Prettify(); got.Message != tt.want {
+				t.Errorf("Error() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestCallerReferences(t *testing.T) {
 	type reference struct {
 		raw      string

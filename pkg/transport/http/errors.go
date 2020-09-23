@@ -21,7 +21,6 @@ func (i wrapErr) Unwrap() error {
 
 // ErrUnknownMethod occurs when undefined method is called
 type ErrUnknownMethod struct {
-	wrapErr
 	Method  string
 	Service string
 }
@@ -45,7 +44,6 @@ func (e ErrUnknownMethod) Prettify() prettyerr.Error {
 
 // ErrUndefinedCodec occurs when undefined codec is called
 type ErrUndefinedCodec struct {
-	wrapErr
 	Codec string
 }
 

@@ -6,17 +6,8 @@ import (
 	"github.com/jexia/semaphore/pkg/prettyerr"
 )
 
-type wrapErr struct {
-	Inner error
-}
-
-func (i wrapErr) Unwrap() error {
-	return i.Inner
-}
-
 // ErrUnknownMethod occurs when undefined method is called
 type ErrUnknownMethod struct {
-	wrapErr
 	Method string
 }
 

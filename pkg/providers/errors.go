@@ -6,17 +6,8 @@ import (
 	"github.com/jexia/semaphore/pkg/prettyerr"
 )
 
-type wrapErr struct {
-	Inner error
-}
-
-func (i wrapErr) Unwrap() error {
-	return i.Inner
-}
-
 // ErrUndefinedObject occurs when Object is not found in schema
 type ErrUndefinedObject struct {
-	wrapErr
 	Schema string
 }
 
@@ -38,7 +29,6 @@ func (e ErrUndefinedObject) Prettify() prettyerr.Error {
 
 // ErrUndefinedService occurs when Service is not defined in a flow
 type ErrUndefinedService struct {
-	wrapErr
 	Service string
 	Flow    string
 }
@@ -62,7 +52,6 @@ func (e ErrUndefinedService) Prettify() prettyerr.Error {
 
 // ErrUndefinedMethod occurs when method is not defined in a flow
 type ErrUndefinedMethod struct {
-	wrapErr
 	Method string
 	Flow   string
 }
@@ -86,7 +75,6 @@ func (e ErrUndefinedMethod) Prettify() prettyerr.Error {
 
 // ErrUndefinedOutput occurs when output is not defined in a flow
 type ErrUndefinedOutput struct {
-	wrapErr
 	Output string
 	Flow   string
 }
@@ -110,7 +98,6 @@ func (e ErrUndefinedOutput) Prettify() prettyerr.Error {
 
 // ErrUndefinedProperty occurs when property is not defined in a flow
 type ErrUndefinedProperty struct {
-	wrapErr
 	Property string
 	Flow     string
 }

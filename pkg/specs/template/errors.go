@@ -6,17 +6,8 @@ import (
 	"github.com/jexia/semaphore/pkg/prettyerr"
 )
 
-type wrapErr struct {
-	Inner error
-}
-
-func (i wrapErr) Unwrap() error {
-	return i.Inner
-}
-
 // ErrPathNotFound occurs when path cannot be resolved
 type ErrPathNotFound struct {
-	wrapErr
 	Path string
 }
 

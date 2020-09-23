@@ -93,28 +93,6 @@ func ResolveErrors(flows specs.FlowListInterface, err *specs.ParameterMap) {
 	}
 }
 
-// ErrMultiValueReource occurs when resource has more than one request and or flow
-type ErrMultiValueReource struct {
-	wrapErr
-	Name string
-}
-
-// Error returns a description of the given error as a string
-func (e ErrMultiValueReource) Error() string {
-	return fmt.Sprintf("only one request and or flow could be defined inside a single resource '%s'", e.Name)
-}
-
-// Prettify returns the prettified version of the given error
-func (e ErrMultiValueReource) Prettify() prettyerr.Error {
-	return prettyerr.Error{
-		Code:    "MultiValueReource",
-		Message: e.Error(),
-		Details: map[string]interface{}{
-			"Name": e.Name,
-		},
-	}
-}
-
 // ErrPathNotFound occurs when path cannot be resolved
 type ErrPathNotFound struct {
 	wrapErr
