@@ -23,8 +23,8 @@ func CompareProperties(t *testing.T, left specs.Property, right specs.Property) 
 		t.Errorf("unexpected type '%s', expected '%s'", left.Scalar.Type, right.Scalar.Type)
 	}
 
-	if left.Scalar.Label != right.Scalar.Label {
-		t.Errorf("unexpected label '%s', expected '%s'", left.Scalar.Label, right.Scalar.Label)
+	if left.Label != right.Label {
+		t.Errorf("unexpected label '%s', expected '%s'", left.Label, right.Label)
 	}
 
 	if right.Reference != nil && left.Reference == nil {
@@ -67,23 +67,23 @@ func TestParseTemplateContent(t *testing.T) {
 
 	tests := map[string]specs.Property{
 		"'prefix'": {
-			Name: name,
-			Path: path,
+			Name:  name,
+			Path:  path,
+			Label: labels.Optional,
 			Template: specs.Template{
 				Scalar: &specs.Scalar{
 					Type:    types.String,
-					Label:   labels.Optional,
 					Default: "prefix",
 				},
 			},
 		},
 		"'edge''": {
-			Name: name,
-			Path: path,
+			Name:  name,
+			Path:  path,
+			Label: labels.Optional,
 			Template: specs.Template{
 				Scalar: &specs.Scalar{
 					Type:    types.String,
-					Label:   labels.Optional,
 					Default: "edge'",
 				},
 			},

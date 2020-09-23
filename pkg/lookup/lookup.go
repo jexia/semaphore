@@ -184,9 +184,13 @@ func GetReference(path string, prop string, references ReferenceMap) *specs.Prop
 func VariableHeaderLookup(header specs.Header) PathLookup {
 	return func(path string) *specs.Property {
 		header[path] = &specs.Property{
-			Path:    path,
-			Type:    types.String,
-			Default: "",
+			Path: path,
+			Template: specs.Template{
+				Scalar: &specs.Scalar{
+					Type:    types.String,
+					Default: "",
+				},
+			},
 		}
 
 		return header[path]
@@ -213,30 +217,27 @@ func HeaderLookup(header specs.Header) PathLookup {
 // PropertyLookup attempts to lookup the given path inside the params collection
 func PropertyLookup(param *specs.Property) PathLookup {
 	return func(path string) *specs.Property {
-		if param == nil {
+		switch {
+		case param == nil:
 			return nil
-		}
-
-		if path == SelfRef {
+		case path == SelfRef:
 			return param
-		}
-
-		if param.Path == path {
+		case param.Path == path:
 			return param
-		}
-
-		if param.Nested == nil {
-			return nil
-		}
-
-		for _, param := range param.Nested {
-			lookup := PropertyLookup(param)(path)
-			if lookup != nil {
-				return lookup
+		case param.Template.Repeated != nil:
+			return PropertyLookup(param.Template.Repeated.Property)(path)
+		case param.Template.Message != nil:
+			for _, param := range param.Template.Message {
+				lookup := PropertyLookup(param)(path)
+				if lookup != nil {
+					return lookup
+				}
 			}
-		}
 
-		return nil
+			return nil
+		default:
+			return nil
+		}
 	}
 }
 
@@ -261,7 +262,11 @@ func ParamsLookup(params map[string]*specs.Property, flow specs.FlowInterface, b
 
 				result := reference.Clone()
 
-				param.Type = result.Type
+				// TODO: needs refactoring
+				if param.Scalar != nil && result.Scalar != nil {
+					param.Scalar.Type = result.Scalar.Type
+				}
+
 				param.Label = result.Label
 				param.Reference.Property = result
 
@@ -281,15 +286,23 @@ func OnErrLookup(node string, spec *specs.OnError) PathLookup {
 
 	if spec.Message == nil {
 		spec.Message = &specs.Property{
-			Type:  types.String,
 			Label: labels.Optional,
+			Template: specs.Template{
+				Scalar: &specs.Scalar{
+					Type: types.String,
+				},
+			},
 		}
 	}
 
 	if spec.Status == nil {
 		spec.Status = &specs.Property{
-			Type:  types.Int64,
 			Label: labels.Optional,
+			Template: specs.Template{
+				Scalar: &specs.Scalar{
+					Type: types.Int64,
+				},
+			},
 		}
 	}
 

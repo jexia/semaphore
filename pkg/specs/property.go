@@ -126,8 +126,8 @@ type Repeated struct {
 	*Property
 
 	// Default contains the static values for certain indexes
-	Default   map[uint]*Property `json:"default,omitempty"`
-	Reference *PropertyReference `json:"reference,omitempty"`
+	Default map[uint]*Property `json:"default,omitempty"`
+	// Reference *PropertyReference `json:"reference,omitempty"`
 }
 
 // Clone repeated.

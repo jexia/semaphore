@@ -124,12 +124,12 @@ func ParseContent(path string, name string, content string) (*specs.Property, er
 	if StringPattern.MatchString(content) {
 		matched := StringPattern.FindStringSubmatch(content)
 		result := &specs.Property{
-			Name: name,
-			Path: path,
+			Name:  name,
+			Path:  path,
+			Label: labels.Optional,
 			Template: specs.Template{
 				Scalar: &specs.Scalar{
 					Type:    types.String,
-					Label:   labels.Optional,
 					Default: matched[1],
 				},
 			},
