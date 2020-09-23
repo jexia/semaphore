@@ -90,8 +90,8 @@ func TestNewEvaluableExpression(t *testing.T) {
 					}
 				}
 
-				if param.Type != expected.Type {
-					t.Fatalf("unexpected type '%+v', expected '%+v'", param.Type, expected.Type)
+				if param.Type() != expected.Type() {
+					t.Fatalf("unexpected type '%+v', expected '%+v'", param.Type(), expected.Type())
 				}
 
 				if param.Label != expected.Label {
