@@ -44,14 +44,19 @@ func TestDefineFunction(t *testing.T) {
 						Call: &specs.Call{
 							Response: &specs.ParameterMap{
 								Property: &specs.Property{
-									Type:  types.Message,
 									Label: labels.Optional,
-									Nested: []*specs.Property{
-										{
-											Name:  "name",
-											Path:  "name",
-											Type:  types.String,
-											Label: labels.Optional,
+									Template: specs.Template{
+										Message: specs.Message{
+											"name": &specs.Property{
+												Name:  "name",
+												Path:  "name",
+												Label: labels.Optional,
+												Template: specs.Template{
+													Scalar: &specs.Scalar{
+														Type: types.String,
+													},
+												},
+											},
 										},
 									},
 								},
@@ -85,14 +90,19 @@ func TestDefineFunction(t *testing.T) {
 						Call: &specs.Call{
 							Response: &specs.ParameterMap{
 								Property: &specs.Property{
-									Type:  types.Message,
 									Label: labels.Optional,
-									Nested: []*specs.Property{
-										{
-											Name:  "name",
-											Path:  "name",
-											Type:  types.String,
-											Label: labels.Optional,
+									Template: specs.Template{
+										Message: specs.Message{
+											"name": &specs.Property{
+												Name:  "name",
+												Path:  "name",
+												Label: labels.Optional,
+												Template: specs.Template{
+													Scalar: &specs.Scalar{
+														Type: types.String,
+													},
+												},
+											},
 										},
 									},
 								},
