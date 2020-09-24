@@ -38,7 +38,7 @@ func (array *Array) MarshalXML(encoder *xml.Encoder, _ xml.StartElement) error {
 }
 
 func (array *Array) encodeElement(encoder *xml.Encoder, store references.Store) error {
-	if array.specs.Type == types.Message {
+	if array.specs.Type() == types.Message {
 		return encodeNested(encoder, array.specs, store)
 	}
 

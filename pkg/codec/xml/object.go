@@ -13,12 +13,12 @@ import (
 // Object represents an XML object.
 type Object struct {
 	resource string
-	specs    specs.PropertyList
+	specs    specs.Message
 	refs     references.Store
 }
 
 // NewObject constructs a new object encoder/decoder for the given specs.
-func NewObject(resource string, specs []*specs.Property, refs references.Store) *Object {
+func NewObject(resource string, specs specs.Message, refs references.Store) *Object {
 	return &Object{
 		resource: resource,
 		refs:     refs,
@@ -44,12 +44,12 @@ func (object *Object) MarshalXML(encoder *xml.Encoder, _ xml.StartElement) error
 }
 
 func (object *Object) encodeElement(encoder *xml.Encoder, prop *specs.Property) error {
-	if prop.Label == labels.Repeated {
+	if prop.Repeated != nil {
 		return encodeRepeated(encoder, object.resource, prop, object.refs)
 	}
 
 	// TODO: hide empty nested objects
-	if prop.Type == types.Message {
+	if prop.Type() == types.Message {
 		return encodeNested(encoder, prop, object.refs)
 	}
 
@@ -90,7 +90,7 @@ func (object *Object) startElement(decoder *xml.Decoder, tok xml.Token, refs map
 			return errUndefinedProperty(t.Name.Local)
 		}
 
-		if prop.Label == labels.Repeated {
+		if prop.Re == labels.Repeated {
 			return object.repeated(decoder, prop, refs)
 		}
 

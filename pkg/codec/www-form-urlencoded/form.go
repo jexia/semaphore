@@ -81,7 +81,7 @@ func encode(encoder url.Values, root string, name string, refs references.Store,
 
 	switch {
 	case prop.Message != nil:
-		for key, nested := range prop.Message.Properties {
+		for key, nested := range prop.Message {
 			encode(encoder, path, key, refs, nested)
 		}
 	case prop.Repeated != nil:
