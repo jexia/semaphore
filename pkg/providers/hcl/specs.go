@@ -190,8 +190,12 @@ func ParseIntermediateInputParameterMap(ctx *broker.Context, params *InputParame
 		result.Header[key] = &specs.Property{
 			Path:  key,
 			Name:  key,
-			Type:  types.String,
 			Label: labels.Optional,
+			Template: specs.Template{
+				Scalar: &specs.Scalar{
+					Type: types.String,
+				},
+			},
 		}
 	}
 
@@ -228,10 +232,13 @@ func ParseIntermediateProxy(ctx *broker.Context, proxy Proxy) (*specs.Proxy, err
 
 		for _, key := range proxy.Input.Header {
 			input.Header[key] = &specs.Property{
-				Path:  key,
-				Name:  key,
-				Type:  types.String,
-				Label: labels.Optional,
+				Path: key,
+				Name: key,
+				Template: specs.Template{
+					Scalar: &specs.Scalar{
+						Type: types.String,
+					},
+				},
 			}
 		}
 
@@ -326,9 +333,10 @@ func ParseIntermediateParameterMap(ctx *broker.Context, params *ParameterMap) (*
 		Schema:  params.Schema,
 		Options: make(specs.Options),
 		Property: &specs.Property{
-			Type:   types.Message,
-			Label:  labels.Optional,
-			Nested: []*specs.Property{},
+			Label: labels.Optional,
+			Template: specs.Template{
+				Message: make(specs.Message),
+			},
 		},
 	}
 
@@ -380,11 +388,12 @@ func ParseIntermediateParameterMap(ctx *broker.Context, params *ParameterMap) (*
 func ParseIntermediateNestedParameterMap(ctx *broker.Context, params NestedParameterMap, path string) (*specs.Property, error) {
 	properties, _ := params.Properties.JustAttributes()
 	result := specs.Property{
-		Name:   params.Name,
-		Path:   path,
-		Type:   types.Message,
-		Label:  labels.Optional,
-		Nested: []*specs.Property{},
+		Name:  params.Name,
+		Path:  path,
+		Label: labels.Optional,
+		Template: specs.Template{
+			Message: make(specs.Message),
+		},
 	}
 
 	for _, nested := range params.Nested {
@@ -422,12 +431,13 @@ func ParseIntermediateNestedParameterMap(ctx *broker.Context, params NestedParam
 func ParseIntermediateRepeatedParameterMap(ctx *broker.Context, params RepeatedParameterMap, path string) (*specs.Property, error) {
 	properties, _ := params.Properties.JustAttributes()
 	result := specs.Property{
-		Name:      params.Name,
-		Path:      path,
-		Reference: template.ParsePropertyReference(params.Template),
-		Type:      types.Message,
-		Label:     labels.Optional,
-		Nested:    []*specs.Property{},
+		Name:  params.Name,
+		Path:  path,
+		Label: labels.Optional,
+		Template: specs.Template{
+			Reference: template.ParsePropertyReference(params.Template),
+			Message:   make(specs.Message),
+		},
 	}
 
 	for _, nested := range params.Nested {
@@ -607,9 +617,10 @@ func ParseIntermediateCallParameterMap(ctx *broker.Context, params *Call) (*spec
 	result := specs.ParameterMap{
 		Options: make(specs.Options),
 		Property: &specs.Property{
-			Type:   types.Message,
-			Label:  labels.Optional,
-			Nested: []*specs.Property{},
+			Label: labels.Optional,
+			Template: specs.Template{
+				Message: make(specs.Message),
+			},
 		},
 	}
 

@@ -140,12 +140,17 @@ func ResolvePropertyReferences(property *specs.Property, dependencies specs.Depe
 		return
 	}
 
-	for _, repeated := range property.Nested {
-		ResolvePropertyReferences(repeated, dependencies)
-	}
+	switch {
+	case property.Repeated != nil:
+		ResolvePropertyReferences(&specs.Property{
+			Template: property.Repeated.Template,
+		}, dependencies)
 
-	if property.Message != nil {
-		for _, nested := range property.Message.Properties {
+		for _, repeated := range property.Repeated.Default {
+			ResolvePropertyReferences(repeated, dependencies)
+		}
+	case property.Message != nil:
+		for _, nested := range property.Message {
 			ResolvePropertyReferences(nested, dependencies)
 		}
 	}

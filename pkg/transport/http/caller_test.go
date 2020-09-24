@@ -328,8 +328,8 @@ func TestCallerReferencesLookup(t *testing.T) {
 				t.Fatalf("unexpected references %+v", refs)
 			}
 
+			refs[0].Label = labels.Optional
 			refs[0].Scalar.Type = types.String
-			refs[0].Scalar.Label = labels.Optional
 
 			store := references.NewReferenceStore(1)
 			ctx := context.Background()

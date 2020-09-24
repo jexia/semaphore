@@ -22,22 +22,22 @@ func NewSchema(descriptors []*desc.FileDescriptor) specs.Schemas {
 
 // NewMessage constructs a schema Property with the given message descriptor
 func NewMessage(path string, descriptor *desc.MessageDescriptor) *specs.Property {
-	fields := descriptor.GetFields()
-	result := &specs.Property{
-		Path:        path,
-		Name:        descriptor.GetFullyQualifiedName(),
-		Description: descriptor.GetSourceInfo().GetLeadingComments(),
-		Position:    1,
-		Template: specs.Template{
-			Message: &specs.Message{
-				Properties: make(map[string]*specs.Property, len(fields)),
+	var (
+		fields = descriptor.GetFields()
+		result = &specs.Property{
+			Path:        path,
+			Name:        descriptor.GetFullyQualifiedName(),
+			Description: descriptor.GetSourceInfo().GetLeadingComments(),
+			Position:    1,
+			Template: specs.Template{
+				Message: make(specs.Message, len(fields)),
 			},
-		},
-		Options: specs.Options{},
-	}
+			Options: specs.Options{},
+		}
+	)
 
 	for _, field := range fields {
-		result.Message.Properties[field.GetName()] = NewProperty(template.JoinPath(path, field.GetName()), field)
+		result.Message[field.GetName()] = NewProperty(template.JoinPath(path, field.GetName()), field)
 	}
 
 	return result
@@ -80,21 +80,19 @@ func NewProperty(path string, descriptor *desc.FieldDescriptor) *specs.Property 
 	}
 
 	if descriptor.GetType() == protobuf.FieldDescriptorProto_TYPE_MESSAGE {
-		fields := descriptor.GetMessageType().GetFields()
-		result.Message = &specs.Message{
-			Properties: make(map[string]*specs.Property, len(fields)),
-		}
+		var fields = descriptor.GetMessageType().GetFields()
+		result.Message = make(specs.Message, len(fields))
 
 		for _, field := range fields {
-			result.Message.Properties[field.GetName()] = NewProperty(template.JoinPath(path, field.GetName()), field)
+			result.Message[field.GetName()] = NewProperty(template.JoinPath(path, field.GetName()), field)
 		}
 
 		return result
 	}
 
+	result.Label = Labels[descriptor.GetLabel()]
 	result.Scalar = &specs.Scalar{
-		Type:  Types[descriptor.GetType()],
-		Label: Labels[descriptor.GetLabel()],
+		Type: Types[descriptor.GetType()],
 	}
 
 	return result

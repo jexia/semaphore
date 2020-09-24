@@ -162,9 +162,9 @@ func GenerateParameter(key string, required bool, in ParameterIn, property *spec
 	}
 
 	if property != nil {
-		result.Description = property.Comment
+		result.Description = property.Description
 		result.Schema = &Schema{
-			Type: types.Open(property.Type),
+			Type: types.Open(property.Type()),
 		}
 	}
 
@@ -195,24 +195,27 @@ func GenerateSchema(property *specs.Property) *Schema {
 	}
 
 	result := &Schema{
-		Description: property.Comment,
-		Default:     property.Default,
-		Type:        types.Open(property.Type),
+		Description: property.Description,
+		Type:        types.Open(property.Type()),
 	}
 
-	if len(property.Nested) > 0 {
-		result.Properties = make(map[string]*Schema, len(property.Nested))
-	}
+	switch {
+	case property.Scalar != nil:
+		result.Default = property.Scalar.Default
 
-	for _, nested := range property.Nested {
-		result.Properties[nested.Name] = GenerateSchema(nested)
+		break
+	case property.Message != nil:
+		result.Properties = make(map[string]*Schema, len(property.Message))
 
-		if nested.Label == labels.Required {
-			result.Required = append(result.Required, nested.Name)
+		for _, nested := range property.Message {
+			result.Properties[nested.Name] = GenerateSchema(nested)
+
+			if nested.Label == labels.Required {
+				result.Required = append(result.Required, nested.Name)
+			}
 		}
-	}
 
-	if property.Enum != nil {
+	case property.Enum != nil:
 		// ensure property enum order
 		result.Enum = make([]interface{}, len(property.Enum.Keys))
 		keys := make([]int, 0, len(property.Enum.Positions))
@@ -226,11 +229,17 @@ func GenerateSchema(property *specs.Property) *Schema {
 		for pos, key := range keys {
 			result.Enum[pos] = property.Enum.Positions[int32(key)].Key
 		}
-	}
 
-	if property.Label == labels.Repeated {
-		result = &Schema{
-			Items: result,
+		break
+	case property.Repeated != nil:
+		var repeated = &specs.Property{
+			Name:     property.Name,
+			Path:     property.Path,
+			Template: property.Repeated.Template,
+		}
+
+		return &Schema{
+			Items: GenerateSchema(repeated),
 		}
 	}
 

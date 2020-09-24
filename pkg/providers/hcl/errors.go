@@ -1,12 +1,15 @@
 package hcl
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/labels"
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
+
+var errNonScalarType = errors.New("non scalar type")
 
 type errUnknownPopertyType string
 
@@ -22,22 +25,30 @@ func DefaultOnError(err *specs.OnError) {
 
 	if err.Status == nil {
 		err.Status = &specs.Property{
-			Type:  types.Int64,
 			Label: labels.Optional,
-			Reference: &specs.PropertyReference{
-				Resource: "error",
-				Path:     "status",
+			Template: specs.Template{
+				Reference: &specs.PropertyReference{
+					Resource: "error",
+					Path:     "status",
+				},
+				Scalar: &specs.Scalar{
+					Type: types.Int64,
+				},
 			},
 		}
 	}
 
 	if err.Message == nil {
 		err.Message = &specs.Property{
-			Type:  types.String,
 			Label: labels.Optional,
-			Reference: &specs.PropertyReference{
-				Resource: "error",
-				Path:     "message",
+			Template: specs.Template{
+				Reference: &specs.PropertyReference{
+					Resource: "error",
+					Path:     "message",
+				},
+				Scalar: &specs.Scalar{
+					Type: types.String,
+				},
 			},
 		}
 	}

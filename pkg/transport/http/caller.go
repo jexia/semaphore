@@ -226,9 +226,11 @@ func TemplateReferences(value string, functions functions.Custom) ([]*specs.Prop
 		path := key[1:]
 		property := &specs.Property{
 			Path: key,
-			Reference: &specs.PropertyReference{
-				Resource: ".params",
-				Path:     path,
+			Template: specs.Template{
+				Reference: &specs.PropertyReference{
+					Resource: ".params",
+					Path:     path,
+				},
 			},
 		}
 
