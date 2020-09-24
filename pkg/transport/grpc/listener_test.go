@@ -122,14 +122,22 @@ func TestErrorHandlingListener(t *testing.T) {
 		"simple": {
 			err: &specs.OnError{
 				Status: &specs.Property{
-					Type:    types.Int64,
-					Label:   labels.Optional,
-					Default: int64(500),
+					Label: labels.Optional,
+					Template: specs.Template{
+						Scalar: &specs.Scalar{
+							Type:    types.Int64,
+							Default: int64(500),
+						},
+					},
 				},
 				Message: &specs.Property{
-					Type:    types.String,
-					Label:   labels.Optional,
-					Default: "database broken",
+					Label: labels.Optional,
+					Template: specs.Template{
+						Scalar: &specs.Scalar{
+							Type:    types.String,
+							Default: "database broken",
+						},
+					},
 				},
 			},
 			expected: 500,
@@ -142,19 +150,27 @@ func TestErrorHandlingListener(t *testing.T) {
 			},
 			err: &specs.OnError{
 				Status: &specs.Property{
-					Type:  types.Int64,
 					Label: labels.Optional,
-					Reference: &specs.PropertyReference{
-						Resource: "error",
-						Path:     "status",
+					Template: specs.Template{
+						Scalar: &specs.Scalar{
+							Type: types.Int64,
+						},
+						Reference: &specs.PropertyReference{
+							Resource: "error",
+							Path:     "status",
+						},
 					},
 				},
 				Message: &specs.Property{
-					Type:  types.String,
 					Label: labels.Optional,
-					Reference: &specs.PropertyReference{
-						Resource: "error",
-						Path:     "message",
+					Template: specs.Template{
+						Scalar: &specs.Scalar{
+							Type: types.String,
+						},
+						Reference: &specs.PropertyReference{
+							Resource: "error",
+							Path:     "message",
+						},
 					},
 				},
 			},
@@ -168,19 +184,27 @@ func TestErrorHandlingListener(t *testing.T) {
 			},
 			err: &specs.OnError{
 				Status: &specs.Property{
-					Type:  types.Int64,
 					Label: labels.Optional,
-					Reference: &specs.PropertyReference{
-						Resource: "error",
-						Path:     "status",
+					Template: specs.Template{
+						Scalar: &specs.Scalar{
+							Type: types.Int64,
+						},
+						Reference: &specs.PropertyReference{
+							Resource: "error",
+							Path:     "status",
+						},
 					},
 				},
 				Message: &specs.Property{
-					Type:  types.String,
 					Label: labels.Optional,
-					Reference: &specs.PropertyReference{
-						Resource: "input",
-						Path:     "message",
+					Template: specs.Template{
+						Scalar: &specs.Scalar{
+							Type: types.String,
+						},
+						Reference: &specs.PropertyReference{
+							Resource: "input",
+							Path:     "message",
+						},
 					},
 				},
 			},

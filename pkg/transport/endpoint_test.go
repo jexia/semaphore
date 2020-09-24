@@ -66,15 +66,15 @@ func TestNewObject(t *testing.T) {
 func TestResolveStatusCode(t *testing.T) {
 	expected := int64(200)
 	status := &specs.Property{
+		Label: labels.Optional,
 		Template: specs.Template{
 			Scalar: &specs.Scalar{
-				Type:  types.Int64,
-				Label: labels.Optional,
+				Type: types.Int64,
 			},
-		},
-		Reference: &specs.PropertyReference{
-			Resource: "input",
-			Path:     "status",
+			Reference: &specs.PropertyReference{
+				Resource: "input",
+				Path:     "status",
+			},
 		},
 	}
 
@@ -109,15 +109,15 @@ func TestResolveStatusCodeNil(t *testing.T) {
 func TestResolveStatusCodeNilReference(t *testing.T) {
 	expected := StatusInternalErr
 	status := &specs.Property{
+		Label: labels.Optional,
 		Template: specs.Template{
 			Scalar: &specs.Scalar{
-				Type:  types.Int64,
-				Label: labels.Optional,
+				Type: types.Int64,
 			},
-		},
-		Reference: &specs.PropertyReference{
-			Resource: "input",
-			Path:     "status",
+			Reference: &specs.PropertyReference{
+				Resource: "input",
+				Path:     "status",
+			},
 		},
 	}
 
@@ -135,15 +135,15 @@ func TestResolveStatusCodeNilReference(t *testing.T) {
 func TestResolveStatusMessage(t *testing.T) {
 	expected := "unexpected mock err"
 	message := &specs.Property{
+		Label: labels.Optional,
 		Template: specs.Template{
 			Scalar: &specs.Scalar{
-				Type:  types.String,
-				Label: labels.Optional,
+				Type: types.String,
 			},
-		},
-		Reference: &specs.PropertyReference{
-			Resource: "input",
-			Path:     "status",
+			Reference: &specs.PropertyReference{
+				Resource: "input",
+				Path:     "status",
+			},
 		},
 	}
 
@@ -178,15 +178,15 @@ func TestResolveStatusMessageNil(t *testing.T) {
 func TestResolveStatusMessageNilReference(t *testing.T) {
 	expected := StatusMessage(StatusInternalErr)
 	message := &specs.Property{
+		Label: labels.Optional,
 		Template: specs.Template{
 			Scalar: &specs.Scalar{
-				Type:  types.Int64,
-				Label: labels.Optional,
+				Type: types.Int64,
 			},
-		},
-		Reference: &specs.PropertyReference{
-			Resource: "input",
-			Path:     "status",
+			Reference: &specs.PropertyReference{
+				Resource: "input",
+				Path:     "status",
+			},
 		},
 	}
 
@@ -206,10 +206,10 @@ func TestObjectNewMeta(t *testing.T) {
 	schema := &specs.ParameterMap{
 		Header: specs.Header{
 			"key": &specs.Property{
+				Label: labels.Optional,
 				Template: specs.Template{
 					Scalar: &specs.Scalar{
-						Type:  types.String,
-						Label: labels.Optional,
+						Type: types.String,
 					},
 				},
 			},
@@ -247,16 +247,14 @@ func TestNewCodec(t *testing.T) {
 	schema := &specs.ParameterMap{
 		Property: &specs.Property{
 			Template: specs.Template{
-				Message: &specs.Message{
-					Properties: map[string]*specs.Property{
-						"key": {
-							Name: "key",
-							Path: "key",
-							Template: specs.Template{
-								Scalar: &specs.Scalar{
-									Type:  types.String,
-									Label: labels.Optional,
-								},
+				Message: specs.Message{
+					"key": {
+						Name:  "key",
+						Path:  "key",
+						Label: labels.Optional,
+						Template: specs.Template{
+							Scalar: &specs.Scalar{
+								Type: types.String,
 							},
 						},
 					},
@@ -300,10 +298,10 @@ func TestNewCodecErr(t *testing.T) {
 
 	schema := &specs.ParameterMap{
 		Property: &specs.Property{
+			Label: labels.Optional,
 			Template: specs.Template{
 				Scalar: &specs.Scalar{
-					Type:  types.String,
-					Label: labels.Optional,
+					Type: types.String,
 				},
 			},
 		},
@@ -351,10 +349,10 @@ func TestSetErrsNil(t *testing.T) {
 func TestForwardNewMeta(t *testing.T) {
 	schema := specs.Header{
 		"key": &specs.Property{
+			Label: labels.Optional,
 			Template: specs.Template{
 				Scalar: &specs.Scalar{
-					Type:  types.String,
-					Label: labels.Optional,
+					Type: types.String,
 				},
 			},
 		},

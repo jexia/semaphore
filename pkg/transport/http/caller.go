@@ -151,13 +151,13 @@ func (call *Call) SendMsg(ctx context.Context, rw transport.ResponseWriter, pr *
 
 		endpoint := LookupEndpointReferences(method, refs)
 		if endpoint != "" {
-			endpointUri, err := url.Parse(endpoint)
+			endpointURI, err := url.Parse(endpoint)
 			if err != nil {
 				return fmt.Errorf("failed to parse endpoint: %w", err)
 			}
 
-			uri.Path = endpointUri.Path
-			uri.RawQuery = endpointUri.RawQuery
+			uri.Path = endpointURI.Path
+			uri.RawQuery = endpointURI.RawQuery
 		}
 
 		request = method.request
