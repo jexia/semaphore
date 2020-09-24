@@ -225,29 +225,27 @@ func NewInputMockProperty() *specs.Property {
 								Label: labels.Optional,
 								Template: specs.Template{
 									Repeated: &specs.Repeated{
-										Property: &specs.Property{
-											Template: specs.Template{
-												Message: specs.Message{
-													"message": {
-														Name:  "message",
-														Path:  "nested.repeated.message",
-														Label: labels.Optional,
-														Template: specs.Template{
-															Scalar: &specs.Scalar{
-																Default: "hello repeated underground world",
-																Type:    types.String,
-															},
+										Template: specs.Template{
+											Message: specs.Message{
+												"message": {
+													Name:  "message",
+													Path:  "nested.repeated.message",
+													Label: labels.Optional,
+													Template: specs.Template{
+														Scalar: &specs.Scalar{
+															Default: "hello repeated underground world",
+															Type:    types.String,
 														},
 													},
-													"active": {
-														Name:  "active",
-														Path:  "nested.repeated.active",
-														Label: labels.Optional,
-														Template: specs.Template{
-															Scalar: &specs.Scalar{
-																Default: false,
-																Type:    types.Bool,
-															},
+												},
+												"active": {
+													Name:  "active",
+													Path:  "nested.repeated.active",
+													Label: labels.Optional,
+													Template: specs.Template{
+														Scalar: &specs.Scalar{
+															Default: false,
+															Type:    types.Bool,
 														},
 													},
 												},
@@ -265,61 +263,57 @@ func NewInputMockProperty() *specs.Property {
 					Label: labels.Optional,
 					Template: specs.Template{
 						Repeated: &specs.Repeated{
-							Property: &specs.Property{
-								Template: specs.Template{
-									Message: specs.Message{
-										"message": {
-											Name:  "message",
-											Path:  "message",
-											Label: labels.Optional,
-											Template: specs.Template{
-												Scalar: &specs.Scalar{
-													Default: "hello repeated world",
-													Type:    types.String,
-												},
+							Template: specs.Template{
+								Message: specs.Message{
+									"message": {
+										Name:  "message",
+										Path:  "message",
+										Label: labels.Optional,
+										Template: specs.Template{
+											Scalar: &specs.Scalar{
+												Default: "hello repeated world",
+												Type:    types.String,
 											},
 										},
-										"active": {
-											Name:  "active",
-											Path:  "active",
-											Label: labels.Optional,
-											Template: specs.Template{
-												Scalar: &specs.Scalar{
-													Default: false,
-													Type:    types.Bool,
-												},
+									},
+									"active": {
+										Name:  "active",
+										Path:  "active",
+										Label: labels.Optional,
+										Template: specs.Template{
+											Scalar: &specs.Scalar{
+												Default: false,
+												Type:    types.Bool,
 											},
 										},
-										"repeated": {
-											Name:  "repeated",
-											Path:  "repeated.repeated",
-											Label: labels.Optional,
-											Template: specs.Template{
-												Repeated: &specs.Repeated{
-													Property: &specs.Property{
-														Template: specs.Template{
-															Message: specs.Message{
-																"message": {
-																	Name:  "message",
-																	Path:  "repeated.message",
-																	Label: labels.Optional,
-																	Template: specs.Template{
-																		Scalar: &specs.Scalar{
-																			Default: "hello repeated nested world",
-																			Type:    types.String,
-																		},
-																	},
+									},
+									"repeated": {
+										Name:  "repeated",
+										Path:  "repeated.repeated",
+										Label: labels.Optional,
+										Template: specs.Template{
+											Repeated: &specs.Repeated{
+												Template: specs.Template{
+													Message: specs.Message{
+														"message": {
+															Name:  "message",
+															Path:  "repeated.message",
+															Label: labels.Optional,
+															Template: specs.Template{
+																Scalar: &specs.Scalar{
+																	Default: "hello repeated nested world",
+																	Type:    types.String,
 																},
-																"active": {
-																	Name:  "active",
-																	Path:  "repeated.active",
-																	Label: labels.Optional,
-																	Template: specs.Template{
-																		Scalar: &specs.Scalar{
-																			Default: false,
-																			Type:    types.Bool,
-																		},
-																	},
+															},
+														},
+														"active": {
+															Name:  "active",
+															Path:  "repeated.active",
+															Label: labels.Optional,
+															Template: specs.Template{
+																Scalar: &specs.Scalar{
+																	Default: false,
+																	Type:    types.Bool,
 																},
 															},
 														},
@@ -430,29 +424,27 @@ func NewResultMockProperty() *specs.Property {
 								Path: "nested.repeated",
 								Template: specs.Template{
 									Repeated: &specs.Repeated{
-										Property: &specs.Property{
-											Template: specs.Template{
-												Message: specs.Message{
-													"result": {
-														Name:  "result",
-														Path:  "nested.repeated.result",
-														Label: labels.Optional,
-														Template: specs.Template{
-															Scalar: &specs.Scalar{
-																Default: "hello world",
-																Type:    types.String,
-															},
+										Template: specs.Template{
+											Message: specs.Message{
+												"result": {
+													Name:  "result",
+													Path:  "nested.repeated.result",
+													Label: labels.Optional,
+													Template: specs.Template{
+														Scalar: &specs.Scalar{
+															Default: "hello world",
+															Type:    types.String,
 														},
 													},
-													"active": {
-														Name:  "active",
-														Path:  "nested.repeated.active",
-														Label: labels.Optional,
-														Template: specs.Template{
-															Scalar: &specs.Scalar{
-																Default: false,
-																Type:    types.Bool,
-															},
+												},
+												"active": {
+													Name:  "active",
+													Path:  "nested.repeated.active",
+													Label: labels.Optional,
+													Template: specs.Template{
+														Scalar: &specs.Scalar{
+															Default: false,
+															Type:    types.Bool,
 														},
 													},
 												},
@@ -469,61 +461,57 @@ func NewResultMockProperty() *specs.Property {
 					Path: "repeated",
 					Template: specs.Template{
 						Repeated: &specs.Repeated{
-							Property: &specs.Property{
-								Template: specs.Template{
-									Message: specs.Message{
-										"result": {
-											Name:  "result",
-											Path:  "repeated.result",
-											Label: labels.Optional,
-											Template: specs.Template{
-												Scalar: &specs.Scalar{
-													Default: "hello repeated world",
-													Type:    types.String,
-												},
+							Template: specs.Template{
+								Message: specs.Message{
+									"result": {
+										Name:  "result",
+										Path:  "repeated.result",
+										Label: labels.Optional,
+										Template: specs.Template{
+											Scalar: &specs.Scalar{
+												Default: "hello repeated world",
+												Type:    types.String,
 											},
 										},
-										"active": {
-											Name:  "active",
-											Path:  "repeated.active",
-											Label: labels.Optional,
-											Template: specs.Template{
-												Scalar: &specs.Scalar{
-													Default: false,
-													Type:    types.Bool,
-												},
+									},
+									"active": {
+										Name:  "active",
+										Path:  "repeated.active",
+										Label: labels.Optional,
+										Template: specs.Template{
+											Scalar: &specs.Scalar{
+												Default: false,
+												Type:    types.Bool,
 											},
 										},
-										"repeated": {
-											Name:  "repeated",
-											Path:  "repeated.repeated",
-											Label: labels.Optional,
-											Template: specs.Template{
-												Repeated: &specs.Repeated{
-													Property: &specs.Property{
-														Template: specs.Template{
-															Message: specs.Message{
-																"result": {
-																	Name:  "result",
-																	Path:  "repeated.repeated.result",
-																	Label: labels.Optional,
-																	Template: specs.Template{
-																		Scalar: &specs.Scalar{
-																			Default: "hello repeated nested world",
-																			Type:    types.String,
-																		},
-																	},
+									},
+									"repeated": {
+										Name:  "repeated",
+										Path:  "repeated.repeated",
+										Label: labels.Optional,
+										Template: specs.Template{
+											Repeated: &specs.Repeated{
+												Template: specs.Template{
+													Message: specs.Message{
+														"result": {
+															Name:  "result",
+															Path:  "repeated.repeated.result",
+															Label: labels.Optional,
+															Template: specs.Template{
+																Scalar: &specs.Scalar{
+																	Default: "hello repeated nested world",
+																	Type:    types.String,
 																},
-																"active": {
-																	Name:  "active",
-																	Path:  "repeated.repeated.active",
-																	Label: labels.Optional,
-																	Template: specs.Template{
-																		Scalar: &specs.Scalar{
-																			Default: false,
-																			Type:    types.Bool,
-																		},
-																	},
+															},
+														},
+														"active": {
+															Name:  "active",
+															Path:  "repeated.repeated.active",
+															Label: labels.Optional,
+															Template: specs.Template{
+																Scalar: &specs.Scalar{
+																	Default: false,
+																	Type:    types.Bool,
 																},
 															},
 														},
@@ -643,9 +631,11 @@ func NewMockCall(name string) *specs.Node {
 					},
 					"reference": {
 						Path: "reference",
-						Reference: &specs.PropertyReference{
-							Resource: name,
-							Path:     "result",
+						Template: specs.Template{
+							Reference: &specs.PropertyReference{
+								Resource: name,
+								Path:     "result",
+							},
 						},
 					},
 				},
@@ -722,9 +712,11 @@ func NewMockFlow(name string) *specs.Flow {
 					},
 					"reference": {
 						Path: "reference",
-						Reference: &specs.PropertyReference{
-							Resource: name,
-							Path:     "message",
+						Template: specs.Template{
+							Reference: &specs.PropertyReference{
+								Resource: name,
+								Path:     "message",
+							},
 						},
 					},
 				},
@@ -925,12 +917,12 @@ func TestGetResourceOutputReference(t *testing.T) {
 			{"first.request", "nested"}:                    flow.Nodes[0].Call.Request.Property.Message["nested"],
 			{"first.request", "nested.message"}:            flow.Nodes[0].Call.Request.Property.Message["nested"].Message["message"],
 			{"first.request", "nested.nested.message"}:     flow.Nodes[0].Call.Request.Property.Message["nested"].Message["nested"].Message["message"],
-			{"first.request", "nested.repeated.message"}:   flow.Nodes[0].Call.Request.Property.Message["nested"].Message["repeated"].Repeated.Property.Message["message"],
+			{"first.request", "nested.repeated.message"}:   flow.Nodes[0].Call.Request.Property.Message["nested"].Message["repeated"].Repeated.Message["message"],
 			{"first.response", "result"}:                   flow.Nodes[0].Call.Response.Property.Message["result"],
 			{"first.response", "nested.nested.result"}:     flow.Nodes[0].Call.Response.Property.Message["nested"].Message["nested"].Message["result"],
-			{"first.response", "nested.repeated.result"}:   flow.Nodes[0].Call.Response.Property.Message["nested"].Message["repeated"].Repeated.Property.Message["result"],
-			{"first.response", "repeated.repeated.result"}: flow.Nodes[0].Call.Response.Property.Message["repeated"].Repeated.Property.Message["repeated"].Repeated.Property.Message["result"],
-			{"first.response", "nested.repeated.result"}:   flow.Nodes[0].Call.Response.Property.Message["nested"].Message["repeated"].Repeated.Property.Message["result"],
+			{"first.response", "nested.repeated.result"}:   flow.Nodes[0].Call.Response.Property.Message["nested"].Message["repeated"].Repeated.Message["result"],
+			{"first.response", "repeated.repeated.result"}: flow.Nodes[0].Call.Response.Property.Message["repeated"].Repeated.Message["repeated"].Repeated.Message["result"],
+			{"first.response", "nested.repeated.result"}:   flow.Nodes[0].Call.Response.Property.Message["nested"].Message["repeated"].Repeated.Message["result"],
 			{"first.params", "message"}:                    flow.Nodes[0].Call.Request.Params["message"],
 			{"first.params", "name"}:                       flow.Nodes[0].Call.Request.Params["name"],
 			{"first.params", "reference"}:                  flow.Nodes[0].Call.Request.Params["reference"],
@@ -1015,8 +1007,8 @@ func TestGetIntermediateResourceReference(t *testing.T) {
 		{"first.header", "cookie"}:                     flow.Nodes[0].Intermediate.Header["cookie"],
 		{"first.response", "result"}:                   flow.Nodes[0].Intermediate.Property.Message["result"],
 		{"first.response", "nested.nested.result"}:     flow.Nodes[0].Intermediate.Property.Message["nested"].Message["nested"].Message["result"],
-		{"first.response", "nested.repeated.result"}:   flow.Nodes[0].Intermediate.Property.Message["nested"].Message["repeated"].Repeated.Property.Message["result"],
-		{"first.response", "repeated.repeated.result"}: flow.Nodes[0].Intermediate.Property.Message["repeated"].Repeated.Property.Message["repeated"].Repeated.Property.Message["result"],
+		{"first.response", "nested.repeated.result"}:   flow.Nodes[0].Intermediate.Property.Message["nested"].Message["repeated"].Repeated.Message["result"],
+		{"first.response", "repeated.repeated.result"}: flow.Nodes[0].Intermediate.Property.Message["repeated"].Repeated.Message["repeated"].Repeated.Message["result"],
 	}
 
 	for input, expected := range tests {

@@ -106,10 +106,12 @@ func ParseReference(path string, name string, value string) (*specs.Property, er
 	}
 
 	prop := &specs.Property{
-		Name:      name,
-		Path:      JoinPath(path, name),
-		Reference: ParsePropertyReference(value),
-		Raw:       value,
+		Name: name,
+		Path: JoinPath(path, name),
+		Raw:  value,
+		Template: specs.Template{
+			Reference: ParsePropertyReference(value),
+		},
 	}
 
 	return prop, nil
@@ -157,7 +159,7 @@ func Parse(ctx *broker.Context, path string, name string, value string) (*specs.
 
 	logger.Debug(ctx, "template results in property with type",
 		zap.String("path", path),
-		zap.Any("default", result.Scalar.Default),
+		zap.Any("default", result.DefaultValue()),
 		zap.String("reference", result.Reference.String()),
 	)
 

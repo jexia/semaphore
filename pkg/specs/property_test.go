@@ -380,6 +380,7 @@ func TestPropertyClone(t *testing.T) {
 		Path:        "path",
 		Label:       labels.Optional,
 		Template: Template{
+			Reference: &PropertyReference{},
 			Scalar: &Scalar{
 				Default: false,
 				Type:    types.String,
@@ -394,8 +395,7 @@ func TestPropertyClone(t *testing.T) {
 				Name: "unknown",
 			},
 		},
-		Reference: &PropertyReference{},
-		Raw:       "first",
+		Raw: "first",
 		Options: Options{
 			"sample": "option",
 		},

@@ -30,21 +30,21 @@ func (constructor *Constructor) New(resource string, specs *specs.ParameterMap) 
 
 	return &Manager{
 		resource: resource,
-		specs:    specs.Property,
+		property: specs.Property,
 	}, nil
 }
 
 // Manager manages a specs object and allows to encode/decode messages.
 type Manager struct {
 	resource string
-	specs    *specs.Property
+	property *specs.Property
 }
 
 // Name returns the codec name.
 func (manager *Manager) Name() string { return "xml" }
 
 // Property returns the manager property which is used to marshal and unmarshal data.
-func (manager *Manager) Property() *specs.Property { return manager.specs }
+func (manager *Manager) Property() *specs.Property { return manager.property }
 
 // Marshal marshals the given reference store into a XML message.
 // This method is called during runtime to encode a new message with the values

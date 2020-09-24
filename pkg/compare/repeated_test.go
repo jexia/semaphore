@@ -9,18 +9,14 @@ import (
 
 func TestCompareRepeated(t *testing.T) {
 	repeatedA := &specs.Repeated{
-		Property: &specs.Property{
-			Template: specs.Template{
-				Scalar: &specs.Scalar{Type: types.Int32},
-			},
+		Template: specs.Template{
+			Scalar: &specs.Scalar{Type: types.Int32},
 		},
 	}
 
 	repeatedB := &specs.Repeated{
-		Property: &specs.Property{
-			Template: specs.Template{
-				Scalar: &specs.Scalar{Type: types.String},
-			},
+		Template: specs.Template{
+			Scalar: &specs.Scalar{Type: types.String},
 		},
 	}
 

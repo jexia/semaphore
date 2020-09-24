@@ -56,7 +56,7 @@ func TestCheckPropertyTypes(t *testing.T) {
 			Path: "dogs",
 			Template: specs.Template{
 				Repeated: &specs.Repeated{
-					Property: createEnum(),
+					Template: createEnum().Template,
 				},
 			},
 		}
@@ -91,7 +91,7 @@ func TestCheckPropertyTypes(t *testing.T) {
 	}
 	createAnotherRepeated := func() *specs.Property {
 		prop := createRepeated()
-		prop.Repeated.Property.Enum = &specs.Enum{}
+		prop.Repeated.Enum = &specs.Enum{}
 		return prop
 	}
 	createAnotherMessage := func() *specs.Property {

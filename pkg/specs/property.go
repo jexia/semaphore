@@ -123,17 +123,17 @@ type EnumValue struct {
 
 // Repeated represents an array type.
 type Repeated struct {
-	*Property
+	// This is a reference to the parent property
+	Template
 
 	// Default contains the static values for certain indexes
 	Default map[uint]*Property `json:"default,omitempty"`
-	// Reference *PropertyReference `json:"reference,omitempty"`
 }
 
 // Clone repeated.
 func (repeated Repeated) Clone() *Repeated {
 	var clone = &Repeated{
-		Property: repeated.Property.Clone(),
+		Template: *repeated.Template.Clone(),
 		Default:  make(map[uint]*Property, len(repeated.Default)),
 	}
 
@@ -173,6 +173,8 @@ func (message Message) Clone() Message {
 
 // Template contains property schema. This is a union type (Only one field must be set).
 type Template struct {
+	Reference *PropertyReference `json:"reference,omitempty"` // Reference represents a property reference made inside the given property
+
 	// Only one of the following fields should be set
 	Scalar   *Scalar   `json:"scalar,omitempty"`
 	Enum     *Enum     `json:"enum,omitempty"`
@@ -203,7 +205,9 @@ func (t Template) Type() types.Type {
 
 // Clone internal value.
 func (t Template) Clone() *Template {
-	var clone = new(Template)
+	var clone = &Template{
+		Reference: t.Reference.Clone(),
+	}
 
 	if t.Scalar != nil {
 		clone.Scalar = t.Scalar.Clone()
@@ -257,14 +261,28 @@ type Property struct {
 
 	Options Options    `json:"options,omitempty"`    // Options holds variable options used inside single modules or components
 	Expr    Expression `json:"expression,omitempty"` // Expr represents the position on where the given property is defined
-
-	Reference *PropertyReference `json:"reference,omitempty"` // Reference represents a property reference made inside the given property
-	Raw       string             `json:"raw,omitempty"`       // Raw holds the raw template string used to define the given property
+	Raw     string     `json:"raw,omitempty"`        // Raw holds the raw template string used to define the given property
 
 	// Label is the set of field attributes/properties. E.g. label describes that the property is optional.
 	Label labels.Label `json:"label,omitempty"`
 
 	Template
+}
+
+func (prop *Property) DefaultValue() interface{} {
+	t := prop.Template
+	switch {
+	case t.Scalar != nil:
+		return t.Scalar.Default
+	case t.Message != nil:
+		return nil
+	case t.Repeated != nil:
+		return t.Repeated.Default
+	case t.Enum != nil:
+		return nil
+	}
+
+	return nil
 }
 
 // Empty checks if the property has any defined type
@@ -285,11 +303,10 @@ func (prop *Property) Clone() *Property {
 		Name:        prop.Name,
 		Path:        prop.Path,
 
-		Expr:      prop.Expr,
-		Raw:       prop.Raw,
-		Options:   prop.Options,
-		Reference: prop.Reference.Clone(),
-		Label:     prop.Label,
+		Expr:    prop.Expr,
+		Raw:     prop.Raw,
+		Options: prop.Options,
+		Label:   prop.Label,
 
 		Template: *prop.Template.Clone(),
 	}
