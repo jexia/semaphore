@@ -164,14 +164,14 @@ func CheckPropertyTypes(property *specs.Property, schema *specs.Property) (err e
 		return trace.New(trace.WithExpression(property.Expr), trace.WithMessage("schema '%s' has a nested object but property does not '%s'", schema.Name, property.Path))
 	}
 
-	if err := checkTemplate(&schema.Template, &property.Template); err != nil {
+	if err := CompareTemplate(schema.Template, property.Template); err != nil {
 		return fmt.Errorf("nested schema mismatch under property '%s': %w", property.Path, err)
 	}
 
 	return nil
 }
 
-func checkTemplate(expected *specs.Template, given *specs.Template) error {
+func CompareTemplate(expected specs.Template, given specs.Template) error {
 	var (
 		err error
 	)
