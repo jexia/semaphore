@@ -95,13 +95,13 @@ func (manager *Manager) Marshal(refs references.Store) (io.Reader, error) {
 
 // Encode encodes the given specs object into the given dynamic proto message.
 // References inside the specs are attempted to be fetched from the reference store.
-func (manager *Manager) Encode(proto *dynamic.Message, desc *desc.MessageDescriptor, specs *specs.Message, store references.Store) (err error) {
+func (manager *Manager) Encode(proto *dynamic.Message, desc *desc.MessageDescriptor, specs specs.Message, store references.Store) (err error) {
 	if specs == nil {
 		return
 	}
 
 	for _, field := range desc.GetFields() {
-		prop := specs.Properties[field.GetName()]
+		prop := specs[field.GetName()]
 		if prop == nil {
 			continue
 		}
@@ -237,13 +237,13 @@ func (manager *Manager) Unmarshal(reader io.Reader, refs references.Store) error
 }
 
 // Decode decodes the given proto message into the given reference store.
-func (manager *Manager) Decode(protobuf *dynamic.Message, message *specs.Message, store references.Store) {
+func (manager *Manager) Decode(protobuf *dynamic.Message, message specs.Message, store references.Store) {
 	if message == nil {
 		return
 	}
 
 	for _, field := range protobuf.GetKnownFields() {
-		prop := message.Properties[field.GetName()]
+		prop := message[field.GetName()]
 
 		// TODO: refactor me
 		if field.IsRepeated() {

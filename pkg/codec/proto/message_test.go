@@ -54,7 +54,7 @@ func ValidateStore(t *testing.T, prop *specs.Property, resource string, origin s
 	}
 
 	for key, value := range input {
-		nprop := prop.Message.Properties[key]
+		nprop := prop.Message[key]
 		if nprop == nil {
 			nprop = prop
 		}

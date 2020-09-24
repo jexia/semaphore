@@ -41,161 +41,155 @@ var schema = &specs.ParameterMap{
 	Property: &specs.Property{
 		Label: labels.Optional,
 		Template: specs.Template{
-			Message: &specs.Message{
-				Properties: map[string]*specs.Property{
-					"bad_label": {
-						Name:  "bad_label",
-						Path:  "bad_label",
-						Label: 0,
-						Template: specs.Template{
-							Scalar: &specs.Scalar{
-								Type: types.String,
+			Message: specs.Message{
+				"bad_label": {
+					Name:  "bad_label",
+					Path:  "bad_label",
+					Label: 0,
+					Template: specs.Template{
+						Scalar: &specs.Scalar{
+							Type: types.String,
+						},
+					},
+				},
+				"no_nested_schema": {
+					Name:  "no_nested_schema",
+					Path:  "no_nested_schema",
+					Label: labels.Optional,
+					Template: specs.Template{
+						Message: specs.Message{},
+					},
+				},
+				"numeric": {
+					Name:  "numeric",
+					Path:  "numeric",
+					Label: labels.Optional,
+					Template: specs.Template{
+						Scalar: &specs.Scalar{
+							Type: types.Int32,
+						},
+					},
+				},
+				"message": {
+					Name:  "message",
+					Path:  "message",
+					Label: labels.Optional,
+					Reference: &specs.PropertyReference{
+						Resource: template.InputResource,
+						Path:     "message",
+					},
+					Template: specs.Template{
+						Scalar: &specs.Scalar{
+							Type: types.String,
+						},
+					},
+				},
+				"status": {
+					Name:  "status",
+					Path:  "status",
+					Label: labels.Optional,
+					Reference: &specs.PropertyReference{
+						Resource: template.InputResource,
+						Path:     "status",
+					},
+					Template: specs.Template{
+						Enum: enum,
+					},
+				},
+				"nested": {
+					Name:  "nested",
+					Path:  "nested",
+					Label: labels.Optional,
+					Template: specs.Template{
+						Message: specs.Message{
+							"first": {
+								Name:  "first",
+								Path:  "nested.first",
+								Label: labels.Optional,
+								Reference: &specs.PropertyReference{
+									Resource: template.InputResource,
+									Path:     "nested.first",
+								},
+								Template: specs.Template{
+									Scalar: &specs.Scalar{
+										Type: types.String,
+									},
+								},
+							},
+							"second": {
+								Name:  "second",
+								Path:  "nested.second",
+								Label: labels.Optional,
+								Reference: &specs.PropertyReference{
+									Resource: template.InputResource,
+									Path:     "nested.second",
+								},
+								Template: specs.Template{
+									Scalar: &specs.Scalar{
+										Type: types.String,
+									},
+								},
 							},
 						},
 					},
-					"no_nested_schema": {
-						Name:  "no_nested_schema",
-						Path:  "no_nested_schema",
-						Label: labels.Optional,
-						Template: specs.Template{
-							Message: &specs.Message{},
-						},
+				},
+				"repeating_string": {
+					Name: "repeating_string",
+					Path: "repeating_string",
+					Reference: &specs.PropertyReference{
+						Resource: template.InputResource,
+						Path:     "repeating_string",
 					},
-					"numeric": {
-						Name:  "numeric",
-						Path:  "numeric",
-						Label: labels.Optional,
-						Template: specs.Template{
-							Scalar: &specs.Scalar{
-								Type: types.Int32,
+					Template: specs.Template{
+						Repeated: &specs.Repeated{
+							Property: &specs.Property{
+								Template: specs.Template{
+									Scalar: &specs.Scalar{
+										Type: types.String,
+									},
+								},
 							},
 						},
 					},
-					"message": {
-						Name:  "message",
-						Path:  "message",
-						Label: labels.Optional,
-						Reference: &specs.PropertyReference{
-							Resource: template.InputResource,
-							Path:     "message",
-						},
-						Template: specs.Template{
-							Scalar: &specs.Scalar{
-								Type: types.String,
+				},
+				"repeating_enum": {
+					Name:  "repeating_enum",
+					Path:  "repeating_enum",
+					Label: labels.Optional,
+					Reference: &specs.PropertyReference{
+						Resource: template.InputResource,
+						Path:     "repeating_enum",
+					},
+					Template: specs.Template{
+						Repeated: &specs.Repeated{
+							Property: &specs.Property{
+								Template: specs.Template{
+									Enum: enum,
+								},
 							},
 						},
 					},
-					"status": {
-						Name:  "status",
-						Path:  "status",
-						Label: labels.Optional,
-						Reference: &specs.PropertyReference{
-							Resource: template.InputResource,
-							Path:     "status",
-						},
-						Template: specs.Template{
-							Enum: enum,
-						},
-					},
-					"nested": {
-						Name:  "nested",
-						Path:  "nested",
-						Label: labels.Optional,
-						Template: specs.Template{
-							Message: &specs.Message{
-								Properties: map[string]*specs.Property{
-									"first": {
-										Name:  "first",
-										Path:  "nested.first",
-										Label: labels.Optional,
-										Reference: &specs.PropertyReference{
-											Resource: template.InputResource,
-											Path:     "nested.first",
-										},
-										Template: specs.Template{
-											Scalar: &specs.Scalar{
-												Type: types.String,
+				},
+				"repeating": {
+					Name:  "repeating",
+					Path:  "repeating",
+					Label: labels.Optional,
+					Template: specs.Template{
+						Repeated: &specs.Repeated{
+							Property: &specs.Property{
+								Template: specs.Template{
+									Message: specs.Message{
+										"value": {
+											Name:  "value",
+											Path:  "repeating.value",
+											Label: labels.Optional,
+											Reference: &specs.PropertyReference{
+												Resource: template.InputResource,
+												Path:     "repeating.value",
 											},
-										},
-									},
-									"second": {
-										Name:  "second",
-										Path:  "nested.second",
-										Label: labels.Optional,
-										Reference: &specs.PropertyReference{
-											Resource: template.InputResource,
-											Path:     "nested.second",
-										},
-										Template: specs.Template{
-											Scalar: &specs.Scalar{
-												Type: types.String,
-											},
-										},
-									},
-								},
-							},
-						},
-					},
-					"repeating_string": {
-						Name: "repeating_string",
-						Path: "repeating_string",
-						Reference: &specs.PropertyReference{
-							Resource: template.InputResource,
-							Path:     "repeating_string",
-						},
-						Template: specs.Template{
-							Repeated: &specs.Repeated{
-								Property: &specs.Property{
-									Template: specs.Template{
-										Scalar: &specs.Scalar{
-											Type: types.String,
-										},
-									},
-								},
-							},
-						},
-					},
-					"repeating_enum": {
-						Name:  "repeating_enum",
-						Path:  "repeating_enum",
-						Label: labels.Optional,
-						Reference: &specs.PropertyReference{
-							Resource: template.InputResource,
-							Path:     "repeating_enum",
-						},
-						Template: specs.Template{
-							Repeated: &specs.Repeated{
-								Property: &specs.Property{
-									Template: specs.Template{
-										Enum: enum,
-									},
-								},
-							},
-						},
-					},
-					"repeating": {
-						Name:  "repeating",
-						Path:  "repeating",
-						Label: labels.Optional,
-						Template: specs.Template{
-							Repeated: &specs.Repeated{
-								Property: &specs.Property{
-									Template: specs.Template{
-										Message: &specs.Message{
-											Properties: map[string]*specs.Property{
-												"value": {
-													Name:  "value",
-													Path:  "repeating.value",
-													Label: labels.Optional,
-													Reference: &specs.PropertyReference{
-														Resource: template.InputResource,
-														Path:     "repeating.value",
-													},
-													Template: specs.Template{
-														Scalar: &specs.Scalar{
-															Type: types.String,
-														},
-													},
+											Template: specs.Template{
+												Scalar: &specs.Scalar{
+													Type: types.String,
 												},
 											},
 										},
@@ -203,10 +197,10 @@ var schema = &specs.ParameterMap{
 								},
 							},
 						},
-						Reference: &specs.PropertyReference{
-							Resource: template.InputResource,
-							Path:     "repeating",
-						},
+					},
+					Reference: &specs.PropertyReference{
+						Resource: template.InputResource,
+						Path:     "repeating",
 					},
 				},
 			},

@@ -152,14 +152,14 @@ func (manager *Manager) Unmarshal(reader io.Reader, refs references.Store) error
 	return nil
 }
 
-func decodeElement(resource string, pos int, path []string, values []string, schema specs.PropertyList, refs references.Store) error {
+func decodeElement(resource string, pos int, path []string, values []string, schema specs.Message, refs references.Store) error {
 	propName := path[pos]
 
 	if schema == nil {
 		return errNilSchema
 	}
 
-	prop := schema.Get(propName)
+	prop := schema[propName]
 	if prop == nil {
 		return errUndefinedProperty(propName)
 	}
@@ -168,6 +168,7 @@ func decodeElement(resource string, pos int, path []string, values []string, sch
 		Path: prop.Path,
 	}
 
+	// TODO: implement nested repeated
 	switch prop.Label {
 	case labels.Repeated:
 		for _, raw := range values {
@@ -200,7 +201,7 @@ func decodeElement(resource string, pos int, path []string, values []string, sch
 		switch prop.Type {
 		case types.Message:
 			if len(path) > pos+1 {
-				return decodeElement(resource, pos+1, path, values, prop.Nested, refs)
+				return decodeElement(resource, pos+1, path, values, prop.Message, refs)
 			}
 		case types.Enum:
 			enum := prop.Enum.Keys[values[0]]
