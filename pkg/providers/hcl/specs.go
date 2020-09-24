@@ -655,7 +655,7 @@ func ParseIntermediateCallParameterMap(ctx *broker.Context, params *Call) (*spec
 			return nil, err
 		}
 
-		result.Property.Nested = append(result.Property.Nested, results)
+		result.Property.Message[results.Name] = results
 	}
 
 	for _, nested := range params.Nested {
@@ -664,7 +664,7 @@ func ParseIntermediateCallParameterMap(ctx *broker.Context, params *Call) (*spec
 			return nil, err
 		}
 
-		result.Property.Nested = append(result.Property.Nested, results)
+		result.Property.Message[results.Name] = results
 	}
 
 	for _, repeated := range params.Repeated {
