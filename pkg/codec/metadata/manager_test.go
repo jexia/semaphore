@@ -70,10 +70,10 @@ func TestManagerMarshal(t *testing.T) {
 						Scalar: &specs.Scalar{
 							Type: types.String,
 						},
-					},
-					Reference: &specs.PropertyReference{
-						Resource: "input",
-						Path:     "value",
+						Reference: &specs.PropertyReference{
+							Resource: "input",
+							Path:     "value",
+						},
 					},
 				},
 			}

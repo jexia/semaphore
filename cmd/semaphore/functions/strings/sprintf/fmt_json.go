@@ -98,7 +98,7 @@ func (r repeated) MarshalJSON() ([]byte, error) {
 			buff.WriteString(",")
 		}
 
-		var item = &specs.Property{Reference: &specs.PropertyReference{}}
+		var item = &specs.Property{Template: specs.Template{Reference: &specs.PropertyReference{}}}
 
 		bb, err := encoder{property: item, refs: store}.MarshalJSON()
 		if err != nil {

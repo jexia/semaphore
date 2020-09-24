@@ -46,10 +46,10 @@ func NewMockOnError() *specs.OnError {
 								Scalar: &specs.Scalar{
 									Type: types.Int64,
 								},
-							},
-							Reference: &specs.PropertyReference{
-								Resource: "error",
-								Path:     "status",
+								Reference: &specs.PropertyReference{
+									Resource: "error",
+									Path:     "status",
+								},
 							},
 						},
 						"message": {
@@ -60,10 +60,10 @@ func NewMockOnError() *specs.OnError {
 								Scalar: &specs.Scalar{
 									Type: types.String,
 								},
-							},
-							Reference: &specs.PropertyReference{
-								Resource: "error",
-								Path:     "message",
+								Reference: &specs.PropertyReference{
+									Resource: "error",
+									Path:     "message",
+								},
 							},
 						},
 					},
@@ -361,17 +361,21 @@ func TestConstructingNode(t *testing.T) {
 									"first": {
 										Name: "first",
 										Path: "first",
-										Reference: &specs.PropertyReference{
-											Resource: "input",
-											Path:     "first",
+										Template: specs.Template{
+											Reference: &specs.PropertyReference{
+												Resource: "input",
+												Path:     "first",
+											},
 										},
 									},
 									"second": {
 										Name: "second",
 										Path: "second",
-										Reference: &specs.PropertyReference{
-											Resource: "input",
-											Path:     "second",
+										Template: specs.Template{
+											Reference: &specs.PropertyReference{
+												Resource: "input",
+												Path:     "second",
+											},
 										},
 									},
 								},
@@ -392,17 +396,21 @@ func TestConstructingNode(t *testing.T) {
 									"first": {
 										Name: "first",
 										Path: "first",
-										Reference: &specs.PropertyReference{
-											Resource: "input",
-											Path:     "first",
+										Template: specs.Template{
+											Reference: &specs.PropertyReference{
+												Resource: "input",
+												Path:     "first",
+											},
 										},
 									},
 									"second": {
 										Name: "second",
 										Path: "second",
-										Reference: &specs.PropertyReference{
-											Resource: "input",
-											Path:     "first",
+										Template: specs.Template{
+											Reference: &specs.PropertyReference{
+												Resource: "input",
+												Path:     "first",
+											},
 										},
 									},
 								},

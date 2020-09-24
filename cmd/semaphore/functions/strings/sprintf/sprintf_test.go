@@ -37,11 +37,11 @@ func TestFunction(t *testing.T) {
 
 	t.Run("should return an error when the format is a reference", func(t *testing.T) {
 		var _, _, err = Function(&specs.Property{
-			Reference: &specs.PropertyReference{
-				Resource: template.InputResource,
-				Path:     "reference",
-			},
 			Template: specs.Template{
+				Reference: &specs.PropertyReference{
+					Resource: template.InputResource,
+					Path:     "reference",
+				},
 				Scalar: &specs.Scalar{
 					Type: types.String,
 				},
