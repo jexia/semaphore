@@ -269,6 +269,22 @@ type Property struct {
 	Template
 }
 
+func (prop *Property) DefaultValue() interface{} {
+	t := prop.Template
+	switch {
+	case t.Scalar != nil:
+		return t.Scalar.Default
+	case t.Message != nil:
+		return nil
+	case t.Repeated != nil:
+		return t.Repeated.Default
+	case t.Enum != nil:
+		return nil
+	}
+
+	return nil
+}
+
 // Empty checks if the property has any defined type
 func (prop *Property) Empty() bool {
 	return prop.Template.Type() == types.Unknown
