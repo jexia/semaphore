@@ -409,8 +409,13 @@ func ScopeNestedReferences(source *specs.Property, property *specs.Property) {
 			}
 		}
 	case source.Repeated != nil:
-		// TODO: check if correct
-		ScopeNestedReferences(source.Repeated.Property, property)
+		// TODO: check me!
+		ScopeNestedReferences(
+			&specs.Property{
+				Template: source.Repeated.Template,
+			},
+			property,
+		)
 
 		for _, item := range source.Repeated.Default {
 			nested, ok := property.Message[item.Name]
