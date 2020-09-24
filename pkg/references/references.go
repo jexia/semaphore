@@ -248,9 +248,9 @@ func resolveProperty(ctx *broker.Context, node *specs.Node, property *specs.Prop
 
 		return nil
 	case property.Repeated != nil:
-		if err := ResolveProperty(ctx, node, property.Repeated.Property, flow); err != nil {
-			return NewErrUnresolvedProperty(err, property.Repeated.Property)
-		}
+		// if err := ResolveProperty(ctx, node, property.Repeated.Property, flow); err != nil {
+		// 	return NewErrUnresolvedProperty(err, property.Repeated.Property)
+		// }
 
 		for _, repeated := range property.Repeated.Default {
 			err := ResolveProperty(ctx, node, repeated, flow)
@@ -367,7 +367,7 @@ func InsideProperty(source *specs.Property, target *specs.Property) bool {
 			}
 		}
 	case source.Repeated != nil:
-		if InsideProperty(source.Repeated.Property, target) {
+		if InsideProperty(&specs.Property{Template: source.Repeated.Template}, target) {
 			return true
 		}
 
