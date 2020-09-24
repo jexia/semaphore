@@ -41,28 +41,35 @@ func (e ErrUnresolvedFlow) Prettify() prettyerr.Error {
 // ErrUndefinedReference occurs when resolving meets unknown reference.
 type ErrUndefinedReference struct {
 	wrapErr
-	Expression specs.Expression
-	// Reference points to the reference which caused the error
-	Reference  *specs.PropertyReference
+	Property   *specs.Property
 	Breakpoint string
-	Path       string
+}
+
+func NewErrUndefinedReference(inner error, property *specs.Property, breakpoint string) ErrUndefinedReference {
+	return ErrUndefinedReference{
+		wrapErr: wrapErr{
+			Inner: inner,
+		},
+		Property:   property,
+		Breakpoint: breakpoint,
+	}
 }
 
 // Error returns a description of the given error as a string
 func (e ErrUndefinedReference) Error() string {
-	return fmt.Sprintf("undefined reference '%s' in '%s.%s'", e.Reference, e.Breakpoint, e.Path)
+	return fmt.Sprintf("undefined reference '%s' in '%s.%s'", e.Property.Reference, e.Breakpoint, e.Property.Path)
 }
 
 // Prettify returns the prettified version of the given error
 func (e ErrUndefinedReference) Prettify() prettyerr.Error {
 	details := map[string]interface{}{
-		"Reference":  e.Reference,
+		"Reference":  e.Property.Reference,
 		"Breakpoint": e.Breakpoint,
-		"Path":       e.Path,
+		"Path":       e.Property.Path,
 	}
 
-	if e.Expression != nil {
-		details["Expression"] = e.Expression.Position()
+	if e.Property.Expr != nil {
+		details["Expression"] = e.Property.Expr.Position()
 	}
 
 	return prettyerr.Error{
@@ -179,6 +186,15 @@ func (e ErrUnresolvedParameterMap) Prettify() prettyerr.Error {
 type ErrUnresolvedProperty struct {
 	wrapErr
 	Property *specs.Property
+}
+
+func NewErrUnresolvedProperty(inner error, property *specs.Property) ErrUnresolvedProperty {
+	return ErrUnresolvedProperty{
+		wrapErr: wrapErr{
+			Inner: inner,
+		},
+		Property: property,
+	}
 }
 
 func (e ErrUnresolvedProperty) Error() string {

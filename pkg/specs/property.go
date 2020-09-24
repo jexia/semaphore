@@ -138,7 +138,7 @@ func (repeated Repeated) Clone() *Repeated {
 	}
 
 	for index, prop := range repeated.Default {
-		clone.Default[index] = prop
+		clone.Default[index] = prop.Clone()
 	}
 
 	return clone
