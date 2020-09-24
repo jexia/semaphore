@@ -35,26 +35,36 @@ func NewMockServices() specs.ServiceList {
 func NewMockSchemas() specs.Schemas {
 	return specs.Schemas{
 		"com.mock.message": &specs.Property{
-			Type:  types.Message,
 			Label: labels.Optional,
-			Nested: []*specs.Property{
-				{
-					Name:  "value",
-					Path:  "value",
-					Type:  types.String,
-					Label: labels.Optional,
-				},
-				{
-					Name:  "meta",
-					Path:  "meta",
-					Type:  types.Message,
-					Label: labels.Optional,
-					Nested: []*specs.Property{
-						{
-							Name:  "id",
-							Path:  "meta.id",
-							Type:  types.String,
-							Label: labels.Optional,
+			Template: specs.Template{
+				Message: specs.Message{
+					"value": {
+						Name:  "value",
+						Path:  "value",
+						Label: labels.Optional,
+						Template: specs.Template{
+							Scalar: &specs.Scalar{
+								Type: types.String,
+							},
+						},
+					},
+					"meta": {
+						Name:  "meta",
+						Path:  "meta",
+						Label: labels.Optional,
+						Template: specs.Template{
+							Message: specs.Message{
+								"id": {
+									Name:  "id",
+									Path:  "meta.id",
+									Label: labels.Optional,
+									Template: specs.Template{
+										Scalar: &specs.Scalar{
+											Type: types.String,
+										},
+									},
+								},
+							},
 						},
 					},
 				},
@@ -370,20 +380,26 @@ func TestUndefinedNestedSchemaProperty(t *testing.T) {
 		"single": {
 			Schema: "com.mock.message",
 			Property: &specs.Property{
-				Nested: []*specs.Property{
-					nil,
+				Template: specs.Template{
+					Message: specs.Message{
+						"meta": nil,
+					},
 				},
 			},
 		},
 		"nested": {
 			Schema: "com.mock.message",
 			Property: &specs.Property{
-				Nested: []*specs.Property{
-					{
-						Name: "meta",
-						Path: "meta",
-						Nested: []*specs.Property{
-							nil,
+				Template: specs.Template{
+					Message: specs.Message{
+						"meta": {
+							Name: "meta",
+							Path: "meta",
+							Template: specs.Template{
+								Message: specs.Message{
+									"id": nil,
+								},
+							},
 						},
 					},
 				},

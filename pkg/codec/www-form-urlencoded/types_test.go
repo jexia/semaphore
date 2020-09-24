@@ -47,7 +47,7 @@ func TestAddType(t *testing.T) {
 			expected: "mock=1E%2B01",
 		},
 		types.String: {
-			input:    string("msg"),
+			input:    "msg",
 			expected: "mock=msg",
 		},
 		types.Bool: {
