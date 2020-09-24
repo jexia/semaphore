@@ -7,7 +7,6 @@ import (
 
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/labels"
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
@@ -48,37 +47,33 @@ type encoder struct {
 }
 
 func (enc encoder) MarshalJSON() ([]byte, error) {
-	if enc.property.Label == labels.Repeated {
+	switch {
+	case enc.property.Repeated != nil || enc.property.Message != nil:
 		return repeated{property: enc.property, refs: enc.refs}.MarshalJSON()
+	case enc.property.Enum != nil && enc.property.Reference != nil:
+		reference := enc.refs.Load(enc.property.Reference.Resource, enc.property.Reference.Path)
+		if reference == nil {
+			return null, nil
+		}
+
+		var enum = enc.property.Enum.Positions[*reference.Enum]
+		if enum == nil {
+			return json.Marshal(*reference.Enum)
+		}
+
+		return json.Marshal(enum.Key)
+	case enc.property.Scalar != nil:
+		value := enc.property.Scalar.Default
+
+		var reference = enc.refs.Load(enc.property.Reference.Resource, enc.property.Reference.Path)
+		if reference != nil {
+			value = reference.Value
+		}
+
+		return json.Marshal(value)
 	}
 
-	if enc.property.Type == types.Message {
-		return message{property: enc.property, refs: enc.refs}.MarshalJSON()
-	}
-
-	if enc.property.Reference == nil {
-		return json.Marshal(enc.property.Default)
-	}
-
-	var reference = enc.refs.Load(enc.property.Reference.Resource, enc.property.Reference.Path)
-	if reference == nil {
-		return json.Marshal(enc.property.Default)
-	}
-
-	if enc.property.Type != types.Enum {
-		return json.Marshal(reference.Value)
-	}
-
-	if reference.Enum == nil {
-		return null, nil
-	}
-
-	var enum = enc.property.Enum.Positions[*reference.Enum]
-	if enum == nil {
-		return json.Marshal(*reference.Enum)
-	}
-
-	return json.Marshal(enum.Key)
+	return null, nil
 }
 
 type repeated struct {
@@ -124,7 +119,7 @@ type message struct {
 }
 
 func (m message) MarshalJSON() ([]byte, error) {
-	if m.property.Nested == nil {
+	if m.property.Message == nil {
 		return null, nil
 	}
 
@@ -133,7 +128,7 @@ func (m message) MarshalJSON() ([]byte, error) {
 		firstKey = true
 	)
 
-	for key, prop := range m.property.Nested {
+	for key, prop := range m.property.Message {
 		bb, err := (&encoder{property: prop, refs: m.refs}).MarshalJSON()
 		if err != nil {
 			return nil, err

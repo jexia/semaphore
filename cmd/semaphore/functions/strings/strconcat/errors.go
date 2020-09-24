@@ -26,7 +26,7 @@ type ErrInvalidArgument struct {
 
 // Error returns a description of the given error as a string
 func (e ErrInvalidArgument) Error() string {
-	return fmt.Sprintf("invalid argument %s in %s expected %s", e.Property.Type, e.Function, e.Expected)
+	return fmt.Sprintf("invalid argument %s in %s expected %s", e.Property.Type(), e.Function, e.Expected)
 }
 
 // Prettify returns the prettified version of the given error

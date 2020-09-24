@@ -57,8 +57,8 @@ func FormatWithFunc(valueFormatter ValueFormatter) func(Precision) Formatter {
 		return func(store references.Store, argument *specs.Property) (string, error) {
 			var value interface{}
 
-			if argument.Default != nil {
-				value = argument.Default
+			if argument.Scalar != nil {
+				value = argument.Scalar.Default
 			}
 
 			if argument.Reference != nil {
