@@ -64,10 +64,10 @@ func main() {
 
 func jwt(args ...*specs.Property) (*specs.Property, functions.Exec, error) {
 	prop := &specs.Property{
+		Label: labels.Optional,
 		Template: specs.Template{
 			Scalar: &specs.Scalar{
-				Type:  types.String,
-				Label: labels.Optional,
+				Type: types.String,
 			},
 		},
 	}

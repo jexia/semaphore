@@ -9,7 +9,7 @@ import (
 )
 
 func decodeNested(decoder *xml.Decoder, start xml.StartElement, prop *specs.Property, resource string, store references.Store, refs map[string]*references.Reference) error {
-	if prop.Type != types.Message {
+	if prop.Type() != types.Message {
 		return errNotAnObject
 	}
 
@@ -19,7 +19,7 @@ func decodeNested(decoder *xml.Decoder, start xml.StartElement, prop *specs.Prop
 }
 
 func decodeRepeatedNested(decoder *xml.Decoder, start xml.StartElement, prop *specs.Property, resource string, refs map[string]*references.Reference) error {
-	if prop.Type != types.Message {
+	if prop.Type() != types.Message {
 		return errNotAnObject
 	}
 
@@ -56,7 +56,7 @@ func decodeRepeatedValue(raw xml.CharData, prop *specs.Property, refs map[string
 		refs[prop.Path] = ref
 	}
 
-	if prop.Type == types.Enum {
+	if prop.Type() == types.Enum {
 		enum, ok := prop.Enum.Keys[string(raw)]
 		if !ok {
 			return errUnknownEnum(raw)
@@ -84,7 +84,7 @@ func decodeValue(raw xml.CharData, prop *specs.Property, resource string, store 
 		Path: prop.Path,
 	}
 
-	if prop.Type == types.Enum {
+	if prop.Type() == types.Enum {
 		enum, ok := prop.Enum.Keys[string(raw)]
 		if !ok {
 			return errUnknownEnum(raw)

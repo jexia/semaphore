@@ -44,9 +44,13 @@ func TestTokensPrint(t *testing.T) {
 					},
 				},
 				{
-					Name:    "whole",
-					Path:    "whole",
-					Default: "whole",
+					Name: "whole",
+					Path: "whole",
+					Template: specs.Template{
+						Scalar: &specs.Scalar{
+							Default: "whole",
+						},
+					},
 				},
 			},
 		},
@@ -58,9 +62,13 @@ func TestTokensPrint(t *testing.T) {
 			},
 			args: []*specs.Property{
 				{
-					Name:    "first",
-					Path:    "first",
-					Default: 1.5,
+					Name: "first",
+					Path: "first",
+					Template: specs.Template{
+						Scalar: &specs.Scalar{
+							Default: 1.5,
+						},
+					},
 				},
 				{
 					Name: "second",
@@ -71,9 +79,13 @@ func TestTokensPrint(t *testing.T) {
 					},
 				},
 				{
-					Name:    "message",
-					Path:    "message",
-					Default: 2,
+					Name: "message",
+					Path: "message",
+					Template: specs.Template{
+						Scalar: &specs.Scalar{
+							Default: 2,
+						},
+					},
 				},
 			},
 		},
@@ -91,10 +103,19 @@ func TestTokensPrint(t *testing.T) {
 			},
 			args: []*specs.Property{
 				{
-					Name:  "array",
-					Path:  "array",
-					Type:  types.Float,
-					Label: labels.Repeated,
+					Name: "array",
+					Path: "array",
+					Template: specs.Template{
+						Repeated: &specs.Repeated{
+							Property: &specs.Property{
+								Template: specs.Template{
+									Scalar: &specs.Scalar{
+										Type: types.Float,
+									},
+								},
+							},
+						},
+					},
 					Reference: &specs.PropertyReference{
 						Resource: template.InputResource,
 						Path:     "array",
@@ -103,16 +124,21 @@ func TestTokensPrint(t *testing.T) {
 				{
 					Name: "object",
 					Path: "object",
-					Type: types.Message,
-					Nested: map[string]*specs.Property{
-						"e": {
-							Name:  "e",
-							Path:  "object.e",
-							Type:  types.Float,
-							Label: labels.Optional,
-							Reference: &specs.PropertyReference{
-								Resource: template.InputResource,
-								Path:     "object.e",
+					Template: specs.Template{
+						Message: map[string]*specs.Property{
+							"e": {
+								Name:  "e",
+								Path:  "object.e",
+								Label: labels.Optional,
+								Reference: &specs.PropertyReference{
+									Resource: template.InputResource,
+									Path:     "object.e",
+								},
+								Template: specs.Template{
+									Scalar: &specs.Scalar{
+										Type: types.Float,
+									},
+								},
 							},
 						},
 					},

@@ -23,7 +23,11 @@ func TestFunction(t *testing.T) {
 
 	t.Run("should return an error when the format has invalid type", func(t *testing.T) {
 		var _, _, err = Function(&specs.Property{
-			Type: types.Bool,
+			Template: specs.Template{
+				Scalar: &specs.Scalar{
+					Type: types.Bool,
+				},
+			},
 		})
 
 		if !errors.Is(err, errInvalidFormat) {
@@ -33,10 +37,14 @@ func TestFunction(t *testing.T) {
 
 	t.Run("should return an error when the format is a reference", func(t *testing.T) {
 		var _, _, err = Function(&specs.Property{
-			Type: types.String,
 			Reference: &specs.PropertyReference{
 				Resource: template.InputResource,
 				Path:     "reference",
+			},
+			Template: specs.Template{
+				Scalar: &specs.Scalar{
+					Type: types.String,
+				},
 			},
 		})
 
@@ -47,7 +55,11 @@ func TestFunction(t *testing.T) {
 
 	t.Run("should return an error when the format is missing", func(t *testing.T) {
 		var _, _, err = Function(&specs.Property{
-			Type: types.String,
+			Template: specs.Template{
+				Scalar: &specs.Scalar{
+					Type: types.String,
+				},
+			},
 		})
 
 		if !errors.Is(err, errNoFormat) {
@@ -57,8 +69,12 @@ func TestFunction(t *testing.T) {
 
 	t.Run("should propagate scanner error", func(t *testing.T) {
 		var _, _, err = Function(&specs.Property{
-			Type:    types.String,
-			Default: "%z",
+			Template: specs.Template{
+				Scalar: &specs.Scalar{
+					Type:    types.String,
+					Default: "%z",
+				},
+			},
 		})
 
 		if !errors.Is(err, errUnknownFormatter) {
@@ -68,8 +84,12 @@ func TestFunction(t *testing.T) {
 
 	t.Run("should return an error when the number of arguments does not match the number of verbs", func(t *testing.T) {
 		var _, _, err = Function(&specs.Property{
-			Type:    types.String,
-			Default: "%s",
+			Template: specs.Template{
+				Scalar: &specs.Scalar{
+					Type:    types.String,
+					Default: "%s",
+				},
+			},
 		})
 
 		if !errors.As(err, &errInvalidArguments{}) {
@@ -80,12 +100,20 @@ func TestFunction(t *testing.T) {
 	t.Run("should return an error when the type of provided argument does not match expected", func(t *testing.T) {
 		var _, _, err = Function(
 			&specs.Property{
-				Type:    types.String,
-				Default: "%s",
+				Template: specs.Template{
+					Scalar: &specs.Scalar{
+						Type:    types.String,
+						Default: "%s",
+					},
+				},
 			},
 			&specs.Property{
 				Name: "foo",
-				Type: types.Bool,
+				Template: specs.Template{
+					Scalar: &specs.Scalar{
+						Type: types.Bool,
+					},
+				},
 			},
 		)
 
@@ -98,19 +126,31 @@ func TestFunction(t *testing.T) {
 		var (
 			outputs, executable, err = Function(
 				&specs.Property{
-					Type:    types.String,
-					Default: "develop %s, not hard!",
+					Template: specs.Template{
+						Scalar: &specs.Scalar{
+							Type:    types.String,
+							Default: "develop %s, not hard!",
+						},
+					},
 				},
 				&specs.Property{
 					Name: "foo",
-					Type: types.String,
+					Template: specs.Template{
+						Scalar: &specs.Scalar{
+							Type: types.String,
+						},
+					},
 				},
 			)
 
 			expected = &specs.Property{
 				Name:  "sprintf",
-				Type:  types.String,
 				Label: labels.Optional,
+				Template: specs.Template{
+					Scalar: &specs.Scalar{
+						Type: types.String,
+					},
+				},
 			}
 		)
 

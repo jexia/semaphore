@@ -8,19 +8,19 @@ import (
 )
 
 // NewObject constructs a new object encoder/decoder for the given specs
-func NewObject(resource string, items *specs.Message, refs references.Store) *Object {
+func NewObject(resource string, items specs.Message, refs references.Store) *Object {
 	return &Object{
 		resource: resource,
-		length:   len(items.Properties),
+		length:   len(items),
 		refs:     refs,
-		specs:    items.Properties,
+		specs:    items,
 	}
 }
 
 // Object represents a JSON object
 type Object struct {
 	resource string
-	specs    map[string]*specs.Property
+	specs    specs.Message
 	refs     references.Store
 	length   int
 }
