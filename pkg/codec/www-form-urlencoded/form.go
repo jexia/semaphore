@@ -12,7 +12,6 @@ import (
 	"github.com/jexia/semaphore/pkg/codec"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/labels"
 	"github.com/jexia/semaphore/pkg/specs/template"
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
@@ -96,7 +95,11 @@ func encode(encoder url.Values, root string, name string, refs references.Store,
 
 		for index, repeated := range ref.Repeated {
 			current := fmt.Sprintf("%s[%d]", path, index)
-			encode(encoder, current, "", repeated, prop.Repeated.Property)
+			// specs.Repeated does not have reference to Property, so it should be wrapped.
+			propToEncode := &specs.Property{
+				Template: prop.Repeated.Template,
+			}
+			encode(encoder, current, "", repeated, propToEncode)
 		}
 	case prop.Enum != nil:
 		ref := refs.Load(prop.Reference.Resource, prop.Reference.Path)
@@ -144,7 +147,7 @@ func (manager *Manager) Unmarshal(reader io.Reader, refs references.Store) error
 	}
 
 	for key, values := range values {
-		if err := decodeElement(manager.resource, 0, strings.Split(key, "."), values, manager.specs.Nested, refs); err != nil {
+		if err := decodeElement(manager.resource, 0, strings.Split(key, "."), values, manager.specs.Message, refs); err != nil {
 			return err
 		}
 	}
@@ -169,19 +172,19 @@ func decodeElement(resource string, pos int, path []string, values []string, sch
 	}
 
 	// TODO: implement nested repeated
-	switch prop.Label {
-	case labels.Repeated:
+	switch {
+	case prop.Repeated != nil:
 		for _, raw := range values {
 			store := references.NewReferenceStore(0)
 
-			switch prop.Type {
-			case types.Message:
+			switch {
+			case prop.Template.Message != nil:
 				if len(path) > pos+1 {
-					if err := decodeElement(resource, pos+1, path, []string{raw}, prop.Nested, store); err != nil {
+					if err := decodeElement(resource, pos+1, path, []string{raw}, prop.Message, store); err != nil {
 						return err
 					}
 				}
-			case types.Enum:
+			case prop.Template.Enum != nil:
 				enum := prop.Enum.Keys[raw]
 				if enum != nil {
 					store.StoreEnum("", "", enum.Position)
@@ -197,27 +200,22 @@ func decodeElement(resource string, pos int, path []string, values []string, sch
 
 			ref.Append(store)
 		}
-	case labels.Optional, labels.Required:
-		switch prop.Type {
-		case types.Message:
-			if len(path) > pos+1 {
-				return decodeElement(resource, pos+1, path, values, prop.Message, refs)
-			}
-		case types.Enum:
-			enum := prop.Enum.Keys[values[0]]
-			if enum != nil {
-				ref.Enum = &enum.Position
-			}
-		default:
-			value, err := types.DecodeFromString(values[0], prop.Type)
-			if err != nil {
-				return err
-			}
-
-			ref.Value = value
+	case prop.Message != nil:
+		if len(path) > pos+1 {
+			return decodeElement(resource, pos+1, path, values, prop.Message, refs)
+		}
+	case prop.Enum != nil:
+		enum := prop.Enum.Keys[values[0]]
+		if enum != nil {
+			ref.Enum = &enum.Position
 		}
 	default:
-		return errUnknownLabel(prop.Label)
+		value, err := types.DecodeFromString(values[0], prop.Type)
+		if err != nil {
+			return err
+		}
+
+		ref.Value = value
 	}
 
 	refs.StoreReference(resource, ref)
