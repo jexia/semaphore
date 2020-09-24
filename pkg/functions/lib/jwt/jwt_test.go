@@ -18,14 +18,18 @@ func (c claims) Subject() string { return c.StandardClaims.Subject }
 func TestExecutable(t *testing.T) {
 	var (
 		token = &specs.Property{
-			Name: "claims",
-			Path: "claims",
-			Reference: &specs.PropertyReference{
-				Resource: "input",
-				Path:     "authorization",
-			},
-			Type:  types.String,
+			Name:  "claims",
+			Path:  "claims",
 			Label: labels.Required,
+			Template: specs.Template{
+				Reference: &specs.PropertyReference{
+					Resource: "input",
+					Path:     "authorization",
+				},
+				Scalar: &specs.Scalar{
+					Type: types.String,
+				},
+			},
 		}
 
 		store = references.NewReferenceStore(1)

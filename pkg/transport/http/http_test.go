@@ -53,15 +53,13 @@ func NewSimpleMockSpecs() *specs.ParameterMap {
 		},
 		Property: &specs.Property{
 			Template: specs.Template{
-				Message: &specs.Message{
-					Properties: []*specs.Property{
-						{
-							Name: "message",
-							Path: "message",
-							Template: specs.Template{
-								Scalar: &specs.Scalar{
-									Type: types.String,
-								},
+				Message: specs.Message{
+					"message": {
+						Name: "message",
+						Path: "message",
+						Template: specs.Template{
+							Scalar: &specs.Scalar{
+								Type: types.String,
 							},
 						},
 					},

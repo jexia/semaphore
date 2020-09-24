@@ -329,7 +329,7 @@ func TestCallerReferencesLookup(t *testing.T) {
 			}
 
 			refs[0].Scalar.Type = types.String
-			refs[0].Scalar.Label = labels.Optional
+			refs[0].Label = labels.Optional
 
 			store := references.NewReferenceStore(1)
 			ctx := context.Background()

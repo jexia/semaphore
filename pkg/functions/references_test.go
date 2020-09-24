@@ -26,9 +26,11 @@ func TestDefineFunction(t *testing.T) {
 					Arguments: []*specs.Property{
 						{
 							Name: "name",
-							Reference: &specs.PropertyReference{
-								Resource: "first",
-								Path:     "name",
+							Template: specs.Template{
+								Reference: &specs.PropertyReference{
+									Resource: "first",
+									Path:     "name",
+								},
 							},
 						},
 					},
@@ -73,9 +75,11 @@ func TestDefineFunction(t *testing.T) {
 			stack: Stack{
 				"sample": &Function{
 					Returns: &specs.Property{
-						Reference: &specs.PropertyReference{
-							Resource: "first",
-							Path:     "name",
+						Template: specs.Template{
+							Reference: &specs.PropertyReference{
+								Resource: "first",
+								Path:     "name",
+							},
 						},
 					},
 				},
