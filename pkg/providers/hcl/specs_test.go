@@ -55,14 +55,15 @@ func TestParseIntermediateStaticProperty(t *testing.T) {
 			expected: &specs.Property{
 				Name:  "array",
 				Path:  "array",
-				Type:  types.String,
-				Label: labels.Repeated,
-				Nested: []*specs.Property{
-					{
-						Path:    "array",
-						Type:    types.String,
-						Label:   labels.Optional,
-						Default: "foo",
+				Label: labels.Optional,
+				Template: specs.Template{
+					Repeated: &specs.Repeated{
+						Template: specs.Template{
+							Scalar: &specs.Scalar{
+								Type:    types.String,
+								Default: "foo",
+							},
+						},
 					},
 				},
 			},
@@ -75,20 +76,23 @@ func TestParseIntermediateStaticProperty(t *testing.T) {
 			expected: &specs.Property{
 				Name:  "array",
 				Path:  "array",
-				Type:  types.String,
-				Label: labels.Repeated,
-				Nested: []*specs.Property{
-					{
-						Path: "array",
-						Reference: &specs.PropertyReference{
-							Resource: "input",
-							Path:     "message",
+				Label: labels.Optional,
+				Template: specs.Template{
+					Repeated: &specs.Repeated{
+						Template: specs.Template{
+							Reference: &specs.PropertyReference{
+								Resource: "input",
+								Path:     "message",
+							},
+							Scalar: &specs.Scalar{
+								Type: types.String,
+							},
 						},
 					},
 				},
 			},
 		},
-		"array ints": {
+		"array of ints": {
 			template: `
 				array = [
 					10,
@@ -97,25 +101,41 @@ func TestParseIntermediateStaticProperty(t *testing.T) {
 			expected: &specs.Property{
 				Name:  "array",
 				Path:  "array",
-				Type:  types.String,
-				Label: labels.Repeated,
-				Nested: []*specs.Property{
-					{
-						Path:    "array",
-						Type:    types.Int64,
-						Label:   labels.Optional,
-						Default: int64(10),
-					},
-					{
-						Path:    "array",
-						Type:    types.Int64,
-						Label:   labels.Optional,
-						Default: int64(42),
+				Label: labels.Optional,
+				Template: specs.Template{
+					Repeated: &specs.Repeated{
+						Template: specs.Template{
+							Scalar: &specs.Scalar{
+								Type: types.Int64, //
+							},
+						},
+						Default: map[uint]*specs.Property{
+							0: {
+								Path:  "array", // ??? maybe use Template as well or even a custom struct with Reference and Value (interface{}) inside?
+								Label: labels.Optional,
+								Template: specs.Template{
+									Scalar: &specs.Scalar{
+										Type:    types.Int64,
+										Default: int64(10),
+									},
+								},
+							},
+							1: {
+								Path:  "array",
+								Label: labels.Optional,
+								Template: specs.Template{
+									Scalar: &specs.Scalar{
+										Type:    types.Int64,
+										Default: int64(42),
+									},
+								},
+							},
+						},
 					},
 				},
 			},
 		},
-		"array objects": {
+		"array of objects": {
 			template: `
 				array = [
 					{
