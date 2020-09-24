@@ -1,10 +1,21 @@
 package hcl
 
 import (
+	"fmt"
+
+	"github.com/jexia/semaphore/pkg/prettyerr"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/labels"
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
+
+type wrapErr struct {
+	Inner error
+}
+
+func (i wrapErr) Unwrap() error {
+	return i.Inner
+}
 
 // DefaultOnError sets the default values for not defined properties
 func DefaultOnError(err *specs.OnError) {
@@ -79,5 +90,27 @@ func ResolveErrors(flows specs.FlowListInterface, err *specs.ParameterMap) {
 
 			MergeOnError(node.OnError, flow.GetOnError())
 		}
+	}
+}
+
+// ErrPathNotFound occurs when path cannot be resolved
+type ErrPathNotFound struct {
+	wrapErr
+	Path string
+}
+
+// Error returns a description of the given error as a string
+func (e ErrPathNotFound) Error() string {
+	return fmt.Sprintf("unable to resolve path, no files found '%s'", e.Path)
+}
+
+// Prettify returns the prettified version of the given error
+func (e ErrPathNotFound) Prettify() prettyerr.Error {
+	return prettyerr.Error{
+		Code:    "PathNotFound",
+		Message: e.Error(),
+		Details: map[string]interface{}{
+			"Path": e.Path,
+		},
 	}
 }

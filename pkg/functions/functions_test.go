@@ -93,6 +93,35 @@ func TestCollectionLoad(t *testing.T) {
 	}
 }
 
+func TestUndefinedFunction(t *testing.T) {
+	type fields struct {
+		Function string
+		Property string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			"return the formatted error",
+			fields{Function: "getsources", Property: "add"},
+			"undefined custom function 'getsources' in 'add'",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			e := ErrUndefinedFunction{
+				Function: "getsources",
+				Property: "add",
+			}
+			if got := e.Prettify(); got.Message != tt.want {
+				t.Errorf("Error() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestParseFunction(t *testing.T) {
 	static := specs.Property{
 		Path:    "message",

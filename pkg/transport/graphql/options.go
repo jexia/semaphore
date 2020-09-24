@@ -1,7 +1,6 @@
 package graphql
 
 import (
-	"github.com/jexia/semaphore/pkg/broker/trace"
 	"github.com/jexia/semaphore/pkg/transport"
 )
 
@@ -37,7 +36,9 @@ func ParseEndpointOptions(endpoint *transport.Endpoint) (*EndpointOptions, error
 	base, has := endpoint.Options[BaseOption]
 	if has {
 		if base != QueryObject && base != MutationObject {
-			return nil, trace.New(trace.WithMessage("unknown base '%s', expected query or mutation", base))
+			return nil, ErrUnknownBase{
+				Base: base,
+			}
 		}
 
 		result.Base = base

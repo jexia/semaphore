@@ -11,7 +11,6 @@ import (
 
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
-	"github.com/jexia/semaphore/pkg/broker/trace"
 	"github.com/jexia/semaphore/pkg/codec"
 	"github.com/jexia/semaphore/pkg/codec/metadata"
 	"github.com/jexia/semaphore/pkg/specs/template"
@@ -154,12 +153,16 @@ func NewHandle(ctx *broker.Context, endpoint *transport.Endpoint, options *Endpo
 
 	req := constructors[options.RequestCodec]
 	if req == nil {
-		return nil, trace.New(trace.WithMessage("request codec not found '%s'", options.RequestCodec))
+		return nil, ErrUndefinedCodec{
+			Codec: options.RequestCodec,
+		}
 	}
 
 	res := constructors[options.ResponseCodec]
 	if req == nil {
-		return nil, trace.New(trace.WithMessage("response codec not found '%s'", options.ResponseCodec))
+		return nil, ErrUndefinedCodec{
+			Codec: options.RequestCodec,
+		}
 	}
 
 	err := endpoint.NewCodec(ctx, req, res)
@@ -176,7 +179,10 @@ func NewHandle(ctx *broker.Context, endpoint *transport.Endpoint, options *Endpo
 	if endpoint.Forward != nil {
 		url, err := url.Parse(endpoint.Forward.Service.Host)
 		if err != nil {
-			return nil, trace.New(trace.WithMessage("unable to parse the proxy forward host '%s'", endpoint.Forward.Service.Host))
+			return nil, ErrInvalidHost{
+				wrapErr: wrapErr{err},
+				Host:    endpoint.Forward.Service.Host,
+			}
 		}
 
 		handle.Proxy = &Proxy{

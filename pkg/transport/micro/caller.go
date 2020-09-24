@@ -7,7 +7,6 @@ import (
 
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
-	"github.com/jexia/semaphore/pkg/broker/trace"
 	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
@@ -133,7 +132,7 @@ func (call *Call) GetMethod(name string) transport.Method {
 // SendMsg calls the configured service and attempts to call the given endpoint with the given headers and stream
 func (call *Call) SendMsg(ctx context.Context, rw transport.ResponseWriter, pr *transport.Request, refs references.Store) error {
 	if pr.Method == nil {
-		return trace.New(trace.WithMessage("method required, proxy forward not supported"))
+		return ErrUndefinedMethod{}
 	}
 
 	bb, err := ioutil.ReadAll(pr.Body)
@@ -145,7 +144,9 @@ func (call *Call) SendMsg(ctx context.Context, rw transport.ResponseWriter, pr *
 
 	method := call.methods[pr.Method.GetName()]
 	if method == nil {
-		return trace.New(trace.WithMessage("unknown service method %s", pr.Method.GetName()))
+		return ErrUnknownMethod{
+			Method: pr.Method.GetName(),
+		}
 	}
 
 	req := call.client.NewRequest(call.pkg, method.endpoint, &bytes.Frame{
