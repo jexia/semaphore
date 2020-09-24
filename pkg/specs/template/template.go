@@ -106,10 +106,12 @@ func ParseReference(path string, name string, value string) (*specs.Property, er
 	}
 
 	prop := &specs.Property{
-		Name:      name,
-		Path:      JoinPath(path, name),
-		Reference: ParsePropertyReference(value),
-		Raw:       value,
+		Name: name,
+		Path: JoinPath(path, name),
+		Raw:  value,
+		Template: specs.Template{
+			Reference: ParsePropertyReference(value),
+		},
 	}
 
 	return prop, nil

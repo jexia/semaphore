@@ -224,11 +224,15 @@ func PropertyLookup(param *specs.Property) PathLookup {
 			return param
 		case param.Path == path:
 			return param
-		case param.Template.Repeated != nil:
-			return PropertyLookup(param.Template.Repeated.Property)(path)
-		case param.Template.Message != nil:
-			for _, param := range param.Template.Message {
-				lookup := PropertyLookup(param)(path)
+		case param.Repeated != nil:
+			return PropertyLookup(
+				&specs.Property{
+					Template: param.Repeated.Template,
+				},
+			)(path)
+		case param.Message != nil:
+			for _, nested := range param.Template.Message {
+				lookup := PropertyLookup(nested)(path)
 				if lookup != nil {
 					return lookup
 				}

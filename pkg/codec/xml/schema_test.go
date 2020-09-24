@@ -8,7 +8,53 @@ import (
 )
 
 var (
-	schema = &specs.ParameterMap{
+	schemaArray = &specs.Property{
+			Name:  "countries",
+			Path:  "countries",
+			Type:  types.Message,
+			Label: labels.Repeated,
+			Nested: map[string]*specs.Property{
+				"country": {
+					Name:  "country",
+					Path:  "country",
+					Type:  types.Message,
+					Label: labels.Optional,
+					Nested: map[string]*specs.Property{
+						"iso2Code": {
+							Name:  "iso2Code",
+							Path:  "country.iso2Code",
+							Type:  types.String,
+							Label: labels.Optional,
+						},
+						"name": {
+							Name:  "name",
+							Path:  "country.name",
+							Type:  types.String,
+							Label: labels.Optional,
+						},
+						"latitude": {
+							Name:  "iso2Code",
+							Path:  "country.latitude",
+							Type:  types.Float,
+							Label: labels.Optional,
+						},
+						"longitude": {
+							Name:  "name",
+							Path:  "country.longitude",
+							Type:  types.Float,
+							Label: labels.Optional,
+						},
+					},
+					Reference: &specs.PropertyReference{
+						Resource: template.InputResource,
+						Path:     "repeating",
+					},
+				},
+			},
+		},
+	}
+
+	schemaObject = &specs.ParameterMap{
 		Property: &specs.Property{
 			Type:  types.Message,
 			Label: labels.Optional,
