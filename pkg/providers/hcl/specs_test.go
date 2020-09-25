@@ -61,7 +61,16 @@ func TestParseIntermediateStaticProperty(t *testing.T) {
 						Template: specs.Template{
 							Scalar: &specs.Scalar{
 								Type:    types.String,
-								Default: "foo",
+							},
+						},
+						Default: map[uint]*Property{
+							0: {
+								Template: specs.Template{
+									Scalar: &specs.Scalar{
+										Type:    types.String,
+										Default: "foo",
+									},
+								},
 							},
 						},
 					},
@@ -79,6 +88,7 @@ func TestParseIntermediateStaticProperty(t *testing.T) {
 				Label: labels.Optional,
 				Template: specs.Template{
 					Repeated: &specs.Repeated{
+
 						Template: specs.Template{
 							Reference: &specs.PropertyReference{
 								Resource: "input",
@@ -88,6 +98,7 @@ func TestParseIntermediateStaticProperty(t *testing.T) {
 								Type: types.String,
 							},
 						},
+
 					},
 				},
 			},
@@ -148,34 +159,55 @@ func TestParseIntermediateStaticProperty(t *testing.T) {
 			expected: &specs.Property{
 				Name:  "array",
 				Path:  "array",
-				Type:  types.String,
-				Label: labels.Repeated,
-				Nested: []*specs.Property{
-					{
-						Path:  "array",
-						Type:  types.Message,
-						Label: labels.Optional,
-						Nested: []*specs.Property{
-							{
-								Name:    "action",
-								Path:    "array.action",
-								Type:    types.String,
-								Label:   labels.Optional,
-								Default: "create",
+				Label: labels.Optional,
+				Template: specs.Template{
+					Repeated: &specs.Repeated{
+						Template: specs.Template{ // Question? maybe get rid of Template completely since it is an array of a fixed size
+							Message: specs.Message{
+								"action": {
+									Name: "action",
+									Path: "array.action",
+								},
 							},
 						},
-					},
-					{
-						Path:  "array",
-						Type:  types.Message,
-						Label: labels.Optional,
-						Nested: []*specs.Property{
-							{
-								Name:    "action",
-								Path:    "array.action",
-								Type:    types.String,
-								Label:   labels.Optional,
-								Default: "update",
+						Default: map[uint]*specs.Property{
+							0: {
+								Path:  "array",
+								Label: labels.Optional,
+								Template: specs.Template{
+									Message: specs.Message{
+										"action": {
+											Name:  "action",
+											Path:  "array.action",
+											Label: labels.Optional,
+											Template: specs.Template{
+												Scalar: &specs.Scalar{
+													Type:    types.String,
+													Default: "create",
+												},
+											},
+										},
+									},
+								},
+							},
+							1: {
+								Path:  "array",
+								Label: labels.Optional,
+								Template: specs.Template{
+									Message: specs.Message{
+										"action": {
+											Name:  "action",
+											Path:  "array.action",
+											Label: labels.Optional,
+											Template: specs.Template{
+												Scalar: &specs.Scalar{
+													Type:    types.String,
+													Default: "update",
+												},
+											},
+										},
+									},
+								},
 							},
 						},
 					},
@@ -189,37 +221,66 @@ func TestParseIntermediateStaticProperty(t *testing.T) {
 					42,
 					{
 						"id": "{{ input:id }}",
-					}
+					},
+					{{ input:name }}
 				]`,
 			expected: &specs.Property{
 				Name:  "array",
 				Path:  "array",
-				Type:  types.String,
-				Label: labels.Repeated,
-				Nested: []*specs.Property{
-					{
-						Path:    "array",
-						Type:    types.String,
-						Label:   labels.Optional,
-						Default: "foo",
-					},
-					{
-						Path:    "array",
-						Type:    types.Int64,
-						Label:   labels.Optional,
-						Default: int64(42),
-					},
-					{
-						Path:  "array",
-						Type:  types.Message,
-						Label: labels.Optional,
-						Nested: []*specs.Property{
-							{
-								Name: "id",
-								Path: "array.id",
-								Reference: &specs.PropertyReference{
-									Resource: "input",
-									Path:     "id",
+				Label: labels.Optional,
+				Template: specs.Template{
+					Repeated: &specs.Repeated{
+						Template: specs.Template{
+						// 	// ??!?!?!?! Is it oneOF?
+						// },
+						Default: map[uint]*specs.Property{
+							0: {
+								Path:  "array",
+								Label: labels.Optional,
+								Template: specs.Template{
+									Scalar: &specs.Scalar{
+										Type:    types.String,
+										Default: "foo",
+									},
+								},
+							},
+							1: {
+								Path:  "array",
+								Label: labels.Optional,
+								Template: specs.Template{
+									Scalar: &specs.Scalar{
+										Type:    types.Int64,
+										Default: int64(42),
+									},
+								},
+							},
+							2: {
+								Path:  "array",
+								Label: labels.Optional,
+								Template: specs.Template{
+									Message: specs.Message{
+										"id": {
+											Name: "id",
+											Path: "array.id",
+											Template: specs.Template{
+												Reference: &specs.PropertyReference{
+													Resource: "input",
+													Path:     "id",
+												},
+											},
+										},
+									},
+								},
+							},
+							3: {
+								Path:  "array",
+								Label: labels.Optional,
+								Template:specs.Template{
+									Reference: &specs.PropertyReference{ // What happens when the reference gets resolved? fills Scalar/Enum/Repeated/Message and set Reference = nil?
+										Resource: "input",
+										Path:     "name",
+									},
+									// Scalar: ... when it is resolved
 								},
 							},
 						},
@@ -239,8 +300,11 @@ func TestParseIntermediateStaticProperty(t *testing.T) {
 			expected: &specs.Property{
 				Name:  "object",
 				Path:  "object",
-				Type:  types.Message,
 				Label: labels.Optional,
+				Template: specs.Template{
+					Message: 
+				},
+				Type: types.Message,
 				Nested: []*specs.Property{
 					{
 						Name:    "message",

@@ -225,6 +225,8 @@ func PropertyLookup(param *specs.Property) PathLookup {
 		case param.Path == path:
 			return param
 		case param.Repeated != nil:
+			// TODO: allow to reference indexes
+
 			return PropertyLookup(
 				&specs.Property{
 					Template: param.Repeated.Template,
