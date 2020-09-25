@@ -67,9 +67,7 @@ func (repeated Repeated) Compare(expected Repeated) error {
 	}
 
 	for position, expectedProperty := range expected {
-		// given message does not include the current property
 		givenProperty := repeated[position]
-
 		if err := givenProperty.Compare(expectedProperty); err != nil {
 			return fmt.Errorf("array property mismatch: %w", err)
 		}
