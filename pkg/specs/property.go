@@ -121,24 +121,15 @@ type EnumValue struct {
 	Description string `json:"description,omitempty"`
 }
 
-// Repeated represents an array type.
-type Repeated struct {
-	// This is a reference to the parent property
-	Template
-
-	// Default contains the static values for certain indexes
-	Default map[uint]*Property `json:"default,omitempty"`
-}
+// Repeated represents an array type of fixed size.
+type Repeated []Template
 
 // Clone repeated.
-func (repeated Repeated) Clone() *Repeated {
-	var clone = &Repeated{
-		Template: *repeated.Template.Clone(),
-		Default:  make(map[uint]*Property, len(repeated.Default)),
-	}
+func (repeated Repeated) Clone() Repeated {
+	var clone = make([]Template, len(repeated))
 
-	for index, prop := range repeated.Default {
-		clone.Default[index] = prop.Clone()
+	for index, template := range repeated {
+		clone[index] = template.Clone()
 	}
 
 	return clone
@@ -176,10 +167,10 @@ type Template struct {
 	Reference *PropertyReference `json:"reference,omitempty"` // Reference represents a property reference made inside the given property
 
 	// Only one of the following fields should be set
-	Scalar   *Scalar   `json:"scalar,omitempty"`
-	Enum     *Enum     `json:"enum,omitempty"`
-	Repeated *Repeated `json:"repeated,omitempty"`
-	Message  Message   `json:"message,omitempty"`
+	Scalar   *Scalar  `json:"scalar,omitempty"`
+	Enum     *Enum    `json:"enum,omitempty"`
+	Repeated Repeated `json:"repeated,omitempty"`
+	Message  Message  `json:"message,omitempty"`
 }
 
 // Type returns the type of the given template.
@@ -204,8 +195,8 @@ func (t Template) Type() types.Type {
 }
 
 // Clone internal value.
-func (t Template) Clone() *Template {
-	var clone = &Template{
+func (t Template) Clone() Template {
+	var clone = Template{
 		Reference: t.Reference.Clone(),
 	}
 
@@ -269,6 +260,7 @@ type Property struct {
 	Template
 }
 
+// DefaultValue returns rge default value for a given property.
 func (prop *Property) DefaultValue() interface{} {
 	t := prop.Template
 	switch {
@@ -277,7 +269,7 @@ func (prop *Property) DefaultValue() interface{} {
 	case t.Message != nil:
 		return nil
 	case t.Repeated != nil:
-		return t.Repeated.Default
+		return nil
 	case t.Enum != nil:
 		return nil
 	}
@@ -308,7 +300,7 @@ func (prop *Property) Clone() *Property {
 		Options: prop.Options,
 		Label:   prop.Label,
 
-		Template: *prop.Template.Clone(),
+		Template: prop.Template.Clone(),
 	}
 }
 

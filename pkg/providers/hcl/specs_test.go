@@ -148,8 +148,15 @@ func TestParseIntermediateStaticProperty(t *testing.T) {
 			expected: &specs.Property{
 				Name:  "array",
 				Path:  "array",
-				Type:  types.String,
-				Label: labels.Repeated,
+				Label: labels.Optional,
+				Template: specs.Template{
+					Repeated: &specs.Repeated{
+						Default: map[uint]*specs.Property{},
+					},
+				},
+
+				Type: types.String,
+
 				Nested: []*specs.Property{
 					{
 						Path:  "array",

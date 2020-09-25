@@ -228,10 +228,8 @@ func TestPropertyUnmarshalDefault(t *testing.T) {
 			t.Run("repeated", func(t *testing.T) {
 				message := &Property{
 					Template: Template{
-						Repeated: &Repeated{
-							Default: map[uint]*Property{
-								0: test.input,
-							},
+						Repeated: Repeated{
+							test.input.Template,
 						},
 					},
 				}
@@ -251,12 +249,12 @@ func TestPropertyUnmarshalDefault(t *testing.T) {
 					t.Fatalf("result repeated is not set")
 				}
 
-				property := result.Repeated.Default[0]
-				if property == nil {
+				template := result.Repeated[0]
+				if template.Scalar == nil {
 					t.Fatalf("result repeated default property %s is not set", name)
 				}
 
-				kind := reflect.TypeOf(property.Scalar.Default).Kind()
+				kind := reflect.TypeOf(template.Scalar.Default).Kind()
 				if kind != test.expected {
 					t.Errorf("unexpected type %+v, expected %+v", kind, test.expected)
 				}
@@ -385,9 +383,7 @@ func TestPropertyClone(t *testing.T) {
 				Default: false,
 				Type:    types.String,
 			},
-			Repeated: &Repeated{
-				Default: map[uint]*Property{},
-			},
+			Repeated: Repeated{},
 			Message: Message{
 				"first": {Name: "first", Path: "first"},
 			},
@@ -458,8 +454,8 @@ func TestPropertyClone(t *testing.T) {
 		t.Fatalf("repeated not set")
 	}
 
-	if result.Repeated.Default == nil {
-		t.Fatalf("repeated default not set")
+	if result.Repeated == nil {
+		t.Fatalf("repeated is not set")
 	}
 
 	if result.Raw != property.Raw {
