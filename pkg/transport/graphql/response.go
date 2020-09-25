@@ -3,84 +3,97 @@ package graphql
 import (
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/labels"
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
-// ResponseValue constructs the response value send back to the client
-func ResponseValue(specs *specs.Property, refs references.Store) (interface{}, error) {
-	if specs.Type != types.Message {
+// ResponseObject constructs the response value send back to the client
+func ResponseObject(specs *specs.Property, refs references.Store) (map[string]interface{}, error) {
+	if specs.Type() != types.Message {
 		return nil, ErrInvalidObject
 	}
 
-	result := make(map[string]interface{}, len(specs.Message))
-	for _, nested := range specs.Message {
-		if nested.Label == labels.Repeated {
-			store := refs.Load(nested.Reference.Resource, nested.Reference.Path)
-			if store == nil {
-				continue
-			}
+	value, err := ResponseValue(specs.Template, refs)
+	if err != nil {
+		return nil, err
+	}
 
-			repeating := make([]interface{}, len(store.Repeated))
+	object, is := value.(map[string]interface{})
+	if !is {
+		return nil, ErrInvalidObject
+	}
 
-			for index, store := range store.Repeated {
-				if nested.Type == types.Message {
-					value, err := ResponseValue(nested, store)
-					if err != nil {
-						return nil, err
-					}
+	return object, nil
+}
 
-					repeating[index] = value
-					continue
-				}
-
-				val := nested.Default
-				ref := store.Load("", "")
-				if ref != nil {
-					if ref.Enum != nil {
-						val = nested.Enum.Positions[*ref.Enum].Key
-					}
-
-					if ref.Value != nil && val == nil {
-						val = ref.Value
-					}
-				}
-
-				repeating[index] = val
-			}
-
-			result[nested.Name] = repeating
-			continue
-		}
-
-		if nested.Type == types.Message {
-			value, err := ResponseValue(nested, refs)
+// ResponseValue constructs a new response used inside a response object
+func ResponseValue(template specs.Template, refs references.Store) (interface{}, error) {
+	switch {
+	case template.Message != nil:
+		result := make(map[string]interface{}, len(template.Message))
+		for _, nested := range template.Message {
+			value, err := ResponseValue(nested.Template, refs)
 			if err != nil {
 				return nil, err
 			}
 
-			result[nested.Name] = value
-			continue
-		}
-
-		val := nested.Default
-
-		if nested.Reference != nil {
-			ref := refs.Load(nested.Reference.Resource, nested.Reference.Path)
-			if ref != nil {
-				if ref.Enum != nil {
-					// Enum should exist and a additional nil check should not be necessary
-					val = nested.Enum.Positions[*ref.Enum].Key
-				}
-
-				if ref.Value != nil && val == nil {
-					val = ref.Value
-				}
+			if value == nil {
+				continue
 			}
+
+			result[nested.Name] = value
 		}
 
-		result[nested.Name] = val
+		return result, nil
+	case template.Repeated != nil:
+		// TODO: implement default types
+		store := refs.Load(template.Reference.Resource, template.Reference.Path)
+		if store == nil {
+			return nil, nil
+		}
+
+		result := make([]interface{}, 0, len(store.Repeated))
+
+		if len(store.Repeated) == 0 {
+			return result, nil
+		}
+
+		// TODO: cache repeated template
+		template, err := template.Repeated.Template()
+		if err != nil {
+			return nil, err
+		}
+
+		for _, store := range store.Repeated {
+			value, err := ResponseValue(template, store)
+			if err != nil {
+				return nil, err
+			}
+
+			if value == nil {
+				continue
+			}
+
+			result = append(result, value)
+		}
+
+		return result, nil
+	case template.Enum != nil:
+		ref := refs.Load(template.Reference.Resource, template.Reference.Path)
+		if ref == nil {
+			return nil, nil
+		}
+
+		return template.Enum.Positions[*ref.Enum].Key, nil
+	case template.Scalar != nil:
+		value := template.Scalar.Default
+
+		ref := refs.Load(template.Reference.Resource, template.Reference.Path)
+		if ref != nil {
+			value = ref.Value
+		}
+
+		return value, nil
 	}
 
-	return result, nil
+	return nil, nil
 }
