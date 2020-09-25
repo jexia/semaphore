@@ -248,14 +248,14 @@ func resolveProperty(ctx *broker.Context, node *specs.Node, property *specs.Prop
 
 		return nil
 	case property.Repeated != nil:
-		// if err := ResolveProperty(ctx, node, property.Repeated.Property, flow); err != nil {
-		// 	return NewErrUnresolvedProperty(err, property.Repeated.Property)
-		// }
+		for _, repeated := range property.Repeated {
+			property := &specs.Property{
+				Template: repeated,
+			}
 
-		for _, repeated := range property.Repeated.Default {
-			err := ResolveProperty(ctx, node, repeated, flow)
+			err := ResolveProperty(ctx, node, property, flow)
 			if err != nil {
-				return NewErrUnresolvedProperty(err, repeated)
+				return NewErrUnresolvedProperty(err, property)
 			}
 		}
 
@@ -312,15 +312,16 @@ func ResolveProperty(ctx *broker.Context, node *specs.Node, property *specs.Prop
 	property.Label = reference.Label
 	property.Reference.Property = reference
 
-	// TODO: fixme
-	// property.Default = reference.Default
-	// property.Type = reference.Type
+	if property.Scalar != nil && reference.Scalar != nil {
+		property.Scalar.Default = reference.Scalar.Default
+		property.Scalar.Type = reference.Scalar.Type
+	}
 
 	if reference.Enum != nil {
 		property.Enum = reference.Enum
 	}
 
-	ScopeNestedReferences(reference, property)
+	ScopeNestedReferences(reference.Template, property, property.Template)
 
 	return nil
 }
@@ -367,12 +368,12 @@ func InsideProperty(source *specs.Property, target *specs.Property) bool {
 			}
 		}
 	case source.Repeated != nil:
-		if InsideProperty(&specs.Property{Template: source.Repeated.Template}, target) {
-			return true
-		}
+		for _, repeated := range source.Repeated {
+			property := &specs.Property{
+				Template: repeated,
+			}
 
-		for _, repeated := range source.Repeated.Default {
-			if InsideProperty(repeated, target) {
+			if InsideProperty(property, target) {
 				return true
 			}
 		}
@@ -382,59 +383,51 @@ func InsideProperty(source *specs.Property, target *specs.Property) bool {
 }
 
 // ScopeNestedReferences scopes all nested references available inside the reference property
-func ScopeNestedReferences(source *specs.Property, property *specs.Property) {
-	if source == nil || property == nil {
-		return
-	}
-
+func ScopeNestedReferences(source specs.Template, property *specs.Property, target specs.Template) {
 	switch {
 	case source.Message != nil:
 		for _, item := range source.Message {
-			nested, ok := property.Message[item.Name]
+			nested, ok := target.Message[item.Name]
 			if !ok {
 				nested = item.Clone()
-				property.Message[item.Name] = nested
+				target.Message[item.Name] = nested
 			}
 
 			if nested.Reference == nil {
 				nested.Reference = &specs.PropertyReference{
-					Resource: property.Reference.Resource,
-					Path:     template.JoinPath(property.Reference.Path, item.Name),
+					Resource: target.Reference.Resource,
+					Path:     template.JoinPath(target.Reference.Path, item.Name),
 					Property: item,
 				}
 			}
 
 			if len(item.Message) > 0 {
-				ScopeNestedReferences(item, nested)
+				ScopeNestedReferences(item.Template, item, nested.Template)
 			}
 		}
 	case source.Repeated != nil:
-		// TODO: check me!
-		ScopeNestedReferences(
-			&specs.Property{
-				Template: source.Repeated.Template,
-			},
-			property,
-		)
+		if target.Repeated != nil {
+			return
+		}
 
-		for _, item := range source.Repeated.Default {
-			nested, ok := property.Message[item.Name]
-			if !ok {
-				nested = item.Clone()
-				property.Message[item.Name] = nested
-			}
+		target.Repeated = make(specs.Repeated, len(source.Repeated))
 
-			if nested.Reference == nil {
-				nested.Reference = &specs.PropertyReference{
+		for index, item := range source.Repeated {
+			cloned := item.Clone()
+
+			if cloned.Reference == nil {
+				cloned.Reference = &specs.PropertyReference{
 					Resource: property.Reference.Resource,
-					Path:     template.JoinPath(property.Reference.Path, item.Name),
-					Property: item,
+					Path:     property.Reference.Path,
+					Property: property,
 				}
 			}
 
 			if len(item.Message) > 0 {
-				ScopeNestedReferences(item, nested)
+				ScopeNestedReferences(item, property, cloned)
 			}
+
+			target.Repeated[index] = cloned
 		}
 	}
 }

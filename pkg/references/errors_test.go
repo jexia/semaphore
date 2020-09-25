@@ -18,7 +18,9 @@ func TestErrUndefinedReference_Prettify(t *testing.T) {
 	t.Run("includes Expression in details", func(t *testing.T) {
 		expr := SomeExpression{}
 		err := ErrUndefinedReference{
-			Expression: expr,
+			Property: &specs.Property{
+				Expr: expr,
+			},
 		}
 
 		pretty := err.Prettify().Details
@@ -32,7 +34,7 @@ func TestErrUndefinedReference_Prettify(t *testing.T) {
 
 	t.Run("does not include nil Expression in details", func(t *testing.T) {
 		err := ErrUndefinedReference{
-			Expression: nil,
+			Property: &specs.Property{},
 		}
 
 		pretty := err.Prettify().Details
@@ -45,10 +47,13 @@ func TestErrUndefinedReference_Prettify(t *testing.T) {
 
 	t.Run("returns pretty error", func(t *testing.T) {
 		err := ErrUndefinedReference{
-			Expression: nil,
-			Reference:  &specs.PropertyReference{Resource: "user", Path: "name"},
+			Property: &specs.Property{
+				Path: "there",
+				Template: specs.Template{
+					Reference: &specs.PropertyReference{Resource: "user", Path: "name"},
+				},
+			},
 			Breakpoint: "here",
-			Path:       "there",
 		}
 
 		got := err.Prettify()
@@ -56,9 +61,9 @@ func TestErrUndefinedReference_Prettify(t *testing.T) {
 		want := prettyerr.Error{
 			Message: err.Error(),
 			Details: map[string]interface{}{
-				"Reference":  err.Reference,
+				"Reference":  err.Property.Reference,
 				"Breakpoint": err.Breakpoint,
-				"Path":       err.Path,
+				"Path":       err.Property.Path,
 			},
 			Code:       "UndefinedReference",
 			Suggestion: "",

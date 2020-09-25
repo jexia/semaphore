@@ -646,7 +646,7 @@ func TestRepeatedTemplate(t *testing.T) {
 		t.Run(title, func(t *testing.T) {
 			actual, err := test.repeated.Template()
 
-			if !reflect.DeepEqual(err, test.error) {
+			if err != test.error {
 				t.Errorf("error '%+v' was expected to be %+v", err, test.error)
 			}
 
