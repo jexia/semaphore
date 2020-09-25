@@ -2,36 +2,14 @@ package specs
 
 import (
 	"encoding/json"
+	"fmt"
 	"reflect"
-	"sort"
 	"testing"
 
 	"github.com/jexia/semaphore/pkg/specs/labels"
 	"github.com/jexia/semaphore/pkg/specs/metadata"
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
-
-func TestScalarUnmarshalInvalidJSON(t *testing.T) {
-	payload := "non json string"
-	prop := Property{
-		Template: Template{
-			Scalar: &Scalar{},
-		},
-	}
-
-	err := prop.Scalar.UnmarshalJSON([]byte(payload))
-	if err == nil {
-		t.Error("expected error got nil")
-	}
-}
-
-func TestScalarUnmarshalNil(t *testing.T) {
-	var scalar *Scalar
-	err := scalar.UnmarshalJSON(nil)
-	if err != nil {
-		t.Error(err)
-	}
-}
 
 func TestPropertyUnmarshalDefault(t *testing.T) {
 	t.Parallel()
@@ -263,74 +241,6 @@ func TestPropertyUnmarshalDefault(t *testing.T) {
 	}
 }
 
-func TestPropertyReferenceClone(t *testing.T) {
-	reference := &PropertyReference{
-		Meta:     metadata.WithValue(nil, nil, nil),
-		Resource: "resource",
-		Path:     "path",
-		Property: &Property{},
-	}
-
-	result := reference.Clone()
-	if result == nil {
-		t.Error("unexpected result, expected property reference clone to be returned")
-	}
-
-	if result.Meta != reference.Meta {
-		t.Errorf("unexpected meta %+v, expected %+v", result.Meta, reference.Meta)
-	}
-
-	if result.Resource != reference.Resource {
-		t.Errorf("unexpected resource %+v", result.Resource)
-	}
-
-	if result.Path != reference.Path {
-		t.Errorf("unexpected path %+v", result.Path)
-	}
-
-	if result.Property != nil {
-		t.Errorf("unexpected property %+v", result.Property)
-	}
-}
-
-func TestPropertyReferenceCloneNilValue(t *testing.T) {
-	var reference *PropertyReference
-	result := reference.Clone()
-	if result != nil {
-		t.Errorf("unexpected result %+v", result)
-	}
-}
-
-func TestPropertyReferenceString(t *testing.T) {
-	t.Parallel()
-
-	tests := map[string]*PropertyReference{
-		"resource:path": {
-			Resource: "resource",
-			Path:     "path",
-		},
-		"resource:nested.path": {
-			Resource: "resource",
-			Path:     "nested.path",
-		},
-		"resource.prop:path": {
-			Resource: "resource.prop",
-			Path:     "path",
-		},
-		":": {},
-		"":  nil,
-	}
-
-	for expected, reference := range tests {
-		t.Run(expected, func(t *testing.T) {
-			result := reference.String()
-			if result != expected {
-				t.Fatalf("unexpected result %s, expected %s", result, expected)
-			}
-		})
-	}
-}
-
 func TestObjectsAppend(t *testing.T) {
 	objects := Schemas{}
 
@@ -475,57 +385,184 @@ func TestPropertyClone(t *testing.T) {
 	}
 }
 
-func TestPropertyListSort(t *testing.T) {
-	list := PropertyList{
-		&Property{Name: "third", Position: 2},
-		&Property{Name: "first", Position: 0},
-		&Property{Name: "second", Position: 1},
-	}
-
-	sort.Sort(list)
-
-	for index, item := range list {
-		if int(item.Position) != index {
-			t.Fatalf("unexpected property list order %d, expected %d", item.Position, index)
+func TestPropertyCompare(t *testing.T) {
+	var (
+		createScalar = func() *Property {
+			return &Property{
+				Name:     "age",
+				Path:     "dog",
+				Position: 0,
+				Label:    labels.Required,
+				Template: Template{
+					Scalar: &Scalar{
+						Type: types.Int32,
+					},
+				},
+			}
 		}
-	}
-}
 
-func TestPropertyListGet(t *testing.T) {
-	list := PropertyList{
-		&Property{Name: "first"},
-		&Property{Name: "second"},
-	}
+		createEnum = func() *Property {
+			retriever := &EnumValue{
+				Key:      "retriever",
+				Position: 0,
+			}
+			shepherd := &EnumValue{
+				Key:      "shepherd",
+				Position: 1,
+			}
 
-	result := list.Get("second")
-	if result == nil {
-		t.Fatal("unexpected empty result when looking up second")
-	}
+			return &Property{
+				Name:     "breed",
+				Path:     "dog",
+				Position: 0,
+				Template: Template{
+					Enum: &Enum{
+						Name: "breed",
+						Keys: map[string]*EnumValue{
+							retriever.Key: retriever, shepherd.Key: shepherd,
+						},
+						Positions: map[int32]*EnumValue{
+							retriever.Position: retriever, shepherd.Position: shepherd,
+						},
+					},
+				},
+			}
+		}
 
-	unexpected := list.Get("unexpected")
-	if unexpected != nil {
-		t.Fatal("unexpected lookup returned a unexpected property")
-	}
-}
+		createRepeated = func() *Property {
+			return &Property{
+				Name: "hunters",
+				Path: "dogs",
+				Template: Template{
+					Repeated: Repeated{
+						createEnum().Template,
+					},
+				},
+			}
+		}
 
-func TestPropertyListGetNil(t *testing.T) {
-	list := PropertyList{
-		nil,
-		&Property{Name: "first"},
-		nil,
-		&Property{Name: "second"},
-		nil,
-	}
+		createMessage = func() *Property {
+			return &Property{
+				Name: "dog",
+				Path: "request",
+				Template: Template{
+					Message: Message{
+						"age":   createScalar(),
+						"breed": createEnum(),
+					},
+				},
+			}
+		}
 
-	result := list.Get("second")
-	if result == nil {
-		t.Fatal("unexpected empty result when looking up second")
-	}
+		// createAnother<T> behaves like create<T> with a tiny difference.
+		// For example, a scalar type or a name might be different.
+		// We use it to test comparison <T> against a bit different <T>
 
-	unexpected := list.Get("unexpected")
-	if unexpected != nil {
-		t.Fatal("unexpected lookup returned a unexpected property")
-	}
+		createAnotherScalar = func() *Property {
+			prop := createScalar()
+			prop.Scalar.Type = types.String
+			return prop
+		}
+
+		createAnotherEnum = func() *Property {
+			prop := createEnum()
+			prop.Enum.Keys["foobar"] = &EnumValue{Key: "foobar", Position: 100}
+			prop.Enum.Positions[100] = &EnumValue{Key: "foobar", Position: 100}
+			return prop
+		}
+
+		createAnotherRepeated = func() *Property {
+			prop := createRepeated()
+			prop.Repeated = Repeated{
+				{
+					Enum: &Enum{},
+				},
+			}
+			return prop
+		}
+
+		createAnotherMessage = func() *Property {
+			prop := createMessage()
+			prop.Message["age"] = createAnotherScalar()
+			return prop
+		}
+
+		shouldFail = func(t *testing.T, property, schema *Property) {
+			if property.Compare(schema) == nil {
+				t.Fatalf("CheckPropertyTypes() = nil, an error expected")
+			}
+		}
+
+		shouldMatch = func(t *testing.T, property, schema *Property) {
+			if err := property.Compare(schema); err != nil {
+				t.Fatalf("CheckPropertyTypes() returns unexpected error: %s", err)
+			}
+		}
+	)
+
+	t.Run("should fail as schema is nil", func(t *testing.T) {
+		shouldFail(t, createScalar(), nil)
+	})
+
+	t.Run("should fail due to different type", func(t *testing.T) {
+		schema := createScalar()
+		prop := createScalar()
+
+		prop.Scalar.Type = types.Float
+
+		shouldFail(t, prop, schema)
+	})
+
+	t.Run("should fail due to different label", func(t *testing.T) {
+		schema := createScalar()
+		prop := createScalar()
+
+		prop.Label = labels.Optional
+
+		shouldFail(t, prop, schema)
+	})
+
+	t.Run("should fail due to empty schema, but filled property", func(t *testing.T) {
+		prop := createScalar()
+
+		prop.Label = labels.Optional
+
+		shouldFail(t, prop, &Property{})
+	})
+
+	t.Run("should fail due to empty property, but filled schema", func(t *testing.T) {
+		schema := createScalar()
+
+		shouldFail(t, &Property{}, schema)
+	})
+
+	t.Run("", func(t *testing.T) {
+		props := map[string]*Property{
+			"scalar":   createScalar(),
+			"enum":     createEnum(),
+			"message":  createMessage(),
+			"repeated": createRepeated(),
+
+			"another_scalar":   createAnotherScalar(),
+			"another_enum":     createAnotherEnum(),
+			"another_message":  createAnotherMessage(),
+			"another_repeated": createAnotherRepeated(),
+		}
+
+		for propKind, prop := range props {
+			for schemaKind, schema := range props {
+				if propKind == schemaKind {
+					t.Run(fmt.Sprintf("should match property '%s' against schema '%s'", propKind, schemaKind), func(t *testing.T) {
+						shouldMatch(t, prop, schema)
+					})
+				} else {
+					t.Run(fmt.Sprintf("should not match property '%s' against schema '%s'", propKind, schemaKind), func(t *testing.T) {
+						shouldFail(t, prop, schema)
+					})
+				}
+			}
+		}
+	})
 }
 
 func TestParameterMapClone(t *testing.T) {
@@ -583,76 +620,5 @@ func TestParameterMapCloneNilValue(t *testing.T) {
 	result := params.Clone()
 	if result != nil {
 		t.Errorf("unexpected result %+v", result)
-	}
-}
-
-func TestRepeatedTemplate(t *testing.T) {
-	type test struct {
-		repeated Repeated
-		expected Template
-		error    error
-	}
-
-	var (
-		foo = Template{
-			Scalar: &Scalar{
-				Type:    types.String,
-				Default: "foo",
-			},
-		}
-
-		bar = Template{
-			Scalar: &Scalar{
-				Type:    types.String,
-				Default: "bar",
-			},
-		}
-
-		baz = Template{
-			Scalar: &Scalar{
-				Type:    types.String,
-				Default: "baz",
-			},
-		}
-
-		fooBarMsg = Message{
-			"foo": &Property{Template: foo},
-			"bar": &Property{Template: bar},
-		}
-
-		objFooBar = Template{
-			Message: fooBarMsg,
-		}
-
-		tests = map[string]test{
-			"strings": {
-				repeated: Repeated{foo, bar, baz},
-				expected: Template{
-					Scalar: &Scalar{
-						Type: types.String,
-					},
-				},
-			},
-			"objects": {
-				repeated: Repeated{objFooBar, objFooBar, objFooBar},
-				expected: Template{
-					Message: fooBarMsg,
-				},
-			},
-		}
-	)
-
-	for title, test := range tests {
-		t.Run(title, func(t *testing.T) {
-			actual, err := test.repeated.Template()
-
-			if !reflect.DeepEqual(err, test.error) {
-				t.Errorf("error '%+v' was expected to be %+v", err, test.error)
-			}
-
-			if !reflect.DeepEqual(actual, test.expected) {
-				t.Errorf("template %+v was expected to be %+v", actual, test.expected)
-			}
-		})
 	}
 }

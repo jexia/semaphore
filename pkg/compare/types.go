@@ -134,68 +134,9 @@ func CheckParameterMapTypes(ctx *broker.Context, parameters *specs.ParameterMap,
 		}
 	}
 
-	err := CheckPropertyTypes(parameters.Property, objects.Get(parameters.Schema))
+	err := parameters.Property.Compare(objects.Get(parameters.Schema))
 	if err != nil {
 		return fmt.Errorf("flow '%s' mismatch: %w", flow.GetName(), err)
-	}
-
-	return nil
-}
-
-// CheckPropertyTypes checks the given schema against the given schema method types
-func CheckPropertyTypes(property *specs.Property, schema *specs.Property) (err error) {
-	if schema == nil {
-		return trace.New(trace.WithExpression(property.Expr), trace.WithMessage("unable to check types for '%s' no schema given", property.Path))
-	}
-
-	if property.Template.Type() != schema.Type() {
-		return trace.New(trace.WithExpression(property.Expr), trace.WithMessage("cannot use type (%s) for '%s', expected (%s)", property.Type(), property.Path, schema.Type()))
-	}
-
-	if property.Label != schema.Label {
-		return trace.New(trace.WithExpression(property.Expr), trace.WithMessage("cannot use label (%s) for '%s', expected (%s)", property.Label, property.Path, schema.Label))
-	}
-
-	if !property.Empty() && schema.Empty() {
-		return trace.New(trace.WithExpression(property.Expr), trace.WithMessage("property '%s' has a nested object but schema does not '%s'", property.Path, schema.Name))
-	}
-
-	if !schema.Empty() && property.Empty() {
-		return trace.New(trace.WithExpression(property.Expr), trace.WithMessage("schema '%s' has a nested object but property does not '%s'", schema.Name, property.Path))
-	}
-
-	if err := CompareTemplate(schema.Template, property.Template); err != nil {
-		return fmt.Errorf("nested schema mismatch under property '%s': %w", property.Path, err)
-	}
-
-	return nil
-}
-
-func CompareTemplate(expected specs.Template, given specs.Template) error {
-	var (
-		err error
-	)
-
-	switch {
-	case expected.Repeated != nil:
-		err = CompareRepeated(expected.Repeated, given.Repeated)
-		break
-
-	case expected.Scalar != nil:
-		err = CompareScalars(expected.Scalar, given.Scalar)
-		break
-
-	case expected.Message != nil:
-		err = CompareMessages(expected.Message, given.Message)
-		break
-
-	case expected.Enum != nil:
-		err = CompareEnums(expected.Enum, given.Enum)
-		break
-	}
-
-	if err != nil {
-		return fmt.Errorf("type mismatch: %w", err)
 	}
 
 	return nil
