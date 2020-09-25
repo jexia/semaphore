@@ -306,17 +306,12 @@ func PropertyReferences(property *specs.Property) Collection {
 
 		break
 	case property.Repeated != nil:
-		// TODO: check me!
-		for key, ref := range PropertyReferences(
-			&specs.Property{
-				Template: property.Repeated.Template,
-			},
-		) {
-			result[key] = ref
-		}
+		for _, repeated := range property.Repeated {
+			property := &specs.Property{
+				Template: repeated,
+			}
 
-		for _, repeated := range property.Repeated.Default {
-			for key, ref := range PropertyReferences(repeated) {
+			for key, ref := range PropertyReferences(property) {
 				result[key] = ref
 			}
 		}

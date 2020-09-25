@@ -602,8 +602,10 @@ func TestParameterMapReferences(t *testing.T) {
 			params: &specs.ParameterMap{
 				Header: specs.Header{
 					"key": &specs.Property{
-						Reference: &specs.PropertyReference{
-							Path: "key",
+						Template: specs.Template{
+							Reference: &specs.PropertyReference{
+								Path: "key",
+							},
 						},
 					},
 				},
@@ -613,8 +615,10 @@ func TestParameterMapReferences(t *testing.T) {
 			count: 1,
 			params: &specs.ParameterMap{
 				Property: &specs.Property{
-					Reference: &specs.PropertyReference{
-						Path: "key",
+					Template: specs.Template{
+						Reference: &specs.PropertyReference{
+							Path: "key",
+						},
 					},
 				},
 			},
@@ -624,18 +628,20 @@ func TestParameterMapReferences(t *testing.T) {
 			params: &specs.ParameterMap{
 				Property: &specs.Property{
 					Template: specs.Template{
-						Message: &specs.Message{
-							Properties: map[string]*specs.Property{
-								"first": {
-									Name: "first",
-									Path: "first",
+						Message: specs.Message{
+							"first": {
+								Name: "first",
+								Path: "first",
+								Template: specs.Template{
 									Reference: &specs.PropertyReference{
 										Path: "key",
 									},
 								},
-								"second": {
-									Name: "second",
-									Path: "second",
+							},
+							"second": {
+								Name: "second",
+								Path: "second",
+								Template: specs.Template{
 									Reference: &specs.PropertyReference{
 										Path: "else",
 									},
@@ -651,18 +657,20 @@ func TestParameterMapReferences(t *testing.T) {
 			params: &specs.ParameterMap{
 				Property: &specs.Property{
 					Template: specs.Template{
-						Message: &specs.Message{
-							Properties: map[string]*specs.Property{
-								"first": {
-									Name: "first",
-									Path: "first",
+						Message: specs.Message{
+							"first": {
+								Name: "first",
+								Path: "first",
+								Template: specs.Template{
 									Reference: &specs.PropertyReference{
 										Path: "key",
 									},
 								},
-								"second": {
-									Name: "second",
-									Path: "second",
+							},
+							"second": {
+								Name: "second",
+								Path: "second",
+								Template: specs.Template{
 									Reference: &specs.PropertyReference{
 										Path: "key",
 									},

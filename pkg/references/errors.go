@@ -45,6 +45,7 @@ type ErrUndefinedReference struct {
 	Breakpoint string
 }
 
+// NewErrUndefinedReference constructs a new error thrown when a undefined reference is given.
 func NewErrUndefinedReference(inner error, property *specs.Property, breakpoint string) ErrUndefinedReference {
 	return ErrUndefinedReference{
 		wrapErr: wrapErr{
@@ -188,6 +189,7 @@ type ErrUnresolvedProperty struct {
 	Property *specs.Property
 }
 
+// NewErrUnresolvedProperty is thrown when the given property has not been resolved
 func NewErrUnresolvedProperty(inner error, property *specs.Property) ErrUnresolvedProperty {
 	return ErrUnresolvedProperty{
 		wrapErr: wrapErr{
