@@ -224,8 +224,8 @@ func NewInputMockProperty() *specs.Property {
 								Path:  "nested.repeated",
 								Label: labels.Optional,
 								Template: specs.Template{
-									Repeated: &specs.Repeated{
-										Template: specs.Template{
+									Repeated: specs.Repeated{
+										{
 											Message: specs.Message{
 												"message": {
 													Name:  "message",
@@ -262,8 +262,8 @@ func NewInputMockProperty() *specs.Property {
 					Path:  "repeated",
 					Label: labels.Optional,
 					Template: specs.Template{
-						Repeated: &specs.Repeated{
-							Template: specs.Template{
+						Repeated: specs.Repeated{
+							{
 								Message: specs.Message{
 									"message": {
 										Name:  "message",
@@ -292,8 +292,8 @@ func NewInputMockProperty() *specs.Property {
 										Path:  "repeated.repeated",
 										Label: labels.Optional,
 										Template: specs.Template{
-											Repeated: &specs.Repeated{
-												Template: specs.Template{
+											Repeated: specs.Repeated{
+												{
 													Message: specs.Message{
 														"message": {
 															Name:  "message",
@@ -423,8 +423,8 @@ func NewResultMockProperty() *specs.Property {
 								Name: "repeated",
 								Path: "nested.repeated",
 								Template: specs.Template{
-									Repeated: &specs.Repeated{
-										Template: specs.Template{
+									Repeated: specs.Repeated{
+										{
 											Message: specs.Message{
 												"result": {
 													Name:  "result",
@@ -460,8 +460,8 @@ func NewResultMockProperty() *specs.Property {
 					Name: "repeated",
 					Path: "repeated",
 					Template: specs.Template{
-						Repeated: &specs.Repeated{
-							Template: specs.Template{
+						Repeated: specs.Repeated{
+							{
 								Message: specs.Message{
 									"result": {
 										Name:  "result",
@@ -490,8 +490,8 @@ func NewResultMockProperty() *specs.Property {
 										Path:  "repeated.repeated",
 										Label: labels.Optional,
 										Template: specs.Template{
-											Repeated: &specs.Repeated{
-												Template: specs.Template{
+											Repeated: specs.Repeated{
+												{
 													Message: specs.Message{
 														"result": {
 															Name:  "result",
@@ -917,12 +917,12 @@ func TestGetResourceOutputReference(t *testing.T) {
 			{"first.request", "nested"}:                    flow.Nodes[0].Call.Request.Property.Message["nested"],
 			{"first.request", "nested.message"}:            flow.Nodes[0].Call.Request.Property.Message["nested"].Message["message"],
 			{"first.request", "nested.nested.message"}:     flow.Nodes[0].Call.Request.Property.Message["nested"].Message["nested"].Message["message"],
-			{"first.request", "nested.repeated.message"}:   flow.Nodes[0].Call.Request.Property.Message["nested"].Message["repeated"].Repeated.Message["message"],
+			{"first.request", "nested.repeated.message"}:   flow.Nodes[0].Call.Request.Property.Message["nested"].Message["repeated"].Repeated[0].Message["message"],
 			{"first.response", "result"}:                   flow.Nodes[0].Call.Response.Property.Message["result"],
 			{"first.response", "nested.nested.result"}:     flow.Nodes[0].Call.Response.Property.Message["nested"].Message["nested"].Message["result"],
-			{"first.response", "nested.repeated.result"}:   flow.Nodes[0].Call.Response.Property.Message["nested"].Message["repeated"].Repeated.Message["result"],
-			{"first.response", "repeated.repeated.result"}: flow.Nodes[0].Call.Response.Property.Message["repeated"].Repeated.Message["repeated"].Repeated.Message["result"],
-			{"first.response", "nested.repeated.result"}:   flow.Nodes[0].Call.Response.Property.Message["nested"].Message["repeated"].Repeated.Message["result"],
+			{"first.response", "nested.repeated.result"}:   flow.Nodes[0].Call.Response.Property.Message["nested"].Message["repeated"].Repeated[0].Message["result"],
+			{"first.response", "repeated.repeated.result"}: flow.Nodes[0].Call.Response.Property.Message["repeated"].Repeated[0].Message["repeated"].Repeated[0].Message["result"],
+			{"first.response", "nested.repeated.result"}:   flow.Nodes[0].Call.Response.Property.Message["nested"].Message["repeated"].Repeated[0].Message["result"],
 			{"first.params", "message"}:                    flow.Nodes[0].Call.Request.Params["message"],
 			{"first.params", "name"}:                       flow.Nodes[0].Call.Request.Params["name"],
 			{"first.params", "reference"}:                  flow.Nodes[0].Call.Request.Params["reference"],
@@ -1007,8 +1007,8 @@ func TestGetIntermediateResourceReference(t *testing.T) {
 		{"first.header", "cookie"}:                     flow.Nodes[0].Intermediate.Header["cookie"],
 		{"first.response", "result"}:                   flow.Nodes[0].Intermediate.Property.Message["result"],
 		{"first.response", "nested.nested.result"}:     flow.Nodes[0].Intermediate.Property.Message["nested"].Message["nested"].Message["result"],
-		{"first.response", "nested.repeated.result"}:   flow.Nodes[0].Intermediate.Property.Message["nested"].Message["repeated"].Repeated.Message["result"],
-		{"first.response", "repeated.repeated.result"}: flow.Nodes[0].Intermediate.Property.Message["repeated"].Repeated.Message["repeated"].Repeated.Message["result"],
+		{"first.response", "nested.repeated.result"}:   flow.Nodes[0].Intermediate.Property.Message["nested"].Message["repeated"].Repeated[0].Message["result"],
+		{"first.response", "repeated.repeated.result"}: flow.Nodes[0].Intermediate.Property.Message["repeated"].Repeated[0].Message["repeated"].Repeated[0].Message["result"],
 	}
 
 	for input, expected := range tests {
