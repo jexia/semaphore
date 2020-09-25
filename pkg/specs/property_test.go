@@ -228,10 +228,8 @@ func TestPropertyUnmarshalDefault(t *testing.T) {
 			t.Run("repeated", func(t *testing.T) {
 				message := &Property{
 					Template: Template{
-						Repeated: &Repeated{
-							Default: map[uint]*Property{
-								0: test.input,
-							},
+						Repeated: Repeated{
+							test.input.Template,
 						},
 					},
 				}
@@ -251,12 +249,12 @@ func TestPropertyUnmarshalDefault(t *testing.T) {
 					t.Fatalf("result repeated is not set")
 				}
 
-				property := result.Repeated.Default[0]
-				if property == nil {
+				template := result.Repeated[0]
+				if template.Scalar == nil {
 					t.Fatalf("result repeated default property %s is not set", name)
 				}
 
-				kind := reflect.TypeOf(property.Scalar.Default).Kind()
+				kind := reflect.TypeOf(template.Scalar.Default).Kind()
 				if kind != test.expected {
 					t.Errorf("unexpected type %+v, expected %+v", kind, test.expected)
 				}
@@ -385,9 +383,7 @@ func TestPropertyClone(t *testing.T) {
 				Default: false,
 				Type:    types.String,
 			},
-			Repeated: &Repeated{
-				Default: map[uint]*Property{},
-			},
+			Repeated: Repeated{},
 			Message: Message{
 				"first": {Name: "first", Path: "first"},
 			},
@@ -458,8 +454,8 @@ func TestPropertyClone(t *testing.T) {
 		t.Fatalf("repeated not set")
 	}
 
-	if result.Repeated.Default == nil {
-		t.Fatalf("repeated default not set")
+	if result.Repeated == nil {
+		t.Fatalf("repeated is not set")
 	}
 
 	if result.Raw != property.Raw {
@@ -587,5 +583,76 @@ func TestParameterMapCloneNilValue(t *testing.T) {
 	result := params.Clone()
 	if result != nil {
 		t.Errorf("unexpected result %+v", result)
+	}
+}
+
+func TestRepeatedTemplate(t *testing.T) {
+	type test struct {
+		repeated Repeated
+		expected Template
+		error    error
+	}
+
+	var (
+		foo = Template{
+			Scalar: &Scalar{
+				Type:    types.String,
+				Default: "foo",
+			},
+		}
+
+		bar = Template{
+			Scalar: &Scalar{
+				Type:    types.String,
+				Default: "bar",
+			},
+		}
+
+		baz = Template{
+			Scalar: &Scalar{
+				Type:    types.String,
+				Default: "baz",
+			},
+		}
+
+		fooBarMsg = Message{
+			"foo": &Property{Template: foo},
+			"bar": &Property{Template: bar},
+		}
+
+		objFooBar = Template{
+			Message: fooBarMsg,
+		}
+
+		tests = map[string]test{
+			"strings": {
+				repeated: Repeated{foo, bar, baz},
+				expected: Template{
+					Scalar: &Scalar{
+						Type: types.String,
+					},
+				},
+			},
+			"objects": {
+				repeated: Repeated{objFooBar, objFooBar, objFooBar},
+				expected: Template{
+					Message: fooBarMsg,
+				},
+			},
+		}
+	)
+
+	for title, test := range tests {
+		t.Run(title, func(t *testing.T) {
+			actual, err := test.repeated.Template()
+
+			if !reflect.DeepEqual(err, test.error) {
+				t.Errorf("error '%+v' was expected to be %+v", err, test.error)
+			}
+
+			if !reflect.DeepEqual(actual, test.expected) {
+				t.Errorf("template %+v was expected to be %+v", actual, test.expected)
+			}
+		})
 	}
 }

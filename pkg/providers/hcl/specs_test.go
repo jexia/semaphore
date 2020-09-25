@@ -162,12 +162,24 @@ func TestParseIntermediateStaticProperty(t *testing.T) {
 				Label: labels.Optional,
 				Template: specs.Template{
 					Repeated: &specs.Repeated{
-						Template: specs.Template{ // Question? maybe get rid of Template completely since it is an array of a fixed size
-							Message: specs.Message{
-								"action": {
-									Name: "action",
-									Path: "array.action",
-								},
+						Default: map[uint]*specs.Property{},
+					},
+				},
+
+				Type: types.String,
+
+				Nested: []*specs.Property{
+					{
+						Path:  "array",
+						Type:  types.Message,
+						Label: labels.Optional,
+						Nested: []*specs.Property{
+							{
+								Name:    "action",
+								Path:    "array.action",
+								Type:    types.String,
+								Label:   labels.Optional,
+								Default: "create",
 							},
 						},
 						Default: map[uint]*specs.Property{
@@ -302,7 +314,7 @@ func TestParseIntermediateStaticProperty(t *testing.T) {
 				Path:  "object",
 				Label: labels.Optional,
 				Template: specs.Template{
-					Message: 
+					Message:
 				},
 				Type: types.Message,
 				Nested: []*specs.Property{
