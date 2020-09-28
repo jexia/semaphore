@@ -43,9 +43,9 @@ func New(reader Reader, newClaims func() Claims) functions.Intermediate {
 			}
 		}
 
-		if args[0].Type != types.String {
+		if args[0].Type() != types.String {
 			return nil, nil, errInvalidArgumentType{
-				actual:   args[0].Type,
+				actual:   args[0].Type(),
 				expected: types.String,
 			}
 		}
@@ -56,7 +56,7 @@ func New(reader Reader, newClaims func() Claims) functions.Intermediate {
 
 func executable(reader Reader, token *specs.Property, newClaims func() Claims) func(store references.Store) error {
 	return func(store references.Store) error {
-		var value = token.Default
+		var value = token.DefaultValue()
 
 		if token.Reference != nil {
 			ref := store.Load(token.Reference.Resource, token.Reference.Path)

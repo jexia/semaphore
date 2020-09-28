@@ -125,8 +125,10 @@ func TestNew(t *testing.T) {
 	t.Run("should return an error providing invalid argument", func(t *testing.T) {
 		var (
 			arg = &specs.Property{
-				Type:  types.Message,
 				Label: labels.Required,
+				Template: specs.Template{
+					Message: specs.Message{},
+				},
 			}
 
 			_, _, err = fn(arg)
@@ -140,8 +142,12 @@ func TestNew(t *testing.T) {
 	t.Run("should return outputs and executable when input argument is valid", func(t *testing.T) {
 		var (
 			arg = &specs.Property{
-				Type:  types.String,
 				Label: labels.Required,
+				Template: specs.Template{
+					Scalar: &specs.Scalar{
+						Type: types.String,
+					},
+				},
 			}
 
 			outputs, executable, err = fn(arg)

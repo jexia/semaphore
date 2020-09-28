@@ -116,8 +116,8 @@ func TestTokensPrint(t *testing.T) {
 							Resource: template.InputResource,
 							Path:     "array",
 						},
-						Repeated: &specs.Repeated{
-							Template: specs.Template{
+						Repeated: specs.Repeated{
+							{
 								Scalar: &specs.Scalar{
 									Type: types.Float,
 								},
