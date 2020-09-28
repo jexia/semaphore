@@ -13,6 +13,12 @@ import (
 	"go.uber.org/zap"
 )
 
+/**
+ * TODO: this file has to be refactored to avoid code duplication and
+ * type casting. A lot of code duplication is aroundnested and repeated parameter
+ * maps. Interfaces have to be created for these types to allow to reuse implementations.
+ */
+
 // ParseFlows parses the given intermediate manifest to a flows manifest
 func ParseFlows(ctx *broker.Context, manifest Manifest) (errObject *specs.ParameterMap, _ specs.FlowListInterface, _ error) {
 	logger.Info(ctx, "parsing intermediate manifest to flows manifest")
