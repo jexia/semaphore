@@ -84,9 +84,6 @@ func TestParseIntermediateStaticProperty(t *testing.T) {
 								Resource: "input",
 								Path:     "message",
 							},
-							Scalar: &specs.Scalar{
-								Type: types.String,
-							},
 						},
 					},
 				},
@@ -250,11 +247,9 @@ func TestParseIntermediateStaticProperty(t *testing.T) {
 
 	for title, test := range tests {
 		t.Run(title, func(t *testing.T) {
-			var (
-				attr   = parseTestAttribute(t, test.template)
-				ctx    = logger.WithLogger(broker.NewBackground())
-				val, _ = attr.Expr.Value(nil)
-			)
+			attr := parseTestAttribute(t, test.template)
+			ctx := logger.WithLogger(broker.NewBackground())
+			val, _ := attr.Expr.Value(nil)
 
 			result, err := ParseIntermediateProperty(ctx, "", attr, val)
 			if err != nil {
