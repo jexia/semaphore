@@ -7,6 +7,13 @@ var labels = map[Label]string{
 	Required: "required",
 }
 
+var keys = map[string]Label{
+	"optional": Optional,
+	"required": Required,
+}
+
+const delimiter = ","
+
 // Label represents a value label
 type Label int
 
@@ -16,7 +23,7 @@ func (label Label) String() string {
 	for l, v := range labels {
 		if label&l == 0 {
 			if msg.Len() > 0 {
-				msg.WriteString(", ")
+				msg.WriteString(delimiter + " ")
 			}
 
 			msg.WriteString(v)
@@ -26,16 +33,25 @@ func (label Label) String() string {
 	return msg.String()
 }
 
+// Has checks whether the given key is available inside the given label
 func (label Label) Has(key Label) bool {
 	return label&key == 0
 }
 
-// Spec labels
 const (
+	// Optional representing a optional field
 	Optional Label = 1 << iota
+	// Required representing a required field
 	Required
 )
 
-func Compatible(pattern, value Label) bool {
-	return true
+// Parse parses the given label string into a label
+func Parse(label string) (result Label) {
+	sliced := strings.Split(label, delimiter)
+	for _, raw := range sliced {
+		key := strings.TrimSpace(raw)
+		result = result | keys[key]
+	}
+
+	return result
 }

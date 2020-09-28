@@ -321,7 +321,7 @@ func ResolveProperty(ctx *broker.Context, node *specs.Node, property *specs.Prop
 		property.Enum = reference.Enum
 	}
 
-	ScopeNestedReferences(reference.Template, property.Template)
+	ScopeNestedReferences(&reference.Template, &property.Template)
 
 	return nil
 }
@@ -383,9 +383,17 @@ func InsideProperty(source *specs.Property, target *specs.Property) bool {
 }
 
 // ScopeNestedReferences scopes all nested references available inside the reference property
-func ScopeNestedReferences(source specs.Template, target specs.Template) {
+func ScopeNestedReferences(source, target *specs.Template) {
+	if source == nil || target == nil {
+		return
+	}
+
 	switch {
 	case source.Message != nil:
+		if target.Message == nil {
+			target.Message = make(specs.Message, len(source.Message))
+		}
+
 		for _, item := range source.Message {
 			nested, ok := target.Message[item.Name]
 			if !ok {
@@ -402,7 +410,7 @@ func ScopeNestedReferences(source specs.Template, target specs.Template) {
 			}
 
 			if len(item.Message) > 0 {
-				ScopeNestedReferences(item.Template, nested.Template)
+				ScopeNestedReferences(&item.Template, &nested.Template)
 			}
 		}
 	case source.Repeated != nil:
@@ -423,7 +431,7 @@ func ScopeNestedReferences(source specs.Template, target specs.Template) {
 			}
 
 			if len(item.Message) > 0 {
-				ScopeNestedReferences(item, cloned)
+				ScopeNestedReferences(&item, &cloned)
 			}
 
 			target.Repeated[index] = cloned

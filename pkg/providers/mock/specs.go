@@ -2,6 +2,7 @@ package mock
 
 import (
 	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/pkg/specs/labels"
 	"github.com/jexia/semaphore/pkg/specs/template"
 )
 
@@ -22,7 +23,7 @@ func SpecsProperty(path string, property *Property) *specs.Property {
 		Name:        property.Name,
 		Path:        path,
 		Description: property.Comment,
-		Label:       property.Label,
+		Label:       labels.Parse(property.Label),
 		Position:    property.Position,
 		Options:     property.Options,
 	}

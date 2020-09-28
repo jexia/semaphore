@@ -124,7 +124,7 @@ func TestUnmarshalFile(t *testing.T) {
 }
 
 func TestScopeNestedReferencesNil(t *testing.T) {
-	ScopeNestedReferences(specs.Template{}, specs.Template{})
+	ScopeNestedReferences(nil, nil)
 }
 
 func TestScopeNestedReferences(t *testing.T) {
@@ -246,7 +246,7 @@ func TestScopeNestedReferences(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			ScopeNestedReferences(test.source.Template, test.target.Template)
+			ScopeNestedReferences(&test.source.Template, &test.target.Template)
 
 			var lookup func(source *specs.Property, target *specs.Property)
 			lookup = func(source *specs.Property, target *specs.Property) {

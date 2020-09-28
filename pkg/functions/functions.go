@@ -312,7 +312,7 @@ func PrepareFunction(ctx *broker.Context, node *specs.Node, flow specs.FlowInter
 		Property: returns,
 	}
 
-	references.ScopeNestedReferences(returns.Template, property.Template)
+	references.ScopeNestedReferences(&returns.Template, &property.Template)
 	return nil
 }
 

@@ -2,7 +2,6 @@ package mock
 
 import (
 	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/labels"
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
@@ -148,7 +147,7 @@ type Property struct {
 	Name     string
 	Comment  string               `yaml:"comment"`
 	Type     types.Type           `yaml:"type"`
-	Label    labels.Label         `yaml:"label"`
+	Label    string               `yaml:"label"`
 	Default  interface{}          `yaml:"default"`
 	Position int32                `yaml:"position"`
 	Nested   map[string]*Property `yaml:"nested"`
