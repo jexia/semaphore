@@ -54,12 +54,16 @@ func TestSetDefaultValue(t *testing.T) {
 			}
 		}
 
-		if expected.defaultValue != property.Default {
-			t.Errorf("unexpected result %+v, expected %+v", property.Default, expected.defaultValue)
+		if property.Scalar == nil {
+			t.Fatal("property scalar has not been defined")
 		}
 
-		if expected.dataType != property.Type {
-			t.Errorf("unexpected type %s, expected %s", property.Type, expected.dataType)
+		if expected.defaultValue != property.Scalar.Default {
+			t.Errorf("unexpected result %+v, expected %+v", property.Scalar.Default, expected.defaultValue)
+		}
+
+		if expected.dataType != property.Scalar.Type {
+			t.Errorf("unexpected type %s, expected %s", property.Scalar.Type, expected.dataType)
 		}
 	}
 }

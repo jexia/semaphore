@@ -19,17 +19,22 @@ func SchemaManifest(collection *Collection) specs.Schemas {
 // SpecsProperty formats the given mock property to a specs property
 func SpecsProperty(path string, property *Property) *specs.Property {
 	result := &specs.Property{
-		Name:     property.Name,
-		Path:     path,
-		Comment:  property.Comment,
-		Default:  property.Default,
-		Type:     property.Type,
-		Label:    property.Label,
-		Position: property.Position,
-		Options:  property.Options,
+		Name:        property.Name,
+		Path:        path,
+		Description: property.Comment,
+		Label:       property.Label,
+		Position:    property.Position,
+		Options:     property.Options,
 	}
 
-	if property.Enum != nil {
+	switch {
+	case property.Enum != nil:
+		result.Message = make(specs.Message, len(property.Nested))
+
+		for key, nested := range property.GetNested() {
+			result.Message[key] = SpecsProperty(template.JoinPath(path, key), nested)
+		}
+	case property.Nested != nil:
 		result.Enum = &specs.Enum{
 			Name:      property.Name,
 			Keys:      make(map[string]*specs.EnumValue, len(property.Enum)),
@@ -46,13 +51,10 @@ func SpecsProperty(path string, property *Property) *specs.Property {
 			result.Enum.Keys[value.Key] = value
 			result.Enum.Positions[value.Position] = value
 		}
-	}
-
-	if property.Nested != nil {
-		result.Nested = make([]*specs.Property, 0, len(property.Nested))
-
-		for key, nested := range property.GetNested() {
-			result.Nested = append(result.Nested, SpecsProperty(template.JoinPath(path, key), nested))
+	default:
+		result.Scalar = &specs.Scalar{
+			Default: property.Default,
+			Type:    property.Type,
 		}
 	}
 

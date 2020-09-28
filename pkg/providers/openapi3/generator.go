@@ -233,9 +233,11 @@ func GenerateSchema(property *specs.Property) *Schema {
 		break
 	case property.Repeated != nil:
 		var repeated = &specs.Property{
-			Name:     property.Name,
-			Path:     property.Path,
-			Template: property.Repeated.Template,
+			Name: property.Name,
+			Path: property.Path,
+			Template: specs.Template{
+				Repeated: property.Repeated,
+			},
 		}
 
 		return &Schema{

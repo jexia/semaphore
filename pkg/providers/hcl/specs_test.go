@@ -57,20 +57,11 @@ func TestParseIntermediateStaticProperty(t *testing.T) {
 				Path:  "array",
 				Label: labels.Optional,
 				Template: specs.Template{
-					Repeated: &specs.Repeated{
-						Template: specs.Template{
+					Repeated: specs.Repeated{
+						specs.Template{
 							Scalar: &specs.Scalar{
 								Type:    types.String,
-							},
-						},
-						Default: map[uint]*Property{
-							0: {
-								Template: specs.Template{
-									Scalar: &specs.Scalar{
-										Type:    types.String,
-										Default: "foo",
-									},
-								},
+								Default: "foo",
 							},
 						},
 					},
@@ -87,9 +78,8 @@ func TestParseIntermediateStaticProperty(t *testing.T) {
 				Path:  "array",
 				Label: labels.Optional,
 				Template: specs.Template{
-					Repeated: &specs.Repeated{
-
-						Template: specs.Template{
+					Repeated: specs.Repeated{
+						specs.Template{
 							Reference: &specs.PropertyReference{
 								Resource: "input",
 								Path:     "message",
@@ -98,7 +88,6 @@ func TestParseIntermediateStaticProperty(t *testing.T) {
 								Type: types.String,
 							},
 						},
-
 					},
 				},
 			},
@@ -114,32 +103,17 @@ func TestParseIntermediateStaticProperty(t *testing.T) {
 				Path:  "array",
 				Label: labels.Optional,
 				Template: specs.Template{
-					Repeated: &specs.Repeated{
-						Template: specs.Template{
+					Repeated: specs.Repeated{
+						specs.Template{
 							Scalar: &specs.Scalar{
-								Type: types.Int64, //
+								Type:    types.Int64,
+								Default: int64(10),
 							},
 						},
-						Default: map[uint]*specs.Property{
-							0: {
-								Path:  "array", // ??? maybe use Template as well or even a custom struct with Reference and Value (interface{}) inside?
-								Label: labels.Optional,
-								Template: specs.Template{
-									Scalar: &specs.Scalar{
-										Type:    types.Int64,
-										Default: int64(10),
-									},
-								},
-							},
-							1: {
-								Path:  "array",
-								Label: labels.Optional,
-								Template: specs.Template{
-									Scalar: &specs.Scalar{
-										Type:    types.Int64,
-										Default: int64(42),
-									},
-								},
+						specs.Template{
+							Scalar: &specs.Scalar{
+								Type:    types.Int64,
+								Default: int64(42),
 							},
 						},
 					},
@@ -161,62 +135,32 @@ func TestParseIntermediateStaticProperty(t *testing.T) {
 				Path:  "array",
 				Label: labels.Optional,
 				Template: specs.Template{
-					Repeated: &specs.Repeated{
-						Default: map[uint]*specs.Property{},
-					},
-				},
-
-				Type: types.String,
-
-				Nested: []*specs.Property{
-					{
-						Path:  "array",
-						Type:  types.Message,
-						Label: labels.Optional,
-						Nested: []*specs.Property{
-							{
-								Name:    "action",
-								Path:    "array.action",
-								Type:    types.String,
-								Label:   labels.Optional,
-								Default: "create",
-							},
-						},
-						Default: map[uint]*specs.Property{
-							0: {
-								Path:  "array",
-								Label: labels.Optional,
-								Template: specs.Template{
-									Message: specs.Message{
-										"action": {
-											Name:  "action",
-											Path:  "array.action",
-											Label: labels.Optional,
-											Template: specs.Template{
-												Scalar: &specs.Scalar{
-													Type:    types.String,
-													Default: "create",
-												},
-											},
+					Repeated: specs.Repeated{
+						specs.Template{
+							Message: specs.Message{
+								"action": {
+									Name:  "action",
+									Path:  "array.action",
+									Label: labels.Optional,
+									Template: specs.Template{
+										Scalar: &specs.Scalar{
+											Type:    types.String,
+											Default: "create",
 										},
 									},
 								},
 							},
-							1: {
-								Path:  "array",
-								Label: labels.Optional,
-								Template: specs.Template{
-									Message: specs.Message{
-										"action": {
-											Name:  "action",
-											Path:  "array.action",
-											Label: labels.Optional,
-											Template: specs.Template{
-												Scalar: &specs.Scalar{
-													Type:    types.String,
-													Default: "update",
-												},
-											},
+						},
+						specs.Template{
+							Message: specs.Message{
+								"action": {
+									Name:  "action",
+									Path:  "array.action",
+									Label: labels.Optional,
+									Template: specs.Template{
+										Scalar: &specs.Scalar{
+											Type:    types.String,
+											Default: "update",
 										},
 									},
 								},
@@ -229,8 +173,6 @@ func TestParseIntermediateStaticProperty(t *testing.T) {
 		"array complex": {
 			template: `
 				array = [
-					"foo",
-					42,
 					{
 						"id": "{{ input:id }}",
 					},
@@ -241,110 +183,25 @@ func TestParseIntermediateStaticProperty(t *testing.T) {
 				Path:  "array",
 				Label: labels.Optional,
 				Template: specs.Template{
-					Repeated: &specs.Repeated{
-						Template: specs.Template{
-						// 	// ??!?!?!?! Is it oneOF?
-						// },
-						Default: map[uint]*specs.Property{
-							0: {
-								Path:  "array",
-								Label: labels.Optional,
-								Template: specs.Template{
-									Scalar: &specs.Scalar{
-										Type:    types.String,
-										Default: "foo",
-									},
-								},
-							},
-							1: {
-								Path:  "array",
-								Label: labels.Optional,
-								Template: specs.Template{
-									Scalar: &specs.Scalar{
-										Type:    types.Int64,
-										Default: int64(42),
-									},
-								},
-							},
-							2: {
-								Path:  "array",
-								Label: labels.Optional,
-								Template: specs.Template{
-									Message: specs.Message{
-										"id": {
-											Name: "id",
-											Path: "array.id",
-											Template: specs.Template{
-												Reference: &specs.PropertyReference{
-													Resource: "input",
-													Path:     "id",
-												},
-											},
+					Repeated: specs.Repeated{
+						specs.Template{
+							Message: specs.Message{
+								"id": {
+									Name: "id",
+									Path: "array.id",
+									Template: specs.Template{
+										Reference: &specs.PropertyReference{
+											Resource: "input",
+											Path:     "id",
 										},
 									},
 								},
 							},
-							3: {
-								Path:  "array",
-								Label: labels.Optional,
-								Template:specs.Template{
-									Reference: &specs.PropertyReference{ // What happens when the reference gets resolved? fills Scalar/Enum/Repeated/Message and set Reference = nil?
-										Resource: "input",
-										Path:     "name",
-									},
-									// Scalar: ... when it is resolved
-								},
-							},
 						},
-					},
-				},
-			},
-		},
-		"object complex": {
-			template: `
-				object = {
-					"message": "hello world",
-					"meta": {
-						"id": "{{ input:id }}",
-						"foo": 42
-					}
-				}`,
-			expected: &specs.Property{
-				Name:  "object",
-				Path:  "object",
-				Label: labels.Optional,
-				Template: specs.Template{
-					Message:
-				},
-				Type: types.Message,
-				Nested: []*specs.Property{
-					{
-						Name:    "message",
-						Path:    "object.message",
-						Type:    types.String,
-						Label:   labels.Optional,
-						Default: "hello world",
-					},
-					{
-						Name:  "meta",
-						Path:  "object.meta",
-						Type:  types.Message,
-						Label: labels.Optional,
-						Nested: []*specs.Property{
-							{
-								Name: "id",
-								Path: "object.meta.id",
-								Reference: &specs.PropertyReference{
-									Resource: "input",
-									Path:     "id",
-								},
-							},
-							{
-								Name:    "foo",
-								Path:    "object.meta.foo",
-								Label:   labels.Optional,
-								Type:    types.Int64,
-								Default: int64(42),
+						specs.Template{
+							Reference: &specs.PropertyReference{
+								Resource: "input",
+								Path:     "name",
 							},
 						},
 					},
@@ -362,26 +219,26 @@ func TestParseIntermediateStaticProperty(t *testing.T) {
 			expected: &specs.Property{
 				Name:  "object",
 				Path:  "object",
-				Type:  types.Message,
 				Label: labels.Optional,
-				Nested: []*specs.Property{
-					{
-						Name:  "message",
-						Path:  "object.message",
-						Type:  types.String,
-						Label: labels.Repeated,
-						Nested: []*specs.Property{
-							{
-								Path:    "object.message",
-								Type:    types.String,
-								Label:   labels.Optional,
-								Default: "hello world",
-							},
-							{
-								Path: "object.message",
-								Reference: &specs.PropertyReference{
-									Resource: "input",
-									Path:     "message",
+				Template: specs.Template{
+					Message: specs.Message{
+						"message": {
+							Name: "message",
+							Path: "object.message",
+							Template: specs.Template{
+								Repeated: specs.Repeated{
+									specs.Template{
+										Scalar: &specs.Scalar{
+											Type:    types.String,
+											Default: "hello world",
+										},
+									},
+									specs.Template{
+										Reference: &specs.PropertyReference{
+											Resource: "input",
+											Path:     "message",
+										},
+									},
 								},
 							},
 						},
@@ -404,12 +261,12 @@ func TestParseIntermediateStaticProperty(t *testing.T) {
 				t.Fatalf("unexpected error: %s", err)
 			}
 
-			ValidateProperties(t, result, test.expected)
+			ValidateProperty(t, result, test.expected)
 		})
 	}
 }
 
-func ValidateProperties(t *testing.T, result *specs.Property, expected *specs.Property) {
+func ValidateProperty(t *testing.T, result *specs.Property, expected *specs.Property) {
 	if result.Path != expected.Path {
 		t.Errorf("property path %q was expected to be %q", result.Path, expected.Path)
 	}
@@ -422,33 +279,45 @@ func ValidateProperties(t *testing.T, result *specs.Property, expected *specs.Pr
 		t.Errorf("property (%q) label %q was expected to be %q", result.Path, result.Label, expected.Label)
 	}
 
-	if result.Type != expected.Type {
-		t.Errorf("property (%q) type %q was expected to be %q", result.Path, result.Type, expected.Type)
+	ValidateTemplate(t, result.Path, result.Template, expected.Template)
+}
+
+func ValidateTemplate(t *testing.T, path string, result, expected specs.Template) {
+	if expected.Scalar != nil && result.Scalar == nil {
+		t.Errorf("property (%q) scalar was expected to be set", path)
+	}
+
+	if result.Scalar != nil && result.Scalar.Type != expected.Scalar.Type {
+		t.Errorf("property (%q) type %q was expected to be %q", path, result.Scalar.Type, expected.Scalar.Type)
+	}
+
+	if result.Scalar != nil && !reflect.DeepEqual(result.Scalar.Default, expected.Scalar.Default) {
+		t.Errorf("property (%q) default value \"%v\" was expected to be \"%v\"", path, result.Scalar.Default, expected.Scalar.Default)
 	}
 
 	if !reflect.DeepEqual(result.Reference, expected.Reference) {
-		t.Errorf("property (%q) reference \"%v\" was expected to be \"%v\"", result.Path, result.Reference, expected.Reference)
+		t.Errorf("property (%q) reference \"%v\" was expected to be \"%v\"", path, result.Reference, expected.Reference)
 	}
 
-	if !reflect.DeepEqual(result.Default, expected.Default) {
-		t.Errorf("property (%q) default value \"%v\" was expected to be \"%v\"", result.Path, result.Default, expected.Default)
+	if len(result.Message) != len(expected.Message) {
+		t.Fatalf("unexpected message %+v, expected %+v", result.Message, expected.Message)
 	}
 
-	if len(result.Nested) != len(expected.Nested) {
-		t.Fatalf("unexpected repeated %+v, expected %+v", result.Nested, expected.Nested)
+	if len(result.Repeated) != len(expected.Repeated) {
+		t.Fatalf("unexpected repeated %+v, expected %+v", result.Repeated, expected.Repeated)
 	}
 
-	for index, schema := range expected.Nested {
-		// if array order matters
-		nested := result.Nested[index]
-		if expected.Type == types.Message {
-			nested = result.Nested.Get(schema.Name)
-		}
-
+	for key, schema := range expected.Message {
+		nested := result.Message[key]
 		if nested == nil {
-			t.Fatalf("was expected to contain nested property %q inside %q", schema.Name, result.Path)
+			t.Fatalf("was expected to contain message property %q inside %q", schema.Name, path)
 		}
 
-		ValidateProperties(t, nested, schema)
+		ValidateProperty(t, nested, schema)
+	}
+
+	for index, schema := range expected.Repeated {
+		nested := result.Repeated[index]
+		ValidateTemplate(t, path, nested, schema)
 	}
 }
