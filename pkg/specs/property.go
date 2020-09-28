@@ -74,7 +74,7 @@ func (property *Property) DefaultValue() interface{} {
 
 // Empty checks if the property has any defined type
 func (property *Property) Empty() bool {
-	return property.Template.Type() == types.Unknown
+	return property.Type() == types.Unknown
 }
 
 // Clone makes a deep clone of the given property
