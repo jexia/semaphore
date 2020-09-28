@@ -23,7 +23,7 @@ func SpecsProperty(path string, property *Property) *specs.Property {
 		Name:        property.Name,
 		Path:        path,
 		Description: property.Comment,
-		Label:       labels.Parse(property.Label),
+		Label:       labels.Label(property.Label),
 		Position:    property.Position,
 		Options:     property.Options,
 	}
