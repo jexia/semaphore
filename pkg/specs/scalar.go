@@ -42,24 +42,56 @@ func (scalar *Scalar) Clean() {
 
 	switch scalar.Type {
 	case types.Int64, types.Sint64, types.Sfixed64:
-		_, ok := scalar.Default.(int64)
-		if !ok {
-			scalar.Default = int64(scalar.Default.(float64))
+		switch t := scalar.Default.(type) {
+		case uint32:
+			scalar.Default = int64(t)
+		case uint64:
+			scalar.Default = int64(t)
+		case int32:
+			scalar.Default = int64(t)
+		case float32:
+			scalar.Default = int64(t)
+		case float64:
+			scalar.Default = int64(t)
 		}
 	case types.Uint64, types.Fixed64:
-		_, ok := scalar.Default.(uint64)
-		if !ok {
-			scalar.Default = uint64(scalar.Default.(float64))
+		switch t := scalar.Default.(type) {
+		case uint32:
+			scalar.Default = uint64(t)
+		case int32:
+			scalar.Default = uint64(t)
+		case int64:
+			scalar.Default = uint64(t)
+		case float32:
+			scalar.Default = uint64(t)
+		case float64:
+			scalar.Default = uint64(t)
 		}
 	case types.Int32, types.Sint32, types.Sfixed32:
-		_, ok := scalar.Default.(int32)
-		if !ok {
-			scalar.Default = int32(scalar.Default.(float64))
+		switch t := scalar.Default.(type) {
+		case uint32:
+			scalar.Default = int32(t)
+		case uint64:
+			scalar.Default = int32(t)
+		case int64:
+			scalar.Default = int32(t)
+		case float32:
+			scalar.Default = int32(t)
+		case float64:
+			scalar.Default = int32(t)
 		}
 	case types.Uint32, types.Fixed32:
-		_, ok := scalar.Default.(uint32)
-		if !ok {
-			scalar.Default = uint32(scalar.Default.(float64))
+		switch t := scalar.Default.(type) {
+		case uint64:
+			scalar.Default = uint32(t)
+		case int32:
+			scalar.Default = uint32(t)
+		case int64:
+			scalar.Default = uint32(t)
+		case float32:
+			scalar.Default = uint32(t)
+		case float64:
+			scalar.Default = uint32(t)
 		}
 	}
 }
