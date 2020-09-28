@@ -54,11 +54,11 @@ func TestSetDefaultValue(t *testing.T) {
 			}
 		}
 
-		if expected.defaultValue != property.Default {
-			t.Errorf("unexpected result %+v, expected %+v", property.Default, expected.defaultValue)
+		if actual := property.DefaultValue(); actual != expected.defaultValue {
+			t.Errorf("unexpected result %+v, expected %+v", actual, expected.defaultValue)
 		}
 
-		if expected.dataType != property.Type {
+		if expected.dataType != property.Type() {
 			t.Errorf("unexpected type %s, expected %s", property.Type, expected.dataType)
 		}
 	}

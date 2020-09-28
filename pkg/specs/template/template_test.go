@@ -10,34 +10,32 @@ import (
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
-func CompareProperties(t *testing.T, left specs.Property, right specs.Property) {
-	if left.Scalar == nil || right.Scalar == nil {
-		t.Fatalf("scalar not set left (%+v) right (%+v)", left.Scalar, right.Scalar)
+func CompareProperties(t *testing.T, actual, expected *specs.Property) {
+	if err := actual.Compare(expected); err != nil {
+		t.Errorf("unexpected property: %s", err)
 	}
 
-	if left.Scalar.Default != right.Scalar.Default {
-		t.Errorf("unexpected default '%s', expected '%s'", left.Scalar.Default, right.Scalar.Default)
+	// if actual.Scalar == nil || expected.Scalar == nil {
+	// 	t.Fatalf("scalar not set actual (%+v) expected (%+v)", actual.Scalar, expected.Scalar)
+	// }
+
+	if expected.Scalar != nil {
+		if actual.Scalar.Default != expected.Scalar.Default {
+			t.Errorf("unexpected default '%s', expected '%s'", actual.Scalar.Default, expected.Scalar.Default)
+		}
 	}
 
-	if left.Scalar.Type != right.Scalar.Type {
-		t.Errorf("unexpected type '%s', expected '%s'", left.Scalar.Type, right.Scalar.Type)
-	}
-
-	if left.Label != right.Label {
-		t.Errorf("unexpected label '%s', expected '%s'", left.Label, right.Label)
-	}
-
-	if right.Reference != nil && left.Reference == nil {
+	if expected.Reference != nil && actual.Reference == nil {
 		t.Error("reference not set but expected")
 	}
 
-	if right.Reference != nil {
-		if left.Reference.Resource != right.Reference.Resource {
-			t.Errorf("unexpected reference resource '%s', expected '%s'", left.Reference.Resource, right.Reference.Resource)
+	if expected.Reference != nil {
+		if actual.Reference.Resource != expected.Reference.Resource {
+			t.Errorf("unexpected reference resource '%s', expected '%s'", actual.Reference.Resource, expected.Reference.Resource)
 		}
 
-		if left.Reference.Path != right.Reference.Path {
-			t.Errorf("unexpected reference path '%s', expected '%s'", left.Reference.Path, right.Reference.Path)
+		if actual.Reference.Path != expected.Reference.Path {
+			t.Errorf("unexpected reference path '%s', expected '%s'", actual.Reference.Path, expected.Reference.Path)
 		}
 	}
 }
@@ -65,7 +63,7 @@ func TestParseTemplateContent(t *testing.T) {
 	name := ""
 	path := "message"
 
-	tests := map[string]specs.Property{
+	tests := map[string]*specs.Property{
 		"'prefix'": {
 			Name:  name,
 			Path:  path,
@@ -149,7 +147,7 @@ func TestParseTemplateContent(t *testing.T) {
 				t.Errorf("unexpected path '%s', expected '%s'", property.Path, expected.Path)
 			}
 
-			CompareProperties(t, *property, expected)
+			CompareProperties(t, property, expected)
 		})
 	}
 }
@@ -158,7 +156,7 @@ func TestParseReference(t *testing.T) {
 	name := ""
 	path := "message"
 
-	tests := map[string]specs.Property{
+	tests := map[string]*specs.Property{
 		"input:message": {
 			Name: name,
 			Path: path,
@@ -236,7 +234,7 @@ func TestParseReference(t *testing.T) {
 				t.Errorf("unexpected path '%s', expected '%s'", property.Path, expected.Path)
 			}
 
-			CompareProperties(t, *property, expected)
+			CompareProperties(t, property, expected)
 		})
 	}
 }
@@ -282,7 +280,7 @@ func TestUnknownReferencePattern(t *testing.T) {
 func TestParseReferenceTemplates(t *testing.T) {
 	name := ""
 
-	tests := map[string]specs.Property{
+	tests := map[string]*specs.Property{
 		"{{ input:message }}": {
 			Path: "message",
 			Template: specs.Template{
@@ -347,7 +345,7 @@ func TestParseReferenceTemplates(t *testing.T) {
 				t.Error(err)
 			}
 
-			CompareProperties(t, *property, expected)
+			CompareProperties(t, property, expected)
 		})
 	}
 }
