@@ -141,8 +141,8 @@ var schema = &specs.ParameterMap{
 							Resource: template.InputResource,
 							Path:     "repeating_string",
 						},
-						Repeated: &specs.Repeated{
-							Template: specs.Template{
+						Repeated: specs.Repeated{
+							{
 								Scalar: &specs.Scalar{
 									Type: types.String,
 								},
@@ -159,8 +159,8 @@ var schema = &specs.ParameterMap{
 							Resource: template.InputResource,
 							Path:     "repeating_enum",
 						},
-						Repeated: &specs.Repeated{
-							Template: specs.Template{
+						Repeated: specs.Repeated{
+							{
 								Enum: enum,
 							},
 						},
@@ -175,8 +175,8 @@ var schema = &specs.ParameterMap{
 							Resource: template.InputResource,
 							Path:     "repeating",
 						},
-						Repeated: &specs.Repeated{
-							Template: specs.Template{
+						Repeated: specs.Repeated{
+							{
 								Message: specs.Message{
 									"value": {
 										Name:  "value",
@@ -640,7 +640,7 @@ func assert(t *testing.T, resource string, path string, store references.Store, 
 	ref := store.Load(resource, path)
 
 	if ref == nil {
-		t.Errorf("reference %q was expected to be set", path)
+		t.Fatalf("reference %q was expected to be set", path)
 	}
 
 	if output.value != nil {

@@ -30,7 +30,7 @@ func (object *Object) MarshalJSONObject(encoder *gojay.Encoder) {
 	for _, prop := range object.specs {
 		switch {
 		case prop.Repeated != nil:
-			array := NewArray(object.resource, prop.Repeated, object.refs)
+			array := NewArray(object.resource, prop.Template, object.refs)
 			encoder.AddArrayKey(prop.Name, array)
 			break
 		case prop.Message != nil:
@@ -82,7 +82,7 @@ func (object *Object) UnmarshalJSONObject(dec *gojay.Decoder, key string) error 
 			Path: property.Path,
 		}
 
-		array := NewArray(object.resource, property.Repeated, object.refs)
+		array := NewArray(object.resource, property.Template, object.refs)
 		err := dec.AddArray(array)
 		if err != nil {
 			return err

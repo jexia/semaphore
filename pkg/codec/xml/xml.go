@@ -50,11 +50,11 @@ func (manager *Manager) Property() *specs.Property { return manager.property }
 // This method is called during runtime to encode a new message with the values
 // stored inside the given reference store.
 func (manager *Manager) Marshal(refs references.Store) (io.Reader, error) {
-	if manager.specs == nil {
+	if manager.property == nil {
 		return nil, nil
 	}
 
-	var object = NewObject(manager.resource, manager.specs.Nested, refs)
+	var object = NewObject(manager.resource, manager.property.Message, refs)
 
 	bb, err := xml.Marshal(object)
 	if err != nil {
@@ -68,7 +68,7 @@ func (manager *Manager) Marshal(refs references.Store) (io.Reader, error) {
 // This method is called during runtime to decode a new message and store it inside
 // the given reference store.
 func (manager *Manager) Unmarshal(reader io.Reader, refs references.Store) error {
-	if manager.specs == nil {
+	if manager.property == nil {
 		return nil
 	}
 
@@ -81,7 +81,7 @@ func (manager *Manager) Unmarshal(reader io.Reader, refs references.Store) error
 		return nil
 	}
 
-	var object = NewObject(manager.resource, manager.specs.Nested, refs)
+	var object = NewObject(manager.resource, manager.property.Message, refs)
 
 	return xml.Unmarshal(bb, object)
 }

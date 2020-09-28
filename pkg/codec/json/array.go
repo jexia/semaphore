@@ -8,18 +8,18 @@ import (
 )
 
 // NewArray constructs a new JSON array encoder/decoder
-func NewArray(resource string, repeated *specs.Repeated, refs references.Store) *Array {
+func NewArray(resource string, template specs.Template, refs references.Store) *Array {
 	generator := &Array{
 		resource: resource,
-		specs:    repeated,
+		template: template,
 	}
 
-	if repeated.Reference != nil {
-		generator.ref = refs.Load(repeated.Reference.Resource, repeated.Reference.Path)
+	if template.Reference != nil {
+		generator.ref = refs.Load(template.Reference.Resource, template.Reference.Path)
 	}
 
-	if repeated.Default != nil {
-		generator.keys = len(repeated.Default)
+	if template.Repeated != nil {
+		generator.keys = len(template.Repeated)
 	}
 
 	return generator
@@ -28,7 +28,7 @@ func NewArray(resource string, repeated *specs.Repeated, refs references.Store) 
 // Array represents a JSON array
 type Array struct {
 	resource string
-	specs    *specs.Repeated
+	template specs.Template
 	ref      *references.Reference
 	keys     int
 }
@@ -41,15 +41,15 @@ func (array *Array) MarshalJSONArray(enc *gojay.Encoder) {
 
 	for _, store := range array.ref.Repeated {
 		switch {
-		case array.specs.Message != nil:
-			enc.AddObject(NewObject(array.resource, array.specs.Message, store))
+		case array.template.Message != nil:
+			enc.AddObject(NewObject(array.resource, array.template.Message, store))
 			break
-		case array.specs.Repeated != nil:
-			enc.AddArray(NewArray(array.resource, array.specs.Repeated, store))
+		case array.template.Repeated != nil:
+			enc.AddArray(NewArray(array.resource, array.template, store))
 			break
-		case array.specs.Enum != nil:
+		case array.template.Enum != nil:
 			// TODO: check if enums in arrays work
-			if array.specs.Reference == nil {
+			if array.template.Reference == nil {
 				break
 			}
 
@@ -58,18 +58,18 @@ func (array *Array) MarshalJSONArray(enc *gojay.Encoder) {
 				break
 			}
 
-			key := array.specs.Enum.Positions[*ref.Enum].Key
+			key := array.template.Enum.Positions[*ref.Enum].Key
 			AddType(enc, types.String, key)
 			break
-		case array.specs.Scalar != nil:
-			val := array.specs.Scalar.Default
+		case array.template.Scalar != nil:
+			val := array.template.Scalar.Default
 
 			ref := store.Load("", "")
 			if ref != nil {
 				val = ref.Value
 			}
 
-			AddType(enc, array.specs.Scalar.Type, val)
+			AddType(enc, array.template.Scalar.Type, val)
 			break
 		}
 	}
@@ -80,8 +80,8 @@ func (array *Array) UnmarshalJSONArray(dec *gojay.Decoder) error {
 	store := references.NewReferenceStore(array.keys)
 
 	switch {
-	case array.specs.Message != nil:
-		object := NewObject(array.resource, array.specs.Message, store)
+	case array.template.Message != nil:
+		object := NewObject(array.resource, array.template.Message, store)
 		err := dec.AddObject(object)
 		if err != nil {
 			return err
@@ -89,8 +89,8 @@ func (array *Array) UnmarshalJSONArray(dec *gojay.Decoder) error {
 
 		array.ref.Append(store)
 		break
-	case array.specs.Repeated != nil:
-		array := NewArray(array.resource, array.specs.Repeated, store)
+	case array.template.Repeated != nil:
+		array := NewArray(array.resource, array.template, store)
 		err := dec.AddArray(array)
 		if err != nil {
 			return err
@@ -98,21 +98,21 @@ func (array *Array) UnmarshalJSONArray(dec *gojay.Decoder) error {
 
 		array.ref.Append(store)
 		break
-	case array.specs.Enum != nil:
+	case array.template.Enum != nil:
 		var key string
 		err := dec.AddString(&key)
 		if err != nil {
 			return err
 		}
 
-		enum := array.specs.Enum.Keys[key]
+		enum := array.template.Enum.Keys[key]
 		if enum != nil {
 			store.StoreEnum("", "", enum.Position)
 			array.ref.Append(store)
 		}
 		break
-	case array.specs.Scalar != nil:
-		val, err := DecodeType(dec, array.specs.Scalar.Type)
+	case array.template.Scalar != nil:
+		val, err := DecodeType(dec, array.template.Scalar.Type)
 		if err != nil {
 			return err
 		}

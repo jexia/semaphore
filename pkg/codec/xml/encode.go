@@ -25,12 +25,12 @@ func encodeRepeated(encoder *xml.Encoder, resource string, prop *specs.Property,
 
 func encodeNested(encoder *xml.Encoder, prop *specs.Property, store references.Store) error {
 	// ignore malformed objects
-	if prop.Nested == nil {
+	if prop.Message == nil {
 		return nil
 	}
 
 	var (
-		nested = NewObject(prop.Name, prop.Nested, store)
+		nested = NewObject(prop.Name, prop.Message, store)
 		start  = xml.StartElement{Name: xml.Name{Local: prop.Name}}
 	)
 
@@ -38,7 +38,7 @@ func encodeNested(encoder *xml.Encoder, prop *specs.Property, store references.S
 }
 
 func encodeValue(encoder *xml.Encoder, prop *specs.Property, store references.Store, loadByPath bool) error {
-	var val = prop.Default
+	var val = prop.DefaultValue()
 
 	if prop.Reference != nil {
 		var ref *references.Reference
@@ -50,7 +50,7 @@ func encodeValue(encoder *xml.Encoder, prop *specs.Property, store references.St
 		}
 
 		if ref != nil {
-			if prop.Type == types.Enum && ref.Enum != nil {
+			if prop.Type() == types.Enum && ref.Enum != nil {
 				var enum = prop.Enum.Positions[*ref.Enum]
 				if enum != nil {
 					val = enum.Key
