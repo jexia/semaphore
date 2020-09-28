@@ -36,7 +36,7 @@ type errCannotFormat struct {
 }
 
 func (e errCannotFormat) Error() string {
-	return fmt.Sprintf("cannot use '%%%s' formatter for argument '%s' of type '%s'", e.formatter, e.argument.Name, e.argument.Type)
+	return fmt.Sprintf("cannot use '%%%s' formatter for argument '%s' of type '%s'", e.formatter, e.argument.Name, e.argument.Type())
 }
 
 type errVerbConflict struct {

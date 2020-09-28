@@ -236,7 +236,7 @@ func PreparePropertyFunctions(ctx *broker.Context, node *specs.Node, flow specs.
 
 	if prop.Message != nil {
 		for _, nested := range prop.Message {
-				err := PreparePropertyFunctions(ctx, node, flow, stack, nested, functions)
+			err := PreparePropertyFunctions(ctx, node, flow, stack, nested, functions)
 			if err != nil {
 				return err
 			}
@@ -312,7 +312,7 @@ func PrepareFunction(ctx *broker.Context, node *specs.Node, flow specs.FlowInter
 		Property: returns,
 	}
 
-	references.ScopeNestedReferences(returns, property)
+	references.ScopeNestedReferences(returns.Template, property.Template)
 	return nil
 }
 

@@ -8,7 +8,7 @@ import (
 
 func TestErrUnsupportedAuthMethod(t *testing.T) {
 	var (
-		expected = "unsupported authorization method (unknown)"
+		expected = "unsuported authorization method (unknown)"
 		err      = errUnsupportedAuthMethod{kind: "unknown"}
 	)
 
