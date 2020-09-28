@@ -622,3 +622,60 @@ func TestParameterMapCloneNilValue(t *testing.T) {
 		t.Errorf("unexpected result %+v", result)
 	}
 }
+
+func TestPropertyDefaultValue(t *testing.T) {
+	type test struct {
+		property *Property
+		expected interface{}
+	}
+
+	var tests = []test{
+		{
+			property: &Property{
+				Template: Template{
+					Scalar: &Scalar{
+						Type:    types.String,
+						Default: "develop smart not hard",
+					},
+				},
+			},
+			expected: "develop smart not hard",
+		},
+		{
+			property: &Property{
+				Template: Template{
+					Enum: &Enum{},
+				},
+			},
+			expected: nil,
+		},
+		{
+			property: &Property{
+				Template: Template{
+					Message: Message{},
+				},
+			},
+			expected: nil,
+		},
+		{
+			property: &Property{
+				Template: Template{
+					Repeated: Repeated{},
+				},
+			},
+			expected: nil,
+		},
+		{
+			property: &Property{},
+			expected: nil,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(string(test.property.Type()), func(t *testing.T) {
+			if actual := test.property.DefaultValue(); actual != test.expected {
+				t.Errorf("default value '%+v' was expected to be '%+v'", actual, test.expected)
+			}
+		})
+	}
+}
