@@ -15,16 +15,21 @@ const (
 
 func outputs() *specs.Property {
 	return &specs.Property{
-		Nested: []*specs.Property{
-			{
-				Name:  propSubject,
-				Path:  propSubject,
-				Type:  types.String,
-				Label: labels.Optional,
+		Label: labels.Required,
+		Template: specs.Template{
+			Message: specs.Message{
+				propSubject: {
+					Name:  propSubject,
+					Path:  propSubject,
+					Label: labels.Optional,
+					Template: specs.Template{
+						Scalar: &specs.Scalar{
+							Type: types.String,
+						},
+					},
+				},
 			},
 		},
-		Type:  types.Message,
-		Label: labels.Required,
 	}
 }
 
