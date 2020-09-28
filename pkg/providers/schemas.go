@@ -162,18 +162,23 @@ func resolveMessage(message, schema specs.Message, flow specs.FlowInterface) err
 	return nil
 }
 
-func resolveRepeated(repeated, schema *specs.Repeated, flow specs.FlowInterface) error {
-	for pos, property := range repeated.Default {
-		if property == nil {
-			continue
-		}
+func resolveRepeated(repeated, schema specs.Repeated, flow specs.FlowInterface) error {
+	if len(repeated) != len(schema) {
+		return trace.New(trace.WithMessage("the length of repeated does not match the schema"))
+	}
 
-		object, ok := schema.Default[pos]
-		if !ok {
-			return trace.New(trace.WithMessage("undefined schema nested message property '%s' in flow '%s'", property.Name, flow.GetName()))
-		}
+	for pos, template := range repeated {
+		object := schema[pos]
 
-		if err := ResolveProperty(property, object.Clone(), flow); err != nil {
+		if err := ResolveProperty(
+			&specs.Property{
+				Template: template,
+			},
+			(&specs.Property{
+				Template: object,
+			}).Clone(),
+			flow,
+		); err != nil {
 			return err
 		}
 	}
@@ -192,13 +197,9 @@ func setMessage(message, schema specs.Message) {
 	}
 }
 
-func setRepeated(repeated, schema *specs.Repeated) {
-	for pos, prop := range schema.Default {
-		if _, ok := repeated.Default[pos]; ok {
-			continue
-		}
-
-		repeated.Default[pos] = prop.Clone()
+func setRepeated(repeated, schema specs.Repeated) {
+	for position, template := range schema {
+		repeated[position] = template.Clone()
 	}
 }
 
@@ -219,18 +220,6 @@ func ResolveProperty(property, schema *specs.Property, flow specs.FlowInterface)
 
 		break
 	case property.Repeated != nil:
-		if err := ResolveProperty(
-			&specs.Property{
-				Template: property.Repeated.Template,
-			},
-			&specs.Property{
-				Template: schema.Repeated.Template,
-			},
-			flow,
-		); err != nil {
-			return err
-		}
-
 		if err := resolveRepeated(property.Repeated, schema.Repeated, flow); err != nil {
 			return err
 		}
