@@ -6,7 +6,6 @@ import (
 
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/labels"
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
@@ -85,12 +84,12 @@ func (object *Object) unmarshalXML(decoder *xml.Decoder, refs map[string]*refere
 func (object *Object) startElement(decoder *xml.Decoder, tok xml.Token, refs map[string]*references.Reference) error {
 	switch t := tok.(type) {
 	case xml.StartElement:
-		var prop = object.specs.Get(t.Name.Local)
+		var prop = object.specs[t.Name.Local]
 		if prop == nil {
 			return errUndefinedProperty(t.Name.Local)
 		}
 
-		if prop.Re == labels.Repeated {
+		if prop.Repeated != nil {
 			return object.repeated(decoder, prop, refs)
 		}
 

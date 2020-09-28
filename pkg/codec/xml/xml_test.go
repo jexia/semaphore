@@ -27,7 +27,7 @@ func TestName(t *testing.T) {
 		}
 	})
 
-	manager, err := xml.New("mock", schema)
+	manager, err := xml.New("mock", schemaObject)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -128,7 +128,7 @@ func TestMarshal(t *testing.T) {
 
 	for title, test := range tests {
 		t.Run(title, func(t *testing.T) {
-			manager, err := xml.New("mock", schema)
+			manager, err := xml.New("mock", schemaObject)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -352,7 +352,7 @@ func TestUnmarshal(t *testing.T) {
 				t.Fatal("unexpected nil")
 			}
 
-			manager, err := xml.New("mock", schema)
+			manager, err := xml.New("mock", schemaObject)
 			if err != nil {
 				t.Fatal(err)
 			}

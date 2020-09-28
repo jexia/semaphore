@@ -2,6 +2,7 @@ package formencoded
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/url"
@@ -102,29 +103,17 @@ func array(encoder url.Values, root string, refs references.Store, prop *specs.P
 	AddTypeKey(encoder, root, prop.Type, val)
 }
 
-// func encodeRepeated(encoder url.Values, template specs.Template, path string, refs references.Store) {
-// 	if template.Reference == nil {
-// 		return
-// 	}
-//
-// 	ref := refs.Load(template.Reference.Resource, template.Reference.Path)
-// 	if ref == nil {
-// 		return
-// 	}
-//
-// 	for index, repeated := range ref.Repeated {
-// 		current := fmt.Sprintf("%s[%d]", path, index)
-// 		encode(encoder, current, repeated, &specs.Property{Template: template})
-//
-// 		_, _ = current, repeated
-// 	}
-// }
-
 func encode(encoder url.Values, root string, refs references.Store, property *specs.Property) {
 	path := template.JoinPath(root, property.Name)
 
 	switch {
 	case property.Repeated != nil:
+
+		for index, repeated := range ref.Repeated {
+			current := fmt.Sprintf("%s[%d]", path, index)
+			array(encoder, current, repeated, prop)
+		}
+
 		// encodeRepeated(encoder, property.Template, path, refs)
 		array(encoder, current, repeated, prop)
 	case property.Message != nil:
