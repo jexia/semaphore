@@ -85,6 +85,16 @@ func ResolveNode(ctx *broker.Context, node *specs.Node, flow specs.FlowInterface
 		}
 	}
 
+	if node.Intermediate != nil {
+		err = ResolveParameterMap(ctx, node, node.Intermediate, flow)
+		if err != nil {
+			return ErrUnresolvedParameterMap{
+				wrapErr:   wrapErr{err},
+				Parameter: node.Intermediate,
+			}
+		}
+	}
+
 	if node.Call != nil {
 		err = ResolveCall(ctx, node, node.Call, flow)
 		if err != nil {
@@ -312,15 +322,6 @@ func ResolveProperty(ctx *broker.Context, node *specs.Node, property *specs.Prop
 	property.Label = reference.Label
 	property.Reference.Property = reference
 
-	if property.Scalar != nil && reference.Scalar != nil {
-		property.Scalar.Default = reference.Scalar.Default
-		property.Scalar.Type = reference.Scalar.Type
-	}
-
-	if reference.Enum != nil {
-		property.Enum = reference.Enum
-	}
-
 	ScopeNestedReferences(&reference.Template, &property.Template)
 
 	return nil
@@ -389,6 +390,17 @@ func ScopeNestedReferences(source, target *specs.Template) {
 	}
 
 	switch {
+	case source.Scalar != nil:
+		if target.Scalar == nil {
+			target.Scalar = &specs.Scalar{}
+		}
+
+		target.Scalar.Default = source.Scalar.Default
+		target.Scalar.Type = source.Scalar.Type
+		break
+	case source.Enum != nil:
+		target.Enum = source.Enum
+		break
 	case source.Message != nil:
 		if target.Message == nil {
 			target.Message = make(specs.Message, len(source.Message))
@@ -413,6 +425,8 @@ func ScopeNestedReferences(source, target *specs.Template) {
 				ScopeNestedReferences(&item.Template, &nested.Template)
 			}
 		}
+
+		break
 	case source.Repeated != nil:
 		if target.Repeated != nil {
 			return
@@ -436,5 +450,7 @@ func ScopeNestedReferences(source, target *specs.Template) {
 
 			target.Repeated[index] = cloned
 		}
+
+		break
 	}
 }

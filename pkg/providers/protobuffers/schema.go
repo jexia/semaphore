@@ -23,19 +23,18 @@ func NewSchema(descriptors []*desc.FileDescriptor) specs.Schemas {
 
 // NewMessage constructs a schema Property with the given message descriptor
 func NewMessage(path string, descriptor *desc.MessageDescriptor) *specs.Property {
-	var (
-		fields = descriptor.GetFields()
-		result = &specs.Property{
-			Path:        path,
-			Name:        descriptor.GetFullyQualifiedName(),
-			Description: descriptor.GetSourceInfo().GetLeadingComments(),
-			Position:    1,
-			Template: specs.Template{
-				Message: make(specs.Message, len(fields)),
-			},
-			Options: specs.Options{},
-		}
-	)
+	fields := descriptor.GetFields()
+	result := &specs.Property{
+		Path:        path,
+		Name:        descriptor.GetFullyQualifiedName(),
+		Description: descriptor.GetSourceInfo().GetLeadingComments(),
+		Position:    1,
+		Label:       labels.Optional,
+		Template: specs.Template{
+			Message: make(specs.Message, len(fields)),
+		},
+		Options: specs.Options{},
+	}
 
 	for _, field := range fields {
 		result.Message[field.GetName()] = NewProperty(template.JoinPath(path, field.GetName()), field)
@@ -52,6 +51,7 @@ func NewProperty(path string, descriptor *desc.FieldDescriptor) *specs.Property 
 		Description: descriptor.GetSourceInfo().GetLeadingComments(),
 		Position:    descriptor.GetNumber(),
 		Options:     specs.Options{},
+		Label:       Labels[descriptor.GetLabel()],
 	}
 
 	switch {
@@ -89,7 +89,6 @@ func NewProperty(path string, descriptor *desc.FieldDescriptor) *specs.Property 
 
 		break
 	default:
-		result.Label = Labels[descriptor.GetLabel()]
 		result.Scalar = &specs.Scalar{
 			Type: Types[descriptor.GetType()],
 		}
