@@ -16,8 +16,8 @@ import (
 
 var enum = &specs.Enum{
 	Keys: map[string]*specs.EnumValue{
-		"UNKOWN": {
-			Key:      "UNKOWN",
+		"UNKNOWN": {
+			Key:      "UNKNOWN",
 			Position: 0,
 		},
 		"PENDING": {
@@ -27,12 +27,35 @@ var enum = &specs.Enum{
 	},
 	Positions: map[int32]*specs.EnumValue{
 		0: {
-			Key:      "UNKOWN",
+			Key:      "UNKNOWN",
 			Position: 0,
 		},
 		1: {
 			Key:      "PENDING",
 			Position: 1,
+		},
+	},
+}
+
+var schemaWithDefaultRepeating = &specs.ParameterMap{
+	Property: &specs.Property{
+		Name: "repeating_with_defaults",
+		Path: "repeating_with_defaults",
+		Template: specs.Template{
+			Repeated: specs.Repeated{
+				{
+					Scalar: &specs.Scalar{
+						Default: "yes",
+						Type:    types.String,
+					},
+				},
+				{
+					Scalar: &specs.Scalar{
+						Default: "no",
+						Type:    types.String,
+					},
+				},
+			},
 		},
 	},
 }
@@ -143,9 +166,7 @@ var schema = &specs.ParameterMap{
 						},
 						Repeated: specs.Repeated{
 							{
-								Scalar: &specs.Scalar{
-									Type: types.String,
-								},
+								Scalar: &specs.Scalar{Type: types.String},
 							},
 						},
 					},
@@ -160,9 +181,7 @@ var schema = &specs.ParameterMap{
 							Path:     "repeating_enum",
 						},
 						Repeated: specs.Repeated{
-							{
-								Enum: enum,
-							},
+							{Enum: enum},
 						},
 					},
 				},
@@ -218,7 +237,7 @@ func TestConstructorName(t *testing.T) {
 	expected := "form-urlencoded"
 	name := form.Name()
 	if name != expected {
-		t.Errorf("unexpected name %s, expected %s", name, expected)
+		t.Errorf("unexpected name %s, want %s", name, expected)
 	}
 }
 
@@ -264,7 +283,7 @@ func TestManagerName(t *testing.T) {
 	expected := "form-urlencoded"
 	name := manager.Name()
 	if name != expected {
-		t.Errorf("unexpected name %s, expected %s", name, expected)
+		t.Errorf("unexpected name %s, want %s", name, expected)
 	}
 }
 
@@ -285,7 +304,7 @@ func TestManagerProperty(t *testing.T) {
 
 	result := manager.Property()
 	if result != expected.Property {
-		t.Errorf("unexpected property %+v, expected %+v", result, expected.Property)
+		t.Errorf("unexpected property %+v, want %+v", result, expected.Property)
 	}
 }
 
@@ -320,6 +339,7 @@ func TestMarshal(t *testing.T) {
 	type test struct {
 		expected string
 		input    map[string]interface{}
+		schema *specs.ParameterMap // if nil, use the default global `schema`
 	}
 
 	tests := map[string]test{
@@ -358,8 +378,15 @@ func TestMarshal(t *testing.T) {
 				},
 			},
 		},
+		"repeating_with_defaults": {
+			schema: schemaWithDefaultRepeating,
+			expected: "repeating_with_defaults%5B0%5D=yes&repeating_with_defaults%5B1%5D=no",
+			input: map[string]interface{}{
+				"repeating_with_defaults": []interface{}{},
+			},
+		},
 		"repeating_enum": {
-			expected: "repeating_enum%5B0%5D=PENDING&repeating_enum%5B1%5D=UNKOWN",
+			expected: "repeating_enum%5B0%5D=PENDING&repeating_enum%5B1%5D=UNKNOWN",
 			input: map[string]interface{}{
 				"nested": map[string]interface{}{},
 				"repeating_enum": []interface{}{
@@ -409,7 +436,11 @@ func TestMarshal(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			manager, err := form.New("mock", schema)
+			sch := schema
+			if test.schema != nil {
+				sch = test.schema
+			}
+			manager, err := form.New("mock", sch)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -432,7 +463,7 @@ func TestMarshal(t *testing.T) {
 			}
 
 			if string(bb) != test.expected {
-				t.Errorf("unexpected result %s, expected %s", string(bb), test.expected)
+				t.Errorf("unexpected result %s, want %s", string(bb), test.expected)
 			}
 		})
 	}
@@ -558,7 +589,7 @@ func TestUnmarshal(t *testing.T) {
 		},
 		"repeated enum": {
 			input: strings.NewReader(
-				"repeating_enum=PENDING&repeating_enum=UNKOWN",
+				"repeating_enum=PENDING&repeating_enum=UNKNOWN",
 			),
 			expected: map[string]expect{
 				"repeating_enum": {
@@ -616,10 +647,10 @@ func TestUnmarshal(t *testing.T) {
 
 			if test.error != nil {
 				if !errors.As(err, &test.error) {
-					t.Errorf("error [%s] was expected to be [%s]", err, test.error)
+					t.Errorf("error [%s] was want to be [%s]", err, test.error)
 				}
 			} else if err != nil {
-				t.Errorf("error was not expected: %s", err)
+				t.Errorf("error was not want: %s", err)
 			}
 
 			for path, output := range test.expected {
@@ -645,7 +676,7 @@ func assert(t *testing.T, resource string, path string, store references.Store, 
 
 	if output.value != nil {
 		if ref.Value != output.value {
-			t.Errorf("reference %q was expected to have value [%v], not [%v]", path, output.value, ref.Value)
+			t.Errorf("reference %q was want to have value [%v], not [%v]", path, output.value, ref.Value)
 		}
 
 		return
@@ -653,11 +684,11 @@ func assert(t *testing.T, resource string, path string, store references.Store, 
 
 	if output.enum != nil {
 		if ref.Enum == nil {
-			t.Errorf("reference %q was expected to have a enum value", path)
+			t.Errorf("reference %q was want to have a enum value", path)
 		}
 
 		if *output.enum != *ref.Enum {
-			t.Errorf("reference %q was expected to have enum value [%d], not [%d]", path, *output.enum, *ref.Enum)
+			t.Errorf("reference %q was want to have enum value [%d], not [%d]", path, *output.enum, *ref.Enum)
 		}
 
 		return
@@ -665,11 +696,11 @@ func assert(t *testing.T, resource string, path string, store references.Store, 
 
 	if output.repeated != nil {
 		if ref.Repeated == nil {
-			t.Errorf("reference %q was expected to have a repeated value", path)
+			t.Errorf("reference %q was want to have a repeated value", path)
 		}
 
 		if expected, actual := len(ref.Repeated), len(ref.Repeated); actual != expected {
-			t.Errorf("invalid number of repeated values, expected %d, got %d", expected, actual)
+			t.Errorf("invalid number of repeated values, want %d, got %d", expected, actual)
 		}
 
 		for index, expected := range output.repeated {

@@ -1,146 +1,248 @@
 properties:
-    com.complete.input:
-        type: "message"
-        label: "optional"
-        nested:
+  com.complete.input:
+    label: "optional"
+    template:
+      message:
+        "message":
+          name: "message"
+          label: "optional"
+          template:
+            scalar:
+              type: "string"
+        "nested":
+          name: "nested"
+          label: "optional"
+          template:
             message:
-                type: "string"
+              "value":
+                name: "value"
                 label: "optional"
-            nested:
-                type: "message"
-                label: "optional"
-                nested:
-                    value:
-                        type: "string"
-                        label: "optional"
-            repeating:
-                type: "message"
-                label: "repeated"
-                nested:
-                    value:
-                        type: "string"
-                        label: "optional"
-            repeating_values:
-                type: "string"
-                label: "repeated"
-            enum:
-                type: "enum"
-                label: "optional"
-                enum:
-                    UNKNOWN:
-                        position: 1
-                    PENDING:
-                        position: 2
-            repeating_enum:
-                type: "enum"
-                label: "repeated"
-                enum:
-                    UNKNOWN:
-                        position: 1
-                    PENDING:
-                        position: 2
-    com.complete.output:
-        type: "message"
-        label: "optional"
-        nested:
-            id:
-                type: "int64"
-                label: "optional"
-    com.simple.input:
-        type: "message"
-        label: "optional"
-        nested:
-            message:
-                type: "string"
-                label: "optional"
-    com.enum.input:
-        type: "message"
-        label: "optional"
-        nested:
-            enum:
-                type: "enum"
-                label: "optional"
-                enum:
-                    UNKNOWN:
-                        position: 1
-                    PENDING:
-                        position: 2
-    com.repeating_enum.input:
-        type: "message"
-        label: "optional"
-        nested:
-            enum:
-                type: "enum"
-                label: "repeated"
-                enum:
-                    UNKNOWN:
-                        position: 1
-                    PENDING:
-                        position: 2
-    com.simple.output:
-        type: "message"
-        label: "optional"
-        nested:
-            id:
-                type: "int64"
-                label: "optional"
-    com.repeated.input:
-        type: "message"
-        label: "optional"
-        nested:
-            repeating:
-                type: "message"
-                label: "repeated"
-                nested:
-                    value:
-                        type: "string"
-                        label: "optional"
-    com.repeated.output:
-        type: "message"
-        label: "optional"
-        nested:
-            id:
-                type: "int64"
-                label: "optional"
-    com.repeated_values.input:
-        type: "message"
-        label: "optional"
-        nested:
-            repeated_values:
-                type: "string"
-                label: "repeated"
-    com.nested.input:
-        type: "message"
-        label: "optional"
-        nested:
-            nested:
-                type: "message"
-                label: "optional"
-                nested:
-                    value:
-                        type: "string"
-                        label: "optional"
-services:
-    mock:
-        methods:
-            complete:
-                input: "com.complete.input"
-                output: "com.complete.output"
-            simple:
-                input: "com.simple.input"
-                output: "com.simple.output"
+                template:
+                  scalar:
+                    type: "string"
+
+        "repeating":
+          name: "repeating"
+          label: "optional"
+          template:
             repeated:
-                input: "com.repeated.input"
-                output: "com.repeated.output"
-            repeated_values:
-                input: "com.repeated_values.input"
-                output: "com.repeated.output"
-            nested:
-                input: "com.nested.input"
-                output: "com.simple.output"
+              - message:
+                  "value":
+                    name: "value"
+                    label: "optional"
+                    template:
+                      scalar:
+                        type: "string"
+        "repeating_values":
+          name: "repeating_values"
+          label: "optional"
+          template:
+            repeated:
+              - scalar:
+                  type: "string"
+        "enum":
+            name: "enum"
+            label: "optional"
+            template:
+              enum:
+                name: "STATUS"
+                keys:
+                  "UNKNOWN":
+                    key: "UNKNOWN"
+                    position: 1
+                    description: "unknown status"
+                  "PENDING":
+                    key: "PENDING"
+                    position: 2
+                    description: "pending status"
+                positions:
+                  1:
+                    key: "UNKNOWN"
+                    position: 1
+                    description: "unknown status"
+                  2:
+                    key: "PENDING"
+                    position: 2
+                    description: "pending status"
+        "repeating_enum":
+          name: "repeating_enum"
+          label: "optional"
+          template:
+            repeated:
+              - enum:
+                  name: "STATUS"
+                  keys:
+                    "UNKNOWN":
+                      key: "UNKNOWN"
+                      position: 1
+                      description: "unknown status"
+                    "PENDING":
+                      key: "PENDING"
+                      position: 2
+                      description: "pending status"
+                  positions:
+                    1:
+                      key: "UNKNOWN"
+                      position: 1
+                      description: "unknown status"
+                    2:
+                      key: "PENDING"
+                      position: 2
+                      description: "pending status"
+  com.complete.output:
+    label: "optional"
+    template:
+      message:
+        "id":
+          name: "id"
+          label: "optional"
+          template:
+            scalar:
+              type: "int64"
+  com.simple.input:
+    label: "optional"
+    template:
+      message:
+        "message":
+          name: "message"
+          label: "optional"
+          template:
+            scalar:
+              type: "string"
+  com.enum.input:
+    label: "optional"
+    template:
+      message:
+        "enum":
+          name: "enum"
+          label: "optional"
+          template:
             enum:
-                input: "com.enum.input"
-                output: "com.simple.output"
-            repeating_enum:
-                input: "com.repeating_enum.input"
-                output: "com.simple.output"
+              name: "STATUS"
+              keys:
+                "UNKNOWN":
+                  key: "UNKNOWN"
+                  position: 1
+                  description: "unknown status"
+                "PENDING":
+                  key: "PENDING"
+                  position: 2
+                  description: "pending status"
+              positions:
+                1:
+                  key: "UNKNOWN"
+                  position: 1
+                  description: "unknown status"
+                2:
+                  key: "PENDING"
+                  position: 2
+                  description: "pending status"
+  com.repeating_enum.input:
+    label: "optional"
+    template:
+      repeated:
+        - enum:
+            name: "STATUS"
+            keys:
+              "UNKNOWN":
+                key: "UNKNOWN"
+                position: 1
+                description: "unknown status"
+              "PENDING":
+                key: "PENDING"
+                position: 2
+                description: "pending status"
+            positions:
+              1:
+                key: "UNKNOWN"
+                position: 1
+                description: "unknown status"
+              2:
+                key: "PENDING"
+                position: 2
+                description: "pending status"
+  com.simple.output:
+    label: "optional"
+    template:
+      message:
+        "id":
+          name: "id"
+          label: "optional"
+          template:
+            scalar:
+              type: "int64"
+  com.repeated.input:
+    label: "optional"
+    template:
+      message:
+        "repeating":
+          name: "repeating"
+          label: "optional"
+          template:
+            repeated:
+              - message:
+                  "value":
+                    label: "optional"
+                    template:
+                      scalar:
+                        type: "string"
+  com.repeated.output:
+    label: "optional"
+    template:
+      message:
+        "id":
+          name: "id"
+          label: "optional"
+          template:
+            scalar:
+              type: "int64"
+  com.repeated_values.input:
+    label: "optional"
+    template:
+      message:
+        "repeated_values":
+          name: "repeated_values"
+          label: "optional"
+          template:
+            repeated:
+              - scalar:
+                  type: "string"
+  com.nested.input:
+    label: "optional"
+    template:
+      message:
+        "nested":
+          name: "nested"
+          label: "optional"
+          template:
+            message:
+              "value":
+                name: "value"
+                label: "optional"
+                template:
+                  scalar:
+                    type: "string"
+services:
+  mock:
+    methods:
+      complete:
+        input: "com.complete.input"
+        output: "com.complete.output"
+      simple:
+        input: "com.simple.input"
+        output: "com.simple.output"
+      repeated:
+        input: "com.repeated.input"
+        output: "com.repeated.output"
+      repeated_values:
+        input: "com.repeated_values.input"
+        output: "com.repeated.output"
+      nested:
+        input: "com.nested.input"
+        output: "com.simple.output"
+      enum:
+        input: "com.enum.input"
+        output: "com.simple.output"
+      repeating_enum:
+        input: "com.repeating_enum.input"
+        output: "com.simple.output"

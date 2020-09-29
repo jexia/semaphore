@@ -9,7 +9,7 @@ func TestErrUndefinedProperty(t *testing.T) {
 	)
 
 	if actual := err.Error(); actual != expected {
-		t.Errorf("error %q was expected to be %q", actual, expected)
+		t.Errorf("error %q was want to be %q", actual, expected)
 	}
 }
 
@@ -20,6 +20,6 @@ func TestErrUnknownLabel(t *testing.T) {
 	)
 
 	if actual := err.Error(); actual != expected {
-		t.Errorf("error %q was expected to be %q", actual, expected)
+		t.Errorf("error %q was want to be %q", actual, expected)
 	}
 }
