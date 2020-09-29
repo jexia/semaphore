@@ -1,66 +1,6 @@
 package mock
 
-import (
-	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/labels"
-	"github.com/jexia/semaphore/pkg/specs/template"
-)
-
-// SchemaManifest formats the given mock collection to a specs schema manifest
-func SchemaManifest(collection *Collection) specs.Schemas {
-	result := make(specs.Schemas, 0)
-
-	for _, prop := range collection.GetMessages() {
-		result[prop.Name] = SpecsProperty("", prop)
-	}
-
-	return result
-}
-
-// SpecsProperty formats the given mock property to a specs property
-func SpecsProperty(path string, property *Property) *specs.Property {
-	result := &specs.Property{
-		Name:        property.Name,
-		Path:        path,
-		Description: property.Comment,
-		Label:       labels.Label(property.Label),
-		Position:    property.Position,
-		Options:     property.Options,
-	}
-
-	switch {
-	case property.Enum != nil:
-		result.Message = make(specs.Message, len(property.Nested))
-
-		for key, nested := range property.GetNested() {
-			result.Message[key] = SpecsProperty(template.JoinPath(path, key), nested)
-		}
-	case property.Nested != nil:
-		result.Enum = &specs.Enum{
-			Name:      property.Name,
-			Keys:      make(map[string]*specs.EnumValue, len(property.Enum)),
-			Positions: make(map[int32]*specs.EnumValue, len(property.Enum)),
-		}
-
-		for key, value := range property.Enum {
-			value := &specs.EnumValue{
-				Key:         key,
-				Position:    value.Position,
-				Description: value.Description,
-			}
-
-			result.Enum.Keys[value.Key] = value
-			result.Enum.Positions[value.Position] = value
-		}
-	default:
-		result.Scalar = &specs.Scalar{
-			Default: property.Default,
-			Type:    property.Type,
-		}
-	}
-
-	return result
-}
+import "github.com/jexia/semaphore/pkg/specs"
 
 // ServiceManifest formats the given mock collection to a specs service(s) manifest
 func ServiceManifest(collection *Collection) specs.ServiceList {

@@ -39,7 +39,7 @@ func SchemaResolver(path string) providers.SchemaResolver {
 			return nil, err
 		}
 
-		return SchemaManifest(collection), nil
+		return collection.Properties, nil
 	}
 }
 

@@ -1,12 +1,24 @@
 properties:
-    com.input:
-        type: "enum"
-        label: "optional"
-        enum:
-            UNKNOWN:
-                position: 1
-                description: "unknown status"
-            PENDING:
-                position: 2
-                description: "pending status"
-            
+  com.input:
+    label: "optional"
+    template:
+      enum:
+        name: "STATUS"
+        keys:
+          "UNKNOWN":
+            key: "UNKNOWN"
+            position: 1
+            description: "unknown status"
+          "PENDING":
+            key: "PENDING"
+            position: 2
+            description: "pending status"
+        positions:
+          1:
+            key: "UNKNOWN"
+            position: 1
+            description: "unknown status"
+          2:
+            key: "PENDING"
+            position: 2
+            description: "pending status"

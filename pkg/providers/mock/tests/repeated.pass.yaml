@@ -1,25 +1,27 @@
 properties:
-    com.input:
-        type: "message"
-        label: "optional"
-        nested:
-            repeating:
-                type: "message"
-                label: "repeated"
-                nested:
-                    value:
-                        type: "string"
-                        label: "optional"
-    com.output:
-        type: "message"
-        label: "optional"
-        nested:
+  com.input:
+    label: "optional"
+    template:
+      repeated:
+        - message:
             message:
-                type: "int32"
-                label: "optional"
+              name: "message"
+              label: "optional"
+              template:
+                scalar:
+                  type: "string"
+  com.output:
+    label: "optional"
+    template:
+      message:
+        "message":
+          label: "optional"
+          template:
+            scalar:
+              type: "int32"
 services:
-    caller:
-        methods:
-            Open:
-                input: com.input
-                output: com.output
+  caller:
+    methods:
+      Open:
+        input: com.input
+        output: com.output
