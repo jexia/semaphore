@@ -21,7 +21,7 @@ func NewArgs(props *specs.ParameterMap) (graphql.FieldConfigArgument, error) {
 	args := graphql.FieldConfigArgument{}
 
 	if prop.Type() != types.Message {
-		return nil, trace.New(trace.WithMessage("arguments must be a object, received '%s'", prop.Type))
+		return nil, trace.New(trace.WithMessage("arguments must be a object, received '%s'", prop.Type()))
 	}
 
 	if len(prop.Message) == 0 {
