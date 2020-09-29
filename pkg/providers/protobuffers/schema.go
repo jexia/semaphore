@@ -3,6 +3,7 @@ package protobuffers
 import (
 	protobuf "github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/pkg/specs/labels"
 	"github.com/jexia/semaphore/pkg/specs/template"
 	"github.com/jhump/protoreflect/desc"
 )
@@ -53,7 +54,8 @@ func NewProperty(path string, descriptor *desc.FieldDescriptor) *specs.Property 
 		Options:     specs.Options{},
 	}
 
-	if descriptor.GetType() == protobuf.FieldDescriptorProto_TYPE_ENUM {
+	switch {
+	case descriptor.GetType() == protobuf.FieldDescriptorProto_TYPE_ENUM:
 		enum := descriptor.GetEnumType()
 		keys := map[string]*specs.EnumValue{}
 		positions := map[int32]*specs.EnumValue{}
@@ -76,10 +78,8 @@ func NewProperty(path string, descriptor *desc.FieldDescriptor) *specs.Property 
 			Positions:   positions,
 		}
 
-		return result
-	}
-
-	if descriptor.GetType() == protobuf.FieldDescriptorProto_TYPE_MESSAGE {
+		break
+	case descriptor.GetType() == protobuf.FieldDescriptorProto_TYPE_MESSAGE:
 		var fields = descriptor.GetMessageType().GetFields()
 		result.Message = make(specs.Message, len(fields))
 
@@ -87,12 +87,19 @@ func NewProperty(path string, descriptor *desc.FieldDescriptor) *specs.Property 
 			result.Message[field.GetName()] = NewProperty(template.JoinPath(path, field.GetName()), field)
 		}
 
-		return result
+		break
+	default:
+		result.Label = Labels[descriptor.GetLabel()]
+		result.Scalar = &specs.Scalar{
+			Type: Types[descriptor.GetType()],
+		}
 	}
 
-	result.Label = Labels[descriptor.GetLabel()]
-	result.Scalar = &specs.Scalar{
-		Type: Types[descriptor.GetType()],
+	if descriptor.GetLabel() == protobuf.FieldDescriptorProto_LABEL_REPEATED {
+		result.Label = labels.Optional
+		result.Template = specs.Template{
+			Repeated: specs.Repeated{result.Template},
+		}
 	}
 
 	return result

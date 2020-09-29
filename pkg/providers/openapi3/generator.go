@@ -185,17 +185,13 @@ func IncludeParameterMap(object *Object, params *specs.ParameterMap) {
 		object.Components.Schemas = map[string]*Schema{}
 	}
 
-	object.Components.Schemas[params.Schema] = GenerateSchema(params.Property)
+	object.Components.Schemas[params.Schema] = GenerateSchema(params.Property.Description, params.Property.Template)
 }
 
 // GenerateSchema generates a new schema for the given property
-func GenerateSchema(property *specs.Property) *Schema {
-	if property == nil {
-		return nil
-	}
-
+func GenerateSchema(description string, property specs.Template) *Schema {
 	result := &Schema{
-		Description: property.Description,
+		Description: description,
 		Type:        types.Open(property.Type()),
 	}
 
@@ -208,13 +204,14 @@ func GenerateSchema(property *specs.Property) *Schema {
 		result.Properties = make(map[string]*Schema, len(property.Message))
 
 		for _, nested := range property.Message {
-			result.Properties[nested.Name] = GenerateSchema(nested)
+			result.Properties[nested.Name] = GenerateSchema(nested.Description, nested.Template)
 
 			if nested.Label == labels.Required {
 				result.Required = append(result.Required, nested.Name)
 			}
 		}
 
+		break
 	case property.Enum != nil:
 		// ensure property enum order
 		result.Enum = make([]interface{}, len(property.Enum.Keys))
@@ -232,16 +229,14 @@ func GenerateSchema(property *specs.Property) *Schema {
 
 		break
 	case property.Repeated != nil:
-		var repeated = &specs.Property{
-			Name: property.Name,
-			Path: property.Path,
-			Template: specs.Template{
-				Repeated: property.Repeated,
-			},
+		template, err := property.Repeated.Template()
+		if err != nil {
+			panic(err)
 		}
 
 		return &Schema{
-			Items: GenerateSchema(repeated),
+			Description: description,
+			Items:       GenerateSchema("", template),
 		}
 	}
 

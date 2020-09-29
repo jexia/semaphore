@@ -45,7 +45,7 @@ var schema = &specs.ParameterMap{
 				"bad_label": {
 					Name:  "bad_label",
 					Path:  "bad_label",
-					Label: 0,
+					Label: "",
 					Template: specs.Template{
 						Scalar: &specs.Scalar{
 							Type: types.String,
