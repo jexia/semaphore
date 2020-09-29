@@ -1,14 +1,16 @@
 exception:
-    file: basic
-    line: 10
-    message: unhandled error
+  file: basic
+  line: 10
+  message: unhandled error
 services:
-    caller:
-        methods:
-            call:
-                input: "com.input"
+  caller:
+    methods:
+      call:
+        input: "com.input"
 properties:
-    com.input:
+  com.input:
+    label: "optional"
+    template:
+      scalar:
         type: "string"
-        label: "optional"
-            
+        default: "hello world"

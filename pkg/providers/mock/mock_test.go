@@ -40,9 +40,13 @@ func TestSchemaParsing(t *testing.T) {
 			}
 
 			schema := SchemaResolver(file.Path)
-			_, err = schema(ctx)
+			properties, err := schema(ctx)
 			if err != nil {
 				t.Errorf("unexpected err while resolving schema %s, %v", file.Name(), err)
+			}
+
+			if properties == nil {
+				t.Error("unexpected nil")
 			}
 		})
 	}
