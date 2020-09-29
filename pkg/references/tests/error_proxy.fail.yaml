@@ -1,3 +1,3 @@
 exception:
-    message: object 'com.unknown', is unavailable inside the schema collection
+  message: object 'com.unknown', is unavailable inside the schema collection
 properties:

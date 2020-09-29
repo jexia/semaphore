@@ -1,6 +1,5 @@
 proxy "echo" {
-	error "com.error" {
-    }
+  error "com.error" {}
 
-    forward "" {}
+  forward "" {}
 }

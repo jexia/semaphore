@@ -11,10 +11,10 @@ type Template struct {
 	Reference *PropertyReference `json:"reference,omitempty"` // Reference represents a property reference made inside the given property
 
 	// Only one of the following fields should be set
-	Scalar   *Scalar  `json:"scalar,omitempty"`
-	Enum     *Enum    `json:"enum,omitempty"`
-	Repeated Repeated `json:"repeated,omitempty"`
-	Message  Message  `json:"message,omitempty"`
+	Scalar   *Scalar  `json:"scalar,omitempty" yaml:"scalar,omitempty"`
+	Enum     *Enum    `json:"enum,omitempty" yaml:"enum,omitempty"`
+	Repeated Repeated `json:"repeated,omitempty" yaml:"repeated,omitempty"`
+	Message  Message  `json:"message,omitempty" yaml:"message,omitempty"`
 }
 
 // Type returns the type of the given template.

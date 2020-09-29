@@ -1,8 +1,7 @@
 proxy "echo" {
-    input {
-        params = "unexpected"
-    }
+  input {
+    params = "unexpected"
+  }
 
-    forward "caller" {
-    }
+  forward "caller" {}
 }

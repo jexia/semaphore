@@ -39,20 +39,20 @@ type Expression interface {
 // Property represents a value property.
 type Property struct {
 	*metadata.Meta
-	Name        string `json:"name,omitempty"`        // Name represents the name of the given property
-	Path        string `json:"path,omitempty"`        // Path represents the full path to the given property
-	Description string `json:"description,omitempty"` // Description holds the description of the given property used to describe its use
+	Name        string `json:"name,omitempty" yaml:"name,omitempty"`               // Name represents the name of the given property
+	Path        string `json:"path,omitempty" yaml:"path,omitempty"`               // Path represents the full path to the given property
+	Description string `json:"description,omitempty" yaml:"description,omitempty"` // Description holds the description of the given property used to describe its use
 
-	Position int32 `json:"position,omitempty"` // Position of the given property
+	Position int32 `json:"position,omitempty" yaml:"position,omitempty"` // Position of the given property (in array/object)
 
-	Options Options    `json:"options,omitempty"`    // Options holds variable options used inside single modules or components
-	Expr    Expression `json:"expression,omitempty"` // Expr represents the position on where the given property is defined
-	Raw     string     `json:"raw,omitempty"`        // Raw holds the raw template string used to define the given property
+	Options Options    `json:"options,omitempty" yaml:"options,omitempty"` // Options holds variable options used inside single modules or components
+	Expr    Expression `json:"expression,omitempty"`                       // Expr represents the position on where the given property is defined
+	Raw     string     `json:"raw,omitempty"`                              // Raw holds the raw template string used to define the given property
 
 	// Label is the set of field attributes/properties. E.g. label describes that the property is optional.
-	Label labels.Label `json:"label,omitempty"`
+	Label labels.Label `json:"label,omitempty" yaml:"label,omitempty"`
 
-	Template
+	Template `json:"template" yaml:"template"`
 }
 
 // DefaultValue returns rge default value for a given property.

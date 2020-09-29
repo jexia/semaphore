@@ -10,10 +10,10 @@ import (
 // Enum represents a enum configuration
 type Enum struct {
 	*metadata.Meta
-	Name        string                `json:"name,omitempty"`
-	Description string                `json:"description,omitempty"`
-	Keys        map[string]*EnumValue `json:"keys,omitempty"`
-	Positions   map[int32]*EnumValue  `json:"positions,omitempty"`
+	Name        string                `json:"name,omitempty" yaml:"name,omitempty"`
+	Description string                `json:"description,omitempty" yaml:"description,omitempty"`
+	Keys        map[string]*EnumValue `json:"keys,omitempty" yaml:"keys,omitempty"`
+	Positions   map[int32]*EnumValue  `json:"positions,omitempty" yaml:"positions,omitempty"`
 }
 
 // Clone enum schema.

@@ -1,6 +1,7 @@
 package references
 
 import (
+	"log"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -79,6 +80,8 @@ func TestUnmarshalFile(t *testing.T) {
 			}
 
 			if strings.HasSuffix(clean, fail) && err != nil {
+				log.Println(err)
+
 				stack, perr := prettyerr.Prettify(err)
 				if perr != nil {
 					t.Fatal(perr)
@@ -89,7 +92,7 @@ func TestUnmarshalFile(t *testing.T) {
 				}
 
 				if err.Error() != collection.Exception.Message {
-					t.Fatalf("unexpected error message %s, expected %s", err.Error(), collection.Exception.Message)
+					t.Fatalf("unexpected error message %q, expected %q", err.Error(), collection.Exception.Message)
 				}
 
 				return
@@ -116,7 +119,7 @@ func TestUnmarshalFile(t *testing.T) {
 				}
 
 				if err.Error() != collection.Exception.Message {
-					t.Fatalf("unexpected error message %s, expected %s", err.Error(), collection.Exception.Message)
+					t.Fatalf("unexpected error message %q, expected %q", err.Error(), collection.Exception.Message)
 				}
 			}
 		})

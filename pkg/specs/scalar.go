@@ -10,8 +10,8 @@ import (
 
 // Scalar value.
 type Scalar struct {
-	Default interface{} `json:"default,omitempty"`
-	Type    types.Type  `json:"type,omitempty"`
+	Default interface{} `json:"default,omitempty" yaml:"default,omitempty"`
+	Type    types.Type  `json:"type,omitempty" yaml:"type,omitempty"`
 }
 
 // UnmarshalJSON corrects the 64bit data types in accordance with golang

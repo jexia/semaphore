@@ -1,26 +1,32 @@
 exception:
-    message: object 'unexpected', is unavailable inside the schema collection
+  message: object 'unexpected', is unavailable inside the schema collection
 properties:
-    com.input:
-        type: "message"
-        label: "optional"
-        nested:
-            message:
-                type: "string"
-                label: "optional"
-    com.output:
-        type: "message"
-        label: "optional"
-        nested:
-            message:
-                type: "string"
-                label: "optional"
+  com.input:
+    label: "optional"
+    template:
+      message:
+        "message":
+          name: "message"
+          label: "optional"
+          template:
+            scalar:
+              type: "string"
+  com.output:
+    label: "optional"
+    template:
+      message:
+        "message":
+          name: "message"
+          label: "optional"
+          template:
+            scalar:
+              type: "string"
 services:
-    caller:
-        methods:
-            Open:
-                input: "com.input"
-                output: "com.output"
-            Upload:
-                input: "com.input"
-                output: "com.output"
+  caller:
+    methods:
+      Open:
+        input: "com.input"
+        output: "com.output"
+      Upload:
+        input: "com.input"
+        output: "com.output"
