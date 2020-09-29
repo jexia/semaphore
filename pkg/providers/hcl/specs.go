@@ -693,27 +693,26 @@ func ParseIntermediateProperty(ctx *broker.Context, path string, property *hcl.A
 
 	logger.Debug(ctx, "parsing intermediate property to specs", zap.String("path", path))
 
-	var (
-		typed  = value.Type()
-		result = &specs.Property{
-			Name:  property.Name,
-			Path:  template.JoinPath(path, property.Name),
-			Expr:  &Expression{property.Expr},
-			Label: labels.Optional,
-		}
-		err error
-	)
+	fqpath := template.JoinPath(path, property.Name)
+	typed := value.Type()
+	result := &specs.Property{
+		Name:  property.Name,
+		Path:  fqpath,
+		Expr:  &Expression{property.Expr},
+		Label: labels.Optional,
+	}
 
 	switch {
 	case typed.IsTupleType():
 		result.Repeated = make(specs.Repeated, 0, typed.Length())
 
 		value.ForEachElement(func(key cty.Value, value cty.Value) (stop bool) {
-			// TODO: refactor to return template
-			item, err := ParseIntermediateProperty(ctx, result.Path, &hcl.Attribute{
+			attr := &hcl.Attribute{
 				Expr: property.Expr,
-			}, value)
+			}
 
+			// TODO: refactor to return template
+			item, err := ParseIntermediateProperty(ctx, fqpath, attr, value)
 			if err != nil {
 				return true
 			}
@@ -721,31 +720,43 @@ func ParseIntermediateProperty(ctx *broker.Context, path string, property *hcl.A
 			result.Repeated = append(result.Repeated, item.Template)
 			return false
 		})
+
+		break
 	case typed.IsObjectType():
 		result.Message = specs.Message{}
 
 		value.ForEachElement(func(key cty.Value, value cty.Value) (stop bool) {
-			var item *specs.Property
-
-			if item, err = ParseIntermediateProperty(ctx, result.Path, &hcl.Attribute{
+			attr := &hcl.Attribute{
 				Name: key.AsString(),
 				Expr: property.Expr,
-			}, value); err != nil {
+			}
+
+			item, err := ParseIntermediateProperty(ctx, fqpath, attr, value)
+			if err != nil {
 				return true
 			}
 
 			result.Message[key.AsString()] = item
-
 			return false
 		})
-	case typed == cty.String && template.Is(value.AsString()):
-		result, err = template.Parse(ctx, path, result.Name, value.AsString())
-	default:
-		err = SetDefaultValue(ctx, result, value)
-	}
 
-	if err != nil {
-		return nil, err
+		break
+	case typed == cty.String && template.Is(value.AsString()):
+		// TODO: refactor and return template
+		returns, err := template.Parse(ctx, path, result.Name, value.AsString())
+		if err != nil {
+			return nil, err
+		}
+
+		result = returns
+		break
+	default:
+		err := SetScalar(ctx, &result.Template, value)
+		if err != nil {
+			return nil, err
+		}
+
+		break
 	}
 
 	return result, nil

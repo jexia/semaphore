@@ -173,7 +173,7 @@ func TestParseIntermediateStaticProperty(t *testing.T) {
 					{
 						"id": "{{ input:id }}",
 					},
-					{{ input:name }}
+					"{{ input:name }}"
 				]`,
 			expected: &specs.Property{
 				Name:  "array",
@@ -220,8 +220,9 @@ func TestParseIntermediateStaticProperty(t *testing.T) {
 				Template: specs.Template{
 					Message: specs.Message{
 						"message": {
-							Name: "message",
-							Path: "object.message",
+							Name:  "message",
+							Path:  "object.message",
+							Label: labels.Optional,
 							Template: specs.Template{
 								Repeated: specs.Repeated{
 									specs.Template{

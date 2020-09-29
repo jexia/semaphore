@@ -10,15 +10,11 @@ import (
 	"go.uber.org/zap"
 )
 
-// SetDefaultValue sets the given value as default value inside the given property
-func SetDefaultValue(ctx *broker.Context, property *specs.Property, value cty.Value) error {
-	logger.Debug(ctx, "set default value for property", zap.String("path", property.Path), zap.Any("value", value))
+// SetScalar sets the given value as default value inside the given property
+func SetScalar(ctx *broker.Context, tmpl *specs.Template, value cty.Value) error {
+	logger.Debug(ctx, "set default value for property", zap.Any("value", value))
 
-	var scalar = property.Scalar
-
-	if scalar == nil {
-		return errNonScalarType
-	}
+	scalar := &specs.Scalar{}
 
 	switch value.Type() {
 	case cty.String:
@@ -37,8 +33,9 @@ func SetDefaultValue(ctx *broker.Context, property *specs.Property, value cty.Va
 		scalar.Default = def
 		scalar.Type = types.Bool
 	default:
-		return errUnknownPopertyType(value.Type().FriendlyName())
+		return ErrUnkownPropertyType(value.Type().FriendlyName())
 	}
 
+	tmpl.Scalar = scalar
 	return nil
 }

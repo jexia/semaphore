@@ -1,7 +1,6 @@
 package hcl
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/jexia/semaphore/pkg/specs"
@@ -9,11 +8,10 @@ import (
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
-var errNonScalarType = errors.New("non scalar type")
+// ErrUnkownPropertyType is thrown when the given property type is unkown
+type ErrUnkownPropertyType string
 
-type errUnknownPopertyType string
-
-func (e errUnknownPopertyType) Error() string {
+func (e ErrUnkownPropertyType) Error() string {
 	return fmt.Sprintf("unsupported property type %q", string(e))
 }
 

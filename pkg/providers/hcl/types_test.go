@@ -12,7 +12,7 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
-func TestSetDefaultValue(t *testing.T) {
+func TestSetScalar(t *testing.T) {
 	type expected struct {
 		defaultValue interface{}
 		dataType     types.Type
@@ -33,37 +33,40 @@ func TestSetDefaultValue(t *testing.T) {
 			dataType:     types.Bool,
 		},
 		cty.DynamicVal: {
-			error: errUnknownPopertyType("dynamic"),
+			error: ErrUnkownPropertyType("dynamic"),
 		},
 	}
 
 	for input, expected := range tests {
-		var (
-			ctx      = logger.WithLogger(broker.NewBackground())
-			property = specs.Property{}
-			err      = SetDefaultValue(ctx, &property, input)
-		)
+		t.Run(input.GoString(), func(t *testing.T) {
+			ctx := logger.WithLogger(broker.NewBackground())
+			property := specs.Property{}
+			err := SetScalar(ctx, &property.Template, input)
 
-		if expected.error != nil {
-			if !errors.Is(err, expected.error) {
-				t.Errorf("error '%s' was expected to be '%s'", err, expected.error)
+			switch {
+			case expected.error != nil:
+				if !errors.Is(err, expected.error) {
+					t.Errorf("error '%s' was expected to be '%s'", err, expected.error)
+				}
+
+				return
+			default:
+				if err != nil {
+					t.Errorf("unexpected error '%s'", err)
+				}
 			}
-		} else {
-			if err != nil {
-				t.Errorf("unexpected error '%s'", err)
+
+			if property.Scalar == nil {
+				t.Fatal("property scalar has not been defined")
 			}
-		}
 
-		if property.Scalar == nil {
-			t.Fatal("property scalar has not been defined")
-		}
+			if expected.defaultValue != property.Scalar.Default {
+				t.Errorf("unexpected result %+v, expected %+v", property.Scalar.Default, expected.defaultValue)
+			}
 
-		if expected.defaultValue != property.Scalar.Default {
-			t.Errorf("unexpected result %+v, expected %+v", property.Scalar.Default, expected.defaultValue)
-		}
-
-		if expected.dataType != property.Scalar.Type {
-			t.Errorf("unexpected type %s, expected %s", property.Scalar.Type, expected.dataType)
-		}
+			if expected.dataType != property.Scalar.Type {
+				t.Errorf("unexpected type %s, expected %s", property.Scalar.Type, expected.dataType)
+			}
+		})
 	}
 }
