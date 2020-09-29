@@ -72,7 +72,7 @@ var (
 					"bad_label": {
 						Name:  "bad_label",
 						Path:  "bad_label",
-						Label: 42,
+						Label: "unknown",
 						Template: specs.Template{
 							Scalar: &specs.Scalar{
 								Type: types.String,
