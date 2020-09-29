@@ -384,6 +384,46 @@ func BenchmarkRepeatedUnmarshal(b *testing.B) {
 	}
 }
 
+func TestUndefinedSpecs(t *testing.T) {
+	tests := []struct {
+		name string
+		want string
+	}{
+		{
+			"return the formatted error",
+			"no object specs defined",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			e := ErrUndefinedSpecs{}
+			if got := e.Prettify(); got.Message != tt.want {
+				t.Errorf("Error() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestNonRootMessage(t *testing.T) {
+	tests := []struct {
+		name string
+		want string
+	}{
+		{
+			"return the formatted error",
+			"a proto message always requires a root message",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			e := ErrNonRootMessage{}
+			if got := e.Prettify(); got.Message != tt.want {
+				t.Errorf("Error() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestMarshal(t *testing.T) {
 	flows, err := NewMock()
 	if err != nil {

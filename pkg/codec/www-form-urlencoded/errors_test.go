@@ -23,3 +23,23 @@ func TestErrUnknownLabel(t *testing.T) {
 		t.Errorf("error %q was expected to be %q", actual, expected)
 	}
 }
+
+func TestUndefinedSpecs(t *testing.T) {
+	tests := []struct {
+		name string
+		want string
+	}{
+		{
+			"return the formatted error",
+			"no object specs defined",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			e := ErrUndefinedSpecs{}
+			if got := e.Prettify(); got.Message != tt.want {
+				t.Errorf("Error() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
