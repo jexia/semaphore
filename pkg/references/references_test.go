@@ -1,7 +1,6 @@
 package references
 
 import (
-	"log"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -76,11 +75,10 @@ func TestUnmarshalFile(t *testing.T) {
 			}()
 
 			if strings.HasSuffix(clean, pass) && err != nil {
-				t.Fatalf("expected test to pass but failed instead %s, %v", file.Name(), err)
+				t.Fatalf("expected test to pass but failed instead %s, %s", file.Name(), err)
 			}
 
 			if strings.HasSuffix(clean, fail) && err != nil {
-				log.Println(err)
 
 				stack, perr := prettyerr.Prettify(err)
 				if perr != nil {

@@ -83,6 +83,13 @@ func ResolveNode(ctx *broker.Context, services specs.ServiceList, schemas specs.
 		}
 	}
 
+	if node.Intermediate != nil {
+		err = ResolveParameterMap(ctx, schemas, node.Intermediate, flow)
+		if err != nil {
+			return err
+		}
+	}
+
 	if node.OnError != nil {
 		err = ResolveOnError(ctx, schemas, node.OnError, flow)
 		if err != nil {

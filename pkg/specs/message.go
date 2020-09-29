@@ -47,18 +47,13 @@ func (message Message) Compare(expected Message) error {
 		return fmt.Errorf("expected to be an object, got %v", nil)
 	}
 
-	if len(expected) != len(message) {
-		return fmt.Errorf("expected to have %d properties, got %d", len(expected), len(message))
-	}
-
-	for expectedName, expectedProperty := range expected {
-		// given message does not include the current property
-		givenProperty, ok := message[expectedName]
+	for key, property := range message {
+		result, ok := expected[key]
 		if !ok {
-			return fmt.Errorf("expected the object has field '%s'", expectedName)
+			return fmt.Errorf("object has unkown field field '%s'", key)
 		}
 
-		if err := givenProperty.Compare(expectedProperty); err != nil {
+		if err := result.Compare(property); err != nil {
 			return fmt.Errorf("object property mismatch: %w", err)
 		}
 	}

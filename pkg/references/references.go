@@ -439,8 +439,8 @@ func ScopeNestedReferences(source, target *specs.Template) {
 
 			if cloned.Reference == nil {
 				cloned.Reference = &specs.PropertyReference{
-					Resource: source.Reference.Resource,
-					Path:     source.Reference.Path,
+					Resource: target.Reference.Resource,
+					Path:     target.Reference.Path,
 				}
 			}
 
