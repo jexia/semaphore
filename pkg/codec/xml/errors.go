@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+
+	"github.com/jexia/semaphore/pkg/prettyerr"
 )
 
 var errNotAnObject = errors.New("not an object")
@@ -36,4 +38,20 @@ func (e errUnexpectedToken) printExpected() string {
 
 func (e errUnexpectedToken) Error() string {
 	return fmt.Sprintf(`unexpected element "%T", expected one of [%s]`, e.actual, e.printExpected())
+}
+
+// ErrUndefinedSpecs occurs when spacs are nil
+type ErrUndefinedSpecs struct{}
+
+// Error returns a description of the given error as a string
+func (e ErrUndefinedSpecs) Error() string {
+	return fmt.Sprint("no object specs defined")
+}
+
+// Prettify returns the prettified version of the given error
+func (e ErrUndefinedSpecs) Prettify() prettyerr.Error {
+	return prettyerr.Error{
+		Code:    "UndefinedSpecs",
+		Message: e.Error(),
+	}
 }

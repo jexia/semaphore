@@ -5,7 +5,6 @@ import (
 	"io"
 	"io/ioutil"
 
-	"github.com/jexia/semaphore/pkg/broker/trace"
 	"github.com/jexia/semaphore/pkg/codec"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
@@ -31,7 +30,7 @@ func (constructor *Constructor) Name() string {
 // New constructs a new proto codec manager
 func (constructor *Constructor) New(resource string, specs *specs.ParameterMap) (codec.Manager, error) {
 	if specs == nil {
-		return nil, trace.New(trace.WithMessage("no object specs defined"))
+		return nil, ErrUndefinedSpecs{}
 	}
 
 	prop := specs.Property
@@ -40,7 +39,7 @@ func (constructor *Constructor) New(resource string, specs *specs.ParameterMap) 
 	}
 
 	if prop.Type != types.Message {
-		return nil, trace.New(trace.WithMessage("a proto message always requires a root message"))
+		return nil, ErrNonRootMessage{}
 	}
 
 	desc, err := NewMessage(resource, prop.Nested)
