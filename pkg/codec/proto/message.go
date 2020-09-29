@@ -106,10 +106,10 @@ func (manager *Manager) Encode(proto *dynamic.Message, desc *desc.MessageDescrip
 			continue
 		}
 
-		// TODO: refactor me
 		if field.IsRepeated() {
+			// TODO: implemnet static repeated
 			if prop.Reference == nil {
-				for _, repeated := range prop.Repeated.Default {
+				for _, repeated := range prop.Repeated {
 					err = manager.setField(proto.TryAddRepeatedField, repeated, field, store)
 					if err != nil {
 						return err
@@ -161,7 +161,7 @@ func (manager *Manager) Encode(proto *dynamic.Message, desc *desc.MessageDescrip
 			continue
 		}
 
-		err = manager.setField(proto.TrySetField, prop, field, store)
+		err = manager.setField(proto.TrySetField, prop.Template, field, store)
 		if err != nil {
 			return err
 		}
@@ -172,7 +172,7 @@ func (manager *Manager) Encode(proto *dynamic.Message, desc *desc.MessageDescrip
 
 type trySetProto func(fd *desc.FieldDescriptor, val interface{}) error
 
-func (manager *Manager) setField(setter trySetProto, property *specs.Property, field *desc.FieldDescriptor, store references.Store) error {
+func (manager *Manager) setField(setter trySetProto, property specs.Template, field *desc.FieldDescriptor, store references.Store) error {
 	switch {
 	case property.Message != nil:
 		dynamic := dynamic.NewMessage(field.GetMessageType())

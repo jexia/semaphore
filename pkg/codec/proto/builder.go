@@ -93,8 +93,13 @@ func ConstructFieldType(message *builder.MessageBuilder, key string, template sp
 
 		return builder.FieldTypeMessage(nested), nil
 	case template.Repeated != nil:
+		field, err := template.Repeated.Template()
+		if err != nil {
+			return nil, err
+		}
+
 		// TODO: thrown a error when attempting to construct a nested array
-		return ConstructFieldType(message, key, template.Repeated)
+		return ConstructFieldType(message, key, field)
 	case template.Enum != nil:
 		enum := builder.NewEnum(key + "Enum")
 
