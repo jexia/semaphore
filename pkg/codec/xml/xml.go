@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/xml"
 	"io"
-	"io/ioutil"
 
 	"github.com/jexia/semaphore/pkg/broker/trace"
 	"github.com/jexia/semaphore/pkg/codec"
@@ -56,34 +55,25 @@ func (manager *Manager) Marshal(refs references.Store) (io.Reader, error) {
 		return nil, nil
 	}
 
-	var object = NewObject(manager.resource, manager.property.Message, refs)
+	var (
+		buff    = bytes.NewBuffer([]byte{})
+		encoder = xml.NewEncoder(buff)
+	)
 
-	bb, err := xml.Marshal(object)
-	if err != nil {
+	if err := encodeElement(encoder, manager.property.Name, manager.property.Template, refs); err != nil {
 		return nil, err
 	}
 
-	return bytes.NewBuffer(bb), nil
+	if err := encoder.Flush(); err != nil {
+		return nil, err
+	}
+
+	return buff, nil
 }
 
 // Unmarshal unmarshals the given XML io.Reader into the given reference store.
 // This method is called during runtime to decode a new message and store it inside
 // the given reference store.
 func (manager *Manager) Unmarshal(reader io.Reader, refs references.Store) error {
-	if manager.property == nil {
-		return nil
-	}
-
-	bb, err := ioutil.ReadAll(reader)
-	if err != nil {
-		return err
-	}
-
-	if len(bb) == 0 {
-		return nil
-	}
-
-	var object = NewObject(manager.resource, manager.property.Message, refs)
-
-	return xml.Unmarshal(bb, object)
+	return nil
 }

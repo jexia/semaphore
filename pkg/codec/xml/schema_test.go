@@ -66,6 +66,7 @@ var (
 
 	SchemaObject = &specs.ParameterMap{
 		Property: &specs.Property{
+			Name:  "root",
 			Label: labels.Optional,
 			Template: specs.Template{
 				Message: specs.Message{
@@ -79,12 +80,6 @@ var (
 								Type: types.String,
 							},
 						},
-					},
-					"no_nested_schema": {
-						Position: 2,
-						Name:     "no_nested_schema",
-						Path:     "no_nested_schema",
-						Label:    labels.Optional,
 					},
 					"numeric": {
 						Position: 3,
@@ -222,7 +217,11 @@ var (
 								Resource: template.InputResource,
 								Path:     "repeating_enum",
 							},
-							Enum: enum,
+							Repeated: specs.Repeated{
+								{
+									Enum: enum,
+								},
+							},
 						},
 					},
 					"repeating_numeric": {
