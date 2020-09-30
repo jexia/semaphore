@@ -134,11 +134,13 @@ func CheckParameterMapTypes(ctx *broker.Context, parameters *specs.ParameterMap,
 		}
 	}
 
-	err := parameters.Property.Compare(objects.Get(parameters.Schema))
+	schema := objects.Get(parameters.Schema)
+	err := parameters.Property.Compare(schema)
 	if err != nil {
 		return fmt.Errorf("flow '%s' mismatch: %w", flow.GetName(), err)
 	}
 
+	parameters.Property.Define(schema)
 	return nil
 }
 

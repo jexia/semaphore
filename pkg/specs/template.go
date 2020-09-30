@@ -91,3 +91,34 @@ func (template Template) Compare(expected Template) (err error) {
 
 	return nil
 }
+
+// Define ensures that all missing nested template are defined
+func (template *Template) Define(expected Template) {
+	if template.Message != nil && expected.Message != nil {
+		for key, value := range expected.Message {
+			existing, has := template.Message[key]
+			if has {
+				existing.Define(value)
+				continue
+			}
+
+			template.Message[key] = value.Clone()
+		}
+	}
+
+	// TODO: figure out on how to define repeated
+	// this implementation requires that the positions inside the schema and flow
+	// are overlapping.
+
+	if template.Message == nil && expected.Message != nil {
+		template.Message = expected.Message.Clone()
+	}
+
+	if template.Enum == nil && expected.Enum != nil {
+		template.Enum = expected.Enum.Clone()
+	}
+
+	if template.Scalar == nil && expected.Scalar != nil {
+		template.Scalar = expected.Scalar.Clone()
+	}
+}

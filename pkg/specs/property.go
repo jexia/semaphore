@@ -99,7 +99,6 @@ func (property *Property) Clone() *Property {
 }
 
 // Compare checks the given property against the provided one.
-// TODO: return error stack
 func (property *Property) Compare(expected *Property) error {
 	if expected == nil {
 		return fmt.Errorf("unable to check types for '%s' no schema given", property.Path)
@@ -126,6 +125,12 @@ func (property *Property) Compare(expected *Property) error {
 	}
 
 	return nil
+}
+
+// Define ensures that all missing nested properties are defined
+func (property *Property) Define(expected *Property) {
+	property.Position = expected.Position
+	property.Template.Define(expected.Template)
 }
 
 // ParameterMap is the initial map of parameter names (keys) and their (templated) values (values)

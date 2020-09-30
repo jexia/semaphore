@@ -111,7 +111,10 @@ func ConstructFieldType(message *builder.MessageBuilder, key string, template sp
 				LeadingComment: value.Description,
 			})
 
-			enum.AddValue(eval)
+			err := enum.TryAddValue(eval)
+			if err != nil {
+				return nil, err
+			}
 		}
 
 		err := message.TryAddNestedEnum(enum)
