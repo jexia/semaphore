@@ -2,11 +2,10 @@ package formencoded
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/url"
-	"strings"
 
 	"github.com/jexia/semaphore/pkg/broker/trace"
 	"github.com/jexia/semaphore/pkg/codec"
@@ -171,99 +170,9 @@ func encode(encoded url.Values, path string, store references.Store, tpl specs.T
 }
 
 // Unmarshal the given www-form-urlencoded io reader into the given reference store.
-// This method is called during runtime to decode a new message and store it inside the given reference store
+// This method is called during runtime to decode a new message and store it inside the given reference store.
+//
+// Note: it does not work yet and returns error "not implemented yet" for every call.
 func (manager *Manager) Unmarshal(reader io.Reader, refs references.Store) error {
-	if manager.property == nil {
-		return nil
-	}
-
-	bb, err := ioutil.ReadAll(reader)
-	if err != nil {
-		return err
-	}
-
-	if len(bb) == 0 {
-		return nil
-	}
-
-	values, err := url.ParseQuery(string(bb))
-	if err != nil {
-		return err
-	}
-
-	for key, values := range values {
-		if err := decodeElement(manager.resource, 0, strings.Split(key, "."), values, manager.property.Message, refs); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func decodeElement(resource string, pos int, path []string, values []string, schema specs.Message, refs references.Store) error {
-	propName := path[pos]
-
-	if schema == nil {
-		return errNilSchema
-	}
-
-	prop := schema[propName]
-	if prop == nil {
-		return errUndefinedProperty(propName)
-	}
-
-	ref := &references.Reference{
-		Path: prop.Path,
-	}
-
-	// TODO: implement nested repeated
-	switch {
-	case prop.Repeated != nil:
-		for _, raw := range values {
-			store := references.NewReferenceStore(0)
-
-			switch {
-			case prop.Template.Message != nil:
-				if len(path) > pos+1 {
-					if err := decodeElement(resource, pos+1, path, []string{raw}, prop.Message, store); err != nil {
-						return err
-					}
-				}
-			case prop.Template.Enum != nil:
-				enum := prop.Enum.Keys[raw]
-				if enum != nil {
-					store.StoreEnum("", "", enum.Position)
-				}
-			default:
-				value, err := types.DecodeFromString(raw, prop.Type())
-				if err != nil {
-					return err
-				}
-
-				store.StoreValue("", "", value)
-			}
-
-			ref.Append(store)
-		}
-	case prop.Message != nil:
-		if len(path) > pos+1 {
-			return decodeElement(resource, pos+1, path, values, prop.Message, refs)
-		}
-	case prop.Enum != nil:
-		enum := prop.Enum.Keys[values[0]]
-		if enum != nil {
-			ref.Enum = &enum.Position
-		}
-	default:
-		value, err := types.DecodeFromString(values[0], prop.Type())
-		if err != nil {
-			return err
-		}
-
-		ref.Value = value
-	}
-
-	refs.StoreReference(resource, ref)
-
-	return nil
+	return errors.New("not implemented yet")
 }
