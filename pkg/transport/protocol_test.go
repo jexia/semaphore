@@ -26,7 +26,7 @@ func TestGetCaller(t *testing.T) {
 
 func TestGetCallerUnkown(t *testing.T) {
 	list := Callers{&MockCaller{}}
-	result := list.Get("unkown")
+	result := list.Get("unknown")
 	if result != nil {
 		t.Errorf("unexpected result %+v", result)
 	}
@@ -51,7 +51,7 @@ func TestGetListener(t *testing.T) {
 
 func TestGetListenerUnkown(t *testing.T) {
 	list := ListenerList{&MockListener{}}
-	result := list.Get("unkown")
+	result := list.Get("unknown")
 	if result != nil {
 		t.Errorf("unexpected result %+v", result)
 	}

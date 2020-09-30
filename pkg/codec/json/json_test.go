@@ -30,7 +30,6 @@ func NewMock() (specs.FlowListInterface, error) {
 	core, err := semaphore.NewOptions(ctx,
 		semaphore.WithFlows(hcl.FlowsResolver("./tests/*.hcl")),
 	)
-
 	if err != nil {
 		return nil, err
 	}

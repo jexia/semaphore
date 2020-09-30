@@ -50,7 +50,7 @@ func (message Message) Compare(expected Message) error {
 	for key, property := range message {
 		nested, ok := expected[key]
 		if !ok {
-			return fmt.Errorf("object has unkown field field '%s'", key)
+			return fmt.Errorf("object has unknown field '%s'", key)
 		}
 
 		if err := property.Compare(nested); err != nil {

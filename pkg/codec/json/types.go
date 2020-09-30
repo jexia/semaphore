@@ -8,8 +8,8 @@ import (
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
-// ErrUnkownType is thrown when the given type is unkown
-var ErrUnkownType = errors.New("unkown type")
+// ErrUnknownType is thrown when the given type is unknown
+var ErrUnknownType = errors.New("unknown type")
 
 // AddTypeKey encodes the given value into the given encoder
 func AddTypeKey(encoder *gojay.Encoder, key string, typed types.Type, value interface{}) {
@@ -155,7 +155,7 @@ func DecodeType(decoder *gojay.Decoder, prop types.Type) (interface{}, error) {
 		return value, err
 	}
 
-	return nil, ErrUnkownType
+	return nil, ErrUnknownType
 }
 
 // StringEmpty returns the given value as a string or a empty string if the value is nil
