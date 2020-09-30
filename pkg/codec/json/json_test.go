@@ -446,13 +446,13 @@ func TestMarshal(t *testing.T) {
 		},
 		"enum": {
 			"nested": map[string]interface{}{},
-			"enum":   "PENDING",
+			"enum":   references.Enum("PENDING", 2),
 		},
 		"repeating_enum": {
 			"nested": map[string]interface{}{},
 			"repeating_enum": []interface{}{
-				"UNKNOWN",
-				"PENDING",
+				references.Enum("UNKNOWN", 1),
+				references.Enum("PENDING", 2),
 			},
 		},
 		"repeating": {

@@ -66,11 +66,19 @@ func (repeated Repeated) Compare(expected Repeated) error {
 		return fmt.Errorf("expected to have %d elements, got %d", len(expected), len(repeated))
 	}
 
-	for position, expectedProperty := range expected {
-		givenProperty := repeated[position]
-		if err := givenProperty.Compare(expectedProperty); err != nil {
-			return fmt.Errorf("array property mismatch: %w", err)
-		}
+	left, err := repeated.Template()
+	if err != nil {
+		return fmt.Errorf("unkown repeated property template: %w", err)
+	}
+
+	right, err := expected.Template()
+	if err != nil {
+		return fmt.Errorf("unkown expected property template: %w", err)
+	}
+
+	err = left.Compare(right)
+	if err != nil {
+		return fmt.Errorf("repeated property: %w", err)
 	}
 
 	return nil

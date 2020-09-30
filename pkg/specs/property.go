@@ -105,7 +105,7 @@ func (property *Property) Compare(expected *Property) error {
 		return fmt.Errorf("unable to check types for '%s' no schema given", property.Path)
 	}
 
-	if property.Template.Type() != expected.Type() {
+	if property.Type() != expected.Type() {
 		return fmt.Errorf("cannot use type (%s) for '%s', expected (%s)", property.Type(), property.Path, expected.Type())
 	}
 

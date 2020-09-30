@@ -1,6 +1,8 @@
 package json
 
 import (
+	"log"
+
 	"github.com/francoispqt/gojay"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
@@ -9,13 +11,29 @@ import (
 
 // NewArray constructs a new JSON array encoder/decoder
 func NewArray(resource string, template specs.Template, refs references.Store) *Array {
+	// skip arrays which have no elements
+	if len(template.Repeated) == 0 && template.Reference == nil {
+		return nil
+	}
+
+	var reference *references.Reference
+	if template.Reference != nil {
+		reference = refs.Load(template.Reference.Resource, template.Reference.Path)
+	}
+
+	if template.Reference != nil && reference == nil {
+		return nil
+	}
+
+	template, err := template.Repeated.Template()
+	if err != nil {
+		panic(err)
+	}
+
 	generator := &Array{
 		resource: resource,
 		template: template,
-	}
-
-	if template.Reference != nil {
-		generator.ref = refs.Load(template.Reference.Resource, template.Reference.Path)
+		ref:      reference,
 	}
 
 	if template.Repeated != nil {
@@ -35,17 +53,28 @@ type Array struct {
 
 // MarshalJSONArray encodes the array into the given gojay encoder
 func (array *Array) MarshalJSONArray(enc *gojay.Encoder) {
-	if array.ref == nil {
+	if array == nil || array.ref == nil {
 		return
 	}
 
 	for _, store := range array.ref.Repeated {
+		log.Println(store, array.template.Type())
 		switch {
 		case array.template.Message != nil:
-			enc.AddObject(NewObject(array.resource, array.template.Message, store))
+			object := NewObject(array.resource, array.template.Message, store)
+			if object == nil {
+				break
+			}
+
+			enc.AddObject(object)
 			break
 		case array.template.Repeated != nil:
-			enc.AddArray(NewArray(array.resource, array.template, store))
+			array := NewArray(array.resource, array.template, store)
+			if array == nil {
+				break
+			}
+
+			enc.AddArray(array)
 			break
 		case array.template.Enum != nil:
 			// TODO: check if enums in arrays work
@@ -54,7 +83,7 @@ func (array *Array) MarshalJSONArray(enc *gojay.Encoder) {
 			}
 
 			ref := store.Load("", "")
-			if ref == nil {
+			if ref == nil || ref.Enum == nil {
 				break
 			}
 
@@ -77,6 +106,11 @@ func (array *Array) MarshalJSONArray(enc *gojay.Encoder) {
 
 // UnmarshalJSONArray unmarshals the given specs into the configured reference store
 func (array *Array) UnmarshalJSONArray(dec *gojay.Decoder) error {
+	if array == nil {
+		return nil
+	}
+
+	// FIXME: array.keys is derrived from a wrong value
 	store := references.NewReferenceStore(array.keys)
 
 	switch {

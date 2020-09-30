@@ -27,35 +27,57 @@ type Object struct {
 
 // MarshalJSONObject encodes the given specs object into the given gojay encoder
 func (object *Object) MarshalJSONObject(encoder *gojay.Encoder) {
+	if object == nil {
+		return
+	}
+
 	for _, prop := range object.specs {
 		switch {
 		case prop.Repeated != nil:
 			array := NewArray(object.resource, prop.Template, object.refs)
+			if array == nil {
+				break
+			}
+
 			encoder.AddArrayKey(prop.Name, array)
 			break
 		case prop.Message != nil:
 			result := NewObject(object.resource, prop.Message, object.refs)
+			if result == nil {
+				break
+			}
+
 			encoder.AddObjectKey(prop.Name, result)
+			break
+		case prop.Enum != nil:
+			if prop.Reference == nil {
+				break
+			}
+
+			ref := object.refs.Load(prop.Reference.Resource, prop.Reference.Path)
+			if ref == nil || ref.Enum == nil {
+				break
+			}
+
+			enum := prop.Enum.Positions[*ref.Enum]
+			if enum == nil {
+				break
+			}
+
+			AddTypeKey(encoder, prop.Name, types.String, enum.Key)
 			break
 		case prop.Scalar != nil:
 			val := prop.Scalar.Default
 
 			if prop.Reference != nil {
 				ref := object.refs.Load(prop.Reference.Resource, prop.Reference.Path)
-				if ref != nil {
-					if prop.Scalar.Type == types.Enum && ref.Enum != nil {
-						enum := prop.Enum.Positions[*ref.Enum]
-						if enum != nil {
-							val = enum.Key
-						}
-					} else if ref.Value != nil {
-						val = ref.Value
-					}
+				if ref != nil && ref.Value != nil {
+					val = ref.Value
 				}
 			}
 
 			if val == nil {
-				continue
+				break
 			}
 
 			AddTypeKey(encoder, prop.Name, prop.Scalar.Type, val)
@@ -67,6 +89,10 @@ func (object *Object) MarshalJSONObject(encoder *gojay.Encoder) {
 
 // UnmarshalJSONObject unmarshals the given specs into the configured reference store
 func (object *Object) UnmarshalJSONObject(dec *gojay.Decoder, key string) error {
+	if object == nil {
+		return nil
+	}
+
 	property, has := object.specs[key]
 	if !has {
 		return nil
@@ -74,15 +100,22 @@ func (object *Object) UnmarshalJSONObject(dec *gojay.Decoder, key string) error 
 
 	switch {
 	case property.Message != nil:
-		return dec.AddObject(
-			NewObject(object.resource, property.Message, object.refs),
-		)
+		object := NewObject(object.resource, property.Message, object.refs)
+		if object == nil {
+			break
+		}
+
+		return dec.AddObject(object)
 	case property.Repeated != nil:
 		ref := &references.Reference{
 			Path: property.Path,
 		}
 
 		array := NewArray(object.resource, property.Template, object.refs)
+		if array == nil {
+			break
+		}
+
 		err := dec.AddArray(array)
 		if err != nil {
 			return err

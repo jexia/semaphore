@@ -140,27 +140,31 @@ properties:
   com.repeating_enum.input:
     label: "optional"
     template:
-      repeated:
-        - enum:
-            name: "STATUS"
-            keys:
-              "UNKNOWN":
-                key: "UNKNOWN"
-                position: 1
-                description: "unknown status"
-              "PENDING":
-                key: "PENDING"
-                position: 2
-                description: "pending status"
-            positions:
-              1:
-                key: "UNKNOWN"
-                position: 1
-                description: "unknown status"
-              2:
-                key: "PENDING"
-                position: 2
-                description: "pending status"
+      message:
+        "enum":
+          label: "optional"
+          template:
+            repeated:
+            - enum:
+                name: "STATUS"
+                keys:
+                  "UNKNOWN":
+                    key: "UNKNOWN"
+                    position: 1
+                    description: "unknown status"
+                  "PENDING":
+                    key: "PENDING"
+                    position: 2
+                    description: "pending status"
+                positions:
+                  1:
+                    key: "UNKNOWN"
+                    position: 1
+                    description: "unknown status"
+                  2:
+                    key: "PENDING"
+                    position: 2
+                    description: "pending status"
   com.simple.output:
     label: "optional"
     template:
