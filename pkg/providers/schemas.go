@@ -235,7 +235,7 @@ func ResolveProperty(property, schema *specs.Property, flow specs.FlowInterface)
 	case property.Message != nil:
 		if err := resolveMessage(property.Message, schema.Message, flow); err != nil {
 			return ErrUndefinedProperty{
-				Property: key,
+				Property: property.Name,
 				Flow:     flow.GetName(),
 			}
 		}

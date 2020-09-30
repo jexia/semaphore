@@ -21,7 +21,7 @@ func NewArgs(props *specs.ParameterMap) (graphql.FieldConfigArgument, error) {
 
 	if prop.Type() != types.Message {
 		return nil, ErrUnexpectedType{
-			Type:     prop.Type,
+			Type:     prop.Type(),
 			Expected: types.Message,
 		}
 	}
@@ -77,7 +77,7 @@ func NewArgs(props *specs.ParameterMap) (graphql.FieldConfigArgument, error) {
 func NewInputArgObject(prop *specs.Property) (*graphql.InputObject, error) {
 	if prop.Type() != types.Message {
 		return nil, ErrUnexpectedType{
-			Type:     prop.Type,
+			Type:     prop.Type(),
 			Expected: types.Message,
 		}
 	}
