@@ -48,8 +48,10 @@ type encoder struct {
 
 func (enc encoder) MarshalJSON() ([]byte, error) {
 	switch {
-	case enc.property.Repeated != nil || enc.property.Message != nil:
+	case enc.property.Repeated != nil:
 		return repeated{property: enc.property, refs: enc.refs}.MarshalJSON()
+	case enc.property.Message != nil:
+		return message{property: enc.property, refs: enc.refs}.MarshalJSON()
 	case enc.property.Enum != nil && enc.property.Reference != nil:
 		reference := enc.refs.Load(enc.property.Reference.Resource, enc.property.Reference.Path)
 		if reference == nil {
@@ -98,9 +100,15 @@ func (r repeated) MarshalJSON() ([]byte, error) {
 			buff.WriteString(",")
 		}
 
-		var item = &specs.Property{Template: specs.Template{Reference: &specs.PropertyReference{}}}
+		item, err := r.property.Repeated.Template()
+		if err != nil {
+			return nil, fmt.Errorf("failed to encode repeated item: %w", err)
+		}
 
-		bb, err := encoder{property: item, refs: store}.MarshalJSON()
+		// the item template does include its own reference
+		item.Reference = &specs.PropertyReference{}
+
+		bb, err := encoder{property: &specs.Property{Template: item}, refs: store}.MarshalJSON()
 		if err != nil {
 			return nil, err
 		}
