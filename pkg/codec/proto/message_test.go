@@ -390,15 +390,15 @@ func TestUndefinedSpecs(t *testing.T) {
 		want string
 	}{
 		{
-			"return the formatted error",
-			"no object specs defined",
+			name: "return the formatted error",
+			want: "no object specs defined",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			e := ErrUndefinedSpecs{}
 			if got := e.Prettify(); got.Message != tt.want {
-				t.Errorf("Error() = %v, want %v", got, tt.want)
+				t.Errorf("%v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -410,15 +410,15 @@ func TestNonRootMessage(t *testing.T) {
 		want string
 	}{
 		{
-			"return the formatted error",
-			"a proto message always requires a root message",
+			name: "return the formatted error",
+			want: "a proto message always requires a root message",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			e := ErrNonRootMessage{}
 			if got := e.Prettify(); got.Message != tt.want {
-				t.Errorf("Error() = %v, want %v", got, tt.want)
+				t.Errorf("%v, want %v", got, tt.want)
 			}
 		})
 	}

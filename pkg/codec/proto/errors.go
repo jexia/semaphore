@@ -27,7 +27,7 @@ type ErrNonRootMessage struct{}
 
 // Error returns a description of the given error as a string
 func (e ErrNonRootMessage) Error() string {
-	return fmt.Sprint("a proto message always requires a root message")
+	return fmt.Sprint("protobuffer messages root property should be a message")
 }
 
 // Prettify returns the prettified version of the given error
