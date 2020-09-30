@@ -411,7 +411,7 @@ func TestNonRootMessage(t *testing.T) {
 	}{
 		{
 			name: "return the formatted error",
-			want: "a proto message always requires a root message",
+			want: "protobuffer messages root property should be a message",
 		},
 	}
 	for _, tt := range tests {
