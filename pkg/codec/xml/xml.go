@@ -28,10 +28,12 @@ func (constructor *Constructor) New(resource string, specs *specs.ParameterMap) 
 		return nil, trace.New(trace.WithMessage("no object specs defined"))
 	}
 
-	return &Manager{
+	manager := &Manager{
 		resource: resource,
 		property: specs.Property,
-	}, nil
+	}
+
+	return manager, nil
 }
 
 // Manager manages a specs object and allows to encode/decode messages.

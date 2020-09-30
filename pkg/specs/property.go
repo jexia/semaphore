@@ -49,8 +49,7 @@ type Property struct {
 	Expr    Expression `json:"expression,omitempty"`                       // Expr represents the position on where the given property is defined
 	Raw     string     `json:"raw,omitempty"`                              // Raw holds the raw template string used to define the given property
 
-	// Label is the set of field attributes/properties. E.g. label describes that the property is optional.
-	Label labels.Label `json:"label,omitempty" yaml:"label,omitempty"`
+	Label labels.Label `json:"label,omitempty" yaml:"label,omitempty"` // Label label describes the usage of a given property ex: optional
 
 	Template `json:"template" yaml:"template"`
 }

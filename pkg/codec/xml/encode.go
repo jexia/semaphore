@@ -29,10 +29,8 @@ func encodeNested(encoder *xml.Encoder, prop *specs.Property, store references.S
 		return nil
 	}
 
-	var (
-		nested = NewObject(prop.Name, prop.Message, store)
-		start  = xml.StartElement{Name: xml.Name{Local: prop.Name}}
-	)
+	nested := NewObject(prop.Name, prop.Message, store)
+	start := xml.StartElement{Name: xml.Name{Local: prop.Name}}
 
 	return nested.MarshalXML(encoder, start)
 }

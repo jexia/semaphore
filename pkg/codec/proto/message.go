@@ -245,6 +245,11 @@ func (manager *Manager) Decode(protobuf *dynamic.Message, message specs.Message,
 	for _, field := range protobuf.GetKnownFields() {
 		prop := message[field.GetName()]
 
+		if prop == nil {
+			// TODO: field should be available?
+			continue
+		}
+
 		// TODO: refactor me
 		if field.IsRepeated() {
 			length := protobuf.FieldLength(field)

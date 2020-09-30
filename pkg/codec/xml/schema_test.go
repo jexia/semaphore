@@ -53,7 +53,7 @@ var (
 		},
 	}
 
-	schemaArray = &specs.Property{
+	SchemaArray = &specs.Property{
 		Name:  "countries",
 		Path:  "countries",
 		Label: labels.Optional,
@@ -64,15 +64,16 @@ var (
 		},
 	}
 
-	schemaObject = &specs.ParameterMap{
+	SchemaObject = &specs.ParameterMap{
 		Property: &specs.Property{
 			Label: labels.Optional,
 			Template: specs.Template{
 				Message: specs.Message{
 					"bad_label": {
-						Name:  "bad_label",
-						Path:  "bad_label",
-						Label: "unknown",
+						Position: 1,
+						Name:     "bad_label",
+						Path:     "bad_label",
+						Label:    "unknown",
 						Template: specs.Template{
 							Scalar: &specs.Scalar{
 								Type: types.String,
@@ -80,15 +81,16 @@ var (
 						},
 					},
 					"no_nested_schema": {
-						Name: "no_nested_schema",
-						Path: "no_nested_schema",
-						// Type:  types.Message,
-						Label: labels.Optional,
+						Position: 2,
+						Name:     "no_nested_schema",
+						Path:     "no_nested_schema",
+						Label:    labels.Optional,
 					},
 					"numeric": {
-						Name:  "numeric",
-						Path:  "numeric",
-						Label: labels.Optional,
+						Position: 3,
+						Name:     "numeric",
+						Path:     "numeric",
+						Label:    labels.Optional,
 						Template: specs.Template{
 							Scalar: &specs.Scalar{
 								Type: types.Int32,
@@ -96,9 +98,10 @@ var (
 						},
 					},
 					"message": {
-						Name:  "message",
-						Path:  "message",
-						Label: labels.Optional,
+						Position: 4,
+						Name:     "message",
+						Path:     "message",
+						Label:    labels.Optional,
 						Template: specs.Template{
 							Reference: &specs.PropertyReference{
 								Resource: template.InputResource,
@@ -110,9 +113,10 @@ var (
 						},
 					},
 					"another_message": {
-						Name:  "another_message",
-						Path:  "another_message",
-						Label: labels.Optional,
+						Position: 5,
+						Name:     "another_message",
+						Path:     "another_message",
+						Label:    labels.Optional,
 						Template: specs.Template{
 							Reference: &specs.PropertyReference{
 								Resource: template.InputResource,
@@ -124,9 +128,10 @@ var (
 						},
 					},
 					"status": {
-						Name:  "status",
-						Path:  "status",
-						Label: labels.Optional,
+						Position: 6,
+						Name:     "status",
+						Path:     "status",
+						Label:    labels.Optional,
 						Template: specs.Template{
 							Reference: &specs.PropertyReference{
 								Resource: template.InputResource,
@@ -136,9 +141,10 @@ var (
 						},
 					},
 					"another_status": {
-						Name:  "another_status",
-						Path:  "another_status",
-						Label: labels.Optional,
+						Position: 7,
+						Name:     "another_status",
+						Path:     "another_status",
+						Label:    labels.Optional,
 						Template: specs.Template{
 							Reference: &specs.PropertyReference{
 								Resource: template.InputResource,
@@ -148,15 +154,17 @@ var (
 						},
 					},
 					"nested": {
-						Name:  "nested",
-						Path:  "nested",
-						Label: labels.Optional,
+						Position: 8,
+						Name:     "nested",
+						Path:     "nested",
+						Label:    labels.Optional,
 						Template: specs.Template{
 							Message: specs.Message{
 								"first": {
-									Name:  "first",
-									Path:  "nested.first",
-									Label: labels.Optional,
+									Position: 1,
+									Name:     "first",
+									Path:     "nested.first",
+									Label:    labels.Optional,
 									Template: specs.Template{
 										Reference: &specs.PropertyReference{
 											Resource: template.InputResource,
@@ -168,9 +176,10 @@ var (
 									},
 								},
 								"second": {
-									Name:  "second",
-									Path:  "nested.second",
-									Label: labels.Optional,
+									Position: 2,
+									Name:     "second",
+									Path:     "nested.second",
+									Label:    labels.Optional,
 									Template: specs.Template{
 										Reference: &specs.PropertyReference{
 											Resource: template.InputResource,
@@ -185,9 +194,10 @@ var (
 						},
 					},
 					"repeating_string": {
-						Name:  "repeating_string",
-						Path:  "repeating_string",
-						Label: labels.Optional,
+						Position: 9,
+						Name:     "repeating_string",
+						Path:     "repeating_string",
+						Label:    labels.Optional,
 						Template: specs.Template{
 							Reference: &specs.PropertyReference{
 								Resource: template.InputResource,
@@ -203,9 +213,10 @@ var (
 						},
 					},
 					"repeating_enum": {
-						Name:  "repeating_enum",
-						Path:  "repeating_enum",
-						Label: labels.Optional,
+						Position: 10,
+						Name:     "repeating_enum",
+						Path:     "repeating_enum",
+						Label:    labels.Optional,
 						Template: specs.Template{
 							Reference: &specs.PropertyReference{
 								Resource: template.InputResource,
@@ -215,9 +226,10 @@ var (
 						},
 					},
 					"repeating_numeric": {
-						Name:  "repeating_numeric",
-						Path:  "repeating_numeric",
-						Label: labels.Optional,
+						Position: 11,
+						Name:     "repeating_numeric",
+						Path:     "repeating_numeric",
+						Label:    labels.Optional,
 						Template: specs.Template{
 							Reference: &specs.PropertyReference{
 								Resource: template.InputResource,
@@ -229,9 +241,10 @@ var (
 						},
 					},
 					"repeating": {
-						Name:  "repeating",
-						Path:  "repeating",
-						Label: labels.Optional,
+						Position: 12,
+						Name:     "repeating",
+						Path:     "repeating",
+						Label:    labels.Optional,
 						Template: specs.Template{
 							Reference: &specs.PropertyReference{
 								Resource: template.InputResource,
@@ -241,9 +254,10 @@ var (
 								{
 									Message: specs.Message{
 										"value": {
-											Name:  "value",
-											Path:  "repeating.value",
-											Label: labels.Optional,
+											Position: 1,
+											Name:     "value",
+											Path:     "repeating.value",
+											Label:    labels.Optional,
 											Template: specs.Template{
 												Reference: &specs.PropertyReference{
 													Resource: template.InputResource,

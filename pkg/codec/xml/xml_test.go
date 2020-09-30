@@ -27,7 +27,7 @@ func TestName(t *testing.T) {
 		}
 	})
 
-	manager, err := xml.New("mock", schemaObject)
+	manager, err := xml.New("mock", SchemaObject)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -40,8 +40,8 @@ func TestName(t *testing.T) {
 }
 
 func TestMarshal(t *testing.T) {
-	var xml = NewConstructor()
-	if xml == nil {
+	var constructor = NewConstructor()
+	if constructor == nil {
 		t.Fatal("unexpected nil")
 	}
 
@@ -128,7 +128,7 @@ func TestMarshal(t *testing.T) {
 
 	for title, test := range tests {
 		t.Run(title, func(t *testing.T) {
-			manager, err := xml.New("mock", schemaObject)
+			manager, err := constructor.New("mock", SchemaObject)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -136,18 +136,20 @@ func TestMarshal(t *testing.T) {
 			refs := references.NewReferenceStore(len(test.input))
 			refs.StoreValues(template.InputResource, "", test.input)
 
-			r, err := manager.Marshal(refs)
+			reader, err := manager.Marshal(refs)
 			if err != nil {
 				t.Error(err)
 			}
 
-			bb, err := ioutil.ReadAll(r)
+			bb, err := ioutil.ReadAll(reader)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			if actual := string(bb); actual != test.expected {
-				t.Errorf("output %q was expectetd to be %q", actual, test.expected)
+			result := string(bb)
+
+			if test.expected != result {
+				t.Errorf("unexpected difference %s, %s", test.expected, result)
 			}
 		})
 	}
@@ -352,7 +354,7 @@ func TestUnmarshal(t *testing.T) {
 				t.Fatal("unexpected nil")
 			}
 
-			manager, err := xml.New("mock", schemaObject)
+			manager, err := xml.New("mock", SchemaObject)
 			if err != nil {
 				t.Fatal(err)
 			}

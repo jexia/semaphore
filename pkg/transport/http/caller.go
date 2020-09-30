@@ -14,6 +14,7 @@ import (
 	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/pkg/specs/labels"
 	"github.com/jexia/semaphore/pkg/specs/types"
 	"github.com/jexia/semaphore/pkg/transport"
 	"go.uber.org/zap"
@@ -225,11 +226,15 @@ func TemplateReferences(value string, functions functions.Custom) ([]*specs.Prop
 	for _, key := range references {
 		path := key[1:]
 		property := &specs.Property{
-			Path: key,
+			Path:  key,
+			Label: labels.Optional,
 			Template: specs.Template{
 				Reference: &specs.PropertyReference{
 					Resource: ".params",
 					Path:     path,
+				},
+				Scalar: &specs.Scalar{
+					Type: types.String,
 				},
 			},
 		}

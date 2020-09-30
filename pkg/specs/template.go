@@ -3,11 +3,13 @@ package specs
 import (
 	"fmt"
 
+	"github.com/jexia/semaphore/pkg/specs/metadata"
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
 // Template contains property schema. This is a union type (Only one field must be set).
 type Template struct {
+	*metadata.Meta
 	Reference *PropertyReference `json:"reference,omitempty"` // Reference represents a property reference made inside the given property
 
 	// Only one of the following fields should be set

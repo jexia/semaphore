@@ -33,7 +33,9 @@ func (object *Object) MarshalXML(encoder *xml.Encoder, _ xml.StartElement) error
 		return err
 	}
 
-	for _, spec := range object.specs {
+	// TODO: properties are now sorted during runtime. This process should be
+	// moved to be prepared before MarshalXML is called.
+	for _, spec := range object.specs.SortedProperties() {
 		if err := object.encodeElement(encoder, spec); err != nil {
 			return err
 		}
