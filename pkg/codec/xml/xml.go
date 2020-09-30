@@ -1,7 +1,6 @@
 package xml
 
 import (
-	"bytes"
 	"encoding/xml"
 	"io"
 
@@ -56,19 +55,27 @@ func (manager *Manager) Marshal(refs references.Store) (io.Reader, error) {
 	}
 
 	var (
-		buff    = bytes.NewBuffer([]byte{})
-		encoder = xml.NewEncoder(buff)
+		reader, writer = io.Pipe()
+		encoder        = xml.NewEncoder(writer)
 	)
 
-	if err := encodeElement(encoder, manager.property.Name, manager.property.Template, refs); err != nil {
-		return nil, err
-	}
+	go func() {
+		if err := encodeElement(encoder, manager.property.Name, manager.property.Template, refs); err != nil {
+			writer.CloseWithError(err)
 
-	if err := encoder.Flush(); err != nil {
-		return nil, err
-	}
+			return
+		}
 
-	return buff, nil
+		if err := encoder.Flush(); err != nil {
+			writer.CloseWithError(err)
+
+			return
+		}
+
+		writer.Close()
+	}()
+
+	return reader, nil
 }
 
 // Unmarshal unmarshals the given XML io.Reader into the given reference store.

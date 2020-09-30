@@ -119,7 +119,7 @@ func TestMarshal(t *testing.T) {
 					},
 				},
 			},
-			expected: "<root><message>hello world</message><nested><first>foo</first><second>bar</second></nested><repeating><value>repeating one</value></repeating><repeating><value>repeating two</value></repeating></root>",
+			expected: "<root><numeric>42</numeric><message>hello world</message><nested><first>foo</first><second>bar</second></nested><repeating><value>repeating one</value></repeating><repeating><value>repeating two</value></repeating></root>",
 		},
 	}
 

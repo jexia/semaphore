@@ -2,7 +2,6 @@ package xml
 
 import (
 	"encoding/xml"
-	"errors"
 
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
@@ -40,12 +39,8 @@ func (enum *Enum) MarshalXML(encoder *xml.Encoder, _ xml.StartElement) error {
 	if enum.reference != nil {
 		var reference = enum.store.Load(enum.reference.Resource, enum.reference.Path)
 
-		if reference == nil {
+		if reference == nil || reference.Enum == nil {
 			return nil
-		}
-
-		if reference.Enum == nil {
-			return errors.New("reference does not contain enum value")
 		}
 
 		var enumValue = enum.enum.Positions[*reference.Enum]

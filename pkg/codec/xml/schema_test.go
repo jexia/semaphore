@@ -54,8 +54,8 @@ var (
 	}
 
 	SchemaArray = &specs.Property{
-		Name:  "countries",
-		Path:  "countries",
+		Name:  "country",
+		Path:  "country",
 		Label: labels.Optional,
 		Template: specs.Template{
 			Repeated: specs.Repeated{
@@ -87,6 +87,10 @@ var (
 						Path:     "numeric",
 						Label:    labels.Optional,
 						Template: specs.Template{
+							Reference: &specs.PropertyReference{
+								Resource: template.InputResource,
+								Path:     "numeric",
+							},
 							Scalar: &specs.Scalar{
 								Type: types.Int32,
 							},
