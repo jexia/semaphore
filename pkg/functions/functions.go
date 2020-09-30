@@ -8,7 +8,6 @@ import (
 
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
-	"github.com/jexia/semaphore/pkg/broker/trace"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/template"
@@ -266,7 +265,10 @@ func PrepareFunction(ctx *broker.Context, node *specs.Node, flow specs.FlowInter
 	args := strings.Split(pattern[2], ArgumentDelimiter)
 
 	if methods[fn] == nil {
-		return trace.New(trace.WithMessage("undefined custom function '%s' in '%s'", fn, property.Raw))
+		return ErrUndefinedFunction{
+			Function: fn,
+			Property: property.Raw,
+		}
 	}
 
 	arguments := make([]*specs.Property, len(args))

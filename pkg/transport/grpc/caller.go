@@ -7,7 +7,6 @@ import (
 
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
-	"github.com/jexia/semaphore/pkg/broker/trace"
 	"github.com/jexia/semaphore/pkg/codec/proto"
 	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/references"
@@ -136,7 +135,9 @@ func (call *Call) Director(ctx context.Context) (*grpc.ClientConn, error) {
 func (call *Call) SendMsg(ctx context.Context, rw transport.ResponseWriter, pr *transport.Request, refs references.Store) error {
 	method := call.methods[pr.Method.GetName()]
 	if method == nil {
-		return trace.New(trace.WithMessage("unknown service method %s", pr.Method.GetName()))
+		return ErrUnknownMethod{
+			Method: pr.Method.GetName(),
+		}
 	}
 
 	conn, err := call.Director(ctx)

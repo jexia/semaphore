@@ -1,6 +1,7 @@
 package json
 
 import (
+	"fmt"
 	"io/ioutil"
 	"strings"
 	"testing"
@@ -32,29 +33,37 @@ func (m *mockObject) IsNil() bool {
 }
 
 func TestAddTypeKey(t *testing.T) {
-	tests := map[types.Type]interface{}{
-		types.Double:   float64(10),
-		types.Int64:    int64(10),
-		types.Uint64:   uint64(10),
-		types.Fixed64:  uint64(10),
-		types.Int32:    int32(10),
-		types.Uint32:   uint32(10),
-		types.Fixed32:  uint64(10),
-		types.Float:    float32(10),
-		types.String:   string("msg"),
-		types.Bool:     true,
-		types.Bytes:    []byte{10, 10},
-		types.Sfixed32: int32(10),
-		types.Sfixed64: int64(10),
-		types.Sint32:   int32(10),
-		types.Sint64:   int64(10),
+	type test struct {
+		dataType types.Type
+		value    interface{}
 	}
 
-	for typed, value := range tests {
-		t.Run(string(typed), func(t *testing.T) {
+	tests := map[string]test{
+		fmt.Sprintf("%s from float32", string(types.Double)): {types.Double, float32(10)},
+		fmt.Sprintf("%s from float64", string(types.Double)): {types.Double, float64(10)},
+		string(types.Int64):   {types.Int64, int64(10)},
+		string(types.Uint64):  {types.Uint64, uint64(10)},
+		string(types.Fixed64): {types.Fixed64, uint64(10)},
+		string(types.Int32):   {types.Int32, int32(10)},
+		string(types.Uint32):  {types.Uint32, uint32(10)},
+		string(types.Fixed32): {types.Fixed32, uint64(10)},
+		fmt.Sprintf("%s from float32", string(types.Float)): {types.Float, float32(10)},
+		fmt.Sprintf("%s from float64", string(types.Float)): {types.Float, float64(10)},
+		string(types.Float):    {types.Float, float32(10)},
+		string(types.String):   {types.String, string("msg")},
+		string(types.Bool):     {types.Bool, true},
+		string(types.Bytes):    {types.Bytes, []byte{10, 10}},
+		string(types.Sfixed32): {types.Sfixed32, int32(10)},
+		string(types.Sfixed64): {types.Sfixed64, int64(10)},
+		string(types.Sint32):   {types.Sint32, int32(10)},
+		string(types.Sint64):   {types.Sint64, int64(10)},
+	}
+
+	for title, test := range tests {
+		t.Run(title, func(t *testing.T) {
 			object := &mockObject{
 				enc: func(encoder *gojay.Encoder) {
-					AddTypeKey(encoder, "mock", typed, value)
+					AddTypeKey(encoder, "mock", test.dataType, test.value)
 				},
 			}
 

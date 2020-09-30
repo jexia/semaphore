@@ -10,7 +10,6 @@ import (
 
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
-	"github.com/jexia/semaphore/pkg/broker/trace"
 	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
@@ -147,7 +146,10 @@ func (call *Call) SendMsg(ctx context.Context, rw transport.ResponseWriter, pr *
 	if pr.Method != nil {
 		method := call.methods[pr.Method.GetName()]
 		if method == nil {
-			return trace.New(trace.WithMessage("unknown method '%s' for service '%s'", pr.Method, call.service))
+			return ErrUnknownMethod{
+				Method:  pr.Method.GetName(),
+				Service: call.service,
+			}
 		}
 
 		endpoint := LookupEndpointReferences(method, refs)

@@ -2,7 +2,6 @@ package graphql
 
 import (
 	"github.com/graphql-go/graphql"
-	"github.com/jexia/semaphore/pkg/broker/trace"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
@@ -21,7 +20,10 @@ func NewArgs(props *specs.ParameterMap) (graphql.FieldConfigArgument, error) {
 	args := graphql.FieldConfigArgument{}
 
 	if prop.Type() != types.Message {
-		return nil, trace.New(trace.WithMessage("arguments must be a object, received '%s'", prop.Type()))
+		return nil, ErrUnexpectedType{
+			Type:     prop.Type,
+			Expected: types.Message,
+		}
 	}
 
 	if len(prop.Message) == 0 {
@@ -74,7 +76,10 @@ func NewArgs(props *specs.ParameterMap) (graphql.FieldConfigArgument, error) {
 // NewInputArgObject constructs a new input argument object
 func NewInputArgObject(prop *specs.Property) (*graphql.InputObject, error) {
 	if prop.Type() != types.Message {
-		return nil, trace.New(trace.WithMessage("expected a message type received '%s'", prop.Type()))
+		return nil, ErrUnexpectedType{
+			Type:     prop.Type,
+			Expected: types.Message,
+		}
 	}
 
 	fields := graphql.InputObjectConfigFieldMap{}

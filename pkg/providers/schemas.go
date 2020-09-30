@@ -30,7 +30,9 @@ func ResolveFlow(parent *broker.Context, services specs.ServiceList, schemas spe
 	if flow.GetInput() != nil {
 		input := schemas.Get(flow.GetInput().Schema)
 		if input == nil {
-			return trace.New(trace.WithMessage("object '%s', is unavailable inside the schema collection", flow.GetInput().Schema))
+			return ErrUndefinedObject{
+				Schema: flow.GetInput().Schema,
+			}
 		}
 
 		flow.GetInput().Property = input.Clone()
@@ -118,17 +120,26 @@ func DefineCall(ctx *broker.Context, services specs.ServiceList, schemas specs.S
 
 		service := services.Get(call.Service)
 		if service == nil {
-			return trace.New(trace.WithMessage("undefined service '%s' in flow '%s'", call.Service, flow.GetName()))
+			return ErrUndefinedService{
+				Service: call.Service,
+				Flow:    flow.GetName(),
+			}
 		}
 
 		method := service.GetMethod(call.Method)
 		if method == nil {
-			return trace.New(trace.WithMessage("undefined method '%s' in flow '%s'", call.Method, flow.GetName()))
+			return ErrUndefinedMethod{
+				Flow:   flow.GetName(),
+				Method: call.Method,
+			}
 		}
 
 		output := schemas.Get(method.Output)
 		if output == nil {
-			return trace.New(trace.WithMessage("undefined method output property '%s' in flow '%s'", method.Output, flow.GetName()))
+			return ErrUndefinedOutput{
+				Output: method.Output,
+				Flow:   flow.GetName(),
+			}
 		}
 
 		call.Descriptor = method
@@ -223,7 +234,10 @@ func ResolveProperty(property, schema *specs.Property, flow specs.FlowInterface)
 	switch {
 	case property.Message != nil:
 		if err := resolveMessage(property.Message, schema.Message, flow); err != nil {
-			return err
+			return ErrUndefinedProperty{
+				Property: key,
+				Flow:     flow.GetName(),
+			}
 		}
 
 		property.Label = schema.Label
@@ -269,7 +283,9 @@ func ResolveParameterMap(ctx *broker.Context, schemas specs.Schemas, params *spe
 
 	schema := schemas.Get(params.Schema)
 	if schema == nil {
-		return trace.New(trace.WithMessage("object '%s', is unavailable inside the schema collection", params.Schema))
+		return ErrUndefinedObject{
+			Schema: params.Schema,
+		}
 	}
 
 	err = ResolveProperty(params.Property, schema.Clone(), flow)

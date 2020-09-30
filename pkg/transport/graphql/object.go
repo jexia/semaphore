@@ -4,7 +4,6 @@ import (
 	"errors"
 
 	"github.com/graphql-go/graphql"
-	"github.com/jexia/semaphore/pkg/broker/trace"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/types"
 	"github.com/jexia/semaphore/pkg/transport"
@@ -121,7 +120,9 @@ func NewSchemaObject(objects *Objects, name string, object *transport.Object) (*
 	_, has := objects.collection[name]
 	if has {
 		if objects.properties[name] != property {
-			return nil, trace.New(trace.WithMessage("duplicate object '%s'", name))
+			return nil, ErrDuplicateObject{
+				Name: name,
+			}
 		}
 
 		return objects.collection[name], nil

@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -54,7 +55,7 @@ func WithLogger(parent *broker.Context) *broker.Context {
 func SetLevel(ctx *broker.Context, pattern string, level zapcore.Level) error {
 	matched, err := filepath.Match(pattern, ctx.Module)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to match pattern: %w", err)
 	}
 
 	if (matched || pattern == ctx.Module) && ctx.Atom != nil {

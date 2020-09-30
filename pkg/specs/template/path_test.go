@@ -41,3 +41,30 @@ func TestSplitPath(t *testing.T) {
 		}
 	}
 }
+
+func TestPathError(t *testing.T) {
+	type fields struct {
+		Path string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			"return the formatted error",
+			fields{Path: "/semaphore"},
+			"unable to resolve path '/semaphore'",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			e := ErrPathNotFound{
+				Path: "/semaphore",
+			}
+			if got := e.Prettify(); got.Message != tt.want {
+				t.Errorf("Error() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
