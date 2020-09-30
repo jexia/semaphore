@@ -51,9 +51,9 @@ func TestStatefulScanner(t *testing.T) {
 			},
 		},
 		"json": {
-			input: `{"array":%json,"object":%json}`,
+			input:        `{"array":%json,"object":%json}`,
 			constructors: []Constructor{JSON{}},
-			tokens: []string{`{"array":`, "%0.0", "json", `,"object":`, "%0.0", "json", "}"},
+			tokens:       []string{`{"array":`, "%0.0", "json", `,"object":`, "%0.0", "json", "}"},
 		},
 	}
 

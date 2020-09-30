@@ -336,7 +336,7 @@ func TestMarshal(t *testing.T) {
 	type test struct {
 		expected string
 		input    map[string]interface{}
-		schema *specs.ParameterMap // if nil, use the default global `schema`
+		schema   *specs.ParameterMap // if nil, use the default global `schema`
 	}
 
 	tests := map[string]test{
@@ -376,7 +376,7 @@ func TestMarshal(t *testing.T) {
 			},
 		},
 		"repeating_with_defaults": {
-			schema: schemaWithDefaultRepeating,
+			schema:   schemaWithDefaultRepeating,
 			expected: "repeating_with_defaults%5B0%5D=yes&repeating_with_defaults%5B1%5D=no",
 			input: map[string]interface{}{
 				"repeating_with_defaults": []interface{}{},
