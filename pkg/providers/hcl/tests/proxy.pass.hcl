@@ -1,13 +1,11 @@
 proxy "echo" {
-    forward "uploader" {
-
-    }
+  forward "uploader" {}
 }
 
 proxy "ping" {
-    forward "uploader" {
-        header {
-            cookie = "mnomnom"
-        }
+  forward "uploader" {
+    header {
+      cookie = "mnomnom"
     }
+  }
 }

@@ -11,7 +11,7 @@ import (
 func CopyRPCMD(source rpcMeta.MD) metadata.MD {
 	result := metadata.MD{}
 	for key, vals := range source {
-		result[key] = strings.Join(vals, ";")
+		result[strings.ToLower(key)] = strings.Join(vals, ";")
 	}
 
 	return result

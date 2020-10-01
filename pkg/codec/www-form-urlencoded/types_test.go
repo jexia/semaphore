@@ -1,93 +1,86 @@
 package formencoded
 
 import (
-	"net/url"
 	"testing"
 
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
-func TestAddType(t *testing.T) {
+func TestCastType(t *testing.T) {
 	type test struct {
-		input    interface{}
-		expected string
+		input interface{}
+		want  string
 	}
 
 	tests := map[types.Type]test{
 		types.Double: {
-			input:    float64(10),
-			expected: "mock=1E%2B01",
+			input: float64(10),
+			want:  "1E+01",
 		},
 		types.Int64: {
-			input:    int64(10),
-			expected: "mock=10",
+			input: int64(10),
+			want:  "10",
 		},
 		types.Uint64: {
-			input:    uint64(10),
-			expected: "mock=10",
+			input: uint64(10),
+			want:  "10",
 		},
 		types.Fixed64: {
-			input:    uint64(10),
-			expected: "mock=10",
+			input: uint64(10),
+			want:  "10",
 		},
 		types.Int32: {
-			input:    int32(10),
-			expected: "mock=10",
+			input: int32(10),
+			want:  "10",
 		},
 		types.Uint32: {
-			input:    uint32(10),
-			expected: "mock=10",
+			input: uint32(10),
+			want:  "10",
 		},
 		types.Fixed32: {
-			input:    uint32(10),
-			expected: "mock=10",
+			input: uint32(10),
+			want:  "10",
 		},
 		types.Float: {
-			input:    float32(10),
-			expected: "mock=1E%2B01",
+			input: float32(10),
+			want:  "1E+01",
 		},
 		types.String: {
-			input:    string("msg"),
-			expected: "mock=msg",
+			input: "msg",
+			want:  "msg",
 		},
 		types.Bool: {
-			input:    true,
-			expected: "mock=true",
+			input: true,
+			want:  "true",
 		},
 		types.Bytes: {
-			input:    []byte{10, 10},
-			expected: "mock=Cgo%3D",
+			input: []byte{10, 10},
+			want:  "Cgo=",
 		},
 		types.Sfixed32: {
-			input:    int32(10),
-			expected: "mock=10",
+			input: int32(10),
+			want:  "10",
 		},
 		types.Sfixed64: {
-			input:    int64(10),
-			expected: "mock=10",
+			input: int64(10),
+			want:  "10",
 		},
 		types.Sint32: {
-			input:    int32(10),
-			expected: "mock=10",
+			input: int32(10),
+			want:  "10",
 		},
 		types.Sint64: {
-			input:    int64(10),
-			expected: "mock=10",
+			input: int64(10),
+			want:  "10",
 		},
 	}
 
 	for typed, test := range tests {
 		t.Run(string(typed), func(t *testing.T) {
-			encoder := url.Values{}
-			AddTypeKey(encoder, "mock", typed, test.input)
+			got := castType(typed, test.input)
 
-			result := encoder.Encode()
-			if result == "" {
-				t.Errorf("unexpected empty result")
-			}
-
-			if result != test.expected {
-				t.Errorf("unexpected result %s, expected %s", result, test.expected)
+			if got != test.want {
+				t.Errorf("unexpected result %s, want %s", got, test.want)
 			}
 		})
 	}
@@ -114,15 +107,10 @@ func TestAddEmptyType(t *testing.T) {
 
 	for typed, value := range tests {
 		t.Run(string(typed), func(t *testing.T) {
-			encoder := url.Values{}
-			key := "key"
-			expected := key + "="
-
-			AddTypeKey(encoder, key, typed, value)
-
-			result := encoder.Encode()
-			if result != expected {
-				t.Errorf("unexpected result %s", result)
+			got := castType(typed, value)
+			want := ""
+			if got != want {
+				t.Errorf("unexpected result %s", got)
 			}
 		})
 	}

@@ -50,6 +50,14 @@ func NewService(descriptor *desc.ServiceDescriptor) *specs.Service {
 		options[ResponseCodecOption] = ext.GetResponseCodec()
 	}
 
+	if options[TransportOption] == "" {
+		options[TransportOption] = "grpc"
+	}
+
+	if options[CodecOption] == "" {
+		options[CodecOption] = "proto"
+	}
+
 	result := &specs.Service{
 		FullyQualifiedName: descriptor.GetFullyQualifiedName(),
 		Name:               descriptor.GetName(),

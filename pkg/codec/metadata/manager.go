@@ -13,10 +13,16 @@ import (
 
 // NewManager constructs a new metadata manager for the given resource.
 func NewManager(ctx *broker.Context, resource string, params specs.Header) *Manager {
+	keys := make(map[string]struct{}, len(params))
+	for key := range params {
+		keys[strings.ToLower(key)] = struct{}{}
+	}
+
 	return &Manager{
 		Context:  ctx,
 		Resource: template.JoinPath(resource, template.HeaderResource),
 		Params:   params,
+		Keys:     keys,
 	}
 }
 
@@ -25,6 +31,7 @@ type Manager struct {
 	Context  *broker.Context
 	Resource string
 	Params   specs.Header
+	Keys     map[string]struct{}
 }
 
 // Marshal attempts to marshal the given metadata specs from the given refs store
@@ -35,7 +42,11 @@ func (manager *Manager) Marshal(store references.Store) MD {
 
 	result := make(MD, len(manager.Params))
 	for key, property := range manager.Params {
-		value := property.Default
+		if property.Scalar == nil {
+			continue
+		}
+
+		value := property.Scalar.Default
 
 		if property.Reference != nil {
 			ref := store.Load(property.Reference.Resource, property.Reference.Path)
@@ -60,7 +71,7 @@ func (manager *Manager) Marshal(store references.Store) MD {
 // Unmarshal unmarshals the given transport metadata into the given reference store
 func (manager *Manager) Unmarshal(metadata MD, store references.Store) {
 	for key, value := range metadata {
-		_, has := manager.Params[key]
+		_, has := manager.Keys[key]
 		if !has {
 			continue
 		}

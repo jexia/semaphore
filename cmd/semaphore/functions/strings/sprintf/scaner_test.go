@@ -50,6 +50,11 @@ func TestStatefulScanner(t *testing.T) {
 				"?",
 			},
 		},
+		"json": {
+			input:        `{"array":%json,"object":%json}`,
+			constructors: []Constructor{JSON{}},
+			tokens:       []string{`{"array":`, "%0.0", "json", `,"object":`, "%0.0", "json", "}"},
+		},
 	}
 
 	for title, test := range tests {

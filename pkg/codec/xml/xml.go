@@ -1,10 +1,8 @@
 package xml
 
 import (
-	"bytes"
 	"encoding/xml"
 	"io"
-	"io/ioutil"
 
 	"github.com/jexia/semaphore/pkg/broker/trace"
 	"github.com/jexia/semaphore/pkg/codec"
@@ -28,60 +26,61 @@ func (constructor *Constructor) New(resource string, specs *specs.ParameterMap) 
 		return nil, trace.New(trace.WithMessage("no object specs defined"))
 	}
 
-	return &Manager{
+	manager := &Manager{
 		resource: resource,
-		specs:    specs.Property,
-	}, nil
+		property: specs.Property,
+	}
+
+	return manager, nil
 }
 
 // Manager manages a specs object and allows to encode/decode messages.
 type Manager struct {
 	resource string
-	specs    *specs.Property
+	property *specs.Property
 }
 
 // Name returns the codec name.
 func (manager *Manager) Name() string { return "xml" }
 
 // Property returns the manager property which is used to marshal and unmarshal data.
-func (manager *Manager) Property() *specs.Property { return manager.specs }
+func (manager *Manager) Property() *specs.Property { return manager.property }
 
 // Marshal marshals the given reference store into a XML message.
 // This method is called during runtime to encode a new message with the values
 // stored inside the given reference store.
 func (manager *Manager) Marshal(refs references.Store) (io.Reader, error) {
-	if manager.specs == nil {
+	if manager.property == nil {
 		return nil, nil
 	}
 
-	var object = NewObject(manager.resource, manager.specs.Nested, refs)
+	var (
+		reader, writer = io.Pipe()
+		encoder        = xml.NewEncoder(writer)
+	)
 
-	bb, err := xml.Marshal(object)
-	if err != nil {
-		return nil, err
-	}
+	go func() {
+		if err := encodeElement(encoder, manager.property.Name, manager.property.Template, refs); err != nil {
+			writer.CloseWithError(err)
 
-	return bytes.NewBuffer(bb), nil
+			return
+		}
+
+		if err := encoder.Flush(); err != nil {
+			writer.CloseWithError(err)
+
+			return
+		}
+
+		writer.Close()
+	}()
+
+	return reader, nil
 }
 
 // Unmarshal unmarshals the given XML io.Reader into the given reference store.
 // This method is called during runtime to decode a new message and store it inside
 // the given reference store.
 func (manager *Manager) Unmarshal(reader io.Reader, refs references.Store) error {
-	if manager.specs == nil {
-		return nil
-	}
-
-	bb, err := ioutil.ReadAll(reader)
-	if err != nil {
-		return err
-	}
-
-	if len(bb) == 0 {
-		return nil
-	}
-
-	var object = NewObject(manager.resource, manager.specs.Nested, refs)
-
-	return xml.Unmarshal(bb, object)
+	return nil
 }

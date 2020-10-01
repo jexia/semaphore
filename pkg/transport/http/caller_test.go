@@ -13,8 +13,6 @@ import (
 	"github.com/jexia/semaphore/pkg/codec/json"
 	"github.com/jexia/semaphore/pkg/codec/metadata"
 	"github.com/jexia/semaphore/pkg/references"
-	"github.com/jexia/semaphore/pkg/specs/labels"
-	"github.com/jexia/semaphore/pkg/specs/types"
 	"github.com/jexia/semaphore/pkg/transport"
 )
 
@@ -356,9 +354,6 @@ func TestCallerReferencesLookup(t *testing.T) {
 			if len(refs) != 1 {
 				t.Fatalf("unexpected references %+v", refs)
 			}
-
-			refs[0].Type = types.String
-			refs[0].Label = labels.Optional
 
 			store := references.NewReferenceStore(1)
 			ctx := context.Background()

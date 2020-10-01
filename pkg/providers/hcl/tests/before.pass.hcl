@@ -1,29 +1,29 @@
 flow "mock" {
-    before {
-        resource "check" {
-            request "com.semaphore" "Fetch" {
-                key = "value"
-            }
-        }
-
-        resources {
-            sample = "key"
-        }
+  before {
+    resource "check" {
+      request "com.semaphore" "Fetch" {
+        key = "value"
+      }
     }
+
+    resources {
+      sample = "key"
+    }
+  }
 }
 
 proxy "mock" {
-    before {
-        resource "check" {
-            request "com.semaphore" "Fetch" {
-                key = "value"
-            }
-        }
-
-        resources {
-            sample = "key"
-        }
+  before {
+    resource "check" {
+      request "com.semaphore" "Fetch" {
+        key = "value"
+      }
     }
 
-    forward "" {}
+    resources {
+      sample = "key"
+    }
+  }
+
+  forward "" {}
 }

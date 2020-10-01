@@ -1,5 +1,5 @@
 flow "input" {
-    input "com.schema" {
-        header = ["object"]
-    }
+  input "com.schema" {
+    header = ["object"]
+  }
 }

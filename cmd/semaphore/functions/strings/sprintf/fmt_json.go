@@ -7,7 +7,6 @@ import (
 
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/labels"
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
@@ -48,37 +47,35 @@ type encoder struct {
 }
 
 func (enc encoder) MarshalJSON() ([]byte, error) {
-	if enc.property.Label == labels.Repeated {
+	switch {
+	case enc.property.Repeated != nil:
 		return repeated{property: enc.property, refs: enc.refs}.MarshalJSON()
-	}
-
-	if enc.property.Type == types.Message {
+	case enc.property.Message != nil:
 		return message{property: enc.property, refs: enc.refs}.MarshalJSON()
+	case enc.property.Enum != nil && enc.property.Reference != nil:
+		reference := enc.refs.Load(enc.property.Reference.Resource, enc.property.Reference.Path)
+		if reference == nil {
+			return null, nil
+		}
+
+		var enum = enc.property.Enum.Positions[*reference.Enum]
+		if enum == nil {
+			return json.Marshal(*reference.Enum)
+		}
+
+		return json.Marshal(enum.Key)
+	case enc.property.Scalar != nil:
+		value := enc.property.Scalar.Default
+
+		var reference = enc.refs.Load(enc.property.Reference.Resource, enc.property.Reference.Path)
+		if reference != nil {
+			value = reference.Value
+		}
+
+		return json.Marshal(value)
 	}
 
-	if enc.property.Reference == nil {
-		return json.Marshal(enc.property.Default)
-	}
-
-	var reference = enc.refs.Load(enc.property.Reference.Resource, enc.property.Reference.Path)
-	if reference == nil {
-		return json.Marshal(enc.property.Default)
-	}
-
-	if enc.property.Type != types.Enum {
-		return json.Marshal(reference.Value)
-	}
-
-	if reference.Enum == nil {
-		return null, nil
-	}
-
-	var enum = enc.property.Enum.Positions[*reference.Enum]
-	if enum == nil {
-		return json.Marshal(*reference.Enum)
-	}
-
-	return json.Marshal(enum.Key)
+	return null, nil
 }
 
 type repeated struct {
@@ -103,9 +100,15 @@ func (r repeated) MarshalJSON() ([]byte, error) {
 			buff.WriteString(",")
 		}
 
-		var item = &specs.Property{Reference: &specs.PropertyReference{}}
+		item, err := r.property.Repeated.Template()
+		if err != nil {
+			return nil, fmt.Errorf("failed to encode repeated item: %w", err)
+		}
 
-		bb, err := encoder{property: item, refs: store}.MarshalJSON()
+		// the item template does include its own reference
+		item.Reference = &specs.PropertyReference{}
+
+		bb, err := encoder{property: &specs.Property{Template: item}, refs: store}.MarshalJSON()
 		if err != nil {
 			return nil, err
 		}
@@ -124,7 +127,7 @@ type message struct {
 }
 
 func (m message) MarshalJSON() ([]byte, error) {
-	if m.property.Nested == nil {
+	if m.property.Message == nil {
 		return null, nil
 	}
 
@@ -133,7 +136,7 @@ func (m message) MarshalJSON() ([]byte, error) {
 		firstKey = true
 	)
 
-	for key, prop := range m.property.Nested {
+	for key, prop := range m.property.Message {
 		bb, err := (&encoder{property: prop, refs: m.refs}).MarshalJSON()
 		if err != nil {
 			return nil, err

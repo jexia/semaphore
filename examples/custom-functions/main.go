@@ -64,8 +64,12 @@ func main() {
 
 func jwt(args ...*specs.Property) (*specs.Property, functions.Exec, error) {
 	prop := &specs.Property{
-		Type:  types.String,
 		Label: labels.Optional,
+		Template: specs.Template{
+			Scalar: &specs.Scalar{
+				Type: types.String,
+			},
+		},
 	}
 
 	if len(args) != 1 {
@@ -74,12 +78,16 @@ func jwt(args ...*specs.Property) (*specs.Property, functions.Exec, error) {
 
 	input := args[0]
 
-	if input.Type != types.String {
-		return nil, nil, fmt.Errorf("invalid argument type (%s), expected (%s)", input.Type, types.String)
+	if input.Scalar == nil {
+		return nil, nil, fmt.Errorf("invalid argument, property has to be a <string>")
+	}
+
+	if input.Scalar.Type != types.String {
+		return nil, nil, fmt.Errorf("invalid argument type (%s), expected (%s)", input.Scalar.Type, types.String)
 	}
 
 	fn := func(store references.Store) error {
-		value := input.Default
+		value := input.Scalar.Default
 
 		if input.Reference != nil {
 			ref := store.Load(input.Reference.Resource, input.Reference.Path)

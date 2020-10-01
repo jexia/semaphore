@@ -296,12 +296,27 @@ func PropertyReferences(property *specs.Property) Collection {
 		result[property.Reference.String()] = property.Reference
 	}
 
-	if property.Nested != nil {
-		for _, nested := range property.Nested {
+	switch {
+	case property.Message != nil:
+		for _, nested := range property.Message {
 			for key, ref := range PropertyReferences(nested) {
 				result[key] = ref
 			}
 		}
+
+		break
+	case property.Repeated != nil:
+		for _, repeated := range property.Repeated {
+			property := &specs.Property{
+				Template: repeated,
+			}
+
+			for key, ref := range PropertyReferences(property) {
+				result[key] = ref
+			}
+		}
+
+		break
 	}
 
 	return result

@@ -1,8 +1,7 @@
 proxy "echo" {
-    input {
-        params = "com.input"
-    }
+  input {
+    params = "com.input"
+  }
 
-    forward "caller" {
-    }
+  forward "caller" {}
 }

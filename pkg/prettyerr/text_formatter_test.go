@@ -4,23 +4,23 @@ import "testing"
 
 func TestTextFormatter(t *testing.T) {
 	missingConfig := Error{
-		Message:  "File config is missing.",
+		Message: "File config is missing.",
 		Details: map[string]interface{}{
 			"filename": "/etc/foo/config.yml",
 		},
-		Code:     "MissingConfig",
+		Code: "MissingConfig",
 	}
 
 	genericError := Error{
-		Message:  "Something happened, I'm sorry.",
-		Details:  nil,
-		Code:     "GenericError",
+		Message: "Something happened, I'm sorry.",
+		Details: nil,
+		Code:    "GenericError",
 	}
 
 	want :=
-		"File config is missing.\n"+
-		"\tfilename: /etc/foo/config.yml\n"+
-		"Something happened, I'm sorry.\n"
+		"File config is missing.\n" +
+			"\tfilename: /etc/foo/config.yml\n" +
+			"Something happened, I'm sorry.\n"
 
 	stack := Errors{missingConfig, genericError}
 	format := "{{ .Message }}\n{{ range $key, $value := .Details }}\t{{ $key }}: {{ $value }}\n{{ end }}"

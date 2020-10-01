@@ -29,19 +29,19 @@ func (method *Method) References() []*specs.Property {
 }
 
 // GetRequest returns the request input parameter map
-func (method *Method) GetRequest() map[string]*specs.Property {
+func (method *Method) GetRequest() specs.Message {
 	if method.Request == nil {
-		return make(map[string]*specs.Property, 0)
+		return make(specs.Message, 0)
 	}
 
-	return method.Request.Definition.Property.Nested
+	return method.Request.Definition.Property.Message
 }
 
 // GetResponse returns the request output parameter map
-func (method *Method) GetResponse() map[string]*specs.Property {
+func (method *Method) GetResponse() specs.Message {
 	if method.Response == nil {
-		return make(map[string]*specs.Property, 0)
+		return make(specs.Message, 0)
 	}
 
-	return method.Response.Definition.Property.Nested
+	return method.Response.Definition.Property.Message
 }

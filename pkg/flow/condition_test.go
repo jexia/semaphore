@@ -50,8 +50,12 @@ func TestConditionEvaluation(t *testing.T) {
 						return nil
 					},
 					Returns: &specs.Property{
-						Type:  types.String,
 						Label: labels.Optional,
+						Template: specs.Template{
+							Scalar: &specs.Scalar{
+								Type: types.String,
+							},
+						},
 					},
 				},
 			},
@@ -107,8 +111,12 @@ func TestInvalidConditionEvaluation(t *testing.T) {
 						return errors.New("unexpected error")
 					},
 					Returns: &specs.Property{
-						Type:  types.String,
 						Label: labels.Optional,
+						Template: specs.Template{
+							Scalar: &specs.Scalar{
+								Type: types.String,
+							},
+						},
 					},
 				},
 			},

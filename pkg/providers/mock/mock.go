@@ -1,10 +1,6 @@
 package mock
 
-import (
-	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/labels"
-	"github.com/jexia/semaphore/pkg/specs/types"
-)
+import "github.com/jexia/semaphore/pkg/specs"
 
 // NewCollection constructs a new schema collection from the given descriptors
 func NewCollection(descriptor Collection) *Collection {
@@ -20,9 +16,9 @@ type Exception struct {
 
 // Collection represents a mock YAML file
 type Collection struct {
-	Exception  Exception            `yaml:"exception"`
-	Services   map[string]*Service  `yaml:"services"`
-	Properties map[string]*Property `yaml:"properties"`
+	Exception  Exception                  `yaml:"exception"`
+	Services   map[string]*Service        `yaml:"services"`
+	Properties map[string]*specs.Property `yaml:"properties"`
 }
 
 // GetService attempts to find the given service
@@ -44,30 +40,6 @@ func (collection *Collection) GetServices() []*Service {
 
 	for name, service := range collection.Services {
 		result = append(result, NewService(name, service))
-	}
-
-	return result
-}
-
-// GetMessage attempts to find and return the given schema property
-func (collection *Collection) GetMessage(name string) *Property {
-	for key, object := range collection.Properties {
-		if key != name {
-			continue
-		}
-
-		return NewProperty(key, object)
-	}
-
-	return nil
-}
-
-// GetMessages returns all available messages inside the given collection
-func (collection *Collection) GetMessages() []*Property {
-	result := make([]*Property, 0, len(collection.Properties))
-
-	for key, object := range collection.Properties {
-		result = append(result, NewProperty(key, object))
 	}
 
 	return result
@@ -130,44 +102,4 @@ type Method struct {
 func NewMethod(name string, method *Method) *Method {
 	method.Name = name
 	return method
-}
-
-// NewProperty appends the name to the given property
-func NewProperty(name string, property *Property) *Property {
-	property.Name = name
-
-	for key, prop := range property.Nested {
-		property.Nested[key] = NewProperty(key, prop)
-	}
-
-	return property
-}
-
-// Property represents a proto message property
-type Property struct {
-	Name     string
-	Comment  string               `yaml:"comment"`
-	Type     types.Type           `yaml:"type"`
-	Label    labels.Label         `yaml:"label"`
-	Default  interface{}          `yaml:"default"`
-	Position int32                `yaml:"position"`
-	Nested   map[string]*Property `yaml:"nested"`
-	Options  specs.Options        `yaml:"options"`
-	Enum     map[string]Enum      `yaml:"enum"`
-}
-
-// GetNested returns the field nested object
-func (property *Property) GetNested() map[string]*Property {
-	result := make(map[string]*Property, len(property.Nested))
-	for key, nested := range property.Nested {
-		result[key] = NewProperty(key, nested)
-	}
-
-	return result
-}
-
-// Enum represents a property enum value
-type Enum struct {
-	Position    int32  `yaml:"position"`
-	Description string `yaml:"description"`
 }

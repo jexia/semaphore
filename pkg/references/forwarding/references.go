@@ -79,7 +79,10 @@ func ResolveParameterMapReferences(parameters *specs.ParameterMap, dependencies 
 
 	ResolveParamReferences(parameters.Params, parameters.DependsOn)
 	ResolveHeaderReferences(parameters.Header, parameters.DependsOn)
-	ResolvePropertyReferences(parameters.Property, parameters.DependsOn)
+
+	if parameters.Property != nil {
+		ResolvePropertyReferences(&parameters.Property.Template, parameters.DependsOn)
+	}
 
 	for key, val := range parameters.DependsOn {
 		dependencies[key] = val
@@ -95,7 +98,10 @@ func ResolveOnErrorReferences(parameters *specs.OnError, dependencies specs.Depe
 	if parameters.Response != nil {
 		ResolveParamReferences(parameters.Response.Params, dependencies)
 		ResolveHeaderReferences(parameters.Response.Header, dependencies)
-		ResolvePropertyReferences(parameters.Response.Property, dependencies)
+
+		if parameters.Response.Property != nil {
+			ResolvePropertyReferences(&parameters.Response.Property.Template, dependencies)
+		}
 	}
 }
 
@@ -106,7 +112,7 @@ func ResolveParamReferences(params map[string]*specs.Property, dependencies spec
 	}
 
 	for _, property := range params {
-		ResolvePropertyReferences(property, dependencies)
+		ResolvePropertyReferences(&property.Template, dependencies)
 	}
 }
 
@@ -119,56 +125,64 @@ func ResolveFunctionsReferences(functions functions.Stack, dependencies specs.De
 	for _, function := range functions {
 		if function.Arguments != nil {
 			for _, arg := range function.Arguments {
-				ResolvePropertyReferences(arg, dependencies)
+				ResolvePropertyReferences(&arg.Template, dependencies)
 			}
 		}
 
-		ResolvePropertyReferences(function.Returns, dependencies)
+		if function.Returns != nil {
+			ResolvePropertyReferences(&function.Returns.Template, dependencies)
+		}
 	}
 }
 
 // ResolveHeaderReferences resolves all references made inside the header
 func ResolveHeaderReferences(header specs.Header, dependencies specs.Dependencies) {
-	for _, prop := range header {
-		ResolvePropertyReferences(prop, dependencies)
+	for _, property := range header {
+		ResolvePropertyReferences(&property.Template, dependencies)
 	}
 }
 
 // ResolvePropertyReferences moves any property reference into the correct data structure
-func ResolvePropertyReferences(property *specs.Property, dependencies specs.Dependencies) {
-	if property == nil {
+func ResolvePropertyReferences(tmpl *specs.Template, dependencies specs.Dependencies) {
+	switch {
+	case tmpl.Repeated != nil:
+		for _, repeated := range tmpl.Repeated {
+			ResolvePropertyReferences(&repeated, dependencies)
+		}
+	case tmpl.Message != nil:
+		for _, nested := range tmpl.Message {
+			ResolvePropertyReferences(&nested.Template, dependencies)
+		}
+	}
+
+	if tmpl.Reference == nil {
 		return
 	}
 
-	for _, nested := range property.Nested {
-		ResolvePropertyReferences(nested, dependencies)
-	}
-
-	if property.Reference == nil {
-		return
-	}
-
-	dependency := template.SplitPath(property.Reference.Resource)[0]
+	dependency := template.SplitPath(tmpl.Reference.Resource)[0]
 	dependencies[dependency] = nil
 
-	ScopePropertyReference(property)
+	ScopePropertyReference(tmpl)
 }
 
 // ScopePropertyReference ensures that the root property is used inside the
 // property reference.
-func ScopePropertyReference(property *specs.Property) {
-	if property.Reference == nil || property.Reference.Property == nil {
-		return
-	}
+func ScopePropertyReference(tmpl *specs.Template) {
+	for {
+		if tmpl.Reference == nil || tmpl.Reference.Property == nil {
+			return
+		}
 
-	if property.Reference.Property.Reference == nil {
-		return
-	}
+		if tmpl.Reference == tmpl.Reference.Property.Reference {
+			// NOTE: circular reference!
+			return
+		}
 
-	if property.Reference.Property == property {
-		return
-	}
+		target := tmpl.Reference.Property.Reference
+		if target == nil {
+			return
+		}
 
-	property.Reference = property.Reference.Property.Reference
-	ScopePropertyReference(property)
+		tmpl.Reference = target
+	}
 }

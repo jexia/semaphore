@@ -33,7 +33,11 @@ func TestErrCannotFormat(t *testing.T) {
 			formatter: stringer("foo"),
 			argument: &specs.Property{
 				Name: "bar",
-				Type: types.Bool,
+				Template: specs.Template{
+					Scalar: &specs.Scalar{
+						Type: types.Bool,
+					},
+				},
 			},
 		}
 	)

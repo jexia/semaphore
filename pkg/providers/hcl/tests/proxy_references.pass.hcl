@@ -1,7 +1,7 @@
 proxy "references" {
-    resources {
-        prop = ""
-    }
+  resources {
+    prop = ""
+  }
 
-    forward "" {}
+  forward "" {}
 }

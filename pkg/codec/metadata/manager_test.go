@@ -17,8 +17,12 @@ func TestNewManager(t *testing.T) {
 		"example": &specs.Property{
 			Name:  "example",
 			Path:  "example",
-			Type:  types.String,
 			Label: labels.Optional,
+			Template: specs.Template{
+				Scalar: &specs.Scalar{
+					Type: types.String,
+				},
+			},
 		},
 	}
 
@@ -36,11 +40,15 @@ func TestManagerMarshal(t *testing.T) {
 		"simple": func() (specs.Header, references.Store, MD) {
 			header := specs.Header{
 				"example": &specs.Property{
-					Name:    "example",
-					Path:    "example",
-					Default: "hello",
-					Type:    types.String,
-					Label:   labels.Optional,
+					Name:  "example",
+					Path:  "example",
+					Label: labels.Optional,
+					Template: specs.Template{
+						Scalar: &specs.Scalar{
+							Default: "hello",
+							Type:    types.String,
+						},
+					},
 				},
 			}
 
@@ -57,11 +65,15 @@ func TestManagerMarshal(t *testing.T) {
 				"example": &specs.Property{
 					Name:  "example",
 					Path:  "example",
-					Type:  types.String,
 					Label: labels.Optional,
-					Reference: &specs.PropertyReference{
-						Resource: "input",
-						Path:     "value",
+					Template: specs.Template{
+						Scalar: &specs.Scalar{
+							Type: types.String,
+						},
+						Reference: &specs.PropertyReference{
+							Resource: "input",
+							Path:     "value",
+						},
 					},
 				},
 			}
@@ -108,8 +120,36 @@ func TestManagerUnmarshal(t *testing.T) {
 				"example": &specs.Property{
 					Name:  "example",
 					Path:  "example",
-					Type:  types.String,
 					Label: labels.Optional,
+					Template: specs.Template{
+						Scalar: &specs.Scalar{
+							Type: types.String,
+						},
+					},
+				},
+			}
+
+			input := MD{
+				"example": "hello",
+			}
+
+			expected := MD{
+				"example": "hello",
+			}
+
+			return params, input, expected
+		},
+		"case insensitive": func() (specs.Header, MD, MD) {
+			params := specs.Header{
+				"Example": &specs.Property{
+					Name:  "example",
+					Path:  "example",
+					Label: labels.Optional,
+					Template: specs.Template{
+						Scalar: &specs.Scalar{
+							Type: types.String,
+						},
+					},
 				},
 			}
 
@@ -128,8 +168,12 @@ func TestManagerUnmarshal(t *testing.T) {
 				"example": &specs.Property{
 					Name:  "example",
 					Path:  "example",
-					Type:  types.String,
 					Label: labels.Optional,
+					Template: specs.Template{
+						Scalar: &specs.Scalar{
+							Type: types.String,
+						},
+					},
 				},
 			}
 

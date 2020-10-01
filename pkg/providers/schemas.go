@@ -3,6 +3,7 @@ package providers
 import (
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
+	"github.com/jexia/semaphore/pkg/broker/trace"
 	"github.com/jexia/semaphore/pkg/specs"
 	"go.uber.org/zap"
 )
@@ -84,6 +85,13 @@ func ResolveNode(ctx *broker.Context, services specs.ServiceList, schemas specs.
 		}
 	}
 
+	if node.Intermediate != nil {
+		err = ResolveParameterMap(ctx, schemas, node.Intermediate, flow)
+		if err != nil {
+			return err
+		}
+	}
+
 	if node.OnError != nil {
 		err = ResolveOnError(ctx, schemas, node.OnError, flow)
 		if err != nil {
@@ -153,42 +161,115 @@ func DefineCall(ctx *broker.Context, services specs.ServiceList, schemas specs.S
 	return nil
 }
 
+func resolveMessage(message, schema specs.Message, flow specs.FlowInterface) error {
+	for _, nested := range message {
+		if nested == nil {
+			continue
+		}
+
+		object := schema[nested.Name]
+		if object == nil {
+			return trace.New(trace.WithMessage("undefined schema nested message property '%s' in flow '%s'", nested.Name, flow.GetName()))
+		}
+
+		if err := ResolveProperty(nested, object.Clone(), flow); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func resolveRepeated(repeated, schema specs.Repeated, flow specs.FlowInterface) error {
+	if len(repeated) != len(schema) {
+		return trace.New(trace.WithMessage("the length of repeated does not match the schema"))
+	}
+
+	// FIXME: flow and schema repeated could have different type orders.
+	for pos, template := range repeated {
+		object := schema[pos]
+
+		if err := ResolveProperty(
+			&specs.Property{
+				Template: template,
+			},
+			(&specs.Property{
+				Template: object,
+			}).Clone(),
+			flow,
+		); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func setMessage(message, schema specs.Message) {
+	// Set any properties not defined inside the flow but available inside the schema
+	for _, prop := range schema {
+		if _, ok := message[prop.Name]; ok {
+			continue
+		}
+
+		message[prop.Name] = prop.Clone()
+	}
+}
+
+func setRepeated(repeated, schema specs.Repeated) {
+	// FIXME: how do we match schemas and repeated?
+	// FIXME: out of range panic
+	for pos, prop := range schema {
+		repeated[pos] = prop.Clone()
+	}
+}
+
 // ResolveProperty ensures that all schema properties are defined inside the given property
-func ResolveProperty(property *specs.Property, schema *specs.Property, flow specs.FlowInterface) error {
+func ResolveProperty(property, schema *specs.Property, flow specs.FlowInterface) error {
 	if property == nil {
 		property = schema.Clone()
 		return nil
 	}
 
-	for key, nested := range property.Nested {
-		object := schema.Nested[key]
-		if object == nil {
+	switch {
+	case property.Message != nil:
+		if err := resolveMessage(property.Message, schema.Message, flow); err != nil {
 			return ErrUndefinedProperty{
-				Property: key,
+				Property: property.Name,
 				Flow:     flow.GetName(),
 			}
 		}
 
-		err := ResolveProperty(nested, object.Clone(), flow)
-		if err != nil {
+		property.Label = schema.Label
+
+		break
+	case property.Repeated != nil:
+		if err := resolveRepeated(property.Repeated, schema.Repeated, flow); err != nil {
 			return err
 		}
+
+		property.Label = schema.Label
+
+		break
 	}
 
-	if property.Nested == nil && schema.Nested != nil {
-		clone := schema.Clone()
-		property.Nested = clone.Nested
-		return nil
-	}
-
-	// Set any properties not defined inside the flow but available inside the schema
-	for _, prop := range schema.Nested {
-		_, has := property.Nested[prop.Name]
-		if has {
-			continue
+	switch {
+	case schema.Message != nil:
+		if property.Message == nil {
+			property.Message = schema.Message.Clone()
 		}
 
-		property.Nested[prop.Name] = prop.Clone()
+		setMessage(property.Message, schema.Message)
+
+		break
+	case schema.Repeated != nil:
+		if property.Repeated == nil {
+			property.Repeated = schema.Repeated.Clone()
+		}
+
+		setRepeated(property.Repeated, schema.Repeated)
+
+		break
 	}
 
 	return nil

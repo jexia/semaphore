@@ -19,9 +19,11 @@ func TestNewEvaluableExpression(t *testing.T) {
 			raw: "{{ input:id }} == {{ input:id }}",
 			params: map[string]*specs.Property{
 				"input:id": {
-					Reference: &specs.PropertyReference{
-						Resource: "input",
-						Path:     "id",
+					Template: specs.Template{
+						Reference: &specs.PropertyReference{
+							Resource: "input",
+							Path:     "id",
+						},
 					},
 				},
 			},
@@ -30,15 +32,19 @@ func TestNewEvaluableExpression(t *testing.T) {
 			raw: "({{ input:id }} == {{ input:id }}) || {{ input:name }}",
 			params: map[string]*specs.Property{
 				"input:id": {
-					Reference: &specs.PropertyReference{
-						Resource: "input",
-						Path:     "id",
+					Template: specs.Template{
+						Reference: &specs.PropertyReference{
+							Resource: "input",
+							Path:     "id",
+						},
 					},
 				},
 				"input:name": {
-					Reference: &specs.PropertyReference{
-						Resource: "input",
-						Path:     "name",
+					Template: specs.Template{
+						Reference: &specs.PropertyReference{
+							Resource: "input",
+							Path:     "name",
+						},
 					},
 				},
 			},
@@ -47,15 +53,19 @@ func TestNewEvaluableExpression(t *testing.T) {
 			raw: "({{ resource:id }} == {{ input:id }})",
 			params: map[string]*specs.Property{
 				"input:id": {
-					Reference: &specs.PropertyReference{
-						Resource: "input",
-						Path:     "id",
+					Template: specs.Template{
+						Reference: &specs.PropertyReference{
+							Resource: "input",
+							Path:     "id",
+						},
 					},
 				},
 				"resource:id": {
-					Reference: &specs.PropertyReference{
-						Resource: "resource",
-						Path:     "id",
+					Template: specs.Template{
+						Reference: &specs.PropertyReference{
+							Resource: "resource",
+							Path:     "id",
+						},
 					},
 				},
 			},
@@ -90,8 +100,8 @@ func TestNewEvaluableExpression(t *testing.T) {
 					}
 				}
 
-				if param.Type != expected.Type {
-					t.Fatalf("unexpected type '%+v', expected '%+v'", param.Type, expected.Type)
+				if param.Type() != expected.Type() {
+					t.Fatalf("unexpected type '%+v', expected '%+v'", param.Type(), expected.Type())
 				}
 
 				if param.Label != expected.Label {

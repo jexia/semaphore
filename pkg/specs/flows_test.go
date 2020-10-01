@@ -78,7 +78,17 @@ func TestFlowInterface(t *testing.T) {
 	}
 
 	if flow.GetNodes().Get("first") == nil {
-		t.Error("unexpected result, expected node to be set")
+		t.Error("unexpected result, expected first node to be set")
+	}
+
+	flow.SetNodes(NodeList{&Node{ID: "second"}})
+
+	if flow.GetNodes() == nil {
+		t.Error("unexpected result, expected nodes to be set")
+	}
+
+	if flow.GetNodes().Get("second") == nil {
+		t.Error("unexpected result, expected second node to be set")
 	}
 
 	if flow.GetOutput() == nil {
@@ -136,12 +146,18 @@ func TestProxyInterface(t *testing.T) {
 		t.Error("unexpected result, expected input to be set")
 	}
 
+	if flow.GetNodes().Get("first") == nil {
+		t.Error("unexpected result, expected first node to be set")
+	}
+
+	flow.SetNodes(NodeList{&Node{ID: "second"}})
+
 	if flow.GetNodes() == nil {
 		t.Error("unexpected result, expected nodes to be set")
 	}
 
-	if flow.GetNodes().Get("first") == nil {
-		t.Error("unexpected result, expected node to be set")
+	if flow.GetNodes().Get("second") == nil {
+		t.Error("unexpected result, expected second node to be set")
 	}
 
 	if flow.GetOutput() != nil {
@@ -275,5 +291,26 @@ func TestOnErrorInterfaceNil(t *testing.T) {
 
 	if err.GetMessage() != nil {
 		t.Errorf("unexpected result %+v, expected message nil value", err.GetMessage())
+	}
+}
+
+func TestDependenciesAppend(t *testing.T) {
+	deps := Dependencies{}
+	deps = deps.Append(Dependencies{"input": nil})
+
+	if len(deps) != 1 {
+		t.Fatalf("unexpected dependencies length %d, expected 1", len(deps))
+	}
+
+	deps = deps.Append(Dependencies{"first": nil, "second": nil})
+
+	if len(deps) != 3 {
+		t.Fatalf("unexpected dependencies length %d, expected 3", len(deps))
+	}
+
+	deps = deps.Append(Dependencies{"first": nil})
+
+	if len(deps) != 3 {
+		t.Fatalf("unexpected dependencies length %d, dependency length should have stayed at 3", len(deps))
 	}
 }

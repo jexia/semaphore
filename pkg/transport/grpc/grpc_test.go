@@ -64,16 +64,21 @@ func NewMockListener(t *testing.T, nodes flow.Nodes, errs transport.Errs) (trans
 func NewSimpleMockSpecs() *specs.ParameterMap {
 	return &specs.ParameterMap{
 		Property: &specs.Property{
-			Type:  types.Message,
 			Label: labels.Optional,
-			Nested: map[string]*specs.Property{
-				"message": {
-					Comment:  "mock",
-					Position: 1,
-					Name:     "message",
-					Path:     "message",
-					Type:     types.String,
-					Label:    labels.Optional,
+			Template: specs.Template{
+				Message: specs.Message{
+					"mock": {
+						Description: "mock",
+						Position:    1,
+						Name:        "message",
+						Path:        "message",
+						Label:       labels.Optional,
+						Template: specs.Template{
+							Scalar: &specs.Scalar{
+								Type: types.String,
+							},
+						},
+					},
 				},
 			},
 		},

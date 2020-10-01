@@ -13,6 +13,7 @@ import (
 	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/pkg/specs/labels"
 	"github.com/jexia/semaphore/pkg/specs/types"
 	"github.com/jexia/semaphore/pkg/transport"
 	"go.uber.org/zap"
@@ -153,13 +154,13 @@ func (call *Call) SendMsg(ctx context.Context, rw transport.ResponseWriter, pr *
 
 		endpoint := LookupEndpointReferences(method, refs)
 		if endpoint != "" {
-			endpointUri, err := url.Parse(endpoint)
+			endpointURI, err := url.Parse(endpoint)
 			if err != nil {
 				return fmt.Errorf("failed to parse endpoint: %w", err)
 			}
 
-			uri.Path = endpointUri.Path
-			uri.RawQuery = endpointUri.RawQuery
+			uri.Path = endpointURI.Path
+			uri.RawQuery = endpointURI.RawQuery
 		}
 
 		request = method.request
@@ -203,7 +204,7 @@ func LookupEndpointReferences(method *Method, store references.Store) string {
 
 	for _, prop := range method.references {
 		ref := store.Load(prop.Reference.Resource, prop.Reference.Path)
-		if ref == nil || prop.Type != types.String {
+		if ref == nil || prop.Scalar.Type != types.String {
 			result = strings.Replace(result, prop.Path, "", 1)
 			continue
 		}
@@ -227,10 +228,16 @@ func TemplateReferences(value string, functions functions.Custom) ([]*specs.Prop
 	for _, key := range references {
 		path := key[1:]
 		property := &specs.Property{
-			Path: key,
-			Reference: &specs.PropertyReference{
-				Resource: ".params",
-				Path:     path,
+			Path:  key,
+			Label: labels.Optional,
+			Template: specs.Template{
+				Reference: &specs.PropertyReference{
+					Resource: ".params",
+					Path:     path,
+				},
+				Scalar: &specs.Scalar{
+					Type: types.String,
+				},
 			},
 		}
 

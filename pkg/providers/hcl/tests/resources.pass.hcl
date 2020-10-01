@@ -1,5 +1,5 @@
 flow "mock" {
-    resources {
-        sample = "key"
-    }
+  resources {
+    sample = "key"
+  }
 }

@@ -162,9 +162,9 @@ func GenerateParameter(key string, required bool, in ParameterIn, property *spec
 	}
 
 	if property != nil {
-		result.Description = property.Comment
+		result.Description = property.Description
 		result.Schema = &Schema{
-			Type: types.Open(property.Type),
+			Type: types.Open(property.Type()),
 		}
 	}
 
@@ -185,34 +185,34 @@ func IncludeParameterMap(object *Object, params *specs.ParameterMap) {
 		object.Components.Schemas = map[string]*Schema{}
 	}
 
-	object.Components.Schemas[params.Schema] = GenerateSchema(params.Property)
+	object.Components.Schemas[params.Schema] = GenerateSchema(params.Property.Description, params.Property.Template)
 }
 
 // GenerateSchema generates a new schema for the given property
-func GenerateSchema(property *specs.Property) *Schema {
-	if property == nil {
-		return nil
-	}
-
+func GenerateSchema(description string, property specs.Template) *Schema {
 	result := &Schema{
-		Description: property.Comment,
-		Default:     property.Default,
-		Type:        types.Open(property.Type),
+		Description: description,
+		Type:        types.Open(property.Type()),
 	}
 
-	if len(property.Nested) > 0 {
-		result.Properties = make(map[string]*Schema, len(property.Nested))
-	}
+	switch {
+	case property.Scalar != nil:
+		result.Default = property.Scalar.Default
 
-	for key, nested := range property.Nested {
-		result.Properties[key] = GenerateSchema(nested)
+		break
+	case property.Message != nil:
+		result.Properties = make(map[string]*Schema, len(property.Message))
 
-		if nested.Label == labels.Required {
-			result.Required = append(result.Required, key)
+		for _, nested := range property.Message {
+			result.Properties[nested.Name] = GenerateSchema(nested.Description, nested.Template)
+
+			if nested.Label == labels.Required {
+				result.Required = append(result.Required, nested.Name)
+			}
 		}
-	}
 
-	if property.Enum != nil {
+		break
+	case property.Enum != nil:
 		// ensure property enum order
 		result.Enum = make([]interface{}, len(property.Enum.Keys))
 		keys := make([]int, 0, len(property.Enum.Positions))
@@ -226,11 +226,17 @@ func GenerateSchema(property *specs.Property) *Schema {
 		for pos, key := range keys {
 			result.Enum[pos] = property.Enum.Positions[int32(key)].Key
 		}
-	}
 
-	if property.Label == labels.Repeated {
-		result = &Schema{
-			Items: result,
+		break
+	case property.Repeated != nil:
+		template, err := property.Repeated.Template()
+		if err != nil {
+			panic(err)
+		}
+
+		return &Schema{
+			Description: description,
+			Items:       GenerateSchema("", template),
 		}
 	}
 

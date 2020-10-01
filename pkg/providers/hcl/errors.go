@@ -17,6 +17,13 @@ func (i wrapErr) Unwrap() error {
 	return i.Inner
 }
 
+// ErrUnkownPropertyType is thrown when the given property type is unkown
+type ErrUnkownPropertyType string
+
+func (e ErrUnkownPropertyType) Error() string {
+	return fmt.Sprintf("unsupported property type %q", string(e))
+}
+
 // DefaultOnError sets the default values for not defined properties
 func DefaultOnError(err *specs.OnError) {
 	if err == nil {
@@ -25,22 +32,30 @@ func DefaultOnError(err *specs.OnError) {
 
 	if err.Status == nil {
 		err.Status = &specs.Property{
-			Type:  types.Int64,
 			Label: labels.Optional,
-			Reference: &specs.PropertyReference{
-				Resource: "error",
-				Path:     "status",
+			Template: specs.Template{
+				Reference: &specs.PropertyReference{
+					Resource: "error",
+					Path:     "status",
+				},
+				Scalar: &specs.Scalar{
+					Type: types.Int64,
+				},
 			},
 		}
 	}
 
 	if err.Message == nil {
 		err.Message = &specs.Property{
-			Type:  types.String,
 			Label: labels.Optional,
-			Reference: &specs.PropertyReference{
-				Resource: "error",
-				Path:     "message",
+			Template: specs.Template{
+				Reference: &specs.PropertyReference{
+					Resource: "error",
+					Path:     "message",
+				},
+				Scalar: &specs.Scalar{
+					Type: types.String,
+				},
 			},
 		}
 	}

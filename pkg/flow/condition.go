@@ -43,7 +43,11 @@ func (condition *Condition) Eval(ctx *broker.Context, store references.Store) (b
 
 	parameters := make(map[string]interface{}, len(condition.expression.GetParameters().Params))
 	for key, param := range condition.expression.GetParameters().Params {
-		value := param.Default
+		var value interface{}
+
+		if param.Scalar != nil {
+			value = param.Scalar.Default
+		}
 
 		if param.Reference != nil {
 			ref := store.Load(param.Reference.Resource, param.Reference.Path)

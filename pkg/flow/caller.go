@@ -177,7 +177,9 @@ func (caller *caller) HandleErr(w *transport.Writer, reader io.Reader, store ref
 
 	if caller.err != nil {
 		if caller.err.message != nil {
-			message = caller.err.message.Default
+			if caller.err.message.Scalar != nil {
+				message = caller.err.message.Scalar.Default
+			}
 
 			if caller.err.message.Reference != nil {
 				ref := store.Load(caller.err.message.Reference.Resource, caller.err.message.Reference.Path)
@@ -188,7 +190,9 @@ func (caller *caller) HandleErr(w *transport.Writer, reader io.Reader, store ref
 		}
 
 		if caller.err.status != nil {
-			status = caller.err.status.Default
+			if caller.err.status.Scalar != nil {
+				status = caller.err.status.Scalar.Default
+			}
 
 			if caller.err.status.Reference != nil {
 				ref := store.Load(caller.err.status.Reference.Resource, caller.err.status.Reference.Path)

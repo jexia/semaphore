@@ -34,10 +34,14 @@ func init() {
 
 func prettyErrors(err error) error {
 	stack, err := prettyerr.Prettify(err)
-	if err != nil { return err }
+	if err != nil {
+		return err
+	}
 
 	msg, err := prettyerr.TextFormatter(stack, prettyerr.DefaultTextFormat)
-	if err != nil { return err }
+	if err != nil {
+		return err
+	}
 
 	return errors.New("\n" + msg)
 }

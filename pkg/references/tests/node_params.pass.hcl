@@ -1,12 +1,11 @@
 flow "echo" {
-	input "com.input" {
-	}
+  input "com.input" {}
 
-	resource "opening" {
-		request "caller" "Open" {
-			params {
-                message = "{{ input:message }}"
-            }
-		}
-	}
+  resource "opening" {
+    request "caller" "Open" {
+      params {
+        message = "{{ input:message }}"
+      }
+    }
+  }
 }

@@ -1,25 +1,25 @@
 proxy "" {
-	resource "" {
-		error "proto.Error" {
-			message = "{{ error:message }}"
-			status = "{{ error:status }}"
+  resource "" {
+    error "proto.Error" {
+      message = "{{ error:message }}"
+      status  = "{{ error:status }}"
 
-            message "nested" {
-                message "nested" {}
-                repeated "" "" {}
-            }
+      message "nested" {
+        message  "nested" {}
+        repeated ""       ""       {}
+      }
 
-            repeated "" "" {
-                message "nested" {}
-                repeated "" "" {}
-            }
-		}
+      repeated "" "" {
+        message  "nested" {}
+        repeated ""       ""       {}
+      }
+    }
 
-		on_error {
-			status = 401
-			message = "node error message"
-		}
-	}
+    on_error {
+      status  = 401
+      message = "node error message"
+    }
+  }
 
-    forward "" {}
+  forward "" {}
 }

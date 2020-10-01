@@ -1,9 +1,9 @@
 flow "params" {
-    resource "" {
-        request "" "" {
-            params {
-                id = ""
-            }
-        }
+  resource "" {
+    request "" "" {
+      params {
+        id = ""
+      }
     }
+  }
 }
