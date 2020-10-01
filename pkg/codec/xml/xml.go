@@ -4,7 +4,6 @@ import (
 	"encoding/xml"
 	"io"
 
-	"github.com/jexia/semaphore/pkg/broker/trace"
 	"github.com/jexia/semaphore/pkg/codec"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
@@ -23,7 +22,7 @@ func (constructor *Constructor) Name() string { return "xml" }
 // New constructs a new XML codec manager
 func (constructor *Constructor) New(resource string, specs *specs.ParameterMap) (codec.Manager, error) {
 	if specs == nil {
-		return nil, trace.New(trace.WithMessage("no object specs defined"))
+		return nil, ErrUndefinedSpecs{}
 	}
 
 	manager := &Manager{

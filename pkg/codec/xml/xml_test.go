@@ -36,6 +36,26 @@ func TestName(t *testing.T) {
 	})
 }
 
+func TestUndefinedSpecs(t *testing.T) {
+	tests := []struct {
+		name string
+		want string
+	}{
+		{
+			name: "return the formatted error",
+			want: "no object specs defined",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			e := ErrUndefinedSpecs{}
+			if got := e.Prettify(); got.Message != tt.want {
+				t.Errorf("%v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestMarshal(t *testing.T) {
 	var constructor = NewConstructor()
 	if constructor == nil {

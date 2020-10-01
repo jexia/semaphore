@@ -1,25 +1,10 @@
-package formencoded
+package xml
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/jexia/semaphore/pkg/prettyerr"
 )
-
-var errNilSchema = errors.New("nil schema")
-
-type errUndefinedProperty string
-
-func (e errUndefinedProperty) Error() string {
-	return fmt.Sprintf("undefined property %q", string(e))
-}
-
-type errUnknownLabel string
-
-func (e errUnknownLabel) Error() string {
-	return fmt.Sprintf("unknown label %q", string(e))
-}
 
 // ErrUndefinedSpecs occurs when spacs are nil
 type ErrUndefinedSpecs struct{}

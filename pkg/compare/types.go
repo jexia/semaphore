@@ -5,7 +5,6 @@ import (
 
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
-	"github.com/jexia/semaphore/pkg/broker/trace"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/types"
 	"go.uber.org/zap"
@@ -58,7 +57,10 @@ func FlowTypes(ctx *broker.Context, services specs.ServiceList, objects specs.Sc
 	if flow.GetOutput() != nil {
 		message := objects.Get(flow.GetOutput().Schema)
 		if message == nil {
-			return trace.New(trace.WithMessage("undefined flow output object '%s' in '%s'", flow.GetOutput().Schema, flow.GetName()))
+			return ErrUndefinedObject{
+				Flow:   flow.GetName(),
+				Schema: flow.GetOutput().Schema,
+			}
 		}
 
 		err = CheckParameterMapTypes(ctx, flow.GetOutput(), objects, flow)
@@ -93,12 +95,18 @@ func CallTypes(ctx *broker.Context, services specs.ServiceList, objects specs.Sc
 
 	service := services.Get(call.Service)
 	if service == nil {
-		return trace.New(trace.WithMessage("undefined service '%s' in flow '%s'", call.Service, flow.GetName()))
+		return ErrUndefinedService{
+			Flow:    flow.GetName(),
+			Service: call.Service,
+		}
 	}
 
 	method := service.GetMethod(call.Method)
 	if method == nil {
-		return trace.New(trace.WithMessage("undefined method '%s' in flow '%s'", call.Method, flow.GetName()))
+		return ErrUndefinedMethod{
+			Flow:   flow.GetName(),
+			Method: call.Method,
+		}
 	}
 
 	err = CheckParameterMapTypes(ctx, call.Request, objects, flow)
@@ -148,7 +156,12 @@ func CheckParameterMapTypes(ctx *broker.Context, parameters *specs.ParameterMap,
 func CheckHeader(header specs.Header, flow specs.FlowInterface) error {
 	for _, header := range header {
 		if header.Type() != types.String {
-			return trace.New(trace.WithMessage("cannot use type (%s) for 'header.%s' in flow '%s', expected (%s)", header.Type(), header.Path, flow.GetName(), types.String))
+			return ErrHeaderTypeMismatch{
+				Type:     header.Type(),
+				Path:     header.Path,
+				Flow:     flow.GetName(),
+				Expected: types.String,
+			}
 		}
 	}
 

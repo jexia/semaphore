@@ -489,13 +489,13 @@ func TestPropertyCompare(t *testing.T) {
 
 		shouldFail = func(t *testing.T, property, schema *Property) {
 			if property.Compare(schema) == nil {
-				t.Fatalf("CheckPropertyTypes() = nil, an error expected")
+				t.Fatalf("nil, an error expected")
 			}
 		}
 
 		shouldMatch = func(t *testing.T, property, schema *Property) {
 			if err := property.Compare(schema); err != nil {
-				t.Fatalf("CheckPropertyTypes() returns unexpected error: %s", err)
+				t.Fatalf("returns unexpected error: %s", err)
 			}
 		}
 	)
