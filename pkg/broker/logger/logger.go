@@ -58,14 +58,15 @@ func SetLevel(ctx *broker.Context, pattern string, level zapcore.Level) error {
 		return fmt.Errorf("failed to match pattern: %w", err)
 	}
 
-	if (matched || pattern == ctx.Module) && ctx.Atom != nil {
-		ctx.Atom.SetLevel(level)
+	for _, child := range ctx.Children {
+		err = SetLevel(child, pattern, level)
+		if err != nil {
+			return err
+		}
 	}
 
-	for _, child := range ctx.Children {
-		// errors could only occure inside the pattern which are validate above
-		// this error could safely be ignored
-		_ = SetLevel(child, pattern, level)
+	if (matched || pattern == ctx.Module) && ctx.Atom != nil {
+		ctx.Atom.SetLevel(level)
 	}
 
 	return nil
