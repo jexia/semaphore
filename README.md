@@ -6,37 +6,38 @@
 - Documentation: [https://jexia.gitbook.io/semaphore/](https://jexia.gitbook.io/semaphore/)
 - Go package documentation: [GoDev](https://pkg.go.dev/github.com/jexia/semaphore)
 
-Semaphore is a feature-rich [level 7](https://en.wikipedia.org/wiki/OSI_model#Layer_7:_Application_Layer) orchestrator. Create advanced data flows and expose them through endpoints over multiple protocols such as HTTP, GraphQL, and gRPC.
-Have full control over your services, create high performing data flows with ease.
+> Take control of your data, connect with anything, and expose it anywhere through protocols such as HTTP, GraphQL, and gRPC!
+
+Create advanced and high performing data flows and expose them through endpoints over multiple protocols such as HTTP, GraphQL, and gRPC.
 Create custom extensions or use the availability of custom functions and protocol implementations.
 
-Key features of Semaphore are:
+**Key features of Semaphore are:**
 
-* **Modular protocols** Use the right tool for the job.
+* **🔗 Connect with anything** Use the right tool for the job.
   Semaphore supports various protocols out of the box with
   the ability to supporting additional protocols through
   modules. Endpoints could be created to expose a single
   flow through multiple protocols.
 
-* **Branches** Semaphore scales up to your needs. Branches
+* **🚀 Blazing fast** Semaphore scales up to your needs. Branches
   are created to execute resources concurrently. Branches are
   based on dependencies between resources made through
   references or hard coded values. Creating high-performance
   flows is almost boringly easy.
 
-* **Transactional flows** Make sure that your data stays consistent.
+* **✅ Transactional flows** Make sure that your data stays consistent.
   Rollback data when an unexpected response is returned from
   one of your services. References to returned values could be
   made allowing to ensure that your customers have the best experience
   possible.
 
-* **Conditional logic** Only call services when needed.
+* **⛩️ Conditional logic** Only call services when needed.
   Conditional expressions ensure that resources are only
   executed when needed. Conditions grow to your needs.
   Whether you want to keep things simple or need to achieve
   complex goals.
 
-* **Adapts to your environment** Semaphore integrates
+* **🌍 Adapts to your environment** Semaphore integrates
   with your existing system(s). Define flows through
   simple and strict typed definitions. Use your already
   existing schema definitions such as Protobuffers. Or
@@ -48,6 +49,15 @@ Key features of Semaphore are:
 ----
 
 [![asciicast](https://asciinema.org/a/344280.svg)](https://asciinema.org/a/344280)
+
+## Enterprise
+
+Want to take your systems to the next level?
+Semaphore Enterprise allows users to fully embrace the power their data flows.
+Additional modules and tooling allows users to build more complex environments and helps running Semaphore in production.
+
+Feel free to request for more information or a demo by sending us a email at:
+support@jexia.com
 
 ## Documentation and Getting Started
 

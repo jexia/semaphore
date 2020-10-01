@@ -42,8 +42,7 @@ how the requested feature would help you do that.
      exercised by your tests.
 
   1. Please run:
-     * `go vet ./...`
-     * `go test ./...`
+     * `make test`
 
   1. Do your best to have [well-formed commit messages][] for each change.
      This provides consistency throughout the project, and ensures that commit

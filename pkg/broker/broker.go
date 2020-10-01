@@ -15,7 +15,7 @@ func NewContext() *Context {
 // NewBackground constructs a new context with a Atom log level set
 // to fatal level avoiding to write logs.
 func NewBackground() *Context {
-	atom := zap.NewAtomicLevelAt(zapcore.FatalLevel)
+	atom := zap.NewAtomicLevelAt(zapcore.ErrorLevel)
 
 	return &Context{
 		Atom: &atom,
