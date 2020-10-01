@@ -10,7 +10,6 @@ import (
 // Object represents an XML object.
 type Object struct {
 	name      string
-	path      string
 	message   specs.Message
 	reference *specs.PropertyReference
 	store     references.Store

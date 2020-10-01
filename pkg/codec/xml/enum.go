@@ -10,7 +10,6 @@ import (
 // Enum is a vrapper over specs.Enum providing XML encoding/decoding.
 type Enum struct {
 	name      string
-	path      string
 	enum      *specs.Enum
 	reference *specs.PropertyReference
 	store     references.Store
