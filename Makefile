@@ -14,6 +14,7 @@ bootstrap:
 proto-build: $(PROTODIR)/annotations.pb.go
 
 test:
+	go vet ./...
 	go test -mod vendor -cover -race ./...
 
 bench:
