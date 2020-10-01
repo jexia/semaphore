@@ -1,5 +1,5 @@
 flow "echo" {
-    output "com.input" {
-      message = "{{ input.header:Unkown }}"
-    }
+  output "com.input" {
+    message = "{{ input.header:Unknown }}"
+  }
 }

@@ -1,22 +1,21 @@
 flow "echo" {
-    input "object" {
-    }
+  input "object" {}
 
-    resource "get" {
-        request "getter" "Get" {
-            message "nested" {
-                name = "{{ input:nested.name }}"
+  resource "get" {
+    request "getter" "Get" {
+      message "nested" {
+        name = "{{ input:nested.name }}"
 
-                message "sub" {
-                    message = "hello world"
-                }
-            }
+        message "sub" {
+          message = "hello world"
         }
+      }
     }
+  }
 
-    output "object" {
-        message "nested" {
-            name = "<string>"
-        }
+  output "object" {
+    message "nested" {
+      name = "<string>"
     }
+  }
 }

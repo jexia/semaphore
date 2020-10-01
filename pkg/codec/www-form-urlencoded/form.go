@@ -2,16 +2,14 @@ package formencoded
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/url"
-	"strings"
 
 	"github.com/jexia/semaphore/pkg/codec"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/labels"
 	"github.com/jexia/semaphore/pkg/specs/template"
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
@@ -41,14 +39,14 @@ func (constructor *Constructor) New(resource string, specs *specs.ParameterMap) 
 
 	return &Manager{
 		resource: resource,
-		specs:    specs.Property,
+		property: specs.Property,
 	}, nil
 }
 
 // Manager manages a specs object and allows to encode/decode messages
 type Manager struct {
 	resource string
-	specs    *specs.Property
+	property *specs.Property
 }
 
 // Name returns the proto codec name
@@ -58,197 +56,122 @@ func (manager *Manager) Name() string {
 
 // Property returns the manager property which is used to marshal and unmarshal data
 func (manager *Manager) Property() *specs.Property {
-	return manager.specs
+	return manager.property
 }
 
 // Marshal marshals the given reference store into a www-form-urlencoded message.
 // This method is called during runtime to encode a new message with the values stored inside the given reference store
 func (manager *Manager) Marshal(refs references.Store) (io.Reader, error) {
-	if manager.specs == nil {
+	if manager.property == nil {
 		return bytes.NewReader([]byte{}), nil
 	}
 
 	encoder := url.Values{}
-	encode(encoder, "", refs, manager.specs)
+	path := template.JoinPath("", manager.property.Name)
+	err := encode(encoder, path, refs, manager.property.Template)
+	if err != nil {
+		return nil, fmt.Errorf("failed to encode %s: %w", manager.property.Name, err)
+	}
 
 	bb := []byte(encoder.Encode())
 	return bytes.NewReader(bb), nil
 }
 
-func encode(encoder url.Values, root string, refs references.Store, prop *specs.Property) {
-	path := template.JoinPath(root, prop.Name)
+// encode the template recursively.
+//
+// - encoded is passed by the reference and the function modifies the given encoded argument by adding new key-value pairs.
+// - path is the current value path in the encoded results. Example: "user.name", "id", "users[0]"
+// - store is the references store
+// - tpl is the encoding template
+//
+// The producing key-value pair examples:
+// user.name=bob&user.age=30&id=100
+// users[0]=bob&users[1]=alice
+func encode(encoded url.Values, path string, store references.Store, tpl specs.Template) error {
+	var (
+		ref *references.Reference
+	)
 
-	if prop.Label == labels.Repeated {
-		if prop.Reference == nil {
-			return
-		}
-
-		ref := refs.Load(prop.Reference.Resource, prop.Reference.Path)
-		if ref == nil {
-			return
-		}
-
-		for index, repeated := range ref.Repeated {
-			current := fmt.Sprintf("%s[%d]", path, index)
-			array(encoder, current, repeated, prop)
-		}
-
-		return
+	if tpl.Reference != nil {
+		ref = store.Load(tpl.Reference.Resource, tpl.Reference.Path)
 	}
 
-	for _, nested := range prop.Nested {
-		encode(encoder, path, refs, nested)
-	}
-
-	val := prop.Default
-
-	if prop.Reference != nil {
-		ref := refs.Load(prop.Reference.Resource, prop.Reference.Path)
-		if ref != nil {
-			if prop.Type == types.Enum && ref.Enum != nil {
-				enum := prop.Enum.Positions[*ref.Enum]
-				if enum != nil {
-					val = enum.Key
-				}
-			} else if ref.Value != nil {
-				val = ref.Value
-			}
-		}
-	}
-
-	if val == nil {
-		return
-	}
-
-	AddTypeKey(encoder, path, prop.Type, val)
-}
-
-func array(encoder url.Values, root string, refs references.Store, prop *specs.Property) {
-	for _, nested := range prop.Nested {
-		encode(encoder, root, refs, nested)
-	}
-
-	val := prop.Default
-
-	if prop.Reference != nil {
-		ref := refs.Load("", "")
-		if ref != nil {
-			if prop.Type == types.Enum && ref.Enum != nil {
-				enum := prop.Enum.Positions[*ref.Enum]
-				if enum != nil {
-					val = enum.Key
-				}
-			} else if ref.Value != nil {
-				val = ref.Value
-			}
-		}
-	}
-
-	if val == nil {
-		return
-	}
-
-	AddTypeKey(encoder, root, prop.Type, val)
-}
-
-// Unmarshal unmarshals the given www-form-urlencoded io reader into the given reference store.
-// This method is called during runtime to decode a new message and store it inside the given reference store
-func (manager *Manager) Unmarshal(reader io.Reader, refs references.Store) error {
-	if manager.specs == nil {
-		return nil
-	}
-
-	bb, err := ioutil.ReadAll(reader)
-	if err != nil {
-		return err
-	}
-
-	if len(bb) == 0 {
-		return nil
-	}
-
-	values, err := url.ParseQuery(string(bb))
-	if err != nil {
-		return err
-	}
-
-	for key, values := range values {
-		if err := decodeElement(manager.resource, 0, strings.Split(key, "."), values, manager.specs.Nested, refs); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func decodeElement(resource string, pos int, path []string, values []string, schema map[string]*specs.Property, refs references.Store) error {
-	propName := path[pos]
-
-	if schema == nil {
-		return errNilSchema
-	}
-
-	prop, has := schema[propName]
-	if !has {
-		return errUndefinedProperty(propName)
-	}
-
-	ref := &references.Reference{
-		Path: prop.Path,
-	}
-
-	switch prop.Label {
-	case labels.Repeated:
-		for _, raw := range values {
-			store := references.NewReferenceStore(0)
-
-			switch prop.Type {
-			case types.Message:
-				if len(path) > pos+1 {
-					if err := decodeElement(resource, pos+1, path, []string{raw}, prop.Nested, store); err != nil {
-						return err
-					}
-				}
-			case types.Enum:
-				enum := prop.Enum.Keys[raw]
-				if enum != nil {
-					store.StoreEnum("", "", enum.Position)
-				}
-			default:
-				value, err := types.DecodeFromString(raw, prop.Type)
-				if err != nil {
-					return err
-				}
-
-				store.StoreValue("", "", value)
-			}
-
-			ref.Append(store)
-		}
-	case labels.Optional, labels.Required:
-		switch prop.Type {
-		case types.Message:
-			if len(path) > pos+1 {
-				return decodeElement(resource, pos+1, path, values, prop.Nested, refs)
-			}
-		case types.Enum:
-			enum := prop.Enum.Keys[values[0]]
-			if enum != nil {
-				ref.Enum = &enum.Position
-			}
-		default:
-			value, err := types.DecodeFromString(values[0], prop.Type)
+	switch {
+	case tpl.Message != nil:
+		for fieldName, field := range tpl.Message {
+			path := template.JoinPath(path, fieldName)
+			err := encode(encoded, path, store, field.Template)
 			if err != nil {
-				return err
+				return fmt.Errorf("failed to encode message property %s under %s: %w", fieldName, path, err)
 			}
-
-			ref.Value = value
 		}
-	default:
-		return errUnknownLabel(prop.Label)
+
+	case tpl.Scalar != nil:
+		var value interface{} // value to cast
+
+		if ref == nil {
+			value = tpl.Scalar.Default
+		} else {
+			value = ref.Value
+		}
+
+		casted := castType(tpl.Scalar.Type, value)
+		if casted != "" {
+			encoded.Add(path, casted)
+		}
+
+	case tpl.Enum != nil:
+		if ref == nil {
+			// no default value for nil. No reference => nothing to encode.
+			break
+		}
+
+		value := tpl.Enum.Positions[*ref.Enum]
+		casted := castType(types.Enum, value.Key)
+		if casted != "" {
+			encoded.Add(path, casted)
+		}
+
+	// repeated is described by a static template with a reference
+	case tpl.Repeated != nil && ref != nil:
+		item, err := tpl.Repeated.Template()
+
+		if err != nil {
+			return fmt.Errorf("failed to encode repeated property %s: %w", path, err)
+		}
+
+		// as item is the static template, it does not have its own Reference.
+		// all repeated values are located in store by empty resource-path identifier.
+		item.Reference = &specs.PropertyReference{Resource: "", Path: ""}
+
+		for idx, store := range ref.Repeated {
+			path := fmt.Sprintf("%s[%d]", path, idx)
+			err = encode(encoded, path, store, item)
+
+			if err != nil {
+				return fmt.Errorf("failed to encode repeated property item %s: %w", path, err)
+			}
+		}
+
+	// repeated does not have a static template but described "inline"
+	case tpl.Repeated != nil && ref == nil:
+		for idx, item := range tpl.Repeated {
+			path := fmt.Sprintf("%s[%d]", path, idx)
+			err := encode(encoded, path, store, item)
+
+			if err != nil {
+				return fmt.Errorf("failed to encode repeated property item %s: %w", path, err)
+			}
+		}
 	}
 
-	refs.StoreReference(resource, ref)
-
 	return nil
+}
+
+// Unmarshal the given www-form-urlencoded io reader into the given reference store.
+// This method is called during runtime to decode a new message and store it inside the given reference store.
+//
+// Note: it does not work yet and returns error "not implemented yet" for every call.
+func (manager *Manager) Unmarshal(reader io.Reader, refs references.Store) error {
+	return errors.New("not implemented yet")
 }

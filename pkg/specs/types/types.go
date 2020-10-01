@@ -19,6 +19,7 @@ const (
 	Fixed32  Type = "fixed32"
 	Bool     Type = "bool"
 	String   Type = "string"
+	Array    Type = "array"
 	Message  Type = "message"
 	Bytes    Type = "bytes"
 	Uint32   Type = "uint32"
@@ -27,6 +28,7 @@ const (
 	Sfixed64 Type = "sfixed64"
 	Sint32   Type = "sint32"
 	Sint64   Type = "sint64"
+	Unknown  Type = "unknown"
 )
 
 // DecodeFromString decodes the given property from string.

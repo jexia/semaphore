@@ -33,16 +33,16 @@ func (constructor *Constructor) New(resource string, specs *specs.ParameterMap) 
 		return nil, ErrUndefinedSpecs{}
 	}
 
-	prop := specs.Property
-	if prop == nil {
+	property := specs.Property
+	if property == nil {
 		return nil, nil
 	}
 
-	if prop.Type != types.Message {
+	if property.Type() != types.Message {
 		return nil, ErrNonRootMessage{}
 	}
 
-	desc, err := NewMessage(resource, prop.Nested)
+	desc, err := NewMessage(resource, property.Message)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +79,7 @@ func (manager *Manager) Marshal(refs references.Store) (io.Reader, error) {
 	}
 
 	result := dynamic.NewMessage(manager.desc)
-	err := manager.Encode(result, manager.desc, manager.specs.Nested, refs)
+	err := manager.Encode(result, manager.desc, manager.specs.Message, refs)
 	if err != nil {
 		return nil, err
 	}
@@ -94,98 +94,140 @@ func (manager *Manager) Marshal(refs references.Store) (io.Reader, error) {
 
 // Encode encodes the given specs object into the given dynamic proto message.
 // References inside the specs are attempted to be fetched from the reference store.
-func (manager *Manager) Encode(proto *dynamic.Message, desc *desc.MessageDescriptor, specs map[string]*specs.Property, store references.Store) (err error) {
+func (manager *Manager) Encode(proto *dynamic.Message, desc *desc.MessageDescriptor, specs specs.Message, store references.Store) (err error) {
+	if specs == nil {
+		return
+	}
+
 	for _, field := range desc.GetFields() {
-		prop, has := specs[field.GetName()]
-		if !has {
+		property := specs[field.GetName()]
+		if property == nil {
 			continue
 		}
 
-		if field.IsRepeated() {
-			if prop.Reference == nil {
+		switch {
+		case field.IsRepeated():
+			err = manager.setRepeating(proto, property.Template, field, store)
+			if err != nil {
+				return err
+			}
+
+			break
+		default:
+			err = manager.setField(proto.TrySetField, property.Template, field, store)
+			if err != nil {
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (manager *Manager) setRepeating(message *dynamic.Message, template specs.Template, field *desc.FieldDescriptor, store references.Store) error {
+	// TODO: implement static values
+	// 	if prop.Reference == nil {
+	// 		for _, repeated := range prop.Repeated {
+	// 			err = manager.setField(proto.TryAddRepeatedField, repeated, field, store)
+	// 			if err != nil {
+	// 				return err
+	// 			}
+	// 		}
+
+	// 		continue
+	// 	}
+
+	if template.Reference == nil {
+		return nil
+	}
+
+	ref := store.Load(template.Reference.Resource, template.Reference.Path)
+	if ref == nil {
+		return nil
+	}
+
+	// TODO: generate and store repeated template upfront
+	template, err := template.Repeated.Template()
+	if err != nil {
+		return err
+	}
+
+	for _, store := range ref.Repeated {
+		var value interface{}
+
+		switch template.Type() {
+		case types.Message:
+			item := dynamic.NewMessage(field.GetMessageType())
+			err = manager.Encode(item, field.GetMessageType(), template.Message, store)
+			if err != nil {
+				return err
+			}
+
+			value = item
+		case types.Enum:
+			ref := store.Load("", "")
+			if ref == nil || ref.Enum == nil {
 				continue
 			}
 
-			ref := store.Load(prop.Reference.Resource, prop.Reference.Path)
+			value = *ref.Enum
+		default:
+			ref := store.Load("", "")
 			if ref == nil {
 				continue
 			}
 
-			for _, store := range ref.Repeated {
-				var value interface{}
-
-				switch prop.Type {
-				case types.Message:
-					item := dynamic.NewMessage(field.GetMessageType())
-					err = manager.Encode(item, field.GetMessageType(), prop.Nested, store)
-					if err != nil {
-						return err
-					}
-
-					value = item
-				case types.Enum:
-					ref := store.Load("", "")
-					if ref == nil || ref.Enum == nil {
-						continue
-					}
-
-					value = *ref.Enum
-				default:
-					ref := store.Load("", "")
-					if ref == nil {
-						continue
-					}
-
-					value = ref.Value
-				}
-
-				err = proto.TryAddRepeatedField(field, value)
-				if err != nil {
-					return err
-				}
-			}
-
-			continue
+			value = ref.Value
 		}
 
-		if prop.Type == types.Message {
-			dynamic := dynamic.NewMessage(field.GetMessageType())
-			err = manager.Encode(dynamic, field.GetMessageType(), prop.Nested, store)
-			if err != nil {
-				return err
-			}
+		err = message.TryAddRepeatedField(field, value)
+		if err != nil {
+			return err
+		}
+	}
 
-			err = proto.TrySetField(field, dynamic)
-			if err != nil {
-				return err
-			}
+	return nil
+}
 
-			continue
+type trySetProto func(fd *desc.FieldDescriptor, val interface{}) error
+
+func (manager *Manager) setField(setter trySetProto, template specs.Template, field *desc.FieldDescriptor, store references.Store) error {
+	switch {
+	case template.Message != nil:
+		dynamic := dynamic.NewMessage(field.GetMessageType())
+		err := manager.Encode(dynamic, field.GetMessageType(), template.Message, store)
+		if err != nil {
+			return err
 		}
 
-		value := prop.Default
+		return setter(field, dynamic)
+	case template.Enum != nil:
+		if template.Reference == nil {
+			break
+		}
 
-		if prop.Reference != nil {
-			ref := store.Load(prop.Reference.Resource, prop.Reference.Path)
-			if ref != nil {
-				if prop.Type == types.Enum && ref.Enum != nil {
-					value = ref.Enum
-				}
+		ref := store.Load(template.Reference.Resource, template.Reference.Path)
+		if ref == nil || ref.Enum == nil {
+			break
+		}
 
-				if value == nil {
-					value = ref.Value
-				}
+		return setter(field, ref.Enum)
+	case template.Scalar != nil:
+		value := template.Scalar.Default
+
+		if template.Reference != nil {
+			ref := store.Load(template.Reference.Resource, template.Reference.Path)
+			if ref != nil && ref.Value != nil {
+				value = ref.Value
 			}
 		}
 
 		if value == nil {
-			continue
+			break
 		}
 
-		err = proto.TrySetField(field, value)
-		if err != nil {
-			return err
-		}
+		return setter(field, value)
 	}
 
 	return nil
@@ -209,38 +251,48 @@ func (manager *Manager) Unmarshal(reader io.Reader, refs references.Store) error
 		return err
 	}
 
-	manager.Decode(result, manager.specs.Nested, refs)
+	manager.Decode(result, manager.specs.Message, refs)
 	return nil
 }
 
 // Decode decodes the given proto message into the given reference store.
-func (manager *Manager) Decode(proto *dynamic.Message, properties map[string]*specs.Property, store references.Store) {
-	for _, field := range proto.GetKnownFields() {
-		prop := properties[field.GetName()]
+func (manager *Manager) Decode(protobuf *dynamic.Message, message specs.Message, store references.Store) {
+	if message == nil {
+		return
+	}
 
-		if field.IsRepeated() {
-			length := proto.FieldLength(field)
+	for _, field := range protobuf.GetKnownFields() {
+		property := message[field.GetName()]
+		if property == nil {
+			continue
+		}
+
+		switch property.Type() {
+		case types.Array:
+			length := protobuf.FieldLength(field)
 
 			ref := &references.Reference{
-				Path: prop.Path,
+				Path: property.Path,
 			}
 
 			ref.Repeating(length)
 
-			for index := 0; index < length; index++ {
-				value := proto.GetRepeatedField(field, index)
+			tmpl, err := property.Repeated.Template()
+			if err != nil {
+				panic(err)
+			}
 
-				if prop.Type == types.Message {
+			for index := 0; index < length; index++ {
+				value := protobuf.GetRepeatedField(field, index)
+
+				switch tmpl.Type() {
+				case types.Message:
 					message := value.(*dynamic.Message)
 					store := references.NewReferenceStore(len(message.GetKnownFields()))
-					manager.Decode(message, prop.Nested, store)
+					manager.Decode(message, tmpl.Message, store)
 					ref.Set(index, store)
-					continue
-				}
-
-				store := references.NewReferenceStore(1)
-
-				if prop.Type == types.Enum {
+				case types.Enum:
+					store := references.NewReferenceStore(1)
 					enum, is := value.(int32)
 					if !is {
 						continue
@@ -248,40 +300,29 @@ func (manager *Manager) Decode(proto *dynamic.Message, properties map[string]*sp
 
 					store.StoreEnum("", "", enum)
 					ref.Set(index, store)
-					continue
-				}
+				default:
+					store := references.NewReferenceStore(1)
 
-				store.StoreValue("", "", value)
-				ref.Set(index, store)
+					store.StoreValue("", "", value)
+					ref.Set(index, store)
+				}
 			}
 
 			store.StoreReference(manager.resource, ref)
-			continue
-		}
-
-		if prop.Type == types.Message {
-			nested := proto.GetField(field).(*dynamic.Message)
-			manager.Decode(nested, prop.Nested, store)
-			continue
-		}
-
-		value := proto.GetField(field)
-		ref := &references.Reference{
-			Path: prop.Path,
-		}
-
-		if prop.Type == types.Enum {
+		case types.Message:
+			nested := protobuf.GetField(field).(*dynamic.Message)
+			manager.Decode(nested, property.Message, store)
+		case types.Enum:
+			value := protobuf.GetField(field)
 			enum, is := value.(int32)
 			if !is {
-				continue
+				break
 			}
 
-			ref.Enum = &enum
-			store.StoreReference(manager.resource, ref)
-			continue
+			store.StoreEnum(manager.resource, property.Path, enum)
+		default:
+			value := protobuf.GetField(field)
+			store.StoreValue(manager.resource, property.Path, value)
 		}
-
-		ref.Value = value
-		store.StoreReference(manager.resource, ref)
 	}
 }

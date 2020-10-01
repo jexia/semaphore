@@ -13,17 +13,21 @@ func TestResolveReferences(t *testing.T) {
 	tests := map[string]func() (specs.FlowListInterface, *specs.Property, *specs.Property, functions.Collection){
 		"flow": func() (specs.FlowListInterface, *specs.Property, *specs.Property, functions.Collection) {
 			expected := &specs.Property{
-				Reference: &specs.PropertyReference{
-					Resource: "expected",
-					Path:     "expected",
+				Template: specs.Template{
+					Reference: &specs.PropertyReference{
+						Resource: "expected",
+						Path:     "expected",
+					},
 				},
 			}
 
 			target := &specs.Property{
-				Reference: &specs.PropertyReference{
-					Resource: "mock",
-					Path:     "",
-					Property: expected,
+				Template: specs.Template{
+					Reference: &specs.PropertyReference{
+						Resource: "mock",
+						Path:     "",
+						Property: expected,
+					},
 				},
 			}
 
@@ -45,17 +49,21 @@ func TestResolveReferences(t *testing.T) {
 		},
 		"intermediate": func() (specs.FlowListInterface, *specs.Property, *specs.Property, functions.Collection) {
 			expected := &specs.Property{
-				Reference: &specs.PropertyReference{
-					Resource: "expected",
-					Path:     "expected",
+				Template: specs.Template{
+					Reference: &specs.PropertyReference{
+						Resource: "expected",
+						Path:     "expected",
+					},
 				},
 			}
 
 			target := &specs.Property{
-				Reference: &specs.PropertyReference{
-					Resource: "mock",
-					Path:     "",
-					Property: expected,
+				Template: specs.Template{
+					Reference: &specs.PropertyReference{
+						Resource: "mock",
+						Path:     "",
+						Property: expected,
+					},
 				},
 			}
 
@@ -75,17 +83,21 @@ func TestResolveReferences(t *testing.T) {
 		},
 		"intermediate function": func() (specs.FlowListInterface, *specs.Property, *specs.Property, functions.Collection) {
 			expected := &specs.Property{
-				Reference: &specs.PropertyReference{
-					Resource: "expected",
-					Path:     "expected",
+				Template: specs.Template{
+					Reference: &specs.PropertyReference{
+						Resource: "expected",
+						Path:     "expected",
+					},
 				},
 			}
 
 			target := &specs.Property{
-				Reference: &specs.PropertyReference{
-					Resource: "mock",
-					Path:     "",
-					Property: expected,
+				Template: specs.Template{
+					Reference: &specs.PropertyReference{
+						Resource: "mock",
+						Path:     "",
+						Property: expected,
+					},
 				},
 			}
 
@@ -113,17 +125,21 @@ func TestResolveReferences(t *testing.T) {
 		},
 		"call function": func() (specs.FlowListInterface, *specs.Property, *specs.Property, functions.Collection) {
 			expected := &specs.Property{
-				Reference: &specs.PropertyReference{
-					Resource: "expected",
-					Path:     "expected",
+				Template: specs.Template{
+					Reference: &specs.PropertyReference{
+						Resource: "expected",
+						Path:     "expected",
+					},
 				},
 			}
 
 			target := &specs.Property{
-				Reference: &specs.PropertyReference{
-					Resource: "mock",
-					Path:     "",
-					Property: expected,
+				Template: specs.Template{
+					Reference: &specs.PropertyReference{
+						Resource: "mock",
+						Path:     "",
+						Property: expected,
+					},
 				},
 			}
 
@@ -153,17 +169,21 @@ func TestResolveReferences(t *testing.T) {
 		},
 		"condition": func() (specs.FlowListInterface, *specs.Property, *specs.Property, functions.Collection) {
 			expected := &specs.Property{
-				Reference: &specs.PropertyReference{
-					Resource: "expected",
-					Path:     "expected",
+				Template: specs.Template{
+					Reference: &specs.PropertyReference{
+						Resource: "expected",
+						Path:     "expected",
+					},
 				},
 			}
 
 			target := &specs.Property{
-				Reference: &specs.PropertyReference{
-					Resource: "mock",
-					Path:     "",
-					Property: expected,
+				Template: specs.Template{
+					Reference: &specs.PropertyReference{
+						Resource: "mock",
+						Path:     "",
+						Property: expected,
+					},
 				},
 			}
 
@@ -187,17 +207,21 @@ func TestResolveReferences(t *testing.T) {
 		},
 		"flow on_error property": func() (specs.FlowListInterface, *specs.Property, *specs.Property, functions.Collection) {
 			expected := &specs.Property{
-				Reference: &specs.PropertyReference{
-					Resource: "expected",
-					Path:     "expected",
+				Template: specs.Template{
+					Reference: &specs.PropertyReference{
+						Resource: "expected",
+						Path:     "expected",
+					},
 				},
 			}
 
 			target := &specs.Property{
-				Reference: &specs.PropertyReference{
-					Resource: "mock",
-					Path:     "",
-					Property: expected,
+				Template: specs.Template{
+					Reference: &specs.PropertyReference{
+						Resource: "mock",
+						Path:     "",
+						Property: expected,
+					},
 				},
 			}
 
@@ -215,17 +239,21 @@ func TestResolveReferences(t *testing.T) {
 		},
 		"flow on_error header": func() (specs.FlowListInterface, *specs.Property, *specs.Property, functions.Collection) {
 			expected := &specs.Property{
-				Reference: &specs.PropertyReference{
-					Resource: "expected",
-					Path:     "expected",
+				Template: specs.Template{
+					Reference: &specs.PropertyReference{
+						Resource: "expected",
+						Path:     "expected",
+					},
 				},
 			}
 
 			target := &specs.Property{
-				Reference: &specs.PropertyReference{
-					Resource: "mock",
-					Path:     "",
-					Property: expected,
+				Template: specs.Template{
+					Reference: &specs.PropertyReference{
+						Resource: "mock",
+						Path:     "",
+						Property: expected,
+					},
 				},
 			}
 
@@ -245,17 +273,21 @@ func TestResolveReferences(t *testing.T) {
 		},
 		"flow on_error param": func() (specs.FlowListInterface, *specs.Property, *specs.Property, functions.Collection) {
 			expected := &specs.Property{
-				Reference: &specs.PropertyReference{
-					Resource: "expected",
-					Path:     "expected",
+				Template: specs.Template{
+					Reference: &specs.PropertyReference{
+						Resource: "expected",
+						Path:     "expected",
+					},
 				},
 			}
 
 			target := &specs.Property{
-				Reference: &specs.PropertyReference{
-					Resource: "mock",
-					Path:     "",
-					Property: expected,
+				Template: specs.Template{
+					Reference: &specs.PropertyReference{
+						Resource: "mock",
+						Path:     "",
+						Property: expected,
+					},
 				},
 			}
 
@@ -275,17 +307,21 @@ func TestResolveReferences(t *testing.T) {
 		},
 		"node on_error property": func() (specs.FlowListInterface, *specs.Property, *specs.Property, functions.Collection) {
 			expected := &specs.Property{
-				Reference: &specs.PropertyReference{
-					Resource: "expected",
-					Path:     "expected",
+				Template: specs.Template{
+					Reference: &specs.PropertyReference{
+						Resource: "expected",
+						Path:     "expected",
+					},
 				},
 			}
 
 			target := &specs.Property{
-				Reference: &specs.PropertyReference{
-					Resource: "mock",
-					Path:     "",
-					Property: expected,
+				Template: specs.Template{
+					Reference: &specs.PropertyReference{
+						Resource: "mock",
+						Path:     "",
+						Property: expected,
+					},
 				},
 			}
 
@@ -307,17 +343,21 @@ func TestResolveReferences(t *testing.T) {
 		},
 		"node on_error header": func() (specs.FlowListInterface, *specs.Property, *specs.Property, functions.Collection) {
 			expected := &specs.Property{
-				Reference: &specs.PropertyReference{
-					Resource: "expected",
-					Path:     "expected",
+				Template: specs.Template{
+					Reference: &specs.PropertyReference{
+						Resource: "expected",
+						Path:     "expected",
+					},
 				},
 			}
 
 			target := &specs.Property{
-				Reference: &specs.PropertyReference{
-					Resource: "mock",
-					Path:     "",
-					Property: expected,
+				Template: specs.Template{
+					Reference: &specs.PropertyReference{
+						Resource: "mock",
+						Path:     "",
+						Property: expected,
+					},
 				},
 			}
 
@@ -341,17 +381,21 @@ func TestResolveReferences(t *testing.T) {
 		},
 		"node on_error param": func() (specs.FlowListInterface, *specs.Property, *specs.Property, functions.Collection) {
 			expected := &specs.Property{
-				Reference: &specs.PropertyReference{
-					Resource: "expected",
-					Path:     "expected",
+				Template: specs.Template{
+					Reference: &specs.PropertyReference{
+						Resource: "expected",
+						Path:     "expected",
+					},
 				},
 			}
 
 			target := &specs.Property{
-				Reference: &specs.PropertyReference{
-					Resource: "mock",
-					Path:     "",
-					Property: expected,
+				Template: specs.Template{
+					Reference: &specs.PropertyReference{
+						Resource: "mock",
+						Path:     "",
+						Property: expected,
+					},
 				},
 			}
 
@@ -375,17 +419,21 @@ func TestResolveReferences(t *testing.T) {
 		},
 		"proxy": func() (specs.FlowListInterface, *specs.Property, *specs.Property, functions.Collection) {
 			expected := &specs.Property{
-				Reference: &specs.PropertyReference{
-					Resource: "expected",
-					Path:     "expected",
+				Template: specs.Template{
+					Reference: &specs.PropertyReference{
+						Resource: "expected",
+						Path:     "expected",
+					},
 				},
 			}
 
 			target := &specs.Property{
-				Reference: &specs.PropertyReference{
-					Resource: "mock",
-					Path:     "",
-					Property: expected,
+				Template: specs.Template{
+					Reference: &specs.PropertyReference{
+						Resource: "mock",
+						Path:     "",
+						Property: expected,
+					},
 				},
 			}
 
@@ -407,17 +455,21 @@ func TestResolveReferences(t *testing.T) {
 		},
 		"params": func() (specs.FlowListInterface, *specs.Property, *specs.Property, functions.Collection) {
 			expected := &specs.Property{
-				Reference: &specs.PropertyReference{
-					Resource: "expected",
-					Path:     "expected",
+				Template: specs.Template{
+					Reference: &specs.PropertyReference{
+						Resource: "expected",
+						Path:     "expected",
+					},
 				},
 			}
 
 			target := &specs.Property{
-				Reference: &specs.PropertyReference{
-					Resource: "mock",
-					Path:     "",
-					Property: expected,
+				Template: specs.Template{
+					Reference: &specs.PropertyReference{
+						Resource: "mock",
+						Path:     "",
+						Property: expected,
+					},
 				},
 			}
 
@@ -458,17 +510,21 @@ func TestResolveNodeReferences(t *testing.T) {
 	tests := map[string]func() (*specs.Node, *specs.Property, *specs.Property){
 		"call request": func() (*specs.Node, *specs.Property, *specs.Property) {
 			expected := &specs.Property{
-				Reference: &specs.PropertyReference{
-					Resource: "expected",
-					Path:     "expected",
+				Template: specs.Template{
+					Reference: &specs.PropertyReference{
+						Resource: "expected",
+						Path:     "expected",
+					},
 				},
 			}
 
 			target := &specs.Property{
-				Reference: &specs.PropertyReference{
-					Resource: "mock",
-					Path:     "",
-					Property: expected,
+				Template: specs.Template{
+					Reference: &specs.PropertyReference{
+						Resource: "mock",
+						Path:     "",
+						Property: expected,
+					},
 				},
 			}
 
@@ -484,17 +540,21 @@ func TestResolveNodeReferences(t *testing.T) {
 		},
 		"call response": func() (*specs.Node, *specs.Property, *specs.Property) {
 			expected := &specs.Property{
-				Reference: &specs.PropertyReference{
-					Resource: "expected",
-					Path:     "expected",
+				Template: specs.Template{
+					Reference: &specs.PropertyReference{
+						Resource: "expected",
+						Path:     "expected",
+					},
 				},
 			}
 
 			target := &specs.Property{
-				Reference: &specs.PropertyReference{
-					Resource: "mock",
-					Path:     "",
-					Property: expected,
+				Template: specs.Template{
+					Reference: &specs.PropertyReference{
+						Resource: "mock",
+						Path:     "",
+						Property: expected,
+					},
 				},
 			}
 
@@ -510,17 +570,21 @@ func TestResolveNodeReferences(t *testing.T) {
 		},
 		"rollback request": func() (*specs.Node, *specs.Property, *specs.Property) {
 			expected := &specs.Property{
-				Reference: &specs.PropertyReference{
-					Resource: "expected",
-					Path:     "expected",
+				Template: specs.Template{
+					Reference: &specs.PropertyReference{
+						Resource: "expected",
+						Path:     "expected",
+					},
 				},
 			}
 
 			target := &specs.Property{
-				Reference: &specs.PropertyReference{
-					Resource: "mock",
-					Path:     "",
-					Property: expected,
+				Template: specs.Template{
+					Reference: &specs.PropertyReference{
+						Resource: "mock",
+						Path:     "",
+						Property: expected,
+					},
 				},
 			}
 
@@ -536,17 +600,21 @@ func TestResolveNodeReferences(t *testing.T) {
 		},
 		"rollback response": func() (*specs.Node, *specs.Property, *specs.Property) {
 			expected := &specs.Property{
-				Reference: &specs.PropertyReference{
-					Resource: "expected",
-					Path:     "expected",
+				Template: specs.Template{
+					Reference: &specs.PropertyReference{
+						Resource: "expected",
+						Path:     "expected",
+					},
 				},
 			}
 
 			target := &specs.Property{
-				Reference: &specs.PropertyReference{
-					Resource: "mock",
-					Path:     "",
-					Property: expected,
+				Template: specs.Template{
+					Reference: &specs.PropertyReference{
+						Resource: "mock",
+						Path:     "",
+						Property: expected,
+					},
 				},
 			}
 
@@ -562,23 +630,29 @@ func TestResolveNodeReferences(t *testing.T) {
 		},
 		"call nested": func() (*specs.Node, *specs.Property, *specs.Property) {
 			expected := &specs.Property{
-				Reference: &specs.PropertyReference{
-					Resource: "expected",
-					Path:     "expected",
-				},
-				Nested: map[string]*specs.Property{
-					"example": {
-						Name: "example",
-						Path: "example",
+				Template: specs.Template{
+					Reference: &specs.PropertyReference{
+						Resource: "expected",
+						Path:     "expected",
+					},
+					Message: specs.Message{
+						"example": {
+							Name: "example",
+							Path: "example",
+						},
 					},
 				},
 			}
 
 			target := &specs.Property{
-				Reference: &specs.PropertyReference{
-					Resource: "mock",
-					Path:     "",
-					Property: expected,
+				Name: "example",
+				Path: "example",
+				Template: specs.Template{
+					Reference: &specs.PropertyReference{
+						Resource: "mock",
+						Path:     "",
+						Property: expected,
+					},
 				},
 			}
 
@@ -586,8 +660,10 @@ func TestResolveNodeReferences(t *testing.T) {
 				Rollback: &specs.Call{
 					Response: &specs.ParameterMap{
 						Property: &specs.Property{
-							Nested: map[string]*specs.Property{
-								"example": target,
+							Template: specs.Template{
+								Message: specs.Message{
+									target.Name: target,
+								},
 							},
 						},
 					},
@@ -598,17 +674,21 @@ func TestResolveNodeReferences(t *testing.T) {
 		},
 		"header": func() (*specs.Node, *specs.Property, *specs.Property) {
 			expected := &specs.Property{
-				Reference: &specs.PropertyReference{
-					Resource: "expected",
-					Path:     "expected",
+				Template: specs.Template{
+					Reference: &specs.PropertyReference{
+						Resource: "expected",
+						Path:     "expected",
+					},
 				},
 			}
 
 			target := &specs.Property{
-				Reference: &specs.PropertyReference{
-					Resource: "mock",
-					Path:     "",
-					Property: expected,
+				Template: specs.Template{
+					Reference: &specs.PropertyReference{
+						Resource: "mock",
+						Path:     "",
+						Property: expected,
+					},
 				},
 			}
 
@@ -651,17 +731,21 @@ func TestResolveOutputReferences(t *testing.T) {
 	tests := map[string]func() (*specs.Flow, *specs.Property, *specs.Property){
 		"simple": func() (*specs.Flow, *specs.Property, *specs.Property) {
 			expected := &specs.Property{
-				Reference: &specs.PropertyReference{
-					Resource: "expected",
-					Path:     "expected",
+				Template: specs.Template{
+					Reference: &specs.PropertyReference{
+						Resource: "expected",
+						Path:     "expected",
+					},
 				},
 			}
 
 			target := &specs.Property{
-				Reference: &specs.PropertyReference{
-					Resource: "mock",
-					Path:     "",
-					Property: expected,
+				Template: specs.Template{
+					Reference: &specs.PropertyReference{
+						Resource: "mock",
+						Path:     "",
+						Property: expected,
+					},
 				},
 			}
 
@@ -675,23 +759,27 @@ func TestResolveOutputReferences(t *testing.T) {
 		},
 		"nested": func() (*specs.Flow, *specs.Property, *specs.Property) {
 			expected := &specs.Property{
-				Reference: &specs.PropertyReference{
-					Resource: "expected",
-					Path:     "expected",
-				},
-				Nested: map[string]*specs.Property{
-					"example": {
-						Name: "example",
-						Path: "example",
+				Template: specs.Template{
+					Reference: &specs.PropertyReference{
+						Resource: "expected",
+						Path:     "expected",
+					},
+					Message: specs.Message{
+						"example": {
+							Name: "example",
+							Path: "example",
+						},
 					},
 				},
 			}
 
 			target := &specs.Property{
-				Reference: &specs.PropertyReference{
-					Resource: "mock",
-					Path:     "",
-					Property: expected,
+				Template: specs.Template{
+					Reference: &specs.PropertyReference{
+						Resource: "mock",
+						Path:     "",
+						Property: expected,
+					},
 				},
 			}
 
@@ -705,17 +793,21 @@ func TestResolveOutputReferences(t *testing.T) {
 		},
 		"header": func() (*specs.Flow, *specs.Property, *specs.Property) {
 			expected := &specs.Property{
-				Reference: &specs.PropertyReference{
-					Resource: "expected",
-					Path:     "expected",
+				Template: specs.Template{
+					Reference: &specs.PropertyReference{
+						Resource: "expected",
+						Path:     "expected",
+					},
 				},
 			}
 
 			target := &specs.Property{
-				Reference: &specs.PropertyReference{
-					Resource: "mock",
-					Path:     "",
-					Property: expected,
+				Template: specs.Template{
+					Reference: &specs.PropertyReference{
+						Resource: "mock",
+						Path:     "",
+						Property: expected,
+					},
 				},
 			}
 

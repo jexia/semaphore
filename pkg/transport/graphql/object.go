@@ -5,7 +5,6 @@ import (
 
 	"github.com/graphql-go/graphql"
 	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/labels"
 	"github.com/jexia/semaphore/pkg/specs/types"
 	"github.com/jexia/semaphore/pkg/transport"
 )
@@ -14,72 +13,81 @@ import (
 var ErrInvalidObject = errors.New("graphql only supports object types as root elements")
 
 // NewObject constructs a new graphql object of the given specs
-func NewObject(name string, prop *specs.Property) (*graphql.Object, error) {
-	if prop.Type != types.Message {
+func NewObject(name string, description string, template specs.Template) (*graphql.Object, error) {
+	if template.Type() != types.Message {
 		return nil, ErrInvalidObject
 	}
 
-	fields := graphql.Fields{}
-	for _, nested := range prop.Nested {
-		if nested.Type == types.Message {
-			field := &graphql.Field{
-				Description: nested.Comment,
-			}
+	typed, err := NewType(name, description, template)
+	if err != nil {
+		return nil, err
+	}
 
-			object, err := NewObject(name+"_"+nested.Name, nested)
+	object, is := typed.(*graphql.Object)
+	if !is {
+		return nil, ErrInvalidObject
+	}
+
+	return object, nil
+}
+
+// NewType constructs a new output type from the given template.
+func NewType(name string, description string, property specs.Template) (graphql.Output, error) {
+	switch {
+	case property.Message != nil:
+		object := graphql.NewObject(graphql.ObjectConfig{
+			Name: name,
+		})
+
+		for _, nested := range property.Message {
+			typed, err := NewType(name+"_"+nested.Name, nested.Description, nested.Template)
 			if err != nil {
 				return nil, err
 			}
 
-			if nested.Label == labels.Repeated {
-				field.Type = graphql.NewList(object)
-			} else {
-				field.Type = object
+			field := &graphql.Field{
+				Description: nested.Description,
+				Type:        typed,
 			}
 
-			fields[nested.Name] = field
-			continue
+			object.AddFieldConfig(nested.Name, field)
 		}
 
-		field := &graphql.Field{
-			Description: nested.Comment,
+		return object, nil
+	case property.Repeated != nil:
+		template, err := property.Repeated.Template()
+		if err != nil {
+			return nil, err
 		}
 
-		field.Type = gtypes[nested.Type]
-
-		if nested.Label == labels.Repeated {
-			field.Type = graphql.NewList(gtypes[nested.Type])
+		typed, err := NewType(name, description, template)
+		if err != nil {
+			return nil, err
 		}
 
-		if nested.Type == types.Enum {
-			values := graphql.EnumValueConfigMap{}
+		return graphql.NewList(typed), nil
+	case property.Enum != nil:
+		values := graphql.EnumValueConfigMap{}
 
-			for key, field := range nested.Enum.Keys {
-				values[key] = &graphql.EnumValueConfig{
-					Value:       key,
-					Description: field.Description,
-				}
+		for key, field := range property.Enum.Keys {
+			values[key] = &graphql.EnumValueConfig{
+				Value:       key,
+				Description: field.Description,
 			}
-
-			config := graphql.EnumConfig{
-				Name:        name + "_" + nested.Enum.Name,
-				Description: nested.Enum.Description,
-				Values:      values,
-			}
-
-			field.Type = graphql.NewEnum(config)
 		}
 
-		fields[nested.Name] = field
+		config := graphql.EnumConfig{
+			Name:        name + "_" + property.Enum.Name,
+			Description: property.Enum.Description,
+			Values:      values,
+		}
+
+		return graphql.NewEnum(config), nil
+	case property.Scalar != nil:
+		return gtypes[property.Scalar.Type], nil
 	}
 
-	config := graphql.ObjectConfig{
-		Name:        name,
-		Fields:      fields,
-		Description: prop.Comment,
-	}
-
-	return graphql.NewObject(config), nil
+	return nil, nil
 }
 
 // NewObjects constructs a new objects collection
@@ -120,7 +128,7 @@ func NewSchemaObject(objects *Objects, name string, object *transport.Object) (*
 		return objects.collection[name], nil
 	}
 
-	obj, err := NewObject(name, property)
+	obj, err := NewObject(name, property.Description, property.Template)
 	if err != nil {
 		return nil, err
 	}

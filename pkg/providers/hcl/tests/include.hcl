@@ -1,3 +1,1 @@
-flow "sample" {
-    
-}
+flow "sample" {}

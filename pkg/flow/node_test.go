@@ -35,37 +35,58 @@ func NewMockOnError() *specs.OnError {
 	return &specs.OnError{
 		Response: &specs.ParameterMap{
 			Property: &specs.Property{
-				Type:  types.Message,
 				Label: labels.Optional,
-				Nested: map[string]*specs.Property{
-					"status": {
-						Type:  types.Int64,
-						Label: labels.Optional,
-						Reference: &specs.PropertyReference{
-							Resource: "error",
-							Path:     "status",
+				Template: specs.Template{
+					Message: specs.Message{
+						"status": {
+							Name:  "status",
+							Path:  "status",
+							Label: labels.Optional,
+							Template: specs.Template{
+								Scalar: &specs.Scalar{
+									Type: types.Int64,
+								},
+								Reference: &specs.PropertyReference{
+									Resource: "error",
+									Path:     "status",
+								},
+							},
 						},
-					},
-					"message": {
-						Type:  types.String,
-						Label: labels.Optional,
-						Reference: &specs.PropertyReference{
-							Resource: "error",
-							Path:     "message",
+						"message": {
+							Name:  "message",
+							Path:  "message",
+							Label: labels.Optional,
+							Template: specs.Template{
+								Scalar: &specs.Scalar{
+									Type: types.String,
+								},
+								Reference: &specs.PropertyReference{
+									Resource: "error",
+									Path:     "message",
+								},
+							},
 						},
 					},
 				},
 			},
 		},
 		Status: &specs.Property{
-			Type:    types.Int64,
-			Label:   labels.Optional,
-			Default: 500,
+			Label: labels.Optional,
+			Template: specs.Template{
+				Scalar: &specs.Scalar{
+					Type:    types.Int64,
+					Default: 500,
+				},
+			},
 		},
 		Message: &specs.Property{
-			Type:    types.String,
-			Label:   labels.Optional,
-			Default: "mock error message",
+			Label: labels.Optional,
+			Template: specs.Template{
+				Scalar: &specs.Scalar{
+					Type:    types.String,
+					Default: "mock error message",
+				},
+			},
 		},
 	}
 }
@@ -76,15 +97,20 @@ func BenchmarkSingleNodeCallingJSONCodecParallel(b *testing.B) {
 
 	req, err := constructor.New("first.request", &specs.ParameterMap{
 		Property: &specs.Property{
-			Type:  types.Message,
 			Label: labels.Optional,
-			Nested: map[string]*specs.Property{
-				"key": {
-					Name:    "key",
-					Path:    "key",
-					Type:    types.String,
-					Label:   labels.Optional,
-					Default: "message",
+			Template: specs.Template{
+				Message: specs.Message{
+					"key": {
+						Name:  "key",
+						Path:  "key",
+						Label: labels.Optional,
+						Template: specs.Template{
+							Scalar: &specs.Scalar{
+								Type:    types.String,
+								Default: "message",
+							},
+						},
+					},
 				},
 			},
 		},
@@ -96,15 +122,20 @@ func BenchmarkSingleNodeCallingJSONCodecParallel(b *testing.B) {
 
 	res, err := constructor.New("first.response", &specs.ParameterMap{
 		Property: &specs.Property{
-			Type:  types.Message,
 			Label: labels.Optional,
-			Nested: map[string]*specs.Property{
-				"key": {
-					Name:    "key",
-					Path:    "key",
-					Type:    types.String,
-					Label:   labels.Optional,
-					Default: "message",
+			Template: specs.Template{
+				Message: specs.Message{
+					"key": {
+						Name:  "key",
+						Path:  "key",
+						Label: labels.Optional,
+						Template: specs.Template{
+							Scalar: &specs.Scalar{
+								Type:    types.String,
+								Default: "message",
+							},
+						},
+					},
 				},
 			},
 		},
@@ -147,15 +178,20 @@ func BenchmarkSingleNodeCallingJSONCodecSerial(b *testing.B) {
 
 	req, err := constructor.New("first.request", &specs.ParameterMap{
 		Property: &specs.Property{
-			Type:  types.Message,
 			Label: labels.Optional,
-			Nested: map[string]*specs.Property{
-				"key": {
-					Name:    "key",
-					Path:    "key",
-					Type:    types.String,
-					Label:   labels.Optional,
-					Default: "message",
+			Template: specs.Template{
+				Message: specs.Message{
+					"key": {
+						Name:  "key",
+						Path:  "key",
+						Label: labels.Optional,
+						Template: specs.Template{
+							Scalar: &specs.Scalar{
+								Type:    types.String,
+								Default: "message",
+							},
+						},
+					},
 				},
 			},
 		},
@@ -167,15 +203,20 @@ func BenchmarkSingleNodeCallingJSONCodecSerial(b *testing.B) {
 
 	res, err := constructor.New("first.response", &specs.ParameterMap{
 		Property: &specs.Property{
-			Type:  types.Message,
 			Label: labels.Optional,
-			Nested: map[string]*specs.Property{
-				"key": {
-					Name:    "key",
-					Path:    "key",
-					Type:    types.String,
-					Label:   labels.Optional,
-					Default: "message",
+			Template: specs.Template{
+				Message: specs.Message{
+					"key": {
+						Name:  "key",
+						Path:  "key",
+						Label: labels.Optional,
+						Template: specs.Template{
+							Scalar: &specs.Scalar{
+								Type:    types.String,
+								Default: "message",
+							},
+						},
+					},
 				},
 			},
 		},
@@ -315,17 +356,27 @@ func TestConstructingNode(t *testing.T) {
 				Call: &specs.Call{
 					Request: &specs.ParameterMap{
 						Property: &specs.Property{
-							Nested: map[string]*specs.Property{
-								"first": {
-									Reference: &specs.PropertyReference{
-										Resource: "input",
-										Path:     "first",
+							Template: specs.Template{
+								Message: specs.Message{
+									"first": {
+										Name: "first",
+										Path: "first",
+										Template: specs.Template{
+											Reference: &specs.PropertyReference{
+												Resource: "input",
+												Path:     "first",
+											},
+										},
 									},
-								},
-								"second": {
-									Reference: &specs.PropertyReference{
-										Resource: "input",
-										Path:     "second",
+									"second": {
+										Name: "second",
+										Path: "second",
+										Template: specs.Template{
+											Reference: &specs.PropertyReference{
+												Resource: "input",
+												Path:     "second",
+											},
+										},
 									},
 								},
 							},
@@ -340,17 +391,27 @@ func TestConstructingNode(t *testing.T) {
 				Call: &specs.Call{
 					Request: &specs.ParameterMap{
 						Property: &specs.Property{
-							Nested: map[string]*specs.Property{
-								"first": {
-									Reference: &specs.PropertyReference{
-										Resource: "input",
-										Path:     "first",
+							Template: specs.Template{
+								Message: specs.Message{
+									"first": {
+										Name: "first",
+										Path: "first",
+										Template: specs.Template{
+											Reference: &specs.PropertyReference{
+												Resource: "input",
+												Path:     "first",
+											},
+										},
 									},
-								},
-								"second": {
-									Reference: &specs.PropertyReference{
-										Resource: "input",
-										Path:     "first",
+									"second": {
+										Name: "second",
+										Path: "second",
+										Template: specs.Template{
+											Reference: &specs.PropertyReference{
+												Resource: "input",
+												Path:     "first",
+											},
+										},
 									},
 								},
 							},

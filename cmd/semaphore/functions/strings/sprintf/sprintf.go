@@ -11,8 +11,12 @@ import (
 func sprintfOutputs() *specs.Property {
 	return &specs.Property{
 		Name:  "sprintf",
-		Type:  types.String,
 		Label: labels.Optional,
+		Template: specs.Template{
+			Scalar: &specs.Scalar{
+				Type: types.String,
+			},
+		},
 	}
 }
 
@@ -37,7 +41,7 @@ func Function(args ...*specs.Property) (*specs.Property, functions.Exec, error) 
 
 	var format = args[0]
 
-	if format.Type != types.String {
+	if format.Type() != types.String {
 		return nil, nil, errInvalidFormat
 	}
 
@@ -45,11 +49,11 @@ func Function(args ...*specs.Property) (*specs.Property, functions.Exec, error) 
 		return nil, nil, errNoReferenceSupport
 	}
 
-	if format.Default == nil {
+	if format.Scalar.Default == nil {
 		return nil, nil, errNoFormat
 	}
 
-	tokens, err := scanner.Scan(format.Default.(string))
+	tokens, err := scanner.Scan(format.Scalar.Default.(string))
 	if err != nil {
 		return nil, nil, err
 	}
@@ -69,7 +73,7 @@ func Function(args ...*specs.Property) (*specs.Property, functions.Exec, error) 
 	}
 
 	for index, verb := range printer.Verbs() {
-		if !verb.CanFormat(args[index].Type) {
+		if !verb.CanFormat(args[index].Type()) {
 			return nil, nil, errCannotFormat{
 				formatter: verb,
 				argument:  args[index],

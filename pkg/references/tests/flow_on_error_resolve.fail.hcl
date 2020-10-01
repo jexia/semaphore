@@ -1,5 +1,5 @@
 flow "echo" {
-    on_error {
-      message = "{{ input.header:Unkown }}"
-    }
+  on_error {
+    message = "{{ input.header:Unknown }}"
+  }
 }

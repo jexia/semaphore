@@ -1,6 +1,9 @@
 package proto
 
 import (
+	"fmt"
+
+	"github.com/jexia/semaphore/pkg/prettyerr"
 	"github.com/jexia/semaphore/pkg/providers/protobuffers"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/types"
@@ -9,9 +12,9 @@ import (
 )
 
 // NewMessage attempts to construct a new proto message descriptor for the given specs property
-func NewMessage(resource string, specs map[string]*specs.Property) (*desc.MessageDescriptor, error) {
+func NewMessage(resource string, message specs.Message) (*desc.MessageDescriptor, error) {
 	msg := builder.NewMessage(resource)
-	err := ConstructMessage(msg, specs)
+	err := ConstructMessage(msg, message)
 	if err != nil {
 		return nil, err
 	}
@@ -20,77 +23,109 @@ func NewMessage(resource string, specs map[string]*specs.Property) (*desc.Messag
 }
 
 // ConstructMessage constructs a proto message of the given specs into the given message builders
-func ConstructMessage(msg *builder.MessageBuilder, specs map[string]*specs.Property) (err error) {
-	for key, prop := range specs {
-		if prop.Type == types.Message {
-			// TODO: appending a fixed prefix is probably not a good idea.
-			nested := builder.NewMessage(key + "Nested")
-			err = ConstructMessage(nested, prop.Nested)
-			if err != nil {
-				return err
-			}
+func ConstructMessage(message *builder.MessageBuilder, spec specs.Message) (err error) {
+	if spec == nil {
+		return nil
+	}
 
-			message := builder.FieldTypeMessage(nested)
-			field := builder.NewField(key, message)
-			field.SetJsonName(key)
-			field.SetLabel(protobuffers.ProtoLabels[prop.Label])
-			field.SetComments(builder.Comments{
-				LeadingComment: prop.Comment,
-			})
-
-			err = msg.TryAddField(field.SetNumber(prop.Position))
-			if err != nil {
-				return err
-			}
-
-			err = msg.TryAddNestedMessage(nested)
-			if err != nil {
-				return err
-			}
-
-			continue
+	for _, property := range spec {
+		typed, err := ConstructFieldType(message, property.Name, property.Template)
+		if err != nil {
+			return err
 		}
 
-		var typ *builder.FieldType
-
-		if prop.Type == types.Enum {
-			enum := builder.NewEnum(key + "Enum")
-
-			for _, value := range prop.Enum.Keys {
-				eval := builder.NewEnumValue(value.Key)
-
-				eval.SetNumber(value.Position)
-				eval.SetComments(builder.Comments{
-					LeadingComment: value.Description,
-				})
-
-				enum.AddValue(eval)
-			}
-
-			err = msg.TryAddNestedEnum(enum)
-			if err != nil {
-				return err
-			}
-
-			typ = builder.FieldTypeEnum(enum)
+		label := protobuffers.ProtoLabels[property.Label]
+		if property.Type() == types.Array {
+			label = protobuffers.Repeated
 		}
 
-		if typ == nil {
-			typ = builder.FieldTypeScalar(protobuffers.ProtoTypes[prop.Type])
-		}
-
-		field := builder.NewField(key, typ)
-		field.SetJsonName(key)
-		field.SetLabel(protobuffers.ProtoLabels[prop.Label])
+		field := builder.NewField(property.Name, typed)
+		field.SetJsonName(property.Name)
+		field.SetLabel(label)
 		field.SetComments(builder.Comments{
-			LeadingComment: prop.Comment,
+			LeadingComment: property.Description,
 		})
 
-		err = msg.TryAddField(field.SetNumber(prop.Position))
+		err = message.TryAddField(field.SetNumber(property.Position))
 		if err != nil {
 			return err
 		}
 	}
 
 	return nil
+}
+
+// ErrInvalidFieldType is thrown when the given field type is invalid
+type ErrInvalidFieldType struct {
+	template specs.Template
+}
+
+func (e ErrInvalidFieldType) Error() string {
+	return fmt.Sprintf("invalid invalid template field type %s", e.template.Type())
+}
+
+// Prettify returns the prettified version of the given error
+func (e ErrInvalidFieldType) Prettify() prettyerr.Error {
+	return prettyerr.Error{
+		Code:    "InvalidFieldType",
+		Message: e.Error(),
+		Details: map[string]interface{}{
+			"type": e.template.Type(),
+		},
+	}
+}
+
+// ConstructFieldType constructs a field constructor from the given property
+func ConstructFieldType(message *builder.MessageBuilder, key string, template specs.Template) (*builder.FieldType, error) {
+	switch {
+	case template.Message != nil:
+		// TODO: appending a fixed prefix is probably not a good idea.
+		nested := builder.NewMessage(key + "Nested")
+		err := ConstructMessage(nested, template.Message)
+		if err != nil {
+			return nil, err
+		}
+
+		err = message.TryAddNestedMessage(nested)
+		if err != nil {
+			return nil, err
+		}
+
+		return builder.FieldTypeMessage(nested), nil
+	case template.Repeated != nil:
+		field, err := template.Repeated.Template()
+		if err != nil {
+			return nil, err
+		}
+
+		// TODO: thrown a error when attempting to construct a nested array
+		return ConstructFieldType(message, key, field)
+	case template.Enum != nil:
+		enum := builder.NewEnum(key + "Enum")
+
+		for _, value := range template.Enum.Keys {
+			eval := builder.NewEnumValue(value.Key)
+
+			eval.SetNumber(value.Position)
+			eval.SetComments(builder.Comments{
+				LeadingComment: value.Description,
+			})
+
+			err := enum.TryAddValue(eval)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		err := message.TryAddNestedEnum(enum)
+		if err != nil {
+			return nil, err
+		}
+
+		return builder.FieldTypeEnum(enum), nil
+	case template.Scalar != nil:
+		return builder.FieldTypeScalar(protobuffers.ProtoTypes[template.Scalar.Type]), nil
+	}
+
+	return nil, ErrInvalidFieldType{template}
 }

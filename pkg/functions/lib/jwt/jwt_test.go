@@ -18,14 +18,18 @@ func (c claims) Subject() string { return c.StandardClaims.Subject }
 func TestExecutable(t *testing.T) {
 	var (
 		token = &specs.Property{
-			Name: "claims",
-			Path: "claims",
-			Reference: &specs.PropertyReference{
-				Resource: "input",
-				Path:     "authorization",
-			},
-			Type:  types.String,
+			Name:  "claims",
+			Path:  "claims",
 			Label: labels.Required,
+			Template: specs.Template{
+				Reference: &specs.PropertyReference{
+					Resource: "input",
+					Path:     "authorization",
+				},
+				Scalar: &specs.Scalar{
+					Type: types.String,
+				},
+			},
 		}
 
 		store = references.NewReferenceStore(1)
@@ -121,8 +125,10 @@ func TestNew(t *testing.T) {
 	t.Run("should return an error providing invalid argument", func(t *testing.T) {
 		var (
 			arg = &specs.Property{
-				Type:  types.Message,
 				Label: labels.Required,
+				Template: specs.Template{
+					Message: specs.Message{},
+				},
 			}
 
 			_, _, err = fn(arg)
@@ -136,8 +142,12 @@ func TestNew(t *testing.T) {
 	t.Run("should return outputs and executable when input argument is valid", func(t *testing.T) {
 		var (
 			arg = &specs.Property{
-				Type:  types.String,
 				Label: labels.Required,
+				Template: specs.Template{
+					Scalar: &specs.Scalar{
+						Type: types.String,
+					},
+				},
 			}
 
 			outputs, executable, err = fn(arg)

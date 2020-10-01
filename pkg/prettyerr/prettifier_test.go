@@ -14,7 +14,7 @@ func (e errTooPretty) Prettify() Error {
 	return Error{
 		Original: e,
 		Message:  "too pretty. Expected: less pretty",
-		Details: nil,
+		Details:  nil,
 		Code:     "TooPretty",
 	}
 }
@@ -29,7 +29,7 @@ func TestPrettifierStrategy_Match(t *testing.T) {
 		want := Error{
 			Original: errTooPretty{},
 			Message:  "too pretty. Expected: less pretty",
-			Details: nil,
+			Details:  nil,
 			Code:     "TooPretty",
 		}
 
@@ -46,7 +46,7 @@ func TestPrettifierStrategy_Match(t *testing.T) {
 		want := Error{
 			Original: err,
 			Message:  err.Error(),
-			Details: nil,
+			Details:  nil,
 			Code:     GenericErrorCode,
 		}
 
@@ -65,7 +65,7 @@ func TestPrettyfierFunc_Prettify(t *testing.T) {
 		{
 			"runs the defined prettifier",
 			func() Error {
-				return Error{Code: "SomeErr",}
+				return Error{Code: "SomeErr"}
 			},
 			Error{Code: "SomeErr"},
 		},

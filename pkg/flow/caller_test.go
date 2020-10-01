@@ -408,13 +408,19 @@ func TestTransportErrorSchemaDecoding(t *testing.T) {
 			constructor := json.NewConstructor()
 			codec, err := constructor.New(template.ErrorResource, &specs.ParameterMap{
 				Property: &specs.Property{
-					Type:  types.Message,
 					Label: labels.Optional,
-					Nested: map[string]*specs.Property{
-						"message": {
-							Path:  "message",
-							Type:  types.String,
-							Label: labels.Optional,
+					Template: specs.Template{
+						Message: specs.Message{
+							"message": {
+								Name:  "message",
+								Path:  "message",
+								Label: labels.Optional,
+								Template: specs.Template{
+									Scalar: &specs.Scalar{
+										Type: types.String,
+									},
+								},
+							},
 						},
 					},
 				},
@@ -441,18 +447,26 @@ func TestTransportErrorSchemaDecoding(t *testing.T) {
 			constructor := json.NewConstructor()
 			codec, err := constructor.New(template.ErrorResource, &specs.ParameterMap{
 				Property: &specs.Property{
-					Type:  types.Message,
 					Label: labels.Optional,
-					Nested: map[string]*specs.Property{
-						"meta": {
-							Path:  "meta",
-							Type:  types.Message,
-							Label: labels.Optional,
-							Nested: map[string]*specs.Property{
-								"message": {
-									Path:  "meta.message",
-									Type:  types.String,
-									Label: labels.Optional,
+					Template: specs.Template{
+						Message: specs.Message{
+							"meta": {
+								Name:  "meta",
+								Path:  "meta",
+								Label: labels.Optional,
+								Template: specs.Template{
+									Message: specs.Message{
+										"message": {
+											Name: "message",
+											Path: "meta.message",
+											Template: specs.Template{
+												Scalar: &specs.Scalar{
+													Type: types.String,
+												},
+											},
+											Label: labels.Optional,
+										},
+									},
 								},
 							},
 						},

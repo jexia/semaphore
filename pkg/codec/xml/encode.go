@@ -2,70 +2,32 @@ package xml
 
 import (
 	"encoding/xml"
+	"fmt"
 
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
-func encodeRepeated(encoder *xml.Encoder, resource string, prop *specs.Property, store references.Store) error {
-	if prop.Reference == nil {
-		return nil
-	}
+func encodeElement(encoder *xml.Encoder, name string, template specs.Template, store references.Store) error {
+	var marshaler xml.Marshaler
 
-	var ref = store.Load(prop.Reference.Resource, prop.Reference.Path)
-	if ref == nil {
-		return nil
-	}
-
-	var array = NewArray(resource, prop, ref, ref.Repeated)
-
-	return array.MarshalXML(encoder, xml.StartElement{})
-}
-
-func encodeNested(encoder *xml.Encoder, prop *specs.Property, store references.Store) error {
-	// ignore malformed objects
-	if prop.Nested == nil {
-		return nil
-	}
-
-	var (
-		nested = NewObject(prop.Name, prop.Nested, store)
-		start  = xml.StartElement{Name: xml.Name{Local: prop.Name}}
-	)
-
-	return nested.MarshalXML(encoder, start)
-}
-
-func encodeValue(encoder *xml.Encoder, prop *specs.Property, store references.Store, loadByPath bool) error {
-	var val = prop.Default
-
-	if prop.Reference != nil {
-		var ref *references.Reference
-
-		if loadByPath {
-			ref = store.Load(prop.Reference.Resource, prop.Reference.Path)
-		} else {
-			ref = store.Load("", "")
+	switch {
+	case template.Message != nil:
+		marshaler = NewObject(name, template.Message, store)
+	case template.Repeated != nil:
+		schema, err := template.Repeated.Template()
+		if err != nil {
+			return err
 		}
 
-		if ref != nil {
-			if prop.Type == types.Enum && ref.Enum != nil {
-				var enum = prop.Enum.Positions[*ref.Enum]
-				if enum != nil {
-					val = enum.Key
-				}
-			} else if ref.Value != nil {
-				val = ref.Value
-			}
-		}
+		marshaler = NewArray(name, schema, template.Repeated, template.Reference, store)
+	case template.Enum != nil:
+		marshaler = NewEnum(name, template.Enum, template.Reference, store)
+	case template.Scalar != nil:
+		marshaler = NewScalar(name, template.Scalar, template.Reference, store)
+	default:
+		return fmt.Errorf("property '%s' has unknown type", name)
 	}
 
-	if val == nil {
-		return nil
-	}
-
-	var start = xml.StartElement{Name: xml.Name{Local: prop.Name}}
-
-	return encoder.EncodeElement(val, start)
+	return marshaler.MarshalXML(encoder, xml.StartElement{})
 }

@@ -1,15 +1,19 @@
 properties:
-    input:
-        type: "message"
-        label: "optional"
-        nested:
-            message:
-                type: "string"
-                label: "optional"
-    output:
-        type: "message"
-        label: "optional"
-        nested:
-            message:
-                type: "string"
-                label: "optional"
+  input:
+    label: "optional"
+    template:
+      message:
+        "message":
+          label: "optional"
+          template:
+            scalar:
+              type: "string"
+  output:
+    label: "optional"
+    template:
+      message:
+        "message":
+          label: "optional"
+          template:
+            scalar:
+              type: "string"

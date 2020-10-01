@@ -91,9 +91,9 @@ func TestError_Unwrap(t *testing.T) {
 		Suggestion string
 	}
 	tests := []struct {
-		name    string
-		fields  fields
-		want error
+		name   string
+		fields fields
+		want   error
 	}{
 		{
 			"returns the original error",

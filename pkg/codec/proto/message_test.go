@@ -48,65 +48,68 @@ func NewMock() (specs.FlowListInterface, error) {
 	return collection.FlowListInterface, nil
 }
 
-func ValidateStore(t *testing.T, prop *specs.Property, resource string, origin string, input map[string]interface{}, store references.Store) {
-	for key, value := range input {
-		nprop := prop.Nested[key]
-		if nprop == nil {
-			nprop = prop
-		}
-
-		path := template.JoinPath(origin, key)
-		nested, is := value.(map[string]interface{})
-		if is {
-			ValidateStore(t, nprop, resource, path, nested, store)
-			continue
-		}
-
-		repeated, is := value.([]map[string]interface{})
-		if is {
-			repeating := store.Load(resource, path)
-			if repeating == nil {
-				t.Fatalf("repeating message does not exist in store '%s.%s'", resource, path)
+func ValidateStore(t *testing.T, resource, path string, tmpl specs.Template, input interface{}, store references.Store) {
+	switch typed := input.(type) {
+	case map[string]interface{}:
+		for key, value := range typed {
+			property := tmpl.Message[key]
+			if property == nil {
+				t.Fatalf("property (%s) does not exist in map %s:%s", key, resource, path)
 			}
 
-			for index, store := range repeating.Repeated {
-				ValidateStore(t, nprop, resource, path, repeated[index], store)
-			}
-			continue
+			path := template.JoinPath(path, key)
+
+			ValidateStore(t, resource, path, property.Template, value, store)
+		}
+	case []map[string]interface{}:
+		repeating := store.Load(resource, path)
+		if repeating == nil {
+			t.Fatalf("repeating message does not exist in store '%s:%s'", resource, path)
 		}
 
-		values, is := value.([]interface{})
-		if is {
-			repeating := store.Load(resource, path)
-			if repeating == nil {
-				t.Fatalf("resource not found %s:%s", resource, path)
-			}
-
-			for index, store := range repeating.Repeated {
-				// small wrapper that allows to reuse functionalities
-				wrapper := map[string]interface{}{
-					"": values[index],
-				}
-
-				ValidateStore(t, nprop, "", "", wrapper, store)
-			}
-			continue
+		tmpl, err := tmpl.Repeated.Template()
+		if err != nil {
+			t.Fatal(err)
 		}
 
+		for index, store := range repeating.Repeated {
+			ValidateStore(t, resource, path, tmpl, typed[index], store)
+		}
+	case []interface{}:
+		repeating := store.Load(resource, path)
+		if repeating == nil {
+			t.Fatalf("resource not found %s:%s", resource, path)
+		}
+
+		template, err := tmpl.Repeated.Template()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		for index, store := range repeating.Repeated {
+			ValidateStore(t, "", "", template, typed[index], store)
+		}
+	case *references.EnumVal:
 		ref := store.Load(resource, path)
 		if ref == nil {
 			t.Fatalf("resource not found %s:%s", resource, path)
 		}
 
-		if ref.Enum != nil && nprop.Enum != nil {
-			if nprop.Enum.Positions[*ref.Enum] == nil {
-				t.Fatalf("unexpected enum value at %s '%+v', expected '%+v'", path, ref.Enum, value)
-			}
-			continue
+		if ref.Enum == nil {
+			t.Fatalf("reference enum not set %s:%s", resource, path)
 		}
 
-		if ref.Value != value {
-			t.Fatalf("unexpected value at %s '%+v', expected '%+v'", path, ref.Value, value)
+		if *ref.Enum != typed.Pos() {
+			t.Fatalf("unexpected enum value at %s:%s '%+v', expected '%+v'", resource, path, ref.Enum, typed.Pos())
+		}
+	default:
+		ref := store.Load(resource, path)
+		if ref == nil {
+			t.Fatalf("resource not found %s:%s", resource, path)
+		}
+
+		if ref.Value != typed {
+			t.Fatalf("unexpected value at %s '%+v', expected '%+v'", path, ref.Value, typed)
 		}
 	}
 }
@@ -241,7 +244,7 @@ func BenchmarkSimpleUnmarshal(b *testing.B) {
 	flow := flows.Get("simple")
 	specs := flow.GetNodes().Get("first").Call.Request
 
-	desc, err := NewMessage("MockRequest", specs.Property.Nested)
+	desc, err := NewMessage("MockRequest", specs.Property.Message)
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -295,7 +298,7 @@ func BenchmarkNestedUnmarshal(b *testing.B) {
 	flow := flows.Get("nested")
 	specs := flow.GetNodes().Get("first").Call.Request
 
-	desc, err := NewMessage("MockRequest", specs.Property.Nested)
+	desc, err := NewMessage("MockRequest", specs.Property.Message)
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -351,7 +354,7 @@ func BenchmarkRepeatedUnmarshal(b *testing.B) {
 	flow := flows.Get("repeated")
 	specs := flow.GetNodes().Get("first").Call.Request
 
-	desc, err := NewMessage("MockRequest", specs.Property.Nested)
+	desc, err := NewMessage("MockRequest", specs.Property.Message)
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -432,7 +435,7 @@ func TestMarshal(t *testing.T) {
 
 	flow := flows.Get("complete")
 	req := flow.GetNodes().Get("first").Call.Request
-	desc, err := NewMessage("marshal", req.Property.Nested)
+	desc, err := NewMessage("mock", req.Property.Message)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -488,7 +491,10 @@ func TestMarshal(t *testing.T) {
 			},
 			"repeating": []map[string]interface{}{
 				{
-					"value": "repeating value",
+					"value": "first repeating value",
+				},
+				{
+					"value": "second repeating value",
 				},
 			},
 		},
@@ -501,7 +507,7 @@ func TestMarshal(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			store := references.NewReferenceStore(3)
+			store := references.NewReferenceStore(0)
 			store.StoreValues("input", "", input)
 
 			reader, err := manager.Marshal(store)
@@ -608,7 +614,7 @@ func TestUnmarshal(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			desc, err := NewMessage("input", req.Property.Nested)
+			desc, err := NewMessage("input", req.Property.Message)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -637,7 +643,7 @@ func TestUnmarshal(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			ValidateStore(t, req.Property, "input", "", input, store)
+			ValidateStore(t, template.InputResource, "", req.Property.Template, input, store)
 		})
 	}
 }

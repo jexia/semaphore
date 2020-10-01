@@ -26,6 +26,56 @@ func TestDefineFunction(t *testing.T) {
 					Arguments: []*specs.Property{
 						{
 							Name: "name",
+							Template: specs.Template{
+								Reference: &specs.PropertyReference{
+									Resource: "first",
+									Path:     "name",
+								},
+							},
+						},
+					},
+				},
+			},
+			node: &specs.Node{
+				ID: "second",
+			},
+			flow: &specs.Flow{
+				Nodes: specs.NodeList{
+					{
+						ID: "first",
+						Call: &specs.Call{
+							Response: &specs.ParameterMap{
+								Property: &specs.Property{
+									Label: labels.Optional,
+									Template: specs.Template{
+										Message: specs.Message{
+											"name": &specs.Property{
+												Name:  "name",
+												Path:  "name",
+												Label: labels.Optional,
+												Template: specs.Template{
+													Scalar: &specs.Scalar{
+														Type: types.String,
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+					{
+						ID: "second",
+					},
+				},
+			},
+		},
+		"returns": {
+			stack: Stack{
+				"sample": &Function{
+					Returns: &specs.Property{
+						Template: specs.Template{
 							Reference: &specs.PropertyReference{
 								Resource: "first",
 								Path:     "name",
@@ -44,55 +94,19 @@ func TestDefineFunction(t *testing.T) {
 						Call: &specs.Call{
 							Response: &specs.ParameterMap{
 								Property: &specs.Property{
-									Type:  types.Message,
 									Label: labels.Optional,
-									Nested: map[string]*specs.Property{
-										"name": {
-											Name:  "name",
-											Path:  "name",
-											Type:  types.String,
-											Label: labels.Optional,
-										},
-									},
-								},
-							},
-						},
-					},
-					{
-						ID: "second",
-					},
-				},
-			},
-		},
-		"returns": {
-			stack: Stack{
-				"sample": &Function{
-					Returns: &specs.Property{
-						Reference: &specs.PropertyReference{
-							Resource: "first",
-							Path:     "name",
-						},
-					},
-				},
-			},
-			node: &specs.Node{
-				ID: "second",
-			},
-			flow: &specs.Flow{
-				Nodes: specs.NodeList{
-					{
-						ID: "first",
-						Call: &specs.Call{
-							Response: &specs.ParameterMap{
-								Property: &specs.Property{
-									Type:  types.Message,
-									Label: labels.Optional,
-									Nested: map[string]*specs.Property{
-										"name": {
-											Name:  "name",
-											Path:  "name",
-											Type:  types.String,
-											Label: labels.Optional,
+									Template: specs.Template{
+										Message: specs.Message{
+											"name": &specs.Property{
+												Name:  "name",
+												Path:  "name",
+												Label: labels.Optional,
+												Template: specs.Template{
+													Scalar: &specs.Scalar{
+														Type: types.String,
+													},
+												},
+											},
 										},
 									},
 								},

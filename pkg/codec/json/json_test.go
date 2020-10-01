@@ -30,7 +30,6 @@ func NewMock() (specs.FlowListInterface, error) {
 	core, err := semaphore.NewOptions(ctx,
 		semaphore.WithFlows(hcl.FlowsResolver("./tests/*.hcl")),
 	)
-
 	if err != nil {
 		return nil, err
 	}
@@ -54,8 +53,12 @@ func NewMock() (specs.FlowListInterface, error) {
 }
 
 func ValidateStore(t *testing.T, prop *specs.Property, resource string, origin string, input map[string]interface{}, store references.Store) {
+	if prop.Message == nil {
+		t.Fatalf("%s, property message not set", prop.Path)
+	}
+
 	for key, value := range input {
-		nprop := prop.Nested[key]
+		nprop := prop.Message[key]
 		if nprop == nil {
 			nprop = prop
 		}
@@ -463,13 +466,13 @@ func TestMarshal(t *testing.T) {
 		},
 		"enum": {
 			"nested": map[string]interface{}{},
-			"enum":   "PENDING",
+			"enum":   references.Enum("PENDING", 2),
 		},
 		"repeating_enum": {
 			"nested": map[string]interface{}{},
 			"repeating_enum": []interface{}{
-				"UNKNOWN",
-				"PENDING",
+				references.Enum("UNKNOWN", 1),
+				references.Enum("PENDING", 2),
 			},
 		},
 		"repeating": {

@@ -1,6 +1,8 @@
 package compare
 
 import (
+	"fmt"
+
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/specs"
@@ -14,39 +16,6 @@ func Types(ctx *broker.Context, services specs.ServiceList, objects specs.Schema
 
 	for _, flow := range flows {
 		err := FlowTypes(ctx, services, objects, flow)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// ProxyTypes compares the given proxy against the configured schema types
-func ProxyTypes(ctx *broker.Context, services specs.ServiceList, objects specs.Schemas, proxy *specs.Proxy) (err error) {
-	logger.Info(ctx, "Compare proxy flow types", zap.String("proxy", proxy.GetName()))
-
-	if proxy.OnError != nil {
-		err = CheckParameterMapTypes(ctx, proxy.OnError.Response, objects, proxy)
-		if err != nil {
-			return err
-		}
-	}
-
-	for _, node := range proxy.Nodes {
-		err = CallTypes(ctx, services, objects, node, node.Call, proxy)
-		if err != nil {
-			return err
-		}
-
-		err = CallTypes(ctx, services, objects, node, node.Rollback, proxy)
-		if err != nil {
-			return err
-		}
-	}
-
-	if proxy.Forward.Request.Header != nil {
-		err = CheckHeader(proxy.Forward.Request.Header, proxy)
 		if err != nil {
 			return err
 		}
@@ -173,76 +142,20 @@ func CheckParameterMapTypes(ctx *broker.Context, parameters *specs.ParameterMap,
 		}
 	}
 
-	err := CheckPropertyTypes(parameters.Property, objects.Get(parameters.Schema), flow)
+	schema := objects.Get(parameters.Schema)
+	err := parameters.Property.Compare(schema)
 	if err != nil {
-		return err
+		return fmt.Errorf("flow '%s' mismatch: %w", flow.GetName(), err)
 	}
 
-	return nil
-}
-
-// CheckPropertyTypes checks the given schema against the given schema method types
-func CheckPropertyTypes(property *specs.Property, schema *specs.Property, flow specs.FlowInterface) (err error) {
-	if schema == nil {
-		return ErrUndefinedSchema{
-			Path: property.Path,
-			Expr: property.Expr,
-		}
-	}
-	if property.Type != schema.Type {
-		return ErrTypeMismatch{
-			Expr:     property.Expr,
-			Type:     property.Type,
-			Expected: schema.Type,
-			Path:     property.Path,
-		}
-	}
-
-	if property.Label != schema.Label {
-		return ErrLabelMismatch{
-			Expr:     property.Expr,
-			Label:    property.Label,
-			Expected: schema.Label,
-			Path:     property.Path,
-		}
-	}
-
-	if len(property.Nested) > 0 {
-		if len(schema.Nested) == 0 {
-			return ErrUndeclaredSchema{
-				Expr: property.Expr,
-				Path: property.Path,
-				Name: property.Name,
-			}
-		}
-
-		for key, nested := range property.Nested {
-			object := schema.Nested[key]
-			if object == nil {
-				return ErrUndeclaredSchemaInProperty{
-					Expr: nested.Expr,
-					Path: nested.Path,
-					Name: flow.GetName(),
-				}
-			}
-
-			err := CheckPropertyTypes(nested, object, flow)
-			if err != nil {
-				return err
-			}
-		}
-	}
-
-	// ensure the property position
-	property.Position = schema.Position
-
+	parameters.Property.Define(schema)
 	return nil
 }
 
 // CheckHeader compares the given header types
 func CheckHeader(header specs.Header, flow specs.FlowInterface) error {
 	for _, header := range header {
-		if header.Type != types.String {
+		if header.Type() != types.String {
 			return ErrHeaderTypeMismatch{
 				Type:     header.Type,
 				Path:     header.Path,

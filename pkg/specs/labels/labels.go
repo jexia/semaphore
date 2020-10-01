@@ -1,11 +1,12 @@
 package labels
 
-// Label represents a value label
+// Label represents a value label.
 type Label string
 
-// Spec labels
 const (
+	// Optional representing a optional field.
 	Optional Label = "optional"
+
+	// Required representing a required field.
 	Required Label = "required"
-	Repeated Label = "repeated"
 )

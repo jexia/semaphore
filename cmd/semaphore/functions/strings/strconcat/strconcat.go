@@ -15,12 +15,16 @@ import (
 func Function(args ...*specs.Property) (*specs.Property, functions.Exec, error) {
 	result := &specs.Property{
 		Name:  "concat",
-		Type:  types.String,
 		Label: labels.Optional,
+		Template: specs.Template{
+			Scalar: &specs.Scalar{
+				Type: types.String,
+			},
+		},
 	}
 
 	for _, arg := range args {
-		if arg.Type != types.String {
+		if arg.Scalar == nil || arg.Scalar.Type != types.String {
 			return nil, nil, ErrInvalidArgument{
 				Property: arg,
 				Expected: types.String,
@@ -35,8 +39,8 @@ func Function(args ...*specs.Property) (*specs.Property, functions.Exec, error) 
 		for _, arg := range args {
 			var value string
 
-			if arg.Default != nil {
-				value = arg.Default.(string)
+			if arg.Scalar.Default != nil {
+				value = arg.Scalar.Default.(string)
 			}
 
 			if arg.Reference != nil {

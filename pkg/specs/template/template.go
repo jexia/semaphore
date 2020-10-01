@@ -107,10 +107,12 @@ func ParseReference(path string, name string, value string) (*specs.Property, er
 	}
 
 	prop := &specs.Property{
-		Name:      name,
-		Path:      JoinPath(path, name),
-		Reference: ParsePropertyReference(value),
-		Raw:       value,
+		Name: name,
+		Path: JoinPath(path, name),
+		Raw:  value,
+		Template: specs.Template{
+			Reference: ParsePropertyReference(value),
+		},
 	}
 
 	return prop, nil
@@ -124,14 +126,19 @@ func ParseContent(path string, name string, content string) (*specs.Property, er
 
 	if StringPattern.MatchString(content) {
 		matched := StringPattern.FindStringSubmatch(content)
+		result := &specs.Property{
+			Name:  name,
+			Path:  path,
+			Label: labels.Optional,
+			Template: specs.Template{
+				Scalar: &specs.Scalar{
+					Type:    types.String,
+					Default: matched[1],
+				},
+			},
+		}
 
-		return &specs.Property{
-			Name:    name,
-			Path:    path,
-			Type:    types.String,
-			Label:   labels.Optional,
-			Default: matched[1],
-		}, nil
+		return result, nil
 	}
 
 	return &specs.Property{
@@ -153,8 +160,7 @@ func Parse(ctx *broker.Context, path string, name string, value string) (*specs.
 
 	logger.Debug(ctx, "template results in property with type",
 		zap.String("path", path),
-		zap.String("type", string(result.Type)),
-		zap.Any("default", result.Default),
+		zap.Any("default", result.DefaultValue()),
 		zap.String("reference", result.Reference.String()),
 	)
 

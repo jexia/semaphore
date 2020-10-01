@@ -1,10 +1,7 @@
 package formencoded
 
 import (
-	"errors"
-	"io"
 	"io/ioutil"
-	"strings"
 	"testing"
 
 	"github.com/jexia/semaphore/pkg/references"
@@ -16,8 +13,8 @@ import (
 
 var enum = &specs.Enum{
 	Keys: map[string]*specs.EnumValue{
-		"UNKOWN": {
-			Key:      "UNKOWN",
+		"UNKNOWN": {
+			Key:      "UNKNOWN",
 			Position: 0,
 		},
 		"PENDING": {
@@ -27,7 +24,7 @@ var enum = &specs.Enum{
 	},
 	Positions: map[int32]*specs.EnumValue{
 		0: {
-			Key:      "UNKOWN",
+			Key:      "UNKNOWN",
 			Position: 0,
 		},
 		1: {
@@ -37,119 +34,184 @@ var enum = &specs.Enum{
 	},
 }
 
+var schemaWithDefaultRepeating = &specs.ParameterMap{
+	Property: &specs.Property{
+		Name: "repeating_with_defaults",
+		Path: "repeating_with_defaults",
+		Template: specs.Template{
+			Repeated: specs.Repeated{
+				{
+					Scalar: &specs.Scalar{
+						Default: "yes",
+						Type:    types.String,
+					},
+				},
+				{
+					Scalar: &specs.Scalar{
+						Default: "no",
+						Type:    types.String,
+					},
+				},
+			},
+		},
+	},
+}
+
 var schema = &specs.ParameterMap{
 	Property: &specs.Property{
-		Type:  types.Message,
 		Label: labels.Optional,
-		Nested: map[string]*specs.Property{
-			"bad_label": {
-				Name:  "bad_label",
-				Path:  "bad_label",
-				Type:  types.String,
-				Label: "unsupported",
-			},
-			"no_nested_schema": {
-				Name:  "bad_label",
-				Path:  "bad_label",
-				Type:  types.Message,
-				Label: labels.Optional,
-			},
-			"numeric": {
-				Name:  "bad_label",
-				Path:  "bad_label",
-				Type:  types.Int32,
-				Label: labels.Optional,
-			},
-			"message": {
-				Name:  "message",
-				Path:  "message",
-				Type:  types.String,
-				Label: labels.Optional,
-				Reference: &specs.PropertyReference{
-					Resource: template.InputResource,
-					Path:     "message",
-				},
-			},
-			"status": {
-				Name:  "status",
-				Path:  "status",
-				Type:  types.Enum,
-				Label: labels.Optional,
-				Enum:  enum,
-				Reference: &specs.PropertyReference{
-					Resource: template.InputResource,
-					Path:     "status",
-				},
-			},
-			"nested": {
-				Name:  "nested",
-				Path:  "nested",
-				Type:  types.Message,
-				Label: labels.Optional,
-				Nested: map[string]*specs.Property{
-					"first": {
-						Name:  "first",
-						Path:  "nested.first",
-						Type:  types.String,
-						Label: labels.Optional,
-						Reference: &specs.PropertyReference{
-							Resource: template.InputResource,
-							Path:     "nested.first",
-						},
-					},
-					"second": {
-						Name:  "second",
-						Path:  "nested.second",
-						Type:  types.String,
-						Label: labels.Optional,
-						Reference: &specs.PropertyReference{
-							Resource: template.InputResource,
-							Path:     "nested.second",
+		Template: specs.Template{
+			Message: specs.Message{
+				"bad_label": {
+					Name:  "bad_label",
+					Path:  "bad_label",
+					Label: "",
+					Template: specs.Template{
+						Scalar: &specs.Scalar{
+							Type: types.String,
 						},
 					},
 				},
-			},
-			"repeating_string": {
-				Name:  "repeating_string",
-				Path:  "repeating_string",
-				Type:  types.String,
-				Label: labels.Repeated,
-				Reference: &specs.PropertyReference{
-					Resource: template.InputResource,
-					Path:     "repeating_string",
+				"no_nested_schema": {
+					Name:  "no_nested_schema",
+					Path:  "no_nested_schema",
+					Label: labels.Optional,
+					Template: specs.Template{
+						Message: specs.Message{},
+					},
 				},
-			},
-			"repeating_enum": {
-				Name:  "repeating_enum",
-				Path:  "repeating_enum",
-				Type:  types.Enum,
-				Label: labels.Repeated,
-				Enum:  enum,
-				Reference: &specs.PropertyReference{
-					Resource: template.InputResource,
-					Path:     "repeating_enum",
-				},
-			},
-			"repeating": {
-				Name:  "repeating",
-				Path:  "repeating",
-				Type:  types.Message,
-				Label: labels.Repeated,
-				Nested: map[string]*specs.Property{
-					"value": {
-						Name:  "value",
-						Path:  "repeating.value",
-						Type:  types.String,
-						Label: labels.Optional,
-						Reference: &specs.PropertyReference{
-							Resource: template.InputResource,
-							Path:     "repeating.value",
+				"numeric": {
+					Name:  "numeric",
+					Path:  "numeric",
+					Label: labels.Optional,
+					Template: specs.Template{
+						Scalar: &specs.Scalar{
+							Type: types.Int32,
 						},
 					},
 				},
-				Reference: &specs.PropertyReference{
-					Resource: template.InputResource,
-					Path:     "repeating",
+				"message": {
+					Name:  "message",
+					Path:  "message",
+					Label: labels.Optional,
+					Template: specs.Template{
+						Reference: &specs.PropertyReference{
+							Resource: template.InputResource,
+							Path:     "message",
+						},
+						Scalar: &specs.Scalar{
+							Type: types.String,
+						},
+					},
+				},
+				"status": {
+					Name:  "status",
+					Path:  "status",
+					Label: labels.Optional,
+					Template: specs.Template{
+						Reference: &specs.PropertyReference{
+							Resource: template.InputResource,
+							Path:     "status",
+						},
+						Enum: enum,
+					},
+				},
+				"nested": {
+					Name:  "nested",
+					Path:  "nested",
+					Label: labels.Optional,
+					Template: specs.Template{
+						Message: specs.Message{
+							"first": {
+								Name:  "first",
+								Path:  "nested.first",
+								Label: labels.Optional,
+								Template: specs.Template{
+									Reference: &specs.PropertyReference{
+										Resource: template.InputResource,
+										Path:     "nested.first",
+									},
+									Scalar: &specs.Scalar{
+										Type: types.String,
+									},
+								},
+							},
+							"second": {
+								Name:  "second",
+								Path:  "nested.second",
+								Label: labels.Optional,
+								Template: specs.Template{
+									Reference: &specs.PropertyReference{
+										Resource: template.InputResource,
+										Path:     "nested.second",
+									},
+									Scalar: &specs.Scalar{
+										Type: types.String,
+									},
+								},
+							},
+						},
+					},
+				},
+				"repeating_string": {
+					Name: "repeating_string",
+					Path: "repeating_string",
+					Template: specs.Template{
+						Reference: &specs.PropertyReference{
+							Resource: template.InputResource,
+							Path:     "repeating_string",
+						},
+						Repeated: specs.Repeated{
+							{
+								Scalar: &specs.Scalar{Type: types.String},
+							},
+						},
+					},
+				},
+				"repeating_enum": {
+					Name:  "repeating_enum",
+					Path:  "repeating_enum",
+					Label: labels.Optional,
+					Template: specs.Template{
+						Reference: &specs.PropertyReference{
+							Resource: template.InputResource,
+							Path:     "repeating_enum",
+						},
+						Repeated: specs.Repeated{
+							{Enum: enum},
+						},
+					},
+				},
+				"repeating": {
+					Name:  "repeating",
+					Path:  "repeating",
+					Label: labels.Optional,
+					Template: specs.Template{
+						Reference: &specs.PropertyReference{
+							Resource: template.InputResource,
+							Path:     "repeating",
+						},
+						Repeated: specs.Repeated{
+							{
+								Message: specs.Message{
+									"value": {
+										Name:  "value",
+										Path:  "repeating.value",
+										Label: labels.Optional,
+										Template: specs.Template{
+											Reference: &specs.PropertyReference{
+												Resource: template.InputResource,
+												Path:     "repeating.value",
+											},
+											Scalar: &specs.Scalar{
+												Type: types.String,
+											},
+										},
+									},
+								},
+							},
+						},
+					},
 				},
 			},
 		},
@@ -172,7 +234,7 @@ func TestConstructorName(t *testing.T) {
 	expected := "form-urlencoded"
 	name := form.Name()
 	if name != expected {
-		t.Errorf("unexpected name %s, expected %s", name, expected)
+		t.Errorf("unexpected name %s, want %s", name, expected)
 	}
 }
 
@@ -218,7 +280,7 @@ func TestManagerName(t *testing.T) {
 	expected := "form-urlencoded"
 	name := manager.Name()
 	if name != expected {
-		t.Errorf("unexpected name %s, expected %s", name, expected)
+		t.Errorf("unexpected name %s, want %s", name, expected)
 	}
 }
 
@@ -239,7 +301,7 @@ func TestManagerProperty(t *testing.T) {
 
 	result := manager.Property()
 	if result != expected.Property {
-		t.Errorf("unexpected property %+v, expected %+v", result, expected.Property)
+		t.Errorf("unexpected property %+v, want %+v", result, expected.Property)
 	}
 }
 
@@ -274,6 +336,7 @@ func TestMarshal(t *testing.T) {
 	type test struct {
 		expected string
 		input    map[string]interface{}
+		schema   *specs.ParameterMap // if nil, use the default global `schema`
 	}
 
 	tests := map[string]test{
@@ -312,8 +375,15 @@ func TestMarshal(t *testing.T) {
 				},
 			},
 		},
+		"repeating_with_defaults": {
+			schema:   schemaWithDefaultRepeating,
+			expected: "repeating_with_defaults%5B0%5D=yes&repeating_with_defaults%5B1%5D=no",
+			input: map[string]interface{}{
+				"repeating_with_defaults": []interface{}{},
+			},
+		},
 		"repeating_enum": {
-			expected: "repeating_enum%5B0%5D=PENDING&repeating_enum%5B1%5D=UNKOWN",
+			expected: "repeating_enum%5B0%5D=PENDING&repeating_enum%5B1%5D=UNKNOWN",
 			input: map[string]interface{}{
 				"nested": map[string]interface{}{},
 				"repeating_enum": []interface{}{
@@ -363,7 +433,11 @@ func TestMarshal(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			manager, err := form.New("mock", schema)
+			sch := schema
+			if test.schema != nil {
+				sch = test.schema
+			}
+			manager, err := form.New("mock", sch)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -386,260 +460,8 @@ func TestMarshal(t *testing.T) {
 			}
 
 			if string(bb) != test.expected {
-				t.Errorf("unexpected result %s, expected %s", string(bb), test.expected)
+				t.Errorf("unexpected result %s, want %s", string(bb), test.expected)
 			}
 		})
-	}
-}
-
-type readerFunc func([]byte) (int, error)
-
-func (fn readerFunc) Read(p []byte) (int, error) { return fn(p) }
-
-func TestUnmarshal(t *testing.T) {
-	type test struct {
-		input    io.Reader
-		expected map[string]expect
-		error    error
-	}
-
-	tests := map[string]test{
-		"reader error": {
-			input: readerFunc(
-				func([]byte) (int, error) {
-					return 0, errors.New("failed")
-				},
-			),
-			error: errors.New("failed"),
-		},
-		"type mismatch": {
-			input: strings.NewReader("numeric=foo"),
-			error: errors.New(""), // error returned by ParseInt()
-		},
-		"empty nested schema": {
-			input: strings.NewReader("no_nested_schema.value=foo"),
-			error: errNilSchema,
-		},
-		"empty reader": {
-			input: strings.NewReader(""),
-		},
-		"error with undefined property": {
-			input: strings.NewReader(
-				"undefined=hello+world",
-			),
-			error: errUndefinedProperty(""),
-		},
-		"error with unknown label": {
-			input: strings.NewReader(
-				"bad_label=hello+world",
-			),
-			error: errUnknownLabel(""),
-		},
-		"simple": {
-			input: strings.NewReader(
-				"message=hello+world",
-			),
-			expected: map[string]expect{
-				"message": {
-					value: "hello world",
-				},
-			},
-		},
-		"nested": {
-			input: strings.NewReader(
-				"nested.first=nested+first&nested.second=nested+second",
-			),
-			expected: map[string]expect{
-				"nested.first": {
-					value: "nested first",
-				},
-				"nested.second": {
-					value: "nested second",
-				},
-			},
-		},
-		"enum": {
-			input: strings.NewReader(
-				"status=PENDING",
-			),
-			expected: map[string]expect{
-				"status": {
-					enum: func() *int32 { i := int32(1); return &i }(),
-				},
-			},
-		},
-		"repeated string": {
-			input: strings.NewReader(
-				"repeating_string=repeating+one&repeating_string=repeating+two",
-			),
-			expected: map[string]expect{
-				"repeating_string": {
-					repeated: []expect{
-						{
-							value: "repeating one",
-						},
-						{
-							value: "repeating two",
-						},
-					},
-				},
-			},
-		},
-		"repeated nested": {
-			input: strings.NewReader(
-				"repeating.value=repeating+one&repeating.value=repeating+two",
-			),
-			expected: map[string]expect{
-				"repeating": {
-					repeated: []expect{
-						{
-							nested: map[string]expect{
-								"repeating.value": {
-									value: "repeating one",
-								},
-							},
-						},
-						{
-							nested: map[string]expect{
-								"repeating.value": {
-									value: "repeating two",
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-		"repeated enum": {
-			input: strings.NewReader(
-				"repeating_enum=PENDING&repeating_enum=UNKOWN",
-			),
-			expected: map[string]expect{
-				"repeating_enum": {
-					repeated: []expect{
-						{
-							enum: func() *int32 { i := int32(1); return &i }(),
-						},
-						{
-							enum: func() *int32 { i := int32(0); return &i }(),
-						},
-					},
-				},
-			},
-		},
-		"complex": {
-			input: strings.NewReader(
-				"message=hello+world&nested.first=nested+value&repeating.value=repeating+value",
-			),
-			expected: map[string]expect{
-				"message": {
-					value: "hello world",
-				},
-				"nested.first": {
-					value: "nested value",
-				},
-				"repeating": {
-					repeated: []expect{
-						{
-							nested: map[string]expect{
-								"repeating.value": {
-									value: "repeating value",
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-	}
-
-	for title, test := range tests {
-		t.Run(title, func(t *testing.T) {
-			form := NewConstructor()
-			if form == nil {
-				t.Fatal("unexpected nil")
-			}
-
-			manager, err := form.New("mock", schema)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			var refs = references.NewReferenceStore(0)
-			err = manager.Unmarshal(test.input, refs)
-
-			if test.error != nil {
-				if !errors.As(err, &test.error) {
-					t.Errorf("error [%s] was expected to be [%s]", err, test.error)
-				}
-			} else if err != nil {
-				t.Errorf("error was not expected: %s", err)
-			}
-
-			for path, output := range test.expected {
-				assert(t, "mock", path, refs, output)
-			}
-		})
-	}
-}
-
-type expect struct {
-	value    interface{}
-	enum     *int32
-	repeated []expect
-	nested   map[string]expect
-}
-
-func assert(t *testing.T, resource string, path string, store references.Store, output expect) {
-	ref := store.Load(resource, path)
-
-	if ref == nil {
-		t.Errorf("reference %q was expected to be set", path)
-	}
-
-	if output.value != nil {
-		if ref.Value != output.value {
-			t.Errorf("reference %q was expected to have value [%v], not [%v]", path, output.value, ref.Value)
-		}
-
-		return
-	}
-
-	if output.enum != nil {
-		if ref.Enum == nil {
-			t.Errorf("reference %q was expected to have a enum value", path)
-		}
-
-		if *output.enum != *ref.Enum {
-			t.Errorf("reference %q was expected to have enum value [%d], not [%d]", path, *output.enum, *ref.Enum)
-		}
-
-		return
-	}
-
-	if output.repeated != nil {
-		if ref.Repeated == nil {
-			t.Errorf("reference %q was expected to have a repeated value", path)
-		}
-
-		if expected, actual := len(ref.Repeated), len(ref.Repeated); actual != expected {
-			t.Errorf("invalid number of repeated values, expected %d, got %d", expected, actual)
-		}
-
-		for index, expected := range output.repeated {
-			if expected.value != nil || expected.enum != nil {
-				assert(t, "", "", ref.Repeated[index], expected)
-
-				continue
-			}
-
-			if expected.nested != nil {
-				for key, expected := range expected.nested {
-					assert(t, resource, key, ref.Repeated[index], expected)
-				}
-
-				continue
-			}
-		}
 	}
 }

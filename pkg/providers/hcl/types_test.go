@@ -1,6 +1,7 @@
 package hcl
 
 import (
+	"errors"
 	"math/big"
 	"testing"
 
@@ -11,38 +12,61 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
-func TestSetDefaultValue(t *testing.T) {
+func TestSetScalar(t *testing.T) {
 	type expected struct {
-		Default interface{}
-		Type    types.Type
+		defaultValue interface{}
+		dataType     types.Type
+		error        error
 	}
 
 	tests := map[cty.Value]expected{
 		cty.StringVal("default"): {
-			Default: "default",
-			Type:    types.String,
+			defaultValue: "default",
+			dataType:     types.String,
 		},
 		cty.NumberVal(big.NewFloat(10)): {
-			Default: int64(10),
-			Type:    types.Int64,
+			defaultValue: int64(10),
+			dataType:     types.Int64,
 		},
 		cty.BoolVal(true): {
-			Default: true,
-			Type:    types.Bool,
+			defaultValue: true,
+			dataType:     types.Bool,
+		},
+		cty.DynamicVal: {
+			error: ErrUnkownPropertyType("dynamic"),
 		},
 	}
 
 	for input, expected := range tests {
-		ctx := logger.WithLogger(broker.NewBackground())
-		property := specs.Property{}
-		SetDefaultValue(ctx, &property, input)
+		t.Run(input.GoString(), func(t *testing.T) {
+			ctx := logger.WithLogger(broker.NewBackground())
+			property := specs.Property{}
+			err := SetScalar(ctx, &property.Template, input)
 
-		if expected.Default != property.Default {
-			t.Errorf("unexpected result %+v, expected %+v", property.Default, expected.Default)
-		}
+			switch {
+			case expected.error != nil:
+				if !errors.Is(err, expected.error) {
+					t.Errorf("error '%s' was expected to be '%s'", err, expected.error)
+				}
 
-		if expected.Type != property.Type {
-			t.Errorf("unexpected type %s, expected %s", property.Type, expected.Type)
-		}
+				return
+			default:
+				if err != nil {
+					t.Errorf("unexpected error '%s'", err)
+				}
+			}
+
+			if property.Scalar == nil {
+				t.Fatal("property scalar has not been defined")
+			}
+
+			if expected.defaultValue != property.Scalar.Default {
+				t.Errorf("unexpected result %+v, expected %+v", property.Scalar.Default, expected.defaultValue)
+			}
+
+			if expected.dataType != property.Scalar.Type {
+				t.Errorf("unexpected type %s, expected %s", property.Scalar.Type, expected.dataType)
+			}
+		})
 	}
 }

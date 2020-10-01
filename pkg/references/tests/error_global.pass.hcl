@@ -1,2 +1,1 @@
-error "com.error" {
-}
+error "com.error" {}

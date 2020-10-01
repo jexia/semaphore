@@ -60,7 +60,7 @@ func (manager *Manager) Marshal(refs references.Store) (io.Reader, error) {
 		return nil, nil
 	}
 
-	object := NewObject(manager.resource, manager.specs.Nested, refs)
+	object := NewObject(manager.resource, manager.specs.Message, refs)
 	bb, err := gojay.MarshalJSONObject(object)
 	if err != nil {
 		return nil, err
@@ -85,7 +85,7 @@ func (manager *Manager) Unmarshal(reader io.Reader, refs references.Store) error
 		return nil
 	}
 
-	object := NewObject(manager.resource, manager.specs.Nested, refs)
+	object := NewObject(manager.resource, manager.specs.Message, refs)
 	err = gojay.UnmarshalJSONObject(bb, object)
 	if err != nil {
 		return err

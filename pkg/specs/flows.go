@@ -276,10 +276,11 @@ type ErrorHandle interface {
 // OnError represents the variables that have to be returned if a unexpected error is returned
 type OnError struct {
 	*metadata.Meta
-	Response *ParameterMap        `json:"response,omitempty"`
-	Status   *Property            `json:"status,omitempty"`
-	Message  *Property            `json:"message,omitempty"`
-	Params   map[string]*Property `json:"params,omitempty"`
+	Response *ParameterMap `json:"response,omitempty"`
+	// Question: does it make sense to use full property here or just a Template is enough?
+	Status  *Property            `json:"status,omitempty"`
+	Message *Property            `json:"message,omitempty"`
+	Params  map[string]*Property `json:"params,omitempty"`
 }
 
 // Clone clones the given error

@@ -1,7 +1,7 @@
 proxy "echo" {
-    forward "caller" {
-        header {
-            Authorization = "Bearer"
-        }
+  forward "caller" {
+    header {
+      Authorization = "Bearer"
     }
+  }
 }

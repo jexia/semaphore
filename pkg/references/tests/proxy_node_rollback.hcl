@@ -1,14 +1,13 @@
 proxy "echo" {
-    input {
-        params = "com.input"
-    }
+  input {
+    params = "com.input"
+  }
 
-    resource "mock" {
-        rollback "caller" "Open" {
-			message = "{{ input:message }}"
-		}
+  resource "mock" {
+    rollback "caller" "Open" {
+      message = "{{ input:message }}"
     }
+  }
 
-    forward "caller" {
-    }
+  forward "caller" {}
 }

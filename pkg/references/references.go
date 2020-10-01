@@ -85,6 +85,16 @@ func ResolveNode(ctx *broker.Context, node *specs.Node, flow specs.FlowInterface
 		}
 	}
 
+	if node.Intermediate != nil {
+		err = ResolveParameterMap(ctx, node, node.Intermediate, flow)
+		if err != nil {
+			return ErrUnresolvedParameterMap{
+				wrapErr:   wrapErr{err},
+				Parameter: node.Intermediate,
+			}
+		}
+	}
+
 	if node.Call != nil {
 		err = ResolveCall(ctx, node, node.Call, flow)
 		if err != nil {
@@ -236,22 +246,43 @@ func ResolveParams(ctx *broker.Context, node *specs.Node, params map[string]*spe
 	return nil
 }
 
+func resolveProperty(ctx *broker.Context, node *specs.Node, property *specs.Property, flow specs.FlowInterface) error {
+	switch {
+	case property.Message != nil:
+		for _, nested := range property.Message {
+			err := ResolveProperty(ctx, node, nested, flow)
+			if err != nil {
+				return NewErrUnresolvedProperty(err, nested)
+			}
+		}
+
+		return nil
+	case property.Repeated != nil:
+		for _, repeated := range property.Repeated {
+			property := &specs.Property{
+				Template: repeated,
+			}
+
+			err := ResolveProperty(ctx, node, property, flow)
+			if err != nil {
+				return NewErrUnresolvedProperty(err, property)
+			}
+		}
+
+		return nil
+	default:
+		return nil
+	}
+}
+
 // ResolveProperty resolves all references made within the given property
 func ResolveProperty(ctx *broker.Context, node *specs.Node, property *specs.Property, flow specs.FlowInterface) error {
 	if property == nil {
 		return nil
 	}
 
-	if len(property.Nested) > 0 {
-		for _, nested := range property.Nested {
-			err := ResolveProperty(ctx, node, nested, flow)
-			if err != nil {
-				return ErrUnresolvedProperty{
-					wrapErr:  wrapErr{err},
-					Property: nested,
-				}
-			}
-		}
+	if err := resolveProperty(ctx, node, property, flow); err != nil {
+		return NewErrUnresolvedProperty(err, property)
 	}
 
 	if property.Reference == nil {
@@ -272,22 +303,13 @@ func ResolveProperty(ctx *broker.Context, node *specs.Node, property *specs.Prop
 
 	reference, err := LookupReference(ctx, breakpoint, property.Reference, flow)
 	if err != nil {
-		return ErrUndefinedReference{
-			wrapErr:    wrapErr{err},
-			Expression: property.Expr,
-			Reference:  property.Reference,
-			Breakpoint: breakpoint,
-			Path:       property.Path,
-		}
+		return NewErrUndefinedReference(err, property, breakpoint)
 	}
 
 	if reference.Reference != nil && reference.Reference.Property == nil {
 		err := ResolveProperty(ctx, node, reference, flow)
 		if err != nil {
-			return ErrUnresolvedProperty{
-				wrapErr:  wrapErr{err},
-				Property: reference,
-			}
+			return NewErrUnresolvedProperty(err, reference)
 		}
 	}
 
@@ -297,16 +319,10 @@ func ResolveProperty(ctx *broker.Context, node *specs.Node, property *specs.Prop
 		zap.String("path", property.Path),
 	)
 
-	property.Type = reference.Type
 	property.Label = reference.Label
-	property.Default = reference.Default
 	property.Reference.Property = reference
 
-	if reference.Enum != nil {
-		property.Enum = reference.Enum
-	}
-
-	ScopeNestedReferences(reference, property)
+	ScopeNestedReferences(&reference.Template, &property.Template)
 
 	return nil
 }
@@ -345,11 +361,21 @@ func InsideProperty(source *specs.Property, target *specs.Property) bool {
 		return true
 	}
 
-	if len(source.Nested) > 0 {
-		for _, nested := range source.Nested {
-			is := InsideProperty(nested, target)
-			if is {
-				return is
+	switch {
+	case source.Message != nil:
+		for _, nested := range source.Message {
+			if InsideProperty(nested, target) {
+				return true
+			}
+		}
+	case source.Repeated != nil:
+		for _, repeated := range source.Repeated {
+			property := &specs.Property{
+				Template: repeated,
+			}
+
+			if InsideProperty(property, target) {
+				return true
 			}
 		}
 	}
@@ -358,32 +384,73 @@ func InsideProperty(source *specs.Property, target *specs.Property) bool {
 }
 
 // ScopeNestedReferences scopes all nested references available inside the reference property
-func ScopeNestedReferences(source *specs.Property, property *specs.Property) {
-	if source == nil || property == nil {
+func ScopeNestedReferences(source, target *specs.Template) {
+	if source == nil || target == nil {
 		return
 	}
 
-	if property.Nested == nil {
-		property.Nested = make(map[string]*specs.Property, len(source.Nested))
-	}
-
-	for key, value := range source.Nested {
-		nested, has := property.Nested[key]
-		if !has {
-			nested = value.Clone()
-			property.Nested[key] = nested
+	switch {
+	case source.Scalar != nil:
+		if target.Scalar == nil {
+			target.Scalar = &specs.Scalar{}
 		}
 
-		if nested.Reference == nil {
-			nested.Reference = &specs.PropertyReference{
-				Resource: property.Reference.Resource,
-				Path:     template.JoinPath(property.Reference.Path, key),
-				Property: value,
+		target.Scalar.Default = source.Scalar.Default
+		target.Scalar.Type = source.Scalar.Type
+		break
+	case source.Enum != nil:
+		target.Enum = source.Enum
+		break
+	case source.Message != nil:
+		if target.Message == nil {
+			target.Message = make(specs.Message, len(source.Message))
+		}
+
+		for _, item := range source.Message {
+			nested, ok := target.Message[item.Name]
+			if !ok {
+				nested = item.Clone()
+				target.Message[item.Name] = nested
+			}
+
+			if nested.Reference == nil {
+				nested.Reference = &specs.PropertyReference{
+					Resource: target.Reference.Resource,
+					Path:     template.JoinPath(target.Reference.Path, item.Name),
+					Property: item,
+				}
+			}
+
+			if len(item.Message) > 0 {
+				ScopeNestedReferences(&item.Template, &nested.Template)
 			}
 		}
 
-		if len(value.Nested) > 0 {
-			ScopeNestedReferences(value, nested)
+		break
+	case source.Repeated != nil:
+		if target.Repeated != nil {
+			return
 		}
+
+		target.Repeated = make(specs.Repeated, len(source.Repeated))
+
+		for index, item := range source.Repeated {
+			cloned := item.Clone()
+
+			if cloned.Reference == nil {
+				cloned.Reference = &specs.PropertyReference{
+					Resource: target.Reference.Resource,
+					Path:     target.Reference.Path,
+				}
+			}
+
+			if len(item.Message) > 0 {
+				ScopeNestedReferences(&item, &cloned)
+			}
+
+			target.Repeated[index] = cloned
+		}
+
+		break
 	}
 }

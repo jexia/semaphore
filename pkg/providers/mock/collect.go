@@ -8,6 +8,7 @@ import (
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/providers"
 	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/pkg/specs/template"
 	"gopkg.in/yaml.v2"
 )
 
@@ -39,7 +40,7 @@ func SchemaResolver(path string) providers.SchemaResolver {
 			return nil, err
 		}
 
-		return SchemaManifest(collection), nil
+		return collection.Properties, nil
 	}
 }
 
@@ -73,5 +74,34 @@ func UnmarshalFile(reader io.Reader) (*Collection, error) {
 		return nil, err
 	}
 
+	DefinePropertyPaths(&collection)
 	return &collection, nil
+}
+
+// DefinePropertyPaths defines all property paths inside the given collection
+func DefinePropertyPaths(collection *Collection) {
+	for _, property := range collection.Properties {
+		definePath("", property)
+	}
+}
+
+func definePath(path string, property *specs.Property) {
+	fqpath := template.JoinPath(path, property.Name)
+	property.Path = fqpath
+	walkTemplate(fqpath, &property.Template)
+}
+
+func walkTemplate(path string, template *specs.Template) {
+	if template.Message != nil {
+		for key, property := range template.Message {
+			property.Name = key
+			definePath(path, property)
+		}
+	}
+
+	if template.Repeated != nil {
+		for _, repeated := range template.Repeated {
+			walkTemplate(path, &repeated)
+		}
+	}
 }

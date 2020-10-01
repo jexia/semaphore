@@ -15,16 +15,21 @@ const (
 
 func outputs() *specs.Property {
 	return &specs.Property{
-		Nested: map[string]*specs.Property{
-			propSubject: {
-				Name:  propSubject,
-				Path:  propSubject,
-				Type:  types.String,
-				Label: labels.Optional,
+		Label: labels.Required,
+		Template: specs.Template{
+			Message: specs.Message{
+				propSubject: {
+					Name:  propSubject,
+					Path:  propSubject,
+					Label: labels.Optional,
+					Template: specs.Template{
+						Scalar: &specs.Scalar{
+							Type: types.String,
+						},
+					},
+				},
 			},
 		},
-		Type:  types.Message,
-		Label: labels.Required,
 	}
 }
 
@@ -38,9 +43,9 @@ func New(reader Reader, newClaims func() Claims) functions.Intermediate {
 			}
 		}
 
-		if args[0].Type != types.String {
+		if args[0].Type() != types.String {
 			return nil, nil, errInvalidArgumentType{
-				actual:   args[0].Type,
+				actual:   args[0].Type(),
 				expected: types.String,
 			}
 		}
@@ -51,7 +56,7 @@ func New(reader Reader, newClaims func() Claims) functions.Intermediate {
 
 func executable(reader Reader, token *specs.Property, newClaims func() Claims) func(store references.Store) error {
 	return func(store references.Store) error {
-		var value = token.Default
+		var value = token.DefaultValue()
 
 		if token.Reference != nil {
 			ref := store.Load(token.Reference.Resource, token.Reference.Path)
