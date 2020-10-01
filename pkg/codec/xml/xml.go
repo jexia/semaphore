@@ -3,7 +3,9 @@ package xml
 import (
 	"encoding/xml"
 	"io"
+	"log"
 
+	"github.com/jexia/semaphore/pkg/broker/trace"
 	"github.com/jexia/semaphore/pkg/codec"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
@@ -22,7 +24,7 @@ func (constructor *Constructor) Name() string { return "xml" }
 // New constructs a new XML codec manager
 func (constructor *Constructor) New(resource string, specs *specs.ParameterMap) (codec.Manager, error) {
 	if specs == nil {
-		return nil, ErrUndefinedSpecs{}
+		return nil, trace.New(trace.WithMessage("no object specs defined"))
 	}
 
 	manager := &Manager{
@@ -59,7 +61,12 @@ func (manager *Manager) Marshal(refs references.Store) (io.Reader, error) {
 	)
 
 	go func() {
-		if err := encodeElement(encoder, manager.property.Name, manager.property.Template, refs); err != nil {
+		if err := encodeElement(
+			encoder,
+			manager.property.Name,
+			manager.property.Template,
+			refs,
+		); err != nil {
 			writer.CloseWithError(err)
 
 			return
@@ -81,5 +88,60 @@ func (manager *Manager) Marshal(refs references.Store) (io.Reader, error) {
 // This method is called during runtime to decode a new message and store it inside
 // the given reference store.
 func (manager *Manager) Unmarshal(reader io.Reader, refs references.Store) error {
-	return nil
+	if manager.property == nil {
+		return nil
+	}
+
+	var decoder = xml.NewDecoder(reader)
+
+	for {
+		tok, err := decoder.Token()
+		if err == io.EOF {
+			return nil
+		}
+
+		if err != nil {
+			return err
+		}
+
+		switch t := tok.(type) {
+		case xml.StartElement:
+			if err := decodeElement(
+				decoder,
+				t,
+				manager.resource,
+				"", // prefix
+				manager.property.Name,
+				manager.property.Template,
+				refs,
+			); err != nil {
+				return err
+			}
+
+			continue
+		case xml.CharData:
+			// ignore "\n", "\t" ...
+			continue
+		case xml.EndElement:
+			// stream is closed
+			return nil
+		default:
+			log.Println("foo")
+
+			return errUnexpectedToken{
+				actual: t,
+				expected: []xml.Token{
+					xml.StartElement{},
+				},
+			}
+		}
+	}
+}
+
+func buildPath(prefix, property string) string {
+	if prefix == "" {
+		return property
+	}
+
+	return prefix + "." + property
 }

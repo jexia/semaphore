@@ -1,23 +1,64 @@
 package xml
 
 import (
+	"encoding/xml"
 	"fmt"
-
-	"github.com/jexia/semaphore/pkg/prettyerr"
+	"strings"
 )
 
-// ErrUndefinedSpecs occurs when spacs are nil
-type ErrUndefinedSpecs struct{}
+type errUndefinedProperty string
 
-// Error returns a description of the given error as a string
-func (e ErrUndefinedSpecs) Error() string {
-	return fmt.Sprint("no object specs defined")
+func (e errUndefinedProperty) Error() string {
+	return fmt.Sprintf("undefined property %q", string(e))
 }
 
-// Prettify returns the prettified version of the given error
-func (e ErrUndefinedSpecs) Prettify() prettyerr.Error {
-	return prettyerr.Error{
-		Code:    "UndefinedSpecs",
-		Message: e.Error(),
+type errUnknownEnum string
+
+func (e errUnknownEnum) Error() string {
+	return fmt.Sprintf("unrecognized enum value %q", string(e))
+}
+
+type errUnexpectedToken struct {
+	actual   xml.Token
+	expected []xml.Token
+}
+
+func (e errUnexpectedToken) printExpected() string {
+	var builder strings.Builder
+
+	for index, token := range e.expected {
+		if index > 0 {
+			builder.WriteString(", ")
+		}
+
+		builder.WriteString(fmt.Sprintf(`"%T"`, token))
 	}
+
+	return builder.String()
+}
+
+func (e errUnexpectedToken) Error() string {
+	return fmt.Sprintf(`unexpected element "%T", expected one of [%s]`, e.actual, e.printExpected())
+}
+
+type errFailedToEncodeProperty struct {
+	property string
+	inner    error
+}
+
+func (e errFailedToEncodeProperty) Unwrap() error { return e.inner }
+
+func (e errFailedToEncodeProperty) Error() string {
+	return fmt.Sprintf("failed to encode property '%s': %s", e.property, e.inner)
+}
+
+type errFailedToDecodeProperty struct {
+	property string
+	inner    error
+}
+
+func (e errFailedToDecodeProperty) Unwrap() error { return e.inner }
+
+func (e errFailedToDecodeProperty) Error() string {
+	return fmt.Sprintf("failed to decode property '%s': %s", e.property, e.inner)
 }

@@ -9,17 +9,22 @@ import (
 
 // Object represents an XML object.
 type Object struct {
-	name    string
-	message specs.Message
-	store   references.Store
+	resource string
+	prefix   string
+	name     string
+	path     string
+	message  specs.Message
+	store    references.Store
 }
 
 // NewObject creates a new object by wrapping provided specs.Message.
-func NewObject(name string, message specs.Message, store references.Store) *Object {
+func NewObject(resource, prefix, name string, message specs.Message, store references.Store) *Object {
 	return &Object{
-		name:    name,
-		message: message,
-		store:   store,
+		resource: resource,
+		prefix:   prefix,
+		name:     name,
+		message:  message,
+		store:    store,
 	}
 }
 
@@ -42,7 +47,27 @@ func (object *Object) MarshalXML(encoder *xml.Encoder, _ xml.StartElement) error
 	return encoder.EncodeToken(xml.EndElement{Name: start.Name})
 }
 
-// UnmarshalXML decodes XML input into the reference store.
+// UnmarshalXML decodes XML input into the receiver of type specs.Message.
 func (object *Object) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
-	return nil
+	for {
+		tok, err := decoder.Token()
+		if err != nil {
+			return err
+		}
+
+		switch t := tok.(type) {
+		case xml.StartElement:
+			property, ok := object.message[t.Name.Local]
+			if !ok {
+				return errUndefinedProperty(t.Name.Local)
+			}
+
+			if err := decodeElement(decoder, t, object.resource, object.prefix, property.Name, property.Template, object.store); err != nil {
+				return err
+			}
+		case xml.EndElement:
+			// object is closed
+			return nil
+		}
+	}
 }
