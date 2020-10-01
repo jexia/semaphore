@@ -10,6 +10,7 @@ import (
 	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/transport/http"
+	"go.uber.org/zap/zapcore"
 )
 
 func TestWithFlowsOption(t *testing.T) {
@@ -101,9 +102,25 @@ func TestWithCodec(t *testing.T) {
 
 func TestWithInvalidLogLevel(t *testing.T) {
 	ctx := logger.WithLogger(broker.NewBackground())
-	_, err := NewOptions(ctx, WithLogLevel("*", "unknown"))
+	_, err := NewOptions(ctx, WithLogLevel("*", "unkown"))
 	if err != nil {
 		t.Fatal(err)
+	}
+
+	if ctx.Atom.Level() != zapcore.ErrorLevel {
+		t.Fatalf("unexpected atom level %s, expected %s", ctx.Atom.Level(), zapcore.ErrorLevel)
+	}
+}
+
+func TestWithInvalidLogLevelPattern(t *testing.T) {
+	ctx := logger.WithLogger(broker.WithModule(broker.NewBackground(), "x"))
+	_, err := NewOptions(ctx, WithLogLevel("[x-]", "error"))
+	if err != nil {
+		t.Fatal("unexpected pass")
+	}
+
+	if ctx.Atom.Level() != zapcore.ErrorLevel {
+		t.Fatalf("unexpected atom level %s, expected %s", ctx.Atom.Level(), zapcore.ErrorLevel)
 	}
 }
 

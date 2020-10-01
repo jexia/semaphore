@@ -154,6 +154,7 @@ func WithLogLevel(pattern string, value string) Option {
 		err := level.UnmarshalText([]byte(value))
 		if err != nil {
 			logger.Error(ctx, "unable to unmarshal log level", zap.String("level", value))
+			return
 		}
 
 		err = logger.SetLevel(ctx, pattern, level)
