@@ -59,10 +59,9 @@ func SetLevel(ctx *broker.Context, pattern string, level zapcore.Level) error {
 	}
 
 	for _, child := range ctx.Children {
-		err = SetLevel(child, pattern, level)
-		if err != nil {
-			return err
-		}
+		// errors could only occure inside the pattern which are validate above
+		// this error could safely be ignored
+		_ = SetLevel(child, pattern, level)
 	}
 
 	if (matched || pattern == ctx.Module) && ctx.Atom != nil {
@@ -75,7 +74,11 @@ func SetLevel(ctx *broker.Context, pattern string, level zapcore.Level) error {
 // Error logs a message at ErrorLevel. The message includes any fields passed
 // at the log site, as well as any fields accumulated on the logger.
 func Error(ctx *broker.Context, msg string, fields ...zap.Field) {
-	if ctx.Zap == nil || ctx == nil {
+	if ctx == nil {
+		return
+	}
+
+	if ctx.Zap == nil {
 		panic("context logger not set")
 	}
 
@@ -85,7 +88,11 @@ func Error(ctx *broker.Context, msg string, fields ...zap.Field) {
 // Warn logs a message at WarnLevel. The message includes any fields passed
 // at the log site, as well as any fields accumulated on the logger.
 func Warn(ctx *broker.Context, msg string, fields ...zap.Field) {
-	if ctx.Zap == nil || ctx == nil {
+	if ctx == nil {
+		return
+	}
+
+	if ctx.Zap == nil {
 		panic("context logger not set")
 	}
 
@@ -95,7 +102,11 @@ func Warn(ctx *broker.Context, msg string, fields ...zap.Field) {
 // Info logs a message at InfoLevel. The message includes any fields passed
 // at the log site, as well as any fields accumulated on the logger.
 func Info(ctx *broker.Context, msg string, fields ...zap.Field) {
-	if ctx.Zap == nil || ctx == nil {
+	if ctx == nil {
+		return
+	}
+
+	if ctx.Zap == nil {
 		panic("context logger not set")
 	}
 
@@ -105,7 +116,11 @@ func Info(ctx *broker.Context, msg string, fields ...zap.Field) {
 // Debug logs a message at DebugLevel. The message includes any fields passed
 // at the log site, as well as any fields accumulated on the logger.
 func Debug(ctx *broker.Context, msg string, fields ...zap.Field) {
-	if ctx.Zap == nil || ctx == nil {
+	if ctx == nil {
+		return
+	}
+
+	if ctx.Zap == nil {
 		panic("context logger not set")
 	}
 
