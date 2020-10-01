@@ -12,6 +12,7 @@ type Manifest struct {
 	GRPC            *GRPC         `hcl:"grpc,block"`
 	Prometheus      *Prometheus   `hcl:"prometheus,block"`
 	Protobuffers    []string      `hcl:"protobuffers,optional"`
+	Openapi3        []string      `hcl:"openapi3,optional"`
 	Include         []string      `hcl:"include,optional"`
 	Error           *ParameterMap `hcl:"error,block"`
 	Flows           []Flow        `hcl:"flow,block"`

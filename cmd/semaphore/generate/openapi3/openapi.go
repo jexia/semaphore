@@ -8,8 +8,8 @@ import (
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/functions"
+	"github.com/jexia/semaphore/pkg/generators/openapi3"
 	"github.com/jexia/semaphore/pkg/prettyerr"
-	"github.com/jexia/semaphore/pkg/providers/openapi3"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 )

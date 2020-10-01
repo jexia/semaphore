@@ -7,6 +7,7 @@ require (
 	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/francoispqt/gojay v1.2.13
+	github.com/getkin/kin-openapi v0.22.1
 	github.com/go-test/deep v1.0.7
 	github.com/gogo/protobuf v1.2.2-0.20190723190241-65acae22fc9d // indirect
 	github.com/golang/protobuf v1.4.1
@@ -21,6 +22,7 @@ require (
 	github.com/rs/cors v1.7.0
 	github.com/spf13/cobra v0.0.6
 	github.com/spf13/pflag v1.0.5 // indirect
+	github.com/stretchr/testify v1.5.1
 	github.com/zclconf/go-cty v1.3.1
 	go.uber.org/zap v1.13.0
 	golang.org/x/net v0.0.0-20200319234117-63522dbf7eec // indirect

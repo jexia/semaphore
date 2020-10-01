@@ -4,6 +4,7 @@ package hcl
 type Options struct {
 	LogLevel     string
 	Protobuffers []string
+	Openapi3     []string
 	GraphQL      *GraphQL
 	HTTP         *HTTP
 	GRPC         *GRPC

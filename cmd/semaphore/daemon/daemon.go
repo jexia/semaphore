@@ -27,6 +27,7 @@ func init() {
 	Command.PersistentFlags().StringVar(&flags.GraphQL.Address, "graphql", "", "If set starts the GraphQL listener on the given TCP address")
 	Command.PersistentFlags().StringVar(&flags.GRPC.Address, "grpc", "", "If set starts the gRPC listener on the given TCP address")
 	Command.PersistentFlags().StringSliceVar(&flags.Protobuffers, "proto", []string{}, "If set are all proto definitions found inside the given path passed as schema definitions, all proto definitions are also passed as imports")
+	Command.PersistentFlags().StringSliceVar(&flags.Openapi3, "openapi3", []string{}, "If set all openapi v3 definitions are found inside the given path passed as schema definitions")
 	Command.PersistentFlags().StringSliceVarP(&flags.Files, "file", "f", []string{"config.hcl"}, "Parses the given file as a definition file")
 	Command.PersistentFlags().StringVar(&flags.LogLevel, "level", "", "Global logging level, this value will override the defined log level inside the file definitions")
 }

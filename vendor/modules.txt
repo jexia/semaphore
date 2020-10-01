@@ -14,6 +14,8 @@ github.com/beorn7/perks/quantile
 github.com/bitly/go-simplejson
 # github.com/cespare/xxhash/v2 v2.1.0
 github.com/cespare/xxhash/v2
+# github.com/davecgh/go-spew v1.1.1
+github.com/davecgh/go-spew/spew
 # github.com/dgrijalva/jwt-go v3.2.0+incompatible
 ## explicit
 github.com/dgrijalva/jwt-go
@@ -22,6 +24,10 @@ github.com/dgrijalva/jwt-go
 github.com/francoispqt/gojay
 # github.com/fsnotify/fsnotify v1.4.7
 github.com/fsnotify/fsnotify
+# github.com/getkin/kin-openapi v0.22.1
+## explicit
+github.com/getkin/kin-openapi/jsoninfo
+github.com/getkin/kin-openapi/openapi3
 # github.com/ghodss/yaml v1.0.0
 github.com/ghodss/yaml
 # github.com/go-test/deep v1.0.7
@@ -188,6 +194,8 @@ github.com/nats-io/nuid
 github.com/oxtoacart/bpool
 # github.com/pkg/errors v0.9.1
 github.com/pkg/errors
+# github.com/pmezard/go-difflib v1.0.0
+github.com/pmezard/go-difflib/difflib
 # github.com/prometheus/client_golang v1.2.1
 ## explicit
 github.com/prometheus/client_golang/prometheus
@@ -212,6 +220,9 @@ github.com/spf13/cobra
 # github.com/spf13/pflag v1.0.5
 ## explicit
 github.com/spf13/pflag
+# github.com/stretchr/testify v1.5.1
+## explicit
+github.com/stretchr/testify/assert
 # github.com/zclconf/go-cty v1.3.1
 ## explicit
 github.com/zclconf/go-cty/cty
