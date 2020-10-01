@@ -157,7 +157,7 @@ func CheckHeader(header specs.Header, flow specs.FlowInterface) error {
 	for _, header := range header {
 		if header.Type() != types.String {
 			return ErrHeaderTypeMismatch{
-				Type:     header.Type,
+				Type:     header.Type(),
 				Path:     header.Path,
 				Flow:     flow.GetName(),
 				Expected: types.String,
