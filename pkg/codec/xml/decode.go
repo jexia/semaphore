@@ -18,22 +18,28 @@ func decodeElement(decoder *xml.Decoder, start xml.StartElement, resource, prefi
 		}
 	}()
 
-	var unmarshaler xml.Unmarshaler
+	var (
+		unmarshaler xml.Unmarshaler
+		reference   = specs.PropertyReference{
+			Resource: resource,
+			Path:     prefix,
+		}
+	)
 
 	switch {
 	case template.Message != nil:
-		unmarshaler = NewObject(resource, buildPath(prefix, name), name, template.Message, store)
+		unmarshaler = NewObject(name, template.Message, &reference, store)
 	case template.Repeated != nil:
 		schema, err := template.Repeated.Template()
 		if err != nil {
 			return err
 		}
 
-		unmarshaler = NewArray(resource, prefix, name, schema, template.Repeated, template.Reference, store)
+		unmarshaler = NewArray(name, schema, template.Repeated, &reference, store)
 	case template.Enum != nil:
-		unmarshaler = NewEnum(resource, prefix, name, template.Enum, template.Reference, store)
+		unmarshaler = NewEnum(name, template.Enum, &reference, store)
 	case template.Scalar != nil:
-		unmarshaler = NewScalar(resource, prefix, name, template.Scalar, template.Reference, store)
+		unmarshaler = NewScalar(name, template.Scalar, &reference, store)
 	default:
 		return fmt.Errorf("property '%s' has unknown type", name)
 	}

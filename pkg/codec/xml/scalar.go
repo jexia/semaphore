@@ -10,8 +10,6 @@ import (
 
 // Scalar is a wrapper for specs.Scalar providing XML encoding/decoding.
 type Scalar struct {
-	resource  string
-	prefix    string
 	name      string
 	scalar    *specs.Scalar
 	reference *specs.PropertyReference
@@ -19,10 +17,8 @@ type Scalar struct {
 }
 
 // NewScalar creates a wrapper for specs.Scalar to be XML encoded/decoded.
-func NewScalar(resource, prefix, name string, scalar *specs.Scalar, reference *specs.PropertyReference, store references.Store) *Scalar {
+func NewScalar(name string, scalar *specs.Scalar, reference *specs.PropertyReference, store references.Store) *Scalar {
 	return &Scalar{
-		resource:  resource,
-		prefix:    prefix,
 		name:      name,
 		scalar:    scalar,
 		reference: reference,
@@ -73,7 +69,7 @@ func (scalar *Scalar) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement)
 		switch state {
 		case waitForValue:
 			var reference = &references.Reference{
-				Path: buildPath(scalar.prefix, scalar.name),
+				Path: buildPath(scalar.reference.Path, scalar.name),
 			}
 
 			switch t := tok.(type) {
@@ -82,11 +78,11 @@ func (scalar *Scalar) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement)
 					return err
 				}
 
-				scalar.store.StoreReference(scalar.resource, reference)
+				scalar.store.StoreReference(scalar.reference.Resource, reference)
 
 				state = waitForClose
 			case xml.EndElement:
-				scalar.store.StoreReference(scalar.resource, reference)
+				scalar.store.StoreReference(scalar.reference.Resource, reference)
 				// scalar is closed with nil value
 				return nil
 			default:

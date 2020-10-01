@@ -9,22 +9,20 @@ import (
 
 // Object represents an XML object.
 type Object struct {
-	resource string
-	prefix   string
-	name     string
-	path     string
-	message  specs.Message
-	store    references.Store
+	name      string
+	path      string
+	message   specs.Message
+	reference *specs.PropertyReference
+	store     references.Store
 }
 
 // NewObject creates a new object by wrapping provided specs.Message.
-func NewObject(resource, prefix, name string, message specs.Message, store references.Store) *Object {
+func NewObject(name string, message specs.Message, reference *specs.PropertyReference, store references.Store) *Object {
 	return &Object{
-		resource: resource,
-		prefix:   prefix,
-		name:     name,
-		message:  message,
-		store:    store,
+		name:      name,
+		message:   message,
+		reference: reference,
+		store:     store,
 	}
 }
 
@@ -62,7 +60,17 @@ func (object *Object) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement)
 				return errUndefinedProperty(t.Name.Local)
 			}
 
-			if err := decodeElement(decoder, t, object.resource, object.prefix, property.Name, property.Template, object.store); err != nil {
+			var path = buildPath(object.reference.Path, object.name)
+
+			if err := decodeElement(
+				decoder,
+				t,
+				object.reference.Resource,
+				path,
+				property.Name,
+				property.Template,
+				object.store,
+			); err != nil {
 				return err
 			}
 		case xml.EndElement:

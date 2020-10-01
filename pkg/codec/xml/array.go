@@ -10,8 +10,6 @@ import (
 
 // Array represents an array of values/references.
 type Array struct {
-	resource  string
-	prefix    string
 	name      string
 	template  specs.Template
 	repeated  specs.Repeated
@@ -20,10 +18,8 @@ type Array struct {
 }
 
 // NewArray constructs a new XML array encoder/decoder.
-func NewArray(resource, prefix, name string, template specs.Template, repeated specs.Repeated, reference *specs.PropertyReference, store references.Store) *Array {
+func NewArray(name string, template specs.Template, repeated specs.Repeated, reference *specs.PropertyReference, store references.Store) *Array {
 	return &Array{
-		resource:  resource,
-		prefix:    prefix,
 		name:      name,
 		template:  template,
 		repeated:  repeated,
@@ -62,21 +58,29 @@ func (array *Array) MarshalXML(encoder *xml.Encoder, _ xml.StartElement) error {
 // UnmarshalXML decodes XML input into the receiver of type specs.Repeated.
 func (array *Array) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
 	var (
+		path      = buildPath(array.reference.Path, array.name)
 		store     = references.NewReferenceStore(1)
-		reference = array.store.Load(array.resource, buildPath(array.prefix, array.name))
+		reference = array.store.Load(array.reference.Resource, path)
 	)
 
 	if reference == nil {
 		reference = &references.Reference{
-			Path: buildPath(array.prefix, array.name),
+			Path: path,
 		}
 
-		array.store.StoreReference(array.resource, reference)
+		array.store.StoreReference(array.reference.Resource, reference)
 	}
 
 	// TODO: fixme
-
-	if err := decodeElement(decoder, start, "", "", "", array.template, store); err != nil {
+	if err := decodeElement(
+		decoder,
+		start,
+		"", // resource
+		"", // path
+		"", // name
+		array.template,
+		store,
+	); err != nil {
 		return err
 	}
 

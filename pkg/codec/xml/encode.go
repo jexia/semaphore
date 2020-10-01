@@ -22,18 +22,18 @@ func encodeElement(encoder *xml.Encoder, name string, template specs.Template, s
 
 	switch {
 	case template.Message != nil:
-		marshaler = NewObject("", "", name, template.Message, store)
+		marshaler = NewObject(name, template.Message, nil, store)
 	case template.Repeated != nil:
 		schema, err := template.Repeated.Template()
 		if err != nil {
 			return err
 		}
 
-		marshaler = NewArray("", "", name, schema, template.Repeated, template.Reference, store)
+		marshaler = NewArray(name, schema, template.Repeated, template.Reference, store)
 	case template.Enum != nil:
-		marshaler = NewEnum("", "", name, template.Enum, template.Reference, store)
+		marshaler = NewEnum(name, template.Enum, template.Reference, store)
 	case template.Scalar != nil:
-		marshaler = NewScalar("", "", name, template.Scalar, template.Reference, store)
+		marshaler = NewScalar(name, template.Scalar, template.Reference, store)
 	default:
 		return fmt.Errorf("property '%s' has unknown type", name)
 	}

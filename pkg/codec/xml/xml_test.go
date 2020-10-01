@@ -395,23 +395,6 @@ func TestUnmarshal(t *testing.T) {
 				},
 			},
 		},
-		// TODO: fixme!!!
-
-		// 		"root.array": {
-		// 			repeated: []expect{
-		// 				{
-		// 					value: "foo",
-		// 				},
-		// 				{
-		// 					value: nil,
-		// 				},
-		// 				{
-		// 					value: "bar",
-		// 				},
-		// 			},
-		// 		},
-		// 	},
-		// },
 		"complex": {
 			input: strings.NewReader(
 				`<root>
@@ -452,6 +435,7 @@ func TestUnmarshal(t *testing.T) {
 				"root.nested.second": {
 					value: "bar",
 				},
+				// TODO: fixme
 				"root.repeating": {
 					repeated: []expect{
 						{
