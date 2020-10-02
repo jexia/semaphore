@@ -33,8 +33,6 @@ func (object *Object) MarshalXML(encoder *xml.Encoder, _ xml.StartElement) error
 		return err
 	}
 
-	// Question: why we ignore the reference (when entire object is a reference)?
-
 	// TODO: properties are now sorted during runtime. This process should be
 	// moved to be prepared before MarshalXML is called.
 	for _, property := range object.message.SortedProperties() {
