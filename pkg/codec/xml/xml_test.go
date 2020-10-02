@@ -182,13 +182,15 @@ func TestUnmarshal(t *testing.T) {
 				"<integer><unexpected></integer>",
 			),
 			schema: SchemaScalar,
-			error: errFailedToDecodeProperty{
-				property: "integer",
-				inner: errUnexpectedToken{
-					actual: xml.StartElement{},
-					expected: []xml.Token{
-						xml.CharData{},
-						xml.EndElement{},
+			error: errFailedToDecode{
+				errStack{
+					property: "integer",
+					inner: errUnexpectedToken{
+						actual: xml.StartElement{},
+						expected: []xml.Token{
+							xml.CharData{},
+							xml.EndElement{},
+						},
 					},
 				},
 			},
@@ -198,12 +200,14 @@ func TestUnmarshal(t *testing.T) {
 				"<integer>42<unexpected></integer>",
 			),
 			schema: SchemaScalar,
-			error: errFailedToDecodeProperty{
-				property: "integer",
-				inner: errUnexpectedToken{
-					actual: xml.StartElement{},
-					expected: []xml.Token{
-						xml.EndElement{},
+			error: errFailedToDecode{
+				errStack{
+					property: "integer",
+					inner: errUnexpectedToken{
+						actual: xml.StartElement{},
+						expected: []xml.Token{
+							xml.EndElement{},
+						},
 					},
 				},
 			},
@@ -213,9 +217,11 @@ func TestUnmarshal(t *testing.T) {
 				"<integer>foo</integer>",
 			),
 			schema: SchemaScalar,
-			error: errFailedToDecodeProperty{
-				property: "integer",
-				inner:    errors.New(`strconv.ParseInt: parsing "foo": invalid syntax`),
+			error: errFailedToDecode{
+				errStack{
+					property: "integer",
+					inner:    errors.New(`strconv.ParseInt: parsing "foo": invalid syntax`),
+				},
 			},
 		},
 		"scalar with empty value": {
@@ -245,13 +251,15 @@ func TestUnmarshal(t *testing.T) {
 				"<status><unexpected></status>",
 			),
 			schema: SchemaEnum,
-			error: errFailedToDecodeProperty{
-				property: "status",
-				inner: errUnexpectedToken{
-					actual: xml.StartElement{},
-					expected: []xml.Token{
-						xml.CharData{},
-						xml.EndElement{},
+			error: errFailedToDecode{
+				errStack{
+					property: "status",
+					inner: errUnexpectedToken{
+						actual: xml.StartElement{},
+						expected: []xml.Token{
+							xml.CharData{},
+							xml.EndElement{},
+						},
 					},
 				},
 			},
@@ -261,12 +269,14 @@ func TestUnmarshal(t *testing.T) {
 				"<status>UNKNOWN<unexpected></status>",
 			),
 			schema: SchemaEnum,
-			error: errFailedToDecodeProperty{
-				property: "status",
-				inner: errUnexpectedToken{
-					actual: xml.StartElement{},
-					expected: []xml.Token{
-						xml.EndElement{},
+			error: errFailedToDecode{
+				errStack{
+					property: "status",
+					inner: errUnexpectedToken{
+						actual: xml.StartElement{},
+						expected: []xml.Token{
+							xml.EndElement{},
+						},
 					},
 				},
 			},
@@ -276,9 +286,11 @@ func TestUnmarshal(t *testing.T) {
 				"<status>foo</status>",
 			),
 			schema: SchemaEnum,
-			error: errFailedToDecodeProperty{
-				property: "status",
-				inner:    errUnknownEnum("foo"),
+			error: errFailedToDecode{
+				errStack{
+					property: "status",
+					inner:    errUnknownEnum("foo"),
+				},
 			},
 		},
 		"enum with empty value": {
@@ -317,6 +329,34 @@ func TestUnmarshal(t *testing.T) {
 				},
 				"root.integer": {
 					value: int32(42),
+				},
+			},
+		},
+		"error on nested property": {
+			input: strings.NewReader(
+				`<root>
+					<nested>
+						<status>PENDING</status>
+						<integer>oops</integer>
+					</nested>
+					<string>foobar</string>
+				</root>`,
+			),
+			schema: SchemaObjectNested,
+			error: errFailedToDecode{
+				errStack: errStack{
+					property: "root",
+					inner: errFailedToDecode{
+						errStack: errStack{
+							property: "nested",
+							inner: errFailedToDecode{
+								errStack: errStack{
+									property: "integer",
+									inner:    errors.New("strconv.ParseInt: parsing \"oops\": invalid syntax"),
+								},
+							},
+						},
+					},
 				},
 			},
 		},

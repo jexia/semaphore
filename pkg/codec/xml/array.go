@@ -84,6 +84,7 @@ func (array *Array) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) e
 		return err
 	}
 
+	// update the reference
 	reference.Repeated = append(reference.Repeated, store)
 
 	return nil

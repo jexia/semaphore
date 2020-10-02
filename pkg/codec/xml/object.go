@@ -33,6 +33,8 @@ func (object *Object) MarshalXML(encoder *xml.Encoder, _ xml.StartElement) error
 		return err
 	}
 
+	// Question: why we ignore the reference (when entire object is a reference)?
+
 	// TODO: properties are now sorted during runtime. This process should be
 	// moved to be prepared before MarshalXML is called.
 	for _, property := range object.message.SortedProperties() {
@@ -45,7 +47,7 @@ func (object *Object) MarshalXML(encoder *xml.Encoder, _ xml.StartElement) error
 }
 
 // UnmarshalXML decodes XML input into the receiver of type specs.Message.
-func (object *Object) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
+func (object *Object) UnmarshalXML(decoder *xml.Decoder, _ xml.StartElement) error {
 	for {
 		tok, err := decoder.Token()
 		if err != nil {
@@ -59,13 +61,11 @@ func (object *Object) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement)
 				return errUndefinedProperty(t.Name.Local)
 			}
 
-			var path = buildPath(object.reference.Path, object.name)
-
 			if err := decodeElement(
 				decoder,
-				t,
-				object.reference.Resource,
-				path,
+				t,                         // start element
+				object.reference.Resource, // resource name
+				buildPath(object.reference.Path, object.name), // path
 				property.Name,
 				property.Template,
 				object.store,

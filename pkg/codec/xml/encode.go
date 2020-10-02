@@ -11,9 +11,11 @@ import (
 func encodeElement(encoder *xml.Encoder, name string, template specs.Template, store references.Store) (err error) {
 	defer func() {
 		if err != nil {
-			err = errFailedToEncodeProperty{
-				property: name,
-				inner:    err,
+			err = errFailedToEncode{
+				errStack{
+					property: name,
+					inner:    err,
+				},
 			}
 		}
 	}()
@@ -22,7 +24,7 @@ func encodeElement(encoder *xml.Encoder, name string, template specs.Template, s
 
 	switch {
 	case template.Message != nil:
-		marshaler = NewObject(name, template.Message, nil, store)
+		marshaler = NewObject(name, template.Message, template.Reference, store)
 	case template.Repeated != nil:
 		schema, err := template.Repeated.Template()
 		if err != nil {

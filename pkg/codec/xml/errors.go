@@ -2,9 +2,12 @@ package xml
 
 import (
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"strings"
 )
+
+var errNoSchema = errors.New("no object specs defined")
 
 type errUndefinedProperty string
 
@@ -41,24 +44,50 @@ func (e errUnexpectedToken) Error() string {
 	return fmt.Sprintf(`unexpected element "%T", expected one of [%s]`, e.actual, e.printExpected())
 }
 
-type errFailedToEncodeProperty struct {
+type nestedError interface {
+	path() string
+	unwrap() error
+}
+
+type errStack struct {
 	property string
 	inner    error
 }
 
-func (e errFailedToEncodeProperty) Unwrap() error { return e.inner }
+func (e errStack) Unwrap() error { return e.inner }
 
-func (e errFailedToEncodeProperty) Error() string {
-	return fmt.Sprintf("failed to encode property '%s': %s", e.property, e.inner)
+func (e errStack) path() string {
+	casted, ok := e.inner.(nestedError)
+	if !ok {
+		return e.property
+	}
+
+	return buildPath(e.property, casted.path())
 }
 
-type errFailedToDecodeProperty struct {
-	property string
-	inner    error
+func (e errStack) unwrap() error {
+	caseted, ok := e.inner.(nestedError)
+	if !ok {
+		return e.inner
+	}
+
+	return caseted.unwrap()
 }
 
-func (e errFailedToDecodeProperty) Unwrap() error { return e.inner }
+type errFailedToEncode struct {
+	errStack
+}
 
-func (e errFailedToDecodeProperty) Error() string {
-	return fmt.Sprintf("failed to decode property '%s': %s", e.property, e.inner)
+func (e errFailedToEncode) Error() string {
+	return fmt.Sprintf("failed to encode element '%s': %s", e.path(), e.unwrap())
+}
+
+type errFailedToDecode struct {
+	errStack
+}
+
+func (e errFailedToDecode) Unwrap() error { return e.inner }
+
+func (e errFailedToDecode) Error() string {
+	return fmt.Sprintf("failed to decode element: path '%s': %s", e.path(), e.unwrap())
 }
