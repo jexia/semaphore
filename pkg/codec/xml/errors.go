@@ -79,7 +79,7 @@ type errFailedToEncode struct {
 }
 
 func (e errFailedToEncode) Error() string {
-	return fmt.Sprintf("failed to encode element '%s': %s", e.path(), e.unwrap())
+	return fmt.Sprintf("failed to encode element: path '%s': %s", e.path(), e.unwrap())
 }
 
 type errFailedToDecode struct {
