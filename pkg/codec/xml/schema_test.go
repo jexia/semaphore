@@ -317,6 +317,10 @@ var (
 							},
 							Repeated: specs.Repeated{
 								{
+									Reference: &specs.PropertyReference{
+										Resource: "",
+										Path:     "",
+									},
 									Scalar: &specs.Scalar{
 										Type: types.String,
 									},
@@ -336,6 +340,10 @@ var (
 							},
 							Repeated: specs.Repeated{
 								{
+									Reference: &specs.PropertyReference{
+										Resource: "",
+										Path:     "",
+									},
 									Enum: enum,
 								},
 							},
@@ -368,6 +376,10 @@ var (
 							},
 							Repeated: specs.Repeated{
 								{
+									Reference: &specs.PropertyReference{
+										Resource: "",
+										Path:     "",
+									},
 									Message: specs.Message{
 										"value": {
 											Position: 1,

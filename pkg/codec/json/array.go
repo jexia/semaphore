@@ -1,8 +1,6 @@
 package json
 
 import (
-	"log"
-
 	"github.com/francoispqt/gojay"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
@@ -58,7 +56,6 @@ func (array *Array) MarshalJSONArray(enc *gojay.Encoder) {
 	}
 
 	for _, store := range array.ref.Repeated {
-		log.Println(store, array.template.Type())
 		switch {
 		case array.template.Message != nil:
 			object := NewObject(array.resource, array.template.Message, store)

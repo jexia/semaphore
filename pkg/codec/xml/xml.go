@@ -3,7 +3,6 @@ package xml
 import (
 	"encoding/xml"
 	"io"
-	"log"
 
 	"github.com/jexia/semaphore/pkg/codec"
 	"github.com/jexia/semaphore/pkg/references"
@@ -125,8 +124,6 @@ func (manager *Manager) Unmarshal(reader io.Reader, refs references.Store) error
 			// stream is closed
 			return nil
 		default:
-			log.Println("foo")
-
 			return errUnexpectedToken{
 				actual: t,
 				expected: []xml.Token{

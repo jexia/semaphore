@@ -5,7 +5,6 @@ import (
 	"errors"
 	"io"
 	"io/ioutil"
-	"log"
 	"strings"
 	"testing"
 
@@ -172,7 +171,7 @@ func TestUnmarshal(t *testing.T) {
 	type test struct {
 		input    io.Reader
 		schema   *specs.ParameterMap
-		expected map[string]expect
+		expected expect
 		error    error
 	}
 
@@ -229,9 +228,11 @@ func TestUnmarshal(t *testing.T) {
 				"<integer></integer>",
 			),
 			schema: SchemaScalar,
-			expected: map[string]expect{
-				"integer": {
-					value: nil,
+			expected: expect{
+				nested: map[string]expect{
+					"integer": {
+						value: nil,
+					},
 				},
 			},
 		},
@@ -240,9 +241,11 @@ func TestUnmarshal(t *testing.T) {
 				"<integer>42</integer>",
 			),
 			schema: SchemaScalar,
-			expected: map[string]expect{
-				"integer": {
-					value: int32(42),
+			expected: expect{
+				nested: map[string]expect{
+					"integer": {
+						value: int32(42),
+					},
 				},
 			},
 		},
@@ -298,9 +301,11 @@ func TestUnmarshal(t *testing.T) {
 				"<status></status>",
 			),
 			schema: SchemaEnum,
-			expected: map[string]expect{
-				"status": {
-					value: nil,
+			expected: expect{
+				nested: map[string]expect{
+					"status": {
+						value: nil,
+					},
 				},
 			},
 		},
@@ -309,9 +314,11 @@ func TestUnmarshal(t *testing.T) {
 				"<status>PENDING</status>",
 			),
 			schema: SchemaEnum,
-			expected: map[string]expect{
-				"status": {
-					enum: func() *int32 { i := int32(1); return &i }(),
+			expected: expect{
+				nested: map[string]expect{
+					"status": {
+						enum: func() *int32 { i := int32(1); return &i }(),
+					},
 				},
 			},
 		},
@@ -323,12 +330,14 @@ func TestUnmarshal(t *testing.T) {
 				</root>`,
 			),
 			schema: SchemaObject,
-			expected: map[string]expect{
-				"root.status": {
-					enum: func() *int32 { i := int32(1); return &i }(),
-				},
-				"root.integer": {
-					value: int32(42),
+			expected: expect{
+				nested: map[string]expect{
+					"root.status": {
+						enum: func() *int32 { i := int32(1); return &i }(),
+					},
+					"root.integer": {
+						value: int32(42),
+					},
 				},
 			},
 		},
@@ -371,15 +380,17 @@ func TestUnmarshal(t *testing.T) {
 				</root>`,
 			),
 			schema: SchemaObjectNested,
-			expected: map[string]expect{
-				"root.nested.status": {
-					enum: func() *int32 { i := int32(1); return &i }(),
-				},
-				"root.nested.integer": {
-					value: int32(42),
-				},
-				"root.string": {
-					value: "foobar",
+			expected: expect{
+				nested: map[string]expect{
+					"root.nested.status": {
+						enum: func() *int32 { i := int32(1); return &i }(),
+					},
+					"root.nested.integer": {
+						value: int32(42),
+					},
+					"root.string": {
+						value: "foobar",
+					},
 				},
 			},
 		},
@@ -390,17 +401,19 @@ func TestUnmarshal(t *testing.T) {
 				<array>bar</array>`,
 			),
 			schema: SchemaArray,
-			expected: map[string]expect{
-				"array": {
-					repeated: []expect{
-						{
-							value: "foo",
-						},
-						{
-							value: nil,
-						},
-						{
-							value: "bar",
+			expected: expect{
+				nested: map[string]expect{
+					"array": {
+						repeated: []expect{
+							{
+								value: "foo",
+							},
+							{
+								value: nil,
+							},
+							{
+								value: "bar",
+							},
 						},
 					},
 				},
@@ -416,20 +429,22 @@ func TestUnmarshal(t *testing.T) {
 				</root>`,
 			),
 			schema: SchemaNestedArray,
-			expected: map[string]expect{
-				"root.integer": {
-					value: int32(42),
-				},
-				"root.array": {
-					repeated: []expect{
-						{
-							value: "foo",
-						},
-						{
-							value: nil,
-						},
-						{
-							value: "bar",
+			expected: expect{
+				nested: map[string]expect{
+					"root.integer": {
+						value: int32(42),
+					},
+					"root.array": {
+						repeated: []expect{
+							{
+								value: "foo",
+							},
+							{
+								value: nil,
+							},
+							{
+								value: "bar",
+							},
 						},
 					},
 				},
@@ -455,40 +470,41 @@ func TestUnmarshal(t *testing.T) {
 			</root>`,
 			),
 			schema: SchemaObjectComplex,
-			expected: map[string]expect{
-				"root.repeating_string": {
-					repeated: []expect{
-						{
-							value: "foo",
-						},
-						{
-							value: "bar",
-						},
-					},
-				},
-				"root.message": {
-					value: "hello world",
-				},
-				"root.nested.first": {
-					value: "foo",
-				},
-				"root.nested.second": {
-					value: "bar",
-				},
-				// TODO: fixme
-				"root.repeating": {
-					repeated: []expect{
-						{
-							nested: map[string]expect{
-								"value": {
-									value: "repeating one",
-								},
+			expected: expect{
+				nested: map[string]expect{
+					"root.repeating_string": {
+						repeated: []expect{
+							{
+								value: "foo",
+							},
+							{
+								value: "bar",
 							},
 						},
-						{
-							nested: map[string]expect{
-								"value": {
-									value: "repeating two",
+					},
+					"root.message": {
+						value: "hello world",
+					},
+					"root.nested.first": {
+						value: "foo",
+					},
+					"root.nested.second": {
+						value: "bar",
+					},
+					"root.repeating": {
+						repeated: []expect{
+							{
+								nested: map[string]expect{
+									"value": {
+										value: "repeating one",
+									},
+								},
+							},
+							{
+								nested: map[string]expect{
+									"value": {
+										value: "repeating two",
+									},
 								},
 							},
 						},
@@ -513,8 +529,6 @@ func TestUnmarshal(t *testing.T) {
 			var refs = references.NewReferenceStore(0)
 			err = manager.Unmarshal(test.input, refs)
 
-			log.Printf("[%s]: %s", title, refs)
-
 			if test.error != nil {
 				if err == nil {
 					t.Fatalf("error '%s' was expected", test.error)
@@ -530,9 +544,7 @@ func TestUnmarshal(t *testing.T) {
 				}
 			}
 
-			for path, output := range test.expected {
-				assert(t, "mock", path, refs, output)
-			}
+			assert(t, "mock", "", refs, test.expected)
 		})
 	}
 }
@@ -544,51 +556,40 @@ type expect struct {
 	nested   map[string]expect
 }
 
-func assert(t *testing.T, resource string, path string, store references.Store, output expect) {
-	ref := store.Load(resource, path)
-
-	if ref == nil {
-		t.Fatalf("reference %q was expected to be set", path)
-	}
-
-	if output.value != nil {
-		if ref.Value != output.value {
-			t.Errorf("reference %q was expected to be %T(%v), got %T(%v)", path, output.value, output.value, ref.Value, ref.Value)
+func assert(t *testing.T, resource, path string, store references.Store, input expect) {
+	if input.nested != nil {
+		for key, value := range input.nested {
+			assert(t, resource, key, store, value)
 		}
 
 		return
 	}
 
-	if output.enum != nil {
-		if ref.Enum == nil {
+	ref := store.Load(resource, path)
+
+	switch {
+	case input.enum != nil:
+		if ref == nil || ref.Enum == nil {
 			t.Fatalf("reference %q was expected to have a enum value", path)
 		}
 
-		if *output.enum != *ref.Enum {
-			t.Errorf("reference %q was expected to have enum value [%d], not [%d]", path, *output.enum, *ref.Enum)
+		if *input.enum != *ref.Enum {
+			t.Errorf("reference %q was expected to have enum value [%d], not [%d]", path, *input.enum, *ref.Enum)
 		}
-
-		return
-	}
-
-	if output.nested != nil {
-		for key, expected := range output.nested {
-			assert(t, resource, key, store, expected)
+	case input.value != nil:
+		if ref == nil || ref.Value != input.value {
+			t.Errorf("reference %q was expected to be %T(%v), got %T(%v)", path, input.value, input.value, ref.Value, ref.Value)
 		}
-
-		return
-	}
-
-	if output.repeated != nil {
-		if ref.Repeated == nil {
+	case input.repeated != nil:
+		if ref == nil || ref.Repeated == nil {
 			t.Fatalf("reference %q was expected to have a repeated value", path)
 		}
 
-		if expected, actual := len(output.repeated), len(ref.Repeated); actual != expected {
+		if expected, actual := len(input.repeated), len(ref.Repeated); actual != expected {
 			t.Fatalf("invalid number of repeated values, expected %d, got %d", expected, actual)
 		}
 
-		for index, expected := range output.repeated {
+		for index, expected := range input.repeated {
 			assert(t, "", "", ref.Repeated[index], expected)
 		}
 	}

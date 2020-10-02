@@ -437,7 +437,8 @@ func ParseIntermediateNestedParameterMap(ctx *broker.Context, params NestedParam
 func ParseIntermediateRepeatedParameterMap(ctx *broker.Context, params RepeatedParameterMap, path string) (*specs.Property, error) {
 	properties, _ := params.Properties.JustAttributes()
 	msg := specs.Template{
-		Message: make(specs.Message),
+		Reference: &specs.PropertyReference{},
+		Message:   make(specs.Message),
 	}
 
 	for _, nested := range params.Nested {
