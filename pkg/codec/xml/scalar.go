@@ -39,11 +39,7 @@ func (scalar Scalar) MarshalXML(encoder *xml.Encoder, _ xml.StartElement) error 
 
 	if scalar.reference != nil {
 		var reference = scalar.store.Load(scalar.reference.Resource, scalar.reference.Path)
-		if reference == nil {
-			return nil
-		}
-
-		if reference.Value != nil {
+		if reference != nil && reference.Value != nil {
 			value = reference.Value
 		}
 	}

@@ -74,17 +74,13 @@ func (e errStack) unwrap() error {
 	return caseted.unwrap()
 }
 
-type errFailedToEncode struct {
-	errStack
-}
+type errFailedToEncode struct{ errStack }
 
 func (e errFailedToEncode) Error() string {
 	return fmt.Sprintf("failed to encode element: path '%s': %s", e.path(), e.unwrap())
 }
 
-type errFailedToDecode struct {
-	errStack
-}
+type errFailedToDecode struct{ errStack }
 
 func (e errFailedToDecode) Unwrap() error { return e.inner }
 

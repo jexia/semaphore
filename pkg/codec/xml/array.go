@@ -30,6 +30,12 @@ func NewArray(name string, template specs.Template, repeated specs.Repeated, ref
 // MarshalXML encodes the given specs object into the provided XML encoder.
 func (array *Array) MarshalXML(encoder *xml.Encoder, _ xml.StartElement) error {
 	if array.reference == nil {
+		for _, item := range array.repeated {
+			if err := encodeElement(encoder, array.name, item, array.store); err != nil {
+				return err
+			}
+		}
+
 		return nil
 	}
 
@@ -38,6 +44,8 @@ func (array *Array) MarshalXML(encoder *xml.Encoder, _ xml.StartElement) error {
 		// ignore
 		return nil
 	}
+
+	array.template.Reference = new(specs.PropertyReference)
 
 	for _, store := range reference.Repeated {
 		if err := encodeElement(encoder, array.name, array.template, store); err != nil {
@@ -64,7 +72,6 @@ func (array *Array) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) e
 		array.store.StoreReference(array.reference.Resource, reference)
 	}
 
-	// TODO: fixme
 	if err := decodeElement(
 		decoder,
 		start,

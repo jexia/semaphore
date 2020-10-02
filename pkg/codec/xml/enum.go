@@ -38,7 +38,6 @@ func (enum *Enum) MarshalXML(encoder *xml.Encoder, _ xml.StartElement) error {
 
 	if enum.reference != nil {
 		var reference = enum.store.Load(enum.reference.Resource, enum.reference.Path)
-
 		if reference == nil || reference.Enum == nil {
 			return nil
 		}
