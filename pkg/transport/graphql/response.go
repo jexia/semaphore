@@ -78,6 +78,10 @@ func ResponseValue(template specs.Template, refs references.Store) (interface{},
 
 		return result, nil
 	case template.Enum != nil:
+		if template.Reference == nil {
+			return nil, nil
+		}
+
 		ref := refs.Load(template.Reference.Resource, template.Reference.Path)
 		if ref == nil {
 			return nil, nil
@@ -87,9 +91,11 @@ func ResponseValue(template specs.Template, refs references.Store) (interface{},
 	case template.Scalar != nil:
 		value := template.Scalar.Default
 
-		ref := refs.Load(template.Reference.Resource, template.Reference.Path)
-		if ref != nil {
-			value = ref.Value
+		if template.Reference != nil {
+			ref := refs.Load(template.Reference.Resource, template.Reference.Path)
+			if ref != nil {
+				value = ref.Value
+			}
 		}
 
 		return value, nil

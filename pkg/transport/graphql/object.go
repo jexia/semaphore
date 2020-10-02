@@ -35,9 +35,7 @@ func NewObject(name string, description string, template specs.Template) (*graph
 func NewType(name string, description string, property specs.Template) (graphql.Output, error) {
 	switch {
 	case property.Message != nil:
-		object := graphql.NewObject(graphql.ObjectConfig{
-			Name: name,
-		})
+		fields := graphql.Fields{}
 
 		for _, nested := range property.Message {
 			typed, err := NewType(name+"_"+nested.Name, nested.Description, nested.Template)
@@ -46,12 +44,18 @@ func NewType(name string, description string, property specs.Template) (graphql.
 			}
 
 			field := &graphql.Field{
+				Name:        nested.Name,
 				Description: nested.Description,
 				Type:        typed,
 			}
 
-			object.AddFieldConfig(nested.Name, field)
+			fields[nested.Name] = field
 		}
+
+		object := graphql.NewObject(graphql.ObjectConfig{
+			Name:   name,
+			Fields: fields,
+		})
 
 		return object, nil
 	case property.Repeated != nil:
