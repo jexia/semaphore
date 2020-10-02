@@ -2,7 +2,6 @@ package xml
 
 import (
 	"encoding/xml"
-	"errors"
 
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
@@ -35,12 +34,9 @@ func (array *Array) MarshalXML(encoder *xml.Encoder, _ xml.StartElement) error {
 	}
 
 	var reference = array.store.Load(array.reference.Resource, array.reference.Path)
-	if reference == nil {
+	if reference == nil || reference.Repeated == nil {
+		// ignore
 		return nil
-	}
-
-	if reference.Repeated == nil {
-		return errors.New("reference does not contain repeated value")
 	}
 
 	for _, store := range reference.Repeated {

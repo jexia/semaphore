@@ -301,13 +301,6 @@ func TestUnmarshal(t *testing.T) {
 				"<status></status>",
 			),
 			schema: SchemaEnum,
-			expected: expect{
-				nested: map[string]expect{
-					"status": {
-						value: nil,
-					},
-				},
-			},
 		},
 		"enum": {
 			input: strings.NewReader(
@@ -557,17 +550,13 @@ type expect struct {
 }
 
 func assert(t *testing.T, resource, path string, store references.Store, input expect) {
-	if input.nested != nil {
-		for key, value := range input.nested {
-			assert(t, resource, key, store, value)
-		}
-
-		return
-	}
-
 	ref := store.Load(resource, path)
 
 	switch {
+	case input.nested != nil:
+		for key, value := range input.nested {
+			assert(t, resource, key, store, value)
+		}
 	case input.enum != nil:
 		if ref == nil || ref.Enum == nil {
 			t.Fatalf("reference %q was expected to have a enum value", path)
