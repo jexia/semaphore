@@ -632,6 +632,7 @@ func TestUnmarshal(t *testing.T) {
 
 			store := references.NewReferenceStore(len(input))
 			err = manager.Unmarshal(bytes.NewBuffer(inputAsJSON), store)
+
 			if err != nil {
 				t.Fatal(err)
 			}

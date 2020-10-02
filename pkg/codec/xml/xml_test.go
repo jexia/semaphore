@@ -1,10 +1,15 @@
 package xml
 
 import (
+	"encoding/xml"
+	"errors"
+	"io"
 	"io/ioutil"
+	"strings"
 	"testing"
 
 	"github.com/jexia/semaphore/pkg/references"
+	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/template"
 )
 
@@ -36,26 +41,6 @@ func TestName(t *testing.T) {
 	})
 }
 
-func TestUndefinedSpecs(t *testing.T) {
-	tests := []struct {
-		name string
-		want string
-	}{
-		{
-			name: "return the formatted error",
-			want: "no object specs defined",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			e := ErrUndefinedSpecs{}
-			if got := e.Prettify(); got.Message != tt.want {
-				t.Errorf("%v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestMarshal(t *testing.T) {
 	var constructor = NewConstructor()
 	if constructor == nil {
@@ -64,14 +49,26 @@ func TestMarshal(t *testing.T) {
 
 	type test struct {
 		input    map[string]interface{}
+		schema   *specs.ParameterMap
 		expected string
 	}
 
 	var tests = map[string]test{
+		"array empty": {
+			schema: SchemaArrayDefaultEmpty,
+		},
+		"array default reference": {
+			input: map[string]interface{}{
+				"string": "foo",
+			},
+			schema:   SchemaArrayWithValues,
+			expected: "<array>foo</array><array>bar</array>",
+		},
 		"simple": {
 			input: map[string]interface{}{
 				"message": "hello world",
 			},
+			schema:   SchemaObjectComplex,
 			expected: "<root><message>hello world</message><nested></nested></root>",
 		},
 		"enum": {
@@ -79,6 +76,7 @@ func TestMarshal(t *testing.T) {
 				"nested": map[string]interface{}{},
 				"status": references.Enum("PENDING", 1),
 			},
+			schema:   SchemaObjectComplex,
 			expected: "<root><status>PENDING</status><nested></nested></root>",
 		},
 		"nested": {
@@ -88,6 +86,7 @@ func TestMarshal(t *testing.T) {
 					"second": "bar",
 				},
 			},
+			schema:   SchemaObjectComplex,
 			expected: "<root><nested><first>foo</first><second>bar</second></nested></root>",
 		},
 		"repeating string": {
@@ -98,6 +97,7 @@ func TestMarshal(t *testing.T) {
 					nil, // TODO: nil (null) values should not be ignored
 				},
 			},
+			schema:   SchemaObjectComplex,
 			expected: "<root><nested></nested><repeating_string>repeating one</repeating_string><repeating_string>repeating two</repeating_string></root>",
 		},
 		"repeating enum": {
@@ -107,6 +107,7 @@ func TestMarshal(t *testing.T) {
 					references.Enum("PENDING", 1),
 				},
 			},
+			schema:   SchemaObjectComplex,
 			expected: "<root><nested></nested><repeating_enum>UNKNOWN</repeating_enum><repeating_enum>PENDING</repeating_enum></root>",
 		},
 		"repeating nested": {
@@ -120,6 +121,7 @@ func TestMarshal(t *testing.T) {
 					},
 				},
 			},
+			schema:   SchemaObjectComplex,
 			expected: "<root><nested></nested><repeating><value>repeating one</value></repeating><repeating><value>repeating two</value></repeating></root>",
 		},
 		"complex": {
@@ -139,13 +141,14 @@ func TestMarshal(t *testing.T) {
 					},
 				},
 			},
+			schema:   SchemaObjectComplex,
 			expected: "<root><numeric>42</numeric><message>hello world</message><nested><first>foo</first><second>bar</second></nested><repeating><value>repeating one</value></repeating><repeating><value>repeating two</value></repeating></root>",
 		},
 	}
 
 	for title, test := range tests {
 		t.Run(title, func(t *testing.T) {
-			manager, err := constructor.New("mock", SchemaObject)
+			manager, err := constructor.New("mock", test.schema)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -174,281 +177,449 @@ type readerFunc func([]byte) (int, error)
 
 func (fn readerFunc) Read(p []byte) (int, error) { return fn(p) }
 
-// func TestUnmarshal(t *testing.T) {
-// 	type test struct {
-// 		input    io.Reader
-// 		expected map[string]expect
-// 		error    error
-// 	}
-//
-// 	tests := map[string]test{
-// 		"reader error": {
-// 			input: readerFunc(
-// 				func([]byte) (int, error) {
-// 					return 0, errors.New("failed")
-// 				},
-// 			),
-// 			error: errors.New("failed"),
-// 		},
-// 		"unknown enum value": {
-// 			input: strings.NewReader(
-// 				"<mock><status>PENDING</status><another_status>DONE</another_status></mock>",
-// 			),
-// 			error: errUnknownEnum("DONE"),
-// 		},
-// 		"unknown enum value (repeated)": {
-// 			input: strings.NewReader(
-// 				"<mock><repeating_enum>DONE</repeating_enum></mock>",
-// 			),
-// 			error: errUnknownEnum("DONE"),
-// 		},
-// 		"type mismatch": {
-// 			input: strings.NewReader(
-// 				"<mock><numeric>not a number</numeric></mock>",
-// 			),
-// 			error: errors.New(""), // error returned by ParseInt()
-// 		},
-// 		"type mismatch (repeated)": {
-// 			input: strings.NewReader(
-// 				"<mock><repeating_numeric>not a number</repeating_numeric></mock>",
-// 			),
-// 			error: errors.New(""), // error returned by ParseInt()
-// 		},
-// 		"empty reader": {
-// 			input: strings.NewReader(""),
-// 		},
-// 		"simple (+ignore empty)": {
-// 			input: strings.NewReader(
-// 				"<mock><nested></nested><message>hello world</message><another_message>dlrow olleh</another_message></mock>",
-// 			),
-// 			expected: map[string]expect{
-// 				"message": {
-// 					value: "hello world",
-// 				},
-// 				"another_message": {
-// 					value: "dlrow olleh",
-// 				},
-// 			},
-// 		},
-// 		"enum": {
-// 			input: strings.NewReader(
-// 				"<mock><status>PENDING</status><another_status>UNKNOWN</another_status></mock>",
-// 			),
-// 			expected: map[string]expect{
-// 				"status": {
-// 					enum: func() *int32 { i := int32(1); return &i }(),
-// 				},
-// 				"another_status": {
-// 					enum: func() *int32 { i := int32(0); return &i }(),
-// 				},
-// 			},
-// 		},
-// 		"nested": {
-// 			input: strings.NewReader(
-// 				"<mock><nested><first>foo</first><second>bar</second></nested></mock>",
-// 			),
-// 			expected: map[string]expect{
-// 				"nested.first": {
-// 					value: "foo",
-// 				},
-// 				"nested.second": {
-// 					value: "bar",
-// 				},
-// 			},
-// 		},
-// 		"repeated string": {
-// 			//  TODO: do not ignore empty blocks
-// 			input: strings.NewReader(
-// 				"<mock><repeating_string>repeating one</repeating_string><repeating_string></repeating_string><repeating_string>repeating two</repeating_string></mock>",
-// 			),
-// 			expected: map[string]expect{
-// 				"repeating_string": {
-// 					repeated: []expect{
-// 						{
-// 							value: "repeating one",
-// 						},
-// 						{
-// 							value: "repeating two",
-// 						},
-// 					},
-// 				},
-// 			},
-// 		},
-// 		"repeated enum": {
-// 			input: strings.NewReader(
-// 				"<mock><repeating_enum>UNKNOWN</repeating_enum><repeating_enum>PENDING</repeating_enum></mock>",
-// 			),
-// 			expected: map[string]expect{
-// 				"repeating_enum": {
-// 					repeated: []expect{
-// 						{
-// 							enum: func() *int32 { i := int32(0); return &i }(),
-// 						},
-// 						{
-// 							enum: func() *int32 { i := int32(1); return &i }(),
-// 						},
-// 					},
-// 				},
-// 			},
-// 		},
-// 		"repeated nested": {
-// 			input: strings.NewReader(
-// 				"<mock><repeating><value>repeating one</value></repeating><repeating><value>repeating two</value></repeating></mock>",
-// 			),
-// 			expected: map[string]expect{
-// 				"repeating": {
-// 					repeated: []expect{
-// 						{
-// 							nested: map[string]expect{
-// 								"repeating.value": {
-// 									value: "repeating one",
-// 								},
-// 							},
-// 						},
-// 						{
-// 							nested: map[string]expect{
-// 								"repeating.value": {
-// 									value: "repeating two",
-// 								},
-// 							},
-// 						},
-// 					},
-// 				},
-// 			},
-// 		},
-// 		"complex": {
-// 			input: strings.NewReader(
-// 				"<mock><repeating_string>repeating one</repeating_string><repeating_string>repeating two</repeating_string><message>hello world</message><nested><first>foo</first><second>bar</second></nested><repeating><value>repeating one</value></repeating><repeating><value>repeating two</value></repeating></mock>",
-// 			),
-// 			expected: map[string]expect{
-// 				"repeating_string": {
-// 					repeated: []expect{
-// 						{
-// 							value: "repeating one",
-// 						},
-// 						{
-// 							value: "repeating two",
-// 						},
-// 					},
-// 				},
-// 				"message": {
-// 					value: "hello world",
-// 				},
-// 				"nested.first": {
-// 					value: "foo",
-// 				},
-// 				"nested.second": {
-// 					value: "bar",
-// 				},
-// 				"repeating": {
-// 					repeated: []expect{
-// 						{
-// 							nested: map[string]expect{
-// 								"repeating.value": {
-// 									value: "repeating one",
-// 								},
-// 							},
-// 						},
-// 						{
-// 							nested: map[string]expect{
-// 								"repeating.value": {
-// 									value: "repeating two",
-// 								},
-// 							},
-// 						},
-// 					},
-// 				},
-// 			},
-// 		},
-// 	}
-//
-// 	for title, test := range tests {
-// 		t.Run(title, func(t *testing.T) {
-// 			xml := NewConstructor()
-// 			if xml == nil {
-// 				t.Fatal("unexpected nil")
-// 			}
-//
-// 			manager, err := xml.New("mock", SchemaObject)
-// 			if err != nil {
-// 				t.Fatal(err)
-// 			}
-//
-// 			var refs = references.NewReferenceStore(0)
-// 			err = manager.Unmarshal(test.input, refs)
-//
-// 			if test.error != nil {
-// 				if !errors.As(err, &test.error) {
-// 					t.Errorf("error [%s] was expected to be [%s]", err, test.error)
-// 				}
-// 			} else if err != nil {
-// 				t.Errorf("error was not expected: %s", err)
-// 			}
-//
-// 			for path, output := range test.expected {
-// 				assert(t, "mock", path, refs, output)
-// 			}
-// 		})
-// 	}
-// }
-//
-// type expect struct {
-// 	value    interface{}
-// 	enum     *int32
-// 	repeated []expect
-// 	nested   map[string]expect
-// }
-//
-// func assert(t *testing.T, resource string, path string, store references.Store, output expect) {
-// 	ref := store.Load(resource, path)
-//
-// 	if ref == nil {
-// 		t.Errorf("reference %q was expected to be set", path)
-// 	}
-//
-// 	if output.value != nil {
-// 		if ref.Value != output.value {
-// 			t.Errorf("reference %q was expected to have value [%v], not [%v]", path, output.value, ref.Value)
-// 		}
-//
-// 		return
-// 	}
-//
-// 	if output.enum != nil {
-// 		if ref.Enum == nil {
-// 			t.Errorf("reference %q was expected to have a enum value", path)
-// 		}
-//
-// 		if *output.enum != *ref.Enum {
-// 			t.Errorf("reference %q was expected to have enum value [%d], not [%d]", path, *output.enum, *ref.Enum)
-// 		}
-//
-// 		return
-// 	}
-//
-// 	if output.repeated != nil {
-// 		if ref.Repeated == nil {
-// 			t.Errorf("reference %q was expected to have a repeated value", path)
-// 		}
-//
-// 		if expected, actual := len(ref.Repeated), len(ref.Repeated); actual != expected {
-// 			t.Errorf("invalid number of repeated values, expected %d, got %d", expected, actual)
-// 		}
-//
-// 		for index, expected := range output.repeated {
-// 			if expected.value != nil || expected.enum != nil {
-// 				assert(t, "", "", ref.Repeated[index], expected)
-//
-// 				continue
-// 			}
-//
-// 			if expected.nested != nil {
-// 				for key, expected := range expected.nested {
-// 					assert(t, resource, key, ref.Repeated[index], expected)
-// 				}
-//
-// 				continue
-// 			}
-// 		}
-// 	}
-// }
+func errorString(err error) string {
+	if err != nil {
+		return err.Error()
+	}
+
+	return "<nil>"
+}
+
+func TestUnmarshal(t *testing.T) {
+	type test struct {
+		input    io.Reader
+		schema   *specs.ParameterMap
+		expected expect
+		error    error
+	}
+
+	tests := map[string]test{
+		"empty scalar with unexpected element": {
+			input: strings.NewReader(
+				"<integer><unexpected></integer>",
+			),
+			schema: &specs.ParameterMap{
+				Property: propInteger(),
+			},
+			error: errFailedToDecode{
+				errStack{
+					property: "integer",
+					inner: errUnexpectedToken{
+						actual: xml.StartElement{},
+						expected: []xml.Token{
+							xml.CharData{},
+							xml.EndElement{},
+						},
+					},
+				},
+			},
+		},
+		"scalar with unexpected element": {
+			input: strings.NewReader(
+				"<integer>42<unexpected></integer>",
+			),
+			schema: &specs.ParameterMap{
+				Property: propInteger(),
+			},
+			error: errFailedToDecode{
+				errStack{
+					property: "integer",
+					inner: errUnexpectedToken{
+						actual: xml.StartElement{},
+						expected: []xml.Token{
+							xml.EndElement{},
+						},
+					},
+				},
+			},
+		},
+		"scalar with type error": {
+			input: strings.NewReader(
+				"<integer>foo</integer>",
+			),
+			schema: &specs.ParameterMap{
+				Property: propInteger(),
+			},
+			error: errFailedToDecode{
+				errStack{
+					property: "integer",
+					inner:    errors.New(`strconv.ParseInt: parsing "foo": invalid syntax`),
+				},
+			},
+		},
+		"scalar with empty value": {
+			input: strings.NewReader(
+				"<integer></integer>",
+			),
+			schema: &specs.ParameterMap{
+				Property: propInteger(),
+			},
+			expected: expect{
+				nested: map[string]expect{
+					"integer": {
+						value: nil,
+					},
+				},
+			},
+		},
+		"scalar": {
+			input: strings.NewReader(
+				"<integer>42</integer>",
+			),
+			schema: &specs.ParameterMap{
+				Property: propInteger(),
+			},
+			expected: expect{
+				nested: map[string]expect{
+					"integer": {
+						value: int32(42),
+					},
+				},
+			},
+		},
+		"empty enum with unexpected element": {
+			input: strings.NewReader(
+				"<status><unexpected></status>",
+			),
+			schema: &specs.ParameterMap{
+				Property: propEnum(),
+			},
+			error: errFailedToDecode{
+				errStack{
+					property: "status",
+					inner: errUnexpectedToken{
+						actual: xml.StartElement{},
+						expected: []xml.Token{
+							xml.CharData{},
+							xml.EndElement{},
+						},
+					},
+				},
+			},
+		},
+		"enum with unexpected element": {
+			input: strings.NewReader(
+				"<status>UNKNOWN<unexpected></status>",
+			),
+			schema: &specs.ParameterMap{
+				Property: propEnum(),
+			},
+			error: errFailedToDecode{
+				errStack{
+					property: "status",
+					inner: errUnexpectedToken{
+						actual: xml.StartElement{},
+						expected: []xml.Token{
+							xml.EndElement{},
+						},
+					},
+				},
+			},
+		},
+		"enum with unrecognized value": {
+			input: strings.NewReader(
+				"<status>foo</status>",
+			),
+			schema: &specs.ParameterMap{
+				Property: propEnum(),
+			},
+			error: errFailedToDecode{
+				errStack{
+					property: "status",
+					inner:    errUnknownEnum("foo"),
+				},
+			},
+		},
+		"enum with empty value": {
+			input: strings.NewReader(
+				"<status></status>",
+			),
+			schema: &specs.ParameterMap{
+				Property: propEnum(),
+			},
+		},
+		"enum": {
+			input: strings.NewReader(
+				"<status>PENDING</status>",
+			),
+			schema: &specs.ParameterMap{
+				Property: propEnum(),
+			},
+			expected: expect{
+				nested: map[string]expect{
+					"status": {
+						enum: func() *int32 { i := int32(1); return &i }(),
+					},
+				},
+			},
+		},
+		"object": {
+			input: strings.NewReader(
+				`<root>
+					<status>PENDING</status>
+					<integer>42</integer>
+				</root>`,
+			),
+			schema: SchemaObject,
+			expected: expect{
+				nested: map[string]expect{
+					"root.status": {
+						enum: func() *int32 { i := int32(1); return &i }(),
+					},
+					"root.integer": {
+						value: int32(42),
+					},
+				},
+			},
+		},
+		"error on nested property": {
+			input: strings.NewReader(
+				`<root>
+					<nested>
+						<status>PENDING</status>
+						<integer>oops</integer>
+					</nested>
+					<string>foobar</string>
+				</root>`,
+			),
+			schema: SchemaObjectNested,
+			error: errFailedToDecode{
+				errStack: errStack{
+					property: "root",
+					inner: errFailedToDecode{
+						errStack: errStack{
+							property: "nested",
+							inner: errFailedToDecode{
+								errStack: errStack{
+									property: "integer",
+									inner:    errors.New("strconv.ParseInt: parsing \"oops\": invalid syntax"),
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		"object nested": {
+			input: strings.NewReader(
+				`<root>
+					<nested>
+						<status>PENDING</status>
+						<integer>42</integer>
+					</nested>
+					<string>foobar</string>
+				</root>`,
+			),
+			schema: SchemaObjectNested,
+			expected: expect{
+				nested: map[string]expect{
+					"root.nested.status": {
+						enum: func() *int32 { i := int32(1); return &i }(),
+					},
+					"root.nested.integer": {
+						value: int32(42),
+					},
+					"root.string": {
+						value: "foobar",
+					},
+				},
+			},
+		},
+		"array of strings": {
+			input: strings.NewReader(
+				`<array>foo</array>
+				<array></array>
+				<array>bar</array>`,
+			),
+			schema: &specs.ParameterMap{
+				Property: propArray(),
+			},
+			expected: expect{
+				nested: map[string]expect{
+					"array": {
+						repeated: []expect{
+							{
+								value: "foo",
+							},
+							{
+								value: nil,
+							},
+							{
+								value: "bar",
+							},
+						},
+					},
+				},
+			},
+		},
+		"array nested": {
+			input: strings.NewReader(
+				`<root>
+					<array>foo</array>
+					<array></array>
+					<integer>42</integer>
+					<array>bar</array>
+				</root>`,
+			),
+			schema: SchemaNestedArray,
+			expected: expect{
+				nested: map[string]expect{
+					"root.integer": {
+						value: int32(42),
+					},
+					"root.array": {
+						repeated: []expect{
+							{
+								value: "foo",
+							},
+							{
+								value: nil,
+							},
+							{
+								value: "bar",
+							},
+						},
+					},
+				},
+			},
+		},
+		"complex": {
+			input: strings.NewReader(
+				`<root>
+				<numeric>42</numeric>
+				<message>hello world</message>
+				<nested>
+					<first>foo</first>
+					<second>bar</second>
+				</nested>
+				<repeating_string>foo</repeating_string>
+				<repeating_string>bar</repeating_string>
+				<repeating>
+					<value>repeating one</value>
+				</repeating>
+				<repeating>
+					<value>repeating two</value>
+				</repeating>
+			</root>`,
+			),
+			schema: SchemaObjectComplex,
+			expected: expect{
+				nested: map[string]expect{
+					"root.repeating_string": {
+						repeated: []expect{
+							{
+								value: "foo",
+							},
+							{
+								value: "bar",
+							},
+						},
+					},
+					"root.message": {
+						value: "hello world",
+					},
+					"root.nested.first": {
+						value: "foo",
+					},
+					"root.nested.second": {
+						value: "bar",
+					},
+					"root.repeating": {
+						repeated: []expect{
+							{
+								nested: map[string]expect{
+									"value": {
+										value: "repeating one",
+									},
+								},
+							},
+							{
+								nested: map[string]expect{
+									"value": {
+										value: "repeating two",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	for title, test := range tests {
+		t.Run(title, func(t *testing.T) {
+			xml := NewConstructor()
+			if xml == nil {
+				t.Fatal("unexpected nil")
+			}
+
+			manager, err := xml.New("mock", test.schema)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			var refs = references.NewReferenceStore(0)
+			err = manager.Unmarshal(test.input, refs)
+
+			if test.error != nil {
+				if err == nil {
+					t.Fatalf("error '%s' was expected", test.error)
+				}
+
+				// TODO: find a better way to compare errors
+				if err.Error() != test.error.Error() {
+					t.Fatalf("error '%s' was expected to be '%s'", errorString(err), test.error)
+				}
+			} else {
+				if err != nil {
+					t.Fatalf("unexpected error '%s'", err)
+				}
+			}
+
+			assert(t, "mock", "", refs, test.expected)
+		})
+	}
+}
+
+type expect struct {
+	value    interface{}
+	enum     *int32
+	repeated []expect
+	nested   map[string]expect
+}
+
+func assert(t *testing.T, resource, path string, store references.Store, input expect) {
+	ref := store.Load(resource, path)
+
+	switch {
+	case input.nested != nil:
+		for key, value := range input.nested {
+			assert(t, resource, key, store, value)
+		}
+	case input.enum != nil:
+		if ref == nil || ref.Enum == nil {
+			t.Fatalf("reference %q was expected to have a enum value", path)
+		}
+
+		if *input.enum != *ref.Enum {
+			t.Errorf("reference %q was expected to have enum value [%d], not [%d]", path, *input.enum, *ref.Enum)
+		}
+	case input.value != nil:
+		if ref == nil || ref.Value != input.value {
+			t.Errorf("reference %q was expected to be %T(%v), got %T(%v)", path, input.value, input.value, ref.Value, ref.Value)
+		}
+	case input.repeated != nil:
+		if ref == nil || ref.Repeated == nil {
+			t.Fatalf("reference %q was expected to have a repeated value", path)
+		}
+
+		if expected, actual := len(input.repeated), len(ref.Repeated); actual != expected {
+			t.Fatalf("invalid number of repeated values, expected %d, got %d", expected, actual)
+		}
+
+		for index, expected := range input.repeated {
+			assert(t, "", "", ref.Repeated[index], expected)
+		}
+	}
+}
