@@ -44,10 +44,7 @@ func (array *Array) MarshalXML(encoder *xml.Encoder, _ xml.StartElement) error {
 	}
 
 	for _, store := range reference.Repeated {
-		var template = array.template.Clone()
-		template.Reference = new(specs.PropertyReference)
-
-		if err := encodeElement(encoder, array.name, template, store); err != nil {
+		if err := encodeElement(encoder, array.name, array.template, store); err != nil {
 			return err
 		}
 	}
