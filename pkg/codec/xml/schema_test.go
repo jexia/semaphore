@@ -7,64 +7,217 @@ import (
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
+func propString() *specs.Property {
+	return &specs.Property{
+		Name:  "string",
+		Path:  "string",
+		Label: labels.Required,
+		Template: specs.Template{
+			Scalar: &specs.Scalar{
+				Type: types.String,
+			},
+		},
+	}
+}
+
+func propInteger() *specs.Property {
+	return &specs.Property{
+		Name:  "integer",
+		Path:  "integer",
+		Label: labels.Required,
+		Template: specs.Template{
+			Scalar: &specs.Scalar{
+				Type: types.Int32,
+			},
+		},
+	}
+}
+
+func propArray() *specs.Property {
+	return &specs.Property{
+		Name:  "array",
+		Path:  "array",
+		Label: labels.Optional,
+		Template: specs.Template{
+			Repeated: specs.Repeated{
+				propString().Template,
+			},
+		},
+	}
+}
+
+func propEnum() *specs.Property {
+	return &specs.Property{
+		Name:  "status",
+		Path:  "status",
+		Label: labels.Required,
+		Template: specs.Template{
+			Enum: enum,
+		},
+	}
+}
+
 var (
-	country = specs.Template{
-		Message: specs.Message{
-			"iso2Code": {
-				Name:  "iso2Code",
-				Path:  "country.iso2Code",
-				Label: labels.Optional,
-				Template: specs.Template{
-					Scalar: &specs.Scalar{
-						Type: types.String,
-					},
-				},
+	enum = &specs.Enum{
+		Keys: map[string]*specs.EnumValue{
+			"UNKNOWN": {
+				Key:      "UNKNOWN",
+				Position: 0,
 			},
-			"name": {
-				Name:  "name",
-				Path:  "country.name",
-				Label: labels.Optional,
-				Template: specs.Template{
-					Scalar: &specs.Scalar{
-						Type: types.String,
-					},
-				},
+			"PENDING": {
+				Key:      "PENDING",
+				Position: 1,
 			},
-			"latitude": {
-				Name:  "iso2Code",
-				Path:  "country.latitude",
-				Label: labels.Optional,
-				Template: specs.Template{
-					Scalar: &specs.Scalar{
-						Type: types.Float,
-					},
-				},
+		},
+		Positions: map[int32]*specs.EnumValue{
+			0: {
+				Key:      "UNKNOWN",
+				Position: 0,
 			},
-			"longitude": {
-				Name:  "name",
-				Path:  "country.longitude",
-				Label: labels.Optional,
-				Template: specs.Template{
-					Scalar: &specs.Scalar{
-						Type: types.Float,
+			1: {
+				Key:      "PENDING",
+				Position: 1,
+			},
+		},
+	}
+
+	SchemaArrayDefaultEmpty = &specs.ParameterMap{
+		Property: &specs.Property{
+			Name:  "array",
+			Path:  "array",
+			Label: labels.Optional,
+			Template: specs.Template{
+				Repeated: specs.Repeated{
+					{
+						Scalar: &specs.Scalar{
+							Type: types.String,
+						},
 					},
 				},
 			},
 		},
 	}
 
-	SchemaArray = &specs.Property{
-		Name:  "country",
-		Path:  "country",
-		Label: labels.Optional,
-		Template: specs.Template{
-			Repeated: specs.Repeated{
-				country,
+	SchemaArrayWithValues = &specs.ParameterMap{
+		Property: &specs.Property{
+			Name:  "array",
+			Path:  "array",
+			Label: labels.Optional,
+			Template: specs.Template{
+				Repeated: specs.Repeated{
+					{
+						Reference: &specs.PropertyReference{
+							Resource: template.InputResource,
+							Path:     "string",
+						},
+						Scalar: &specs.Scalar{
+							Type: types.String,
+						},
+					},
+					{
+						Scalar: &specs.Scalar{
+							Type:    types.String,
+							Default: "bar",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	SchemaNestedArray = &specs.ParameterMap{
+		Property: &specs.Property{
+			Name:  "root",
+			Label: labels.Optional,
+			Template: specs.Template{
+				Message: specs.Message{
+					"integer": func() *specs.Property {
+						var clone = propInteger()
+						clone.Position = 1
+						clone.Path = "root." + clone.Path
+
+						return clone
+					}(),
+					"array": func() *specs.Property {
+						var clone = propArray()
+						clone.Position = 2
+						clone.Path = "root." + clone.Path
+
+						return clone
+					}(),
+				},
 			},
 		},
 	}
 
 	SchemaObject = &specs.ParameterMap{
+		Property: &specs.Property{
+			Name:  "root",
+			Label: labels.Optional,
+			Template: specs.Template{
+				Message: specs.Message{
+					"status": func() *specs.Property {
+						var clone = propEnum()
+						clone.Position = 1
+						clone.Path = "root." + clone.Path
+
+						return clone
+					}(),
+					"integer": func() *specs.Property {
+						var clone = propInteger()
+						clone.Position = 2
+						clone.Path = "root." + clone.Path
+
+						return clone
+					}(),
+				},
+			},
+		},
+	}
+
+	SchemaObjectNested = &specs.ParameterMap{
+		Property: &specs.Property{
+			Name:  "root",
+			Label: labels.Optional,
+			Template: specs.Template{
+				Message: specs.Message{
+					"nested": {
+						Position: 1,
+						Name:     "nested",
+						Path:     "root.nested",
+						Label:    labels.Optional,
+						Template: specs.Template{
+							Message: specs.Message{
+								"status": func() *specs.Property {
+									var clone = propEnum()
+									clone.Position = 1
+									clone.Path = "root.nested." + clone.Path
+
+									return clone
+								}(),
+								"integer": func() *specs.Property {
+									var clone = propInteger()
+									clone.Position = 2
+									clone.Path = "root.nested." + clone.Path
+
+									return clone
+								}(),
+							},
+						},
+					},
+					"string": func() *specs.Property {
+						var clone = propString()
+						clone.Position = 2
+						clone.Path = "root." + clone.Path
+
+						return clone
+					}(),
+				},
+			},
+		},
+	}
+
+	SchemaObjectComplex = &specs.ParameterMap{
 		Property: &specs.Property{
 			Name:  "root",
 			Label: labels.Optional,
@@ -205,7 +358,14 @@ var (
 							Repeated: specs.Repeated{
 								{
 									Scalar: &specs.Scalar{
-										Type: types.String,
+										Type:    types.String,
+										Default: "foo",
+									},
+								},
+								{
+									Scalar: &specs.Scalar{
+										Type:    types.String,
+										Default: "bar",
 									},
 								},
 							},
@@ -277,29 +437,6 @@ var (
 						},
 					},
 				},
-			},
-		},
-	}
-
-	enum = &specs.Enum{
-		Keys: map[string]*specs.EnumValue{
-			"UNKNOWN": {
-				Key:      "UNKNOWN",
-				Position: 0,
-			},
-			"PENDING": {
-				Key:      "PENDING",
-				Position: 1,
-			},
-		},
-		Positions: map[int32]*specs.EnumValue{
-			0: {
-				Key:      "UNKNOWN",
-				Position: 0,
-			},
-			1: {
-				Key:      "PENDING",
-				Position: 1,
 			},
 		},
 	}
