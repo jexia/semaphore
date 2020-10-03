@@ -18,6 +18,10 @@ func NewOptions(opts ...EndpointOption) Options {
 	result := Options{}
 
 	for _, opt := range opts {
+		if opt == nil {
+			continue
+		}
+
 		opt(&result)
 	}
 
@@ -58,6 +62,10 @@ func WithCore(conf semaphore.Options) EndpointOption {
 
 // Transporters constructs a new transport Endpoints list from the given endpoints and options
 func Transporters(ctx *broker.Context, endpoints specs.EndpointList, flows specs.FlowListInterface, opts ...EndpointOption) (transport.EndpointList, error) {
+	if ctx == nil {
+		return nil, nil
+	}
+
 	options := NewOptions(opts...)
 
 	results := make(transport.EndpointList, len(endpoints))
@@ -96,7 +104,7 @@ func forwarder(call *specs.Call, options Options) (*transport.Forward, error) {
 
 	service := options.services.Get(call.Service)
 	if service == nil {
-		return nil, ErrNoServiceForMethod{Method: call.Method}
+		return nil, ErrUnknownService{Service: call.Service}
 	}
 
 	result := &transport.Forward{

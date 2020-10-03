@@ -38,7 +38,6 @@ func (enum *Enum) MarshalXML(encoder *xml.Encoder, _ xml.StartElement) error {
 
 	if enum.reference != nil {
 		var reference = enum.store.Load(enum.reference.Resource, enum.reference.Path)
-
 		if reference == nil || reference.Enum == nil {
 			return nil
 		}
@@ -50,4 +49,66 @@ func (enum *Enum) MarshalXML(encoder *xml.Encoder, _ xml.StartElement) error {
 	}
 
 	return encoder.EncodeElement(value, start)
+}
+
+// UnmarshalXML unmarshals enum value from XML stream.
+func (enum *Enum) UnmarshalXML(decoder *xml.Decoder, _ xml.StartElement) error {
+	const (
+		waitForValue int = iota
+		waitForClose
+	)
+
+	var state int
+
+	for {
+		tok, err := decoder.Token()
+		if err != nil {
+			return err
+		}
+
+		switch state {
+		case waitForValue:
+			var reference = &references.Reference{
+				Path: buildPath(enum.reference.Path, enum.name),
+			}
+
+			switch t := tok.(type) {
+			case xml.CharData:
+				enumValue, ok := enum.enum.Keys[string(t)]
+				if !ok {
+					return errUnknownEnum(t)
+				}
+
+				reference.Enum = &enumValue.Position
+				state = waitForClose
+
+				enum.store.StoreReference(enum.reference.Resource, reference)
+			case xml.EndElement:
+				enum.store.StoreReference(enum.reference.Resource, reference)
+				// enum is closed with nil value
+				return nil
+			default:
+				return errUnexpectedToken{
+					actual: t,
+					expected: []xml.Token{
+						xml.CharData{},
+						xml.EndElement{},
+					},
+				}
+			}
+		case waitForClose:
+			switch t := tok.(type) {
+			case xml.EndElement:
+				// enum is closed
+				return nil
+			default:
+				return errUnexpectedToken{
+					actual: t,
+					expected: []xml.Token{
+						xml.EndElement{},
+					},
+				}
+			}
+		}
+	}
 }
