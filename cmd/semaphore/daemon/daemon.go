@@ -1,7 +1,6 @@
 package daemon
 
 import (
-	"errors"
 	"os"
 	"os/signal"
 	"syscall"
@@ -32,20 +31,6 @@ func init() {
 	Command.PersistentFlags().StringVar(&flags.LogLevel, "level", "", "Global logging level, this value will override the defined log level inside the file definitions")
 }
 
-func prettyErrors(err error) error {
-	stack, err := prettyerr.Prettify(err)
-	if err != nil {
-		return err
-	}
-
-	msg, err := prettyerr.TextFormatter(stack, prettyerr.DefaultTextFormat)
-	if err != nil {
-		return err
-	}
-
-	return errors.New("\n" + msg)
-}
-
 func run(cmd *cobra.Command, args []string) error {
 	ctx := logger.WithLogger(broker.NewContext())
 	err := config.SetOptions(ctx, flags)
@@ -65,7 +50,7 @@ func run(cmd *cobra.Command, args []string) error {
 
 	client, err := NewClient(ctx, core, provider)
 	if err != nil {
-		return prettyErrors(err)
+		return prettyerr.PrettyError(err)
 	}
 
 	go sigterm(client)

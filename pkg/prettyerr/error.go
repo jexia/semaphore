@@ -74,3 +74,18 @@ func Prettify(err error, opts ...StackOptionFn) (Errors, error) {
 
 	return stack, nil
 }
+
+// PrettyError prettifies error instance
+func PrettyError(err error) error {
+	stack, err := Prettify(err)
+	if err != nil {
+		return err
+	}
+
+	msg, err := TextFormatter(stack, DefaultTextFormat)
+	if err != nil {
+		return err
+	}
+
+	return errors.New("\nPrettyError Message: \n" + msg)
+}

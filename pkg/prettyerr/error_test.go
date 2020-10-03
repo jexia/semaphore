@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -115,4 +116,22 @@ func TestError_Unwrap(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestPrettyError(t *testing.T) {
+	t.Run("build PrettyError from several unwrapped errors", func(t *testing.T) {
+		errOne := errors.New("missing everything")
+		errTwo := fmt.Errorf("failed to do One: %w", errOne)
+
+		prettyOne := PrettyError(errTwo)
+
+		if reflect.DeepEqual(prettyOne, NoPrettifierErr) {
+			t.Errorf("PrettyError() is not expected to return NoPrettifierErr")
+		}
+
+		if !strings.HasPrefix(prettyOne.Error(), "\nPrettyError Message: \n") {
+			t.Errorf("PrettyError() is not expected to return this error: %v", prettyOne)
+		}
+
+	})
 }
