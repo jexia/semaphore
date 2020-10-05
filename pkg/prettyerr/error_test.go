@@ -117,15 +117,15 @@ func TestError_Unwrap(t *testing.T) {
 	}
 }
 
-func TestPrettyError(t *testing.T) {
-	t.Run("build PrettyError from several unwrapped errors", func(t *testing.T) {
+func TestStandardErr(t *testing.T) {
+	t.Run("build StandardErr from several unwrapped errors", func(t *testing.T) {
 		errOne := errors.New("missing everything")
 		errTwo := fmt.Errorf("failed to do One: %w", errOne)
 
-		prettyOne := PrettyError(errTwo)
+		prettyOne := StandardErr(errTwo)
 
 		if reflect.DeepEqual(prettyOne, NoPrettifierErr) {
-			t.Errorf("PrettyError() is not expected to return NoPrettifierErr")
+			t.Errorf("StandardErr() is not expected to return NoPrettifierErr")
 		}
 
 	})

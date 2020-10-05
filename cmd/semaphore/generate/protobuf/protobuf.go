@@ -45,26 +45,33 @@ func init() {
 	Command.PersistentFlags().StringVarP(&output, "output", "o", "", "Output directory (all missing directories will be created)")
 }
 
-func run(cmd *cobra.Command, args []string) error {
+func run(cmd *cobra.Command, args []string) (err error) {
+
+	defer func() {
+		if err != nil {
+			err = prettyerr.StandardErr(err)
+		}
+	}()
+
 	ctx := logger.WithLogger(broker.NewContext())
-	err := config.SetOptions(ctx, flags)
+	err = config.SetOptions(ctx, flags)
 	if err != nil {
-		return prettyerr.PrettyError(err)
+		return err
 	}
 
 	core, err := config.NewCore(ctx, flags)
 	if err != nil {
-		return prettyerr.PrettyError(err)
+		return err
 	}
 
 	provider, err := config.NewProviders(ctx, core, flags)
 	if err != nil {
-		return prettyerr.PrettyError(err)
+		return err
 	}
 
 	collection, err := providers.Resolve(ctx, functions.Collection{}, provider)
 	if err != nil {
-		return prettyerr.PrettyError(err)
+		return err
 	}
 
 	transporters, err := endpoints.Transporters(ctx, collection.EndpointList, collection.FlowListInterface,
@@ -73,12 +80,12 @@ func run(cmd *cobra.Command, args []string) error {
 		endpoints.WithFunctions(functions.Collection{}),
 	)
 	if err != nil {
-		return prettyerr.PrettyError(err)
+		return err
 	}
 
 	services, err := generate(ctx, transporters)
 	if err != nil {
-		return prettyerr.PrettyError(err)
+		return err
 	}
 
 	// TODO: configure printer with additional options
@@ -88,16 +95,16 @@ func run(cmd *cobra.Command, args []string) error {
 
 		dst, err := getOutput(output, key)
 		if err != nil {
-			return prettyerr.PrettyError(fmt.Errorf("failed to set the output for generator: %w", err))
+			return fmt.Errorf("failed to set the output for generator: %w", err)
 		}
 
 		descriptor, err := service.FileDescriptor()
 		if err != nil {
-			return prettyerr.PrettyError(fmt.Errorf("cannot generate file descriptor for %q: %w", key, err))
+			return fmt.Errorf("cannot generate file descriptor for %q: %w", key, err)
 		}
 
 		if err := printer.PrintProtoFile(descriptor, dst); err != nil {
-			return prettyerr.PrettyError(err)
+			return err
 		}
 
 		dst.Close()
@@ -118,7 +125,7 @@ func getOutput(output, pkg string) (io.WriteCloser, error) {
 	filePath := path.Join(append([]string{output}, strings.Split(pkg, ".")...)...) + ".proto"
 
 	if err := os.MkdirAll(filepath.Dir(filePath), os.ModePerm); err != nil {
-		return nil, prettyerr.PrettyError(err)
+		return nil, err
 	}
 
 	return os.Create(filePath)
@@ -134,7 +141,7 @@ func generate(ctx *broker.Context, endpoints transport.EndpointList) (map[string
 
 		options, err := grpc.ParseEndpointOptions(endpoint)
 		if err != nil {
-			return nil, prettyerr.PrettyError(err)
+			return nil, err
 		}
 
 		protoService := proto.Service{
@@ -157,7 +164,7 @@ func generate(ctx *broker.Context, endpoints transport.EndpointList) (map[string
 
 		constructor := proto.NewConstructor()
 		if err := method.NewCodec(ctx, constructor, constructor); err != nil {
-			return nil, prettyerr.PrettyError(err)
+			return nil, err
 		}
 
 		services[service.String()].Methods[method.String()] = method

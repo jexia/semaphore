@@ -75,8 +75,8 @@ func Prettify(err error, opts ...StackOptionFn) (Errors, error) {
 	return stack, nil
 }
 
-// PrettyError prettifies error instance
-func PrettyError(err error) error {
+// StandardErr prettifies error instance
+func StandardErr(err error) error {
 	stack, err := Prettify(err)
 	if err != nil {
 		return err
