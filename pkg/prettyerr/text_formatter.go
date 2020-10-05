@@ -31,12 +31,12 @@ func TextFormatter(stack Errors, nodeTemplate string) (string, error) {
 	if err != nil {
 		err = fmt.Errorf("failed to parse template: %w", err)
 		// Append failed to parse template error to stack
-		stack = append(stack, Error{
+		stack = append(Errors{Error{
 			Original: err,
 			Message:  err.Error(),
 			Details:  nil,
 			Code:     GenericErrorCode,
-		})
+		}}, stack...)
 
 		// Fallback to default template
 		tpl = defaultTpl
@@ -56,6 +56,7 @@ func TextFormatter(stack Errors, nodeTemplate string) (string, error) {
 				Details:  nil,
 				Code:     GenericErrorCode,
 			})
+			_ = defaultTpl.Execute(o, pretty)
 		}
 	}
 
