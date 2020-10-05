@@ -6,6 +6,7 @@ import (
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/functions"
+	"github.com/jexia/semaphore/pkg/prettyerr"
 	"github.com/spf13/cobra"
 )
 
@@ -29,22 +30,22 @@ func run(cmd *cobra.Command, args []string) error {
 	ctx := logger.WithLogger(broker.NewContext())
 	err := config.SetOptions(ctx, flags)
 	if err != nil {
-		return err
+		return prettyerr.PrettyError(err)
 	}
 
 	core, err := config.NewCore(ctx, flags)
 	if err != nil {
-		return err
+		return prettyerr.PrettyError(err)
 	}
 
 	provider, err := config.NewProviders(ctx, core, flags)
 	if err != nil {
-		return err
+		return prettyerr.PrettyError(err)
 	}
 
 	_, err = providers.Resolve(ctx, functions.Collection{}, provider)
 	if err != nil {
-		return err
+		return prettyerr.PrettyError(err)
 	}
 
 	return nil

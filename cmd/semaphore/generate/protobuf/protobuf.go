@@ -15,6 +15,7 @@ import (
 	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/codec/proto"
 	"github.com/jexia/semaphore/pkg/functions"
+	"github.com/jexia/semaphore/pkg/prettyerr"
 	"github.com/jexia/semaphore/pkg/transport"
 	"github.com/jexia/semaphore/pkg/transport/grpc"
 	"github.com/jhump/protoreflect/desc/protoprint"
@@ -48,22 +49,22 @@ func run(cmd *cobra.Command, args []string) error {
 	ctx := logger.WithLogger(broker.NewContext())
 	err := config.SetOptions(ctx, flags)
 	if err != nil {
-		return err
+		return prettyerr.PrettyError(err)
 	}
 
 	core, err := config.NewCore(ctx, flags)
 	if err != nil {
-		return err
+		return prettyerr.PrettyError(err)
 	}
 
 	provider, err := config.NewProviders(ctx, core, flags)
 	if err != nil {
-		return err
+		return prettyerr.PrettyError(err)
 	}
 
 	collection, err := providers.Resolve(ctx, functions.Collection{}, provider)
 	if err != nil {
-		return err
+		return prettyerr.PrettyError(err)
 	}
 
 	transporters, err := endpoints.Transporters(ctx, collection.EndpointList, collection.FlowListInterface,
@@ -72,12 +73,12 @@ func run(cmd *cobra.Command, args []string) error {
 		endpoints.WithFunctions(functions.Collection{}),
 	)
 	if err != nil {
-		return err
+		return prettyerr.PrettyError(err)
 	}
 
 	services, err := generate(ctx, transporters)
 	if err != nil {
-		return err
+		return prettyerr.PrettyError(err)
 	}
 
 	// TODO: configure printer with additional options
@@ -87,16 +88,16 @@ func run(cmd *cobra.Command, args []string) error {
 
 		dst, err := getOutput(output, key)
 		if err != nil {
-			return fmt.Errorf("failed to set the output for generator: %w", err)
+			return prettyerr.PrettyError(fmt.Errorf("failed to set the output for generator: %w", err))
 		}
 
 		descriptor, err := service.FileDescriptor()
 		if err != nil {
-			return fmt.Errorf("cannot generate file descriptor for %q: %w", key, err)
+			return prettyerr.PrettyError(fmt.Errorf("cannot generate file descriptor for %q: %w", key, err))
 		}
 
 		if err := printer.PrintProtoFile(descriptor, dst); err != nil {
-			return err
+			return prettyerr.PrettyError(err)
 		}
 
 		dst.Close()
@@ -117,7 +118,7 @@ func getOutput(output, pkg string) (io.WriteCloser, error) {
 	filePath := path.Join(append([]string{output}, strings.Split(pkg, ".")...)...) + ".proto"
 
 	if err := os.MkdirAll(filepath.Dir(filePath), os.ModePerm); err != nil {
-		return nil, err
+		return nil, prettyerr.PrettyError(err)
 	}
 
 	return os.Create(filePath)
@@ -133,7 +134,7 @@ func generate(ctx *broker.Context, endpoints transport.EndpointList) (map[string
 
 		options, err := grpc.ParseEndpointOptions(endpoint)
 		if err != nil {
-			return nil, err
+			return nil, prettyerr.PrettyError(err)
 		}
 
 		protoService := proto.Service{
@@ -156,7 +157,7 @@ func generate(ctx *broker.Context, endpoints transport.EndpointList) (map[string
 
 		constructor := proto.NewConstructor()
 		if err := method.NewCodec(ctx, constructor, constructor); err != nil {
-			return nil, err
+			return nil, prettyerr.PrettyError(err)
 		}
 
 		services[service.String()].Methods[method.String()] = method

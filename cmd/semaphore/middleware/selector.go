@@ -6,6 +6,7 @@ import (
 	"github.com/jexia/semaphore/cmd/semaphore/daemon/providers"
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
+	"github.com/jexia/semaphore/pkg/prettyerr"
 	"github.com/jexia/semaphore/pkg/providers/hcl"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/template"
@@ -29,7 +30,7 @@ func ServiceSelector(path string) providers.AfterConstructorHandler {
 							name := template.JoinPath(service.Package, service.Name)
 							matched, err := filepath.Match(selector.Pattern, name)
 							if err != nil {
-								return err
+								return prettyerr.PrettyError(err)
 							}
 
 							logger.Debug(ctx, "pattern matching service",

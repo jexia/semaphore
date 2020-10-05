@@ -12,6 +12,7 @@ import (
 	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/broker/trace"
 	"github.com/jexia/semaphore/pkg/functions"
+	"github.com/jexia/semaphore/pkg/prettyerr"
 	"github.com/jexia/semaphore/pkg/transport"
 	"go.uber.org/zap"
 )
@@ -19,7 +20,7 @@ import (
 // NewClient constructs a new Semaphore instance
 func NewClient(ctx *broker.Context, core semaphore.Options, provider providers.Options) (*Client, error) {
 	if ctx == nil {
-		return nil, errors.New("nil context")
+		return nil, prettyerr.PrettyError(errors.New("nil context"))
 	}
 
 	client := &Client{
@@ -31,7 +32,7 @@ func NewClient(ctx *broker.Context, core semaphore.Options, provider providers.O
 
 	err := client.Apply(ctx)
 	if err != nil {
-		return nil, err
+		return nil, prettyerr.PrettyError(err)
 	}
 
 	return client, nil
@@ -58,7 +59,7 @@ func (client *Client) Apply(ctx *broker.Context) error {
 
 	collection, err := providers.Resolve(ctx, client.stack, client.providers)
 	if err != nil {
-		return err
+		return prettyerr.PrettyError(err)
 	}
 
 	transporters, err := endpoints.Transporters(ctx, collection.EndpointList, collection.FlowListInterface,
@@ -68,12 +69,12 @@ func (client *Client) Apply(ctx *broker.Context) error {
 	)
 
 	if err != nil {
-		return err
+		return prettyerr.PrettyError(err)
 	}
 
 	err = listeners.Apply(ctx, client.providers.Codec, client.providers.Listeners, transporters)
 	if err != nil {
-		return err
+		return prettyerr.PrettyError(err)
 	}
 
 	return nil

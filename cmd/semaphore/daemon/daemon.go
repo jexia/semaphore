@@ -35,17 +35,17 @@ func run(cmd *cobra.Command, args []string) error {
 	ctx := logger.WithLogger(broker.NewContext())
 	err := config.SetOptions(ctx, flags)
 	if err != nil {
-		return err
+		return prettyerr.PrettyError(err)
 	}
 
 	core, err := config.NewCore(ctx, flags)
 	if err != nil {
-		return err
+		return prettyerr.PrettyError(err)
 	}
 
 	provider, err := config.NewProviders(ctx, core, flags)
 	if err != nil {
-		return err
+		return prettyerr.PrettyError(err)
 	}
 
 	client, err := NewClient(ctx, core, provider)
@@ -57,7 +57,7 @@ func run(cmd *cobra.Command, args []string) error {
 
 	err = client.Serve()
 	if err != nil {
-		return err
+		return prettyerr.PrettyError(err)
 	}
 
 	return nil
