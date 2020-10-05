@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"reflect"
-	"strings"
 	"testing"
 )
 
@@ -127,10 +126,6 @@ func TestPrettyError(t *testing.T) {
 
 		if reflect.DeepEqual(prettyOne, NoPrettifierErr) {
 			t.Errorf("PrettyError() is not expected to return NoPrettifierErr")
-		}
-
-		if !strings.HasPrefix(prettyOne.Error(), "\nPrettyError Message: \n") {
-			t.Errorf("PrettyError() is not expected to return this error: %v", prettyOne)
 		}
 
 	})

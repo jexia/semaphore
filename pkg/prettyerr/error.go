@@ -87,5 +87,5 @@ func PrettyError(err error) error {
 		return err
 	}
 
-	return errors.New("\nPrettyError Message: \n" + msg)
+	return errors.New("\n" + msg)
 }

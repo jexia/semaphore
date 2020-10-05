@@ -25,10 +25,21 @@ func TextFormatter(stack Errors, nodeTemplate string) (string, error) {
 		},
 	}
 
+	defaultTpl, _ := template.New("node").Funcs(funcs).Parse(DefaultTextFormat)
 	tpl, err := template.New("node").Funcs(funcs).Parse(nodeTemplate)
 
 	if err != nil {
-		return "", fmt.Errorf("failed to parse template: %w", err)
+		err = fmt.Errorf("failed to parse template: %w", err)
+		// Append failed to parse template error to stack
+		stack = append(stack, Error{
+			Original: err,
+			Message:  err.Error(),
+			Details:  nil,
+			Code:     GenericErrorCode,
+		})
+
+		// Fallback to default template
+		tpl = defaultTpl
 	}
 
 	o := bytes.NewBufferString("")
@@ -36,7 +47,15 @@ func TextFormatter(stack Errors, nodeTemplate string) (string, error) {
 	for i, pretty := range stack {
 		err := tpl.Execute(o, pretty)
 		if err != nil {
-			return "", fmt.Errorf("failed to execute template for %d: %w", i, err)
+			err = fmt.Errorf("failed to execute template for %d: %w", i, err)
+
+			// Append failed to execute template error to string using default template
+			_ = defaultTpl.Execute(o, Error{
+				Original: err,
+				Message:  err.Error(),
+				Details:  nil,
+				Code:     GenericErrorCode,
+			})
 		}
 	}
 
