@@ -74,3 +74,18 @@ func Prettify(err error, opts ...StackOptionFn) (Errors, error) {
 
 	return stack, nil
 }
+
+// StandardErr prettifies error instance
+func StandardErr(err error) error {
+	stack, err := Prettify(err)
+	if err != nil {
+		return err
+	}
+
+	msg, err := TextFormatter(stack, DefaultTextFormat)
+	if err != nil {
+		return err
+	}
+
+	return errors.New("\n" + msg)
+}

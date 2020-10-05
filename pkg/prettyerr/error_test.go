@@ -116,3 +116,17 @@ func TestError_Unwrap(t *testing.T) {
 		})
 	}
 }
+
+func TestStandardErr(t *testing.T) {
+	t.Run("build StandardErr from several unwrapped errors", func(t *testing.T) {
+		errOne := errors.New("missing everything")
+		errTwo := fmt.Errorf("failed to do One: %w", errOne)
+
+		prettyOne := StandardErr(errTwo)
+
+		if reflect.DeepEqual(prettyOne, NoPrettifierErr) {
+			t.Errorf("StandardErr() is not expected to return NoPrettifierErr")
+		}
+
+	})
+}

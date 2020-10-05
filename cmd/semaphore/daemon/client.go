@@ -18,6 +18,7 @@ import (
 
 // NewClient constructs a new Semaphore instance
 func NewClient(ctx *broker.Context, core semaphore.Options, provider providers.Options) (*Client, error) {
+
 	if ctx == nil {
 		return nil, errors.New("nil context")
 	}
