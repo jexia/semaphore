@@ -77,12 +77,10 @@ func SetFieldPath(object *graphql.Object, path string, field *graphql.Field) err
 	target, has := fields[key]
 
 	if len(parts) > 1 {
-		config := graphql.ObjectConfig{
+		nested := graphql.NewObject(graphql.ObjectConfig{
 			Name:   key,
 			Fields: make(graphql.Fields),
-		}
-
-		nested := graphql.NewObject(config)
+		})
 
 		if has {
 			result, isObject := target.Type.(*graphql.Object)
@@ -95,17 +93,6 @@ func SetFieldPath(object *graphql.Object, path string, field *graphql.Field) err
 
 			nested = result
 		}
-
-		part := &graphql.Field{
-			Name: key,
-			Type: nested,
-			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				return p.Source, nil
-			},
-		}
-
-		object.AddFieldConfig(key, part)
-		object.Fields()
 
 		return SetFieldPath(nested, NewPath(parts[1:]), field)
 	}
