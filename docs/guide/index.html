@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Introduction | Semaphore</title>
+    <meta name="generator" content="VuePress 1.6.0">
+    
+    <meta name="description" content="Introduction">
+    <meta name="keywords" content="semaphore getting started introduction">
+    <link rel="preload" href="/semaphore/assets/css/0.styles.f1662e52.css" as="style"><link rel="preload" href="/semaphore/assets/js/app.76f37e99.js" as="script"><link rel="preload" href="/semaphore/assets/js/2.6428342a.js" as="script"><link rel="preload" href="/semaphore/assets/js/8.4d050adc.js" as="script"><link rel="prefetch" href="/semaphore/assets/js/3.6c2dc264.js"><link rel="prefetch" href="/semaphore/assets/js/4.1e27652d.js"><link rel="prefetch" href="/semaphore/assets/js/5.2bb4d79f.js"><link rel="prefetch" href="/semaphore/assets/js/6.a991fd43.js"><link rel="prefetch" href="/semaphore/assets/js/7.d0540668.js">
+    <link rel="stylesheet" href="/semaphore/assets/css/0.styles.f1662e52.css">
+  </head>
+  <body>
+    <div id="app" data-server-rendered="true"><div class="theme-container"><header class="navbar"><div class="sidebar-button"><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" viewBox="0 0 448 512" class="icon"><path fill="currentColor" d="M436 124H12c-6.627 0-12-5.373-12-12V80c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12z"></path></svg></div> <a href="/semaphore/" class="home-link router-link-active"><!----> <span class="site-name">Semaphore</span></a> <div class="links"><div class="search-box"><input aria-label="Search" autocomplete="off" spellcheck="false" value=""> <!----></div> <nav class="nav-links can-hide"><div class="nav-item"><a href="/semaphore/guide/" aria-current="page" class="nav-link router-link-exact-active router-link-active">
+  Guide
+</a></div> <a href="https://github.com/jexia/semaphore" target="_blank" rel="noopener noreferrer" class="repo-link">
+    Contribute
+    <svg xmlns="http://www.w3.org/2000/svg" aria-labelledby="outbound-link-title" role="img" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><title id="outbound-link-title">(opens new window)</title> <path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg></a></nav></div></header> <div class="sidebar-mask"></div> <aside class="sidebar"><nav class="nav-links"><div class="nav-item"><a href="/semaphore/guide/" aria-current="page" class="nav-link router-link-exact-active router-link-active">
+  Guide
+</a></div> <a href="https://github.com/jexia/semaphore" target="_blank" rel="noopener noreferrer" class="repo-link">
+    Contribute
+    <svg xmlns="http://www.w3.org/2000/svg" aria-labelledby="outbound-link-title" role="img" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><title id="outbound-link-title">(opens new window)</title> <path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg></a></nav>  <ul class="sidebar-links"><li><a href="/semaphore/guide/" aria-current="page" class="active sidebar-link">Introduction</a></li></ul> </aside> <main class="page"> <div class="theme-default-content content__default"><h1 id="introduction"><a href="#introduction" class="header-anchor">#</a> Introduction</h1> <p>Semaphore is a tool to orchestrate your micro-service architecture. Requests could be manipulated passed branched to different services to be returned as a single output.
+You could define request flows on top of your currently existing schema definitions.
+Please check out the examples directory for more examples.</p> <div class="custom-block tip"><p class="custom-block-title">TIP</p> <p>In many of the available examples are protobuffers used. Semaphore currently supports protobuffers more official schema definitions such as Avro and XML will be added in the future</p></div> <div class="language-hcl extra-class"><pre class="language-hcl"><code>endpoint <span class="token string">&quot;GetUser&quot;</span> <span class="token string">&quot;http&quot;</span> <span class="token punctuation">{</span>
+    <span class="token property">endpoint</span> <span class="token punctuation">=</span> <span class="token string">&quot;/user/:id&quot;</span>
+    <span class="token property">method</span> <span class="token punctuation">=</span> <span class="token string">&quot;GET&quot;</span>
+<span class="token punctuation">}</span>
+
+flow <span class="token string">&quot;GetUser&quot;</span> <span class="token punctuation">{</span>
+    input <span class="token string">&quot;proto.Query&quot;</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>
+    
+    resource <span class="token string">&quot;user&quot;</span> <span class="token punctuation">{</span>
+        request <span class="token string">&quot;proto.Users&quot;</span> <span class="token string">&quot;Get&quot;</span> <span class="token punctuation">{</span>
+            <span class="token property">id</span> <span class="token punctuation">=</span> <span class="token string">&quot;{{ input:id }}&quot;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    
+    <span class="token keyword">output<span class="token type variable"> &quot;proto.User&quot; </span></span><span class="token punctuation">{</span>
+        <span class="token property">name</span> <span class="token punctuation">=</span> <span class="token string">&quot;{{ user:name }}&quot;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre></div></div> <footer class="page-edit"><!----> <!----></footer> <!----> </main></div><div class="global-ui"></div></div>
+    <script src="/semaphore/assets/js/app.76f37e99.js" defer></script><script src="/semaphore/assets/js/2.6428342a.js" defer></script><script src="/semaphore/assets/js/8.4d050adc.js" defer></script>
+  </body>
+</html>
