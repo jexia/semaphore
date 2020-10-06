@@ -1,1 +1,1 @@
-# Hello Semaphore
+# Semaphore
