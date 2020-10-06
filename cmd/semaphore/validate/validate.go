@@ -6,6 +6,7 @@ import (
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/functions"
+	"github.com/jexia/semaphore/pkg/prettyerr"
 	"github.com/spf13/cobra"
 )
 
@@ -25,9 +26,16 @@ func init() {
 	Command.PersistentFlags().StringVar(&flags.LogLevel, "level", "warn", "Global logging level, this value will override the defined log level inside the file definitions")
 }
 
-func run(cmd *cobra.Command, args []string) error {
+func run(cmd *cobra.Command, args []string) (err error) {
+
+	defer func() {
+		if err != nil {
+			err = prettyerr.StandardErr(err)
+		}
+	}()
+
 	ctx := logger.WithLogger(broker.NewContext())
-	err := config.SetOptions(ctx, flags)
+	err = config.SetOptions(ctx, flags)
 	if err != nil {
 		return err
 	}
