@@ -3,7 +3,7 @@
   "version": "2.0.0",
   "scripts": {
     "dev": "vuepress dev docs",
-    "build": "vuepress build docs -d ./dist"
+    "build": "vuepress build docs -d ./"
   },
   "description": "Take control of your data, connect with anything, and expose it anywhere through protocols such as HTTP, GraphQL, and gRPC.",
   "main": "index.js",
