@@ -1,4 +1,4 @@
-name: Build documentation
+name: Build and publish documentation
 
 on: [push]
 
@@ -21,4 +21,7 @@ jobs:
         restore-keys: |
           ${{ runner.OS }}-node-
           ${{ runner.OS }}-
-    - run: sh ./scripts/build.sh
+    - name: Build and publish documentation
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: sh ./scripts/release.sh
