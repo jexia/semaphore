@@ -1,0 +1,16 @@
+{
+  "name": "semaphore",
+  "version": "2.0.0",
+  "scripts": {
+    "dev": "vuepress dev docs",
+    "build": "vuepress build docs -d ./dist"
+  },
+  "description": "Take control of your data, connect with anything, and expose it anywhere through protocols such as HTTP, GraphQL, and gRPC.",
+  "main": "index.js",
+  "repository": "git@github.com:jexia/semaphore.git",
+  "author": "Jeroen Rinzema <post@jeroen.no>",
+  "license": "MIT",
+  "devDependencies": {
+    "vuepress": "^1.6.0"
+  }
+}
