@@ -11,3 +11,7 @@
 This branch contains the documentation of the Semaphore project.
 When wanting to suggest changes to the documentation please fork and clone this branch.
 Changes to the documentation are automatically deployed and are hosted at Github pages.
+
+The markdown source files are available inside `./src`.
+Please do not perform manual changes inside the `./docs` directory.
+The documentation is maintained and automatically generated through Github actions.

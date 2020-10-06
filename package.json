@@ -2,8 +2,8 @@
   "name": "semaphore",
   "version": "2.0.0",
   "scripts": {
-    "dev": "vuepress dev docs",
-    "build": "vuepress build docs -d ./"
+    "dev": "vuepress dev src",
+    "build": "vuepress build src -d ./docs"
   },
   "description": "Take control of your data, connect with anything, and expose it anywhere through protocols such as HTTP, GraphQL, and gRPC.",
   "main": "index.js",
