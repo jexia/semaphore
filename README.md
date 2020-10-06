@@ -3,7 +3,7 @@
 ----
 
 - Chat: [Discord](https://chat.jexia.com)
-- Documentation: [...]()
+- Documentation: [Github pages](https://jexia.github.io/semaphore/) - [Branch](https://github.com/jexia/semaphore/tree/docs)
 - Go package documentation: [GoDev](https://pkg.go.dev/github.com/jexia/semaphore)
 
 > Take control of your data, connect with anything, and expose it anywhere through protocols such as HTTP, GraphQL, and gRPC!
