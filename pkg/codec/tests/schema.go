@@ -1,4 +1,4 @@
-package xml
+package tests
 
 import (
 	"github.com/jexia/semaphore/pkg/specs"
@@ -7,7 +7,7 @@ import (
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
-func propString() *specs.Property {
+func PropString() *specs.Property {
 	return &specs.Property{
 		Name:  "string",
 		Path:  "string",
@@ -20,7 +20,7 @@ func propString() *specs.Property {
 	}
 }
 
-func propInteger() *specs.Property {
+func PropInteger() *specs.Property {
 	return &specs.Property{
 		Name:  "integer",
 		Path:  "integer",
@@ -33,20 +33,20 @@ func propInteger() *specs.Property {
 	}
 }
 
-func propArray() *specs.Property {
+func PropArray() *specs.Property {
 	return &specs.Property{
 		Name:  "array",
 		Path:  "array",
 		Label: labels.Optional,
 		Template: specs.Template{
 			Repeated: specs.Repeated{
-				propString().Template,
+				PropString().Template,
 			},
 		},
 	}
 }
 
-func propEnum() *specs.Property {
+func PropEnum() *specs.Property {
 	return &specs.Property{
 		Name:  "status",
 		Path:  "status",
@@ -132,14 +132,14 @@ var (
 			Template: specs.Template{
 				Message: specs.Message{
 					"integer": func() *specs.Property {
-						var clone = propInteger()
+						var clone = PropInteger()
 						clone.Position = 1
 						clone.Path = "root." + clone.Path
 
 						return clone
 					}(),
 					"array": func() *specs.Property {
-						var clone = propArray()
+						var clone = PropArray()
 						clone.Position = 2
 						clone.Path = "root." + clone.Path
 
@@ -157,14 +157,14 @@ var (
 			Template: specs.Template{
 				Message: specs.Message{
 					"status": func() *specs.Property {
-						var clone = propEnum()
+						var clone = PropEnum()
 						clone.Position = 1
 						clone.Path = "root." + clone.Path
 
 						return clone
 					}(),
 					"integer": func() *specs.Property {
-						var clone = propInteger()
+						var clone = PropInteger()
 						clone.Position = 2
 						clone.Path = "root." + clone.Path
 
@@ -189,14 +189,14 @@ var (
 						Template: specs.Template{
 							Message: specs.Message{
 								"status": func() *specs.Property {
-									var clone = propEnum()
+									var clone = PropEnum()
 									clone.Position = 1
 									clone.Path = "root.nested." + clone.Path
 
 									return clone
 								}(),
 								"integer": func() *specs.Property {
-									var clone = propInteger()
+									var clone = PropInteger()
 									clone.Position = 2
 									clone.Path = "root.nested." + clone.Path
 
@@ -206,7 +206,7 @@ var (
 						},
 					},
 					"string": func() *specs.Property {
-						var clone = propString()
+						var clone = PropString()
 						clone.Position = 2
 						clone.Path = "root." + clone.Path
 

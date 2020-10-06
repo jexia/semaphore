@@ -16,6 +16,12 @@ flow "complete" {
       repeating_values = "{{ input:repeating_values }}"
       enum             = "{{ input:enum }}"
       repeating_enum   = "{{ input:repeating_enum }}"
+
+      // repeating_default_values = [
+      //   "foo",
+      //   "{{ input:nested.value }}",
+      //   "bar",
+      // ]
     }
   }
 }

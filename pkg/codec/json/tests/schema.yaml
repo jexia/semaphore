@@ -4,12 +4,14 @@ properties:
     template:
       message:
         "message":
+          position: 1
           name: "message"
           label: "optional"
           template:
             scalar:
               type: "string"
         "nested":
+          position: 2
           name: "nested"
           label: "optional"
           template:
@@ -22,6 +24,7 @@ properties:
                     type: "string"
 
         "repeating":
+          position: 3
           name: "repeating"
           label: "optional"
           template:
@@ -34,37 +37,53 @@ properties:
                       scalar:
                         type: "string"
         "repeating_values":
+          position: 4
           name: "repeating_values"
           label: "optional"
           template:
             repeated:
               - scalar:
                   type: "string"
+        # "repeating_default_values":
+        #   name: "repeating_default_values"
+        #   label: "optional"
+        #   template:
+        #     repeated:
+        #       - scalar:
+        #           type: "string"
+        #           default: "foo"
+        #       - scalar:
+        #           type: "string"
+        #       - scalar:
+        #           type: "string"
+        #           default: "bar"
         "enum":
-            name: "enum"
-            label: "optional"
-            template:
-              enum:
-                name: "STATUS"
-                keys:
-                  "UNKNOWN":
-                    key: "UNKNOWN"
-                    position: 1
-                    description: "unknown status"
-                  "PENDING":
-                    key: "PENDING"
-                    position: 2
-                    description: "pending status"
-                positions:
-                  1:
-                    key: "UNKNOWN"
-                    position: 1
-                    description: "unknown status"
-                  2:
-                    key: "PENDING"
-                    position: 2
-                    description: "pending status"
+          position: 5
+          name: "enum"
+          label: "optional"
+          template:
+            enum:
+              name: "STATUS"
+              keys:
+                "UNKNOWN":
+                  key: "UNKNOWN"
+                  position: 1
+                  description: "unknown status"
+                "PENDING":
+                  key: "PENDING"
+                  position: 2
+                  description: "pending status"
+              positions:
+                1:
+                  key: "UNKNOWN"
+                  position: 1
+                  description: "unknown status"
+                2:
+                  key: "PENDING"
+                  position: 2
+                  description: "pending status"
         "repeating_enum":
+          position: 6
           name: "repeating_enum"
           label: "optional"
           template:

@@ -5,13 +5,13 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"path/filepath"
-	"reflect"
 	"testing"
 
 	"github.com/jexia/semaphore"
 	"github.com/jexia/semaphore/cmd/semaphore/daemon/providers"
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
+	"github.com/jexia/semaphore/pkg/codec/tests"
 	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/providers/hcl"
 	"github.com/jexia/semaphore/pkg/providers/mock"
@@ -446,103 +446,152 @@ func TestMarshal(t *testing.T) {
 	}
 
 	flow := flows.Get("complete")
-	req := flow.GetNodes().Get("first").Call.Request
+	schema := flow.GetNodes().Get("first").Call.Request
 
-	constructor := &Constructor{}
-	manager, err := constructor.New("input", req)
-	if err != nil {
-		t.Fatal(err)
+	type test struct {
+		input    map[string]interface{}
+		schema   *specs.ParameterMap
+		expected string
 	}
 
-	tests := map[string]map[string]interface{}{
+	tests := map[string]test{
+		"scalar from reference": {
+			input: map[string]interface{}{
+				"integer": int32(42),
+			},
+			schema: &specs.ParameterMap{
+				Property: func() *specs.Property {
+					var property = tests.PropInteger()
+					property.Reference = &specs.PropertyReference{
+						Resource: "input",
+						Path:     "integer",
+					}
+
+					return property
+				}(),
+			},
+			expected: `42`,
+		},
+		"scalar default value": {
+			input: map[string]interface{}{
+				"integer": int32(42),
+			},
+			schema: &specs.ParameterMap{
+				Property: func() *specs.Property {
+					var property = tests.PropInteger()
+					property.Scalar.Default = int32(42)
+
+					return property
+				}(),
+			},
+			expected: `42`,
+		},
 		"simple": {
-			"message": "some message",
-			"nested":  map[string]interface{}{},
+			input: map[string]interface{}{
+				"message": "some message",
+				"nested":  map[string]interface{}{},
+			},
+			schema:   schema,
+			expected: `{"message":"some message","nested":{}}`,
 		},
 		"nested": {
-			"nested": map[string]interface{}{
-				"value": "some message",
+			input: map[string]interface{}{
+				// "repeating_default_values": []interface{}{
+				// 	"foo",
+				// 	"bar",
+				// },
+				"nested": map[string]interface{}{
+					"value": "some message",
+				},
 			},
+			schema:   schema,
+			expected: `{"nested":{"value":"some message"}}`,
 		},
 		"enum": {
-			"nested": map[string]interface{}{},
-			"enum":   references.Enum("PENDING", 2),
+			input: map[string]interface{}{
+				"nested": map[string]interface{}{},
+				"enum":   references.Enum("PENDING", 2),
+			},
+			schema:   schema,
+			expected: `{"nested":{},"enum":"PENDING"}`,
 		},
 		"repeating_enum": {
-			"nested": map[string]interface{}{},
-			"repeating_enum": []interface{}{
-				references.Enum("UNKNOWN", 1),
-				references.Enum("PENDING", 2),
+			input: map[string]interface{}{
+				"repeating_enum": []interface{}{
+					references.Enum("UNKNOWN", 1),
+					references.Enum("PENDING", 2),
+				},
 			},
+			schema:   schema,
+			expected: `{"nested":{},"repeating_enum":["UNKNOWN","PENDING"]}`,
 		},
 		"repeating": {
-			"nested": map[string]interface{}{},
-			"repeating": []map[string]interface{}{
-				{
-					"value": "repeating value",
-				},
-				{
-					"value": "repeating value",
+			input: map[string]interface{}{
+				"repeating": []map[string]interface{}{
+					{
+						"value": "repeating value",
+					},
+					{
+						"value": "repeating value",
+					},
 				},
 			},
+			schema:   schema,
+			expected: `{"nested":{},"repeating":[{"value":"repeating value"},{"value":"repeating value"}]}`,
 		},
 		"repeating_values": {
-			"nested": map[string]interface{}{},
-			"repeating_values": []interface{}{
-				"repeating value",
-				"repeating value",
+			input: map[string]interface{}{
+				"repeating_values": []interface{}{
+					"repeating one",
+					"repeating two",
+				},
 			},
+			schema:   schema,
+			expected: `{"nested":{},"repeating_values":["repeating one","repeating two"]}`,
 		},
 		"complex": {
-			"message": "hello world",
-			"nested": map[string]interface{}{
-				"value": "nested value",
-			},
-			"repeating": []map[string]interface{}{
-				{
-					"value": "repeating value",
+			input: map[string]interface{}{
+				"message": "hello world",
+				"nested": map[string]interface{}{
+					"value": "nested value",
 				},
-				{
-					"value": "repeating value",
+				"repeating": []map[string]interface{}{
+					{
+						"value": "repeating value",
+					},
+					{
+						"value": "repeating value",
+					},
 				},
 			},
+			schema:   schema,
+			expected: `{"message":"hello world","nested":{"value":"nested value"},"repeating":[{"value":"repeating value"},{"value":"repeating value"}]}`,
 		},
 	}
 
-	for key, input := range tests {
+	for key, test := range tests {
 		t.Run(key, func(t *testing.T) {
-			inputAsJSON, err := json.Marshal(input)
+			constructor := &Constructor{}
+			manager, err := constructor.New("input", test.schema)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			refs := references.NewReferenceStore(len(input))
-			refs.StoreValues("input", "", input)
+			refs := references.NewReferenceStore(len(test.input))
+			refs.StoreValues("input", "", test.input)
 
 			reader, err := manager.Marshal(refs)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			responseAsJSON, err := ioutil.ReadAll(reader)
+			data, err := ioutil.ReadAll(reader)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			result := map[string]interface{}{}
-			err = json.Unmarshal(responseAsJSON, &result)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			expected := map[string]interface{}{}
-			err = json.Unmarshal(inputAsJSON, &expected)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			if !reflect.DeepEqual(expected, result) {
-				t.Errorf("unexpected response %s, expected %s", string(responseAsJSON), string(inputAsJSON))
+			if actual := string(data); actual != test.expected {
+				t.Errorf("unexpected output %s, expected %s", data, test.expected)
 			}
 		})
 	}
