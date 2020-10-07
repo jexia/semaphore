@@ -75,6 +75,10 @@ func NewArgs(props *specs.ParameterMap) (graphql.FieldConfigArgument, error) {
 
 // NewInputArgObject constructs a new input argument object
 func NewInputArgObject(prop *specs.Property) (*graphql.InputObject, error) {
+	if prop == nil {
+		return &graphql.InputObject{}, nil
+	}
+
 	if prop.Type() != types.Message {
 		return nil, ErrUnexpectedType{
 			Type:     prop.Type(),
@@ -95,8 +99,10 @@ func NewInputArgObject(prop *specs.Property) (*graphql.InputObject, error) {
 			}
 
 			typ = result
+			break
 		case nested.Repeated != nil:
 			typ = graphql.NewList(typ)
+			break
 		case nested.Enum != nil:
 			values := graphql.EnumValueConfigMap{}
 
@@ -114,6 +120,7 @@ func NewInputArgObject(prop *specs.Property) (*graphql.InputObject, error) {
 			}
 
 			typ = graphql.NewEnum(config)
+			break
 		}
 
 		fields[nested.Name] = &graphql.InputObjectFieldConfig{
@@ -127,6 +134,11 @@ func NewInputArgObject(prop *specs.Property) (*graphql.InputObject, error) {
 		Fields:      fields,
 		Description: prop.Description,
 	})
+
+	err := result.Error()
+	if err != nil {
+		return nil, err
+	}
 
 	return result, nil
 }

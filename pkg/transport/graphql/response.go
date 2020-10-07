@@ -8,6 +8,10 @@ import (
 
 // ResponseObject constructs the response value send back to the client
 func ResponseObject(specs *specs.Property, refs references.Store) (map[string]interface{}, error) {
+	if specs == nil || refs == nil {
+		return nil, ErrInvalidObject
+	}
+
 	if specs.Type() != types.Message {
 		return nil, ErrInvalidObject
 	}
@@ -17,11 +21,8 @@ func ResponseObject(specs *specs.Property, refs references.Store) (map[string]in
 		return nil, err
 	}
 
-	object, is := value.(map[string]interface{})
-	if !is {
-		return nil, ErrInvalidObject
-	}
-
+	// could safely assume that the given type is a map[string]interface{}
+	object := value.(map[string]interface{})
 	return object, nil
 }
 
