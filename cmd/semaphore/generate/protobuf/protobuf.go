@@ -15,6 +15,7 @@ import (
 	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/codec/proto"
 	"github.com/jexia/semaphore/pkg/functions"
+	"github.com/jexia/semaphore/pkg/prettyerr"
 	"github.com/jexia/semaphore/pkg/transport"
 	"github.com/jexia/semaphore/pkg/transport/grpc"
 	"github.com/jhump/protoreflect/desc/protoprint"
@@ -44,9 +45,16 @@ func init() {
 	Command.PersistentFlags().StringVarP(&output, "output", "o", "", "Output directory (all missing directories will be created)")
 }
 
-func run(cmd *cobra.Command, args []string) error {
+func run(cmd *cobra.Command, args []string) (err error) {
+
+	defer func() {
+		if err != nil {
+			err = prettyerr.StandardErr(err)
+		}
+	}()
+
 	ctx := logger.WithLogger(broker.NewContext())
-	err := config.SetOptions(ctx, flags)
+	err = config.SetOptions(ctx, flags)
 	if err != nil {
 		return err
 	}
