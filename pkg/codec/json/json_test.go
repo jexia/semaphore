@@ -150,7 +150,9 @@ func BenchmarkSimpleMarshal(b *testing.B) {
 			b.Fatal(err)
 		}
 
-		ioutil.ReadAll(reader)
+		if _, err := ioutil.ReadAll(reader); err != nil {
+			b.Fatal(err)
+		}
 	}
 }
 
@@ -187,7 +189,9 @@ func BenchmarkNestedMarshal(b *testing.B) {
 			b.Fatal(err)
 		}
 
-		ioutil.ReadAll(reader)
+		if _, err := ioutil.ReadAll(reader); err != nil {
+			b.Fatal(err)
+		}
 	}
 }
 
@@ -226,7 +230,9 @@ func BenchmarkRepeatedMessagesMarshal(b *testing.B) {
 			b.Fatal(err)
 		}
 
-		ioutil.ReadAll(reader)
+		if _, err := ioutil.ReadAll(reader); err != nil {
+			b.Fatal(err)
+		}
 	}
 }
 
@@ -263,7 +269,9 @@ func BenchmarkRepeatedValuesMarshal(b *testing.B) {
 			b.Fatal(err)
 		}
 
-		ioutil.ReadAll(reader)
+		if _, err := ioutil.ReadAll(reader); err != nil {
+			b.Fatal(err)
+		}
 	}
 }
 
@@ -486,26 +494,38 @@ func TestMarshal(t *testing.T) {
 			},
 			expected: `42`,
 		},
+		"array empty": {
+			schema:   tests.SchemaArrayDefaultEmpty,
+			expected: `[null]`,
+		},
+		"array default reference": {
+			input: map[string]interface{}{
+				"string": "foo",
+			},
+			schema:   tests.SchemaArrayWithValues,
+			expected: `["foo","bar"]`,
+		},
+		"array default no reference value": {
+			input:    map[string]interface{}{},
+			schema:   tests.SchemaArrayWithValues,
+			expected: `[null,"bar"]`,
+		},
 		"simple": {
 			input: map[string]interface{}{
 				"message": "some message",
 				"nested":  map[string]interface{}{},
 			},
 			schema:   schema,
-			expected: `{"message":"some message","nested":{}}`,
+			expected: `{"message":"some message","nested":{},"repeating":[],"repeating_values":[],"repeating_enum":[]}`,
 		},
 		"nested": {
 			input: map[string]interface{}{
-				// "repeating_default_values": []interface{}{
-				// 	"foo",
-				// 	"bar",
-				// },
 				"nested": map[string]interface{}{
 					"value": "some message",
 				},
 			},
 			schema:   schema,
-			expected: `{"nested":{"value":"some message"}}`,
+			expected: `{"nested":{"value":"some message"},"repeating":[],"repeating_values":[],"repeating_enum":[]}`,
 		},
 		"enum": {
 			input: map[string]interface{}{
@@ -513,7 +533,7 @@ func TestMarshal(t *testing.T) {
 				"enum":   references.Enum("PENDING", 2),
 			},
 			schema:   schema,
-			expected: `{"nested":{},"enum":"PENDING"}`,
+			expected: `{"nested":{},"repeating":[],"repeating_values":[],"enum":"PENDING","repeating_enum":[]}`,
 		},
 		"repeating_enum": {
 			input: map[string]interface{}{
@@ -523,9 +543,9 @@ func TestMarshal(t *testing.T) {
 				},
 			},
 			schema:   schema,
-			expected: `{"nested":{},"repeating_enum":["UNKNOWN","PENDING"]}`,
+			expected: `{"nested":{},"repeating":[],"repeating_values":[],"repeating_enum":["UNKNOWN","PENDING"]}`,
 		},
-		"repeating": {
+		"repeating objects": {
 			input: map[string]interface{}{
 				"repeating": []map[string]interface{}{
 					{
@@ -537,9 +557,9 @@ func TestMarshal(t *testing.T) {
 				},
 			},
 			schema:   schema,
-			expected: `{"nested":{},"repeating":[{"value":"repeating value"},{"value":"repeating value"}]}`,
+			expected: `{"nested":{},"repeating":[{"value":"repeating value"},{"value":"repeating value"}],"repeating_values":[],"repeating_enum":[]}`,
 		},
-		"repeating_values": {
+		"repeating values from reference": {
 			input: map[string]interface{}{
 				"repeating_values": []interface{}{
 					"repeating one",
@@ -547,7 +567,7 @@ func TestMarshal(t *testing.T) {
 				},
 			},
 			schema:   schema,
-			expected: `{"nested":{},"repeating_values":["repeating one","repeating two"]}`,
+			expected: `{"nested":{},"repeating":[],"repeating_values":["repeating one","repeating two"],"repeating_enum":[]}`,
 		},
 		"complex": {
 			input: map[string]interface{}{
@@ -565,7 +585,7 @@ func TestMarshal(t *testing.T) {
 				},
 			},
 			schema:   schema,
-			expected: `{"message":"hello world","nested":{"value":"nested value"},"repeating":[{"value":"repeating value"},{"value":"repeating value"}]}`,
+			expected: `{"message":"hello world","nested":{"value":"nested value"},"repeating":[{"value":"repeating value"},{"value":"repeating value"}],"repeating_values":[],"repeating_enum":[]}`,
 		},
 	}
 
@@ -642,10 +662,10 @@ func TestUnmarshal(t *testing.T) {
 			"nested": map[string]interface{}{},
 			"repeating": []map[string]interface{}{
 				{
-					"value": "repeating value",
+					"value": "repeating one",
 				},
 				{
-					"value": "repeating value",
+					"value": "repeating two",
 				},
 			},
 		},
@@ -663,10 +683,10 @@ func TestUnmarshal(t *testing.T) {
 			},
 			"repeating": []map[string]interface{}{
 				{
-					"value": "repeating value",
+					"value": "repeating one",
 				},
 				{
-					"value": "repeating value",
+					"value": "repeating two",
 				},
 			},
 		},

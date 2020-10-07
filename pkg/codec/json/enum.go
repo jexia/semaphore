@@ -25,7 +25,7 @@ func NewEnum(name string, enum *specs.Enum, reference *specs.PropertyReference, 
 	}
 }
 
-func (enum *Enum) Value() *specs.EnumValue {
+func (enum *Enum) value() *specs.EnumValue {
 	if enum.reference == nil {
 		return nil
 	}
@@ -35,25 +35,27 @@ func (enum *Enum) Value() *specs.EnumValue {
 		return nil
 	}
 
-	var enumValue = enum.enum.Positions[*reference.Enum]
-	if enum == nil {
-		return nil
+	if position := reference.Enum; position != nil {
+		return enum.enum.Positions[*reference.Enum]
 	}
 
-	return enumValue
+	return nil
 }
 
+// MarshalJSONEnum marshals enum which is not an object field (array element or
+// standalone enum).
 func (enum Enum) MarshalJSONEnum(encoder *gojay.Encoder) {
 	var value interface{}
-	if enumValue := enum.Value(); enumValue != nil {
+	if enumValue := enum.value(); enumValue != nil {
 		value = enumValue.Key
 	}
 
 	AddType(encoder, types.String, value)
 }
 
+// MarshalJSONEnumKey marshals enum which is an object field.
 func (enum Enum) MarshalJSONEnumKey(encoder *gojay.Encoder) {
-	var enumValue = enum.Value()
+	var enumValue = enum.value()
 	if enumValue == nil {
 		return
 	}
@@ -61,6 +63,7 @@ func (enum Enum) MarshalJSONEnumKey(encoder *gojay.Encoder) {
 	AddTypeKey(encoder, enum.name, types.String, enumValue.Key)
 }
 
+// UnmarshalJSONEnum unmarshals enum value from decoder to the reference store.
 func (enum Enum) UnmarshalJSONEnum(decoder *gojay.Decoder) error {
 	var key string
 	if err := decoder.AddString(&key); err != nil {

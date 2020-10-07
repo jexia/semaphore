@@ -60,7 +60,7 @@ func (manager *Manager) Marshal(store references.Store) (io.Reader, error) {
 		encodeElement(encoder, manager.resource, manager.property.Template, store)
 
 		if _, err := encoder.Write(); err != nil {
-			writer.CloseWithError(err)
+			_ = writer.CloseWithError(err)
 
 			return
 		}

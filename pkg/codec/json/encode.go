@@ -13,10 +13,9 @@ func encodeElement(encoder *gojay.Encoder, resource string, template specs.Templ
 			NewObject(resource, template.Message, store),
 		)
 	case template.Repeated != nil:
-		var array = NewArray(resource, template.Repeated, template.Reference, store)
-		if array != nil {
-			encoder.Array(array)
-		}
+		encoder.Array(
+			NewArray(resource, template.Repeated, template.Reference, store),
+		)
 	case template.Enum != nil:
 		NewEnum("", template.Enum, template.Reference, store).MarshalJSONEnum(encoder)
 	case template.Scalar != nil:
@@ -27,15 +26,15 @@ func encodeElement(encoder *gojay.Encoder, resource string, template specs.Templ
 func encodeElementKey(encoder *gojay.Encoder, resource, key string, template specs.Template, store references.Store) {
 	switch {
 	case template.Message != nil:
-		encoder.AddObjectKey(
+		encoder.ObjectKey(
 			key,
 			NewObject(resource, template.Message, store),
 		)
 	case template.Repeated != nil:
-		var array = NewArray(resource, template.Repeated, template.Reference, store)
-		if array != nil {
-			encoder.AddArrayKey(key, array)
-		}
+		encoder.ArrayKey(
+			key,
+			NewArray(resource, template.Repeated, template.Reference, store),
+		)
 	case template.Enum != nil:
 		NewEnum(key, template.Enum, template.Reference, store).MarshalJSONEnumKey(encoder)
 	case template.Scalar != nil:

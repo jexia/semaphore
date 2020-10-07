@@ -19,7 +19,7 @@ func decodeElement(decoder *gojay.Decoder, resource, path string, template specs
 			break
 		}
 
-		return decoder.AddObject(object)
+		return decoder.Object(object)
 	case template.Repeated != nil:
 		defer store.StoreReference(resource, &references.Reference{
 			Path: path,
@@ -30,7 +30,7 @@ func decodeElement(decoder *gojay.Decoder, resource, path string, template specs
 			break
 		}
 
-		return decoder.AddArray(array)
+		return decoder.Array(array)
 	case template.Enum != nil:
 		return NewEnum("", template.Enum, reference, store).UnmarshalJSONEnum(decoder)
 	case template.Scalar != nil:

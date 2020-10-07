@@ -91,6 +91,7 @@ var (
 					{
 						Scalar: &specs.Scalar{
 							Type: types.String,
+							Default: nil,
 						},
 					},
 				},

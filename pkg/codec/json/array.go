@@ -6,74 +6,61 @@ import (
 	"github.com/jexia/semaphore/pkg/specs"
 )
 
-// Array represents a JSON array
+// Array represents a JSON array.
 type Array struct {
-	resource string
-	template specs.Template
-	ref      *references.Reference
-	keys     int
+	resource  string
+	template  specs.Template
+	repeated  specs.Repeated
+	reference *specs.PropertyReference
+	store     references.Store
 }
 
-// NewArray constructs a new JSON array encoder/decoder
-func NewArray(resource string, repeated specs.Repeated, ref *specs.PropertyReference, refs references.Store) *Array {
-	// skip arrays which have no elements
-	if len(repeated) == 0 && ref == nil {
-		return nil
-	}
-
-	var reference *references.Reference
-	if ref != nil {
-		reference = refs.Load(ref.Resource, ref.Path)
-	}
-
-	if ref != nil && reference == nil {
-		return nil
-	}
-
+// NewArray creates a new array to be JSON encoded/decoded.
+func NewArray(resource string, repeated specs.Repeated, reference *specs.PropertyReference, store references.Store) *Array {
 	template, err := repeated.Template()
 	if err != nil {
 		panic(err)
 	}
 
-	generator := &Array{
-		resource: resource,
-		template: template,
-		ref:      reference,
+	return &Array{
+		resource:  resource,
+		template:  template,
+		repeated:  repeated,
+		reference: reference,
+		store:     store,
 	}
-
-	if template.Repeated != nil {
-		generator.keys = len(template.Repeated)
-	}
-
-	return generator
 }
 
-// MarshalJSONArray encodes the array into the given gojay encoder
+// MarshalJSONArray encodes the array into the given gojay encoder.
 func (array *Array) MarshalJSONArray(encoder *gojay.Encoder) {
-	if array == nil || array.ref == nil {
+	if array.reference == nil {
+		for _, template := range array.repeated {
+			encodeElement(encoder, "", template, array.store)
+		}
+
 		return
 	}
 
-	for _, store := range array.ref.Repeated {
+	var reference = array.store.Load(array.reference.Resource, array.reference.Path)
+
+	if reference == nil {
+		return
+	}
+
+	for _, store := range reference.Repeated {
 		array.template.Reference = new(specs.PropertyReference)
 
 		encodeElement(encoder, array.resource, array.template, store)
 	}
 }
 
-// UnmarshalJSONArray unmarshals the given specs into the configured reference store
+// UnmarshalJSONArray unmarshals the given specs into the configured reference store.
 func (array *Array) UnmarshalJSONArray(decoder *gojay.Decoder) error {
-	if array == nil {
-		return nil
-	}
-
 	// FIXME: array.keys is derrived from a wrong value
-	store := references.NewReferenceStore(array.keys)
-
-	return decodeElement(decoder, "", "", array.template, store)
+	return decodeElement(decoder, "", "", array.template, references.NewReferenceStore(0))
 }
 
-// IsNil returns whether the given array is null or not
+// IsNil returns whether the given array is null or not.
 func (array *Array) IsNil() bool {
 	return array == nil
 }
