@@ -1,6 +1,10 @@
 package broker
 
-import "testing"
+import (
+	"testing"
+
+	"go.uber.org/zap/zapcore"
+)
 
 func TestNewContext(t *testing.T) {
 	ctx := NewContext()
@@ -17,6 +21,10 @@ func TestNewBackground(t *testing.T) {
 
 	if ctx.Atom == nil {
 		t.Fatal("context log level Atom not set")
+	}
+
+	if ctx.Atom.Level() != zapcore.ErrorLevel {
+		t.Fatalf("unexpected atom log level %s, expected %s", ctx.Atom.Level(), zapcore.ErrorLevel)
 	}
 }
 
@@ -37,6 +45,17 @@ func TestChild(t *testing.T) {
 
 	if child.Parent == nil {
 		t.Fatal("parent not set")
+	}
+}
+
+func TestChildNilParent(t *testing.T) {
+	child := Child(nil)
+	if child == nil {
+		t.Fatal("unexpected empty child context")
+	}
+
+	if child.Parent != nil {
+		t.Fatalf("unexpected parent %+v", child.Parent)
 	}
 }
 
