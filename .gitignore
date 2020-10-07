@@ -21,6 +21,3 @@
 bin/
 tmp/
 
-# tmp ignore due to issue: https://github.com/francoispqt/gojay/pull/157
-# this ignore should be removed once the pull request has been merged
-vendor/github.com/francoispqt/gojay

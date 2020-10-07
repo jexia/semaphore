@@ -30,6 +30,10 @@ jobs:
       run: |
         go mod tidy -v
         go mod vendor
+
+        # tmp ignore due to issue: https://github.com/francoispqt/gojay/pull/157
+        # this ignore should be removed once the pull request has been merged
+        git update-index --assume-unchanged vendor/github.com/francoispqt/gojay/*
     
     - name: Git changes
       run: |
