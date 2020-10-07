@@ -56,8 +56,19 @@ func (array *Array) MarshalJSONArray(encoder *gojay.Encoder) {
 
 // UnmarshalJSONArray unmarshals the given specs into the configured reference store.
 func (array *Array) UnmarshalJSONArray(decoder *gojay.Decoder) error {
-	// FIXME: array.keys is derrived from a wrong value
-	return decodeElement(decoder, "", "", array.template, references.NewReferenceStore(0))
+	store := references.NewReferenceStore(0)
+
+	if array.reference != nil {
+		var reference = array.store.Load(array.reference.Resource, array.reference.Path)
+		if reference == nil {
+			return nil
+		}
+
+		reference.Append(store)
+	}
+
+	// NOTE: always consume an array even if the reference is not set
+	return decodeElement(decoder, "", "", array.template, store)
 }
 
 // IsNil returns whether the given array is null or not.

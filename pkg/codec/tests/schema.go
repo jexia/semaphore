@@ -90,7 +90,7 @@ var (
 				Repeated: specs.Repeated{
 					{
 						Scalar: &specs.Scalar{
-							Type: types.String,
+							Type:    types.String,
 							Default: nil,
 						},
 					},
@@ -146,6 +146,37 @@ var (
 
 						return clone
 					}(),
+				},
+			},
+		},
+	}
+
+	SchemaArrayOfArrays = &specs.ParameterMap{
+		Property: &specs.Property{
+			Name:  "array",
+			Path:  "array",
+			Label: labels.Optional,
+			Template: specs.Template{
+				Repeated: specs.Repeated{
+					{
+						Repeated: specs.Repeated{
+							{
+								Reference: &specs.PropertyReference{
+									Resource: template.InputResource,
+									Path:     "string",
+								},
+								Scalar: &specs.Scalar{
+									Type: types.String,
+								},
+							},
+							{
+								Scalar: &specs.Scalar{
+									Type:    types.String,
+									Default: "bar",
+								},
+							},
+						},
+					},
 				},
 			},
 		},
