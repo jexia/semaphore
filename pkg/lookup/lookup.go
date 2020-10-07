@@ -268,7 +268,6 @@ func ParamsLookup(params map[string]*specs.Property, flow specs.FlowInterface, b
 
 				result := reference.Clone()
 
-				// TODO: needs refactoring
 				if param.Scalar != nil && result.Scalar != nil {
 					param.Scalar.Type = result.Scalar.Type
 				}
