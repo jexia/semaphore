@@ -21,9 +21,7 @@ func decodeElement(decoder *gojay.Decoder, resource, path string, template specs
 
 		return decoder.Object(object)
 	case template.Repeated != nil:
-		defer store.StoreReference(resource, &references.Reference{
-			Path: path,
-		})
+		defer store.StoreReference(resource, &references.Reference{Path: path})
 
 		array := NewArray(resource, template.Repeated, template.Reference, store)
 		if array == nil {

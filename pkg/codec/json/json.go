@@ -1,6 +1,7 @@
 package json
 
 import (
+	"bufio"
 	"io"
 
 	"github.com/francoispqt/gojay"
@@ -78,7 +79,18 @@ func (manager *Manager) Unmarshal(reader io.Reader, store references.Store) erro
 		return nil
 	}
 
-	var decoder = gojay.BorrowDecoder(reader)
+	var (
+		buff   = bufio.NewReader(reader)
+		_, err = buff.ReadByte()
+	)
+
+	if err == io.EOF {
+		return nil
+	}
+
+	_ = buff.UnreadByte()
+
+	var decoder = gojay.NewDecoder(buff)
 	defer decoder.Release()
 
 	return decodeElement(decoder, manager.resource, manager.property.Path, manager.property.Template, store)
