@@ -99,7 +99,6 @@ func ParsePropertyReference(value string) *specs.PropertyReference {
 
 // ParseReference parses the given value as a template reference
 func ParseReference(path string, name string, value string) (*specs.Property, error) {
-	// TODO: check values
 	if strings.Count(value, "..") > 0 {
 		return nil, ErrPathNotFound{
 			Path: value,
