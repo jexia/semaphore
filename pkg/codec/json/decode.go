@@ -7,7 +7,7 @@ import (
 )
 
 func decodeElement(decoder *gojay.Decoder, resource, path string, template specs.Template, store references.Store) error {
-	var reference = &specs.PropertyReference{
+	var reference = specs.PropertyReference{
 		Resource: resource,
 		Path:     path,
 	}
@@ -32,9 +32,9 @@ func decodeElement(decoder *gojay.Decoder, resource, path string, template specs
 
 		return decoder.Array(array)
 	case template.Enum != nil:
-		return NewEnum("", template.Enum, reference, store).UnmarshalJSONEnum(decoder)
+		return NewEnum("", template.Enum, &reference, store).UnmarshalJSONEnum(decoder)
 	case template.Scalar != nil:
-		return NewScalar("", template.Scalar, reference, store).UnmarshalJSONScalar(decoder)
+		return NewScalar("", template.Scalar, &reference, store).UnmarshalJSONScalar(decoder)
 	}
 
 	return nil

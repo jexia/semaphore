@@ -44,19 +44,6 @@ properties:
             repeated:
               - scalar:
                   type: "string"
-        # "repeating_default_values":
-        #   name: "repeating_default_values"
-        #   label: "optional"
-        #   template:
-        #     repeated:
-        #       - scalar:
-        #           type: "string"
-        #           default: "foo"
-        #       - scalar:
-        #           type: "string"
-        #       - scalar:
-        #           type: "string"
-        #           default: "bar"
         "enum":
           position: 5
           name: "enum"
