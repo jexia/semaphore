@@ -4,159 +4,74 @@ import (
 	"github.com/francoispqt/gojay"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
-// NewArray constructs a new JSON array encoder/decoder
-func NewArray(resource string, template specs.Template, refs references.Store) *Array {
-	// skip arrays which have no elements
-	if len(template.Repeated) == 0 && template.Reference == nil {
-		return nil
-	}
+// Array represents a JSON array.
+type Array struct {
+	resource  string
+	template  specs.Template
+	repeated  specs.Repeated
+	reference *specs.PropertyReference
+	store     references.Store
+}
 
-	var reference *references.Reference
-	if template.Reference != nil {
-		reference = refs.Load(template.Reference.Resource, template.Reference.Path)
-	}
-
-	if template.Reference != nil && reference == nil {
-		return nil
-	}
-
-	template, err := template.Repeated.Template()
+// NewArray creates a new array to be JSON encoded/decoded.
+func NewArray(resource string, repeated specs.Repeated, reference *specs.PropertyReference, store references.Store) *Array {
+	template, err := repeated.Template()
 	if err != nil {
 		panic(err)
 	}
 
-	generator := &Array{
-		resource: resource,
-		template: template,
-		ref:      reference,
+	return &Array{
+		resource:  resource,
+		template:  template,
+		repeated:  repeated,
+		reference: reference,
+		store:     store,
 	}
-
-	if template.Repeated != nil {
-		generator.keys = len(template.Repeated)
-	}
-
-	return generator
 }
 
-// Array represents a JSON array
-type Array struct {
-	resource string
-	template specs.Template
-	ref      *references.Reference
-	keys     int
-}
+// MarshalJSONArray encodes the array into the given gojay encoder.
+func (array *Array) MarshalJSONArray(encoder *gojay.Encoder) {
+	if array.reference == nil {
+		for _, template := range array.repeated {
+			encodeElement(encoder, "", template, array.store)
+		}
 
-// MarshalJSONArray encodes the array into the given gojay encoder
-func (array *Array) MarshalJSONArray(enc *gojay.Encoder) {
-	if array == nil || array.ref == nil {
 		return
 	}
 
-	for _, store := range array.ref.Repeated {
-		switch {
-		case array.template.Message != nil:
-			object := NewObject(array.resource, array.template.Message, store)
-			if object == nil {
-				break
-			}
+	var reference = array.store.Load(array.reference.Resource, array.reference.Path)
 
-			enc.AddObject(object)
-			break
-		case array.template.Repeated != nil:
-			array := NewArray(array.resource, array.template, store)
-			if array == nil {
-				break
-			}
+	if reference == nil {
+		return
+	}
 
-			enc.AddArray(array)
-			break
-		case array.template.Enum != nil:
-			// TODO: check if enums in arrays work
-			if array.template.Reference == nil {
-				break
-			}
+	for _, store := range reference.Repeated {
+		array.template.Reference = new(specs.PropertyReference)
 
-			ref := store.Load("", "")
-			if ref == nil || ref.Enum == nil {
-				break
-			}
-
-			key := array.template.Enum.Positions[*ref.Enum].Key
-			AddType(enc, types.String, key)
-			break
-		case array.template.Scalar != nil:
-			val := array.template.Scalar.Default
-
-			ref := store.Load("", "")
-			if ref != nil {
-				val = ref.Value
-			}
-
-			AddType(enc, array.template.Scalar.Type, val)
-			break
-		}
+		encodeElement(encoder, array.resource, array.template, store)
 	}
 }
 
-// UnmarshalJSONArray unmarshals the given specs into the configured reference store
-func (array *Array) UnmarshalJSONArray(dec *gojay.Decoder) error {
-	if array == nil {
-		return nil
+// UnmarshalJSONArray unmarshals the given specs into the configured reference store.
+func (array *Array) UnmarshalJSONArray(decoder *gojay.Decoder) error {
+	store := references.NewReferenceStore(0)
+
+	if array.reference != nil {
+		var reference = array.store.Load(array.reference.Resource, array.reference.Path)
+		if reference == nil {
+			return nil
+		}
+
+		reference.Append(store)
 	}
 
-	// FIXME: array.keys is derrived from a wrong value
-	store := references.NewReferenceStore(array.keys)
-
-	switch {
-	case array.template.Message != nil:
-		object := NewObject(array.resource, array.template.Message, store)
-		err := dec.AddObject(object)
-		if err != nil {
-			return err
-		}
-
-		array.ref.Append(store)
-		break
-	case array.template.Repeated != nil:
-		array := NewArray(array.resource, array.template, store)
-		err := dec.AddArray(array)
-		if err != nil {
-			return err
-		}
-
-		array.ref.Append(store)
-		break
-	case array.template.Enum != nil:
-		var key string
-		err := dec.AddString(&key)
-		if err != nil {
-			return err
-		}
-
-		enum := array.template.Enum.Keys[key]
-		if enum != nil {
-			store.StoreEnum("", "", enum.Position)
-			array.ref.Append(store)
-		}
-		break
-	case array.template.Scalar != nil:
-		val, err := DecodeType(dec, array.template.Scalar.Type)
-		if err != nil {
-			return err
-		}
-
-		store.StoreValue("", "", val)
-		array.ref.Append(store)
-		break
-	}
-
-	return nil
+	// NOTE: always consume an array even if the reference is not set
+	return decodeElement(decoder, "", "", array.template, store)
 }
 
-// IsNil returns whether the given array is null or not
+// IsNil returns whether the given array is null or not.
 func (array *Array) IsNil() bool {
-	return false
+	return array == nil
 }
