@@ -41,7 +41,6 @@ func NewArgs(props *specs.ParameterMap) (graphql.FieldConfigArgument, error) {
 			}
 
 			typ = result
-			break
 		case nested.Repeated != nil:
 			typ = graphql.NewList(typ)
 		case nested.Enum != nil:
@@ -61,7 +60,6 @@ func NewArgs(props *specs.ParameterMap) (graphql.FieldConfigArgument, error) {
 			}
 
 			typ = graphql.NewEnum(config)
-			break
 		}
 
 		args[nested.Name] = &graphql.ArgumentConfig{
@@ -99,10 +97,8 @@ func NewInputArgObject(prop *specs.Property) (*graphql.InputObject, error) {
 			}
 
 			typ = result
-			break
 		case nested.Repeated != nil:
 			typ = graphql.NewList(typ)
-			break
 		case nested.Enum != nil:
 			values := graphql.EnumValueConfigMap{}
 
@@ -120,7 +116,6 @@ func NewInputArgObject(prop *specs.Property) (*graphql.InputObject, error) {
 			}
 
 			typ = graphql.NewEnum(config)
-			break
 		}
 
 		fields[nested.Name] = &graphql.InputObjectFieldConfig{
