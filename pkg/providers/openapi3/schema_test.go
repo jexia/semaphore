@@ -263,7 +263,7 @@ func Test_newSchemas(t *testing.T) {
 
 	assert.Len(t, schemas, 6)
 
-	expected := []string {
+	expected := []string{
 		"com.semaphore.GET:/pets:Response[application/json][default]",
 		"com.semaphore.GET:/pets:Response[application/json][200]",
 		"com.semaphore.POST:/pets:Request[application/json]",

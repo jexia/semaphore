@@ -10,7 +10,7 @@ import (
 func Test_scanPaths(t *testing.T) {
 	type testEndpoint struct {
 		path, method string
-		objects []string
+		objects      []string
 	}
 
 	loader := openapi3.NewSwaggerLoader()

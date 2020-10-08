@@ -5,8 +5,8 @@ import (
 	openapi "github.com/getkin/kin-openapi/openapi3"
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
-	"testing"
 	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 func Test_getCanonicalName(t *testing.T) {
@@ -64,7 +64,6 @@ func Test_getCanonicalName(t *testing.T) {
 		})
 	}
 }
-
 
 func Test_collect(t *testing.T) {
 	ctx := logger.WithLogger(broker.NewBackground())

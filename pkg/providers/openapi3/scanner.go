@@ -15,16 +15,16 @@ type endpointRef struct {
 
 func newEndpointRef(method, path string) *endpointRef {
 	return &endpointRef{
-		method: method,
-		path: path,
+		method:    method,
+		path:      path,
 		responses: map[string]*objectRef{},
-		requests: map[string]*objectRef{},
+		requests:  map[string]*objectRef{},
 	}
 }
 
 // return all the objects
 func (e *endpointRef) objects() map[string]*objectRef {
-	var collected = make(map[string]*objectRef, len(e.responses) + len(e.requests))
+	var collected = make(map[string]*objectRef, len(e.responses)+len(e.requests))
 
 	for name, obj := range e.responses {
 		collected[name] = obj
@@ -56,7 +56,7 @@ func (e *endpointRef) addResponse(obj *objectRef) error {
 	if obj.modelName != "" {
 		name = obj.modelName
 	} else {
-		name =  fmt.Sprintf("%s:%s:Response[%s][%s]", e.method, e.path, obj.contentType, obj.code)
+		name = fmt.Sprintf("%s:%s:Response[%s][%s]", e.method, e.path, obj.contentType, obj.code)
 	}
 
 	e.responses[name] = obj
