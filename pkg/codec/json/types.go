@@ -51,6 +51,13 @@ func AddTypeKey(encoder *gojay.Encoder, key string, typed types.Type, value inte
 
 // AddType encodes the given value into the given encoder
 func AddType(encoder *gojay.Encoder, typed types.Type, value interface{}) {
+	// do not skip NULL values while encoding array elements
+	if value == nil {
+		encoder.AddNull()
+
+		return
+	}
+
 	switch typed {
 	case types.Double:
 		encoder.AddFloat64(Float64Empty(value))
@@ -132,7 +139,9 @@ func DecodeType(decoder *gojay.Decoder, prop types.Type) (interface{}, error) {
 		return value, err
 	case types.Bytes:
 		var raw string
-		decoder.AddString(&raw)
+		if err := decoder.AddString(&raw); err != nil {
+			return nil, err
+		}
 
 		value := make([]byte, len(raw))
 		_, err := base64.StdEncoding.Decode(value, []byte(raw))
