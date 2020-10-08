@@ -65,13 +65,13 @@ func (manager *Manager) Marshal(refs references.Store) (io.Reader, error) {
 			manager.property.Template,
 			refs,
 		); err != nil {
-			writer.CloseWithError(err)
+			_ = writer.CloseWithError(err)
 
 			return
 		}
 
 		if err := encoder.Flush(); err != nil {
-			writer.CloseWithError(err)
+			_ = writer.CloseWithError(err)
 
 			return
 		}

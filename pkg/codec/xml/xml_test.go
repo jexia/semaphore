@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/jexia/semaphore/pkg/codec/tests"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/template"
@@ -29,7 +30,7 @@ func TestName(t *testing.T) {
 		}
 	})
 
-	manager, err := xml.New("mock", SchemaObject)
+	manager, err := xml.New("mock", tests.SchemaObject)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -55,20 +56,20 @@ func TestMarshal(t *testing.T) {
 
 	var tests = map[string]test{
 		"array empty": {
-			schema: SchemaArrayDefaultEmpty,
+			schema: tests.SchemaArrayDefaultEmpty,
 		},
 		"array default reference": {
 			input: map[string]interface{}{
 				"string": "foo",
 			},
-			schema:   SchemaArrayWithValues,
+			schema:   tests.SchemaArrayWithValues,
 			expected: "<array>foo</array><array>bar</array>",
 		},
 		"simple": {
 			input: map[string]interface{}{
 				"message": "hello world",
 			},
-			schema:   SchemaObjectComplex,
+			schema:   tests.SchemaObjectComplex,
 			expected: "<root><message>hello world</message><nested></nested></root>",
 		},
 		"enum": {
@@ -76,7 +77,7 @@ func TestMarshal(t *testing.T) {
 				"nested": map[string]interface{}{},
 				"status": references.Enum("PENDING", 1),
 			},
-			schema:   SchemaObjectComplex,
+			schema:   tests.SchemaObjectComplex,
 			expected: "<root><status>PENDING</status><nested></nested></root>",
 		},
 		"nested": {
@@ -86,7 +87,7 @@ func TestMarshal(t *testing.T) {
 					"second": "bar",
 				},
 			},
-			schema:   SchemaObjectComplex,
+			schema:   tests.SchemaObjectComplex,
 			expected: "<root><nested><first>foo</first><second>bar</second></nested></root>",
 		},
 		"repeating string": {
@@ -97,7 +98,7 @@ func TestMarshal(t *testing.T) {
 					nil, // TODO: nil (null) values should not be ignored
 				},
 			},
-			schema:   SchemaObjectComplex,
+			schema:   tests.SchemaObjectComplex,
 			expected: "<root><nested></nested><repeating_string>repeating one</repeating_string><repeating_string>repeating two</repeating_string></root>",
 		},
 		"repeating enum": {
@@ -107,7 +108,7 @@ func TestMarshal(t *testing.T) {
 					references.Enum("PENDING", 1),
 				},
 			},
-			schema:   SchemaObjectComplex,
+			schema:   tests.SchemaObjectComplex,
 			expected: "<root><nested></nested><repeating_enum>UNKNOWN</repeating_enum><repeating_enum>PENDING</repeating_enum></root>",
 		},
 		"repeating nested": {
@@ -121,7 +122,7 @@ func TestMarshal(t *testing.T) {
 					},
 				},
 			},
-			schema:   SchemaObjectComplex,
+			schema:   tests.SchemaObjectComplex,
 			expected: "<root><nested></nested><repeating><value>repeating one</value></repeating><repeating><value>repeating two</value></repeating></root>",
 		},
 		"complex": {
@@ -141,7 +142,7 @@ func TestMarshal(t *testing.T) {
 					},
 				},
 			},
-			schema:   SchemaObjectComplex,
+			schema:   tests.SchemaObjectComplex,
 			expected: "<root><numeric>42</numeric><message>hello world</message><nested><first>foo</first><second>bar</second></nested><repeating><value>repeating one</value></repeating><repeating><value>repeating two</value></repeating></root>",
 		},
 	}
@@ -173,10 +174,6 @@ func TestMarshal(t *testing.T) {
 	}
 }
 
-type readerFunc func([]byte) (int, error)
-
-func (fn readerFunc) Read(p []byte) (int, error) { return fn(p) }
-
 func errorString(err error) string {
 	if err != nil {
 		return err.Error()
@@ -189,17 +186,17 @@ func TestUnmarshal(t *testing.T) {
 	type test struct {
 		input    io.Reader
 		schema   *specs.ParameterMap
-		expected expect
+		expected tests.Expect
 		error    error
 	}
 
-	tests := map[string]test{
+	testCases := map[string]test{
 		"empty scalar with unexpected element": {
 			input: strings.NewReader(
 				"<integer><unexpected></integer>",
 			),
 			schema: &specs.ParameterMap{
-				Property: propInteger(),
+				Property: tests.PropInteger(),
 			},
 			error: errFailedToDecode{
 				errStack{
@@ -219,7 +216,7 @@ func TestUnmarshal(t *testing.T) {
 				"<integer>42<unexpected></integer>",
 			),
 			schema: &specs.ParameterMap{
-				Property: propInteger(),
+				Property: tests.PropInteger(),
 			},
 			error: errFailedToDecode{
 				errStack{
@@ -238,7 +235,7 @@ func TestUnmarshal(t *testing.T) {
 				"<integer>foo</integer>",
 			),
 			schema: &specs.ParameterMap{
-				Property: propInteger(),
+				Property: tests.PropInteger(),
 			},
 			error: errFailedToDecode{
 				errStack{
@@ -252,12 +249,12 @@ func TestUnmarshal(t *testing.T) {
 				"<integer></integer>",
 			),
 			schema: &specs.ParameterMap{
-				Property: propInteger(),
+				Property: tests.PropInteger(),
 			},
-			expected: expect{
-				nested: map[string]expect{
+			expected: tests.Expect{
+				Nested: map[string]tests.Expect{
 					"integer": {
-						value: nil,
+						Value: nil,
 					},
 				},
 			},
@@ -267,12 +264,12 @@ func TestUnmarshal(t *testing.T) {
 				"<integer>42</integer>",
 			),
 			schema: &specs.ParameterMap{
-				Property: propInteger(),
+				Property: tests.PropInteger(),
 			},
-			expected: expect{
-				nested: map[string]expect{
+			expected: tests.Expect{
+				Nested: map[string]tests.Expect{
 					"integer": {
-						value: int32(42),
+						Value: int32(42),
 					},
 				},
 			},
@@ -282,7 +279,7 @@ func TestUnmarshal(t *testing.T) {
 				"<status><unexpected></status>",
 			),
 			schema: &specs.ParameterMap{
-				Property: propEnum(),
+				Property: tests.PropEnum(),
 			},
 			error: errFailedToDecode{
 				errStack{
@@ -302,7 +299,7 @@ func TestUnmarshal(t *testing.T) {
 				"<status>UNKNOWN<unexpected></status>",
 			),
 			schema: &specs.ParameterMap{
-				Property: propEnum(),
+				Property: tests.PropEnum(),
 			},
 			error: errFailedToDecode{
 				errStack{
@@ -321,7 +318,7 @@ func TestUnmarshal(t *testing.T) {
 				"<status>foo</status>",
 			),
 			schema: &specs.ParameterMap{
-				Property: propEnum(),
+				Property: tests.PropEnum(),
 			},
 			error: errFailedToDecode{
 				errStack{
@@ -335,7 +332,7 @@ func TestUnmarshal(t *testing.T) {
 				"<status></status>",
 			),
 			schema: &specs.ParameterMap{
-				Property: propEnum(),
+				Property: tests.PropEnum(),
 			},
 		},
 		"enum": {
@@ -343,12 +340,12 @@ func TestUnmarshal(t *testing.T) {
 				"<status>PENDING</status>",
 			),
 			schema: &specs.ParameterMap{
-				Property: propEnum(),
+				Property: tests.PropEnum(),
 			},
-			expected: expect{
-				nested: map[string]expect{
+			expected: tests.Expect{
+				Nested: map[string]tests.Expect{
 					"status": {
-						enum: func() *int32 { i := int32(1); return &i }(),
+						Enum: func() *int32 { i := int32(1); return &i }(),
 					},
 				},
 			},
@@ -360,14 +357,14 @@ func TestUnmarshal(t *testing.T) {
 					<integer>42</integer>
 				</root>`,
 			),
-			schema: SchemaObject,
-			expected: expect{
-				nested: map[string]expect{
+			schema: tests.SchemaObject,
+			expected: tests.Expect{
+				Nested: map[string]tests.Expect{
 					"root.status": {
-						enum: func() *int32 { i := int32(1); return &i }(),
+						Enum: func() *int32 { i := int32(1); return &i }(),
 					},
 					"root.integer": {
-						value: int32(42),
+						Value: int32(42),
 					},
 				},
 			},
@@ -382,7 +379,7 @@ func TestUnmarshal(t *testing.T) {
 					<string>foobar</string>
 				</root>`,
 			),
-			schema: SchemaObjectNested,
+			schema: tests.SchemaObjectNested,
 			error: errFailedToDecode{
 				errStack: errStack{
 					property: "root",
@@ -410,17 +407,17 @@ func TestUnmarshal(t *testing.T) {
 					<string>foobar</string>
 				</root>`,
 			),
-			schema: SchemaObjectNested,
-			expected: expect{
-				nested: map[string]expect{
+			schema: tests.SchemaObjectNested,
+			expected: tests.Expect{
+				Nested: map[string]tests.Expect{
 					"root.nested.status": {
-						enum: func() *int32 { i := int32(1); return &i }(),
+						Enum: func() *int32 { i := int32(1); return &i }(),
 					},
 					"root.nested.integer": {
-						value: int32(42),
+						Value: int32(42),
 					},
 					"root.string": {
-						value: "foobar",
+						Value: "foobar",
 					},
 				},
 			},
@@ -432,20 +429,20 @@ func TestUnmarshal(t *testing.T) {
 				<array>bar</array>`,
 			),
 			schema: &specs.ParameterMap{
-				Property: propArray(),
+				Property: tests.PropArray(),
 			},
-			expected: expect{
-				nested: map[string]expect{
+			expected: tests.Expect{
+				Nested: map[string]tests.Expect{
 					"array": {
-						repeated: []expect{
+						Repeated: []tests.Expect{
 							{
-								value: "foo",
+								Value: "foo",
 							},
 							{
-								value: nil,
+								Value: nil,
 							},
 							{
-								value: "bar",
+								Value: "bar",
 							},
 						},
 					},
@@ -461,22 +458,22 @@ func TestUnmarshal(t *testing.T) {
 					<array>bar</array>
 				</root>`,
 			),
-			schema: SchemaNestedArray,
-			expected: expect{
-				nested: map[string]expect{
+			schema: tests.SchemaNestedArray,
+			expected: tests.Expect{
+				Nested: map[string]tests.Expect{
 					"root.integer": {
-						value: int32(42),
+						Value: int32(42),
 					},
 					"root.array": {
-						repeated: []expect{
+						Repeated: []tests.Expect{
 							{
-								value: "foo",
+								Value: "foo",
 							},
 							{
-								value: nil,
+								Value: nil,
 							},
 							{
-								value: "bar",
+								Value: "bar",
 							},
 						},
 					},
@@ -502,41 +499,41 @@ func TestUnmarshal(t *testing.T) {
 				</repeating>
 			</root>`,
 			),
-			schema: SchemaObjectComplex,
-			expected: expect{
-				nested: map[string]expect{
+			schema: tests.SchemaObjectComplex,
+			expected: tests.Expect{
+				Nested: map[string]tests.Expect{
 					"root.repeating_string": {
-						repeated: []expect{
+						Repeated: []tests.Expect{
 							{
-								value: "foo",
+								Value: "foo",
 							},
 							{
-								value: "bar",
+								Value: "bar",
 							},
 						},
 					},
 					"root.message": {
-						value: "hello world",
+						Value: "hello world",
 					},
 					"root.nested.first": {
-						value: "foo",
+						Value: "foo",
 					},
 					"root.nested.second": {
-						value: "bar",
+						Value: "bar",
 					},
 					"root.repeating": {
-						repeated: []expect{
+						Repeated: []tests.Expect{
 							{
-								nested: map[string]expect{
+								Nested: map[string]tests.Expect{
 									"value": {
-										value: "repeating one",
+										Value: "repeating one",
 									},
 								},
 							},
 							{
-								nested: map[string]expect{
+								Nested: map[string]tests.Expect{
 									"value": {
-										value: "repeating two",
+										Value: "repeating two",
 									},
 								},
 							},
@@ -547,7 +544,7 @@ func TestUnmarshal(t *testing.T) {
 		},
 	}
 
-	for title, test := range tests {
+	for title, test := range testCases {
 		t.Run(title, func(t *testing.T) {
 			xml := NewConstructor()
 			if xml == nil {
@@ -559,8 +556,8 @@ func TestUnmarshal(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			var refs = references.NewReferenceStore(0)
-			err = manager.Unmarshal(test.input, refs)
+			var store = references.NewReferenceStore(0)
+			err = manager.Unmarshal(test.input, store)
 
 			if test.error != nil {
 				if err == nil {
@@ -577,49 +574,7 @@ func TestUnmarshal(t *testing.T) {
 				}
 			}
 
-			assert(t, "mock", "", refs, test.expected)
+			tests.Assert(t, "mock", "", store, test.expected)
 		})
-	}
-}
-
-type expect struct {
-	value    interface{}
-	enum     *int32
-	repeated []expect
-	nested   map[string]expect
-}
-
-func assert(t *testing.T, resource, path string, store references.Store, input expect) {
-	ref := store.Load(resource, path)
-
-	switch {
-	case input.nested != nil:
-		for key, value := range input.nested {
-			assert(t, resource, key, store, value)
-		}
-	case input.enum != nil:
-		if ref == nil || ref.Enum == nil {
-			t.Fatalf("reference %q was expected to have a enum value", path)
-		}
-
-		if *input.enum != *ref.Enum {
-			t.Errorf("reference %q was expected to have enum value [%d], not [%d]", path, *input.enum, *ref.Enum)
-		}
-	case input.value != nil:
-		if ref == nil || ref.Value != input.value {
-			t.Errorf("reference %q was expected to be %T(%v), got %T(%v)", path, input.value, input.value, ref.Value, ref.Value)
-		}
-	case input.repeated != nil:
-		if ref == nil || ref.Repeated == nil {
-			t.Fatalf("reference %q was expected to have a repeated value", path)
-		}
-
-		if expected, actual := len(input.repeated), len(ref.Repeated); actual != expected {
-			t.Fatalf("invalid number of repeated values, expected %d, got %d", expected, actual)
-		}
-
-		for index, expected := range input.repeated {
-			assert(t, "", "", ref.Repeated[index], expected)
-		}
 	}
 }
