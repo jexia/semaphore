@@ -8,6 +8,10 @@ import (
 
 // SetField sets the given field inside the given fields on the given path
 func SetField(path string, fields graphql.Fields, field *graphql.Field) error {
+	if fields == nil || field == nil {
+		return nil
+	}
+
 	if IsNestedPath(path) {
 		parts := ParsePath(path)
 		key := parts[0]
