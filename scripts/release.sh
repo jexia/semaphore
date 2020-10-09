@@ -3,6 +3,9 @@
 # abort on errors
 set -e
 
+git config --local user.email "action@github.com"
+git config --local user.name "GitHub Action"
+
 npm install
 
 # build
