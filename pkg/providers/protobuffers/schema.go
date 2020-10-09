@@ -1,6 +1,8 @@
 package protobuffers
 
 import (
+	"log"
+
 	protobuf "github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/labels"
@@ -10,7 +12,7 @@ import (
 
 // NewSchema constructs a new schema manifest from the given file descriptors
 func NewSchema(descriptors []*desc.FileDescriptor) specs.Schemas {
-	result := make(specs.Schemas, 0)
+	result := make(specs.Schemas)
 
 	for _, descriptor := range descriptors {
 		for _, message := range descriptor.GetMessageTypes() {
@@ -37,6 +39,8 @@ func NewMessage(path string, descriptor *desc.MessageDescriptor) *specs.Property
 	}
 
 	for _, field := range fields {
+		// TODO: change the approach
+
 		result.Message[field.GetName()] = NewProperty(template.JoinPath(path, field.GetName()), field)
 	}
 
@@ -55,6 +59,17 @@ func NewProperty(path string, descriptor *desc.FieldDescriptor) *specs.Property 
 	}
 
 	switch {
+	case descriptor.GetOneOf() != nil:
+		choises := descriptor.GetOneOf().GetChoices()
+
+		for i, f := range choises {
+			log.Println(i, ":", f)
+		}
+
+		// descriptor.GetOneOf().GetOneOfOptions()
+		log.Printf("ONEOF: %#v\n", descriptor.GetOneOf().GetName())
+		log.Printf("PARENT: %#v\n\n\n", descriptor.GetOneOf().GetParent())
+
 	case descriptor.GetType() == protobuf.FieldDescriptorProto_TYPE_ENUM:
 		enum := descriptor.GetEnumType()
 		keys := map[string]*specs.EnumValue{}

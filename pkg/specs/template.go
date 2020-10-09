@@ -17,6 +17,7 @@ type Template struct {
 	Enum     *Enum    `json:"enum,omitempty" yaml:"enum,omitempty"`
 	Repeated Repeated `json:"repeated,omitempty" yaml:"repeated,omitempty"`
 	Message  Message  `json:"message,omitempty" yaml:"message,omitempty"`
+	OneOf    OneOf    `json:"oneof,omitempty" yaml:"oneof,omitempty"`
 }
 
 // Type returns the type of the given template.
