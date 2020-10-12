@@ -13,14 +13,7 @@ endpoint "oneof" "grpc" {
 flow "oneof" {
   input "semaphore.oneof.Request" {}
 
-  resource "user" {
-    request "semaphore.oneof.TestOneOf" "Do" {
-      first  = "{{ input:first }}"
-      second = "{{ input:second }}"
-    }
-  }
-
   output "semaphore.oneof.Response" {
-    // msg  = "{{ user:msg }}"  // meta = "{{ user:meta }}"
+    // response = "{{ sprintf('%s %json %s %json', input:first, input:second, input:third, input:fourth) }}"
   }
 }

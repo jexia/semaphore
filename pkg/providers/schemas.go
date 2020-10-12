@@ -161,7 +161,7 @@ func DefineCall(ctx *broker.Context, services specs.ServiceList, schemas specs.S
 	return nil
 }
 
-func resolveMessage(message, schema specs.Message, flow specs.FlowInterface) error {
+func resolveMessage(resolved *specs.ResolvedProperty, message, schema specs.Message, flow specs.FlowInterface) error {
 	for _, nested := range message {
 		if nested == nil {
 			continue
@@ -172,7 +172,7 @@ func resolveMessage(message, schema specs.Message, flow specs.FlowInterface) err
 			return trace.New(trace.WithMessage("undefined schema nested message property '%s' in flow '%s'", nested.Name, flow.GetName()))
 		}
 
-		if err := ResolveProperty(nested, object.Clone(), flow); err != nil {
+		if err := ResolveProperty(resolved, nested, object.Clone(), flow); err != nil {
 			return err
 		}
 	}
@@ -180,7 +180,7 @@ func resolveMessage(message, schema specs.Message, flow specs.FlowInterface) err
 	return nil
 }
 
-func resolveRepeated(repeated, schema specs.Repeated, flow specs.FlowInterface) error {
+func resolveRepeated(resolved *specs.ResolvedProperty, repeated, schema specs.Repeated, flow specs.FlowInterface) error {
 	if len(repeated) != len(schema) {
 		return trace.New(trace.WithMessage("the length of repeated does not match the schema"))
 	}
@@ -190,6 +190,7 @@ func resolveRepeated(repeated, schema specs.Repeated, flow specs.FlowInterface) 
 		object := schema[pos]
 
 		if err := ResolveProperty(
+			resolved,
 			&specs.Property{
 				Template: template,
 			},
@@ -225,15 +226,24 @@ func setRepeated(repeated, schema specs.Repeated) {
 }
 
 // ResolveProperty ensures that all schema properties are defined inside the given property
-func ResolveProperty(property, schema *specs.Property, flow specs.FlowInterface) error {
+func ResolveProperty(resolved *specs.ResolvedProperty, property, schema *specs.Property, flow specs.FlowInterface) error {
 	if property == nil {
 		property = schema.Clone()
+
+		resolved.Resolve(property)
+
 		return nil
 	}
 
+	if resolved.Resolved(property) {
+		return nil
+	}
+
+	resolved.Resolve(property)
+
 	switch {
 	case property.Message != nil:
-		if err := resolveMessage(property.Message, schema.Message, flow); err != nil {
+		if err := resolveMessage(resolved, property.Message, schema.Message, flow); err != nil {
 			return ErrUndefinedProperty{
 				Property: property.Name,
 				Flow:     flow.GetName(),
@@ -244,7 +254,7 @@ func ResolveProperty(property, schema *specs.Property, flow specs.FlowInterface)
 
 		break
 	case property.Repeated != nil:
-		if err := resolveRepeated(property.Repeated, schema.Repeated, flow); err != nil {
+		if err := resolveRepeated(resolved, property.Repeated, schema.Repeated, flow); err != nil {
 			return err
 		}
 
@@ -288,7 +298,7 @@ func ResolveParameterMap(ctx *broker.Context, schemas specs.Schemas, params *spe
 		}
 	}
 
-	err = ResolveProperty(params.Property, schema.Clone(), flow)
+	err = ResolveProperty(specs.NewResolvedProperty(), params.Property, schema.Clone(), flow)
 	if err != nil {
 		return err
 	}

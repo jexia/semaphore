@@ -271,7 +271,7 @@ func PrepareFunction(ctx *broker.Context, node *specs.Node, flow specs.FlowInter
 		}
 	}
 
-	arguments := make([]*specs.Property, len(args))
+	var arguments = make([]*specs.Property, len(args))
 
 	for index, arg := range args {
 		result, err := template.ParseContent(property.Path, property.Name, strings.TrimSpace(arg))
@@ -279,7 +279,7 @@ func PrepareFunction(ctx *broker.Context, node *specs.Node, flow specs.FlowInter
 			return err
 		}
 
-		err = references.ResolveProperty(ctx, node, result, flow)
+		err = references.ResolveProperty(ctx, specs.NewResolvedProperty(), node, result, flow)
 		if err != nil {
 			return err
 		}
@@ -314,7 +314,7 @@ func PrepareFunction(ctx *broker.Context, node *specs.Node, flow specs.FlowInter
 		Property: returns,
 	}
 
-	references.ScopeNestedReferences(&returns.Template, &property.Template)
+	references.ScopeNestedReferences(specs.NewResolvedProperty(), returns, property)
 	return nil
 }
 

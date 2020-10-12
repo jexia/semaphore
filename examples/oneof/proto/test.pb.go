@@ -87,7 +87,7 @@ func (x *Request) GetFirst() string {
 	return ""
 }
 
-func (x *Request) GetSecond() *SubRequest {
+func (x *Request) GetSecond() *Request_SubRequest {
 	if x, ok := x.GetOne().(*Request_Second); ok {
 		return x.Second
 	}
@@ -108,7 +108,7 @@ func (x *Request) GetThird() string {
 	return ""
 }
 
-func (x *Request) GetFourth() *SubRequest {
+func (x *Request) GetFourth() *Request_SubRequest {
 	if x, ok := x.GetTwo().(*Request_Fourth); ok {
 		return x.Fourth
 	}
@@ -120,11 +120,11 @@ type isRequest_One interface {
 }
 
 type Request_First struct {
-	First string `protobuf:"bytes,4,opt,name=first,proto3,oneof"`
+	First string `protobuf:"bytes,1,opt,name=first,proto3,oneof"`
 }
 
 type Request_Second struct {
-	Second *SubRequest `protobuf:"bytes,9,opt,name=second,proto3,oneof"`
+	Second *Request_SubRequest `protobuf:"bytes,2,opt,name=second,proto3,oneof"`
 }
 
 func (*Request_First) isRequest_One() {}
@@ -136,79 +136,16 @@ type isRequest_Two interface {
 }
 
 type Request_Third struct {
-	Third string `protobuf:"bytes,10,opt,name=third,proto3,oneof"`
+	Third string `protobuf:"bytes,3,opt,name=third,proto3,oneof"`
 }
 
 type Request_Fourth struct {
-	Fourth *SubRequest `protobuf:"bytes,15,opt,name=fourth,proto3,oneof"`
+	Fourth *Request_SubRequest `protobuf:"bytes,4,opt,name=fourth,proto3,oneof"`
 }
 
 func (*Request_Third) isRequest_Two() {}
 
 func (*Request_Fourth) isRequest_Two() {}
-
-type SubRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Foo string   `protobuf:"bytes,1,opt,name=foo,proto3" json:"foo,omitempty"`
-	Bar string   `protobuf:"bytes,2,opt,name=bar,proto3" json:"bar,omitempty"`
-	Baz []string `protobuf:"bytes,3,rep,name=baz,proto3" json:"baz,omitempty"`
-}
-
-func (x *SubRequest) Reset() {
-	*x = SubRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_test_proto_msgTypes[1]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *SubRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*SubRequest) ProtoMessage() {}
-
-func (x *SubRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_test_proto_msgTypes[1]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use SubRequest.ProtoReflect.Descriptor instead.
-func (*SubRequest) Descriptor() ([]byte, []int) {
-	return file_test_proto_rawDescGZIP(), []int{1}
-}
-
-func (x *SubRequest) GetFoo() string {
-	if x != nil {
-		return x.Foo
-	}
-	return ""
-}
-
-func (x *SubRequest) GetBar() string {
-	if x != nil {
-		return x.Bar
-	}
-	return ""
-}
-
-func (x *SubRequest) GetBaz() []string {
-	if x != nil {
-		return x.Baz
-	}
-	return nil
-}
 
 type Response struct {
 	state         protoimpl.MessageState
@@ -221,7 +158,7 @@ type Response struct {
 func (x *Response) Reset() {
 	*x = Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_test_proto_msgTypes[2]
+		mi := &file_test_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -234,7 +171,7 @@ func (x *Response) String() string {
 func (*Response) ProtoMessage() {}
 
 func (x *Response) ProtoReflect() protoreflect.Message {
-	mi := &file_test_proto_msgTypes[2]
+	mi := &file_test_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -247,7 +184,7 @@ func (x *Response) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Response.ProtoReflect.Descriptor instead.
 func (*Response) Descriptor() ([]byte, []int) {
-	return file_test_proto_rawDescGZIP(), []int{2}
+	return file_test_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *Response) GetResponse() string {
@@ -257,34 +194,34 @@ func (x *Response) GetResponse() string {
 	return ""
 }
 
-type AnimalRequest struct {
+type Request_SubRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Types that are assignable to Animal:
-	//	*AnimalRequest_Cat_
-	//	*AnimalRequest_Dog_
-	Animal isAnimalRequest_Animal `protobuf_oneof:"Animal"`
+	Foo   string   `protobuf:"bytes,1,opt,name=foo,proto3" json:"foo,omitempty"`
+	Bar   string   `protobuf:"bytes,2,opt,name=bar,proto3" json:"bar,omitempty"`
+	Third string   `protobuf:"bytes,3,opt,name=third,proto3" json:"third,omitempty"`
+	Baz   []string `protobuf:"bytes,4,rep,name=baz,proto3" json:"baz,omitempty"`
 }
 
-func (x *AnimalRequest) Reset() {
-	*x = AnimalRequest{}
+func (x *Request_SubRequest) Reset() {
+	*x = Request_SubRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_test_proto_msgTypes[3]
+		mi := &file_test_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
 }
 
-func (x *AnimalRequest) String() string {
+func (x *Request_SubRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*AnimalRequest) ProtoMessage() {}
+func (*Request_SubRequest) ProtoMessage() {}
 
-func (x *AnimalRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_test_proto_msgTypes[3]
+func (x *Request_SubRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_test_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -295,156 +232,37 @@ func (x *AnimalRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use AnimalRequest.ProtoReflect.Descriptor instead.
-func (*AnimalRequest) Descriptor() ([]byte, []int) {
-	return file_test_proto_rawDescGZIP(), []int{3}
+// Deprecated: Use Request_SubRequest.ProtoReflect.Descriptor instead.
+func (*Request_SubRequest) Descriptor() ([]byte, []int) {
+	return file_test_proto_rawDescGZIP(), []int{0, 0}
 }
 
-func (m *AnimalRequest) GetAnimal() isAnimalRequest_Animal {
-	if m != nil {
-		return m.Animal
-	}
-	return nil
-}
-
-func (x *AnimalRequest) GetCat() *AnimalRequest_Cat {
-	if x, ok := x.GetAnimal().(*AnimalRequest_Cat_); ok {
-		return x.Cat
-	}
-	return nil
-}
-
-func (x *AnimalRequest) GetDog() *AnimalRequest_Dog {
-	if x, ok := x.GetAnimal().(*AnimalRequest_Dog_); ok {
-		return x.Dog
-	}
-	return nil
-}
-
-type isAnimalRequest_Animal interface {
-	isAnimalRequest_Animal()
-}
-
-type AnimalRequest_Cat_ struct {
-	Cat *AnimalRequest_Cat `protobuf:"bytes,1,opt,name=cat,proto3,oneof"`
-}
-
-type AnimalRequest_Dog_ struct {
-	Dog *AnimalRequest_Dog `protobuf:"bytes,2,opt,name=dog,proto3,oneof"`
-}
-
-func (*AnimalRequest_Cat_) isAnimalRequest_Animal() {}
-
-func (*AnimalRequest_Dog_) isAnimalRequest_Animal() {}
-
-type AnimalRequest_Cat struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Age  uint32 `protobuf:"varint,2,opt,name=age,proto3" json:"age,omitempty"`
-}
-
-func (x *AnimalRequest_Cat) Reset() {
-	*x = AnimalRequest_Cat{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_test_proto_msgTypes[4]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *AnimalRequest_Cat) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*AnimalRequest_Cat) ProtoMessage() {}
-
-func (x *AnimalRequest_Cat) ProtoReflect() protoreflect.Message {
-	mi := &file_test_proto_msgTypes[4]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use AnimalRequest_Cat.ProtoReflect.Descriptor instead.
-func (*AnimalRequest_Cat) Descriptor() ([]byte, []int) {
-	return file_test_proto_rawDescGZIP(), []int{3, 0}
-}
-
-func (x *AnimalRequest_Cat) GetName() string {
+func (x *Request_SubRequest) GetFoo() string {
 	if x != nil {
-		return x.Name
+		return x.Foo
 	}
 	return ""
 }
 
-func (x *AnimalRequest_Cat) GetAge() uint32 {
+func (x *Request_SubRequest) GetBar() string {
 	if x != nil {
-		return x.Age
-	}
-	return 0
-}
-
-type AnimalRequest_Dog struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Age  uint32 `protobuf:"varint,2,opt,name=age,proto3" json:"age,omitempty"`
-}
-
-func (x *AnimalRequest_Dog) Reset() {
-	*x = AnimalRequest_Dog{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_test_proto_msgTypes[5]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *AnimalRequest_Dog) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*AnimalRequest_Dog) ProtoMessage() {}
-
-func (x *AnimalRequest_Dog) ProtoReflect() protoreflect.Message {
-	mi := &file_test_proto_msgTypes[5]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use AnimalRequest_Dog.ProtoReflect.Descriptor instead.
-func (*AnimalRequest_Dog) Descriptor() ([]byte, []int) {
-	return file_test_proto_rawDescGZIP(), []int{3, 1}
-}
-
-func (x *AnimalRequest_Dog) GetName() string {
-	if x != nil {
-		return x.Name
+		return x.Bar
 	}
 	return ""
 }
 
-func (x *AnimalRequest_Dog) GetAge() uint32 {
+func (x *Request_SubRequest) GetThird() string {
 	if x != nil {
-		return x.Age
+		return x.Third
 	}
-	return 0
+	return ""
+}
+
+func (x *Request_SubRequest) GetBaz() []string {
+	if x != nil {
+		return x.Baz
+	}
+	return nil
 }
 
 var File_test_proto protoreflect.FileDescriptor
@@ -453,39 +271,27 @@ var file_test_proto_rawDesc = []byte{
 	0x0a, 0x0a, 0x74, 0x65, 0x73, 0x74, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x0f, 0x73, 0x65,
 	0x6d, 0x61, 0x70, 0x68, 0x6f, 0x72, 0x65, 0x2e, 0x6f, 0x6e, 0x65, 0x6f, 0x66, 0x1a, 0x15, 0x61,
 	0x70, 0x69, 0x2f, 0x61, 0x6e, 0x6e, 0x6f, 0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x22, 0xb5, 0x01, 0x0a, 0x07, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
-	0x12, 0x16, 0x0a, 0x05, 0x66, 0x69, 0x72, 0x73, 0x74, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x48,
-	0x00, 0x52, 0x05, 0x66, 0x69, 0x72, 0x73, 0x74, 0x12, 0x35, 0x0a, 0x06, 0x73, 0x65, 0x63, 0x6f,
-	0x6e, 0x64, 0x18, 0x09, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1b, 0x2e, 0x73, 0x65, 0x6d, 0x61, 0x70,
-	0x68, 0x6f, 0x72, 0x65, 0x2e, 0x6f, 0x6e, 0x65, 0x6f, 0x66, 0x2e, 0x53, 0x75, 0x62, 0x52, 0x65,
-	0x71, 0x75, 0x65, 0x73, 0x74, 0x48, 0x00, 0x52, 0x06, 0x73, 0x65, 0x63, 0x6f, 0x6e, 0x64, 0x12,
-	0x16, 0x0a, 0x05, 0x74, 0x68, 0x69, 0x72, 0x64, 0x18, 0x0a, 0x20, 0x01, 0x28, 0x09, 0x48, 0x01,
-	0x52, 0x05, 0x74, 0x68, 0x69, 0x72, 0x64, 0x12, 0x35, 0x0a, 0x06, 0x66, 0x6f, 0x75, 0x72, 0x74,
-	0x68, 0x18, 0x0f, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1b, 0x2e, 0x73, 0x65, 0x6d, 0x61, 0x70, 0x68,
-	0x6f, 0x72, 0x65, 0x2e, 0x6f, 0x6e, 0x65, 0x6f, 0x66, 0x2e, 0x53, 0x75, 0x62, 0x52, 0x65, 0x71,
-	0x75, 0x65, 0x73, 0x74, 0x48, 0x01, 0x52, 0x06, 0x66, 0x6f, 0x75, 0x72, 0x74, 0x68, 0x42, 0x05,
-	0x0a, 0x03, 0x6f, 0x6e, 0x65, 0x42, 0x05, 0x0a, 0x03, 0x74, 0x77, 0x6f, 0x22, 0x42, 0x0a, 0x0a,
-	0x53, 0x75, 0x62, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x10, 0x0a, 0x03, 0x66, 0x6f,
-	0x6f, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x66, 0x6f, 0x6f, 0x12, 0x10, 0x0a, 0x03,
-	0x62, 0x61, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x62, 0x61, 0x72, 0x12, 0x10,
-	0x0a, 0x03, 0x62, 0x61, 0x7a, 0x18, 0x03, 0x20, 0x03, 0x28, 0x09, 0x52, 0x03, 0x62, 0x61, 0x7a,
-	0x22, 0x26, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x1a, 0x0a, 0x08,
-	0x72, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08,
-	0x72, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0xe3, 0x01, 0x0a, 0x0d, 0x41, 0x6e, 0x69,
-	0x6d, 0x61, 0x6c, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x36, 0x0a, 0x03, 0x63, 0x61,
-	0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x22, 0x2e, 0x73, 0x65, 0x6d, 0x61, 0x70, 0x68,
-	0x6f, 0x72, 0x65, 0x2e, 0x6f, 0x6e, 0x65, 0x6f, 0x66, 0x2e, 0x41, 0x6e, 0x69, 0x6d, 0x61, 0x6c,
-	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x2e, 0x43, 0x61, 0x74, 0x48, 0x00, 0x52, 0x03, 0x63,
-	0x61, 0x74, 0x12, 0x36, 0x0a, 0x03, 0x64, 0x6f, 0x67, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32,
-	0x22, 0x2e, 0x73, 0x65, 0x6d, 0x61, 0x70, 0x68, 0x6f, 0x72, 0x65, 0x2e, 0x6f, 0x6e, 0x65, 0x6f,
-	0x66, 0x2e, 0x41, 0x6e, 0x69, 0x6d, 0x61, 0x6c, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x2e,
-	0x44, 0x6f, 0x67, 0x48, 0x00, 0x52, 0x03, 0x64, 0x6f, 0x67, 0x1a, 0x2b, 0x0a, 0x03, 0x43, 0x61,
-	0x74, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52,
-	0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x10, 0x0a, 0x03, 0x61, 0x67, 0x65, 0x18, 0x02, 0x20, 0x01,
-	0x28, 0x0d, 0x52, 0x03, 0x61, 0x67, 0x65, 0x1a, 0x2b, 0x0a, 0x03, 0x44, 0x6f, 0x67, 0x12, 0x12,
-	0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61,
-	0x6d, 0x65, 0x12, 0x10, 0x0a, 0x03, 0x61, 0x67, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0d, 0x52,
-	0x03, 0x61, 0x67, 0x65, 0x42, 0x08, 0x0a, 0x06, 0x41, 0x6e, 0x69, 0x6d, 0x61, 0x6c, 0x32, 0x6b,
+	0x72, 0x6f, 0x74, 0x6f, 0x22, 0x9f, 0x02, 0x0a, 0x07, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
+	0x12, 0x16, 0x0a, 0x05, 0x66, 0x69, 0x72, 0x73, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x48,
+	0x00, 0x52, 0x05, 0x66, 0x69, 0x72, 0x73, 0x74, 0x12, 0x3d, 0x0a, 0x06, 0x73, 0x65, 0x63, 0x6f,
+	0x6e, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x23, 0x2e, 0x73, 0x65, 0x6d, 0x61, 0x70,
+	0x68, 0x6f, 0x72, 0x65, 0x2e, 0x6f, 0x6e, 0x65, 0x6f, 0x66, 0x2e, 0x52, 0x65, 0x71, 0x75, 0x65,
+	0x73, 0x74, 0x2e, 0x53, 0x75, 0x62, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x48, 0x00, 0x52,
+	0x06, 0x73, 0x65, 0x63, 0x6f, 0x6e, 0x64, 0x12, 0x16, 0x0a, 0x05, 0x74, 0x68, 0x69, 0x72, 0x64,
+	0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x48, 0x01, 0x52, 0x05, 0x74, 0x68, 0x69, 0x72, 0x64, 0x12,
+	0x3d, 0x0a, 0x06, 0x66, 0x6f, 0x75, 0x72, 0x74, 0x68, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0b, 0x32,
+	0x23, 0x2e, 0x73, 0x65, 0x6d, 0x61, 0x70, 0x68, 0x6f, 0x72, 0x65, 0x2e, 0x6f, 0x6e, 0x65, 0x6f,
+	0x66, 0x2e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x2e, 0x53, 0x75, 0x62, 0x52, 0x65, 0x71,
+	0x75, 0x65, 0x73, 0x74, 0x48, 0x01, 0x52, 0x06, 0x66, 0x6f, 0x75, 0x72, 0x74, 0x68, 0x1a, 0x58,
+	0x0a, 0x0a, 0x53, 0x75, 0x62, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x10, 0x0a, 0x03,
+	0x66, 0x6f, 0x6f, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x66, 0x6f, 0x6f, 0x12, 0x10,
+	0x0a, 0x03, 0x62, 0x61, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x62, 0x61, 0x72,
+	0x12, 0x14, 0x0a, 0x05, 0x74, 0x68, 0x69, 0x72, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x05, 0x74, 0x68, 0x69, 0x72, 0x64, 0x12, 0x10, 0x0a, 0x03, 0x62, 0x61, 0x7a, 0x18, 0x04, 0x20,
+	0x03, 0x28, 0x09, 0x52, 0x03, 0x62, 0x61, 0x7a, 0x42, 0x05, 0x0a, 0x03, 0x6f, 0x6e, 0x65, 0x42,
+	0x05, 0x0a, 0x03, 0x74, 0x77, 0x6f, 0x22, 0x26, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
+	0x73, 0x65, 0x12, 0x1a, 0x0a, 0x08, 0x72, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x72, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x32, 0x6b,
 	0x0a, 0x09, 0x54, 0x65, 0x73, 0x74, 0x4f, 0x6e, 0x65, 0x4f, 0x66, 0x12, 0x3b, 0x0a, 0x02, 0x44,
 	0x6f, 0x12, 0x18, 0x2e, 0x73, 0x65, 0x6d, 0x61, 0x70, 0x68, 0x6f, 0x72, 0x65, 0x2e, 0x6f, 0x6e,
 	0x65, 0x6f, 0x66, 0x2e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x19, 0x2e, 0x73, 0x65,
@@ -508,27 +314,22 @@ func file_test_proto_rawDescGZIP() []byte {
 	return file_test_proto_rawDescData
 }
 
-var file_test_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_test_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_test_proto_goTypes = []interface{}{
-	(*Request)(nil),           // 0: semaphore.oneof.Request
-	(*SubRequest)(nil),        // 1: semaphore.oneof.SubRequest
-	(*Response)(nil),          // 2: semaphore.oneof.Response
-	(*AnimalRequest)(nil),     // 3: semaphore.oneof.AnimalRequest
-	(*AnimalRequest_Cat)(nil), // 4: semaphore.oneof.AnimalRequest.Cat
-	(*AnimalRequest_Dog)(nil), // 5: semaphore.oneof.AnimalRequest.Dog
+	(*Request)(nil),            // 0: semaphore.oneof.Request
+	(*Response)(nil),           // 1: semaphore.oneof.Response
+	(*Request_SubRequest)(nil), // 2: semaphore.oneof.Request.SubRequest
 }
 var file_test_proto_depIdxs = []int32{
-	1, // 0: semaphore.oneof.Request.second:type_name -> semaphore.oneof.SubRequest
-	1, // 1: semaphore.oneof.Request.fourth:type_name -> semaphore.oneof.SubRequest
-	4, // 2: semaphore.oneof.AnimalRequest.cat:type_name -> semaphore.oneof.AnimalRequest.Cat
-	5, // 3: semaphore.oneof.AnimalRequest.dog:type_name -> semaphore.oneof.AnimalRequest.Dog
-	0, // 4: semaphore.oneof.TestOneOf.Do:input_type -> semaphore.oneof.Request
-	2, // 5: semaphore.oneof.TestOneOf.Do:output_type -> semaphore.oneof.Response
-	5, // [5:6] is the sub-list for method output_type
-	4, // [4:5] is the sub-list for method input_type
-	4, // [4:4] is the sub-list for extension type_name
-	4, // [4:4] is the sub-list for extension extendee
-	0, // [0:4] is the sub-list for field type_name
+	2, // 0: semaphore.oneof.Request.second:type_name -> semaphore.oneof.Request.SubRequest
+	2, // 1: semaphore.oneof.Request.fourth:type_name -> semaphore.oneof.Request.SubRequest
+	0, // 2: semaphore.oneof.TestOneOf.Do:input_type -> semaphore.oneof.Request
+	1, // 3: semaphore.oneof.TestOneOf.Do:output_type -> semaphore.oneof.Response
+	3, // [3:4] is the sub-list for method output_type
+	2, // [2:3] is the sub-list for method input_type
+	2, // [2:2] is the sub-list for extension type_name
+	2, // [2:2] is the sub-list for extension extendee
+	0, // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_test_proto_init() }
@@ -550,18 +351,6 @@ func file_test_proto_init() {
 			}
 		}
 		file_test_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SubRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_test_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Response); i {
 			case 0:
 				return &v.state
@@ -573,32 +362,8 @@ func file_test_proto_init() {
 				return nil
 			}
 		}
-		file_test_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*AnimalRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_test_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*AnimalRequest_Cat); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_test_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*AnimalRequest_Dog); i {
+		file_test_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Request_SubRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -616,17 +381,13 @@ func file_test_proto_init() {
 		(*Request_Third)(nil),
 		(*Request_Fourth)(nil),
 	}
-	file_test_proto_msgTypes[3].OneofWrappers = []interface{}{
-		(*AnimalRequest_Cat_)(nil),
-		(*AnimalRequest_Dog_)(nil),
-	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_test_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

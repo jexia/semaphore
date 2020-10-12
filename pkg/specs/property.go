@@ -78,24 +78,40 @@ func (property *Property) Empty() bool {
 
 // Clone makes a deep clone of the given property
 func (property *Property) Clone() *Property {
+	return property.clone(make(map[string]*Property))
+}
+
+func (property *Property) clone(cloned map[string]*Property) *Property {
 	if property == nil {
 		return &Property{}
 	}
 
-	return &Property{
+	if property.Identifier != "" {
+		existing, ok := cloned[property.Identifier]
+		if ok {
+			return existing
+		}
+	}
+
+	var clone = &Property{
 		Meta:        property.Meta,
 		Position:    property.Position,
 		Description: property.Description,
 		Name:        property.Name,
 		Path:        property.Path,
-
-		Expr:    property.Expr,
-		Raw:     property.Raw,
-		Options: property.Options,
-		Label:   property.Label,
-
-		Template: property.Template.Clone(),
+		Expr:        property.Expr,
+		Raw:         property.Raw,
+		Options:     property.Options,
+		Label:       property.Label,
+		Template: Template{
+			Identifier: property.Identifier,
+		},
 	}
+
+	cloned[property.Identifier] = clone
+	clone.Template = property.Template.clone(cloned)
+
+	return clone
 }
 
 // Compare checks the given property against the provided one.
@@ -151,18 +167,21 @@ func (parameters *ParameterMap) Clone() *ParameterMap {
 		return nil
 	}
 
-	result := &ParameterMap{
-		Meta:     parameters.Meta,
-		Schema:   parameters.Schema,
-		Params:   make(map[string]*Property, len(parameters.Params)),
-		Options:  make(Options, len(parameters.Options)),
-		Header:   make(Header, len(parameters.Header)),
-		Stack:    make(map[string]*Property, len(parameters.Stack)),
-		Property: parameters.Property.Clone(),
-	}
+	var (
+		cloned = make(map[string]*Property)
+		result = &ParameterMap{
+			Meta:     parameters.Meta,
+			Schema:   parameters.Schema,
+			Params:   make(map[string]*Property, len(parameters.Params)),
+			Options:  make(Options, len(parameters.Options)),
+			Header:   make(Header, len(parameters.Header)),
+			Stack:    make(map[string]*Property, len(parameters.Stack)),
+			Property: parameters.Property.clone(cloned),
+		}
+	)
 
 	for key, property := range parameters.Params {
-		result.Params[key] = property.Clone()
+		result.Params[key] = property.clone(cloned)
 	}
 
 	for key, value := range parameters.Options {
@@ -174,7 +193,7 @@ func (parameters *ParameterMap) Clone() *ParameterMap {
 	}
 
 	for key, property := range parameters.Stack {
-		result.Stack[key] = property.Clone()
+		result.Stack[key] = property.clone(cloned)
 	}
 
 	return result

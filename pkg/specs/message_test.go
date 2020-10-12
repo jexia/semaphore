@@ -8,13 +8,14 @@ import (
 )
 
 func TestCompareMessages(t *testing.T) {
-	createScalar := func() *Property {
+	createScalar := func(name string) *Property {
 		return &Property{
-			Name:     "age",
-			Path:     "dog",
+			Name:     name,
+			Path:     name,
 			Position: 0,
 			Label:    labels.Required,
 			Template: Template{
+				Identifier: name,
 				Scalar: &Scalar{
 					Type: types.Int32,
 				},
@@ -22,11 +23,11 @@ func TestCompareMessages(t *testing.T) {
 		}
 	}
 	messageA := Message{
-		"age": createScalar(),
+		"age": createScalar("age"),
 	}
 	messageB := Message{
-		"age":   createScalar(),
-		"color": createScalar(),
+		"age":   createScalar("age"),
+		"color": createScalar("color"),
 	}
 
 	type args struct {

@@ -1,6 +1,8 @@
 package providers
 
 import (
+	"log"
+
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/checks"
 	"github.com/jexia/semaphore/pkg/compare"
@@ -48,25 +50,33 @@ func Resolve(ctx *broker.Context, mem functions.Collection, options Options) (Co
 		return Collection{}, err
 	}
 
+	log.Println("- SERVICES")
+
 	services, err := options.ServiceResolvers.Resolve(ctx)
 	if err != nil {
 		return Collection{}, err
 	}
+
+	log.Println("- FLOW DUPLICATES")
 
 	err = checks.FlowDuplicates(ctx, flows)
 	if err != nil {
 		return Collection{}, err
 	}
 
+	log.Println("- SCHEMAS")
+
 	err = providers.ResolveSchemas(ctx, services, schemas, flows)
 	if err != nil {
 		return Collection{}, err
 	}
 
-	err = functions.PrepareFunctions(ctx, mem, options.Functions, flows)
-	if err != nil {
-		return Collection{}, err
-	}
+	log.Println("- FUNCTIONS")
+
+	// err = functions.PrepareFunctions(ctx, mem, options.Functions, flows)
+	// if err != nil {
+	// 	return Collection{}, err
+	// }
 
 	err = references.Resolve(ctx, flows)
 	if err != nil {

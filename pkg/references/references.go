@@ -60,7 +60,7 @@ func ResolveFlow(ctx *broker.Context, flow specs.FlowInterface) (err error) {
 
 	if flow.GetForward() != nil && flow.GetForward().Request != nil {
 		for _, header := range flow.GetForward().Request.Header {
-			err = ResolveProperty(ctx, nil, header, flow)
+			err = ResolveProperty(ctx, specs.NewResolvedProperty(), nil, header, flow)
 			if err != nil {
 				return ErrUnresolvedProperty{
 					wrapErr:  wrapErr{err},
@@ -156,7 +156,7 @@ func ResolveCall(ctx *broker.Context, node *specs.Node, call *specs.Call, flow s
 // ResolveParameterMap resolves all references made within the given parameter map
 func ResolveParameterMap(ctx *broker.Context, node *specs.Node, params *specs.ParameterMap, flow specs.FlowInterface) (err error) {
 	for _, header := range params.Header {
-		err = ResolveProperty(ctx, node, header, flow)
+		err = ResolveProperty(ctx, specs.NewResolvedProperty(), node, header, flow)
 		if err != nil {
 			return ErrUnresolvedProperty{
 				wrapErr:  wrapErr{err},
@@ -176,7 +176,7 @@ func ResolveParameterMap(ctx *broker.Context, node *specs.Node, params *specs.Pa
 	}
 
 	if params.Property != nil {
-		err = ResolveProperty(ctx, node, params.Property, flow)
+		err = ResolveProperty(ctx, specs.NewResolvedProperty(), node, params.Property, flow)
 		if err != nil {
 			return ErrUnresolvedProperty{
 				wrapErr:  wrapErr{err},
@@ -200,7 +200,7 @@ func ResolveOnError(ctx *broker.Context, node *specs.Node, params *specs.OnError
 		}
 	}
 
-	err = ResolveProperty(ctx, node, params.Message, flow)
+	err = ResolveProperty(ctx, specs.NewResolvedProperty(), node, params.Message, flow)
 	if err != nil {
 		return ErrUnresolvedProperty{
 			wrapErr:  wrapErr{err},
@@ -208,7 +208,7 @@ func ResolveOnError(ctx *broker.Context, node *specs.Node, params *specs.OnError
 		}
 	}
 
-	err = ResolveProperty(ctx, node, params.Status, flow)
+	err = ResolveProperty(ctx, specs.NewResolvedProperty(), node, params.Status, flow)
 	if err != nil {
 		return ErrUnresolvedProperty{
 			wrapErr:  wrapErr{err},
@@ -234,7 +234,7 @@ func ResolveParams(ctx *broker.Context, node *specs.Node, params map[string]*spe
 			continue
 		}
 
-		err := ResolveProperty(ctx, node, param, flow)
+		err := ResolveProperty(ctx, specs.NewResolvedProperty(), node, param, flow)
 		if err != nil {
 			return ErrUnresolvedProperty{
 				wrapErr:  wrapErr{err},
@@ -246,11 +246,11 @@ func ResolveParams(ctx *broker.Context, node *specs.Node, params map[string]*spe
 	return nil
 }
 
-func resolveProperty(ctx *broker.Context, node *specs.Node, property *specs.Property, flow specs.FlowInterface) error {
+func resolveProperty(ctx *broker.Context, resolved *specs.ResolvedProperty, node *specs.Node, property *specs.Property, flow specs.FlowInterface) error {
 	switch {
 	case property.Message != nil:
 		for _, nested := range property.Message {
-			err := ResolveProperty(ctx, node, nested, flow)
+			err := ResolveProperty(ctx, resolved, node, nested, flow)
 			if err != nil {
 				return NewErrUnresolvedProperty(err, nested)
 			}
@@ -263,7 +263,7 @@ func resolveProperty(ctx *broker.Context, node *specs.Node, property *specs.Prop
 				Template: repeated,
 			}
 
-			err := ResolveProperty(ctx, node, property, flow)
+			err := ResolveProperty(ctx, resolved, node, property, flow)
 			if err != nil {
 				return NewErrUnresolvedProperty(err, property)
 			}
@@ -276,12 +276,18 @@ func resolveProperty(ctx *broker.Context, node *specs.Node, property *specs.Prop
 }
 
 // ResolveProperty resolves all references made within the given property
-func ResolveProperty(ctx *broker.Context, node *specs.Node, property *specs.Property, flow specs.FlowInterface) error {
+func ResolveProperty(ctx *broker.Context, resolved *specs.ResolvedProperty, node *specs.Node, property *specs.Property, flow specs.FlowInterface) error {
 	if property == nil {
 		return nil
 	}
 
-	if err := resolveProperty(ctx, node, property, flow); err != nil {
+	if resolved.Resolved(property) {
+		return nil
+	}
+
+	resolved.Resolve(property)
+
+	if err := resolveProperty(ctx, resolved, node, property, flow); err != nil {
 		return NewErrUnresolvedProperty(err, property)
 	}
 
@@ -307,7 +313,7 @@ func ResolveProperty(ctx *broker.Context, node *specs.Node, property *specs.Prop
 	}
 
 	if reference.Reference != nil && reference.Reference.Property == nil {
-		err := ResolveProperty(ctx, node, reference, flow)
+		err := ResolveProperty(ctx, resolved, node, reference, flow)
 		if err != nil {
 			return NewErrUnresolvedProperty(err, reference)
 		}
@@ -322,7 +328,7 @@ func ResolveProperty(ctx *broker.Context, node *specs.Node, property *specs.Prop
 	property.Label = reference.Label
 	property.Reference.Property = reference
 
-	ScopeNestedReferences(&reference.Template, &property.Template)
+	ScopeNestedReferences(specs.NewResolvedProperty(), reference, property)
 
 	return nil
 }
@@ -384,10 +390,16 @@ func InsideProperty(source *specs.Property, target *specs.Property) bool {
 }
 
 // ScopeNestedReferences scopes all nested references available inside the reference property
-func ScopeNestedReferences(source, target *specs.Template) {
+func ScopeNestedReferences(resolved *specs.ResolvedProperty, source, target *specs.Property) {
 	if source == nil || target == nil {
 		return
 	}
+
+	if resolved.Resolved(source) {
+		return
+	}
+
+	resolved.Resolve(source)
 
 	switch {
 	case source.Scalar != nil:
@@ -422,7 +434,7 @@ func ScopeNestedReferences(source, target *specs.Template) {
 			}
 
 			if len(item.Message) > 0 {
-				ScopeNestedReferences(&item.Template, &nested.Template)
+				ScopeNestedReferences(resolved, item, nested)
 			}
 		}
 
@@ -444,9 +456,11 @@ func ScopeNestedReferences(source, target *specs.Template) {
 				}
 			}
 
-			if len(item.Message) > 0 {
-				ScopeNestedReferences(&item, &cloned)
-			}
+			// TODO:
+
+			// if len(item.Message) > 0 {
+			// 	ScopeNestedReferences(item, cloned)
+			// }
 
 			target.Repeated[index] = cloned
 		}

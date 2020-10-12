@@ -19,45 +19,46 @@ service TestOneOf {
 
 message Request {
   oneof one {
-     string first = 4;
-     SubRequest second = 9;
+     string first = 1;
+     SubRequest second = 2;
   }
 
   oneof two {
-     string third = 10;
-     SubRequest fourth = 15;
+     string third = 3;
+     SubRequest fourth = 4;
   }
-}
 
-message SubRequest {
-  string foo = 1;
-  string bar = 2;
-  repeated string baz = 3;
+  message SubRequest {
+    string foo = 1;
+    string bar = 2;
+    string third = 3;
+    repeated string baz = 4;
+  }
 }
 
 message Response {
   string response = 1;
 }
-
-message AnimalRequest {
-  oneof Animal {
-    Cat cat = 1;
-    Dog dog = 2;
-  }
-
-  // ERROR:
-  // oneof Type {
-  //   int32 cat = 3;
-  //   double dog = 4;
-  // }
-
-  message Cat {
-    string name = 1;
-    uint32 age = 2;
-  }
-
-  message Dog {
-    string name = 1;
-    uint32 age = 2;
-  }
-}
+//
+// message AnimalRequest {
+//   oneof Animal {
+//     Cat cat = 1;
+//     Dog dog = 2;
+//   }
+//
+//   // ERROR:
+//   // oneof Type {
+//   //   int32 cat = 3;
+//   //   double dog = 4;
+//   // }
+//
+//   message Cat {
+//     string name = 1;
+//     uint32 age = 2;
+//   }
+//
+//   message Dog {
+//     string name = 1;
+//     uint32 age = 2;
+//   }
+// }

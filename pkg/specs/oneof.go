@@ -1,3 +1,5 @@
 package specs
 
-type OneOf map[string]*Property
+type OneOf struct {
+	Choices map[string]*Property
+}

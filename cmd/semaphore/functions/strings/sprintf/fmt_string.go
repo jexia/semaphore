@@ -17,6 +17,8 @@ func (String) CanFormat(dataType types.Type) bool {
 	switch dataType {
 	case types.String:
 		return true
+	case types.OneOf:
+		return true
 	default:
 		return false
 	}

@@ -84,6 +84,7 @@ func TestResolveReferences(t *testing.T) {
 		"intermediate function": func() (specs.FlowListInterface, *specs.Property, *specs.Property, functions.Collection) {
 			expected := &specs.Property{
 				Template: specs.Template{
+					Identifier: "expected",
 					Reference: &specs.PropertyReference{
 						Resource: "expected",
 						Path:     "expected",
@@ -93,6 +94,7 @@ func TestResolveReferences(t *testing.T) {
 
 			target := &specs.Property{
 				Template: specs.Template{
+					Identifier: "mock",
 					Reference: &specs.PropertyReference{
 						Resource: "mock",
 						Path:     "",
@@ -126,6 +128,7 @@ func TestResolveReferences(t *testing.T) {
 		"call function": func() (specs.FlowListInterface, *specs.Property, *specs.Property, functions.Collection) {
 			expected := &specs.Property{
 				Template: specs.Template{
+					Identifier: "expected",
 					Reference: &specs.PropertyReference{
 						Resource: "expected",
 						Path:     "expected",
@@ -135,6 +138,7 @@ func TestResolveReferences(t *testing.T) {
 
 			target := &specs.Property{
 				Template: specs.Template{
+					Identifier: "mock",
 					Reference: &specs.PropertyReference{
 						Resource: "mock",
 						Path:     "",
@@ -631,6 +635,7 @@ func TestResolveNodeReferences(t *testing.T) {
 		"call nested": func() (*specs.Node, *specs.Property, *specs.Property) {
 			expected := &specs.Property{
 				Template: specs.Template{
+					Identifier: "expected",
 					Reference: &specs.PropertyReference{
 						Resource: "expected",
 						Path:     "expected",
@@ -648,6 +653,7 @@ func TestResolveNodeReferences(t *testing.T) {
 				Name: "example",
 				Path: "example",
 				Template: specs.Template{
+					Identifier: "mock",
 					Reference: &specs.PropertyReference{
 						Resource: "mock",
 						Path:     "",

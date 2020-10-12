@@ -23,8 +23,10 @@ message Request {
 message Response {
 	string msg = 1;
 	Meta meta = 2;
+	// Meta meta2 = 3;
 }
 
 message Meta {
 	int64 session = 1;
+	Meta child = 2;
 }

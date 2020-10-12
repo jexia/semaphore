@@ -125,7 +125,7 @@ func TestUnmarshalFile(t *testing.T) {
 }
 
 func TestScopeNestedReferencesNil(t *testing.T) {
-	ScopeNestedReferences(nil, nil)
+	ScopeNestedReferences(specs.NewResolvedProperty(), nil, nil)
 }
 
 func TestScopeNestedReferences(t *testing.T) {
@@ -144,8 +144,8 @@ func TestScopeNestedReferences(t *testing.T) {
 		"root": {
 			source: &specs.Property{
 				Template: specs.Template{
+					Identifier: "root",
 					Message: specs.Message{
-
 						"key": {
 							Name: "key",
 							Path: "key",
@@ -167,6 +167,7 @@ func TestScopeNestedReferences(t *testing.T) {
 		"nested": {
 			source: &specs.Property{
 				Template: specs.Template{
+					Identifier: "nested",
 					Message: specs.Message{
 						"key": {
 							Name: "key",
@@ -200,6 +201,7 @@ func TestScopeNestedReferences(t *testing.T) {
 		"partial": {
 			source: &specs.Property{
 				Template: specs.Template{
+					Identifier: "partial",
 					Message: specs.Message{
 						"key": {
 							Name: "key",
@@ -247,7 +249,7 @@ func TestScopeNestedReferences(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			ScopeNestedReferences(&test.source.Template, &test.target.Template)
+			ScopeNestedReferences(specs.NewResolvedProperty(), test.source, test.target)
 
 			var lookup func(source *specs.Property, target *specs.Property)
 			lookup = func(source *specs.Property, target *specs.Property) {

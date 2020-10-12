@@ -127,12 +127,12 @@ func service(ctx *broker.Context, manager specs.FlowInterface, node *specs.Node,
 	method := dialer.GetMethod(node.Call.Method)
 	if method != nil {
 		for _, reference := range method.References() {
-			err := references.ResolveProperty(ctx, node, reference, manager)
+			err := references.ResolveProperty(ctx, specs.NewResolvedProperty(), node, reference, manager)
 			if err != nil {
 				return nil, err
 			}
 
-			forwarding.ResolvePropertyReferences(&reference.Template, node.DependsOn)
+			forwarding.ResolvePropertyReferences(make(specs.ResolvedTemplate), &reference.Template, node.DependsOn)
 			err = dependencies.Resolve(manager, node.DependsOn, node.ID, make(dependencies.Unresolved))
 			if err != nil {
 				return nil, err

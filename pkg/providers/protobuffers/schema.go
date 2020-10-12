@@ -12,19 +12,25 @@ import (
 
 // NewSchema constructs a new schema manifest from the given file descriptors
 func NewSchema(descriptors []*desc.FileDescriptor) specs.Schemas {
+	log.Println("PARESING THE SCHEMA")
+
 	result := make(specs.Schemas)
+
+	registry := make(map[string]*specs.Property)
 
 	for _, descriptor := range descriptors {
 		for _, message := range descriptor.GetMessageTypes() {
-			result[message.GetFullyQualifiedName()] = NewMessage("", message)
+			result[message.GetFullyQualifiedName()] = NewMessage("", registry, message)
 		}
 	}
+
+	log.Println("SCHEMA IS PARESED")
 
 	return result
 }
 
 // NewMessage constructs a schema Property with the given message descriptor
-func NewMessage(path string, descriptor *desc.MessageDescriptor) *specs.Property {
+func NewMessage(path string, registry map[string]*specs.Property, descriptor *desc.MessageDescriptor) *specs.Property {
 	fields := descriptor.GetFields()
 	result := &specs.Property{
 		Path:        path,
@@ -39,36 +45,122 @@ func NewMessage(path string, descriptor *desc.MessageDescriptor) *specs.Property
 	}
 
 	for _, field := range fields {
-		// TODO: change the approach
-
-		result.Message[field.GetName()] = NewProperty(template.JoinPath(path, field.GetName()), field)
+		AddProperty(registry, result.Message, template.JoinPath(path, field.GetName()), field)
 	}
 
 	return result
 }
 
+func AddProperty(registry, messages map[string]*specs.Property, path string, descriptor *desc.FieldDescriptor) {
+	var (
+		id   = descriptor.GetFullyQualifiedName()
+		name = descriptor.GetName()
+	)
+
+	log.Println(id, name)
+
+	property, ok := registry[id]
+	if ok {
+		messages[name] = property
+
+		return
+	}
+
+	property = &specs.Property{
+		Path:        path,
+		Name:        name,
+		Description: descriptor.GetSourceInfo().GetLeadingComments(),
+		Position:    descriptor.GetNumber(),
+		Options:     specs.Options{},
+		Label:       Labels[descriptor.GetLabel()],
+		Template: specs.Template{
+			Identifier: id,
+		},
+	}
+
+	registry[id] = property
+	messages[name] = property
+
+	switch {
+	case descriptor.GetType() == protobuf.FieldDescriptorProto_TYPE_ENUM:
+		enum := descriptor.GetEnumType()
+		keys := map[string]*specs.EnumValue{}
+		positions := map[int32]*specs.EnumValue{}
+
+		for _, value := range enum.GetValues() {
+			result := &specs.EnumValue{
+				Key:         value.GetName(),
+				Position:    value.GetNumber(),
+				Description: value.GetSourceInfo().GetLeadingComments(),
+			}
+
+			keys[value.GetName()] = result
+			positions[value.GetNumber()] = result
+		}
+
+		property.Enum = &specs.Enum{
+			Name:        enum.GetName(),
+			Description: enum.GetSourceInfo().GetLeadingComments(),
+			Keys:        keys,
+			Positions:   positions,
+		}
+	case descriptor.GetType() == protobuf.FieldDescriptorProto_TYPE_MESSAGE:
+		var fields = descriptor.GetMessageType().GetFields()
+		property.Message = make(specs.Message, len(fields))
+
+		for _, field := range fields {
+			AddProperty(registry, property.Message, template.JoinPath(path, field.GetName()), field)
+		}
+	default:
+		property.Scalar = &specs.Scalar{
+			Type: Types[descriptor.GetType()],
+		}
+	}
+
+	if descriptor.GetLabel() == protobuf.FieldDescriptorProto_LABEL_REPEATED {
+		property.Label = labels.Optional
+		property.Template = specs.Template{
+			Repeated: specs.Repeated{property.Template},
+		}
+	}
+}
+
 // NewProperty constructs a schema Property with the given field descriptor
-func NewProperty(path string, descriptor *desc.FieldDescriptor) *specs.Property {
-	result := &specs.Property{
+func NewProperty(registry map[string]*specs.Property, path string, descriptor *desc.FieldDescriptor) *specs.Property {
+	log.Println(descriptor.GetFullyQualifiedName())
+
+	property, ok := registry[descriptor.GetFullyQualifiedName()]
+	if ok {
+		return property
+	}
+
+	property = &specs.Property{
 		Path:        path,
 		Name:        descriptor.GetName(),
 		Description: descriptor.GetSourceInfo().GetLeadingComments(),
 		Position:    descriptor.GetNumber(),
 		Options:     specs.Options{},
 		Label:       Labels[descriptor.GetLabel()],
+		Template: specs.Template{
+			Identifier: descriptor.GetFullyQualifiedName(),
+		},
 	}
 
 	switch {
-	case descriptor.GetOneOf() != nil:
-		choises := descriptor.GetOneOf().GetChoices()
-
-		for i, f := range choises {
-			log.Println(i, ":", f)
-		}
-
-		// descriptor.GetOneOf().GetOneOfOptions()
-		log.Printf("ONEOF: %#v\n", descriptor.GetOneOf().GetName())
-		log.Printf("PARENT: %#v\n\n\n", descriptor.GetOneOf().GetParent())
+	// case descriptor.GetOneOf() != nil:
+	// 	var choices = descriptor.GetOneOf().GetChoices()
+	// 	property.OneOf = &specs.OneOf{
+	// 		Choices: make(map[string]*specs.Property, len(choices)),
+	// 	}
+	//
+	// 	for _, choice := range choices {
+	// 		// result.OneOf.Choices[choice.GetName()] = NewProperty(template.JoinPath(path, choice.GetName()), choice)
+	// 		log.Println("choice:", choice)
+	// 	}
+	//
+	// 	// // descriptor.GetOneOf().GetOneOfOptions()
+	// 	// log.Printf("ONEOF: %#v\n", descriptor.GetOneOf().GetName())
+	// 	// log.Printf("PARENT: %#v\n\n\n", descriptor.GetOneOf().GetParent())
 
 	case descriptor.GetType() == protobuf.FieldDescriptorProto_TYPE_ENUM:
 		enum := descriptor.GetEnumType()
@@ -86,35 +178,31 @@ func NewProperty(path string, descriptor *desc.FieldDescriptor) *specs.Property 
 			positions[value.GetNumber()] = result
 		}
 
-		result.Enum = &specs.Enum{
+		property.Enum = &specs.Enum{
 			Name:        enum.GetName(),
 			Description: enum.GetSourceInfo().GetLeadingComments(),
 			Keys:        keys,
 			Positions:   positions,
 		}
-
-		break
 	case descriptor.GetType() == protobuf.FieldDescriptorProto_TYPE_MESSAGE:
 		var fields = descriptor.GetMessageType().GetFields()
-		result.Message = make(specs.Message, len(fields))
+		property.Message = make(specs.Message, len(fields))
 
 		for _, field := range fields {
-			result.Message[field.GetName()] = NewProperty(template.JoinPath(path, field.GetName()), field)
+			property.Message[field.GetName()] = NewProperty(registry, template.JoinPath(path, field.GetName()), field)
 		}
-
-		break
 	default:
-		result.Scalar = &specs.Scalar{
+		property.Scalar = &specs.Scalar{
 			Type: Types[descriptor.GetType()],
 		}
 	}
 
 	if descriptor.GetLabel() == protobuf.FieldDescriptorProto_LABEL_REPEATED {
-		result.Label = labels.Optional
-		result.Template = specs.Template{
-			Repeated: specs.Repeated{result.Template},
+		property.Label = labels.Optional
+		property.Template = specs.Template{
+			Repeated: specs.Repeated{property.Template},
 		}
 	}
 
-	return result
+	return property
 }

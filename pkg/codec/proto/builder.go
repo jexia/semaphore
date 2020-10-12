@@ -1,9 +1,8 @@
 package proto
 
 import (
-	"fmt"
+	"log"
 
-	"github.com/jexia/semaphore/pkg/prettyerr"
 	"github.com/jexia/semaphore/pkg/providers/protobuffers"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/types"
@@ -13,6 +12,8 @@ import (
 
 // NewMessage attempts to construct a new proto message descriptor for the given specs property
 func NewMessage(resource string, message specs.Message) (*desc.MessageDescriptor, error) {
+	log.Println("BUILD THE MESSAGE")
+
 	msg := builder.NewMessage(resource)
 	err := ConstructMessage(msg, message)
 	if err != nil {
@@ -27,6 +28,10 @@ func ConstructMessage(message *builder.MessageBuilder, spec specs.Message) (err 
 	if spec == nil {
 		return nil
 	}
+
+	// types := make(map[string]*builder.FieldType)
+
+	// TODO: implement registry !!!
 
 	for _, property := range spec {
 		typed, err := ConstructFieldType(message, property.Name, property.Template)
@@ -55,31 +60,24 @@ func ConstructMessage(message *builder.MessageBuilder, spec specs.Message) (err 
 	return nil
 }
 
-// ErrInvalidFieldType is thrown when the given field type is invalid
-type ErrInvalidFieldType struct {
-	template specs.Template
-}
-
-func (e ErrInvalidFieldType) Error() string {
-	return fmt.Sprintf("invalid invalid template field type %s", e.template.Type())
-}
-
-// Prettify returns the prettified version of the given error
-func (e ErrInvalidFieldType) Prettify() prettyerr.Error {
-	return prettyerr.Error{
-		Code:    "InvalidFieldType",
-		Message: e.Error(),
-		Details: map[string]interface{}{
-			"type": e.template.Type(),
-		},
-	}
-}
-
 // ConstructFieldType constructs a field constructor from the given property
 func ConstructFieldType(message *builder.MessageBuilder, key string, template specs.Template) (*builder.FieldType, error) {
+	// builder.FromOneOf()
+	// OneOfDescriptor
+
+	log.Println("<<<", template.Identifier)
+
 	switch {
+	case template.OneOf != nil:
+		oneof := builder.NewOneOf("test")
+
+		_ = oneof
+
 	case template.Message != nil:
-		// TODO: appending a fixed prefix is probably not a good idea.
+		// TODO:
+		// - reuse global types
+		// - appending a fixed prefix is probably not a good idea
+		// - do not create inline messages?
 		nested := builder.NewMessage(key + "Nested")
 		err := ConstructMessage(nested, template.Message)
 		if err != nil {
@@ -98,7 +96,7 @@ func ConstructFieldType(message *builder.MessageBuilder, key string, template sp
 			return nil, err
 		}
 
-		// TODO: thrown a error when attempting to construct a nested array
+		// TODO: throw an error when attempting to construct a nested array
 		return ConstructFieldType(message, key, field)
 	case template.Enum != nil:
 		enum := builder.NewEnum(key + "Enum")

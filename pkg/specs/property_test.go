@@ -280,7 +280,7 @@ func TestObjectsGetNilValue(t *testing.T) {
 }
 
 func TestPropertyClone(t *testing.T) {
-	property := &Property{
+	var property = &Property{
 		Meta:        metadata.WithValue(nil, nil, nil),
 		Position:    1,
 		Description: "sample",
@@ -288,7 +288,8 @@ func TestPropertyClone(t *testing.T) {
 		Path:        "path",
 		Label:       labels.Optional,
 		Template: Template{
-			Reference: &PropertyReference{},
+			Identifier: "example",
+			Reference:  &PropertyReference{},
 			Scalar: &Scalar{
 				Default: false,
 				Type:    types.String,
@@ -306,6 +307,8 @@ func TestPropertyClone(t *testing.T) {
 			"sample": "option",
 		},
 	}
+
+	property.Template.Message["second"] = property
 
 	result := property.Clone()
 	if result == nil {
@@ -358,6 +361,10 @@ func TestPropertyClone(t *testing.T) {
 
 	if len(result.Message) != len(property.Message) {
 		t.Errorf("unexpected message properties %+v", result.Message)
+	}
+
+	if result.Message["second"] != result {
+		t.Errorf("nested recursive field was not set")
 	}
 
 	if result.Repeated == nil {

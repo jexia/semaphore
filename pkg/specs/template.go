@@ -10,6 +10,9 @@ import (
 // Template contains property schema. This is a union type (Only one field must be set).
 type Template struct {
 	*metadata.Meta
+
+	Identifier string
+
 	Reference *PropertyReference `json:"reference,omitempty"` // Reference represents a property reference made inside the given property
 
 	// Only one of the following fields should be set
@@ -17,34 +20,36 @@ type Template struct {
 	Enum     *Enum    `json:"enum,omitempty" yaml:"enum,omitempty"`
 	Repeated Repeated `json:"repeated,omitempty" yaml:"repeated,omitempty"`
 	Message  Message  `json:"message,omitempty" yaml:"message,omitempty"`
-	OneOf    OneOf    `json:"oneof,omitempty" yaml:"oneof,omitempty"`
+	OneOf    *OneOf   `json:"oneof,omitempty" yaml:"oneof,omitempty"`
 }
 
 // Type returns the type of the given template.
 func (template Template) Type() types.Type {
-	if template.Message != nil {
+	switch {
+	case template.Message != nil:
 		return types.Message
-	}
-
-	if template.Repeated != nil {
+	case template.Repeated != nil:
 		return types.Array
-	}
-
-	if template.Enum != nil {
+	case template.OneOf != nil:
+		return types.OneOf
+	case template.Enum != nil:
 		return types.Enum
-	}
-
-	if template.Scalar != nil {
+	case template.Scalar != nil:
 		return template.Scalar.Type
+	default:
+		return types.Unknown
 	}
-
-	return types.Unknown
 }
 
 // Clone internal value.
 func (template Template) Clone() Template {
+	return template.clone(make(map[string]*Property))
+}
+
+func (template Template) clone(buff map[string]*Property) Template {
 	var clone = Template{
-		Reference: template.Reference.Clone(),
+		Identifier: template.Identifier,
+		Reference:  template.Reference.Clone(),
 	}
 
 	if template.Scalar != nil {
@@ -60,7 +65,7 @@ func (template Template) Clone() Template {
 	}
 
 	if template.Message != nil {
-		clone.Message = template.Message.Clone()
+		clone.Message = template.Message.clone(buff)
 	}
 
 	return clone
@@ -71,19 +76,12 @@ func (template Template) Compare(expected Template) (err error) {
 	switch {
 	case expected.Repeated != nil:
 		err = template.Repeated.Compare(expected.Repeated)
-		break
-
 	case expected.Scalar != nil:
 		err = template.Scalar.Compare(expected.Scalar)
-		break
-
 	case expected.Message != nil:
 		err = template.Message.Compare(expected.Message)
-		break
-
 	case expected.Enum != nil:
 		err = template.Enum.Compare(expected.Enum)
-		break
 	}
 
 	if err != nil {
