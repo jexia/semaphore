@@ -250,7 +250,7 @@ func (lookup *PropertyLookup) Lookup(path string) *specs.Property {
 			if lookup.seen.Resolved(nested) {
 				continue
 			}
-			defer lookup.seen.Resolve(nested)
+			lookup.seen.Resolve(nested)
 
 			lookup := (&PropertyLookup{
 				property: nested,
