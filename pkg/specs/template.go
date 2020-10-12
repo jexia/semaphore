@@ -73,13 +73,17 @@ func (template Template) clone(buff map[string]*Property) Template {
 
 // Compare given template against the provided one returning the frst mismatch.
 func (template Template) Compare(expected Template) (err error) {
+	return template.compare(NewResolvedProperty(), expected)
+}
+
+func (template Template) compare(resolved *ResolvedProperty, expected Template) (err error) {
 	switch {
 	case expected.Repeated != nil:
 		err = template.Repeated.Compare(expected.Repeated)
 	case expected.Scalar != nil:
 		err = template.Scalar.Compare(expected.Scalar)
 	case expected.Message != nil:
-		err = template.Message.Compare(expected.Message)
+		err = template.Message.compare(resolved, expected.Message)
 	case expected.Enum != nil:
 		err = template.Enum.Compare(expected.Enum)
 	}
@@ -93,15 +97,19 @@ func (template Template) Compare(expected Template) (err error) {
 
 // Define ensures that all missing nested template are defined
 func (template *Template) Define(expected Template) {
+	template.define(make(map[string]*Property), expected)
+}
+
+func (template *Template) define(defined map[string]*Property, expected Template) {
 	if template.Message != nil && expected.Message != nil {
 		for key, value := range expected.Message {
 			existing, has := template.Message[key]
 			if has {
-				existing.Define(value)
+				existing.define(defined, value)
 				continue
 			}
 
-			template.Message[key] = value.Clone()
+			template.Message[key] = value.clone(defined)
 		}
 	}
 
@@ -110,7 +118,7 @@ func (template *Template) Define(expected Template) {
 	// are overlapping.
 
 	if template.Message == nil && expected.Message != nil {
-		template.Message = expected.Message.Clone()
+		template.Message = expected.Message.clone(defined)
 	}
 
 	if template.Enum == nil && expected.Enum != nil {

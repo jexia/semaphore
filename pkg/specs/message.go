@@ -39,6 +39,10 @@ func (message Message) clone(cloned map[string]*Property) Message {
 
 // Compare given message to the provided one returning the first mismatch.
 func (message Message) Compare(expected Message) error {
+	return message.compare(NewResolvedProperty(), expected)
+}
+
+func (message Message) compare(resolved *ResolvedProperty, expected Message) error {
 	if expected == nil && message == nil {
 		return nil
 	}
@@ -57,7 +61,7 @@ func (message Message) Compare(expected Message) error {
 			return fmt.Errorf("object has unknown field '%s'", key)
 		}
 
-		if err := property.Compare(nested); err != nil {
+		if err := property.compare(resolved, nested); err != nil {
 			return fmt.Errorf("object property mismatch: %w", err)
 		}
 	}

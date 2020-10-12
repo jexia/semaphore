@@ -114,8 +114,18 @@ func (property *Property) clone(cloned map[string]*Property) *Property {
 	return clone
 }
 
-// Compare checks the given property against the provided one.
 func (property *Property) Compare(expected *Property) error {
+	return property.compare(NewResolvedProperty(), expected)
+}
+
+// Compare checks the given property against the provided one.
+func (property *Property) compare(resolved *ResolvedProperty, expected *Property) error {
+	if resolved.Resolved(property) {
+		return nil
+	}
+
+	resolved.Resolve(property)
+
 	if expected == nil {
 		return fmt.Errorf("unable to check types for '%s' no schema given", property.Path)
 	}
@@ -136,7 +146,7 @@ func (property *Property) Compare(expected *Property) error {
 		return fmt.Errorf("schema '%s' has a nested object but property does not '%s'", expected.Name, property.Path)
 	}
 
-	if err := property.Template.Compare(expected.Template); err != nil {
+	if err := property.Template.compare(resolved, expected.Template); err != nil {
 		return fmt.Errorf("nested schema mismatch under property '%s': %w", property.Path, err)
 	}
 
@@ -145,8 +155,21 @@ func (property *Property) Compare(expected *Property) error {
 
 // Define ensures that all missing nested properties are defined
 func (property *Property) Define(expected *Property) {
+	property.define(make(map[string]*Property), expected)
+}
+
+func (property *Property) define(defined map[string]*Property, expected *Property) {
+	if expected.Identifier != "" {
+		_, ok := defined[property.Identifier]
+		if ok {
+			return
+		}
+	}
+
+	defined[property.Identifier] = expected
+
 	property.Position = expected.Position
-	property.Template.Define(expected.Template)
+	property.Template.define(defined, expected.Template)
 }
 
 // ParameterMap is the initial map of parameter names (keys) and their (templated) values (values)
