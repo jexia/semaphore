@@ -5,14 +5,18 @@ module.exports = {
   themeConfig: {
     lastUpdated: false,
     sidebar: [
-      "/guide/",
+      "/Guide/",
+      "/Get_Started/",
+      "/Cookbook/",
+      "/DevOps/"
     ],
-    nav: [{
+    /* nav: [{
       text: "Guide",
       link: "/guide/"
-    }],
+    }], */
     repo: "jexia/semaphore",
     repoLabel: "Contribute",
-    displayAllHeaders: true
+    displayAllHeaders: false
   },
+  plugins: ['@vuepress/medium-zoom']
 }
