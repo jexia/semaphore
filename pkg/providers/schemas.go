@@ -275,6 +275,26 @@ func ResolveProperty(property, schema *specs.Property, flow specs.FlowInterface)
 	return nil
 }
 
+// LookupFlowReferenceProperty tried to find the correct reference to a property
+// from the template which is read from hcl directly ignoring the complete schemas
+// hence only including fields used in flows
+func LookupFlowReferenceProperty(ctx *broker.Context, templates, flowList specs.FlowListInterface) error {
+	for _, template := range templates {
+		flow := flowList.Get(template.GetName())
+		for _, node := range template.GetNodes() {
+			inputs := flow.GetInput()
+			inputs.Property.Template = ResolveParameterMapTemplate(node.Call.Request)
+		}
+	}
+	return nil
+}
+
+// ResolveParameterMapTemplate returns the template
+// TODO: handle nil templates
+func ResolveParameterMapTemplate(params *specs.ParameterMap) specs.Template {
+	return params.Property.Template
+}
+
 // ResolveParameterMap ensures that all schema properties are defined inisde the given parameter map
 func ResolveParameterMap(ctx *broker.Context, schemas specs.Schemas, params *specs.ParameterMap, flow specs.FlowInterface) (err error) {
 	if params == nil || params.Schema == "" {
