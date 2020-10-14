@@ -61,11 +61,6 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		return err
 	}
 
-	err = providers.LookupFlowReferences(ctx, collection.FlowListInterface, provider)
-	if err != nil {
-		return err
-	}
-
 	object, err := openapi3.Generate(collection.EndpointList, collection.FlowListInterface)
 	if err != nil {
 		return err

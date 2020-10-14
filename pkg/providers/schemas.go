@@ -5,6 +5,7 @@ import (
 	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/broker/trace"
 	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/pkg/specs/template"
 	"go.uber.org/zap"
 )
 
@@ -161,6 +162,39 @@ func DefineCall(ctx *broker.Context, services specs.ServiceList, schemas specs.S
 	return nil
 }
 
+// ResolveParameterMap ensures that all schema properties are defined inisde the given parameter map
+func ResolveParameterMap(ctx *broker.Context, schemas specs.Schemas, params *specs.ParameterMap, flow specs.FlowInterface) (err error) {
+	if params == nil || params.Schema == "" {
+		return nil
+	}
+
+	schema := schemas.Get(params.Schema)
+	if schema == nil {
+		return ErrUndefinedObject{
+			Schema: params.Schema,
+		}
+	}
+
+	err = ResolveProperty(params.Property, schema.Clone(), flow)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ResolveOnError ensures that all schema properties are defined inside the given on error object
+func ResolveOnError(ctx *broker.Context, schemas specs.Schemas, params *specs.OnError, flow specs.FlowInterface) (err error) {
+	if params.Response != nil {
+		err = ResolveParameterMap(ctx, schemas, params.Response, flow)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func resolveMessage(message, schema specs.Message, flow specs.FlowInterface) error {
 	for _, nested := range message {
 		if nested == nil {
@@ -275,55 +309,124 @@ func ResolveProperty(property, schema *specs.Property, flow specs.FlowInterface)
 	return nil
 }
 
-// LookupFlowReferenceProperty tried to find the correct reference to a property
-// from the template which is read from hcl directly ignoring the complete schemas
-// hence only including fields used in flows
-func LookupFlowReferenceProperty(ctx *broker.Context, templates, flowList specs.FlowListInterface) error {
-	for _, template := range templates {
-		flow := flowList.Get(template.GetName())
-		for _, node := range template.GetNodes() {
-			inputs := flow.GetInput()
-			inputs.Property.Template = ResolveParameterMapTemplate(node.Call.Request)
-		}
-	}
-	return nil
+func ConstructReferencedPathsProperty(referenced Paths, property *specs.Property) *specs.Property {
+	paths := allPosssiblePaths(referenced)
+	result := property.Clone()
+	constructReferencedPathsTemplate(paths, "", result.Template)
+
+	return result
 }
 
-// ResolveParameterMapTemplate returns the template
-// TODO: handle nil templates
-func ResolveParameterMapTemplate(params *specs.ParameterMap) specs.Template {
-	return params.Property.Template
+func constructReferencedPathsTemplate(referenced Paths, path string, template specs.Template) {
+	switch {
+	case template.Message != nil:
+		for key, nested := range template.Message {
+			if nested == nil {
+				delete(template.Message, key)
+				continue
+			}
+
+			if _, has := referenced[nested.Path]; !has {
+				delete(template.Message, key)
+				continue
+			}
+
+			constructReferencedPathsTemplate(referenced, nested.Path, nested.Template)
+		}
+	case template.Repeated != nil:
+		if _, has := referenced[path]; !has {
+			template.Repeated = nil
+			break
+		}
+
+		for _, item := range template.Repeated {
+			constructReferencedPathsTemplate(referenced, path, item)
+		}
+	}
 }
 
-// ResolveParameterMap ensures that all schema properties are defined inisde the given parameter map
-func ResolveParameterMap(ctx *broker.Context, schemas specs.Schemas, params *specs.ParameterMap, flow specs.FlowInterface) (err error) {
-	if params == nil || params.Schema == "" {
-		return nil
-	}
+func allPosssiblePaths(referenced Paths) Paths {
+	result := make(Paths, len(referenced))
 
-	schema := schemas.Get(params.Schema)
-	if schema == nil {
-		return ErrUndefinedObject{
-			Schema: params.Schema,
+	for path := range referenced {
+		absolute := ""
+		parts := template.SplitPath(path)
+		for _, part := range parts {
+			current := template.JoinPath(absolute, part)
+			result[current] = struct{}{}
+			absolute = current
 		}
 	}
 
-	err = ResolveProperty(params.Property, schema.Clone(), flow)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return result
 }
 
-// ResolveOnError ensures that all schema properties are defined inside the given on error object
-func ResolveOnError(ctx *broker.Context, schemas specs.Schemas, params *specs.OnError, flow specs.FlowInterface) (err error) {
-	if params.Response != nil {
-		err = ResolveParameterMap(ctx, schemas, params.Response, flow)
-		if err != nil {
-			return err
+type Paths map[string]struct{}
+
+func FlowReferencedResourcePaths(target Paths, flow specs.FlowInterface, resource string) {
+	for _, node := range flow.GetNodes() {
+		if node.Call != nil {
+			ParameterMapReferencedResourcePaths(target, node.Call.Request, resource)
+			ParameterMapReferencedResourcePaths(target, node.Call.Response, resource)
+		}
+
+		ParameterMapReferencedResourcePaths(target, node.Intermediate, resource)
+
+		if node.Condition != nil {
+			ParameterMapReferencedResourcePaths(target, node.Condition.Params, resource)
 		}
 	}
 
-	return nil
+	ParameterMapReferencedResourcePaths(target, flow.GetOutput(), resource)
+}
+
+func ParameterMapReferencedResourcePaths(target Paths, parameters *specs.ParameterMap, resource string) {
+	if parameters == nil {
+		return
+	}
+
+	for _, header := range parameters.Header {
+		if header == nil {
+			continue
+		}
+
+		PropertyReferencedResourcePaths(target, header.Template, resource)
+	}
+
+	for _, params := range parameters.Params {
+		if params == nil {
+			continue
+		}
+
+		PropertyReferencedResourcePaths(target, params.Template, resource)
+	}
+
+	if parameters.Property != nil {
+		PropertyReferencedResourcePaths(target, parameters.Property.Template, resource)
+	}
+
+	for _, stack := range parameters.Stack {
+		if stack == nil {
+			continue
+		}
+
+		PropertyReferencedResourcePaths(target, stack.Template, resource)
+	}
+}
+
+func PropertyReferencedResourcePaths(target Paths, template specs.Template, resource string) {
+	if template.Reference != nil && template.Reference.Resource == resource {
+		target[template.Reference.Path] = struct{}{}
+	}
+
+	switch {
+	case template.Message != nil:
+		for _, nested := range template.Message {
+			PropertyReferencedResourcePaths(target, nested.Template, resource)
+		}
+	case template.Repeated != nil:
+		for _, item := range template.Repeated {
+			PropertyReferencedResourcePaths(target, item, resource)
+		}
+	}
 }
