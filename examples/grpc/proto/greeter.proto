@@ -23,7 +23,6 @@ message Request {
 message Response {
 	string msg = 1;
 	Meta meta = 2;
-	// Meta meta2 = 3;
 }
 
 message Meta {

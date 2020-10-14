@@ -19,13 +19,10 @@ func NewConstructor() *Constructor {
 }
 
 // Constructor is capable of constructing new codec managers for the given resource and specs
-type Constructor struct {
-}
+type Constructor struct{}
 
 // Name returns the proto codec constructor name
-func (constructor *Constructor) Name() string {
-	return "proto"
-}
+func (constructor *Constructor) Name() string { return "proto" }
 
 // New constructs a new proto codec manager
 func (constructor *Constructor) New(resource string, specs *specs.ParameterMap) (codec.Manager, error) {
@@ -42,7 +39,11 @@ func (constructor *Constructor) New(resource string, specs *specs.ParameterMap) 
 		return nil, ErrNonRootMessage{}
 	}
 
-	desc, err := NewMessage(resource, property.Message)
+	if resource != "" {
+		property.Name = resource
+	}
+
+	desc, err := NewMessage(property)
 	if err != nil {
 		return nil, err
 	}
