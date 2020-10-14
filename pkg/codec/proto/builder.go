@@ -1,6 +1,8 @@
 package proto
 
 import (
+	"log"
+
 	"github.com/jexia/semaphore/pkg/providers/protobuffers"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/types"
@@ -10,7 +12,7 @@ import (
 
 // NewMessage attempts to construct a new proto descriptor for the given property.
 func NewMessage(property *specs.Property) (*desc.MessageDescriptor, error) {
-	builder, err := newMessage(
+	builder, _, err := newMessage(
 		make(map[string]*builder.MessageBuilder),
 		make(map[string]*builder.FieldType),
 		property.Name,
@@ -23,11 +25,15 @@ func NewMessage(property *specs.Property) (*desc.MessageDescriptor, error) {
 	return builder.Build()
 }
 
-func newMessage(builders map[string]*builder.MessageBuilder, fieldTypes map[string]*builder.FieldType, name string, property *specs.Property) (*builder.MessageBuilder, error) {
+func newMessage(builders map[string]*builder.MessageBuilder, fieldTypes map[string]*builder.FieldType, name string, property *specs.Property) (*builder.MessageBuilder, bool, error) {
+	log.Println("newMessage", ":", name)
+
 	if property.Identifier != "" {
 		existing, ok := builders[property.Identifier]
 		if ok {
-			return existing, nil
+			log.Println("newMessage", ":", name, "escaped")
+
+			return existing, true, nil
 		}
 	}
 
@@ -35,10 +41,10 @@ func newMessage(builders map[string]*builder.MessageBuilder, fieldTypes map[stri
 	builders[property.Identifier] = builder
 
 	if err := ConstructMessage(builders, fieldTypes, builder, property.Message); err != nil {
-		return nil, err
+		return nil, false, err
 	}
 
-	return builder, nil
+	return builder, false, nil
 }
 
 // ConstructMessage constructs a proto message of the given specs into the given message builders
@@ -85,8 +91,11 @@ func ConstructMessage(builders map[string]*builder.MessageBuilder, fieldTypes ma
 
 // ConstructFieldType constructs a field constructor from the given property
 func ConstructFieldType(builders map[string]*builder.MessageBuilder, fieldTypes map[string]*builder.FieldType, name string, message *builder.MessageBuilder, property *specs.Property) (ft *builder.FieldType, err error) {
+
 	if property.Identifier != "" {
 		if fieldType, ok := fieldTypes[property.Identifier]; ok {
+			log.Println("ConstructFieldType", ":", name, "escaped")
+
 			return fieldType, nil
 		}
 
@@ -97,13 +106,15 @@ func ConstructFieldType(builders map[string]*builder.MessageBuilder, fieldTypes 
 
 	switch {
 	case property.Message != nil:
-		nested, err := newMessage(builders, fieldTypes, name, property)
+		nested, seen, err := newMessage(builders, fieldTypes, name, property)
 		if err != nil {
 			return nil, err
 		}
 
-		if err := message.TryAddNestedMessage(nested); err != nil {
-			return nil, err
+		if !seen {
+			if err := message.TryAddNestedMessage(nested); err != nil {
+				return nil, err
+			}
 		}
 
 		return builder.FieldTypeMessage(nested), nil
