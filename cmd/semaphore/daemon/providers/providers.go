@@ -21,47 +21,6 @@ type Collection struct {
 	specs.Schemas
 }
 
-// LookupFlowReferences is responsible for matching the used specs with the
-// given schemas and only comitting fields used in flows
-func LookupFlowReferences(ctx *broker.Context, flowList specs.FlowListInterface, options Options) error {
-	flows, err := options.FlowResolvers.Resolve(ctx)
-	if err != nil {
-		return err
-	}
-
-	schemas, err := options.SchemaResolvers.Resolve(ctx)
-	if err != nil {
-		return err
-	}
-
-	services, err := options.ServiceResolvers.Resolve(ctx)
-	if err != nil {
-		return err
-	}
-
-	err = checks.FlowDuplicates(ctx, flows)
-	if err != nil {
-		return err
-	}
-
-	err = providers.ResolveSchemas(ctx, services, schemas, flows)
-	if err != nil {
-		return err
-	}
-
-	err = references.Resolve(ctx, flows)
-	if err != nil {
-		return err
-	}
-
-	err = providers.LookupFlowReferenceProperty(ctx, flows, flowList)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 // Resolve collects and constructs the a specs from the given options.
 // The specifications are received from the providers. The property types are
 // defined and functions are prepared. Once done is a specs collection returned

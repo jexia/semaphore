@@ -7,8 +7,10 @@ import (
 	"strings"
 
 	"github.com/jexia/semaphore/pkg/generators/openapi3/types"
+	"github.com/jexia/semaphore/pkg/providers"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/labels"
+	"github.com/jexia/semaphore/pkg/specs/template"
 	transport "github.com/jexia/semaphore/pkg/transport/http"
 )
 
@@ -119,13 +121,21 @@ func GenerateOperation(object *Object, endpoint *specs.Endpoint, options *transp
 				Content: map[string]MediaType{
 					string(transport.ApplicationJSON): {
 						Schema: Schema{
-							Reference: fmt.Sprintf("#/components/schemas/%s", input.Schema),
+							Reference: fmt.Sprintf("#/components/schemas/%s", flow.GetName()+"Input"),
 						},
 					},
 				},
 			}
 
-			IncludeParameterMap(object, input)
+			paths := providers.Paths{}
+			providers.FlowReferencedResourcePaths(paths, flow, template.InputResource)
+			result := providers.ConstructReferencedPathsProperty(paths, input.Property)
+
+			pm := input.Clone()
+			pm.Schema = flow.GetName() + "Input"
+			pm.Property = result
+
+			IncludeParameterMap(object, pm)
 		}
 	}
 
