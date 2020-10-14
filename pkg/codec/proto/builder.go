@@ -1,17 +1,12 @@
 package proto
 
 import (
-	"log"
-
 	"github.com/jexia/semaphore/pkg/providers/protobuffers"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/types"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/desc/builder"
 )
-
-type mt struct {
-}
 
 // NewMessage attempts to construct a new proto descriptor for the given property.
 func NewMessage(property *specs.Property) (*desc.MessageDescriptor, error) {
@@ -47,23 +42,25 @@ func newMessage(builders map[string]*builder.MessageBuilder, fieldTypes map[stri
 }
 
 // ConstructMessage constructs a proto message of the given specs into the given message builders
-func ConstructMessage(builders map[string]*builder.MessageBuilder, fieldTypes map[string]*builder.FieldType, messageBuilder *builder.MessageBuilder, message specs.Message) error {
-	if message == nil {
-		return nil
-	}
-
+func ConstructMessage(builders map[string]*builder.MessageBuilder, fieldTypes map[string]*builder.FieldType, messageBuilder *builder.MessageBuilder, message specs.Message) (err error) {
 	for _, property := range message {
+		var (
+			ok    bool
+			typed *builder.FieldType
+		)
 
 		if property.Identifier != "" {
-			_, ok := builders[property.Identifier]
-			if ok {
-				continue
+			if typed, ok = fieldTypes[property.Identifier]; !ok {
+				typed, err = ConstructFieldType(builders, fieldTypes, property.Name+"Type", messageBuilder, property)
+				if err != nil {
+					return err
+				}
 			}
-		}
-
-		typed, err := ConstructFieldType(builders, fieldTypes, property.Name+"Type", messageBuilder, property)
-		if err != nil {
-			return err
+		} else {
+			typed, err = ConstructFieldType(builders, fieldTypes, property.Name+"Type", messageBuilder, property)
+			if err != nil {
+				return err
+			}
 		}
 
 		label := protobuffers.ProtoLabels[property.Label]
@@ -81,25 +78,25 @@ func ConstructMessage(builders map[string]*builder.MessageBuilder, fieldTypes ma
 		if err = messageBuilder.TryAddField(field.SetNumber(property.Position)); err != nil {
 			return err
 		}
-
 	}
 
 	return nil
 }
 
 // ConstructFieldType constructs a field constructor from the given property
-func ConstructFieldType(builders map[string]*builder.MessageBuilder, fieldTypes map[string]*builder.FieldType, name string, message *builder.MessageBuilder, property *specs.Property) (*builder.FieldType, error) {
-	log.Println(name, ":", property.Identifier)
+func ConstructFieldType(builders map[string]*builder.MessageBuilder, fieldTypes map[string]*builder.FieldType, name string, message *builder.MessageBuilder, property *specs.Property) (ft *builder.FieldType, err error) {
+	if property.Identifier != "" {
+		if fieldType, ok := fieldTypes[property.Identifier]; ok {
+			return fieldType, nil
+		}
+
+		defer func() {
+			fieldTypes[property.Identifier] = ft
+		}()
+	}
 
 	switch {
 	case property.Message != nil:
-		if property.Identifier != "" {
-			existing, ok := fieldTypes[property.Identifier]
-			if ok {
-				return existing, nil
-			}
-		}
-
 		nested, err := newMessage(builders, fieldTypes, name, property)
 		if err != nil {
 			return nil, err
@@ -109,8 +106,6 @@ func ConstructFieldType(builders map[string]*builder.MessageBuilder, fieldTypes 
 			return nil, err
 		}
 
-		// TODO:
-
 		return builder.FieldTypeMessage(nested), nil
 	case property.Repeated != nil:
 		template, err := property.Repeated.Template()
@@ -119,7 +114,6 @@ func ConstructFieldType(builders map[string]*builder.MessageBuilder, fieldTypes 
 		}
 
 		// TODO: thrown a error when attempting to construct a nested array
-
 		field := &specs.Property{
 			Name:     property.Name,
 			Template: template,
@@ -137,14 +131,12 @@ func ConstructFieldType(builders map[string]*builder.MessageBuilder, fieldTypes 
 				LeadingComment: value.Description,
 			})
 
-			err := enum.TryAddValue(eval)
-			if err != nil {
+			if err := enum.TryAddValue(eval); err != nil {
 				return nil, err
 			}
 		}
 
-		err := message.TryAddNestedEnum(enum)
-		if err != nil {
+		if err := message.TryAddNestedEnum(enum); err != nil {
 			return nil, err
 		}
 
