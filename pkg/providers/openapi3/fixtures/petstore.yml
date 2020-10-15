@@ -141,6 +141,7 @@ components:
     # RandomName represents a Scalar
     RandomName:
       type: "string"
+      default: "Fido"
 
     # Pet represents oneOf
     Pet:

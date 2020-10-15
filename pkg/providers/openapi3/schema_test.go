@@ -21,8 +21,11 @@ func shouldBeScalar(t *testing.T, tpl specs.Template, expected specs.Scalar, opt
 		return false
 	}
 
-	if tpl.Scalar.Type != expected.Type {
-		t.Errorf("%s scalar should be of type %s, but it is %s", prefix, expected.Type, tpl.Scalar.Type)
+	if tpl.Scalar.Type != expected.Type || tpl.Scalar.Default != expected.Default{
+		t.Errorf(
+			"%s scalar should be of type %s with default value %v, but it is %s (%v)", prefix,
+			expected.Type, expected.Default,
+			tpl.Scalar.Type, tpl.Scalar.Default)
 		return false
 	}
 
@@ -152,7 +155,7 @@ func Test_newTemplate(t *testing.T) {
 			return
 		}
 
-		shouldBeScalar(t, got, specs.Scalar{Type: types.String})
+		shouldBeScalar(t, got, specs.Scalar{Type: types.String, Default: "Fido"})
 	})
 
 	t.Run("test repeated of scalars", func(t *testing.T) {
@@ -221,28 +224,45 @@ func Test_newTemplate(t *testing.T) {
 }
 
 func Test_scalar(t *testing.T) {
-	// map of openapi scalar types to testEndpoint types
-	types := map[string]types.Type{
-		"string":  types.String,
-		"number":  types.Float,
-		"integer": types.Int32,
-		"boolean": types.Bool,
-	}
+	t.Run("should support all the openapi types", func(t *testing.T) {
+		// map of openapi scalar types to testEndpoint types
+		types := map[string]types.Type{
+			"string":  types.String,
+			"number":  types.Float,
+			"integer": types.Int32,
+			"boolean": types.Bool,
+		}
 
-	for oapiType, want := range types {
-		t.Run(oapiType, func(t *testing.T) {
-			schema := &openapi3.Schema{Type: oapiType}
-			got, err := scalar(schema)
-			if err != nil {
-				t.Errorf("scalar() error = %v", err)
-				return
-			}
+		for oapiType, want := range types {
+			t.Run(oapiType, func(t *testing.T) {
+				schema := &openapi3.Schema{Type: oapiType}
+				got, err := scalar(schema)
 
-			if got.Scalar.Type != want {
-				t.Errorf("scalar() = %v, want %v", got.Scalar.Type, want)
-			}
-		})
-	}
+				if err != nil {
+					t.Errorf("scalar() error = %v", err)
+					return
+				}
+
+				if got.Scalar.Type != want {
+					t.Errorf("scalar() = %v, want %v", got.Scalar.Type, want)
+				}
+			})
+		}
+	})
+
+	t.Run("should support default value", func(t *testing.T) {
+		schema := &openapi3.Schema{Type: "string", Default: "foo"}
+		got, err := scalar(schema)
+
+		if err != nil {
+			t.Errorf("scalar() error = %v", err)
+			return
+		}
+
+		if got.Scalar.Default != "foo" {
+			t.Errorf("scalar().Default = %v, want %v", got.Scalar.Default, schema.Default)
+		}
+	})
 }
 
 func Test_newSchemas(t *testing.T) {

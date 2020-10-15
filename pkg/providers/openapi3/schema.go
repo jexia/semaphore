@@ -85,7 +85,7 @@ func newTemplate(schema *openapi.Schema) (tpl specs.Template, err error) {
 		}
 	}
 
-	return
+	return tpl, nil
 }
 
 // builds a message template
@@ -133,7 +133,10 @@ func scalar(s *openapi.Schema) (specs.Template, error) {
 	}
 
 	return specs.Template{
-		Scalar: &specs.Scalar{Type: t},
+		Scalar: &specs.Scalar{
+			Type: t,
+			Default: s.Default,
+		},
 	}, nil
 }
 
