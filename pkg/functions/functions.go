@@ -229,25 +229,30 @@ func PrepareParamsFunctions(ctx *broker.Context, node *specs.Node, flow specs.Fl
 
 // PreparePropertyFunctions prepares the function definitions inside the given property
 func PreparePropertyFunctions(ctx *broker.Context, node *specs.Node, flow specs.FlowInterface, stack Stack, prop *specs.Property, functions Custom) error {
-	if prop == nil {
+	return preparePropertyFunctions(ctx, specs.NewResolvedProperty(), node, flow, stack, prop, functions)
+}
+
+func preparePropertyFunctions(ctx *broker.Context, resolved *specs.ResolvedProperty, node *specs.Node, flow specs.FlowInterface, stack Stack, property *specs.Property, functions Custom) error {
+	if property == nil {
 		return nil
 	}
 
-	if prop.Message != nil {
-		for _, nested := range prop.Message {
-			err := PreparePropertyFunctions(ctx, node, flow, stack, nested, functions)
+	if resolved.Resolved(property) {
+		return nil
+	}
+
+	resolved.Resolve(property)
+
+	if property.Message != nil {
+		for _, nested := range property.Message {
+			err := preparePropertyFunctions(ctx, resolved, node, flow, stack, nested, functions)
 			if err != nil {
 				return err
 			}
 		}
 	}
 
-	err := PrepareFunction(ctx, node, flow, prop, stack, functions)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return PrepareFunction(ctx, node, flow, property, stack, functions)
 }
 
 // PrepareFunction attempts to parses the given function
@@ -279,7 +284,7 @@ func PrepareFunction(ctx *broker.Context, node *specs.Node, flow specs.FlowInter
 			return err
 		}
 
-		err = references.ResolveProperty(ctx, specs.NewResolvedProperty(), node, result, flow)
+		err = references.ResolveProperty(ctx, node, result, flow)
 		if err != nil {
 			return err
 		}
@@ -314,7 +319,7 @@ func PrepareFunction(ctx *broker.Context, node *specs.Node, flow specs.FlowInter
 		Property: returns,
 	}
 
-	references.ScopeNestedReferences(specs.NewResolvedProperty(), returns, property)
+	references.ScopeNestedReferences(returns, property)
 	return nil
 }
 

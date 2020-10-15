@@ -126,7 +126,7 @@ func AddProperty(registry, messages map[string]*specs.Property, path string, des
 			// NewMessage(template.JoinPath(path, field.GetName()), registry, field)
 
 			if AddProperty(registry, property.Message, template.JoinPath(path, field.GetName()), field) {
-				return true
+				// return true
 			}
 		}
 	default:

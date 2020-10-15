@@ -43,16 +43,6 @@ func newMessage(builders map[string]*builder.MessageBuilder, name string, proper
 // ConstructMessage constructs a proto message of the given specs into the given message builders
 func ConstructMessage(builders map[string]*builder.MessageBuilder, messageBuilder *builder.MessageBuilder, message specs.Message) (err error) {
 	for _, property := range message {
-		// if property.Identifier != "" {
-		// 	_, ok := builders[property.Identifier]
-		// 	log.Println("SKIP")
-		//
-		// 	if ok {
-		// 		continue
-		// 	}
-		//
-		// }
-
 		typed, err := ConstructFieldType(builders, property.Name+"Type", messageBuilder, property)
 		if err != nil {
 			return err

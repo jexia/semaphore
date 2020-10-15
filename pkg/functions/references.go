@@ -15,7 +15,9 @@ func DefineFunctions(ctx *broker.Context, functions Stack, node *specs.Node, flo
 	for _, function := range functions {
 		if function.Arguments != nil {
 			for _, arg := range function.Arguments {
-				references.ResolveProperty(ctx, specs.NewResolvedProperty(), node, arg, flow)
+				if err := references.ResolveProperty(ctx, node, arg, flow); err != nil {
+					return err
+				}
 			}
 		}
 
@@ -23,7 +25,9 @@ func DefineFunctions(ctx *broker.Context, functions Stack, node *specs.Node, flo
 			continue
 		}
 
-		references.ResolveProperty(ctx, specs.NewResolvedProperty(), node, function.Returns, flow)
+		if err := references.ResolveProperty(ctx, node, function.Returns, flow); err != nil {
+			return err
+		}
 	}
 
 	return nil
