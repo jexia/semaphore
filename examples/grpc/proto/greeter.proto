@@ -22,10 +22,26 @@ message Request {
 
 message Response {
 	string msg = 1;
-	Meta meta = 2;
+
+	int32 foo = 2;
+
+	double bar = 3;
+
+	Action action = 5;
+
+	Meta meta = 4;
+
 
 	message Meta {
 		int64 session = 1;
 		Meta child = 2;
+	}
+
+	enum Action {
+    UNKNOWN = 0;
+    SELECT = 1;
+    CREATE = 2;
+    UPDATE = 3;
+    DELETE = 4;
 	}
 }
