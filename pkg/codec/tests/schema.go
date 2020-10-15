@@ -11,7 +11,7 @@ func PropString() *specs.Property {
 	return &specs.Property{
 		Name:  "string",
 		Path:  "string",
-		Label: labels.Required,
+		Label: labels.Optional,
 		Template: specs.Template{
 			Scalar: &specs.Scalar{
 				Type: types.String,
@@ -24,7 +24,7 @@ func PropInteger() *specs.Property {
 	return &specs.Property{
 		Name:  "integer",
 		Path:  "integer",
-		Label: labels.Required,
+		Label: labels.Optional,
 		Template: specs.Template{
 			Scalar: &specs.Scalar{
 				Type: types.Int32,
