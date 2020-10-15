@@ -23,9 +23,9 @@ message Request {
 message Response {
 	string msg = 1;
 	Meta meta = 2;
-}
 
-message Meta {
-	int64 session = 1;
-	Meta child = 2;
+	message Meta {
+		int64 session = 1;
+		Meta child = 2;
+	}
 }

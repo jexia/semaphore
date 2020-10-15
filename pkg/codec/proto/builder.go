@@ -1,8 +1,6 @@
 package proto
 
 import (
-	"log"
-
 	"github.com/jexia/semaphore/pkg/providers/protobuffers"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/types"
@@ -14,7 +12,6 @@ import (
 func NewMessage(property *specs.Property) (*desc.MessageDescriptor, error) {
 	builder, _, err := newMessage(
 		make(map[string]*builder.MessageBuilder),
-		make(map[string]*builder.FieldType),
 		property.Name,
 		property,
 	)
@@ -25,14 +22,10 @@ func NewMessage(property *specs.Property) (*desc.MessageDescriptor, error) {
 	return builder.Build()
 }
 
-func newMessage(builders map[string]*builder.MessageBuilder, fieldTypes map[string]*builder.FieldType, name string, property *specs.Property) (*builder.MessageBuilder, bool, error) {
-	log.Println("newMessage", ":", name)
-
+func newMessage(builders map[string]*builder.MessageBuilder, name string, property *specs.Property) (*builder.MessageBuilder, bool, error) {
 	if property.Identifier != "" {
 		existing, ok := builders[property.Identifier]
 		if ok {
-			log.Println("newMessage", ":", name, "escaped")
-
 			return existing, true, nil
 		}
 	}
@@ -40,7 +33,7 @@ func newMessage(builders map[string]*builder.MessageBuilder, fieldTypes map[stri
 	builder := builder.NewMessage(name)
 	builders[property.Identifier] = builder
 
-	if err := ConstructMessage(builders, fieldTypes, builder, property.Message); err != nil {
+	if err := ConstructMessage(builders, builder, property.Message); err != nil {
 		return nil, false, err
 	}
 
@@ -48,25 +41,21 @@ func newMessage(builders map[string]*builder.MessageBuilder, fieldTypes map[stri
 }
 
 // ConstructMessage constructs a proto message of the given specs into the given message builders
-func ConstructMessage(builders map[string]*builder.MessageBuilder, fieldTypes map[string]*builder.FieldType, messageBuilder *builder.MessageBuilder, message specs.Message) (err error) {
+func ConstructMessage(builders map[string]*builder.MessageBuilder, messageBuilder *builder.MessageBuilder, message specs.Message) (err error) {
 	for _, property := range message {
-		var (
-			ok    bool
-			typed *builder.FieldType
-		)
+		// if property.Identifier != "" {
+		// 	_, ok := builders[property.Identifier]
+		// 	log.Println("SKIP")
+		//
+		// 	if ok {
+		// 		continue
+		// 	}
+		//
+		// }
 
-		if property.Identifier != "" {
-			if typed, ok = fieldTypes[property.Identifier]; !ok {
-				typed, err = ConstructFieldType(builders, fieldTypes, property.Name+"Type", messageBuilder, property)
-				if err != nil {
-					return err
-				}
-			}
-		} else {
-			typed, err = ConstructFieldType(builders, fieldTypes, property.Name+"Type", messageBuilder, property)
-			if err != nil {
-				return err
-			}
+		typed, err := ConstructFieldType(builders, property.Name+"Type", messageBuilder, property)
+		if err != nil {
+			return err
 		}
 
 		label := protobuffers.ProtoLabels[property.Label]
@@ -90,23 +79,10 @@ func ConstructMessage(builders map[string]*builder.MessageBuilder, fieldTypes ma
 }
 
 // ConstructFieldType constructs a field constructor from the given property
-func ConstructFieldType(builders map[string]*builder.MessageBuilder, fieldTypes map[string]*builder.FieldType, name string, message *builder.MessageBuilder, property *specs.Property) (ft *builder.FieldType, err error) {
-
-	if property.Identifier != "" {
-		if fieldType, ok := fieldTypes[property.Identifier]; ok {
-			log.Println("ConstructFieldType", ":", name, "escaped")
-
-			return fieldType, nil
-		}
-
-		defer func() {
-			fieldTypes[property.Identifier] = ft
-		}()
-	}
-
+func ConstructFieldType(builders map[string]*builder.MessageBuilder, name string, message *builder.MessageBuilder, property *specs.Property) (ft *builder.FieldType, err error) {
 	switch {
 	case property.Message != nil:
-		nested, seen, err := newMessage(builders, fieldTypes, name, property)
+		nested, seen, err := newMessage(builders, name, property)
 		if err != nil {
 			return nil, err
 		}
@@ -130,7 +106,7 @@ func ConstructFieldType(builders map[string]*builder.MessageBuilder, fieldTypes 
 			Template: template,
 		}
 
-		return ConstructFieldType(builders, fieldTypes, name, message, field)
+		return ConstructFieldType(builders, name, message, field)
 	case property.Enum != nil:
 		enum := builder.NewEnum(property.Name + "Enum")
 

@@ -37,7 +37,6 @@ func (service *Service) FileDescriptor() (*desc.FileDescriptor, error) {
 
 		if err := ConstructMessage(
 			make(map[string]*builder.MessageBuilder),
-			make(map[string]*builder.FieldType),
 			req,
 			method.GetRequest(),
 		); err != nil {
@@ -47,7 +46,6 @@ func (service *Service) FileDescriptor() (*desc.FileDescriptor, error) {
 		resp := builder.NewMessage(name + "Response")
 		if err := ConstructMessage(
 			make(map[string]*builder.MessageBuilder),
-			make(map[string]*builder.FieldType),
 			resp,
 			method.GetResponse(),
 		); err != nil {
