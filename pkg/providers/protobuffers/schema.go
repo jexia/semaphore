@@ -1,9 +1,6 @@
 package protobuffers
 
 import (
-	"fmt"
-	"log"
-
 	protobuf "github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/labels"
@@ -13,43 +10,36 @@ import (
 
 // NewSchema constructs a new schema manifest from the given file descriptors
 func NewSchema(descriptors []*desc.FileDescriptor) specs.Schemas {
-	log.Println("PARESING THE SCHEMA")
+	var (
+		result   = make(specs.Schemas)
+		registry = make(map[string]*specs.Property)
+	)
 
-	result := make(specs.Schemas)
-
-	registry := make(map[string]*specs.Property)
-
-	for index, descriptor := range descriptors {
-		log.Printf("DESCRIPTOR N%d", index)
-
+	for _, descriptor := range descriptors {
 		for _, message := range descriptor.GetMessageTypes() {
 			result[message.GetFullyQualifiedName()] = NewMessage("", registry, message)
 		}
 	}
-
-	log.Println("SCHEMA IS PARESED")
-
-	// log.Printf("%s", result["semaphore.greeter.Response"].Message["meta"].Message["child"].Message["child"].Message)
 
 	return result
 }
 
 // NewMessage constructs a schema Property with the given message descriptor
 func NewMessage(path string, registry map[string]*specs.Property, descriptor *desc.MessageDescriptor) *specs.Property {
-	log.Println("TOP:", path, descriptor.GetFullyQualifiedName())
-
-	fields := descriptor.GetFields()
-	result := &specs.Property{
-		Path:        path,
-		Name:        descriptor.GetFullyQualifiedName(),
-		Description: descriptor.GetSourceInfo().GetLeadingComments(),
-		Position:    1,
-		Label:       labels.Optional,
-		Template: specs.Template{
-			Message: make(specs.Message, len(fields)),
-		},
-		Options: specs.Options{},
-	}
+	var (
+		fields = descriptor.GetFields()
+		result = &specs.Property{
+			Path:        path,
+			Name:        descriptor.GetFullyQualifiedName(),
+			Description: descriptor.GetSourceInfo().GetLeadingComments(),
+			Position:    1,
+			Label:       labels.Optional,
+			Template: specs.Template{
+				Message: make(specs.Message, len(fields)),
+			},
+			Options: specs.Options{},
+		}
+	)
 
 	for _, field := range fields {
 		AddProperty(registry, result.Message, template.JoinPath(path, field.GetName()), field)
@@ -58,27 +48,24 @@ func NewMessage(path string, registry map[string]*specs.Property, descriptor *de
 	return result
 }
 
-func AddProperty(registry, messages map[string]*specs.Property, path string, descriptor *desc.FieldDescriptor) bool {
+func AddProperty(registry, messages map[string]*specs.Property, path string, descriptor *desc.FieldDescriptor) {
 	var (
-		id = fmt.Sprintf("%d", descriptor.AsFieldDescriptorProto().Number)
-		//descriptor.GetFullyQualifiedName()
-		name = descriptor.GetName()
+		id       = descriptor.GetFullyQualifiedName()
+		name     = descriptor.GetName()
+		property *specs.Property
+		ok       bool
 	)
 
-	log.Println("FQN", id, descriptor.GetFullyQualifiedName())
-	// log.Println("number", descriptor.AsFieldDescriptorProto().Number)
-	log.Println()
+	if messageType := descriptor.GetMessageType(); messageType != nil {
+		id = messageType.GetName()
+	}
 
-	property, ok := registry[id]
+	property, ok = registry[id]
 	if ok {
 		messages[name] = property
 
-		return true
+		return
 	}
-
-	// log.Println("FQN", id, descriptor.GetFullyQualifiedName())
-	// // log.Println("number", descriptor.AsFieldDescriptorProto().Number)
-	// log.Println()
 
 	property = &specs.Property{
 		Path:        path,
@@ -123,11 +110,7 @@ func AddProperty(registry, messages map[string]*specs.Property, path string, des
 		property.Message = make(specs.Message, len(fields))
 
 		for _, field := range fields {
-			// NewMessage(template.JoinPath(path, field.GetName()), registry, field)
-
-			if AddProperty(registry, property.Message, template.JoinPath(path, field.GetName()), field) {
-				// return true
-			}
+			AddProperty(registry, property.Message, template.JoinPath(path, field.GetName()), field)
 		}
 	default:
 		property.Scalar = &specs.Scalar{
@@ -141,6 +124,4 @@ func AddProperty(registry, messages map[string]*specs.Property, path string, des
 			Repeated: specs.Repeated{property.Template},
 		}
 	}
-
-	return false
 }

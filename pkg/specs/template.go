@@ -46,7 +46,7 @@ func (template Template) Clone() Template {
 	return template.clone(make(map[string]*Property))
 }
 
-func (template Template) clone(buff map[string]*Property) Template {
+func (template Template) clone(seen map[string]*Property) Template {
 	var clone = Template{
 		Identifier: template.Identifier,
 		Reference:  template.Reference.Clone(),
@@ -60,12 +60,12 @@ func (template Template) clone(buff map[string]*Property) Template {
 		clone.Enum = template.Enum.Clone()
 	}
 
-	if template.Repeated != nil {
-		clone.Repeated = template.Repeated.Clone()
+	if template.Message != nil {
+		clone.Message = template.Message.clone(seen)
 	}
 
-	if template.Message != nil {
-		clone.Message = template.Message.clone(buff)
+	if template.Repeated != nil {
+		clone.Repeated = template.Repeated.clone(seen)
 	}
 
 	return clone

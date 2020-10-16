@@ -29,12 +29,11 @@ message Response {
 
 	Action action = 5;
 
-	Meta meta = 4;
-
+	repeated Meta meta = 4;
 
 	message Meta {
 		int64 session = 1;
-		Meta child = 2;
+		Meta meta = 2;
 	}
 
 	enum Action {

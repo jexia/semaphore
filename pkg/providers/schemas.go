@@ -247,6 +247,7 @@ func ResolveProperty(resolved *specs.ResolvedProperty, property, schema *specs.P
 			return ErrUndefinedProperty{
 				Property: property.Name,
 				Flow:     flow.GetName(),
+				Inner:    err,
 			}
 		}
 

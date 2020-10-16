@@ -100,11 +100,12 @@ func (e ErrUndefinedOutput) Prettify() prettyerr.Error {
 type ErrUndefinedProperty struct {
 	Property string
 	Flow     string
+	Inner    error
 }
 
 // Error returns a description of the given error as a string
 func (e ErrUndefinedProperty) Error() string {
-	return fmt.Sprintf("undefined schema nested message property '%s' in flow '%s'", e.Property, e.Flow)
+	return fmt.Sprintf("undefined schema nested message property '%s' in flow '%s': %s", e.Property, e.Flow, e.Inner)
 }
 
 // Prettify returns the prettified version of the given error

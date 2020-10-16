@@ -81,16 +81,9 @@ func (property *Property) Clone() *Property {
 	return property.clone(make(map[string]*Property))
 }
 
-func (property *Property) clone(cloned map[string]*Property) *Property {
+func (property *Property) clone(seen map[string]*Property) *Property {
 	if property == nil {
 		return &Property{}
-	}
-
-	if property.Identifier != "" {
-		existing, ok := cloned[property.Identifier]
-		if ok {
-			return existing
-		}
 	}
 
 	var clone = &Property{
@@ -108,8 +101,16 @@ func (property *Property) clone(cloned map[string]*Property) *Property {
 		},
 	}
 
-	cloned[property.Identifier] = clone
-	clone.Template = property.Template.clone(cloned)
+	if property.Identifier != "" {
+		existing, ok := seen[property.Identifier]
+		if ok {
+			return existing
+		}
+
+		seen[property.Identifier] = clone
+	}
+
+	clone.Template = property.Template.clone(seen)
 
 	return clone
 }

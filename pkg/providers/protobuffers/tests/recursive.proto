@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package semaphore;
+
+service Service {
+  rpc Mock ( Request ) returns ( Response );
+}
+
+message Request {}
+
+message Response {
+  string string = 1;
+
+  int32 integer = 2;
+
+  Recursive recursive = 3;
+
+  message Recursive {
+    bool boolean = 1;
+
+    Recursive recursive = 3;
+  }
+}

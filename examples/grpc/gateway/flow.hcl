@@ -20,6 +20,8 @@ flow "greeter" {
   }
 
   output "semaphore.greeter.Response" {
-    // TODO: here is a trouble!!!!!!!  // get outputs from the flow (not from the specs)  // msg = "{{ user:msg }}"  // meta = "{{ user:meta }}"
+    // TODO: here is a trouble!!!!!!!  // get outputs from the flow (not from the specs)
+    msg  = "{{ user:msg }}"
+    meta = "{{ user:meta }}"
   }
 }

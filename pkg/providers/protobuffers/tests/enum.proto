@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package semaphore;
+
+service Service {
+  rpc Mock ( Request ) returns ( Response );
+}
+
+message Request {
+  Action action = 1;
+
+  string message = 2;
+
+  enum Action {
+    UNKNOWN = 0;
+    SELECT = 1;
+    INSERT = 2;
+    UPDATE = 3;
+    DELETE = 4;
+  }
+}
+
+message Response {}

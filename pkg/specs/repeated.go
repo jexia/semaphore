@@ -39,10 +39,35 @@ func (repeated Repeated) Template() (Template, error) {
 
 // Clone repeated.
 func (repeated Repeated) Clone() Repeated {
+	return repeated.clone(make(map[string]*Property))
+}
+
+func (repeated Repeated) clone(seen map[string]*Property) Repeated {
 	var clone = make([]Template, len(repeated))
 
 	for index, template := range repeated {
-		clone[index] = template.Clone()
+		// if template.Identifier != "" {
+		// 	// log.Println(template.Identifier, seen)
+		//
+		// 	existing, ok := seen[template.Identifier]
+		// 	if ok {
+		// 		clone[index] = existing.Template
+		//
+		// 		continue
+		// 	}
+		//
+		// 	seen[template.Identifier] = &Property{}
+		//
+		// 	clone[index] = template.clone(seen)
+		//
+		// 	// defer func() {
+		// 	seen[template.Identifier].Template = clone[index]
+		// 	// }()
+		//
+		// 	continue
+		// }
+
+		clone[index] = template.clone(seen)
 	}
 
 	return clone
