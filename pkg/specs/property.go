@@ -192,7 +192,6 @@ func (parameters *ParameterMap) Clone() *ParameterMap {
 	}
 
 	var (
-		cloned = make(map[string]*Property)
 		result = &ParameterMap{
 			Meta:     parameters.Meta,
 			Schema:   parameters.Schema,
@@ -200,12 +199,12 @@ func (parameters *ParameterMap) Clone() *ParameterMap {
 			Options:  make(Options, len(parameters.Options)),
 			Header:   make(Header, len(parameters.Header)),
 			Stack:    make(map[string]*Property, len(parameters.Stack)),
-			Property: parameters.Property.clone(cloned),
+			Property: parameters.Property.Clone(),
 		}
 	)
 
 	for key, property := range parameters.Params {
-		result.Params[key] = property.clone(cloned)
+		result.Params[key] = property.Clone()
 	}
 
 	for key, value := range parameters.Options {
@@ -217,7 +216,7 @@ func (parameters *ParameterMap) Clone() *ParameterMap {
 	}
 
 	for key, property := range parameters.Stack {
-		result.Stack[key] = property.clone(cloned)
+		result.Stack[key] = property.Clone()
 	}
 
 	return result

@@ -29,7 +29,8 @@ message Response {
 
 	Action action = 5;
 
-	repeated Meta meta = 4;
+	//repeated
+	Meta meta = 4;
 
 	message Meta {
 		int64 session = 1;
