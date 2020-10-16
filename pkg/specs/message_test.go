@@ -14,7 +14,7 @@ func TestCompareMessages(t *testing.T) {
 			Path:     name,
 			Position: 0,
 			Label:    labels.Required,
-			Template: Template{
+			Template: &Template{
 				Identifier: name,
 				Scalar: &Scalar{
 					Type: types.Int32,

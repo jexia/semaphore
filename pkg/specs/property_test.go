@@ -3,6 +3,7 @@ package specs
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"reflect"
 	"testing"
 
@@ -23,7 +24,7 @@ func TestPropertyUnmarshalDefault(t *testing.T) {
 		"int64": {
 			input: &Property{
 				Label: labels.Optional,
-				Template: Template{
+				Template: &Template{
 					Scalar: &Scalar{
 						Type:    types.Int64,
 						Default: 100,
@@ -35,7 +36,7 @@ func TestPropertyUnmarshalDefault(t *testing.T) {
 		"sint64": {
 			input: &Property{
 				Label: labels.Optional,
-				Template: Template{
+				Template: &Template{
 					Scalar: &Scalar{
 						Type:    types.Sint64,
 						Default: 100,
@@ -47,7 +48,7 @@ func TestPropertyUnmarshalDefault(t *testing.T) {
 		"sfixed64": {
 			input: &Property{
 				Label: labels.Optional,
-				Template: Template{
+				Template: &Template{
 					Scalar: &Scalar{
 						Type:    types.Sfixed64,
 						Default: 100,
@@ -59,7 +60,7 @@ func TestPropertyUnmarshalDefault(t *testing.T) {
 		"uint64": {
 			input: &Property{
 				Label: labels.Optional,
-				Template: Template{
+				Template: &Template{
 					Scalar: &Scalar{
 						Type:    types.Uint64,
 						Default: 100,
@@ -71,7 +72,7 @@ func TestPropertyUnmarshalDefault(t *testing.T) {
 		"fixed64": {
 			input: &Property{
 				Label: labels.Optional,
-				Template: Template{
+				Template: &Template{
 					Scalar: &Scalar{
 						Type:    types.Fixed64,
 						Default: 100,
@@ -83,7 +84,7 @@ func TestPropertyUnmarshalDefault(t *testing.T) {
 		"int32": {
 			input: &Property{
 				Label: labels.Optional,
-				Template: Template{
+				Template: &Template{
 					Scalar: &Scalar{
 						Type:    types.Int32,
 						Default: 100,
@@ -95,7 +96,7 @@ func TestPropertyUnmarshalDefault(t *testing.T) {
 		"sint32": {
 			input: &Property{
 				Label: labels.Optional,
-				Template: Template{
+				Template: &Template{
 					Scalar: &Scalar{
 						Type:    types.Sint32,
 						Default: 100,
@@ -107,7 +108,7 @@ func TestPropertyUnmarshalDefault(t *testing.T) {
 		"sfixed32": {
 			input: &Property{
 				Label: labels.Optional,
-				Template: Template{
+				Template: &Template{
 					Scalar: &Scalar{
 						Type:    types.Sfixed32,
 						Default: 100,
@@ -119,7 +120,7 @@ func TestPropertyUnmarshalDefault(t *testing.T) {
 		"uint32": {
 			input: &Property{
 				Label: labels.Optional,
-				Template: Template{
+				Template: &Template{
 					Scalar: &Scalar{
 						Type:    types.Uint32,
 						Default: 100,
@@ -131,7 +132,7 @@ func TestPropertyUnmarshalDefault(t *testing.T) {
 		"fixed32": {
 			input: &Property{
 				Label: labels.Optional,
-				Template: Template{
+				Template: &Template{
 					Scalar: &Scalar{
 						Type:    types.Fixed32,
 						Default: 100,
@@ -170,7 +171,7 @@ func TestPropertyUnmarshalDefault(t *testing.T) {
 
 			t.Run("message", func(t *testing.T) {
 				message := &Property{
-					Template: Template{
+					Template: &Template{
 						Message: Message{
 							name: test.input,
 						},
@@ -205,9 +206,9 @@ func TestPropertyUnmarshalDefault(t *testing.T) {
 
 			t.Run("repeated", func(t *testing.T) {
 				message := &Property{
-					Template: Template{
+					Template: &Template{
 						Repeated: Repeated{
-							test.input.Template,
+							*test.input.Template,
 						},
 					},
 				}
@@ -287,14 +288,16 @@ func TestPropertyClone(t *testing.T) {
 		Name:        "first",
 		Path:        "path",
 		Label:       labels.Optional,
-		Template: Template{
+		Template: &Template{
 			Identifier: "example",
 			Reference:  &PropertyReference{},
 			Scalar: &Scalar{
 				Default: false,
 				Type:    types.String,
 			},
-			Repeated: Repeated{},
+			Repeated: Repeated{
+				// TODO
+			},
 			Message: Message{
 				"first": {Name: "first", Path: "first"},
 			},
@@ -363,8 +366,11 @@ func TestPropertyClone(t *testing.T) {
 		t.Errorf("unexpected message properties %+v", result.Message)
 	}
 
-	if result.Message["second"] != result {
-		t.Errorf("nested recursive field was not set")
+	log.Printf("%#v", property.Message["second"])
+	log.Printf("%#v", result.Message["second"])
+
+	if !reflect.DeepEqual(result.Message["second"], result) {
+		t.Errorf("nested recursive field does not match expected value")
 	}
 
 	if result.Repeated == nil {
@@ -400,7 +406,7 @@ func TestPropertyCompare(t *testing.T) {
 				Path:     "dog",
 				Position: 0,
 				Label:    labels.Required,
-				Template: Template{
+				Template: &Template{
 					Scalar: &Scalar{
 						Type: types.Int32,
 					},
@@ -422,7 +428,7 @@ func TestPropertyCompare(t *testing.T) {
 				Name:     "breed",
 				Path:     "dog",
 				Position: 0,
-				Template: Template{
+				Template: &Template{
 					Enum: &Enum{
 						Name: "breed",
 						Keys: map[string]*EnumValue{
@@ -440,9 +446,9 @@ func TestPropertyCompare(t *testing.T) {
 			return &Property{
 				Name: "hunters",
 				Path: "dogs",
-				Template: Template{
+				Template: &Template{
 					Repeated: Repeated{
-						createEnum().Template,
+						*createEnum().Template,
 					},
 				},
 			}
@@ -452,7 +458,7 @@ func TestPropertyCompare(t *testing.T) {
 			return &Property{
 				Name: "dog",
 				Path: "request",
-				Template: Template{
+				Template: &Template{
 					Message: Message{
 						"age":   createScalar(),
 						"breed": createEnum(),
@@ -639,7 +645,7 @@ func TestPropertyDefaultValue(t *testing.T) {
 	var tests = []test{
 		{
 			property: &Property{
-				Template: Template{
+				Template: &Template{
 					Scalar: &Scalar{
 						Type:    types.String,
 						Default: "develop smart not hard",
@@ -650,7 +656,7 @@ func TestPropertyDefaultValue(t *testing.T) {
 		},
 		{
 			property: &Property{
-				Template: Template{
+				Template: &Template{
 					Enum: &Enum{},
 				},
 			},
@@ -658,7 +664,7 @@ func TestPropertyDefaultValue(t *testing.T) {
 		},
 		{
 			property: &Property{
-				Template: Template{
+				Template: &Template{
 					Message: Message{},
 				},
 			},
@@ -666,7 +672,7 @@ func TestPropertyDefaultValue(t *testing.T) {
 		},
 		{
 			property: &Property{
-				Template: Template{
+				Template: &Template{
 					Repeated: Repeated{},
 				},
 			},

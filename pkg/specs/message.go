@@ -24,14 +24,14 @@ func (message Message) SortedProperties() PropertyList {
 
 // Clone the message.
 func (message Message) Clone() Message {
-	return message.clone(make(map[string]*Property))
+	return message.clone(make(map[string]*Template))
 }
 
-func (message Message) clone(cloned map[string]*Property) Message {
+func (message Message) clone(seen map[string]*Template) Message {
 	var clone = make(map[string]*Property, len(message))
 
 	for key := range message {
-		clone[key] = message[key].clone(cloned)
+		clone[key] = message[key].clone(seen)
 	}
 
 	return clone

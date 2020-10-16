@@ -51,20 +51,21 @@ type Property struct {
 
 	Label labels.Label `json:"label,omitempty" yaml:"label,omitempty"` // Label label describes the usage of a given property ex: optional
 
-	Template `json:"template" yaml:"template"`
+	*Template `json:"template" yaml:"template"`
 }
 
 // DefaultValue returns rge default value for a given property.
 func (property *Property) DefaultValue() interface{} {
-	t := property.Template
 	switch {
-	case t.Scalar != nil:
-		return t.Scalar.Default
-	case t.Message != nil:
+	case property.Template == nil:
 		return nil
-	case t.Repeated != nil:
+	case property.Scalar != nil:
+		return property.Scalar.Default
+	case property.Message != nil:
 		return nil
-	case t.Enum != nil:
+	case property.Repeated != nil:
+		return nil
+	case property.Enum != nil:
 		return nil
 	}
 
@@ -78,15 +79,15 @@ func (property *Property) Empty() bool {
 
 // Clone makes a deep clone of the given property
 func (property *Property) Clone() *Property {
-	return property.clone(make(map[string]*Property))
+	return property.clone(make(map[string]*Template))
 }
 
-func (property *Property) clone(seen map[string]*Property) *Property {
+func (property *Property) clone(seen map[string]*Template) *Property {
 	if property == nil {
 		return &Property{}
 	}
 
-	var clone = &Property{
+	return &Property{
 		Meta:        property.Meta,
 		Position:    property.Position,
 		Description: property.Description,
@@ -96,23 +97,8 @@ func (property *Property) clone(seen map[string]*Property) *Property {
 		Raw:         property.Raw,
 		Options:     property.Options,
 		Label:       property.Label,
-		Template: Template{
-			Identifier: property.Identifier,
-		},
+		Template:    property.Template.clone(seen),
 	}
-
-	if property.Identifier != "" {
-		existing, ok := seen[property.Identifier]
-		if ok {
-			return existing
-		}
-
-		seen[property.Identifier] = clone
-	}
-
-	clone.Template = property.Template.clone(seen)
-
-	return clone
 }
 
 func (property *Property) Compare(expected *Property) error {
@@ -147,7 +133,7 @@ func (property *Property) compare(resolved *ResolvedProperty, expected *Property
 		return fmt.Errorf("schema '%s' has a nested object but property does not '%s'", expected.Name, property.Path)
 	}
 
-	if err := property.Template.compare(resolved, expected.Template); err != nil {
+	if err := property.Template.compare(resolved, *expected.Template); err != nil {
 		return fmt.Errorf("nested schema mismatch under property '%s': %w", property.Path, err)
 	}
 
@@ -156,21 +142,21 @@ func (property *Property) compare(resolved *ResolvedProperty, expected *Property
 
 // Define ensures that all missing nested properties are defined
 func (property *Property) Define(expected *Property) {
-	property.define(make(map[string]*Property), expected)
+	property.define(make(map[string]*Template), expected)
 }
 
-func (property *Property) define(defined map[string]*Property, expected *Property) {
-	if expected.Identifier != "" {
-		_, ok := defined[property.Identifier]
-		if ok {
-			return
-		}
-	}
-
-	defined[property.Identifier] = expected
+func (property *Property) define(defined map[string]*Template, expected *Property) {
+	// if expected.Identifier != "" {
+	// 	_, ok := defined[property.Identifier]
+	// 	if ok {
+	// 		return
+	// 	}
+	//
+	// 	defined[property.Identifier] = &expected.Template
+	// }
 
 	property.Position = expected.Position
-	property.Template.define(defined, expected.Template)
+	property.Template.define(defined, *expected.Template)
 }
 
 // ParameterMap is the initial map of parameter names (keys) and their (templated) values (values)

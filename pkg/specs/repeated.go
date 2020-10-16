@@ -11,20 +11,20 @@ type Repeated []Template
 // Template returns a Template for a given array. It checks the types of internal
 // elements to detect the data type(s).
 // Note that all the references must be resolved before calling this method.
-func (repeated Repeated) Template() (Template, error) {
-	var template Template
+func (repeated Repeated) Template() (*Template, error) {
+	var template *Template
 
 	// check if all element types are the same
 	// TODO: remove once "oneOf" support is added
 	for position := range repeated {
 		if position == 0 {
-			template = repeated[position]
+			template = &repeated[position]
 
 			continue
 		}
 
 		if err := template.Compare(repeated[position]); err != nil {
-			return Template{}, fmt.Errorf("all the elements inside the array must have the same type: %w", err)
+			return nil, fmt.Errorf("all the elements inside the array must have the same type: %w", err)
 		}
 	}
 
@@ -39,10 +39,10 @@ func (repeated Repeated) Template() (Template, error) {
 
 // Clone repeated.
 func (repeated Repeated) Clone() Repeated {
-	return repeated.clone(make(map[string]*Property))
+	return repeated.clone(make(map[string]*Template))
 }
 
-func (repeated Repeated) clone(seen map[string]*Property) Repeated {
+func (repeated Repeated) clone(seen map[string]*Template) Repeated {
 	var clone = make([]Template, len(repeated))
 
 	for index, template := range repeated {
@@ -67,7 +67,7 @@ func (repeated Repeated) clone(seen map[string]*Property) Repeated {
 		// 	continue
 		// }
 
-		clone[index] = template.clone(seen)
+		clone[index] = *template.clone(seen)
 	}
 
 	return clone
@@ -101,7 +101,7 @@ func (repeated Repeated) Compare(expected Repeated) error {
 		return fmt.Errorf("unkown expected property template: %w", err)
 	}
 
-	err = left.Compare(right)
+	err = left.Compare(*right)
 	if err != nil {
 		return fmt.Errorf("repeated property: %w", err)
 	}

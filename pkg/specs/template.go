@@ -24,8 +24,10 @@ type Template struct {
 }
 
 // Type returns the type of the given template.
-func (template Template) Type() types.Type {
+func (template *Template) Type() types.Type {
 	switch {
+	case template == nil:
+		return types.Unknown
 	case template.Message != nil:
 		return types.Message
 	case template.Repeated != nil:
@@ -42,14 +44,27 @@ func (template Template) Type() types.Type {
 }
 
 // Clone internal value.
-func (template Template) Clone() Template {
-	return template.clone(make(map[string]*Property))
+func (template Template) Clone() *Template {
+	return template.clone(make(map[string]*Template))
 }
 
-func (template Template) clone(seen map[string]*Property) Template {
-	var clone = Template{
+func (template *Template) clone(seen map[string]*Template) *Template {
+	if template == nil {
+		return &Template{}
+	}
+
+	var clone = &Template{
 		Identifier: template.Identifier,
 		Reference:  template.Reference.Clone(),
+	}
+
+	if template.Identifier != "" {
+		existing, ok := seen[template.Identifier]
+		if ok {
+			return existing
+		}
+
+		seen[template.Identifier] = clone
 	}
 
 	if template.Scalar != nil {
@@ -97,10 +112,10 @@ func (template Template) compare(resolved *ResolvedProperty, expected Template) 
 
 // Define ensures that all missing nested template are defined
 func (template *Template) Define(expected Template) {
-	template.define(make(map[string]*Property), expected)
+	template.define(make(map[string]*Template), expected)
 }
 
-func (template *Template) define(defined map[string]*Property, expected Template) {
+func (template *Template) define(defined map[string]*Template, expected Template) {
 	if template.Message != nil && expected.Message != nil {
 		for key, value := range expected.Message {
 			existing, has := template.Message[key]

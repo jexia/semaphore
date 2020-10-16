@@ -13,8 +13,8 @@ func NewResolvedProperty() *ResolvedProperty {
 }
 
 func (resolved ResolvedProperty) Resolved(property *Property) bool {
-	if property.Identifier != "" {
-		return resolved.ResolvedTemplate.Resolved(property.Template)
+	if property.Template != nil && property.Identifier != "" {
+		return resolved.ResolvedTemplate.Resolved(*property.Template)
 	}
 
 	if property.Path != "" {
@@ -27,8 +27,8 @@ func (resolved ResolvedProperty) Resolved(property *Property) bool {
 }
 
 func (resolved ResolvedProperty) Resolve(property *Property) {
-	if property.Identifier != "" {
-		resolved.ResolvedTemplate.Resolve(property.Template)
+	if property.Template != nil && property.Identifier != "" {
+		resolved.ResolvedTemplate.Resolve(*property.Template)
 	}
 
 	if property.Path != "" {
