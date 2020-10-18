@@ -16,7 +16,7 @@ func Function(args ...*specs.Property) (*specs.Property, functions.Exec, error) 
 	result := &specs.Property{
 		Name:  "concat",
 		Label: labels.Optional,
-		Template: specs.Template{
+		Template: &specs.Template{
 			Scalar: &specs.Scalar{
 				Type: types.String,
 			},

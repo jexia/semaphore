@@ -227,7 +227,7 @@ func setRepeated(repeated, schema specs.Repeated) {
 
 // ResolveProperty ensures that all schema properties are defined inside the given property
 func ResolveProperty(resolved *specs.ResolvedProperty, property, schema *specs.Property, flow specs.FlowInterface) error {
-	if property == nil {
+	if property == nil || property.Template == nil {
 		property = schema.Clone()
 
 		resolved.Resolve(property)

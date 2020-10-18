@@ -13,7 +13,7 @@ import (
 var ErrInvalidObject = errors.New("graphql only supports object types as root elements")
 
 // NewObject constructs a new graphql object of the given specs
-func NewObject(name string, description string, template specs.Template) (*graphql.Object, error) {
+func NewObject(name string, description string, template *specs.Template) (*graphql.Object, error) {
 	if template.Type() != types.Message {
 		return nil, ErrInvalidObject
 	}
@@ -32,12 +32,12 @@ func NewObject(name string, description string, template specs.Template) (*graph
 }
 
 // NewType constructs a new output type from the given template.
-func NewType(name string, description string, property specs.Template) (graphql.Output, error) {
+func NewType(name string, description string, template *specs.Template) (graphql.Output, error) {
 	switch {
-	case property.Message != nil:
+	case template.Message != nil:
 		fields := graphql.Fields{}
 
-		for _, nested := range property.Message {
+		for _, nested := range template.Message {
 			typed, err := NewType(name+"_"+nested.Name, nested.Description, nested.Template)
 			if err != nil {
 				return nil, err
@@ -58,8 +58,8 @@ func NewType(name string, description string, property specs.Template) (graphql.
 		})
 
 		return object, nil
-	case property.Repeated != nil:
-		template, err := property.Repeated.Template()
+	case template.Repeated != nil:
+		template, err := template.Repeated.Template()
 		if err != nil {
 			return nil, err
 		}
@@ -70,10 +70,10 @@ func NewType(name string, description string, property specs.Template) (graphql.
 		}
 
 		return graphql.NewList(typed), nil
-	case property.Enum != nil:
+	case template.Enum != nil:
 		values := graphql.EnumValueConfigMap{}
 
-		for key, field := range property.Enum.Keys {
+		for key, field := range template.Enum.Keys {
 			values[key] = &graphql.EnumValueConfig{
 				Value:       key,
 				Description: field.Description,
@@ -81,14 +81,14 @@ func NewType(name string, description string, property specs.Template) (graphql.
 		}
 
 		config := graphql.EnumConfig{
-			Name:        name + "_" + property.Enum.Name,
-			Description: property.Enum.Description,
+			Name:        name + "_" + template.Enum.Name,
+			Description: template.Enum.Description,
 			Values:      values,
 		}
 
 		return graphql.NewEnum(config), nil
-	case property.Scalar != nil:
-		return gtypes[property.Scalar.Type], nil
+	case template.Scalar != nil:
+		return gtypes[template.Scalar.Type], nil
 	}
 
 	return nil, nil

@@ -38,7 +38,7 @@ func TestServiceDescriptor(t *testing.T) {
 						Label:       labels.Optional,
 						Description: "",
 						Position:    1,
-						Template: specs.Template{
+						Template: &specs.Template{
 							Scalar: &specs.Scalar{
 								Type: types.String,
 							},
@@ -52,7 +52,7 @@ func TestServiceDescriptor(t *testing.T) {
 						Label:       labels.Optional,
 						Description: "",
 						Position:    1,
-						Template: specs.Template{
+						Template: &specs.Template{
 							Scalar: &specs.Scalar{
 								Type: types.String,
 							},

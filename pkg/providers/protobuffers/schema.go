@@ -34,7 +34,7 @@ func NewMessage(path string, registry map[string]*specs.Property, descriptor *de
 			Description: descriptor.GetSourceInfo().GetLeadingComments(),
 			Position:    1,
 			Label:       labels.Optional,
-			Template: specs.Template{
+			Template: &specs.Template{
 				Message: make(specs.Message, len(fields)),
 			},
 			Options: specs.Options{},
@@ -74,7 +74,7 @@ func AddProperty(registry, messages map[string]*specs.Property, path string, des
 		Position:    descriptor.GetNumber(),
 		Options:     specs.Options{},
 		Label:       Labels[descriptor.GetLabel()],
-		Template: specs.Template{
+		Template: &specs.Template{
 			Identifier: id,
 		},
 	}
@@ -120,7 +120,7 @@ func AddProperty(registry, messages map[string]*specs.Property, path string, des
 
 	if descriptor.GetLabel() == protobuf.FieldDescriptorProto_LABEL_REPEATED {
 		property.Label = labels.Optional
-		property.Template = specs.Template{
+		property.Template = &specs.Template{
 			Repeated: specs.Repeated{property.Template},
 		}
 	}

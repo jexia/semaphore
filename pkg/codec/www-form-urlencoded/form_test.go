@@ -38,7 +38,7 @@ var schemaWithDefaultRepeating = &specs.ParameterMap{
 	Property: &specs.Property{
 		Name: "repeating_with_defaults",
 		Path: "repeating_with_defaults",
-		Template: specs.Template{
+		Template: &specs.Template{
 			Repeated: specs.Repeated{
 				{
 					Scalar: &specs.Scalar{
@@ -60,13 +60,13 @@ var schemaWithDefaultRepeating = &specs.ParameterMap{
 var schema = &specs.ParameterMap{
 	Property: &specs.Property{
 		Label: labels.Optional,
-		Template: specs.Template{
+		Template: &specs.Template{
 			Message: specs.Message{
 				"bad_label": {
 					Name:  "bad_label",
 					Path:  "bad_label",
 					Label: "",
-					Template: specs.Template{
+					Template: &specs.Template{
 						Scalar: &specs.Scalar{
 							Type: types.String,
 						},
@@ -76,7 +76,7 @@ var schema = &specs.ParameterMap{
 					Name:  "no_nested_schema",
 					Path:  "no_nested_schema",
 					Label: labels.Optional,
-					Template: specs.Template{
+					Template: &specs.Template{
 						Message: specs.Message{},
 					},
 				},
@@ -84,7 +84,7 @@ var schema = &specs.ParameterMap{
 					Name:  "numeric",
 					Path:  "numeric",
 					Label: labels.Optional,
-					Template: specs.Template{
+					Template: &specs.Template{
 						Scalar: &specs.Scalar{
 							Type: types.Int32,
 						},
@@ -94,7 +94,7 @@ var schema = &specs.ParameterMap{
 					Name:  "message",
 					Path:  "message",
 					Label: labels.Optional,
-					Template: specs.Template{
+					Template: &specs.Template{
 						Reference: &specs.PropertyReference{
 							Resource: template.InputResource,
 							Path:     "message",
@@ -108,7 +108,7 @@ var schema = &specs.ParameterMap{
 					Name:  "status",
 					Path:  "status",
 					Label: labels.Optional,
-					Template: specs.Template{
+					Template: &specs.Template{
 						Reference: &specs.PropertyReference{
 							Resource: template.InputResource,
 							Path:     "status",
@@ -120,13 +120,13 @@ var schema = &specs.ParameterMap{
 					Name:  "nested",
 					Path:  "nested",
 					Label: labels.Optional,
-					Template: specs.Template{
+					Template: &specs.Template{
 						Message: specs.Message{
 							"first": {
 								Name:  "first",
 								Path:  "nested.first",
 								Label: labels.Optional,
-								Template: specs.Template{
+								Template: &specs.Template{
 									Reference: &specs.PropertyReference{
 										Resource: template.InputResource,
 										Path:     "nested.first",
@@ -140,7 +140,7 @@ var schema = &specs.ParameterMap{
 								Name:  "second",
 								Path:  "nested.second",
 								Label: labels.Optional,
-								Template: specs.Template{
+								Template: &specs.Template{
 									Reference: &specs.PropertyReference{
 										Resource: template.InputResource,
 										Path:     "nested.second",
@@ -156,7 +156,7 @@ var schema = &specs.ParameterMap{
 				"repeating_string": {
 					Name: "repeating_string",
 					Path: "repeating_string",
-					Template: specs.Template{
+					Template: &specs.Template{
 						Reference: &specs.PropertyReference{
 							Resource: template.InputResource,
 							Path:     "repeating_string",
@@ -172,7 +172,7 @@ var schema = &specs.ParameterMap{
 					Name:  "repeating_enum",
 					Path:  "repeating_enum",
 					Label: labels.Optional,
-					Template: specs.Template{
+					Template: &specs.Template{
 						Reference: &specs.PropertyReference{
 							Resource: template.InputResource,
 							Path:     "repeating_enum",
@@ -186,7 +186,7 @@ var schema = &specs.ParameterMap{
 					Name:  "repeating",
 					Path:  "repeating",
 					Label: labels.Optional,
-					Template: specs.Template{
+					Template: &specs.Template{
 						Reference: &specs.PropertyReference{
 							Resource: template.InputResource,
 							Path:     "repeating",
@@ -198,7 +198,7 @@ var schema = &specs.ParameterMap{
 										Name:  "value",
 										Path:  "repeating.value",
 										Label: labels.Optional,
-										Template: specs.Template{
+										Template: &specs.Template{
 											Reference: &specs.PropertyReference{
 												Resource: template.InputResource,
 												Path:     "repeating.value",

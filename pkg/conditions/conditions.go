@@ -9,9 +9,7 @@ import (
 	"github.com/jexia/semaphore/pkg/specs/template"
 )
 
-var (
-	templatePattern = regexp.MustCompile("{{ *([^}}]+?) *}}")
-)
+var templatePattern = regexp.MustCompile("{{ *([^}}]+?) *}}")
 
 // NewEvaluableExpression constructs a new condition out of the given expression
 func NewEvaluableExpression(ctx *broker.Context, raw string) (*specs.Condition, error) {

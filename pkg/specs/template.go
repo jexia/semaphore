@@ -1,6 +1,7 @@
 package specs
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/jexia/semaphore/pkg/specs/metadata"
@@ -87,12 +88,14 @@ func (template *Template) clone(seen map[string]*Template) *Template {
 }
 
 // Compare given template against the provided one returning the frst mismatch.
-func (template Template) Compare(expected Template) (err error) {
+func (template Template) Compare(expected *Template) (err error) {
 	return template.compare(NewResolvedProperty(), expected)
 }
 
-func (template Template) compare(resolved *ResolvedProperty, expected Template) (err error) {
+func (template *Template) compare(resolved *ResolvedProperty, expected *Template) (err error) {
 	switch {
+	case template != nil && expected == nil:
+		err = errors.New("provided template is nil")
 	case expected.Repeated != nil:
 		err = template.Repeated.Compare(expected.Repeated)
 	case expected.Scalar != nil:

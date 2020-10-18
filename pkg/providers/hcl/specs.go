@@ -1,7 +1,7 @@
 package hcl
 
 import (
-	"github.com/hashicorp/hcl/v2"
+	hcl "github.com/hashicorp/hcl/v2"
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/conditions"
@@ -197,7 +197,7 @@ func ParseIntermediateInputParameterMap(ctx *broker.Context, params *InputParame
 			Path:  key,
 			Name:  key,
 			Label: labels.Optional,
-			Template: specs.Template{
+			Template: &specs.Template{
 				Scalar: &specs.Scalar{
 					Type: types.String,
 				},
@@ -240,7 +240,7 @@ func ParseIntermediateProxy(ctx *broker.Context, proxy Proxy) (*specs.Proxy, err
 			input.Header[key] = &specs.Property{
 				Path: key,
 				Name: key,
-				Template: specs.Template{
+				Template: &specs.Template{
 					Scalar: &specs.Scalar{
 						Type: types.String,
 					},
@@ -340,7 +340,7 @@ func ParseIntermediateParameterMap(ctx *broker.Context, params *ParameterMap) (*
 		Options: make(specs.Options),
 		Property: &specs.Property{
 			Label: labels.Optional,
-			Template: specs.Template{
+			Template: &specs.Template{
 				Message: make(specs.Message),
 			},
 		},
@@ -397,7 +397,7 @@ func ParseIntermediateNestedParameterMap(ctx *broker.Context, params NestedParam
 		Name:  params.Name,
 		Path:  path,
 		Label: labels.Optional,
-		Template: specs.Template{
+		Template: &specs.Template{
 			Message: make(specs.Message),
 		},
 	}
@@ -436,7 +436,7 @@ func ParseIntermediateNestedParameterMap(ctx *broker.Context, params NestedParam
 // ParseIntermediateRepeatedParameterMap parses the given intermediate repeated parameter map to a spec repeated parameter map
 func ParseIntermediateRepeatedParameterMap(ctx *broker.Context, params RepeatedParameterMap, path string) (*specs.Property, error) {
 	properties, _ := params.Properties.JustAttributes()
-	msg := specs.Template{
+	msg := &specs.Template{
 		Message: make(specs.Message),
 	}
 
@@ -472,7 +472,7 @@ func ParseIntermediateRepeatedParameterMap(ctx *broker.Context, params RepeatedP
 		Name:  params.Name,
 		Path:  path,
 		Label: labels.Optional,
-		Template: specs.Template{
+		Template: &specs.Template{
 			Reference: template.ParsePropertyReference(params.Template),
 			Repeated:  specs.Repeated{msg},
 		},
@@ -628,7 +628,7 @@ func ParseIntermediateCallParameterMap(ctx *broker.Context, params *Call) (*spec
 		Options: make(specs.Options),
 		Property: &specs.Property{
 			Label: labels.Optional,
-			Template: specs.Template{
+			Template: &specs.Template{
 				Message: make(specs.Message),
 			},
 		},
@@ -700,10 +700,11 @@ func ParseIntermediateProperty(ctx *broker.Context, path string, property *hcl.A
 	fqpath := template.JoinPath(path, property.Name)
 	typed := value.Type()
 	result := &specs.Property{
-		Name:  property.Name,
-		Path:  fqpath,
-		Expr:  &Expression{property.Expr},
-		Label: labels.Optional,
+		Name:     property.Name,
+		Path:     fqpath,
+		Expr:     &Expression{property.Expr},
+		Label:    labels.Optional,
+		Template: new(specs.Template),
 	}
 
 	switch {
@@ -755,7 +756,7 @@ func ParseIntermediateProperty(ctx *broker.Context, path string, property *hcl.A
 		result = returns
 		break
 	default:
-		err := SetScalar(ctx, &result.Template, value)
+		err := SetScalar(ctx, result.Template, value)
 		if err != nil {
 			return nil, err
 		}

@@ -42,6 +42,10 @@ func (manager *Manager) Marshal(store references.Store) MD {
 
 	result := make(MD, len(manager.Params))
 	for key, property := range manager.Params {
+		if property.Template == nil {
+			continue
+		}
+
 		if property.Scalar == nil {
 			continue
 		}

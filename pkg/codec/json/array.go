@@ -9,7 +9,7 @@ import (
 // Array represents a JSON array.
 type Array struct {
 	resource  string
-	template  specs.Template
+	template  *specs.Template
 	repeated  specs.Repeated
 	reference *specs.PropertyReference
 	store     references.Store

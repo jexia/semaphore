@@ -189,7 +189,7 @@ func IncludeParameterMap(object *Object, params *specs.ParameterMap) {
 }
 
 // GenerateSchema generates a new schema for the given property
-func GenerateSchema(description string, property specs.Template) *Schema {
+func GenerateSchema(description string, property *specs.Template) *Schema {
 	result := &Schema{
 		Description: description,
 		Type:        types.Open(property.Type()),

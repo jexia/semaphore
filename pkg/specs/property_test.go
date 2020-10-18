@@ -3,7 +3,6 @@ package specs
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"reflect"
 	"testing"
 
@@ -208,7 +207,7 @@ func TestPropertyUnmarshalDefault(t *testing.T) {
 				message := &Property{
 					Template: &Template{
 						Repeated: Repeated{
-							*test.input.Template,
+							test.input.Template,
 						},
 					},
 				}
@@ -366,9 +365,6 @@ func TestPropertyClone(t *testing.T) {
 		t.Errorf("unexpected message properties %+v", result.Message)
 	}
 
-	log.Printf("%#v", property.Message["second"])
-	log.Printf("%#v", result.Message["second"])
-
 	if !reflect.DeepEqual(result.Message["second"], result) {
 		t.Errorf("nested recursive field does not match expected value")
 	}
@@ -448,7 +444,7 @@ func TestPropertyCompare(t *testing.T) {
 				Path: "dogs",
 				Template: &Template{
 					Repeated: Repeated{
-						*createEnum().Template,
+						createEnum().Template,
 					},
 				},
 			}

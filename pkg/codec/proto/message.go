@@ -126,7 +126,7 @@ func (manager *Manager) Encode(proto *dynamic.Message, desc *desc.MessageDescrip
 	return nil
 }
 
-func (manager *Manager) setRepeating(message *dynamic.Message, template specs.Template, field *desc.FieldDescriptor, store references.Store) error {
+func (manager *Manager) setRepeating(message *dynamic.Message, template *specs.Template, field *desc.FieldDescriptor, store references.Store) error {
 	// TODO: implement static values
 	// 	if prop.Reference == nil {
 	// 		for _, repeated := range prop.Repeated {
@@ -193,7 +193,7 @@ func (manager *Manager) setRepeating(message *dynamic.Message, template specs.Te
 
 type trySetProto func(fd *desc.FieldDescriptor, val interface{}) error
 
-func (manager *Manager) setField(setter trySetProto, template specs.Template, field *desc.FieldDescriptor, store references.Store) error {
+func (manager *Manager) setField(setter trySetProto, template *specs.Template, field *desc.FieldDescriptor, store references.Store) error {
 	switch {
 	case template.Message != nil:
 		dynamic := dynamic.NewMessage(field.GetMessageType())

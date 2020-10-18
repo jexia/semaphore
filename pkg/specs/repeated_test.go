@@ -63,21 +63,21 @@ func TestRepeatedTemplate(t *testing.T) {
 	}
 
 	var (
-		foo = Template{
+		foo = &Template{
 			Scalar: &Scalar{
 				Type:    types.String,
 				Default: "foo",
 			},
 		}
 
-		bar = Template{
+		bar = &Template{
 			Scalar: &Scalar{
 				Type:    types.String,
 				Default: "bar",
 			},
 		}
 
-		baz = Template{
+		baz = &Template{
 			Scalar: &Scalar{
 				Type:    types.String,
 				Default: "baz",
@@ -85,20 +85,20 @@ func TestRepeatedTemplate(t *testing.T) {
 		}
 
 		fooBarMsg = Message{
-			"foo": &Property{Template: &foo},
-			"bar": &Property{Template: &bar},
+			"foo": &Property{Template: foo},
+			"bar": &Property{Template: bar},
 		}
 
-		objFooBar = Template{
+		objFooBar = &Template{
 			Message: fooBarMsg,
 		}
 
 		barBazMsg = Message{
-			"bar": &Property{Template: &bar},
-			"baz": &Property{Template: &baz},
+			"bar": &Property{Template: bar},
+			"baz": &Property{Template: baz},
 		}
 
-		objBarBaz = Template{
+		objBarBaz = &Template{
 			Message: barBazMsg,
 		}
 

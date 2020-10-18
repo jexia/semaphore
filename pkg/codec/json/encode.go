@@ -6,7 +6,7 @@ import (
 	"github.com/jexia/semaphore/pkg/specs"
 )
 
-func encodeElement(encoder *gojay.Encoder, resource string, template specs.Template, store references.Store) {
+func encodeElement(encoder *gojay.Encoder, resource string, template *specs.Template, store references.Store) {
 	switch {
 	case template.Message != nil:
 		encoder.Object(
@@ -23,7 +23,7 @@ func encodeElement(encoder *gojay.Encoder, resource string, template specs.Templ
 	}
 }
 
-func encodeElementKey(encoder *gojay.Encoder, resource, key string, template specs.Template, store references.Store) {
+func encodeElementKey(encoder *gojay.Encoder, resource, key string, template *specs.Template, store references.Store) {
 	switch {
 	case template.Message != nil:
 		encoder.ObjectKey(

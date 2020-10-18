@@ -504,13 +504,13 @@ func TestListenerErrorHandling(t *testing.T) {
 			err: &specs.OnError{
 				Response: &specs.ParameterMap{
 					Property: &specs.Property{
-						Template: specs.Template{
+						Template: &specs.Template{
 							Message: specs.Message{
 								"status": {
 									Name:  "status",
 									Path:  "status",
 									Label: labels.Optional,
-									Template: specs.Template{
+									Template: &specs.Template{
 										Scalar: &specs.Scalar{
 											Type: types.Int64,
 										},
@@ -524,7 +524,7 @@ func TestListenerErrorHandling(t *testing.T) {
 									Name:  "message",
 									Path:  "message",
 									Label: labels.Optional,
-									Template: specs.Template{
+									Template: &specs.Template{
 										Scalar: &specs.Scalar{
 											Type: types.String,
 										},
@@ -540,7 +540,7 @@ func TestListenerErrorHandling(t *testing.T) {
 				},
 				Status: &specs.Property{
 					Label: labels.Optional,
-					Template: specs.Template{
+					Template: &specs.Template{
 						Scalar: &specs.Scalar{
 							Type:    types.Int64,
 							Default: int64(500),
@@ -549,7 +549,7 @@ func TestListenerErrorHandling(t *testing.T) {
 				},
 				Message: &specs.Property{
 					Label: labels.Optional,
-					Template: specs.Template{
+					Template: &specs.Template{
 						Scalar: &specs.Scalar{
 							Type:    types.String,
 							Default: "value",
@@ -575,13 +575,13 @@ func TestListenerErrorHandling(t *testing.T) {
 			err: &specs.OnError{
 				Response: &specs.ParameterMap{
 					Property: &specs.Property{
-						Template: specs.Template{
+						Template: &specs.Template{
 							Message: specs.Message{
 								"status": {
 									Name:  "status",
 									Path:  "status",
 									Label: labels.Optional,
-									Template: specs.Template{
+									Template: &specs.Template{
 										Scalar: &specs.Scalar{
 											Type: types.Int64,
 										},
@@ -595,7 +595,7 @@ func TestListenerErrorHandling(t *testing.T) {
 									Name:  "message",
 									Path:  "message",
 									Label: labels.Optional,
-									Template: specs.Template{
+									Template: &specs.Template{
 										Scalar: &specs.Scalar{
 											Type: types.String,
 										},
@@ -611,7 +611,7 @@ func TestListenerErrorHandling(t *testing.T) {
 				},
 				Status: &specs.Property{
 					Label: labels.Optional,
-					Template: specs.Template{
+					Template: &specs.Template{
 						Scalar: &specs.Scalar{
 							Type:    types.Int64,
 							Default: int64(401),
@@ -620,7 +620,7 @@ func TestListenerErrorHandling(t *testing.T) {
 				},
 				Message: &specs.Property{
 					Label: labels.Optional,
-					Template: specs.Template{
+					Template: &specs.Template{
 						Scalar: &specs.Scalar{
 							Type:    types.String,
 							Default: "value",
@@ -646,13 +646,13 @@ func TestListenerErrorHandling(t *testing.T) {
 			err: &specs.OnError{
 				Response: &specs.ParameterMap{
 					Property: &specs.Property{
-						Template: specs.Template{
+						Template: &specs.Template{
 							Message: specs.Message{
 								"status": {
 									Name:  "status",
 									Path:  "status",
 									Label: labels.Optional,
-									Template: specs.Template{
+									Template: &specs.Template{
 										Scalar: &specs.Scalar{
 											Type: types.Int64,
 										},
@@ -666,7 +666,7 @@ func TestListenerErrorHandling(t *testing.T) {
 									Name:  "message",
 									Path:  "message",
 									Label: labels.Optional,
-									Template: specs.Template{
+									Template: &specs.Template{
 										Scalar: &specs.Scalar{
 											Type: types.String,
 										},
@@ -682,7 +682,7 @@ func TestListenerErrorHandling(t *testing.T) {
 				},
 				Status: &specs.Property{
 					Label: labels.Optional,
-					Template: specs.Template{
+					Template: &specs.Template{
 						Scalar: &specs.Scalar{
 							Type:    types.Int64,
 							Default: int64(404),
@@ -691,7 +691,7 @@ func TestListenerErrorHandling(t *testing.T) {
 				},
 				Message: &specs.Property{
 					Label: labels.Optional,
-					Template: specs.Template{
+					Template: &specs.Template{
 						Scalar: &specs.Scalar{
 							Type:    types.String,
 							Default: "value",
@@ -717,18 +717,18 @@ func TestListenerErrorHandling(t *testing.T) {
 			err: &specs.OnError{
 				Response: &specs.ParameterMap{
 					Property: &specs.Property{
-						Template: specs.Template{
+						Template: &specs.Template{
 							Message: specs.Message{
 								"meta": {
 									Name: "meta",
 									Path: "meta",
-									Template: specs.Template{
+									Template: &specs.Template{
 										Message: specs.Message{
 											"status": {
 												Name:  "status",
 												Path:  "meta.status",
 												Label: labels.Optional,
-												Template: specs.Template{
+												Template: &specs.Template{
 													Scalar: &specs.Scalar{
 														Type: types.Int64,
 													},
@@ -742,7 +742,7 @@ func TestListenerErrorHandling(t *testing.T) {
 												Name:  "message",
 												Path:  "meta.message",
 												Label: labels.Optional,
-												Template: specs.Template{
+												Template: &specs.Template{
 													Scalar: &specs.Scalar{
 														Type: types.String,
 													},
@@ -759,7 +759,7 @@ func TestListenerErrorHandling(t *testing.T) {
 									Name:  "const",
 									Path:  "const",
 									Label: labels.Optional,
-									Template: specs.Template{
+									Template: &specs.Template{
 										Scalar: &specs.Scalar{
 											Type:    types.String,
 											Default: "custom message",
@@ -772,7 +772,7 @@ func TestListenerErrorHandling(t *testing.T) {
 				},
 				Status: &specs.Property{
 					Label: labels.Optional,
-					Template: specs.Template{
+					Template: &specs.Template{
 						Scalar: &specs.Scalar{
 							Type:    types.Int64,
 							Default: int64(404),
@@ -781,7 +781,7 @@ func TestListenerErrorHandling(t *testing.T) {
 				},
 				Message: &specs.Property{
 					Label: labels.Optional,
-					Template: specs.Template{
+					Template: &specs.Template{
 						Scalar: &specs.Scalar{
 							Type:    types.String,
 							Default: "value",
@@ -811,7 +811,7 @@ func TestListenerErrorHandling(t *testing.T) {
 				Response: nil,
 				Status: &specs.Property{
 					Label: labels.Optional,
-					Template: specs.Template{
+					Template: &specs.Template{
 						Scalar: &specs.Scalar{
 							Type:    types.Int64,
 							Default: int64(404),
@@ -820,7 +820,7 @@ func TestListenerErrorHandling(t *testing.T) {
 				},
 				Message: &specs.Property{
 					Label: labels.Optional,
-					Template: specs.Template{
+					Template: &specs.Template{
 						Scalar: &specs.Scalar{
 							Type:    types.String,
 							Default: "value",

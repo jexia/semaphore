@@ -23,7 +23,7 @@ func TestFunction(t *testing.T) {
 
 	t.Run("should return an error when the format has invalid type", func(t *testing.T) {
 		var _, _, err = Function(&specs.Property{
-			Template: specs.Template{
+			Template: &specs.Template{
 				Scalar: &specs.Scalar{
 					Type: types.Bool,
 				},
@@ -37,7 +37,7 @@ func TestFunction(t *testing.T) {
 
 	t.Run("should return an error when the format is a reference", func(t *testing.T) {
 		var _, _, err = Function(&specs.Property{
-			Template: specs.Template{
+			Template: &specs.Template{
 				Reference: &specs.PropertyReference{
 					Resource: template.InputResource,
 					Path:     "reference",
@@ -55,7 +55,7 @@ func TestFunction(t *testing.T) {
 
 	t.Run("should return an error when the format is missing", func(t *testing.T) {
 		var _, _, err = Function(&specs.Property{
-			Template: specs.Template{
+			Template: &specs.Template{
 				Scalar: &specs.Scalar{
 					Type: types.String,
 				},
@@ -69,7 +69,7 @@ func TestFunction(t *testing.T) {
 
 	t.Run("should propagate scanner error", func(t *testing.T) {
 		var _, _, err = Function(&specs.Property{
-			Template: specs.Template{
+			Template: &specs.Template{
 				Scalar: &specs.Scalar{
 					Type:    types.String,
 					Default: "%z",
@@ -84,7 +84,7 @@ func TestFunction(t *testing.T) {
 
 	t.Run("should return an error when the number of arguments does not match the number of verbs", func(t *testing.T) {
 		var _, _, err = Function(&specs.Property{
-			Template: specs.Template{
+			Template: &specs.Template{
 				Scalar: &specs.Scalar{
 					Type:    types.String,
 					Default: "%s",
@@ -100,7 +100,7 @@ func TestFunction(t *testing.T) {
 	t.Run("should return an error when the type of provided argument does not match expected", func(t *testing.T) {
 		var _, _, err = Function(
 			&specs.Property{
-				Template: specs.Template{
+				Template: &specs.Template{
 					Scalar: &specs.Scalar{
 						Type:    types.String,
 						Default: "%s",
@@ -109,7 +109,7 @@ func TestFunction(t *testing.T) {
 			},
 			&specs.Property{
 				Name: "foo",
-				Template: specs.Template{
+				Template: &specs.Template{
 					Scalar: &specs.Scalar{
 						Type: types.Bool,
 					},
@@ -126,7 +126,7 @@ func TestFunction(t *testing.T) {
 		var (
 			outputs, executable, err = Function(
 				&specs.Property{
-					Template: specs.Template{
+					Template: &specs.Template{
 						Scalar: &specs.Scalar{
 							Type:    types.String,
 							Default: "develop %s, not hard!",
@@ -135,7 +135,7 @@ func TestFunction(t *testing.T) {
 				},
 				&specs.Property{
 					Name: "foo",
-					Template: specs.Template{
+					Template: &specs.Template{
 						Scalar: &specs.Scalar{
 							Type: types.String,
 						},
@@ -146,7 +146,7 @@ func TestFunction(t *testing.T) {
 			expected = &specs.Property{
 				Name:  "sprintf",
 				Label: labels.Optional,
-				Template: specs.Template{
+				Template: &specs.Template{
 					Scalar: &specs.Scalar{
 						Type: types.String,
 					},

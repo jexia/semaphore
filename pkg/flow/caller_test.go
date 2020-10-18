@@ -409,13 +409,13 @@ func TestTransportErrorSchemaDecoding(t *testing.T) {
 			codec, err := constructor.New(template.ErrorResource, &specs.ParameterMap{
 				Property: &specs.Property{
 					Label: labels.Optional,
-					Template: specs.Template{
+					Template: &specs.Template{
 						Message: specs.Message{
 							"message": {
 								Name:  "message",
 								Path:  "message",
 								Label: labels.Optional,
-								Template: specs.Template{
+								Template: &specs.Template{
 									Scalar: &specs.Scalar{
 										Type: types.String,
 									},
@@ -448,18 +448,18 @@ func TestTransportErrorSchemaDecoding(t *testing.T) {
 			codec, err := constructor.New(template.ErrorResource, &specs.ParameterMap{
 				Property: &specs.Property{
 					Label: labels.Optional,
-					Template: specs.Template{
+					Template: &specs.Template{
 						Message: specs.Message{
 							"meta": {
 								Name:  "meta",
 								Path:  "meta",
 								Label: labels.Optional,
-								Template: specs.Template{
+								Template: &specs.Template{
 									Message: specs.Message{
 										"message": {
 											Name: "message",
 											Path: "meta.message",
-											Template: specs.Template{
+											Template: &specs.Template{
 												Scalar: &specs.Scalar{
 													Type: types.String,
 												},

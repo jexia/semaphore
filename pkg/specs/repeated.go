@@ -6,7 +6,7 @@ import (
 )
 
 // Repeated represents an array type of fixed size.
-type Repeated []Template
+type Repeated []*Template
 
 // Template returns a Template for a given array. It checks the types of internal
 // elements to detect the data type(s).
@@ -18,7 +18,7 @@ func (repeated Repeated) Template() (*Template, error) {
 	// TODO: remove once "oneOf" support is added
 	for position := range repeated {
 		if position == 0 {
-			template = &repeated[position]
+			template = repeated[position]
 
 			continue
 		}
@@ -43,7 +43,7 @@ func (repeated Repeated) Clone() Repeated {
 }
 
 func (repeated Repeated) clone(seen map[string]*Template) Repeated {
-	var clone = make([]Template, len(repeated))
+	var clone = make([]*Template, len(repeated))
 
 	for index, template := range repeated {
 		// if template.Identifier != "" {
@@ -67,7 +67,7 @@ func (repeated Repeated) clone(seen map[string]*Template) Repeated {
 		// 	continue
 		// }
 
-		clone[index] = *template.clone(seen)
+		clone[index] = template.clone(seen)
 	}
 
 	return clone
@@ -101,7 +101,7 @@ func (repeated Repeated) Compare(expected Repeated) error {
 		return fmt.Errorf("unkown expected property template: %w", err)
 	}
 
-	err = left.Compare(*right)
+	err = left.Compare(right)
 	if err != nil {
 		return fmt.Errorf("repeated property: %w", err)
 	}

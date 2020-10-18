@@ -12,7 +12,7 @@ func PropString() *specs.Property {
 		Name:  "string",
 		Path:  "string",
 		Label: labels.Optional,
-		Template: specs.Template{
+		Template: &specs.Template{
 			Scalar: &specs.Scalar{
 				Type: types.String,
 			},
@@ -25,7 +25,7 @@ func PropInteger() *specs.Property {
 		Name:  "integer",
 		Path:  "integer",
 		Label: labels.Optional,
-		Template: specs.Template{
+		Template: &specs.Template{
 			Scalar: &specs.Scalar{
 				Type: types.Int32,
 			},
@@ -38,7 +38,7 @@ func PropArray() *specs.Property {
 		Name:  "array",
 		Path:  "array",
 		Label: labels.Optional,
-		Template: specs.Template{
+		Template: &specs.Template{
 			Repeated: specs.Repeated{
 				PropString().Template,
 			},
@@ -51,7 +51,7 @@ func PropEnum() *specs.Property {
 		Name:  "status",
 		Path:  "status",
 		Label: labels.Required,
-		Template: specs.Template{
+		Template: &specs.Template{
 			Enum: enum,
 		},
 	}
@@ -86,7 +86,7 @@ var (
 			Name:  "array",
 			Path:  "array",
 			Label: labels.Optional,
-			Template: specs.Template{
+			Template: &specs.Template{
 				Repeated: specs.Repeated{
 					{
 						Scalar: &specs.Scalar{
@@ -104,7 +104,7 @@ var (
 			Name:  "array",
 			Path:  "array",
 			Label: labels.Optional,
-			Template: specs.Template{
+			Template: &specs.Template{
 				Repeated: specs.Repeated{
 					{
 						Reference: &specs.PropertyReference{
@@ -130,7 +130,7 @@ var (
 		Property: &specs.Property{
 			Name:  "root",
 			Label: labels.Optional,
-			Template: specs.Template{
+			Template: &specs.Template{
 				Message: specs.Message{
 					"integer": func() *specs.Property {
 						var clone = PropInteger()
@@ -156,7 +156,7 @@ var (
 			Name:  "array",
 			Path:  "array",
 			Label: labels.Optional,
-			Template: specs.Template{
+			Template: &specs.Template{
 				Repeated: specs.Repeated{
 					{
 						Repeated: specs.Repeated{
@@ -186,7 +186,7 @@ var (
 		Property: &specs.Property{
 			Name:  "root",
 			Label: labels.Optional,
-			Template: specs.Template{
+			Template: &specs.Template{
 				Message: specs.Message{
 					"status": func() *specs.Property {
 						var clone = PropEnum()
@@ -211,14 +211,14 @@ var (
 		Property: &specs.Property{
 			Name:  "root",
 			Label: labels.Optional,
-			Template: specs.Template{
+			Template: &specs.Template{
 				Message: specs.Message{
 					"nested": {
 						Position: 1,
 						Name:     "nested",
 						Path:     "root.nested",
 						Label:    labels.Optional,
-						Template: specs.Template{
+						Template: &specs.Template{
 							Message: specs.Message{
 								"status": func() *specs.Property {
 									var clone = PropEnum()
@@ -253,14 +253,14 @@ var (
 		Property: &specs.Property{
 			Name:  "root",
 			Label: labels.Optional,
-			Template: specs.Template{
+			Template: &specs.Template{
 				Message: specs.Message{
 					"bad_label": {
 						Position: 1,
 						Name:     "bad_label",
 						Path:     "bad_label",
 						Label:    "unknown",
-						Template: specs.Template{
+						Template: &specs.Template{
 							Scalar: &specs.Scalar{
 								Type: types.String,
 							},
@@ -271,7 +271,7 @@ var (
 						Name:     "numeric",
 						Path:     "numeric",
 						Label:    labels.Optional,
-						Template: specs.Template{
+						Template: &specs.Template{
 							Reference: &specs.PropertyReference{
 								Resource: template.InputResource,
 								Path:     "numeric",
@@ -286,7 +286,7 @@ var (
 						Name:     "message",
 						Path:     "message",
 						Label:    labels.Optional,
-						Template: specs.Template{
+						Template: &specs.Template{
 							Reference: &specs.PropertyReference{
 								Resource: template.InputResource,
 								Path:     "message",
@@ -301,7 +301,7 @@ var (
 						Name:     "another_message",
 						Path:     "another_message",
 						Label:    labels.Optional,
-						Template: specs.Template{
+						Template: &specs.Template{
 							Reference: &specs.PropertyReference{
 								Resource: template.InputResource,
 								Path:     "another_message",
@@ -316,7 +316,7 @@ var (
 						Name:     "status",
 						Path:     "status",
 						Label:    labels.Optional,
-						Template: specs.Template{
+						Template: &specs.Template{
 							Reference: &specs.PropertyReference{
 								Resource: template.InputResource,
 								Path:     "status",
@@ -329,7 +329,7 @@ var (
 						Name:     "another_status",
 						Path:     "another_status",
 						Label:    labels.Optional,
-						Template: specs.Template{
+						Template: &specs.Template{
 							Reference: &specs.PropertyReference{
 								Resource: template.InputResource,
 								Path:     "another_status",
@@ -342,14 +342,14 @@ var (
 						Name:     "nested",
 						Path:     "nested",
 						Label:    labels.Optional,
-						Template: specs.Template{
+						Template: &specs.Template{
 							Message: specs.Message{
 								"first": {
 									Position: 1,
 									Name:     "first",
 									Path:     "nested.first",
 									Label:    labels.Optional,
-									Template: specs.Template{
+									Template: &specs.Template{
 										Reference: &specs.PropertyReference{
 											Resource: template.InputResource,
 											Path:     "nested.first",
@@ -364,7 +364,7 @@ var (
 									Name:     "second",
 									Path:     "nested.second",
 									Label:    labels.Optional,
-									Template: specs.Template{
+									Template: &specs.Template{
 										Reference: &specs.PropertyReference{
 											Resource: template.InputResource,
 											Path:     "nested.second",
@@ -382,7 +382,7 @@ var (
 						Name:     "repeating_string",
 						Path:     "repeating_string",
 						Label:    labels.Optional,
-						Template: specs.Template{
+						Template: &specs.Template{
 							Reference: &specs.PropertyReference{
 								Resource: template.InputResource,
 								Path:     "repeating_string",
@@ -408,7 +408,7 @@ var (
 						Name:     "repeating_enum",
 						Path:     "repeating_enum",
 						Label:    labels.Optional,
-						Template: specs.Template{
+						Template: &specs.Template{
 							Reference: &specs.PropertyReference{
 								Resource: template.InputResource,
 								Path:     "repeating_enum",
@@ -425,7 +425,7 @@ var (
 						Name:     "repeating_numeric",
 						Path:     "repeating_numeric",
 						Label:    labels.Optional,
-						Template: specs.Template{
+						Template: &specs.Template{
 							Reference: &specs.PropertyReference{
 								Resource: template.InputResource,
 								Path:     "repeating_numeric",
@@ -440,7 +440,7 @@ var (
 						Name:     "repeating",
 						Path:     "repeating",
 						Label:    labels.Optional,
-						Template: specs.Template{
+						Template: &specs.Template{
 							Reference: &specs.PropertyReference{
 								Resource: template.InputResource,
 								Path:     "repeating",
@@ -453,7 +453,7 @@ var (
 											Name:     "value",
 											Path:     "repeating.value",
 											Label:    labels.Optional,
-											Template: specs.Template{
+											Template: &specs.Template{
 												Reference: &specs.PropertyReference{
 													Resource: template.InputResource,
 													Path:     "repeating.value",

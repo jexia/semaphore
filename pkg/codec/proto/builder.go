@@ -122,5 +122,5 @@ func ConstructFieldType(builders map[string]*builder.MessageBuilder, name string
 		return builder.FieldTypeScalar(protobuffers.ProtoTypes[property.Scalar.Type]), nil
 	}
 
-	return nil, ErrInvalidFieldType{property.Template}
+	return nil, ErrInvalidFieldType{*property.Template}
 }

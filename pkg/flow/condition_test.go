@@ -51,7 +51,7 @@ func TestConditionEvaluation(t *testing.T) {
 					},
 					Returns: &specs.Property{
 						Label: labels.Optional,
-						Template: specs.Template{
+						Template: &specs.Template{
 							Scalar: &specs.Scalar{
 								Type: types.String,
 							},
@@ -112,7 +112,7 @@ func TestInvalidConditionEvaluation(t *testing.T) {
 					},
 					Returns: &specs.Property{
 						Label: labels.Optional,
-						Template: specs.Template{
+						Template: &specs.Template{
 							Scalar: &specs.Scalar{
 								Type: types.String,
 							},

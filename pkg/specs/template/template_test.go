@@ -64,7 +64,7 @@ func TestParseTemplateContent(t *testing.T) {
 				Name:  name,
 				Path:  path,
 				Label: labels.Optional,
-				Template: specs.Template{
+				Template: &specs.Template{
 					Scalar: &specs.Scalar{
 						Type:    types.String,
 						Default: "prefix",
@@ -75,7 +75,7 @@ func TestParseTemplateContent(t *testing.T) {
 				Name:  name,
 				Path:  path,
 				Label: labels.Optional,
-				Template: specs.Template{
+				Template: &specs.Template{
 					Scalar: &specs.Scalar{
 						Type:    types.String,
 						Default: "edge'",
@@ -85,7 +85,7 @@ func TestParseTemplateContent(t *testing.T) {
 			"input:message": {
 				Name: name,
 				Path: path,
-				Template: specs.Template{
+				Template: &specs.Template{
 					Reference: &specs.PropertyReference{
 						Resource: "input",
 						Path:     "message",
@@ -95,7 +95,7 @@ func TestParseTemplateContent(t *testing.T) {
 			"input:user-id": {
 				Name: name,
 				Path: path,
-				Template: specs.Template{
+				Template: &specs.Template{
 					Reference: &specs.PropertyReference{
 						Resource: "input",
 						Path:     "user-id",
@@ -105,7 +105,7 @@ func TestParseTemplateContent(t *testing.T) {
 			"input.header:Authorization": {
 				Name: name,
 				Path: path,
-				Template: specs.Template{
+				Template: &specs.Template{
 					Reference: &specs.PropertyReference{
 						Resource: "input.header",
 						Path:     "authorization",
@@ -115,7 +115,7 @@ func TestParseTemplateContent(t *testing.T) {
 			"input.header:User-Id": {
 				Name: name,
 				Path: path,
-				Template: specs.Template{
+				Template: &specs.Template{
 					Reference: &specs.PropertyReference{
 						Resource: "input.header",
 						Path:     "user-id",
@@ -124,7 +124,7 @@ func TestParseTemplateContent(t *testing.T) {
 			},
 			"input.header:": {
 				Path: path,
-				Template: specs.Template{
+				Template: &specs.Template{
 					Reference: &specs.PropertyReference{
 						Resource: "input.header",
 					},
@@ -157,7 +157,7 @@ func TestParseReference(t *testing.T) {
 			"input:message": {
 				Name: name,
 				Path: path,
-				Template: specs.Template{
+				Template: &specs.Template{
 					Reference: &specs.PropertyReference{
 						Resource: "input",
 						Path:     "message",
@@ -167,7 +167,7 @@ func TestParseReference(t *testing.T) {
 			"input:user-id": {
 				Name: name,
 				Path: path,
-				Template: specs.Template{
+				Template: &specs.Template{
 					Reference: &specs.PropertyReference{
 						Resource: "input",
 						Path:     "user-id",
@@ -177,7 +177,7 @@ func TestParseReference(t *testing.T) {
 			"input.header:Authorization": {
 				Name: name,
 				Path: path,
-				Template: specs.Template{
+				Template: &specs.Template{
 					Reference: &specs.PropertyReference{
 						Resource: "input.header",
 						Path:     "authorization",
@@ -187,7 +187,7 @@ func TestParseReference(t *testing.T) {
 			"input.header:User-Id": {
 				Name: name,
 				Path: path,
-				Template: specs.Template{
+				Template: &specs.Template{
 					Reference: &specs.PropertyReference{
 						Resource: "input.header",
 						Path:     "user-id",
@@ -196,7 +196,7 @@ func TestParseReference(t *testing.T) {
 			},
 			"input:": {
 				Path: path,
-				Template: specs.Template{
+				Template: &specs.Template{
 					Reference: &specs.PropertyReference{
 						Resource: "input",
 					},
@@ -204,7 +204,7 @@ func TestParseReference(t *testing.T) {
 			},
 			"input.header:": {
 				Path: path,
-				Template: specs.Template{
+				Template: &specs.Template{
 					Reference: &specs.PropertyReference{
 						Resource: "input.header",
 					},
@@ -212,7 +212,7 @@ func TestParseReference(t *testing.T) {
 			},
 			"input": {
 				Path: path,
-				Template: specs.Template{
+				Template: &specs.Template{
 					Reference: &specs.PropertyReference{
 						Resource: "input",
 					},
@@ -283,7 +283,7 @@ func TestParseReferenceTemplates(t *testing.T) {
 		tests = map[string]*specs.Property{
 			"{{ input:message }}": {
 				Path: "message",
-				Template: specs.Template{
+				Template: &specs.Template{
 					Reference: &specs.PropertyReference{
 						Resource: "input",
 						Path:     "message",
@@ -292,7 +292,7 @@ func TestParseReferenceTemplates(t *testing.T) {
 			},
 			"{{ input.prop:message }}": {
 				Path: "message",
-				Template: specs.Template{
+				Template: &specs.Template{
 					Reference: &specs.PropertyReference{
 						Resource: "input.prop",
 						Path:     "message",
@@ -301,7 +301,7 @@ func TestParseReferenceTemplates(t *testing.T) {
 			},
 			"{{ input.prop:user-id }}": {
 				Path: "message",
-				Template: specs.Template{
+				Template: &specs.Template{
 					Reference: &specs.PropertyReference{
 						Resource: "input.prop",
 						Path:     "user-id",
@@ -310,7 +310,7 @@ func TestParseReferenceTemplates(t *testing.T) {
 			},
 			"{{ input:user-id }}": {
 				Path: "message",
-				Template: specs.Template{
+				Template: &specs.Template{
 					Reference: &specs.PropertyReference{
 						Resource: "input",
 						Path:     "user-id",
@@ -319,7 +319,7 @@ func TestParseReferenceTemplates(t *testing.T) {
 			},
 			"{{ input.prop:message.prop }}": {
 				Path: "message.prop",
-				Template: specs.Template{
+				Template: &specs.Template{
 					Reference: &specs.PropertyReference{
 						Resource: "input.prop",
 						Path:     "message.prop",
@@ -328,7 +328,7 @@ func TestParseReferenceTemplates(t *testing.T) {
 			},
 			"{{ input:message.prop }}": {
 				Path: "messsage.prop",
-				Template: specs.Template{
+				Template: &specs.Template{
 					Reference: &specs.PropertyReference{
 						Resource: "input",
 						Path:     "message.prop",

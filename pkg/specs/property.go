@@ -133,7 +133,7 @@ func (property *Property) compare(resolved *ResolvedProperty, expected *Property
 		return fmt.Errorf("schema '%s' has a nested object but property does not '%s'", expected.Name, property.Path)
 	}
 
-	if err := property.Template.compare(resolved, *expected.Template); err != nil {
+	if err := property.Template.compare(resolved, expected.Template); err != nil {
 		return fmt.Errorf("nested schema mismatch under property '%s': %w", property.Path, err)
 	}
 
@@ -146,14 +146,14 @@ func (property *Property) Define(expected *Property) {
 }
 
 func (property *Property) define(defined map[string]*Template, expected *Property) {
-	// if expected.Identifier != "" {
-	// 	_, ok := defined[property.Identifier]
-	// 	if ok {
-	// 		return
-	// 	}
-	//
-	// 	defined[property.Identifier] = &expected.Template
-	// }
+	if expected.Identifier != "" {
+		_, ok := defined[property.Identifier]
+		if ok {
+			return
+		}
+
+		defined[property.Identifier] = expected.Template
+	}
 
 	property.Position = expected.Position
 	property.Template.define(defined, *expected.Template)

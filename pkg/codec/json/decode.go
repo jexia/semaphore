@@ -6,7 +6,7 @@ import (
 	"github.com/jexia/semaphore/pkg/specs"
 )
 
-func decodeElement(decoder *gojay.Decoder, resource, path string, template specs.Template, store references.Store) error {
+func decodeElement(decoder *gojay.Decoder, resource, path string, template *specs.Template, store references.Store) error {
 	var reference = specs.PropertyReference{
 		Resource: resource,
 		Path:     path,

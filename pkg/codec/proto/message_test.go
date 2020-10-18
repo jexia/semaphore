@@ -48,7 +48,7 @@ func NewMock() (specs.FlowListInterface, error) {
 	return collection.FlowListInterface, nil
 }
 
-func ValidateStore(t *testing.T, resource, path string, tmpl specs.Template, input interface{}, store references.Store) {
+func ValidateStore(t *testing.T, resource, path string, tmpl *specs.Template, input interface{}, store references.Store) {
 	switch typed := input.(type) {
 	case map[string]interface{}:
 		for key, value := range typed {

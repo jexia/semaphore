@@ -8,7 +8,7 @@ import (
 	"github.com/jexia/semaphore/pkg/specs"
 )
 
-func encodeElement(encoder *xml.Encoder, name string, template specs.Template, store references.Store) (err error) {
+func encodeElement(encoder *xml.Encoder, name string, template *specs.Template, store references.Store) (err error) {
 	defer func() {
 		if err != nil {
 			err = errFailedToEncode{

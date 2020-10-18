@@ -87,7 +87,7 @@ func (manager *Manager) Marshal(refs references.Store) (io.Reader, error) {
 // The producing key-value pair examples:
 // user.name=bob&user.age=30&id=100
 // users[0]=bob&users[1]=alice
-func encode(encoded url.Values, path string, store references.Store, tpl specs.Template) error {
+func encode(encoded url.Values, path string, store references.Store, tpl *specs.Template) error {
 	var (
 		ref *references.Reference
 	)

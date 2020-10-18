@@ -8,7 +8,7 @@ import (
 	"github.com/jexia/semaphore/pkg/specs"
 )
 
-func decodeElement(decoder *xml.Decoder, start xml.StartElement, resource, prefix, name string, template specs.Template, store references.Store) (err error) {
+func decodeElement(decoder *xml.Decoder, start xml.StartElement, resource, prefix, name string, template *specs.Template, store references.Store) (err error) {
 	defer func() {
 		if err != nil {
 			err = errFailedToDecode{

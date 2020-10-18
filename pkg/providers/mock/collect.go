@@ -75,6 +75,7 @@ func UnmarshalFile(reader io.Reader) (*Collection, error) {
 	}
 
 	DefinePropertyPaths(&collection)
+
 	return &collection, nil
 }
 
@@ -88,7 +89,7 @@ func DefinePropertyPaths(collection *Collection) {
 func definePath(path string, property *specs.Property) {
 	fqpath := template.JoinPath(path, property.Name)
 	property.Path = fqpath
-	walkTemplate(fqpath, &property.Template)
+	walkTemplate(fqpath, property.Template)
 }
 
 func walkTemplate(path string, template *specs.Template) {

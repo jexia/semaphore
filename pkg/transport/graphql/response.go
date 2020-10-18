@@ -26,7 +26,7 @@ func ResponseObject(specs *specs.Property, refs references.Store) (map[string]in
 }
 
 // ResponseValue constructs a new response used inside a response object
-func ResponseValue(template specs.Template, refs references.Store) (interface{}, error) {
+func ResponseValue(template *specs.Template, refs references.Store) (interface{}, error) {
 	switch {
 	case template.Message != nil:
 		result := make(map[string]interface{}, len(template.Message))
