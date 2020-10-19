@@ -1,6 +1,9 @@
 name: Build and publish documentation
 
-on: [push]
+on:
+  push:
+    tags:
+      - v*
 
 jobs:
   build:
@@ -24,4 +27,4 @@ jobs:
     - name: Build and publish documentation
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: sh ./scripts/release.sh
+      run: sh ./docs/scripts/release.sh

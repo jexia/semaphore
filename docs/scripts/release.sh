@@ -1,5 +1,7 @@
 #!/usr/bin/env sh
 
+cd docs
+
 # abort on errors
 set -e
 
@@ -18,4 +20,4 @@ npm run build
 git add -f ./dist
 
 git commit -m 'build: 🏗️ automatically generated documentation'
-git subtree push --prefix dist origin gh-pages
+git subtree push --force --prefix dist origin docs
