@@ -29,6 +29,7 @@ const (
 	Sint32   Type = "sint32"
 	Sint64   Type = "sint64"
 	Unknown  Type = "unknown"
+	OneOf    Type = "oneOf"
 )
 
 // DecodeFromString decodes the given property from string.

@@ -1,0 +1,166 @@
+# This file includes every schema structure what we support
+
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Swagger Petstore
+  license:
+    name: MIT
+  # x-semaphore-package is a semaphore-specific extension
+  x-semaphore-package: com.semaphore
+
+servers:
+  - url: http://petstore.swagger.io/v1
+
+paths:
+  /pets:
+    get:
+      summary: List all pets
+      operationId: listPets
+      tags:
+        - pets
+      parameters:
+        - name: limit
+          in: query
+          description: How many items to return at one time (max 100)
+          required: false
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: An array of pets
+          # by default, semaphore generates properties named as <Verb>:<Endpoint>:Response:<Code>.<ContentType>
+          # Example: Get:/pets:Response:200.json
+          # model allows to override the generated name with a custom name.
+          # The name must be unique in scope of the package.
+          #
+          # Not supported yet!
+          x-semaphore-model: Pets
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Pets"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    post:
+      summary: Create a pet
+      operationId: createPets
+      tags:
+        - pets
+      requestBody:
+        description: The pet object
+        # by default, semaphore generates properties named as <Verb>:<Endpoint>:Response:<Code>.<ContentType>
+        # Example: Get:/pets:Response:200.json
+        # model allows to override the generated name with a custom name.
+        # The name must be unique in scope of the package.
+        #
+        # Not supported yet!
+        x-semaphore-model: CreatePetRequest
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Pet"
+
+      responses:
+        '201':
+          description: Null response
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /pets/{petId}:
+    get:
+      summary: Info for a specific pet
+      operationId: showPetById
+      tags:
+        - pets
+      parameters:
+        - name: petId
+          in: path
+          required: true
+          description: The id of the pet to retrieve
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Pet"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+# Semaphore does not parse components. All schemas are parsed from the paths object.
+components:
+  schemas:
+    # Pets represent a Repeated of One Of
+    Pets:
+      type: array
+      items:
+        $ref: "#/components/schemas/Pet"
+
+    # Error represents a Message.
+    # Error is included in many endpoints as a second response type.
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
+
+    # Dogs represents a Repeated of Message
+    Dogs:
+      type: "array"
+      items:
+        $ref: "#/components/schemas/Dog"
+
+    # DogNames represents a Repeated of Scalars
+    DogNames:
+      type: "array"
+      items:
+        type: "string"
+
+    # RandomName represents a Scalar
+    RandomName:
+      type: "string"
+      default: "Fido"
+
+    # Pet represents oneOf
+    Pet:
+      oneOf:
+        - $ref: "#/components/schemas/Cat"
+        - $ref: "#/components/schemas/Dog"
+
+    Cat:
+      type: "object"
+      properties:
+        name:
+          type: "string"
+        meow:
+          type: "boolean"
+
+    Dog:
+      type: "object"
+      properties:
+        name:
+          type: "string"
+        is_good_boy:
+          type: "boolean"
