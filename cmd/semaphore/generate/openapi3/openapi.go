@@ -14,11 +14,6 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-// IncludeNotReferenced if set includes not referenced properties into the generated OpenAPI3 specification
-var IncludeNotReferenced = false
-
-var flags = &config.Daemon{}
-
 // Command represents the semaphore daemon command
 var Command = &cobra.Command{
 	Use:   "openapi3",
@@ -30,13 +25,16 @@ var Command = &cobra.Command{
 }
 
 func init() {
-	Command.PersistentFlags().StringSliceVar(&flags.Protobuffers, "proto", []string{}, "If set are all proto definitions found inside the given path passed as schema definitions, all proto definitions are also passed as imports")
-	Command.PersistentFlags().StringSliceVarP(&flags.Files, "file", "f", []string{"config.hcl"}, "Parses the given file as a definition file")
-	Command.PersistentFlags().StringVar(&flags.LogLevel, "level", "warn", "Global logging level, this value will override the defined log level inside the file definitions")
-	Command.PersistentFlags().BoolVar(&IncludeNotReferenced, "include-not-referenced", false, "Include not referenced properties into the generated OpenAPI3 schema")
+
 }
 
 func run(cmd *cobra.Command, args []string) (err error) {
+	flags := &config.Daemon{}
+
+	cmd.PersistentFlags().StringSliceVarP(&flags.Protobuffers, "protobuffers", "pb", []string{}, "If set are all proto definitions found inside the given path passed as schema definitions, all proto definitions are also passed as imports")
+	cmd.PersistentFlags().StringSliceVarP(&flags.Files, "file", "f", []string{"config.hcl"}, "Parses the given file as a definition file")
+	cmd.PersistentFlags().StringVar(&flags.LogLevel, "level", "warn", "Global logging level, this value will override the defined log level inside the file definitions")
+	includeNotReferenced := *cmd.PersistentFlags().Bool("include-not-referenced", false, "Include not referenced properties into the generated OpenAPI3 schema")
 
 	defer func() {
 		if err != nil {
@@ -46,7 +44,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 
 	options := openapi3.DefaultOption
 
-	if IncludeNotReferenced {
+	if includeNotReferenced {
 		options = options | openapi3.IncludeNotReferenced
 	}
 
