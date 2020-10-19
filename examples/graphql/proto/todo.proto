@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+import "api/annotations.proto";
+
+package com.semaphore;
+
+service Todo {
+    option (semaphore.api.service) = {
+        transport: "http"
+        codec: "json"
+    };
+
+    rpc First(Empty) returns (Item) {
+        option (semaphore.api.http) = {
+            endpoint: "/todos/1"
+            method: "GET"
+        };
+    };
+
+    rpc Get(Query) returns (Item) {
+        option (semaphore.api.http) = {
+            endpoint: "/todos/:id"
+            method: "GET"
+        };
+    };
+}
+
+// Represents a search query
+message Query {
+    // resource id
+    string id = 1;
+}
+
+message Empty {
+}
+
+message Item {
+    // user id owning the given todo
+    int32 userId = 1;
+    // id of a given todo
+    int32 id = 2;
+    // title of the todo
+    string title = 3;
+    // represents whether the todo is completed or not
+    bool completed = 4;
+}

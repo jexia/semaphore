@@ -1,0 +1,98 @@
+name: Release Semaphore
+on:
+  push:
+    tags:
+      - v*
+jobs:
+  push:
+    name: Publish docker images
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Format version
+        run: |
+          # Strip git ref prefix from version
+          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+
+          # Strip "v" prefix from tag name
+          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
+
+          # Use Docker `latest` tag convention
+          [ "$VERSION" == "master" ] && VERSION=latest
+
+          echo VERSION=$VERSION
+          echo "::set-env name=VERSION::$VERSION"
+
+      - name: Build image
+        run: docker build --file Dockerfile --build-arg version=v${VERSION} --build-arg build=$(git rev-parse --short HEAD) --build-arg label=release --tag semaphore .
+
+      - name: Log into Docker hub
+        run: echo "${{ secrets.DOCKER_HUB_TOKEN }}" | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
+      
+      - name: Push image Docker hub
+        run: |
+          IMAGE_ID=jxapp/semaphore
+
+          echo IMAGE_ID=$IMAGE_ID:$VERSION
+
+          docker tag semaphore $IMAGE_ID:$VERSION
+          docker tag semaphore $IMAGE_ID:latest
+
+          docker push $IMAGE_ID:$VERSION
+          docker push $IMAGE_ID:latest
+      
+      - name: Log into Github registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
+
+      - name: Push image Github registry
+        run: |
+          IMAGE_ID=docker.pkg.github.com/${{ github.repository }}/server
+
+          echo IMAGE_ID=$IMAGE_ID:$VERSION
+
+          docker tag semaphore $IMAGE_ID:$VERSION
+          docker tag semaphore $IMAGE_ID:latest
+
+          docker push $IMAGE_ID:$VERSION
+          docker push $IMAGE_ID:latest
+
+  goreleaser:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Unshallow
+        run: git fetch --prune --unshallow
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.14
+      - name: Format version
+        run: |
+          # Strip git ref prefix from version
+          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+
+          # Strip "v" prefix from tag name
+          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
+
+          # Use Docker `latest` tag convention
+          [ "$VERSION" == "master" ] && VERSION=latest
+
+          echo VERSION=$VERSION
+          echo "::set-env name=VERSION::$VERSION"
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v2
+        with:
+          version: latest
+          args: release --rm-dist
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Discord notification
+        uses: appleboy/discord-action@master
+        with:
+          webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
+          webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
+          file: "./dist/semaphore.rb"
+          message: 'A new Homebrew formula is available for version v${{ env.VERSION }}'

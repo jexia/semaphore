@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package semaphore.greeter;
+
+import "api/annotations.proto";
+
+option go_package = "github.com/jexia/semaphore/examples/grpc/proto";
+
+service Say {
+	option (semaphore.api.service) = {
+		host: "127.0.0.1:5050"
+        transport: "grpc"
+        codec: "proto"
+	};
+
+	rpc Hello(Request) returns (Response) {}
+}
+
+message Request {
+	string name = 1;
+}
+
+message Response {
+	string msg = 1;
+	Meta meta = 2;
+}
+
+message Meta {
+	int64 session = 1;
+}

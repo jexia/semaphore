@@ -1,0 +1,56 @@
+project_name: semaphore
+
+builds:
+- main: ./cmd/semaphore/main.go
+  env:
+  - CGO_ENABLED=0
+  - GO111MODULE=on
+  flags:
+  - -mod=vendor
+  - -v
+  ldflags:
+  - -X main.version=v{{ .Version }}
+  - -X main.build={{ .ShortCommit }}
+  - -X main.label=release
+  goos:
+  - windows
+  - darwin
+  - linux
+  goarch:
+  - 386
+  - amd64
+  - arm
+  - arm64
+  ignore:
+  - goos: darwin
+    goarch: 386
+
+archives:
+- name_template: "semaphore-{{ .Version }}-{{ .Os }}-{{ .Arch }}"
+  format_overrides:
+  - goos: windows
+    format: zip
+  files: [a-workaround-to-include-only-the-binary*]
+  wrap_in_directory: false
+
+brews:
+  - github:
+      owner: jexia
+      name: homebrew-cask
+    skip_upload: true
+    folder: Formula
+    homepage:  https://github.com/jexia/semaphore
+    description: A straightforward service orchestrator
+    test: |
+      system "#{bin}/semaphore -v"
+
+checksum:
+  name_template: "semaphore-{{ .Version }}-checksums.sha256"
+
+release:
+  github:
+    owner: jexia
+    name: semaphore
+
+changelog:
+  skip: true

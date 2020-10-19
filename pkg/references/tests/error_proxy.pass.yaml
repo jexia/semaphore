@@ -1,0 +1,10 @@
+properties:
+  com.error:
+    label: "optional"
+    template:
+      message:
+        "message":
+          label: "optional"
+          template:
+            scalar:
+              type: "string"

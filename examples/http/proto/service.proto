@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+import "api/annotations.proto";
+
+package com.semaphore;
+
+service Todo {
+    option (semaphore.api.service) = {
+        transport: "http"
+        codec: "json"
+    };
+
+    rpc Get(Query) returns (Item) {
+        option (semaphore.api.http) = {
+            endpoint: "/todos/1"
+            method: "GET"
+        };
+    };
+}
+
+message Query {
+}
+
+message Item {
+    int32 userId = 1;
+    int32 id = 2;
+    string title = 3;
+    bool completed = 4;
+}

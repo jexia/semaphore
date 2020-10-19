@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package proto;
+
+service mock {
+    rpc simple(Simple) returns (Empty);
+    rpc nested(Nested) returns (Empty);
+    rpc repeated(Repeated) returns (Empty);
+    rpc repeated_values(RepeatedValues) returns (Empty);
+}
+
+enum Status {
+    UNKNOWN = 0;
+    PENDING = 1;
+}
+
+message Simple {
+    string message = 1;
+}
+
+message Nested {
+    Value nested = 3;
+}
+
+message Repeated {
+    repeated Value repeating = 2;
+}
+
+message RepeatedValues {
+    repeated string repeating = 2;
+}
+
+message Enum {
+    Status status = 1;
+}
+
+message RepeatedEnum {
+    repeated Status status = 1;
+}
+
+message Value {
+    string value = 1;
+}
+
+message Empty {
+}

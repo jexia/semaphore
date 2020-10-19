@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+import "api/annotations.proto";
+
+package proto;
+
+service Service {
+    option (semaphore.api.service) = {
+        host: "https://jsonplaceholder.typicode.com/"
+        transport: "http"
+        codec: "json"
+    };
+
+    rpc ThrowError(Empty) returns (Empty) {
+        option (semaphore.api.http) = {
+            endpoint: "/404"
+            method: "GET"
+        };
+    };
+}
+
+message Empty {
+}
+
+message Error {
+    string message = 1;
+    int64 status = 2;
+}

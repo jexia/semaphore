@@ -1,0 +1,32 @@
+exception:
+  message: "failed to resolve flow 'echo'"
+properties:
+  com.input:
+    label: "optional"
+    template:
+      message:
+        "message":
+          name: "message"
+          label: "optional"
+          template:
+            scalar:
+              type: "string"
+  com.output:
+    label: "optional"
+    template:
+      message:
+        "message":
+          name: "message"
+          label: "optional"
+          template:
+            scalar:
+              type: "string"
+services:
+  caller:
+    methods:
+      Open:
+        input: "com.input"
+        output: "com.output"
+      Upload:
+        input: "com.input"
+        output: "com.output"

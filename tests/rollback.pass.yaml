@@ -1,0 +1,19 @@
+properties:
+  input:
+    label: "optional"
+    template:
+      message:
+        "message":
+          label: "optional"
+          template:
+            scalar:
+              type: "string"
+  output:
+    label: "optional"
+    template:
+      message:
+        "message":
+          label: "optional"
+          template:
+            scalar:
+              type: "string"

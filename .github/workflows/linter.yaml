@@ -1,0 +1,42 @@
+name: CI
+on: [push, pull_request]
+jobs:
+
+  build:
+    name: Linter
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Set up Go 1.14
+      uses: actions/setup-go@v1
+      with:
+        go-version: 1.14
+      id: go
+
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v2
+    
+    - uses: actions/cache@v1
+      with: 
+        path: ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-
+
+    - name: Vet
+      run: go vet ./...
+    
+    - name: Go modules
+      run: |
+        go mod tidy -v
+        go mod vendor
+
+        # tmp ignore due to issue: https://github.com/francoispqt/gojay/pull/157
+        # this ignore should be removed once the pull request has been merged
+        git update-index --assume-unchanged vendor/github.com/francoispqt/gojay/*
+    
+    - name: Git changes
+      run: |
+        echo "check if linters resulted in any changes:"
+        git status --porcelain
+        test -z "$(git status --porcelain)"

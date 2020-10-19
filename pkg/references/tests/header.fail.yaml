@@ -1,0 +1,29 @@
+exception:
+  message: "cannot use type (int32) for 'header.Amount' in flow 'echo', expected (string)"
+properties:
+  com.input:
+    label: "optional"
+    template:
+      message:
+        "amount":
+          name: "amount"
+          label: "optional"
+          template:
+            scalar:
+              type: "int32"
+  com.output:
+    label: "optional"
+    template:
+      message:
+        "amount":
+          name: "amount"
+          label: "optional"
+          template:
+            scalar:
+              type: "string"
+services:
+    caller:
+        methods:
+            Open:
+                input: "com.output"
+                output: "com.output"

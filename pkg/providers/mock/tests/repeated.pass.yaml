@@ -1,0 +1,27 @@
+properties:
+  com.input:
+    label: "optional"
+    template:
+      repeated:
+        - message:
+            message:
+              name: "message"
+              label: "optional"
+              template:
+                scalar:
+                  type: "string"
+  com.output:
+    label: "optional"
+    template:
+      message:
+        "message":
+          label: "optional"
+          template:
+            scalar:
+              type: "int32"
+services:
+  caller:
+    methods:
+      Open:
+        input: com.input
+        output: com.output

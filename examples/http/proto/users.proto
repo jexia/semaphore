@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+import "api/annotations.proto";
+
+package com.semaphore;
+
+service Users {
+    option (semaphore.api.service) = {
+        transport: "http"
+        codec: "json"
+    };
+
+    rpc Get(Query) returns (User) {
+        option (semaphore.api.http) = {
+            endpoint: "/users/1"
+            method: "GET"
+        };
+    };
+}
+
+message Query {
+}
+
+message User {
+    int32 id = 1;
+    string name = 2;
+    string username = 3;
+    string email = 4;
+}

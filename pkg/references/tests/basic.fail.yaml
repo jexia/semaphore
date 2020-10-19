@@ -1,0 +1,29 @@
+exception:
+  message: "flow 'echo' mismatch: nested schema mismatch under property '': type mismatch: object property mismatch: cannot use type (string) for 'message', expected (int32)"
+properties:
+  com.output:
+    label: "optional"
+    template:
+      message:
+        "message":
+          name: "message"
+          label: "optional"
+          template:
+            scalar:
+              type: "int32"
+  com.input:
+    label: "optional"
+    template:
+      message:
+        "message":
+          name: "message"
+          label: "optional"
+          template:
+            scalar:
+              type: "string"
+services:
+  caller:
+    methods:
+      Open:
+        input: "com.output"
+        output: "com.output"
