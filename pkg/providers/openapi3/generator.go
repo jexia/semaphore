@@ -117,25 +117,26 @@ func GenerateOperation(object *Object, endpoint *specs.Endpoint, options *transp
 		}
 
 		if input.Property != nil && flow.GetForward() == nil && RequiresRequestBody(options.Method) {
+			// NOTE: this is a tmp solution since we construct a new object containing only the referenced properties
+			schemaName := flow.GetName() + "Input"
+
 			result.RequestBody = &RequestBody{
 				Content: map[string]MediaType{
 					string(transport.ApplicationJSON): {
 						Schema: Schema{
-							Reference: fmt.Sprintf("#/components/schemas/%s", flow.GetName()+"Input"),
+							Reference: fmt.Sprintf("#/components/schemas/%s", schemaName),
 						},
 					},
 				},
 			}
 
-			paths := providers.Paths{}
+			paths := providers.ReferencedCollection{}
 			providers.FlowReferencedResourcePaths(paths, flow, template.InputResource)
-			result := providers.ConstructReferencedPathsProperty(paths, input.Property)
 
-			pm := input.Clone()
-			pm.Schema = flow.GetName() + "Input"
-			pm.Property = result
+			expected := providers.ConstructReferencedPathsParameterMap(paths, input)
+			expected.Schema = schemaName
 
-			IncludeParameterMap(object, pm)
+			IncludeParameterMap(object, expected)
 		}
 	}
 
