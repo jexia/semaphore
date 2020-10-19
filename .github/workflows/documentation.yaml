@@ -27,4 +27,4 @@ jobs:
     - name: Build and publish documentation
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: sh ./website/scripts/release.sh
+      run: cd website; sh ./scripts/release.sh
