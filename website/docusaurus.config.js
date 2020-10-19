@@ -1,12 +1,12 @@
 module.exports = {
   title: 'Semaphore',
   tagline: 'A straightforward micro-service orchestrator',
-  url: 'https://your-docusaurus-test-site.com',
-  baseUrl: '/',
+  url: 'https://jexia.github.io',
+  baseUrl: '/semaphore/',
   onBrokenLinks: 'throw',
   favicon: 'img/favicon.ico',
-  organizationName: 'facebook', // Usually your GitHub org/user name.
-  projectName: 'docusaurus', // Usually your repo name.
+  organizationName: 'jexia', // Usually your GitHub org/user name.
+  projectName: 'semaphore', // Usually your repo name.
   themeConfig: {
     navbar: {
       title: 'Semaphore',

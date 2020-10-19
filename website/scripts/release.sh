@@ -5,19 +5,10 @@ cd website
 # abort on errors
 set -e
 
-git config --local user.email "action@github.com"
-git config --local user.name "GitHub Action"
+# https://v2.docusaurus.io/docs/deployment#deploying-to-github-pages
+export GIT_USER="Github Action<action@github.com>"
+export DEPLOYMENT_BRANCH="docs"
+export CURRENT_BRANCH="master"
 
 npm install
-
-# build
-npm run build
-
-# if you are deploying to a custom domain
-# echo 'www.example.com' > CNAME
-
-# force add due to ignored in .gitignore
-git add -f ./build
-
-git commit -m 'build: 🏗️ automatically generated documentation'
-git subtree push --force --prefix build origin docs
+npm run deploy
