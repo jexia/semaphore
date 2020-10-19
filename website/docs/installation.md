@@ -1,0 +1,51 @@
+---
+id: installation
+title: Introduction
+sidebar_label: Introduction
+slug: /installation
+---
+
+## What is Semaphore?
+
+Semaphore is a data-aware, high performing **micro-service orchestrator**.
+Create advanced data flows and expose them through multiple protocols such as HTTP, GraphQL, and gRPC.
+Semaphore is designed to adapt to your environment.
+Use your existing schema definitions (OpenAPI3, Protobuffers) to interact with your existing services.
+
+### Key features
+
+* **🔗 Connect with anything** Use the right tool for the job.
+  Semaphore supports various protocols out of the box with
+  the ability to supporting additional protocols through
+  modules. Endpoints could be created to expose a single
+  flow through multiple protocols.
+
+* **🚀 Blazing fast** Semaphore scales up to your needs. Branches
+  are created to execute resources concurrently. Branches are
+  based on dependencies between resources made through
+  references or hard coded values. Creating high-performance
+  flows is almost boringly easy.
+
+* **✅ Transactional flows** Make sure that your data stays consistent.
+  Rollback data when an unexpected response is returned from
+  one of your services. References to returned values could be
+  made allowing to ensure that your customers have the best experience
+  possible.
+
+* **⛩️ Conditional logic** Only call services when needed.
+  Conditional expressions ensure that resources are only
+  executed when needed. Conditions grow to your needs.
+  Whether you want to keep things simple or need to achieve
+  complex goals.
+
+* **🌍 Adapts to your environment** Semaphore integrates
+  with your existing system(s). Define flows through
+  simple and strict typed definitions. Use your already
+  existing schema definitions such as Protobuffers. Or
+  extend Semaphore with custom modules and proprietary
+  software. Integrate services through flow definitions
+  and create a great experience for your customers and
+  your teams.
+
+## Getting started
+

@@ -1,0 +1,159 @@
+---
+id: flows
+title: Getting started
+sidebar_label: Getting started
+slug: /flows
+---
+
+import Link from '@docusaurus/Link';
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+A flow defines a set of actions which have to be executed once a flow gets triggered.
+Flows are defined inside HCL file(s) in a language agnostic manner.
+Resources inside a flow contain 
+
+## Introduction
+
+A flow contains a collection of resources that is executed when an endpoint gets triggered. If an error occurs during the execution of the flow are all rollbacks of executed calls called. A flow could receive a input and produce a output.
+Properties in all resources could be referenced. References could target single values or entire objects.
+References are strict typed and compared against the provided schemas.
+
+```hcl
+flow "CreateUser" {
+    input "com.org.User" {}
+
+    resource "user" {
+        request "com.org.Users" "Create" {}
+
+        rollback {
+            request "com.org.Users" "Delete" {}
+        }
+    }
+
+    output "com.org.User" {
+        id = "{{ user:id }}"
+        ref = "{{ input:ref }}"
+    }
+}
+```
+
+:::important
+Services are defined inside the schema definitions
+:::
+
+Expose flows by defining endpoint(s). An endpoint defines the protocol to be used and protocol-specific options.
+
+```hcl
+endpoint "CreateUser" "http" {
+    endpoint = "/user"
+    method = "POST"
+}
+```
+
+## Resources
+
+A flow contains some predefined resources such as `input` and `error`.
+Custom resources could be defined allowing to interact with external services or to manipulate data.
+
+Resources have unique names which could be referenced.
+To learn more about references check out the <Link to="flows/references#template-references">references documentation</Link>!
+
+```hcl
+resource "<unique name>" {
+
+}
+```
+
+Resources contain variouse blocks which could interact with internal/external services.
+Or define a schema format/rollback when an unexpected error occures.
+The following blocks are available inside a resource definition.
+
+<Tabs
+  defaultValue="request"
+  values={[
+    { label: 'request', value: 'request', },
+    { label: 'rollback', value: 'rollback', },
+    { label: 'error', value: 'error', },
+    { label: 'on_error', value: 'on_error', },
+  ]
+}>
+<TabItem value="request">
+
+```hcl
+resource "<unique name>" {
+    request "com.org.Service" "Method" {
+        property = "constant value"
+    }
+}
+```
+
+Is used to define a service request.
+The transport related options are defined inside the schema or `HCL` definitions.
+
+</TabItem>
+<TabItem value="rollback">
+
+```hcl
+resource "<unique name>" {
+    rollback {
+        request "com.org.Service" "Method" {
+            property = "constant value"
+        }
+    }
+}
+```
+
+Defines actions that have to be executed if an unexpected error happened.
+
+</TabItem>
+<TabItem value="error">
+
+```hcl
+resource "<unique name>" {
+    error "com.org.Schema" {
+        message = "static value"
+    }
+}
+```
+
+Defines the error schema returned to the user if an unexpected error got returned.
+
+</TabItem>
+<TabItem value="on_error">
+
+```hcl
+resource "<unique name>" {
+    on_error {
+        schema = "com.org.Schema"
+        message = "{{ <unique name>.error:message }}"
+        status = 500
+    }
+}
+```
+
+Defines the values returned to the error schema when an unexpected error occured.
+
+</TabItem>
+</Tabs>
+
+## Templates
+
+Templates could reference or manipulate values.
+A template is wrapped in two curly brackets `{{ }}`.
+Functions and references could be defined inside a template.
+The returned value is passed to the assigned property.
+
+```hcl
+property = "{{ }}"
+```
+
+To learn more about references please check out the <Link to="flows/references">resource references documentation</Link>.
+Semaphore shippes with a set of native functions.
+These functions could be executed inside a given template.
+Arguments could be passed to a given function.
+Arguments could consist out of static values or resource references.
+
+```hcl
+property = "{{ custom_function('constant value', resource:path) }}"
+```
