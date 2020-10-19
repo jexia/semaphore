@@ -46,27 +46,6 @@ func (repeated Repeated) clone(seen map[string]*Template) Repeated {
 	var clone = make([]*Template, len(repeated))
 
 	for index, template := range repeated {
-		// if template.Identifier != "" {
-		// 	// log.Println(template.Identifier, seen)
-		//
-		// 	existing, ok := seen[template.Identifier]
-		// 	if ok {
-		// 		clone[index] = existing.Template
-		//
-		// 		continue
-		// 	}
-		//
-		// 	seen[template.Identifier] = &Property{}
-		//
-		// 	clone[index] = template.clone(seen)
-		//
-		// 	// defer func() {
-		// 	seen[template.Identifier].Template = clone[index]
-		// 	// }()
-		//
-		// 	continue
-		// }
-
 		clone[index] = template.clone(seen)
 	}
 
@@ -75,6 +54,10 @@ func (repeated Repeated) clone(seen map[string]*Template) Repeated {
 
 // Compare given repeated to the provided one returning the first mismatch.
 func (repeated Repeated) Compare(expected Repeated) error {
+	return repeated.compare(make(map[string]*Template), expected)
+}
+
+func (repeated Repeated) compare(seen map[string]*Template, expected Repeated) error {
 	if expected == nil && repeated == nil {
 		return nil
 	}
@@ -101,7 +84,7 @@ func (repeated Repeated) Compare(expected Repeated) error {
 		return fmt.Errorf("unkown expected property template: %w", err)
 	}
 
-	err = left.Compare(right)
+	err = left.compare(seen, right)
 	if err != nil {
 		return fmt.Errorf("repeated property: %w", err)
 	}

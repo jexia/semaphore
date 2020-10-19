@@ -89,19 +89,27 @@ func (template *Template) clone(seen map[string]*Template) *Template {
 
 // Compare given template against the provided one returning the frst mismatch.
 func (template Template) Compare(expected *Template) (err error) {
-	return template.compare(NewResolvedProperty(), expected)
+	return template.compare(make(map[string]*Template), expected)
 }
 
-func (template *Template) compare(resolved *ResolvedProperty, expected *Template) (err error) {
+func (template *Template) compare(seen map[string]*Template, expected *Template) (err error) {
+	if template.Identifier != "" {
+		if _, ok := seen[template.Identifier]; ok {
+			return nil
+		}
+
+		seen[template.Identifier] = template
+	}
+
 	switch {
 	case template != nil && expected == nil:
 		err = errors.New("provided template is nil")
 	case expected.Repeated != nil:
-		err = template.Repeated.Compare(expected.Repeated)
+		err = template.Repeated.compare(seen, expected.Repeated)
 	case expected.Scalar != nil:
 		err = template.Scalar.Compare(expected.Scalar)
 	case expected.Message != nil:
-		err = template.Message.compare(resolved, expected.Message)
+		err = template.Message.compare(seen, expected.Message)
 	case expected.Enum != nil:
 		err = template.Enum.Compare(expected.Enum)
 	}

@@ -102,17 +102,11 @@ func (property *Property) clone(seen map[string]*Template) *Property {
 }
 
 func (property *Property) Compare(expected *Property) error {
-	return property.compare(NewResolvedProperty(), expected)
+	return property.compare(make(map[string]*Template), expected)
 }
 
 // Compare checks the given property against the provided one.
-func (property *Property) compare(resolved *ResolvedProperty, expected *Property) error {
-	if resolved.Resolved(property) {
-		return nil
-	}
-
-	resolved.Resolve(property)
-
+func (property *Property) compare(seen map[string]*Template, expected *Property) error {
 	if expected == nil {
 		return fmt.Errorf("unable to check types for '%s' no schema given", property.Path)
 	}
@@ -133,7 +127,7 @@ func (property *Property) compare(resolved *ResolvedProperty, expected *Property
 		return fmt.Errorf("schema '%s' has a nested object but property does not '%s'", expected.Name, property.Path)
 	}
 
-	if err := property.Template.compare(resolved, expected.Template); err != nil {
+	if err := property.Template.compare(seen, expected.Template); err != nil {
 		return fmt.Errorf("nested schema mismatch under property '%s': %w", property.Path, err)
 	}
 

@@ -247,11 +247,12 @@ func (lookup *PropertyLookup) Lookup(path string) *specs.Property {
 		}
 		lookup.seen.Resolve(template)
 
-		return NewPropertyLookup(
-			&specs.Property{
+		return (&PropertyLookup{
+			property: &specs.Property{
 				Template: template,
 			},
-		).Lookup(path)
+			seen: lookup.seen,
+		}).Lookup(path)
 	case lookup.property.Message != nil:
 		for _, nested := range lookup.property.Template.Message {
 			if lookup.seen.Resolved(nested.Template) {
