@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-cd docs
+cd website
 
 # abort on errors
 set -e
