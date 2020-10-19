@@ -13,6 +13,7 @@ import (
 	"github.com/jexia/semaphore/pkg/codec/xml"
 	"github.com/jexia/semaphore/pkg/metrics/prometheus"
 	"github.com/jexia/semaphore/pkg/providers/hcl"
+	"github.com/jexia/semaphore/pkg/providers/openapi3"
 	"github.com/jexia/semaphore/pkg/providers/protobuffers"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/transport/graphql"
@@ -32,6 +33,7 @@ type Daemon struct {
 	GRPC         GRPC
 	Prometheus   Prometheus
 	Protobuffers []string
+	Openapi3     []string
 	Files        []string
 }
 
@@ -95,6 +97,10 @@ func parseHCL(options *hcl.Options, target *Daemon) {
 		target.Protobuffers = append(target.Protobuffers, options.Protobuffers...)
 	}
 
+	if len(options.Openapi3) > 0 {
+		target.Protobuffers = append(target.Openapi3, options.Openapi3...)
+	}
+
 	if options.GraphQL != nil && target.GraphQL.Address == "" {
 		target.GraphQL = GraphQL(*options.GraphQL)
 	}
@@ -153,6 +159,13 @@ func NewProviders(ctx *broker.Context, core semaphore.Options, params *Daemon) (
 	for _, path := range params.Protobuffers {
 		options = append(options, providers.WithSchema(protobuffers.SchemaResolver(params.Protobuffers, path)))
 		options = append(options, providers.WithServices(protobuffers.ServiceResolver(params.Protobuffers, path)))
+	}
+
+	if len(params.Openapi3) != 0 {
+		options = append(
+			options,
+			providers.WithSchema(openapi3.SchemaResolver(params.Openapi3)),
+		)
 	}
 
 	if params.HTTP.Address != "" {

@@ -6,7 +6,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/jexia/semaphore/pkg/providers/openapi3/types"
+	"github.com/jexia/semaphore/pkg/generators/openapi3/types"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/labels"
 	transport "github.com/jexia/semaphore/pkg/transport/http"
