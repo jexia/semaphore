@@ -1117,13 +1117,15 @@ func TestPropertyLookup(t *testing.T) {
 		"self reference": {
 			path: ".",
 			param: &specs.Property{
-				Path: "key",
+				Path:     "key",
+				Template: new(specs.Template),
 			},
 		},
 		"simple": {
 			path: "key",
 			param: &specs.Property{
-				Path: "key",
+				Path:     "key",
+				Template: new(specs.Template),
 			},
 		},
 		"nested": {
@@ -1133,8 +1135,9 @@ func TestPropertyLookup(t *testing.T) {
 				Template: &specs.Template{
 					Message: specs.Message{
 						"nested": {
-							Name: "nested",
-							Path: "key.nested",
+							Name:     "nested",
+							Path:     "key.nested",
+							Template: new(specs.Template),
 						},
 					},
 				},

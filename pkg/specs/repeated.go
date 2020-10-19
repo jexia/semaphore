@@ -12,7 +12,7 @@ type Repeated []*Template
 // elements to detect the data type(s).
 // Note that all the references must be resolved before calling this method.
 func (repeated Repeated) Template() (*Template, error) {
-	var template *Template
+	var template = new(Template)
 
 	// check if all element types are the same
 	// TODO: remove once "oneOf" support is added

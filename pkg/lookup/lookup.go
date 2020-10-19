@@ -216,14 +216,14 @@ func HeaderLookup(header specs.Header) PathLookup {
 
 type PropertyLookup struct {
 	property *specs.Property
-	seen     *specs.ResolvedProperty
+	seen     specs.ResolvedTemplate
 	found    *specs.Property
 }
 
 func NewPropertyLookup(property *specs.Property) *PropertyLookup {
 	return &PropertyLookup{
 		property: property,
-		seen:     specs.NewResolvedProperty(),
+		seen:     make(specs.ResolvedTemplate),
 		found:    nil,
 	}
 }
@@ -231,7 +231,7 @@ func NewPropertyLookup(property *specs.Property) *PropertyLookup {
 // PropertyLookup attempts to lookup the given path inside the params collection
 func (lookup *PropertyLookup) Lookup(path string) *specs.Property {
 	switch {
-	case lookup.property == nil:
+	case lookup.property == nil || lookup.property.Template == nil:
 		return nil
 	case path == SelfRef:
 		return lookup.property
@@ -239,7 +239,14 @@ func (lookup *PropertyLookup) Lookup(path string) *specs.Property {
 		return lookup.property
 	case lookup.property.Repeated != nil:
 		// TODO: allow to reference indexes
+		// TODO: add index to Template.Identifier
 		var template, _ = lookup.property.Repeated.Template()
+
+		if lookup.seen.Resolved(template) {
+			return nil
+		}
+		lookup.seen.Resolve(template)
+
 		return NewPropertyLookup(
 			&specs.Property{
 				Template: template,
@@ -247,10 +254,10 @@ func (lookup *PropertyLookup) Lookup(path string) *specs.Property {
 		).Lookup(path)
 	case lookup.property.Message != nil:
 		for _, nested := range lookup.property.Template.Message {
-			if lookup.seen.Resolved(nested) {
+			if lookup.seen.Resolved(nested.Template) {
 				continue
 			}
-			lookup.seen.Resolve(nested)
+			lookup.seen.Resolve(nested.Template)
 
 			lookup := (&PropertyLookup{
 				property: nested,

@@ -148,11 +148,11 @@ func ResolvePropertyReferences(tmpl *specs.Template, dependencies specs.Dependen
 }
 
 func resolvePropertyReferences(resolved specs.ResolvedTemplate, tmpl *specs.Template, dependencies specs.Dependencies) {
-	if resolved.Resolved(*tmpl) {
+	if resolved.Resolved(tmpl) {
 		return
 	}
 
-	resolved.Resolve(*tmpl)
+	resolved.Resolve(tmpl)
 
 	switch {
 	case tmpl.Repeated != nil:

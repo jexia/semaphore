@@ -14,7 +14,7 @@ func NewResolvedProperty() *ResolvedProperty {
 
 func (resolved ResolvedProperty) Resolved(property *Property) bool {
 	if property.Template != nil && property.Identifier != "" {
-		return resolved.ResolvedTemplate.Resolved(*property.Template)
+		return resolved.ResolvedTemplate.Resolved(property.Template)
 	}
 
 	if property.Path != "" {
@@ -28,7 +28,7 @@ func (resolved ResolvedProperty) Resolved(property *Property) bool {
 
 func (resolved ResolvedProperty) Resolve(property *Property) {
 	if property.Template != nil && property.Identifier != "" {
-		resolved.ResolvedTemplate.Resolve(*property.Template)
+		resolved.ResolvedTemplate.Resolve(property.Template)
 	}
 
 	if property.Path != "" {
@@ -38,12 +38,12 @@ func (resolved ResolvedProperty) Resolve(property *Property) {
 
 type ResolvedTemplate map[string]struct{}
 
-func (resolved ResolvedTemplate) Resolved(template Template) bool {
+func (resolved ResolvedTemplate) Resolved(template *Template) bool {
 	_, ok := resolved[template.Identifier]
 
 	return ok
 }
 
-func (resolved ResolvedTemplate) Resolve(template Template) {
+func (resolved ResolvedTemplate) Resolve(template *Template) {
 	resolved[template.Identifier] = struct{}{}
 }
