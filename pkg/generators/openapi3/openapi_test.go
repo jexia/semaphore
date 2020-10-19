@@ -75,7 +75,7 @@ func TestOpenAPI3Generation(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			result, err := Generate(collection.EndpointList, collection.FlowListInterface)
+			result, err := Generate(collection.EndpointList, collection.FlowListInterface, IncludeNotReferenced)
 			if err != nil {
 				t.Fatal(err)
 			}

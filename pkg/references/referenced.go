@@ -1,4 +1,4 @@
-package providers
+package references
 
 import (
 	"github.com/jexia/semaphore/pkg/specs"
@@ -32,20 +32,20 @@ func (collection ReferencedCollection) Has(path string) bool {
 	return has
 }
 
-// ConstructReferencedPathsParameterMap constructs a new parameter map containing
+// ReferencedParameterMapPaths constructs a new parameter map containing
 // only the paths provided inisde the references collection. All properties
 // not found iniside the collection will be ignored.
-func ConstructReferencedPathsParameterMap(referenced ReferencedCollection, property *specs.ParameterMap) *specs.ParameterMap {
+func ReferencedParameterMapPaths(referenced ReferencedCollection, property *specs.ParameterMap) *specs.ParameterMap {
 	result := property.Clone()
-	result.Property = ConstructReferencedPathsProperty(referenced, result.Property)
+	result.Property = ReferencedPathsProperty(referenced, result.Property)
 
 	return result
 }
 
-// ConstructReferencedPathsProperty constructs a new property containing
+// ReferencedPathsProperty constructs a new property containing
 // only the paths provided inisde the references collection. All properties
 // not found iniside the collection will be ignored.
-func ConstructReferencedPathsProperty(referenced ReferencedCollection, property *specs.Property) *specs.Property {
+func ReferencedPathsProperty(referenced ReferencedCollection, property *specs.Property) *specs.Property {
 	if property == nil {
 		return nil
 	}
@@ -87,24 +87,28 @@ func removeNoneReferencedPathsTemplate(referenced ReferencedCollection, path str
 	}
 }
 
-// FlowReferencedResourcePaths defines all paths references to the given resource
+// ReferencedResourcePaths defines all paths references to the given resource
 // inside the given flow. These references could be used to only include the properties
 // used and referenced inside a given flow.
-func FlowReferencedResourcePaths(target ReferencedCollection, flow specs.FlowInterface, resource string) {
+func ReferencedResourcePaths(flow specs.FlowInterface, resource string) ReferencedCollection {
+	result := ReferencedCollection{}
+
 	for _, node := range flow.GetNodes() {
 		if node.Call != nil {
-			parameterMapReferencedResourcePaths(target, node.Call.Request, resource)
-			parameterMapReferencedResourcePaths(target, node.Call.Response, resource)
+			parameterMapReferencedResourcePaths(result, node.Call.Request, resource)
+			parameterMapReferencedResourcePaths(result, node.Call.Response, resource)
 		}
 
-		parameterMapReferencedResourcePaths(target, node.Intermediate, resource)
+		parameterMapReferencedResourcePaths(result, node.Intermediate, resource)
 
 		if node.Condition != nil {
-			parameterMapReferencedResourcePaths(target, node.Condition.Params, resource)
+			parameterMapReferencedResourcePaths(result, node.Condition.Params, resource)
 		}
 	}
 
-	parameterMapReferencedResourcePaths(target, flow.GetOutput(), resource)
+	parameterMapReferencedResourcePaths(result, flow.GetOutput(), resource)
+
+	return result
 }
 
 func parameterMapReferencedResourcePaths(target ReferencedCollection, parameters *specs.ParameterMap, resource string) {
