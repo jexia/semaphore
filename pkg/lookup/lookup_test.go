@@ -970,15 +970,15 @@ func TestGetResourceReference(t *testing.T) {
 
 	for input, expected := range tests {
 		var (
-			reference = NewPropertyReference(input[0], input[1])
-			title     = reference.String()
+			reference   = NewPropertyReference(input[0], input[1])
+			resource, _ = ParseResource(reference.Resource)
+			title       = reference.String()
 		)
 
 		t.Run(title, func(t *testing.T) {
 			var (
-				resource, _ = ParseResource(reference.Resource)
-				references  = GetAvailableResources(flow, "first")
-				result      = GetResourceReference(reference, references, resource)
+				references = GetAvailableResources(flow, "first")
+				result     = GetResourceReference(reference, references, resource)
 			)
 
 			if result == nil {
@@ -1147,7 +1147,7 @@ func TestPropertyLookup(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			lookup := NewPropertyLookup(test.param).Lookup
+			lookup := PropertyLookup(test.param)
 			result := lookup(test.path)
 			if result == nil {
 				t.Fatal("unexpected empty result")
@@ -1196,7 +1196,12 @@ func TestGetReference(t *testing.T) {
 	prop := "input.request"
 
 	references := ReferenceMap{
-		prop: NewPropertyLookup(&specs.Property{Path: path}).Lookup,
+		prop: PropertyLookup(
+			&specs.Property{
+				Path:     path,
+				Template: &specs.Template{},
+			},
+		),
 	}
 
 	result := GetReference(path, prop, references)
@@ -1210,7 +1215,7 @@ func TestUnknownReference(t *testing.T) {
 	prop := "input.request"
 
 	references := ReferenceMap{
-		prop: NewPropertyLookup(&specs.Property{Path: path}).Lookup,
+		prop: PropertyLookup(&specs.Property{Path: path}),
 	}
 
 	result := GetReference(path, "unknown", references)

@@ -71,7 +71,7 @@ func GetAvailableResources(flow specs.FlowInterface, breakpoint string) map[stri
 
 	if flow.GetInput() != nil {
 		references[template.InputResource] = ReferenceMap{
-			template.RequestResource: NewPropertyLookup(flow.GetInput().Property).Lookup,
+			template.RequestResource: PropertyLookup(flow.GetInput().Property),
 			template.HeaderResource:  HeaderLookup(flow.GetInput().Header),
 		}
 	}
@@ -91,11 +91,11 @@ func GetAvailableResources(flow specs.FlowInterface, breakpoint string) map[stri
 		if node.Intermediate != nil {
 			if node.Intermediate.Stack != nil {
 				for key, returns := range node.Intermediate.Stack {
-					references[template.StackResource][key] = NewPropertyLookup(returns).Lookup
+					references[template.StackResource][key] = PropertyLookup(returns)
 				}
 			}
 
-			references[node.ID][template.ResponseResource] = NewPropertyLookup(node.Intermediate.Property).Lookup
+			references[node.ID][template.ResponseResource] = PropertyLookup(node.Intermediate.Property)
 			references[node.ID][template.HeaderResource] = VariableHeaderLookup(node.Intermediate.Header)
 		}
 
@@ -103,22 +103,22 @@ func GetAvailableResources(flow specs.FlowInterface, breakpoint string) map[stri
 			if node.Call.Request != nil {
 				if node.Call.Request.Stack != nil {
 					for key, returns := range node.Call.Request.Stack {
-						references[template.StackResource][key] = NewPropertyLookup(returns).Lookup
+						references[template.StackResource][key] = PropertyLookup(returns)
 					}
 				}
 
 				references[node.ID][template.ParamsResource] = ParamsLookup(node.Call.Request.Params, flow, breakpoint)
-				references[node.ID][template.RequestResource] = NewPropertyLookup(node.Call.Request.Property).Lookup
+				references[node.ID][template.RequestResource] = PropertyLookup(node.Call.Request.Property)
 			}
 
 			if node.Call.Response != nil {
 				if node.Call.Response.Stack != nil {
 					for key, returns := range node.Call.Response.Stack {
-						references[template.StackResource][key] = NewPropertyLookup(returns).Lookup
+						references[template.StackResource][key] = PropertyLookup(returns)
 					}
 				}
 
-				references[node.ID][template.ResponseResource] = NewPropertyLookup(node.Call.Response.Property).Lookup
+				references[node.ID][template.ResponseResource] = PropertyLookup(node.Call.Response.Property)
 				references[node.ID][template.HeaderResource] = VariableHeaderLookup(node.Call.Response.Header)
 			}
 		}
@@ -131,7 +131,7 @@ func GetAvailableResources(flow specs.FlowInterface, breakpoint string) map[stri
 				}
 
 				if node.GetOnError().Response != nil {
-					references[node.ID][template.ErrorResource] = NewPropertyLookup(node.GetOnError().Response.Property).Lookup
+					references[node.ID][template.ErrorResource] = PropertyLookup(node.GetOnError().Response.Property)
 				}
 			}
 		}
@@ -140,7 +140,7 @@ func GetAvailableResources(flow specs.FlowInterface, breakpoint string) map[stri
 	if flow.GetOutput() != nil {
 		if flow.GetOutput().Stack != nil {
 			for key, returns := range flow.GetOutput().Stack {
-				references[template.StackResource][key] = NewPropertyLookup(returns).Lookup
+				references[template.StackResource][key] = PropertyLookup(returns)
 			}
 		}
 	}
@@ -214,64 +214,52 @@ func HeaderLookup(header specs.Header) PathLookup {
 	}
 }
 
-type PropertyLookup struct {
-	property *specs.Property
-	seen     specs.ResolvedTemplate
-	found    *specs.Property
-}
-
-func NewPropertyLookup(property *specs.Property) *PropertyLookup {
-	return &PropertyLookup{
-		property: property,
-		seen:     make(specs.ResolvedTemplate),
-		found:    nil,
-	}
-}
-
 // PropertyLookup attempts to lookup the given path inside the params collection
-func (lookup *PropertyLookup) Lookup(path string) *specs.Property {
-	switch {
-	case lookup.property == nil || lookup.property.Template == nil:
-		return nil
-	case path == SelfRef:
-		return lookup.property
-	case lookup.property.Path == path:
-		return lookup.property
-	case lookup.property.Repeated != nil:
-		// TODO: allow to reference indexes
-		// TODO: add index to Template.Identifier
-		var template, _ = lookup.property.Repeated.Template()
+func PropertyLookup(property *specs.Property) PathLookup {
+	return propertyLookup(make(map[string]*specs.Template), property)
+}
 
-		if lookup.seen.Resolved(template) {
+func propertyLookup(seen map[string]*specs.Template, property *specs.Property) PathLookup {
+	return func(path string) *specs.Property {
+		if property == nil || property.Template == nil {
 			return nil
 		}
-		lookup.seen.Resolve(template)
 
-		return (&PropertyLookup{
-			property: &specs.Property{
-				Template: template,
-			},
-			seen: lookup.seen,
-		}).Lookup(path)
-	case lookup.property.Message != nil:
-		for _, nested := range lookup.property.Template.Message {
-			if lookup.seen.Resolved(nested.Template) {
-				continue
+		if property.Identifier != "" {
+			if _, ok := seen[property.Identifier]; ok {
+				return nil
 			}
-			lookup.seen.Resolve(nested.Template)
 
-			lookup := (&PropertyLookup{
-				property: nested,
-				seen:     lookup.seen,
-			}).Lookup(path)
-			if lookup != nil {
-				return lookup
-			}
+			seen[property.Identifier] = property.Template
 		}
 
-		return nil
-	default:
-		return nil
+		switch {
+		case path == SelfRef:
+			return property
+		case property.Path == path:
+			return property
+		case property.Repeated != nil:
+			// TODO: allow to reference indexes
+			var template, _ = property.Repeated.Template()
+			return propertyLookup(
+				seen,
+				&specs.Property{
+					Template: template,
+				},
+			)(path)
+		case property.Message != nil:
+			for _, nested := range property.Template.Message {
+
+				lookup := propertyLookup(seen, nested)(path)
+				if lookup != nil {
+					return lookup
+				}
+			}
+
+			return nil
+		default:
+			return nil
+		}
 	}
 }
 
