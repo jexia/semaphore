@@ -14,14 +14,14 @@ type Template struct {
 
 	Identifier string
 
-	Reference *PropertyReference `json:"reference,omitempty"` // Reference represents a property reference made inside the given property
+	// Reference represents a property reference made inside the given property
+	Reference *PropertyReference `json:"reference,omitempty"`
 
 	// Only one of the following fields should be set
 	Scalar   *Scalar  `json:"scalar,omitempty" yaml:"scalar,omitempty"`
 	Enum     *Enum    `json:"enum,omitempty" yaml:"enum,omitempty"`
 	Repeated Repeated `json:"repeated,omitempty" yaml:"repeated,omitempty"`
 	Message  Message  `json:"message,omitempty" yaml:"message,omitempty"`
-	OneOf    *OneOf   `json:"oneof,omitempty" yaml:"oneof,omitempty"`
 }
 
 // Type returns the type of the given template.
@@ -33,8 +33,6 @@ func (template *Template) Type() types.Type {
 		return types.Message
 	case template.Repeated != nil:
 		return types.Array
-	case template.OneOf != nil:
-		return types.OneOf
 	case template.Enum != nil:
 		return types.Enum
 	case template.Scalar != nil:
