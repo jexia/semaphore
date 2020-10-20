@@ -14,4 +14,15 @@ git clone -b docs "https://$GITHUB_ACTOR:$GITHUB_TOKEN@github.com/jexia/semaphor
 rm -rf ./semaphore/*
 mv ./build/* ./semaphore
 
-(cd semaphore; git add -A; git commit -m 'build: 🏗️ automatically generated documentation'; git push)
+cd semaphore;
+
+if [ -z $(git status --porcelain) ];
+then
+    echo "docs up to date nothing to commit"
+else
+    echo "comitting latest changes"
+    git add -A
+    git commit -m 'build: 🏗️ automatically generated documentation'git push
+fi
+
+cd ..
