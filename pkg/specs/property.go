@@ -54,6 +54,19 @@ type Property struct {
 	*Template `json:"template" yaml:"template"`
 }
 
+func (property *Property) String() string {
+	switch {
+	case property.Path != "":
+		return property.Path
+	case property.Name != "":
+		return property.Name
+	case property.Template != nil && property.Identifier != "":
+		return fmt.Sprintf("<unknown property with type ID: %s>", property.Template.Identifier)
+	default:
+		return "<unknown property>"
+	}
+}
+
 // DefaultValue returns rge default value for a given property.
 func (property *Property) DefaultValue() interface{} {
 	switch {
@@ -128,7 +141,7 @@ func (property *Property) compare(seen map[string]*Template, expected *Property)
 	}
 
 	if err := property.Template.compare(seen, expected.Template); err != nil {
-		return fmt.Errorf("nested schema mismatch under property '%s': %w", property.Path, err)
+		return fmt.Errorf("nested schema mismatch under property '%s': %w", property, err)
 	}
 
 	return nil

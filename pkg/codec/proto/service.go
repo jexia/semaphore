@@ -35,20 +35,12 @@ func (service *Service) FileDescriptor() (*desc.FileDescriptor, error) {
 			req  = builder.NewMessage(name + "Request")
 		)
 
-		if err := ConstructMessage(
-			make(map[string]*builder.MessageBuilder),
-			req,
-			method.GetRequest(),
-		); err != nil {
+		if err := ConstructMessage(req, method.GetRequest()); err != nil {
 			return nil, err
 		}
 
 		resp := builder.NewMessage(name + "Response")
-		if err := ConstructMessage(
-			make(map[string]*builder.MessageBuilder),
-			resp,
-			method.GetResponse(),
-		); err != nil {
+		if err := ConstructMessage(resp, method.GetResponse()); err != nil {
 			return nil, err
 		}
 

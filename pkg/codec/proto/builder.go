@@ -33,7 +33,7 @@ func newMessage(builders map[string]*builder.MessageBuilder, name string, proper
 	builder := builder.NewMessage(name)
 	builders[property.Identifier] = builder
 
-	if err := ConstructMessage(builders, builder, property.Message); err != nil {
+	if err := constructMessage(builders, builder, property.Message); err != nil {
 		return nil, false, err
 	}
 
@@ -41,7 +41,11 @@ func newMessage(builders map[string]*builder.MessageBuilder, name string, proper
 }
 
 // ConstructMessage constructs a proto message of the given specs into the given message builders
-func ConstructMessage(builders map[string]*builder.MessageBuilder, messageBuilder *builder.MessageBuilder, message specs.Message) (err error) {
+func ConstructMessage(messageBuilder *builder.MessageBuilder, message specs.Message) (err error) {
+	return constructMessage(make(map[string]*builder.MessageBuilder), messageBuilder, message)
+}
+
+func constructMessage(builders map[string]*builder.MessageBuilder, messageBuilder *builder.MessageBuilder, message specs.Message) (err error) {
 	for _, property := range message {
 		typed, err := ConstructFieldType(builders, property.Name+"Type", messageBuilder, property)
 		if err != nil {

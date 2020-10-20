@@ -29,6 +29,7 @@ type Reference struct {
 	Value    interface{}
 	Repeated []Store
 	Enum     *int32
+	Object   map[string]*Reference
 	mutex    sync.Mutex
 }
 

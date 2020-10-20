@@ -1,21 +1,21 @@
 flow "complete" {
-	input "proto.Message" {}
+  input "proto.Message" {}
 
-	resource "first" {
-		request "proto.test" "complete" {
-			message = "{{ input:message }}"
+  resource "first" {
+    request "proto.test" "complete" {
+      message = "{{ input:message }}"
 
-			message "nested" {
-				value = "{{ input:nested.value }}"
-			}
+      message "nested" {
+        value = "{{ input:nested.value }}"
+      }
 
-			repeated "repeating" "input:repeating" {
-				value = "{{input:repeating.value}}"
-			}
+      repeated "repeating" "input:repeating" {
+        value = "{{input:repeating.value}}"
+      }
 
-			repeating_values = "{{ input:repeating_values }}"
-			status = "{{ input:status }}"
-			repeating_status = "{{ input:repeating_status }}"
-		}
-	}
+      repeating_values = "{{ input:repeating_values }}"
+      status           = "{{ input:status }}"
+      repeating_status = "{{ input:repeating_status }}"
+    }
+  }
 }

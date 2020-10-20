@@ -145,7 +145,9 @@ func BenchmarkSimpleMarshal(b *testing.B) {
 			b.Fatal(err)
 		}
 
-		ioutil.ReadAll(reader)
+		if _, err := ioutil.ReadAll(reader); err != nil {
+			b.Fatalf("unexpected error: %s", err)
+		}
 	}
 }
 
@@ -182,7 +184,9 @@ func BenchmarkNestedMarshal(b *testing.B) {
 			b.Fatal(err)
 		}
 
-		ioutil.ReadAll(reader)
+		if _, err := ioutil.ReadAll(reader); err != nil {
+			b.Fatalf("unexpected error: %s", err)
+		}
 	}
 }
 
@@ -221,7 +225,9 @@ func BenchmarkRepeatedMarshal(b *testing.B) {
 			b.Fatal(err)
 		}
 
-		ioutil.ReadAll(reader)
+		if _, err := ioutil.ReadAll(reader); err != nil {
+			b.Fatalf("unexpected error: %s", err)
+		}
 	}
 }
 

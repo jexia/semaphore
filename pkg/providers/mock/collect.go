@@ -102,7 +102,7 @@ func walkTemplate(path string, template *specs.Template) {
 
 	if template.Repeated != nil {
 		for _, repeated := range template.Repeated {
-			walkTemplate(path, &repeated)
+			walkTemplate(path, repeated)
 		}
 	}
 }

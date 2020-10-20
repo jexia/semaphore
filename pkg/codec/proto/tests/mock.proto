@@ -42,5 +42,4 @@ message Value {
     string value = 1;
 }
 
-message Empty {
-}
+message Empty {}
