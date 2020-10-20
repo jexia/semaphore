@@ -49,7 +49,7 @@ func TestErrUndefinedReference_Prettify(t *testing.T) {
 		err := ErrUndefinedReference{
 			Property: &specs.Property{
 				Path: "there",
-				Template: specs.Template{
+				Template: &specs.Template{
 					Reference: &specs.PropertyReference{Resource: "user", Path: "name"},
 				},
 			},

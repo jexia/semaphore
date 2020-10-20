@@ -47,8 +47,8 @@ func BenchmarkStoreSingleReference(b *testing.B) {
 	store := NewReferenceStore(b.N)
 
 	reference := &Reference{
-		Path:  ".",
-		Value: input,
+		Path:   ".",
+		Scalar: input,
 	}
 
 	b.ReportAllocs()
@@ -162,8 +162,8 @@ func TestStoreReference(t *testing.T) {
 
 	resource := "input"
 	ref := &Reference{
-		Path:  "test",
-		Value: "hello world",
+		Path:   "test",
+		Scalar: "hello world",
 	}
 
 	store.StoreReference(resource, ref)
@@ -176,8 +176,8 @@ func TestStoreReference(t *testing.T) {
 		t.Fatalf("unexpected path %s, expected %s", result.Path, ref.Path)
 	}
 
-	if result.Value != ref.Value {
-		t.Fatalf("unexpected value %+v, expected %+v", result.Value, ref.Value)
+	if result.Scalar != ref.Scalar {
+		t.Fatalf("unexpected value %+v, expected %+v", result.Scalar, ref.Scalar)
 	}
 }
 
@@ -210,8 +210,8 @@ func TestStoreValues(t *testing.T) {
 		t.Fatalf("unexpected path %s, expected %s", result.Path, target)
 	}
 
-	if result.Value != value {
-		t.Fatalf("unexpected value %+v, expected %+v", result.Value, value)
+	if result.Scalar != value {
+		t.Fatalf("unexpected value %+v, expected %+v", result.Scalar, value)
 	}
 }
 
@@ -240,8 +240,8 @@ func TestStoreNestedValues(t *testing.T) {
 		t.Fatalf("unexpected path %s, expected %s", result.Path, target)
 	}
 
-	if result.Value != value {
-		t.Fatalf("unexpected value %+v, expected %+v", result.Value, value)
+	if result.Scalar != value {
+		t.Fatalf("unexpected value %+v, expected %+v", result.Scalar, value)
 	}
 }
 
@@ -286,8 +286,8 @@ func TestStoreRepeatedMap(t *testing.T) {
 		t.Fatalf("unexpected path %s, expected %s", result.Path, target)
 	}
 
-	if result.Value != value {
-		t.Fatalf("unexpected value %+v, expected %+v", result.Value, value)
+	if result.Scalar != value {
+		t.Fatalf("unexpected value %+v, expected %+v", result.Scalar, value)
 	}
 }
 
@@ -399,8 +399,8 @@ func TestStoreRepeatedValues(t *testing.T) {
 		t.Fatal("did not return repeating reference")
 	}
 
-	if result.Value != value {
-		t.Fatalf("unexpected value %+v, expected %+v", result.Value, value)
+	if result.Scalar != value {
+		t.Fatalf("unexpected value %+v, expected %+v", result.Scalar, value)
 	}
 }
 
@@ -437,8 +437,8 @@ func TestStoreRepeatedAppend(t *testing.T) {
 		t.Fatal("did not return repeating reference")
 	}
 
-	if result.Value != value {
-		t.Fatalf("unexpected value %+v, expected %+v", result.Value, value)
+	if result.Scalar != value {
+		t.Fatalf("unexpected value %+v, expected %+v", result.Scalar, value)
 	}
 
 	original := len(result.Repeated)
@@ -464,8 +464,8 @@ func TestPrefixStoreValue(t *testing.T) {
 		t.Fatal("unable to load reference from prefix store")
 	}
 
-	if ref.Value != value {
-		t.Fatalf("unexpected reference value '%+v', expected '%+v'", ref.Value, value)
+	if ref.Scalar != value {
+		t.Fatalf("unexpected reference value '%+v', expected '%+v'", ref.Scalar, value)
 	}
 
 	ref = store.Load(resource, template.JoinPath(prefix, path))
@@ -473,8 +473,8 @@ func TestPrefixStoreValue(t *testing.T) {
 		t.Fatal("unable to load reference from reference store")
 	}
 
-	if ref.Value != value {
-		t.Fatalf("unexpected reference value '%+v', expected '%+v'", ref.Value, value)
+	if ref.Scalar != value {
+		t.Fatalf("unexpected reference value '%+v', expected '%+v'", ref.Scalar, value)
 	}
 }
 
@@ -528,8 +528,8 @@ func TestPrefixStoreValues(t *testing.T) {
 		t.Fatal("unable to load reference from prefix store")
 	}
 
-	if ref.Value != value {
-		t.Fatalf("unexpected value '%s', expected '%s'", ref.Value, value)
+	if ref.Scalar != value {
+		t.Fatalf("unexpected value '%s', expected '%s'", ref.Scalar, value)
 	}
 
 	ref = store.Load(resource, template.JoinPath(prefix, path))
@@ -537,8 +537,8 @@ func TestPrefixStoreValues(t *testing.T) {
 		t.Fatal("unable to load reference from reference store")
 	}
 
-	if ref.Value != value {
-		t.Fatalf("unexpected reference value '%+v', expected '%+v'", ref.Value, value)
+	if ref.Scalar != value {
+		t.Fatalf("unexpected reference value '%+v', expected '%+v'", ref.Scalar, value)
 	}
 }
 
@@ -602,7 +602,7 @@ func TestParameterMapReferences(t *testing.T) {
 			params: &specs.ParameterMap{
 				Header: specs.Header{
 					"key": &specs.Property{
-						Template: specs.Template{
+						Template: &specs.Template{
 							Reference: &specs.PropertyReference{
 								Path: "key",
 							},
@@ -615,7 +615,7 @@ func TestParameterMapReferences(t *testing.T) {
 			count: 1,
 			params: &specs.ParameterMap{
 				Property: &specs.Property{
-					Template: specs.Template{
+					Template: &specs.Template{
 						Reference: &specs.PropertyReference{
 							Path: "key",
 						},
@@ -627,12 +627,12 @@ func TestParameterMapReferences(t *testing.T) {
 			count: 2,
 			params: &specs.ParameterMap{
 				Property: &specs.Property{
-					Template: specs.Template{
+					Template: &specs.Template{
 						Message: specs.Message{
 							"first": {
 								Name: "first",
 								Path: "first",
-								Template: specs.Template{
+								Template: &specs.Template{
 									Reference: &specs.PropertyReference{
 										Path: "key",
 									},
@@ -641,7 +641,7 @@ func TestParameterMapReferences(t *testing.T) {
 							"second": {
 								Name: "second",
 								Path: "second",
-								Template: specs.Template{
+								Template: &specs.Template{
 									Reference: &specs.PropertyReference{
 										Path: "else",
 									},
@@ -656,12 +656,12 @@ func TestParameterMapReferences(t *testing.T) {
 			count: 1,
 			params: &specs.ParameterMap{
 				Property: &specs.Property{
-					Template: specs.Template{
+					Template: &specs.Template{
 						Message: specs.Message{
 							"first": {
 								Name: "first",
 								Path: "first",
-								Template: specs.Template{
+								Template: &specs.Template{
 									Reference: &specs.PropertyReference{
 										Path: "key",
 									},
@@ -670,7 +670,7 @@ func TestParameterMapReferences(t *testing.T) {
 							"second": {
 								Name: "second",
 								Path: "second",
-								Template: specs.Template{
+								Template: &specs.Template{
 									Reference: &specs.PropertyReference{
 										Path: "key",
 									},
@@ -712,8 +712,8 @@ func TestReferenceString(t *testing.T) {
 		},
 		"value to string": {
 			reference: &Reference{
-				Path:  "test",
-				Value: 42,
+				Path:   "test",
+				Scalar: 42,
 			},
 			expected: "test:<int(42)>",
 		},
@@ -755,7 +755,6 @@ func TestReferenceString(t *testing.T) {
 			}
 		})
 	}
-
 }
 
 func TestStoreString(t *testing.T) {
@@ -769,12 +768,12 @@ func TestStoreString(t *testing.T) {
 			store: &store{
 				values: map[string]*Reference{
 					"first": {
-						Path:  "key",
-						Value: "value",
+						Path:   "key",
+						Scalar: "value",
 					},
 					"second": {
-						Path:  "key",
-						Value: "value",
+						Path:   "key",
+						Scalar: "value",
 					},
 				},
 			},
@@ -784,8 +783,8 @@ func TestStoreString(t *testing.T) {
 			store: &store{
 				values: map[string]*Reference{
 					"first": {
-						Path:  "key",
-						Value: "value",
+						Path:   "key",
+						Scalar: "value",
 					},
 				},
 			},
@@ -809,5 +808,4 @@ func TestStoreString(t *testing.T) {
 			}
 		})
 	}
-
 }

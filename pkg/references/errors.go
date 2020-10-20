@@ -58,15 +58,22 @@ func NewErrUndefinedReference(inner error, property *specs.Property, breakpoint 
 
 // Error returns a description of the given error as a string
 func (e ErrUndefinedReference) Error() string {
+	if e.Property.Template == nil {
+		return fmt.Sprintf("reference is not set in '%s.%s'", e.Breakpoint, e.Property.Path)
+	}
+
 	return fmt.Sprintf("undefined reference '%s' in '%s.%s'", e.Property.Reference, e.Breakpoint, e.Property.Path)
 }
 
 // Prettify returns the prettified version of the given error
 func (e ErrUndefinedReference) Prettify() prettyerr.Error {
 	details := map[string]interface{}{
-		"Reference":  e.Property.Reference,
 		"Breakpoint": e.Breakpoint,
 		"Path":       e.Property.Path,
+	}
+
+	if e.Property.Template != nil {
+		details["Reference"] = e.Property.Reference
 	}
 
 	if e.Property.Expr != nil {

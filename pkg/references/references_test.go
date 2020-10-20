@@ -143,13 +143,13 @@ func TestScopeNestedReferences(t *testing.T) {
 	tests := map[string]test{
 		"root": {
 			source: &specs.Property{
-				Template: specs.Template{
+				Template: &specs.Template{
 					Identifier: "root",
 					Message: specs.Message{
 						"key": {
 							Name: "key",
 							Path: "key",
-							Template: specs.Template{
+							Template: &specs.Template{
 								Scalar: &specs.Scalar{
 									Type: types.String,
 								},
@@ -159,24 +159,25 @@ func TestScopeNestedReferences(t *testing.T) {
 				},
 			},
 			target: &specs.Property{
-				Template: specs.Template{
+				Template: &specs.Template{
 					Reference: reference,
 				},
 			},
 		},
 		"nested": {
 			source: &specs.Property{
-				Template: specs.Template{
+				Template: &specs.Template{
 					Identifier: "nested",
 					Message: specs.Message{
 						"key": {
 							Name: "key",
 							Path: "key",
-							Template: specs.Template{
+							Template: &specs.Template{
 								Message: specs.Message{
 									"nested": {
-										Name: "nested",
-										Path: "key.nested",
+										Name:     "nested",
+										Path:     "key.nested",
+										Template: new(specs.Template),
 									},
 								},
 							},
@@ -185,12 +186,12 @@ func TestScopeNestedReferences(t *testing.T) {
 				},
 			},
 			target: &specs.Property{
-				Template: specs.Template{
+				Template: &specs.Template{
 					Message: specs.Message{
 						"key": {
 							Name: "key",
 							Path: "key",
-							Template: specs.Template{
+							Template: &specs.Template{
 								Reference: reference,
 							},
 						},
@@ -200,21 +201,23 @@ func TestScopeNestedReferences(t *testing.T) {
 		},
 		"partial": {
 			source: &specs.Property{
-				Template: specs.Template{
+				Template: &specs.Template{
 					Identifier: "partial",
 					Message: specs.Message{
 						"key": {
 							Name: "key",
 							Path: "key",
-							Template: specs.Template{
+							Template: &specs.Template{
 								Message: specs.Message{
 									"first": {
-										Name: "first",
-										Path: "key.first",
+										Name:     "first",
+										Path:     "key.first",
+										Template: new(specs.Template),
 									},
 									"second": {
-										Name: "second",
-										Path: "key.second",
+										Name:     "second",
+										Path:     "key.second",
+										Template: new(specs.Template),
 									},
 								},
 							},
@@ -223,18 +226,18 @@ func TestScopeNestedReferences(t *testing.T) {
 				},
 			},
 			target: &specs.Property{
-				Template: specs.Template{
+				Template: &specs.Template{
 					Message: specs.Message{
 						"key": {
 							Name: "key",
 							Path: "key",
-							Template: specs.Template{
+							Template: &specs.Template{
 								Reference: reference,
 								Message: specs.Message{
 									"second": {
 										Name: "second",
 										Path: "key.second",
-										Template: specs.Template{
+										Template: &specs.Template{
 											Reference: reference,
 										},
 									},

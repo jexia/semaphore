@@ -26,17 +26,17 @@ type Store interface {
 // Reference represents a value reference
 type Reference struct {
 	Path     string
-	Value    interface{}
-	Repeated []Store
+	Scalar   interface{}
 	Enum     *int32
-	Object   map[string]*Reference
+	Repeated []Store
+	Message  map[string]Store
 	mutex    sync.Mutex
 }
 
 func (reference *Reference) String() string {
 	switch {
-	case reference.Value != nil:
-		return fmt.Sprintf("%s:<%T(%v)>", reference.Path, reference.Value, reference.Value)
+	case reference.Scalar != nil:
+		return fmt.Sprintf("%s:<%T(%v)>", reference.Path, reference.Scalar, reference.Scalar)
 	case reference.Repeated != nil:
 		return fmt.Sprintf("%s:<array(%s)>", reference.Path, reference.Repeated)
 	case reference.Enum != nil:
@@ -163,8 +163,8 @@ func (store *store) StoreValues(resource string, path string, values map[string]
 // StoreValue stores the given value for the given resource and path
 func (store *store) StoreValue(resource string, path string, value interface{}) {
 	reference := &Reference{
-		Path:  path,
-		Value: value,
+		Path:   path,
+		Scalar: value,
 	}
 
 	store.StoreReference(resource, reference)

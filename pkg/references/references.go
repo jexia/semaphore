@@ -399,7 +399,7 @@ func ScopeNestedReferences(source, target *specs.Property) {
 }
 
 func scopeNestedReferences(resolved *specs.ResolvedProperty, source, target *specs.Property) {
-	if source == nil || target == nil {
+	if source == nil || source.Template == nil || target == nil || target.Template == nil {
 		return
 	}
 
