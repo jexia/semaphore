@@ -1,8 +1,5 @@
 #!/usr/bin/env sh
 
-# abort on errors
-set -e
-
 npm install
 npm run build
 
