@@ -108,8 +108,8 @@ func ValidateStore(t *testing.T, resource, path string, tmpl *specs.Template, in
 			t.Fatalf("resource not found %s:%s", resource, path)
 		}
 
-		if ref.Value != typed {
-			t.Fatalf("unexpected value at %s '%+v', expected '%+v'", path, ref.Value, typed)
+		if ref.Scalar != typed {
+			t.Fatalf("unexpected value at %s '%+v', expected '%+v'", path, ref.Scalar, typed)
 		}
 	}
 }

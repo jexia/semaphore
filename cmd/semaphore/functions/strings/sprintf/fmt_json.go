@@ -69,7 +69,7 @@ func (enc encoder) MarshalJSON() ([]byte, error) {
 
 		var reference = enc.refs.Load(enc.property.Reference.Resource, enc.property.Reference.Path)
 		if reference != nil {
-			value = reference.Value
+			value = reference.Scalar
 		}
 
 		return json.Marshal(value)

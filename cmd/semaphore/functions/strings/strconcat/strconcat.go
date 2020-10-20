@@ -46,7 +46,7 @@ func Function(args ...*specs.Property) (*specs.Property, functions.Exec, error) 
 			if arg.Reference != nil {
 				ref := store.Load(arg.Reference.Resource, arg.Reference.Path)
 				if ref != nil {
-					value = ref.Value.(string)
+					value = ref.Scalar.(string)
 				}
 			}
 

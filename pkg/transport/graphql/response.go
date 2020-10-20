@@ -95,7 +95,7 @@ func ResponseValue(template *specs.Template, refs references.Store) (interface{}
 		if template.Reference != nil {
 			ref := refs.Load(template.Reference.Resource, template.Reference.Path)
 			if ref != nil {
-				value = ref.Value
+				value = ref.Scalar
 			}
 		}
 

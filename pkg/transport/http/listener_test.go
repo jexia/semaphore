@@ -334,8 +334,8 @@ func TestPathReferences(t *testing.T) {
 					t.Fatal("input:message ref has not been set")
 				}
 
-				if ref.Value != message {
-					t.Fatalf("unexpected ref value %+v, expected %+v", ref.Value, message)
+				if ref.Scalar != message {
+					t.Fatalf("unexpected ref value %+v, expected %+v", ref.Scalar, message)
 				}
 
 				return nil
@@ -383,12 +383,12 @@ func TestStoringParams(t *testing.T) {
 			t.Fatal("reference not set")
 		}
 
-		if ref.Value == nil {
+		if ref.Scalar == nil {
 			t.Fatal("reference value not set")
 		}
 
-		if ref.Value != expected {
-			t.Fatalf("unexpected value '%+v', expected '%s'", ref.Value, expected)
+		if ref.Scalar != expected {
+			t.Fatalf("unexpected value '%+v', expected '%s'", ref.Scalar, expected)
 		}
 
 		called++

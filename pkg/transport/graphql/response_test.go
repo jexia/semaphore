@@ -16,7 +16,7 @@ func TestResponseObjectNil(t *testing.T) {
 func TestResponseObjectInvalidType(t *testing.T) {
 	store := references.NewReferenceStore(0)
 	property := &specs.Property{
-		Template: specs.Template{
+		Template: &specs.Template{
 			Scalar: &specs.Scalar{},
 		},
 	}
@@ -38,7 +38,7 @@ func TestResponseObject(t *testing.T) {
 	tests := map[string]test{
 		"empty": {
 			property: &specs.Property{
-				Template: specs.Template{
+				Template: &specs.Template{
 					Message: specs.Message{},
 				},
 			},
@@ -47,12 +47,12 @@ func TestResponseObject(t *testing.T) {
 		},
 		"object": {
 			property: &specs.Property{
-				Template: specs.Template{
+				Template: &specs.Template{
 					Message: specs.Message{
 						"name": &specs.Property{
 							Name: "name",
 							Path: "name",
-							Template: specs.Template{
+							Template: &specs.Template{
 								Scalar: &specs.Scalar{
 									Type: types.String,
 								},
@@ -74,17 +74,17 @@ func TestResponseObject(t *testing.T) {
 		},
 		"nested object": {
 			property: &specs.Property{
-				Template: specs.Template{
+				Template: &specs.Template{
 					Message: specs.Message{
 						"nested": &specs.Property{
 							Name: "nested",
 							Path: "nested",
-							Template: specs.Template{
+							Template: &specs.Template{
 								Message: specs.Message{
 									"name": &specs.Property{
 										Name: "name",
 										Path: "nested.name",
-										Template: specs.Template{
+										Template: &specs.Template{
 											Scalar: &specs.Scalar{
 												Type: types.String,
 											},
@@ -111,23 +111,23 @@ func TestResponseObject(t *testing.T) {
 		},
 		"repeated object": {
 			property: &specs.Property{
-				Template: specs.Template{
+				Template: &specs.Template{
 					Message: specs.Message{
 						"repeated": &specs.Property{
 							Name: "repeated",
 							Path: "repeated",
-							Template: specs.Template{
+							Template: &specs.Template{
 								Reference: &specs.PropertyReference{
 									Resource: "input",
 									Path:     "repeated",
 								},
 								Repeated: specs.Repeated{
-									specs.Template{
+									&specs.Template{
 										Message: specs.Message{
 											"name": &specs.Property{
 												Name: "name",
 												Path: "repeated.name",
-												Template: specs.Template{
+												Template: &specs.Template{
 													Scalar: &specs.Scalar{
 														Type: types.String,
 													},
@@ -165,12 +165,12 @@ func TestResponseObject(t *testing.T) {
 		},
 		"object nil keys": {
 			property: &specs.Property{
-				Template: specs.Template{
+				Template: &specs.Template{
 					Message: specs.Message{
 						"name": &specs.Property{
 							Name: "name",
 							Path: "name",
-							Template: specs.Template{
+							Template: &specs.Template{
 								Scalar: &specs.Scalar{
 									Type: types.String,
 								},
@@ -184,12 +184,12 @@ func TestResponseObject(t *testing.T) {
 		},
 		"object nil reference": {
 			property: &specs.Property{
-				Template: specs.Template{
+				Template: &specs.Template{
 					Message: specs.Message{
 						"name": &specs.Property{
 							Name: "name",
 							Path: "name",
-							Template: specs.Template{
+							Template: &specs.Template{
 								Scalar: &specs.Scalar{
 									Type: types.String,
 								},
@@ -207,12 +207,12 @@ func TestResponseObject(t *testing.T) {
 		},
 		"enum": {
 			property: &specs.Property{
-				Template: specs.Template{
+				Template: &specs.Template{
 					Message: specs.Message{
 						"status": &specs.Property{
 							Name: "status",
 							Path: "status",
-							Template: specs.Template{
+							Template: &specs.Template{
 								Enum: &specs.Enum{
 									Keys: map[string]*specs.EnumValue{
 										"UNKOWN": {
@@ -245,12 +245,12 @@ func TestResponseObject(t *testing.T) {
 		},
 		"enum nil reference": {
 			property: &specs.Property{
-				Template: specs.Template{
+				Template: &specs.Template{
 					Message: specs.Message{
 						"status": &specs.Property{
 							Name: "status",
 							Path: "status",
-							Template: specs.Template{
+							Template: &specs.Template{
 								Enum: &specs.Enum{
 									Keys: map[string]*specs.EnumValue{
 										"UNKOWN": {
@@ -279,12 +279,12 @@ func TestResponseObject(t *testing.T) {
 		},
 		"enum nil value": {
 			property: &specs.Property{
-				Template: specs.Template{
+				Template: &specs.Template{
 					Message: specs.Message{
 						"status": &specs.Property{
 							Name: "status",
 							Path: "status",
-							Template: specs.Template{
+							Template: &specs.Template{
 								Enum: &specs.Enum{
 									Keys: map[string]*specs.EnumValue{
 										"UNKOWN": {
@@ -309,18 +309,18 @@ func TestResponseObject(t *testing.T) {
 		},
 		"repeated enum": {
 			property: &specs.Property{
-				Template: specs.Template{
+				Template: &specs.Template{
 					Message: specs.Message{
 						"repeated": &specs.Property{
 							Name: "repeated",
 							Path: "repeated",
-							Template: specs.Template{
+							Template: &specs.Template{
 								Reference: &specs.PropertyReference{
 									Resource: "input",
 									Path:     "repeated",
 								},
 								Repeated: specs.Repeated{
-									specs.Template{
+									&specs.Template{
 										Enum: &specs.Enum{
 											Keys: map[string]*specs.EnumValue{
 												"UNKOWN": {

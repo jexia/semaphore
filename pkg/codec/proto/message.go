@@ -179,7 +179,7 @@ func (manager *Manager) setRepeating(message *dynamic.Message, template *specs.T
 				continue
 			}
 
-			value = ref.Value
+			value = ref.Scalar
 		}
 
 		err = message.TryAddRepeatedField(field, value)
@@ -219,8 +219,8 @@ func (manager *Manager) setField(setter trySetProto, template *specs.Template, f
 
 		if template.Reference != nil {
 			ref := store.Load(template.Reference.Resource, template.Reference.Path)
-			if ref != nil && ref.Value != nil {
-				value = ref.Value
+			if ref != nil && ref.Scalar != nil {
+				value = ref.Scalar
 			}
 		}
 

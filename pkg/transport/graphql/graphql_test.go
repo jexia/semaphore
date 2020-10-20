@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net"
 	"net/http"
 	"testing"
@@ -23,12 +22,12 @@ import (
 func NewSimpleMockSpecs() *specs.ParameterMap {
 	return &specs.ParameterMap{
 		Property: &specs.Property{
-			Template: specs.Template{
+			Template: &specs.Template{
 				Message: specs.Message{
 					"first_name": {
 						Name: "first_name",
 						Path: "first_name",
-						Template: specs.Template{
+						Template: &specs.Template{
 							Scalar: &specs.Scalar{
 								Type:    types.String,
 								Default: "John",
@@ -38,7 +37,7 @@ func NewSimpleMockSpecs() *specs.ParameterMap {
 					"last_name": {
 						Name: "last_name",
 						Path: "last_name",
-						Template: specs.Template{
+						Template: &specs.Template{
 							Scalar: &specs.Scalar{
 								Type:    types.String,
 								Default: "Doe",
@@ -177,7 +176,6 @@ func TestNewListener(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			log.Println(body)
 			if diff := deep.Equal(body, test.expected); diff != nil {
 				t.Fatal(diff)
 			}

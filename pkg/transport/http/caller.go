@@ -209,7 +209,7 @@ func LookupEndpointReferences(method *Method, store references.Store) string {
 			continue
 		}
 
-		str, is := ref.Value.(string)
+		str, is := ref.Scalar.(string)
 		if !is {
 			result = strings.Replace(result, prop.Path, "", 1)
 			continue

@@ -9,20 +9,20 @@ import (
 )
 
 func TestNewObjectNil(t *testing.T) {
-	NewObject("", "", specs.Template{})
+	NewObject("", "", &specs.Template{})
 }
 
 func TestNewObject(t *testing.T) {
 	type test struct {
-		template specs.Template
+		template *specs.Template
 	}
 
 	tests := map[string]test{
 		"scalar": {
-			template: specs.Template{
+			template: &specs.Template{
 				Message: specs.Message{
 					"scalar": &specs.Property{
-						Template: specs.Template{
+						Template: &specs.Template{
 							Scalar: &specs.Scalar{
 								Type: types.String,
 							},
@@ -32,13 +32,13 @@ func TestNewObject(t *testing.T) {
 			},
 		},
 		"message": {
-			template: specs.Template{
+			template: &specs.Template{
 				Message: specs.Message{
 					"nested": &specs.Property{
-						Template: specs.Template{
+						Template: &specs.Template{
 							Message: specs.Message{
 								"value": &specs.Property{
-									Template: specs.Template{
+									Template: &specs.Template{
 										Scalar: &specs.Scalar{
 											Type: types.String,
 										},
@@ -51,12 +51,12 @@ func TestNewObject(t *testing.T) {
 			},
 		},
 		"repeated": {
-			template: specs.Template{
+			template: &specs.Template{
 				Message: specs.Message{
 					"repeated": &specs.Property{
-						Template: specs.Template{
+						Template: &specs.Template{
 							Repeated: specs.Repeated{
-								specs.Template{
+								&specs.Template{
 									Scalar: &specs.Scalar{
 										Type: types.String,
 									},
@@ -68,10 +68,10 @@ func TestNewObject(t *testing.T) {
 			},
 		},
 		"enum": {
-			template: specs.Template{
+			template: &specs.Template{
 				Message: specs.Message{
 					"enum": &specs.Property{
-						Template: specs.Template{
+						Template: &specs.Template{
 							Enum: &specs.Enum{
 								Keys: map[string]*specs.EnumValue{
 									"UNKOWN": {
@@ -111,15 +111,15 @@ func TestNewObject(t *testing.T) {
 
 func TestNewSchemaObject(t *testing.T) {
 	type test struct {
-		template specs.Template
+		template *specs.Template
 	}
 
 	tests := map[string]test{
 		"scalar": {
-			template: specs.Template{
+			template: &specs.Template{
 				Message: specs.Message{
 					"scalar": &specs.Property{
-						Template: specs.Template{
+						Template: &specs.Template{
 							Scalar: &specs.Scalar{
 								Type: types.String,
 							},
@@ -129,13 +129,13 @@ func TestNewSchemaObject(t *testing.T) {
 			},
 		},
 		"message": {
-			template: specs.Template{
+			template: &specs.Template{
 				Message: specs.Message{
 					"nested": &specs.Property{
-						Template: specs.Template{
+						Template: &specs.Template{
 							Message: specs.Message{
 								"value": &specs.Property{
-									Template: specs.Template{
+									Template: &specs.Template{
 										Scalar: &specs.Scalar{
 											Type: types.String,
 										},
@@ -148,12 +148,12 @@ func TestNewSchemaObject(t *testing.T) {
 			},
 		},
 		"repeated": {
-			template: specs.Template{
+			template: &specs.Template{
 				Message: specs.Message{
 					"repeated": &specs.Property{
-						Template: specs.Template{
+						Template: &specs.Template{
 							Repeated: specs.Repeated{
-								specs.Template{
+								&specs.Template{
 									Scalar: &specs.Scalar{
 										Type: types.String,
 									},
@@ -165,10 +165,10 @@ func TestNewSchemaObject(t *testing.T) {
 			},
 		},
 		"enum": {
-			template: specs.Template{
+			template: &specs.Template{
 				Message: specs.Message{
 					"enum": &specs.Property{
-						Template: specs.Template{
+						Template: &specs.Template{
 							Enum: &specs.Enum{
 								Keys: map[string]*specs.EnumValue{
 									"UNKOWN": {

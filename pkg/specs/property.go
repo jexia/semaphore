@@ -2,6 +2,7 @@ package specs
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/jexia/semaphore/pkg/specs/labels"
 	"github.com/jexia/semaphore/pkg/specs/metadata"
@@ -141,6 +142,9 @@ func (property *Property) compare(seen map[string]*Template, expected *Property)
 	}
 
 	if err := property.Template.compare(seen, expected.Template); err != nil {
+
+		log.Println("ERROR:", err)
+
 		return fmt.Errorf("nested schema mismatch under property '%s': %w", property, err)
 	}
 

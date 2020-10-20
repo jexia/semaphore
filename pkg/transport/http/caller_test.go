@@ -100,7 +100,7 @@ func TestCaller(t *testing.T) {
 		t.Fatal("input:message reference not set")
 	}
 
-	result, is := ref.Value.(string)
+	result, is := ref.Scalar.(string)
 	if !is {
 		t.Fatal("input:message reference is not a string")
 	}

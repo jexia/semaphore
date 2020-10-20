@@ -63,7 +63,7 @@ func FormatWithFunc(valueFormatter ValueFormatter) func(Precision) Formatter {
 
 			if argument.Reference != nil {
 				if ref := store.Load(argument.Reference.Resource, argument.Reference.Path); ref != nil {
-					value = ref.Value
+					value = ref.Scalar
 				}
 			}
 
