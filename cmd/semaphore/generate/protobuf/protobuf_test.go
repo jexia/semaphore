@@ -29,7 +29,7 @@ func (flow flow) Wait() {}
 
 var (
 	request = &specs.Property{
-		Template: specs.Template{
+		Template: &specs.Template{
 			Message: make(specs.Message),
 		},
 	}
@@ -37,7 +37,7 @@ var (
 	response = &specs.Property{
 		Name:  "root",
 		Label: labels.Optional,
-		Template: specs.Template{
+		Template: &specs.Template{
 			Identifier: "recursive",
 			Message: specs.Message{
 				"string": func() *specs.Property {
@@ -63,14 +63,14 @@ var (
 		Path:     "meta",
 		Position: 3,
 		Label:    labels.Optional,
-		Template: specs.Template{
+		Template: &specs.Template{
 			Identifier: "recursive",
 			Message: specs.Message{
 				"string": &specs.Property{
 					Name:     "text",
 					Path:     "meta.text",
 					Position: 1,
-					Template: specs.Template{
+					Template: &specs.Template{
 						Scalar: &specs.Scalar{
 							Type: types.String,
 						},
