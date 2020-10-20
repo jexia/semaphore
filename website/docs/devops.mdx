@@ -1,0 +1,75 @@
+---
+id: devops
+title: DevOps
+sidebar_label: DevOps
+slug: /devops
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+Running Semaphore is pretty simple. The daemon by default spawns a production-ready broker. The Semaphore daemon is stateless and multiple instances could be run at the same time to provide scalability.
+
+## Service hosts
+
+Services could have different hosts when running Maestro in multiple environments. Service configurations could be overridden through service selectors. It is advised to store your service selectors inside a separate file and use an environment variable to include a specific service configuration.
+
+<Tabs
+  defaultValue="config"
+  values={[
+    { label: 'config.hcl', value: 'config', },
+    { label: 'services.production.hcl', value: 'services', },
+  ]
+}>
+<TabItem value="config">
+
+```hcl
+include = ["services.$ENVIRONMENT.hcl"]
+```
+
+</TabItem>
+<TabItem value="services">
+
+```hcl
+services {
+    select "org.users.*" {
+        host = "users.ns.svc.com"
+    }
+
+    select "org.projects.*" {
+        host = "projects.ns.svc.com"
+    }
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Service certificates
+
+Root certificates could be included to provide secure connections. Certificates could be passed as options or be overridden through service selectors.
+
+```hcl
+services {
+    select "com.org.users.*" {
+			host = "api.semaphore.io"
+			insecure = "false"
+			ca_file = "/etc/ca.crt"
+    }
+
+    select "com.org.projects.*" {
+      host = "insecure-api.semaphore.io"
+			insecure = "true"
+    }
+}
+```
+
+## Prometheus
+
+A Prometheus metrics endpoint could be set-up. This endpoint exposes metrics such as flow executions, executed rollbacks, and flow latency. The Prometheus agent starts its own HTTP server and requires a separate port.
+
+```hcl
+prometheus {
+    address = ":5050"
+}
+```

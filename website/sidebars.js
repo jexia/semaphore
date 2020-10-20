@@ -21,11 +21,16 @@ module.exports = {
         'flows.requests',
         'flows.errors',
         'flows.proxy',
+        'flows.rollbacks',
       ],
     },
     {
       type: 'doc',
       id: 'functions',
+    },
+    {
+      type: 'doc',
+      id: 'devops',
     }
   ]
 };

@@ -3,12 +3,10 @@
 ----
 
 - Chat: [Discord](https://chat.jexia.com)
-- Documentation: [Github pages](https://jexia.github.io/semaphore/) - [Branch](https://github.com/jexia/semaphore/tree/docs)
+- Documentation: [Github pages](https://jexia.github.io/semaphore/)
 - Go package documentation: [GoDev](https://pkg.go.dev/github.com/jexia/semaphore)
 
-> Take control of your data, connect with anything, and expose it anywhere through protocols such as HTTP, GraphQL, and gRPC!
-
-This directory contains the documentation of the Semaphore project.
+This directory contains the website and documentation of the Semaphore project.
 When wanting to suggest changes to the documentation please fork and clone the repository.
 Changes to the documentation are automatically deployed and are hosted at Github pages.
 This documentation is built using [Docusaurus 2](https://v2.docusaurus.io/), a modern static website generator.
