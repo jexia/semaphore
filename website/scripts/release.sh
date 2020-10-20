@@ -1,15 +1,18 @@
 #!/usr/bin/env sh
 
-# abort on errors
-set -e
+npm install
+npm run build
 
 git config --global user.email "action@github.com"
-git config --global user.name "GitHub Action"
+git config --global user.name "Github Action"
 
-# https://v2.docusaurus.io/docs/deployment#deploying-to-github-pages
-export GIT_USER="github-actions"
-export DEPLOYMENT_BRANCH="docs"
-export CURRENT_BRANCH="master"
+git clone -b docs "https://$GITHUB_ACTOR:$GITHUB_TOKEN@github.com/jexia/semaphore.git" semaphore
 
-npm install
-npm run deploy
+rm -rf ./semaphore/*
+mv ./build/* ./semaphore
+
+cd semaphore;
+
+git add -A
+git commit -m 'build: 🏗️ automatically generated documentation'
+git push
