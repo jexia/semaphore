@@ -7,9 +7,9 @@ npm install
 npm run build
 
 git config --global user.email "action@github.com"
-git config --global user.name "GitHub Action"
+git config --global user.name "Github Action"
 
-git clone -b docs https://github.com/jexia/semaphore.git semaphore
+git clone -b docs "https://$GITHUB_ACTOR:$GITHUB_TOKEN@github.com/jexia/semaphore.git" semaphore
 
 rm -rf ./semaphore/*
 mv ./build/* ./semaphore
