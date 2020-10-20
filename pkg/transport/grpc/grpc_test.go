@@ -65,7 +65,7 @@ func NewSimpleMockSpecs() *specs.ParameterMap {
 	return &specs.ParameterMap{
 		Property: &specs.Property{
 			Label: labels.Optional,
-			Template: specs.Template{
+			Template: &specs.Template{
 				Message: specs.Message{
 					"mock": {
 						Description: "mock",
@@ -73,7 +73,7 @@ func NewSimpleMockSpecs() *specs.ParameterMap {
 						Name:        "message",
 						Path:        "message",
 						Label:       labels.Optional,
-						Template: specs.Template{
+						Template: &specs.Template{
 							Scalar: &specs.Scalar{
 								Type: types.String,
 							},
