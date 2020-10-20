@@ -85,6 +85,13 @@ func (listener *Listener) Serve() error {
 
 // Handle parses the given endpoints and constructs route handlers
 func (listener *Listener) Handle(ctx *broker.Context, endpoints []*transport.Endpoint, constructors map[string]codec.Constructor) error {
+	if len(endpoints) == 0 {
+		listener.mutex.Lock()
+		listener.schema = graphql.Schema{}
+		listener.mutex.Unlock()
+		return nil
+	}
+
 	objects := NewObjects()
 	fields := map[string]graphql.Fields{
 		QueryObject:    {},

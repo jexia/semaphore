@@ -1,0 +1,120 @@
+---
+id: flows.references
+title: References
+sidebar_label: References
+slug: /flows/references
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+## Template references
+
+Resources could contain references to other resources.
+These references are defined inside templates.
+A template inside a property is initialized with two curly brackets `{{ }}`.
+
+All references consist out of two parts.
+The resource you want to reference, and the property path `{{ <resource>:<path> }}`.
+Paths reference a property within the resource.
+Paths could target single properties or entire objects.
+
+## Resource properties
+
+A template reference consist out of the following parts: `<resource>:<path>`.
+Some resources consist out of multiple resource properties.
+The default resource property is used when no resource property is given.
+The following resource properties are available for the variouse resources:
+
+<Tabs
+  defaultValue="input"
+  values={[
+    { label: 'Input', value: 'input', },
+    { label: 'Error', value: 'error', },
+    { label: 'Resource', value: 'resource', },
+  ]
+}>
+<TabItem value="input">
+
+| Parameter | Template | Note |
+|---|---|---|
+| request | `{{ input.request:path }}` | **default** |
+| header | `{{ input.header:path }}` |  |
+
+</TabItem>
+<TabItem value="error">
+
+| Parameter | Template | Note |
+|---|---|---|
+| response | `{{ error.response:path }}` | **default** |
+| params | `{{ error.params:path }}` |  |
+
+</TabItem>
+<TabItem value="resource">
+
+| Parameter | Template | Note |
+|---|---|---|
+| request | `{{ resource.request:path }}` |  |
+| response | `{{ resource.response:path }}` | **default** |
+| header | `{{ resource.header:path }}` |  |
+| error | `{{ resource.error:path }}` | *only self references* |
+
+</TabItem>
+</Tabs>
+
+### Properties in action
+
+```hcl
+flow "FetchUser" {
+  input "com.org.User" {
+    header = ["Authorization"]
+  }
+
+  error "com.org.Unexpected" {
+    trace = "{{ error.params:trace }}"
+    message = "{{ error:message }}"
+  }
+
+  resource "user" {
+    request "com.org.Users" "Single" {
+      id = "{{ input:id }}" // using the default parameter
+    }
+
+    on_error {
+      schema = "com.org.Unexpected"
+      message = "{{ user.error:message }}"
+      status = 500
+
+      params {
+        trace = "{{ user.error:trace }}"
+      }
+    }
+  }
+
+  output "com.org.User" {
+    full_name = "{{ user:bio.full_name }}"
+  }
+}
+```
+
+## Resource dependencies
+
+References automatically define dependencies across resources.
+Sometimes do resources depend on one another without a direct reference.
+Dependencies could manually be created through the `depends_on` property.
+
+```hcl
+resource "warehouse" {
+  request "com.org.Wharehouse" "Ship" {
+    product = "{{ input:product }}"
+  }
+}
+
+resource "log" {
+  depends_on = ["warehouse"]
+
+  request "com.org.Logger" "Append" {
+    message = "{{ input:message }}"
+  }
+}
+```

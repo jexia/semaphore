@@ -22,6 +22,7 @@ type Template struct {
 	Enum     *Enum    `json:"enum,omitempty" yaml:"enum,omitempty"`
 	Repeated Repeated `json:"repeated,omitempty" yaml:"repeated,omitempty"`
 	Message  Message  `json:"message,omitempty" yaml:"message,omitempty"`
+	OneOf    OneOf    `json:"oneOf,omitempty" yaml:"oneOf,omitempty"`
 }
 
 // Type returns the type of the given template.
@@ -37,6 +38,8 @@ func (template *Template) Type() types.Type {
 		return types.Enum
 	case template.Scalar != nil:
 		return template.Scalar.Type
+	case template.OneOf != nil:
+		return types.OneOf
 	default:
 		return types.Unknown
 	}

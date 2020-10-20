@@ -119,6 +119,10 @@ func GetOptions(ctx *broker.Context, path string) (*Options, error) {
 			options.Protobuffers = append(options.Protobuffers, definition.Protobuffers...)
 		}
 
+		if len(definition.Openapi3) > 0 {
+			options.Openapi3 = append(options.Openapi3, definition.Openapi3...)
+		}
+
 		if definition.GRPC != nil {
 			options.GRPC = definition.GRPC
 		}
@@ -184,6 +188,16 @@ func ResolvePath(ctx *broker.Context, ignore []string, path string) ([]Manifest,
 				}
 
 				definition.Protobuffers[index] = proto
+			}
+		}
+
+		if definition.Openapi3 != nil {
+			for index, doc := range definition.Openapi3 {
+				if !filepath.IsAbs(doc) {
+					doc = filepath.Join(filepath.Dir(file.Path), doc)
+				}
+
+				definition.Openapi3[index] = doc
 			}
 		}
 
