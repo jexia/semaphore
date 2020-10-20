@@ -21,7 +21,7 @@ func TestExecutable(t *testing.T) {
 			Name:  "claims",
 			Path:  "claims",
 			Label: labels.Required,
-			Template: specs.Template{
+			Template: &specs.Template{
 				Reference: &specs.PropertyReference{
 					Resource: "input",
 					Path:     "authorization",
@@ -38,7 +38,7 @@ func TestExecutable(t *testing.T) {
 	t.Run("should propagate Reader error", func(t *testing.T) {
 		store.StoreReference("input", &references.Reference{
 			Path:  "authorization",
-			Value: "Bearer expected.jwt",
+			Scalar: "Bearer expected.jwt",
 		})
 
 		var (
@@ -57,7 +57,7 @@ func TestExecutable(t *testing.T) {
 	t.Run("should return an error when unable to get authorization value", func(t *testing.T) {
 		store.StoreReference("input", &references.Reference{
 			Path:  "authorization",
-			Value: "invalid.jwt",
+			Scalar: "invalid.jwt",
 		})
 
 		var (
@@ -74,7 +74,7 @@ func TestExecutable(t *testing.T) {
 	t.Run("should save the subject to the reference store", func(t *testing.T) {
 		store.StoreReference("input", &references.Reference{
 			Path:  "authorization",
-			Value: "Bearer expected.jwt",
+			Scalar: "Bearer expected.jwt",
 		})
 
 		var (
@@ -105,8 +105,8 @@ func TestExecutable(t *testing.T) {
 			t.Error("subject must be stored")
 		}
 
-		if subject.Value != "expected subject" {
-			t.Errorf("unexpected subject: %v", subject.Value)
+		if subject.Scalar != "expected subject" {
+			t.Errorf("unexpected subject: %v", subject.Scalar)
 		}
 	})
 }
@@ -126,7 +126,7 @@ func TestNew(t *testing.T) {
 		var (
 			arg = &specs.Property{
 				Label: labels.Required,
-				Template: specs.Template{
+				Template: &specs.Template{
 					Message: specs.Message{},
 				},
 			}
@@ -143,7 +143,7 @@ func TestNew(t *testing.T) {
 		var (
 			arg = &specs.Property{
 				Label: labels.Required,
-				Template: specs.Template{
+				Template: &specs.Template{
 					Scalar: &specs.Scalar{
 						Type: types.String,
 					},

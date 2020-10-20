@@ -233,7 +233,7 @@ func PreparePropertyFunctions(ctx *broker.Context, node *specs.Node, flow specs.
 }
 
 func preparePropertyFunctions(ctx *broker.Context, resolved *specs.ResolvedProperty, node *specs.Node, flow specs.FlowInterface, stack Stack, property *specs.Property, functions Custom) error {
-	if property == nil {
+	if property == nil || property.Template == nil {
 		return nil
 	}
 

@@ -65,7 +65,7 @@ func main() {
 func jwt(args ...*specs.Property) (*specs.Property, functions.Exec, error) {
 	prop := &specs.Property{
 		Label: labels.Optional,
-		Template: specs.Template{
+		Template: &specs.Template{
 			Scalar: &specs.Scalar{
 				Type: types.String,
 			},
@@ -92,7 +92,7 @@ func jwt(args ...*specs.Property) (*specs.Property, functions.Exec, error) {
 		if input.Reference != nil {
 			ref := store.Load(input.Reference.Resource, input.Reference.Path)
 			if ref != nil {
-				value = ref.Value
+				value = ref.Scalar
 			}
 		}
 

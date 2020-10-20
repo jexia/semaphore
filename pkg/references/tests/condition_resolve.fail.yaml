@@ -1,5 +1,5 @@
 exception:
-  message: "failed to resolve flow 'echo'"
+  message: "failed to resolve flow 'echo': failed to resolve node 'condition': failed to resolve map parameter: failed to resolve params: failed to resolve property 'input.header:Unknown': undefined reference 'input.header:unknown' in '{{ input.header:Unknown }}.input.header:Unknown'"
 properties:
   com.input:
     label: "optional"

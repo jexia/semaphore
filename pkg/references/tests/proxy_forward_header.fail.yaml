@@ -1,5 +1,5 @@
 exception:
-  message: failed to resolve flow 'echo'
+  message: "failed to resolve flow 'echo': failed to resolve property 'Authorization': undefined reference 'input:unknown' in 'output.Authorization'"
 properties:
   com.input:
     label: "optional"

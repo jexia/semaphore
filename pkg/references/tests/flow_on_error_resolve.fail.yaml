@@ -1,5 +1,5 @@
 exception:
-  message: failed to resolve flow 'echo'
+  message: "failed to resolve flow 'echo': failed to resolve OnError"
 properties:
   com.input:
     label: "optional"

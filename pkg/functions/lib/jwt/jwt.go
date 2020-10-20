@@ -16,13 +16,13 @@ const (
 func outputs() *specs.Property {
 	return &specs.Property{
 		Label: labels.Required,
-		Template: specs.Template{
+		Template: &specs.Template{
 			Message: specs.Message{
 				propSubject: {
 					Name:  propSubject,
 					Path:  propSubject,
 					Label: labels.Optional,
-					Template: specs.Template{
+					Template: &specs.Template{
 						Scalar: &specs.Scalar{
 							Type: types.String,
 						},
@@ -61,7 +61,7 @@ func executable(reader Reader, token *specs.Property, newClaims func() Claims) f
 		if token.Reference != nil {
 			ref := store.Load(token.Reference.Resource, token.Reference.Path)
 			if ref != nil {
-				value = ref.Value
+				value = ref.Scalar
 			}
 		}
 

@@ -1,43 +1,43 @@
 flow "simple" {
-	input "proto.Simple" {}
+  input "proto.Simple" {}
 
-	resource "first" {
-		request "proto.mock" "simple" {
-			message = "{{ input:message }}"
-		}
-	}
+  resource "first" {
+    request "proto.mock" "simple" {
+      message = "{{ input:message }}"
+    }
+  }
 }
 
 flow "nested" {
-	input "proto.Message" {}
+  input "proto.Message" {}
 
-	resource "first" {
-		request "proto.mock" "nested" {
-			message "nested" {
-				value = "{{ input:nested.value }}"
-			}
-		}
-	}
+  resource "first" {
+    request "proto.mock" "nested" {
+      message "nested" {
+        value = "{{ input:nested.value }}"
+      }
+    }
+  }
 }
 
 flow "repeated" {
-	input "proto.Message" {}
+  input "proto.Message" {}
 
-	resource "first" {
-		request "proto.mock" "repeated" {
-			repeated "repeating" "input:repeating" {
-				value = "{{ input:repeating.value }}"
-			}
-		}
-	}
+  resource "first" {
+    request "proto.mock" "repeated" {
+      repeated "repeating" "input:repeating" {
+        value = "{{ input:repeating.value }}"
+      }
+    }
+  }
 }
 
 flow "repeated_values" {
-	input "proto.Message" {}
+  input "proto.Message" {}
 
-	resource "first" {
-		request "proto.mock" "repeated_values" {
-			repeating = "{{ input:repeating_values }}"
-		}
-	}
+  resource "first" {
+    request "proto.mock" "repeated_values" {
+      repeating = "{{ input:repeating_values }}"
+    }
+  }
 }

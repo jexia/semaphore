@@ -2,7 +2,6 @@ package specs
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/jexia/semaphore/pkg/specs/labels"
 	"github.com/jexia/semaphore/pkg/specs/metadata"
@@ -62,9 +61,9 @@ func (property *Property) String() string {
 	case property.Name != "":
 		return property.Name
 	case property.Template != nil && property.Identifier != "":
-		return fmt.Sprintf("<unknown property with type ID: %s>", property.Template.Identifier)
+		return fmt.Sprintf("<unknown> with type ID: %s", property.Template.Identifier)
 	default:
-		return "<unknown property>"
+		return "<unknown>"
 	}
 }
 
@@ -115,11 +114,11 @@ func (property *Property) clone(seen map[string]*Template) *Property {
 	}
 }
 
+// Compare checks the given property against the provided one.
 func (property *Property) Compare(expected *Property) error {
 	return property.compare(make(map[string]*Template), expected)
 }
 
-// Compare checks the given property against the provided one.
 func (property *Property) compare(seen map[string]*Template, expected *Property) error {
 	if expected == nil {
 		return fmt.Errorf("unable to check types for '%s' no schema given", property.Path)
@@ -142,9 +141,6 @@ func (property *Property) compare(seen map[string]*Template, expected *Property)
 	}
 
 	if err := property.Template.compare(seen, expected.Template); err != nil {
-
-		log.Println("ERROR:", err)
-
 		return fmt.Errorf("nested schema mismatch under property '%s': %w", property, err)
 	}
 

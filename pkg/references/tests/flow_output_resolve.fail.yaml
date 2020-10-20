@@ -1,5 +1,5 @@
 exception:
-  message: failed to resolve flow 'echo'
+  message: "failed to resolve flow 'echo': failed to resolve map parameter: failed to resolve property '<unknown>': failed to resolve property '<unknown>': failed to resolve property 'message': undefined reference 'input.header:unknown' in 'output.message'"
 properties:
   com.input:
     label: "optional"

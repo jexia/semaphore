@@ -24,7 +24,7 @@ type ErrUnresolvedFlow struct {
 
 // Error returns a description of the given error as a string
 func (e ErrUnresolvedFlow) Error() string {
-	return fmt.Sprintf("failed to resolve flow '%s'", e.Name)
+	return fmt.Sprintf("failed to resolve flow '%s': %s", e.Name, e.Inner)
 }
 
 // Prettify returns the prettified version of the given error
@@ -152,7 +152,7 @@ type ErrUnresolvedNode struct {
 
 // Error returns a description of the given error as a string
 func (e ErrUnresolvedNode) Error() string {
-	return "failed to resolve node"
+	return fmt.Sprintf("failed to resolve node '%s': %s", e.Node.Name, e.Inner)
 }
 
 // Prettify returns the prettified version of the given error
@@ -175,7 +175,7 @@ type ErrUnresolvedParameterMap struct {
 
 // Error returns a description of the given error as a string
 func (e ErrUnresolvedParameterMap) Error() string {
-	return "failed to resolve map parameter"
+	return fmt.Sprintf("failed to resolve map parameter: %s", e.Inner)
 }
 
 // Prettify returns the prettified version of the given error
@@ -207,7 +207,7 @@ func NewErrUnresolvedProperty(inner error, property *specs.Property) ErrUnresolv
 }
 
 func (e ErrUnresolvedProperty) Error() string {
-	return "failed to resolve property"
+	return fmt.Sprintf("failed to resolve property '%s': %s", e.Property, e.Inner)
 }
 
 // Prettify returns the prettified version of the given error
@@ -229,7 +229,7 @@ type ErrUnresolvedParams struct {
 }
 
 func (e ErrUnresolvedParams) Error() string {
-	return "failed to resolve params"
+	return fmt.Sprintf("failed to resolve params: %s", e.Inner)
 }
 
 // Prettify returns the prettified version of the given error
@@ -251,7 +251,7 @@ type ErrUnresolvedCall struct {
 }
 
 func (e ErrUnresolvedCall) Error() string {
-	return "failed to resolve call"
+	return fmt.Sprintf("failed to resolve call '%s': %s", e.Call, e.Inner)
 }
 
 // Prettify returns the prettified version of the given error
