@@ -55,7 +55,7 @@ func (manager *Manager) Marshal(store references.Store) MD {
 		if property.Reference != nil {
 			ref := store.Load(property.Reference.Resource, property.Reference.Path)
 			if ref != nil {
-				value = ref.Value
+				value = ref.Scalar
 			}
 		}
 
@@ -81,8 +81,8 @@ func (manager *Manager) Unmarshal(metadata MD, store references.Store) {
 		}
 
 		ref := &references.Reference{
-			Path:  strings.ToLower(key),
-			Value: value,
+			Path:   strings.ToLower(key),
+			Scalar: value,
 		}
 
 		logger.Debug(manager.Context, "Unmarshalling header property", zap.String("key", key))

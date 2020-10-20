@@ -184,7 +184,7 @@ func (caller *caller) HandleErr(w *transport.Writer, reader io.Reader, store ref
 			if caller.err.message.Reference != nil {
 				ref := store.Load(caller.err.message.Reference.Resource, caller.err.message.Reference.Path)
 				if ref != nil {
-					message = ref.Value
+					message = ref.Scalar
 				}
 			}
 		}
@@ -197,7 +197,7 @@ func (caller *caller) HandleErr(w *transport.Writer, reader io.Reader, store ref
 			if caller.err.status.Reference != nil {
 				ref := store.Load(caller.err.status.Reference.Resource, caller.err.status.Reference.Path)
 				if ref != nil {
-					status = ref.Value
+					status = ref.Scalar
 				}
 			}
 		}

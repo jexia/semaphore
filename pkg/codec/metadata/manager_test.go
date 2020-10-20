@@ -209,9 +209,9 @@ func TestManagerUnmarshal(t *testing.T) {
 					t.Fatalf("reference not set %s", key)
 				}
 
-				str, is := ref.Value.(string)
+				str, is := ref.Scalar.(string)
 				if !is {
-					t.Fatalf("reference value is not a string %+v", ref.Value)
+					t.Fatalf("reference value is not a string %+v", ref.Scalar)
 				}
 
 				if str != input[key] {

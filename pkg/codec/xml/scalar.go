@@ -39,8 +39,8 @@ func (scalar Scalar) MarshalXML(encoder *xml.Encoder, _ xml.StartElement) error 
 
 	if scalar.reference != nil {
 		var reference = scalar.store.Load(scalar.reference.Resource, scalar.reference.Path)
-		if reference != nil && reference.Value != nil {
-			value = reference.Value
+		if reference != nil && reference.Scalar != nil {
+			value = reference.Scalar
 		}
 	}
 
@@ -70,7 +70,7 @@ func (scalar *Scalar) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement)
 
 			switch t := tok.(type) {
 			case xml.CharData:
-				if reference.Value, err = types.DecodeFromString(string(t), scalar.scalar.Type); err != nil {
+				if reference.Scalar, err = types.DecodeFromString(string(t), scalar.scalar.Type); err != nil {
 					return err
 				}
 

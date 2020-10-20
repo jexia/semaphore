@@ -29,8 +29,8 @@ func (scalar Scalar) value() interface{} {
 
 	if scalar.reference != nil {
 		var reference = scalar.store.Load(scalar.reference.Resource, scalar.reference.Path)
-		if reference != nil && reference.Value != nil {
-			value = reference.Value
+		if reference != nil && reference.Scalar != nil {
+			value = reference.Scalar
 		}
 	}
 
@@ -60,8 +60,8 @@ func (scalar Scalar) UnmarshalJSONScalar(decoder *gojay.Decoder) error {
 	}
 
 	var reference = &references.Reference{
-		Path:  scalar.reference.Path,
-		Value: value,
+		Path:   scalar.reference.Path,
+		Scalar: value,
 	}
 
 	scalar.store.StoreReference(scalar.reference.Resource, reference)

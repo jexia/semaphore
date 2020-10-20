@@ -46,8 +46,8 @@ func Assert(t *testing.T, resource, path string, store references.Store, input E
 			t.Fatalf("reference %q was expected to be set", path)
 		}
 
-		if ref.Value != input.Value {
-			t.Errorf("reference %q was expected to be %T(%v), got %T(%v)", path, input.Value, input.Value, ref.Value, ref.Value)
+		if ref.Scalar != input.Value {
+			t.Errorf("reference %q was expected to be %T(%v), got %T(%v)", path, input.Value, input.Value, ref.Scalar, ref.Scalar)
 		}
 	case input.Repeated != nil:
 		if ref == nil {

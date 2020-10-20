@@ -112,7 +112,7 @@ func encode(encoded url.Values, path string, store references.Store, tpl *specs.
 		if ref == nil {
 			value = tpl.Scalar.Default
 		} else {
-			value = ref.Value
+			value = ref.Scalar
 		}
 
 		casted := castType(tpl.Scalar.Type, value)
