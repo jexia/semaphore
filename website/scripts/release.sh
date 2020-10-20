@@ -14,4 +14,4 @@ git clone -b docs https://github.com/jexia/semaphore.git
 rm -r ./semaphore/*
 mv ./build/* ./semaphore
 
-(cd semaphore; git add -A; git commit -m 'build: 🏗️ automatically generated documentation')
+(cd semaphore; git add -A; git commit -m 'build: 🏗️ automatically generated documentation'; git push)
