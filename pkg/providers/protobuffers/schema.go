@@ -1,8 +1,6 @@
 package protobuffers
 
 import (
-	"log"
-
 	protobuf "github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/labels"
@@ -51,10 +49,9 @@ func newMessage(seenProperties map[string]*specs.Property, seenTemplates map[str
 	return result
 }
 
+// GetTemplate creates a new template (data type) if not available yet or returns an existing one.
 func GetTemplate(seenProperties map[string]*specs.Property, seenTemplates map[string]*specs.Template, path string, descriptor *desc.FieldDescriptor) *specs.Template {
 	var id = descriptor.GetFullyQualifiedName()
-
-	log.Println("GetTemplate:", id)
 
 	if messageType := descriptor.GetMessageType(); messageType != nil {
 		id = messageType.GetName()
@@ -114,8 +111,6 @@ func GetTemplate(seenProperties map[string]*specs.Property, seenTemplates map[st
 // GetProperty creates a new property (if not exists) otherwise returns an existing one.
 func GetProperty(seenProperties map[string]*specs.Property, seenTemplates map[string]*specs.Template, path string, descriptor *desc.FieldDescriptor) *specs.Property {
 	var id = descriptor.GetFullyQualifiedName()
-
-	log.Println("GetProperty:", id)
 
 	property, ok := seenProperties[id]
 	if ok {
