@@ -2,6 +2,7 @@ package openapi3
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"sort"
 	"strings"
@@ -190,31 +191,44 @@ func IncludeParameterMap(object *Object, params *specs.ParameterMap) {
 
 // GenerateSchema generates a new schema for the given property
 func GenerateSchema(description string, property *specs.Template) *Schema {
-	result := &Schema{
+	return generateSchema(make(map[*specs.Template]*Schema), description, property)
+}
+
+func generateSchema(generated map[*specs.Template]*Schema, description string, property *specs.Template) *Schema {
+	log.Println(property.Identifier)
+
+	schema, ok := generated[property]
+	if ok {
+		return schema
+	}
+
+	schema = &Schema{
 		Description: description,
 		Type:        types.Open(property.Type()),
 	}
 
+	generated[property] = schema
+
 	switch {
 	case property.Scalar != nil:
-		result.Default = property.Scalar.Default
+		schema.Default = property.Scalar.Default
 
 		break
 	case property.Message != nil:
-		result.Properties = make(map[string]*Schema, len(property.Message))
+		schema.Properties = make(map[string]*Schema, len(property.Message))
 
 		for _, nested := range property.Message {
-			result.Properties[nested.Name] = GenerateSchema(nested.Description, nested.Template)
+			schema.Properties[nested.Name] = generateSchema(generated, nested.Description, nested.Template)
 
 			if nested.Label == labels.Required {
-				result.Required = append(result.Required, nested.Name)
+				schema.Required = append(schema.Required, nested.Name)
 			}
 		}
 
 		break
 	case property.Enum != nil:
 		// ensure property enum order
-		result.Enum = make([]interface{}, len(property.Enum.Keys))
+		schema.Enum = make([]interface{}, len(property.Enum.Keys))
 		keys := make([]int, 0, len(property.Enum.Positions))
 
 		for key := range property.Enum.Positions {
@@ -224,7 +238,7 @@ func GenerateSchema(description string, property *specs.Template) *Schema {
 		sort.Ints(keys)
 
 		for pos, key := range keys {
-			result.Enum[pos] = property.Enum.Positions[int32(key)].Key
+			schema.Enum[pos] = property.Enum.Positions[int32(key)].Key
 		}
 
 		break
@@ -236,11 +250,11 @@ func GenerateSchema(description string, property *specs.Template) *Schema {
 
 		return &Schema{
 			Description: description,
-			Items:       GenerateSchema("", template),
+			Items:       generateSchema(generated, "", template),
 		}
 	}
 
-	return result
+	return schema
 }
 
 // RequiresRequestBody checks whether the given method requires a request body.

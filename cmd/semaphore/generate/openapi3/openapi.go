@@ -66,15 +66,5 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		return err
 	}
 
-	bb, err := yaml.Marshal(object)
-	if err != nil {
-		return err
-	}
-
-	_, err = os.Stdout.Write(bb)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return yaml.NewEncoder(os.Stdout).Encode(object)
 }
