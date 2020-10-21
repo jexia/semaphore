@@ -1,0 +1,26 @@
+@domain/cli:
+  - ./cmd/*
+
+@domain/specs:
+  - ./pkg/specs/*
+
+@domain/codec:
+  - ./cmd/codec/*
+
+@domain/transport:
+  - ./cmd/transport/*
+
+@domain/provider:
+  - ./cmd/providers/*
+
+@domain/generator:
+  - ./cmd/generators/*
+
+@domain/flow:
+  - ./cmd/flow*
+
+@domain/example:
+  - ./example/*
+
+@domain/website:
+  - ./website/*
