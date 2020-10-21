@@ -13,15 +13,27 @@ message Request {
 }
 
 message Response {
-  repeated User users = 1;
+  repeated Person people = 1;
+}
 
-  message User {
-    string id = 1;
+message Person {
+  string id = 1;
 
-    string name = 2;
+  string name = 2;
 
-    string department = 3;
+  Gender gender = 3;
 
-    repeated User subordinates = 4;
-  }
+  Person mother = 4;
+
+  Person father = 5;
+
+  repeated Person children = 6;
+}
+
+enum Gender {
+  UNDEFINED = 0;
+
+  FEMALE = 1;
+
+  MALE = 2;
 }

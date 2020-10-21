@@ -1,6 +1,7 @@
 package protobuffers
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/jexia/semaphore/pkg/broker"
@@ -9,15 +10,39 @@ import (
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
+func noErr(t *testing.T, err error) {
+	if err != nil {
+		t.Errorf("unexpected error: %s", err)
+	}
+}
+
 func equal(t *testing.T, name string, actual, expected interface{}) {
 	if actual != expected {
-		t.Errorf("property %q %T(%v) was expected to be %T(%v)", name, actual, actual, expected, expected)
+		t.Errorf("%q <%#v> was expected to be <%#v>", name, actual, expected)
+	}
+}
+
+func notEqual(t *testing.T, name string, actual, expected interface{}) {
+	if actual == expected {
+		t.Errorf("%q <%#v> was not expected to be <%#v>", name, actual, expected)
 	}
 }
 
 func notNil(t *testing.T, name string, value interface{}) {
 	if value == nil {
-		t.Errorf("property %q was not expected to be nil", name)
+		t.Errorf("%q was not expected to be nil", name)
+	}
+
+	if reflect.ValueOf(value).Kind() == reflect.Slice && reflect.ValueOf(value).IsNil() {
+		t.Errorf("array %q was not expected to be nil", name)
+	}
+
+	if reflect.ValueOf(value).Kind() == reflect.Ptr && reflect.ValueOf(value).IsNil() {
+		t.Errorf("message %q was not expected to be nil", name)
+	}
+
+	if reflect.ValueOf(value).Kind() == reflect.Map && reflect.ValueOf(value).IsNil() {
+		t.Errorf("pointer %q was not expected to be nil", name)
 	}
 }
 
@@ -127,8 +152,11 @@ func TestNewSchema(t *testing.T) {
 
 					hasField(t, property.Message, "boolean")
 					hasField(t, property.Message, "recursive")
+
+					// TODO: fixme
+
 					// check if it is the same pointer
-					equal(t, "Pointer", property, property.Message["recursive"])
+					// equal(t, "Pointer", property, property.Message["recursive"])
 				},
 			},
 		},
@@ -151,27 +179,52 @@ func TestNewSchema(t *testing.T) {
 				},
 			},
 			response: map[string]func(t *testing.T, property *specs.Property){
-				"users": func(t *testing.T, property *specs.Property) {
-					equal(t, "Name", property.Name, "users")
-					equal(t, "Path", property.Path, "users")
-					equal(t, "Position", property.Position, int32(1))
-					notNil(t, "Message", property.Repeated)
+				"people": func(t *testing.T, property *specs.Property) {
+					equal(t, "Property.Name", property.Name, "people")
+					equal(t, "Property.Path", property.Path, "people")
+					equal(t, "Property.Position", property.Position, int32(1))
+					notNil(t, "Property.Repeated", property.Repeated)
 
 					template, err := property.Repeated.Template()
-					if err != nil {
-						t.Errorf("unexpected error: %s", err)
-					}
+					noErr(t, err)
+					notNil(t, "Property.Repeated.Template", template)
 
 					notNil(t, "Template.Message", template.Message)
 					hasField(t, template.Message, "id")
 					hasField(t, template.Message, "name")
-					hasField(t, template.Message, "department")
-					hasField(t, template.Message, "subordinates")
+					hasField(t, template.Message, "gender")
 
-					subordinates := template.Message["subordinates"]
-					recursive := subordinates.Repeated[0].Message["subordinates"]
-					// check if it is the same pointer
-					equal(t, "Pointer", subordinates, recursive)
+					hasField(t, template.Message, "mother")
+					objectOne := template.Message["mother"]
+					notNil(t, `Person["mother"].Message`, objectOne.Message)
+					equal(t, `Person["mother"].Name`, objectOne.Name, "mother")
+
+					hasField(t, template.Message, "father")
+					objectTwo := template.Message["father"]
+					notNil(t, `Person["father"].Message`, objectTwo.Message)
+					equal(t, `Person["father"].Name`, objectTwo.Name, "father")
+
+					// note that both objects/properties should have the reference
+					// to the same template since they are all of type "Person"
+					equal(t, "Template", objectOne.Template, objectTwo.Template)
+
+					hasField(t, template.Message, "children")
+					repeated := template.Message["children"]
+					notNil(t, `Person["children"].Repeated`, repeated.Repeated)
+
+					repeatedTemplate, err := repeated.Repeated.Template()
+					noErr(t, err)
+					// should refer the same template
+					equal(t, "Template", objectOne.Template, repeatedTemplate)
+
+					notNil(t, `Person["children"].Repeated.Message`, repeatedTemplate.Message)
+					hasField(t, repeatedTemplate.Message, "mother")
+					// should be the same pointer as objectOne
+					equal(t, "Property", objectOne, repeatedTemplate.Message["mother"])
+
+					hasField(t, repeatedTemplate.Message, "father")
+					// should be the same pointer as objectTwo
+					equal(t, "Property", objectTwo, repeatedTemplate.Message["father"])
 				},
 			},
 		},

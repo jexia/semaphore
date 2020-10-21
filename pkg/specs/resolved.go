@@ -4,25 +4,25 @@ package specs
 // from the infinite loop.
 type ResolvedProperty struct {
 	ResolvedTemplate
-	byPath map[string]struct{}
+	byIdentifier map[string]struct{}
 }
 
 // NewResolvedProperty creates a storage for visited properties.
 func NewResolvedProperty() *ResolvedProperty {
 	return &ResolvedProperty{
 		ResolvedTemplate: make(ResolvedTemplate),
-		byPath:           make(map[string]struct{}),
+		byIdentifier:     make(map[string]struct{}),
 	}
 }
 
 // Resolved returns true if property was already visited by encoder/resolver etc.
 func (resolved ResolvedProperty) Resolved(property *Property) bool {
-	if property.Template != nil && property.Identifier != "" {
+	if property.Template != nil && property.Template.Identifier != "" {
 		return resolved.ResolvedTemplate.Resolved(property.Template)
 	}
 
-	if property.Path != "" {
-		_, ok := resolved.byPath[property.Path]
+	if property.Identifier != "" {
+		_, ok := resolved.byIdentifier[property.Identifier]
 
 		return ok
 	}
@@ -32,15 +32,16 @@ func (resolved ResolvedProperty) Resolved(property *Property) bool {
 
 // Resolve adds the property to the visited list.
 func (resolved ResolvedProperty) Resolve(property *Property) {
-	if property.Template != nil && property.Identifier != "" {
+	if property.Template != nil && property.Template.Identifier != "" {
 		resolved.ResolvedTemplate.Resolve(property.Template)
 	}
 
-	if property.Path != "" {
-		resolved.byPath[property.Path] = struct{}{}
+	if property.Identifier != "" {
+		resolved.byIdentifier[property.Identifier] = struct{}{}
 	}
 }
 
+// ResolvedTemplate contains the list of templates that were already processed.
 type ResolvedTemplate map[string]struct{}
 
 // Resolved returns true if the template was already resolved (by Identifier).

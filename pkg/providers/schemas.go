@@ -104,13 +104,6 @@ func ResolveNode(ctx *broker.Context, services specs.ServiceList, schemas specs.
 
 // DefineCall defineds the types for the specs call
 func DefineCall(ctx *broker.Context, services specs.ServiceList, schemas specs.Schemas, node *specs.Node, call *specs.Call, flow specs.FlowInterface) (err error) {
-	if call.Request != nil {
-		err = ResolveParameterMap(ctx, schemas, call.Request, flow)
-		if err != nil {
-			return err
-		}
-	}
-
 	if call.Method != "" {
 		logger.Info(ctx, "defining call types",
 			zap.String("call", node.ID),
@@ -149,6 +142,13 @@ func DefineCall(ctx *broker.Context, services specs.ServiceList, schemas specs.S
 
 		call.Request.Schema = method.Input
 		call.Response.Schema = method.Output
+	}
+
+	if call.Request != nil {
+		err = ResolveParameterMap(ctx, schemas, call.Request, flow)
+		if err != nil {
+			return err
+		}
 	}
 
 	if call.Response != nil {
@@ -239,8 +239,6 @@ func ResolveProperty(resolved *specs.ResolvedProperty, property, schema *specs.P
 		return nil
 	}
 
-	resolved.Resolve(property)
-
 	switch {
 	case property.Message != nil:
 		if err := resolveMessage(resolved, property.Message, schema.Message, flow); err != nil {
@@ -283,12 +281,15 @@ func ResolveProperty(resolved *specs.ResolvedProperty, property, schema *specs.P
 		break
 	}
 
+	property.Position = schema.Position
+	resolved.Resolve(property)
+
 	return nil
 }
 
 // ResolveParameterMap ensures that all schema properties are defined inisde the given parameter map
 func ResolveParameterMap(ctx *broker.Context, schemas specs.Schemas, params *specs.ParameterMap, flow specs.FlowInterface) (err error) {
-	if params == nil || params.Schema == "" {
+	if params == nil {
 		return nil
 	}
 

@@ -23,15 +23,15 @@ func NewMessage(property *specs.Property) (*desc.MessageDescriptor, error) {
 }
 
 func newMessage(builders map[string]*builder.MessageBuilder, name string, property *specs.Property) (*builder.MessageBuilder, bool, error) {
-	if property.Identifier != "" {
-		existing, ok := builders[property.Identifier]
+	if property.Template.Identifier != "" {
+		existing, ok := builders[property.Template.Identifier]
 		if ok {
 			return existing, true, nil
 		}
 	}
 
 	builder := builder.NewMessage(name)
-	builders[property.Identifier] = builder
+	builders[property.Template.Identifier] = builder
 
 	if err := constructMessage(builders, builder, property.Message); err != nil {
 		return nil, false, err

@@ -25,7 +25,9 @@ message Data {
 
 	double double = 4;
 
-	repeated Data data = 5;
+	repeated Data dataArray = 5;
+
+	Data dataObject = 6;
 }
 
 message Request {

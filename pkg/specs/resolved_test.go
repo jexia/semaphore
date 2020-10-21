@@ -7,8 +7,8 @@ func TestResolvedProperty(t *testing.T) {
 		resolved = NewResolvedProperty()
 
 		propertyA = &Property{
-			Path:     "property.A",
-			Template: new(Template),
+			Identifier: "A",
+			Template:   new(Template),
 		}
 
 		propertyB = &Property{

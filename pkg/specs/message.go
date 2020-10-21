@@ -62,7 +62,7 @@ func (message Message) compare(seen map[string]*Template, expected Message) erro
 		}
 
 		if err := property.compare(seen, nested); err != nil {
-			return fmt.Errorf("object property mismatch: %w", err)
+			return fmt.Errorf("object property '%s' mismatch: %w", key, err)
 		}
 	}
 

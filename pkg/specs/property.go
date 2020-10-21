@@ -8,10 +8,10 @@ import (
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
-// Schemas represents a map string collection of properties
+// Schemas represents a map string collection of properties.
 type Schemas map[string]*Property
 
-// Get attempts to return the given key from the objects collection
+// Get attempts to return the given key from the objects collection.
 func (objects Schemas) Get(key string) *Property {
 	if objects == nil {
 		return nil
@@ -20,7 +20,7 @@ func (objects Schemas) Get(key string) *Property {
 	return objects[key]
 }
 
-// Append appends the given objects to the objects collection
+// Append appends the given objects to the objects collection.
 func (objects Schemas) Append(arg Schemas) {
 	if objects == nil {
 		return
@@ -39,8 +39,9 @@ type Expression interface {
 // Property represents a value property.
 type Property struct {
 	*metadata.Meta
-	Name        string `json:"name,omitempty" yaml:"name,omitempty"`               // Name represents the name of the given property
-	Path        string `json:"path,omitempty" yaml:"path,omitempty"`               // Path represents the full path to the given property
+	Name        string `json:"name,omitempty" yaml:"name,omitempty"` // Name represents the name of the given property
+	Path        string `json:"path,omitempty" yaml:"path,omitempty"` // Path represents the full path to the given property
+	Identifier  string
 	Description string `json:"description,omitempty" yaml:"description,omitempty"` // Description holds the description of the given property used to describe its use
 
 	Position int32 `json:"position,omitempty" yaml:"position,omitempty"` // Position of the given property (in array/object)
@@ -85,7 +86,7 @@ func (property *Property) DefaultValue() interface{} {
 	return nil
 }
 
-// Empty checks if the property has any defined type
+// Empty checks if the property has any defined type.
 func (property *Property) Empty() bool {
 	return property.Type() == types.Unknown
 }
@@ -104,6 +105,7 @@ func (property *Property) clone(seen map[string]*Template) *Property {
 		Meta:        property.Meta,
 		Position:    property.Position,
 		Description: property.Description,
+		Identifier:  property.Identifier,
 		Name:        property.Name,
 		Path:        property.Path,
 		Expr:        property.Expr,
@@ -147,7 +149,7 @@ func (property *Property) compare(seen map[string]*Template, expected *Property)
 	return nil
 }
 
-// Define ensures that all missing nested properties are defined
+// Define ensures that all missing nested properties are defined.
 func (property *Property) Define(expected *Property) {
 	property.define(make(map[string]*Template), expected)
 }
@@ -178,7 +180,7 @@ type ParameterMap struct {
 	Stack     map[string]*Property `json:"stack,omitempty"`
 }
 
-// Clone clones the given parameter map
+// Clone clones the given parameter map.
 func (parameters *ParameterMap) Clone() *ParameterMap {
 	if parameters == nil {
 		return nil
