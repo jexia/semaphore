@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net"
 	"net/http"
 	"testing"
@@ -177,7 +176,6 @@ func TestNewListener(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			log.Println(body)
 			if diff := deep.Equal(body, test.expected); diff != nil {
 				t.Fatal(diff)
 			}

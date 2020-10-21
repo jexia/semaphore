@@ -57,16 +57,15 @@ func (manager *Manager) Marshal(store references.Store) (io.Reader, error) {
 
 	go func() {
 		defer encoder.Release()
+		defer writer.Close()
 
 		encodeElement(encoder, manager.resource, manager.property.Template, store)
 
-		if _, err := encoder.Write(); err != nil {
-			_ = writer.CloseWithError(err)
-
+		_, err := encoder.Write()
+		if err != nil {
+			writer.CloseWithError(err)
 			return
 		}
-
-		writer.Close()
 	}()
 
 	return reader, nil

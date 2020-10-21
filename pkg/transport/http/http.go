@@ -1,15 +1,20 @@
 package http
 
 import (
-	"context"
 	"net/http"
 	"regexp"
 	"strings"
-	"sync"
 
 	"github.com/jexia/semaphore/pkg/codec/metadata"
 	"github.com/jexia/semaphore/pkg/transport"
 )
+
+// AppendHTTPHeader appends the given HTTP header into a transport header
+func AppendHTTPHeader(dest metadata.MD, src http.Header) {
+	for key, vals := range src {
+		dest[strings.ToLower(key)] = strings.Join(vals, ";")
+	}
+}
 
 // CopyHTTPHeader copies the given HTTP header into a transport header
 func CopyHTTPHeader(source http.Header) metadata.MD {
@@ -36,53 +41,6 @@ func CopyMetadataHeader(header metadata.MD) http.Header {
 	}
 
 	return result
-}
-
-// NewTransportResponseWriter constructs a new HTTP response writer of the given transport response writer
-func NewTransportResponseWriter(ctx context.Context, rw transport.ResponseWriter) *TransportResponseWriter {
-	result := &TransportResponseWriter{
-		header:    http.Header{},
-		transport: rw,
-	}
-
-	result.mutex.Lock()
-	return result
-}
-
-// A TransportResponseWriter interface is used by an HTTP handler to
-// construct an HTTP response.
-type TransportResponseWriter struct {
-	header    http.Header
-	transport transport.ResponseWriter
-	once      sync.Once
-	mutex     sync.RWMutex
-}
-
-// Header returns the header map that will be sent by
-// WriteHeader. The Header map also is the mechanism with which
-// Handlers can set HTTP trailers.
-func (rw *TransportResponseWriter) Header() http.Header {
-	return rw.header
-}
-
-// Write writes the data to the connection as part of an HTTP reply.
-func (rw *TransportResponseWriter) Write(bb []byte) (int, error) {
-	return rw.transport.Write(bb)
-}
-
-// WriteHeader sends an HTTP response header with the provided
-// status code.
-func (rw *TransportResponseWriter) WriteHeader(status int) {
-	rw.once.Do(func() {
-		rw.transport.HeaderStatus(status)
-		rw.transport.HeaderMessage(http.StatusText(status))
-		rw.mutex.Unlock()
-	})
-}
-
-// AwaitStatus awaits till the response header status code has been written
-func (rw *TransportResponseWriter) AwaitStatus() {
-	rw.mutex.RLock()
 }
 
 // NewRequest constructs a new transport request of the given http request
