@@ -75,7 +75,7 @@ func TestUnmarshalFile(t *testing.T) {
 			}()
 
 			if strings.HasSuffix(clean, pass) && err != nil {
-				t.Fatalf("expected test to pass but failed instead %s, %s", file.Name(), err)
+				t.Fatalf("expected test to pass but failed instead %q: %s", file.Name(), err)
 			}
 
 			if strings.HasSuffix(clean, fail) && err != nil {

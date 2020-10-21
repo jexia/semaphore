@@ -3,6 +3,8 @@ package json
 import (
 	"bufio"
 	"io"
+	"log"
+	"os"
 
 	"github.com/francoispqt/gojay"
 	"github.com/jexia/semaphore/pkg/codec"
@@ -55,11 +57,14 @@ func (manager *Manager) Marshal(store references.Store) (io.Reader, error) {
 		encoder        = gojay.BorrowEncoder(writer)
 	)
 
+	err := store.EncodeJSON(os.Stdout)
+	log.Println(err)
+
 	go func() {
 		defer encoder.Release()
 		defer writer.Close()
 
-		encodeElement(encoder, manager.resource, manager.property.Template, store)
+		// encodeElement(encoder, manager.resource, manager.property.Template, store)
 
 		_, err := encoder.Write()
 		if err != nil {
