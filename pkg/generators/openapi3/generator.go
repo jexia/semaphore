@@ -218,7 +218,7 @@ func GenerateSchema(description string, property specs.Template) *Schema {
 		result.Default = property.Scalar.Default
 
 		break
-	case property.Message != nil:
+	case property.Message != nil && len(property.Message) > 0:
 		result.Properties = make(map[string]*Schema, len(property.Message))
 
 		for _, nested := range property.Message {
