@@ -185,7 +185,6 @@ func TestOpenAPI3GenerationWithReference(t *testing.T) {
 			}
 
 			if diff := deep.Equal(result, expected); diff != nil {
-				// t.Logf("\nresult %+v \nexpect %+v\n", reflect.TypeOf(result.Components.Schemas["CreateUserInput"].Properties), reflect.TypeOf(expected.Components.Schemas["CreateUserInput"].Properties))
 				t.Fatal(diff)
 			}
 		})

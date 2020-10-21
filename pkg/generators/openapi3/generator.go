@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/jexia/semaphore/pkg/generators/openapi3/types"
-	"github.com/jexia/semaphore/pkg/providers"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/labels"
