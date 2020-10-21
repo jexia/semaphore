@@ -32,7 +32,7 @@ type Reference struct {
 	Scalar   interface{}
 	Enum     *int32
 	Repeated []Store
-	Message  map[string]*Reference
+	Message  Store
 	mutex    sync.Mutex
 }
 
@@ -86,31 +86,7 @@ func (reference *Reference) EncodeJSON(writer io.Writer) error {
 
 		return err
 	case reference.Message != nil:
-		var separate bool
-
-		if _, err := fmt.Fprint(writer, "{"); err != nil {
-			return err
-		}
-
-		for key, reference := range reference.Repeated {
-			if separate {
-				writer.Write([]byte(","))
-			} else {
-				separate = true
-			}
-
-			if _, err := fmt.Fprintf(writer, "%q:", key); err != nil {
-				return err
-			}
-
-			if err := reference.EncodeJSON(writer); err != nil {
-				return err
-			}
-		}
-
-		_, err := fmt.Fprint(writer, "}")
-
-		return err
+		return reference.Message.EncodeJSON(writer)
 	default:
 		_, err := fmt.Fprint(writer, "null")
 

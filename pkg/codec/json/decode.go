@@ -14,7 +14,14 @@ func decodeElement(decoder *gojay.Decoder, resource, path string, template *spec
 
 	switch {
 	case template.Message != nil:
-		object := NewObject(resource, template.Message, store)
+		reference := &references.Reference{
+			Path:    path,
+			Message: references.NewReferenceStore(0),
+		}
+
+		store.StoreReference(resource, reference)
+
+		object := NewObject(resource, template.Message, reference.Message)
 		if object == nil {
 			break
 		}
