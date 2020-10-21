@@ -27,7 +27,9 @@ flow "CreateUser" {
         request "com.org.Users" "Create" {}
 
         rollback {
-            request "com.org.Users" "Delete" {}
+            request "com.org.Users" "Delete" {
+                id = "{{ user:id }}"
+            }
         }
     }
 

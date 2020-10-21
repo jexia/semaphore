@@ -3,6 +3,7 @@ package http
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -180,14 +181,23 @@ func (call *Call) SendMsg(ctx context.Context, rw transport.ResponseWriter, pr *
 	req.Header.Add(ContentTypeHeaderKey, ContentTypes[pr.RequestCodec])
 	req.Header.Add(AcceptHeaderKey, ContentTypes[pr.ResponseCodec])
 
-	res := NewTransportResponseWriter(ctx, rw)
+	// TODO: configure http client
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+
+	rw.HeaderStatus(res.StatusCode)
+	rw.HeaderMessage(http.StatusText(res.StatusCode))
+	AppendHTTPHeader(rw.Header(), res.Header)
 
 	go func() {
 		defer rw.Close()
-		call.proxy.ServeHTTP(res, req)
+		_, err = io.Copy(rw, res.Body)
+		if err != nil && err != io.EOF {
+			logger.Debug(call.ctx, "unexpected error while copying response body", zap.Error(err))
+		}
 	}()
-
-	res.AwaitStatus()
 
 	return nil
 }
