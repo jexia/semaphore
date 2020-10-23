@@ -293,6 +293,10 @@ func ResolveParameterMap(ctx *broker.Context, schemas specs.Schemas, params *spe
 		return nil
 	}
 
+	if params.Schema == "" {
+		return nil
+	}
+
 	schema := schemas.Get(params.Schema)
 	if schema == nil {
 		return ErrUndefinedObject{
