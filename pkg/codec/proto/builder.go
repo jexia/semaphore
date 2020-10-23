@@ -19,6 +19,10 @@ func NewMessage(property *specs.Property) (*desc.MessageDescriptor, error) {
 		return nil, err
 	}
 
+	if err := builder.TrySetName(property.Name); err != nil {
+		return nil, err
+	}
+
 	return builder.Build()
 }
 

@@ -441,6 +441,9 @@ func TestMarshal(t *testing.T) {
 
 	flow := flows.Get("complete")
 	req := flow.GetNodes().Get("first").Call.Request
+
+	req.Property.Name = "must_be_set"
+
 	desc, err := NewMessage(req.Property)
 	if err != nil {
 		t.Fatal(err)

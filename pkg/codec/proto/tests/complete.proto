@@ -11,22 +11,26 @@ enum MessageStatus {
     PENDING = 1;
 }
 
-message Message {
-    message Repeated {
-        string value = 1;
-    }
+message Repeated {
+    string value = 1;
+}
 
-    message Nested {
-        string value = 1;
-    }
-    
+message Nested {
+    string value = 1;
+}
+
+message Message {
     string message = 1;
+
     repeated Repeated repeating = 2;
+
     Nested nested = 3;
+
     repeated string repeating_values = 4;
+
     MessageStatus status = 5;
+
     repeated MessageStatus repeating_status = 6;
 }
 
-message Empty {
-}
+message Empty {}
