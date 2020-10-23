@@ -295,7 +295,12 @@ func TestPropertyClone(t *testing.T) {
 				Type:    types.String,
 			},
 			Repeated: Repeated{
-				// TODO
+				{
+					Scalar: &Scalar{
+						Default: 42,
+						Type:    types.Int64,
+					},
+				},
 			},
 			Message: Message{
 				"first": {Name: "first", Path: "first"},
@@ -310,7 +315,9 @@ func TestPropertyClone(t *testing.T) {
 		},
 	}
 
+	// add recursive types to the Object and Array to make sure that we are able to escape
 	property.Template.Message["second"] = property
+	property.Template.Repeated = append(property.Template.Repeated, property.Template)
 
 	result := property.Clone()
 	if result == nil {
@@ -365,6 +372,7 @@ func TestPropertyClone(t *testing.T) {
 		t.Errorf("unexpected message properties %+v", result.Message)
 	}
 
+	// check the recursive link
 	if !reflect.DeepEqual(result.Message["second"], result) {
 		t.Errorf("nested recursive field does not match expected value")
 	}
@@ -375,6 +383,10 @@ func TestPropertyClone(t *testing.T) {
 
 	if result.Repeated == nil {
 		t.Fatalf("repeated is not set")
+	}
+
+	if actual, expected := len(result.Repeated), len(property.Repeated); actual != expected {
+		t.Fatalf("the length of repeated %d was expected to be %d", actual, expected)
 	}
 
 	if result.Raw != property.Raw {

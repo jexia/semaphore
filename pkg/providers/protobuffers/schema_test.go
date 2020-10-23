@@ -153,10 +153,8 @@ func TestNewSchema(t *testing.T) {
 					hasField(t, property.Message, "boolean")
 					hasField(t, property.Message, "recursive")
 
-					// TODO: fixme
-
 					// check if it is the same pointer
-					// equal(t, "Pointer", property, property.Message["recursive"])
+					equal(t, "Template pointer", property.Template, property.Message["recursive"].Template)
 				},
 			},
 		},

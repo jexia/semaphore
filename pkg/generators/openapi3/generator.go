@@ -2,7 +2,6 @@ package openapi3
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"sort"
 	"strings"
@@ -195,8 +194,6 @@ func GenerateSchema(description string, property *specs.Template) *Schema {
 }
 
 func generateSchema(generated map[*specs.Template]*Schema, description string, property *specs.Template) *Schema {
-	log.Println(property.Identifier)
-
 	schema, ok := generated[property]
 	if ok {
 		return schema
