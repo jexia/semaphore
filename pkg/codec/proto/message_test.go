@@ -566,6 +566,13 @@ func TestUnmarshal(t *testing.T) {
 
 	flow := flows.Get("complete")
 	req := flow.GetNodes().Get("first").Call.Request
+	property := req.Property
+	property.Name = "must_be_set"
+
+	desc, err := NewMessage(property)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	tests := map[string]map[string]interface{}{
 		"simple": {
@@ -619,11 +626,6 @@ func TestUnmarshal(t *testing.T) {
 	for key, input := range tests {
 		t.Run(key, func(t *testing.T) {
 			inputAsJSON, err := json.Marshal(input)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			desc, err := NewMessage(req.Property)
 			if err != nil {
 				t.Fatal(err)
 			}
