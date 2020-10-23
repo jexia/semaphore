@@ -2,8 +2,6 @@ syntax = "proto3";
 
 package semaphore.typetest;
 
-import "api/annotations.proto";
-
 service Typetest {
 	rpc Run(Request) returns (Response) {}
 }
@@ -25,9 +23,11 @@ message Data {
 
 	double double = 4;
 
-	repeated Data dataArray = 5;
+	repeated int64 numbers = 5;
 
 	Data dataObject = 6;
+
+	repeated Data dataArray = 7;
 }
 
 message Request {
