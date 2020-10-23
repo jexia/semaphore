@@ -55,20 +55,13 @@ func (manager *Manager) Marshal(store references.Store) (io.Reader, error) {
 		encoder        = gojay.BorrowEncoder(writer)
 	)
 
-	// err := store.EncodeJSON(os.Stdout)
-
-	// log.Println(err)
-	// log.Println()
-	// log.Println(store)
-
 	go func() {
 		defer encoder.Release()
 		defer writer.Close()
 
-		// encodeElement(encoder, manager.resource, manager.property.Template, store)
-		// _, err := encoder.Write()
+		encodeElement(encoder, manager.resource, manager.property.Template, store)
 
-		err := store.EncodeJSON(writer)
+		_, err := encoder.Write()
 		if err != nil {
 			writer.CloseWithError(err)
 			return
