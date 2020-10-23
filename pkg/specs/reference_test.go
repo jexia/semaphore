@@ -60,8 +60,8 @@ func TestPropertyReferenceString(t *testing.T) {
 			Resource: "resource.prop",
 			Path:     "path",
 		},
-		":": {},
-		"":  nil,
+		"<empty>": {},
+		"<nil>":   nil,
 	}
 
 	for expected, reference := range tests {

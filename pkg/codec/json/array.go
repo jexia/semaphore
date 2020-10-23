@@ -47,9 +47,9 @@ func (array *Array) MarshalJSONArray(encoder *gojay.Encoder) {
 		return
 	}
 
-	for _, store := range reference.Repeated {
-		array.template.Reference = new(specs.PropertyReference)
+	array.template.Reference = new(specs.PropertyReference)
 
+	for _, store := range reference.Repeated {
 		encodeElement(encoder, array.resource, array.template, store)
 	}
 }

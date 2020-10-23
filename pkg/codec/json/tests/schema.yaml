@@ -6,6 +6,7 @@ properties:
         "message":
           position: 1
           name: "message"
+          path: "message"
           label: "optional"
           template:
             scalar:
@@ -13,6 +14,7 @@ properties:
         "nested":
           position: 2
           name: "nested"
+          path: "nested"
           label: "optional"
           template:
             message:
@@ -26,12 +28,14 @@ properties:
         "repeating":
           position: 3
           name: "repeating"
+          path: "repeating"
           label: "optional"
           template:
             repeated:
               - message:
                   "value":
                     name: "value"
+                    path: "value"
                     label: "optional"
                     template:
                       scalar:
@@ -39,6 +43,7 @@ properties:
         "repeating_values":
           position: 4
           name: "repeating_values"
+          path: "repeating_values"
           label: "optional"
           template:
             repeated:
@@ -47,6 +52,7 @@ properties:
         "enum":
           position: 5
           name: "enum"
+          path: "enum"
           label: "optional"
           template:
             enum:
@@ -72,6 +78,7 @@ properties:
         "repeating_enum":
           position: 6
           name: "repeating_enum"
+          path: "repeating_enum"
           label: "optional"
           template:
             repeated:
