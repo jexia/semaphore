@@ -6,29 +6,16 @@ import (
 	"github.com/jexia/semaphore/pkg/specs"
 )
 
-// Scalar wraps specs.Scalar to be JSON encoded/decoded.
-type Scalar struct {
-	name      string
-	scalar    *specs.Scalar
-	reference *specs.PropertyReference
-	store     references.Store
-}
+// Scalar represents a scalar type such as a string, int or float. The scalar
+// type is used to encode or decode values inside gojay. These values are used
+// to construct messages to a service or user.
+type Scalar specs.Template
 
-// NewScalar creates new specs.Scalar wrapper.
-func NewScalar(name string, scalar *specs.Scalar, reference *specs.PropertyReference, store references.Store) *Scalar {
-	return &Scalar{
-		name:      name,
-		scalar:    scalar,
-		reference: reference,
-		store:     store,
-	}
-}
+func (template Scalar) value(store references.Store, tracker references.Tracker) interface{} {
+	var value = template.Scalar.Default
 
-func (scalar Scalar) value() interface{} {
-	var value = scalar.scalar.Default
-
-	if scalar.reference != nil {
-		var reference = scalar.store.Load(scalar.reference.Resource, scalar.reference.Path)
+	if template.Reference != nil {
+		var reference = store.Load(tracker.Resolve(template.Reference.String()))
 		if reference != nil && reference.Value != nil {
 			value = reference.Value
 		}
@@ -37,34 +24,45 @@ func (scalar Scalar) value() interface{} {
 	return value
 }
 
-// MarshalJSONScalar marshals standalone scalar to JSON.
-func (scalar Scalar) MarshalJSONScalar(encoder *gojay.Encoder) {
-	AddType(encoder, scalar.scalar.Type, scalar.value())
+// Marshal marshals the scalar template as a JSON value.
+func (template Scalar) Marshal(encoder *gojay.Encoder, store references.Store, tracker references.Tracker) {
+	if template.Scalar == nil {
+		return
+	}
+
+	AddType(encoder, template.Scalar.Type, template.value(store, tracker))
 }
 
-// MarshalJSONScalarKey marshals scalar as an object field.
-func (scalar Scalar) MarshalJSONScalarKey(encoder *gojay.Encoder) {
-	var value = scalar.value()
+// MarshalKey marshals the scalar template as an object field using the given key.
+// The key is not set if the value is `null`.
+func (template Scalar) MarshalKey(encoder *gojay.Encoder, key string, store references.Store, tracker references.Tracker) {
+	if template.Scalar == nil {
+		return
+	}
+
+	value := template.value(store, tracker)
 	if value == nil {
 		return
 	}
 
-	AddTypeKey(encoder, scalar.name, scalar.scalar.Type, value)
+	AddTypeKey(encoder, key, template.Scalar.Type, value)
 }
 
-// UnmarshalJSONScalar unmarshals scalar from decoder to the reference store.
-func (scalar Scalar) UnmarshalJSONScalar(decoder *gojay.Decoder) error {
-	value, err := DecodeType(decoder, scalar.scalar.Type)
+// Unmarshal attempts to unmarshal the value from the decoder as a scalar and
+// stores it inside the reference store.
+func (template Scalar) Unmarshal(decoder *gojay.Decoder, path string, store references.Store, tracker references.Tracker) error {
+	if template.Scalar == nil {
+		return nil
+	}
+
+	value, err := DecodeType(decoder, template.Scalar.Type)
 	if err != nil {
 		return err
 	}
 
-	var reference = &references.Reference{
-		Path:  scalar.reference.Path,
+	store.Store(tracker.Resolve(path), &references.Reference{
 		Value: value,
-	}
-
-	scalar.store.StoreReference(scalar.reference.Resource, reference)
+	})
 
 	return nil
 }

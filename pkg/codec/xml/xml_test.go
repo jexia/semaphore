@@ -154,7 +154,7 @@ func TestMarshal(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			refs := references.NewReferenceStore(len(test.input))
+			refs := references.NewStore(len(test.input))
 			refs.StoreValues(template.InputResource, "", test.input)
 
 			reader, err := manager.Marshal(refs)
@@ -556,7 +556,7 @@ func TestUnmarshal(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			var store = references.NewReferenceStore(0)
+			var store = references.NewStore(0)
 			err = manager.Unmarshal(test.input, store)
 
 			if test.error != nil {

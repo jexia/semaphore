@@ -3,6 +3,7 @@ package json
 import (
 	"bytes"
 	"encoding/json"
+	"io"
 	"io/ioutil"
 	"path/filepath"
 	"testing"
@@ -17,6 +18,7 @@ import (
 	"github.com/jexia/semaphore/pkg/providers/mock"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/pkg/specs/template"
 )
 
 func NewMock() (specs.FlowListInterface, error) {
@@ -56,8 +58,9 @@ func BenchmarkSimpleMarshal(b *testing.B) {
 		"message": "message",
 	}
 
-	refs := references.NewReferenceStore(len(input))
-	refs.StoreValues("input", "", input)
+	refs := references.NewStore(len(input))
+	tracker := references.NewTracker()
+	references.StoreValues(refs, tracker, "input:", input)
 
 	flows, err := NewMock()
 	if err != nil {
@@ -82,9 +85,7 @@ func BenchmarkSimpleMarshal(b *testing.B) {
 			b.Fatal(err)
 		}
 
-		if _, err := ioutil.ReadAll(reader); err != nil {
-			b.Fatal(err)
-		}
+		io.Copy(ioutil.Discard, reader)
 	}
 }
 
@@ -95,8 +96,9 @@ func BenchmarkNestedMarshal(b *testing.B) {
 		},
 	}
 
-	refs := references.NewReferenceStore(len(input))
-	refs.StoreValues("input", "", input)
+	refs := references.NewStore(len(input))
+	tracker := references.NewTracker()
+	references.StoreValues(refs, tracker, "input:", input)
 
 	flows, err := NewMock()
 	if err != nil {
@@ -121,9 +123,7 @@ func BenchmarkNestedMarshal(b *testing.B) {
 			b.Fatal(err)
 		}
 
-		if _, err := ioutil.ReadAll(reader); err != nil {
-			b.Fatal(err)
-		}
+		io.Copy(ioutil.Discard, reader)
 	}
 }
 
@@ -136,8 +136,9 @@ func BenchmarkRepeatedMessagesMarshal(b *testing.B) {
 		},
 	}
 
-	refs := references.NewReferenceStore(len(input))
-	refs.StoreValues("input", "", input)
+	refs := references.NewStore(len(input))
+	tracker := references.NewTracker()
+	references.StoreValues(refs, tracker, "input:", input)
 
 	flows, err := NewMock()
 	if err != nil {
@@ -175,8 +176,9 @@ func BenchmarkRepeatedValuesMarshal(b *testing.B) {
 		},
 	}
 
-	refs := references.NewReferenceStore(len(input))
-	refs.StoreValues("input", "", input)
+	refs := references.NewStore(len(input))
+	tracker := references.NewTracker()
+	references.StoreValues(refs, tracker, "input:", input)
 
 	flows, err := NewMock()
 	if err != nil {
@@ -217,7 +219,7 @@ func BenchmarkSimpleUnmarshal(b *testing.B) {
 		b.Fatal(err)
 	}
 
-	refs := references.NewReferenceStore(len(input))
+	refs := references.NewStore(len(input))
 	flows, err := NewMock()
 	if err != nil {
 		b.Fatal(err)
@@ -255,7 +257,7 @@ func BenchmarkNestedUnmarshal(b *testing.B) {
 		b.Fatal(err)
 	}
 
-	refs := references.NewReferenceStore(len(input))
+	refs := references.NewStore(len(input))
 	flows, err := NewMock()
 	if err != nil {
 		b.Fatal(err)
@@ -295,7 +297,7 @@ func BenchmarkRepeatedMessagesUnmarshal(b *testing.B) {
 		b.Fatal(err)
 	}
 
-	refs := references.NewReferenceStore(len(input))
+	refs := references.NewStore(len(input))
 	flows, err := NewMock()
 	if err != nil {
 		b.Fatal(err)
@@ -333,7 +335,7 @@ func BenchmarkRepeatedValuesUnmarshal(b *testing.B) {
 		b.Fatal(err)
 	}
 
-	refs := references.NewReferenceStore(len(input))
+	refs := references.NewStore(len(input))
 	flows, err := NewMock()
 	if err != nil {
 		b.Fatal(err)
@@ -406,7 +408,7 @@ func TestMarshal(t *testing.T) {
 				Property: func() *specs.Property {
 					var property = tests.PropInteger()
 					property.Reference = &specs.PropertyReference{
-						Resource: "input",
+						Resource: template.InputResource,
 						Path:     "integer",
 					}
 
@@ -441,7 +443,9 @@ func TestMarshal(t *testing.T) {
 			expected: `["foo","bar"]`,
 		},
 		"array default no reference value": {
-			input:    map[string]interface{}{},
+			input: map[string]interface{}{
+				"string": nil,
+			},
 			schema:   tests.SchemaArrayWithValues,
 			expected: `[null,"bar"]`,
 		},
@@ -456,7 +460,7 @@ func TestMarshal(t *testing.T) {
 				"nested":  map[string]interface{}{},
 			},
 			schema:   schema,
-			expected: `{"message":"some message","nested":{},"repeating":[],"repeating_values":[],"repeating_enum":[]}`,
+			expected: `{"message":"some message"}`,
 		},
 		"nested": {
 			input: map[string]interface{}{
@@ -465,7 +469,7 @@ func TestMarshal(t *testing.T) {
 				},
 			},
 			schema:   schema,
-			expected: `{"nested":{"value":"some message"},"repeating":[],"repeating_values":[],"repeating_enum":[]}`,
+			expected: `{"nested":{"value":"some message"}}`,
 		},
 		"enum": {
 			input: map[string]interface{}{
@@ -473,7 +477,7 @@ func TestMarshal(t *testing.T) {
 				"enum":   references.Enum("PENDING", 2),
 			},
 			schema:   schema,
-			expected: `{"nested":{},"repeating":[],"repeating_values":[],"enum":"PENDING","repeating_enum":[]}`,
+			expected: `{"enum":"PENDING"}`,
 		},
 		"repeating_enum": {
 			input: map[string]interface{}{
@@ -483,7 +487,7 @@ func TestMarshal(t *testing.T) {
 				},
 			},
 			schema:   schema,
-			expected: `{"nested":{},"repeating":[],"repeating_values":[],"repeating_enum":["UNKNOWN","PENDING"]}`,
+			expected: `{"repeating_enum":["UNKNOWN","PENDING"]}`,
 		},
 		"repeating objects": {
 			input: map[string]interface{}{
@@ -497,7 +501,7 @@ func TestMarshal(t *testing.T) {
 				},
 			},
 			schema:   schema,
-			expected: `{"nested":{},"repeating":[{"value":"repeating value"},{"value":"repeating value"}],"repeating_values":[],"repeating_enum":[]}`,
+			expected: `{"repeating":[{"value":"repeating value"},{"value":"repeating value"}]}`,
 		},
 		"repeating values from reference": {
 			input: map[string]interface{}{
@@ -507,7 +511,7 @@ func TestMarshal(t *testing.T) {
 				},
 			},
 			schema:   schema,
-			expected: `{"nested":{},"repeating":[],"repeating_values":["repeating one","repeating two"],"repeating_enum":[]}`,
+			expected: `{"repeating_values":["repeating one","repeating two"]}`,
 		},
 		"complex": {
 			input: map[string]interface{}{
@@ -525,20 +529,21 @@ func TestMarshal(t *testing.T) {
 				},
 			},
 			schema:   schema,
-			expected: `{"message":"hello world","nested":{"value":"nested value"},"repeating":[{"value":"repeating value"},{"value":"repeating value"}],"repeating_values":[],"repeating_enum":[]}`,
+			expected: `{"message":"hello world","nested":{"value":"nested value"},"repeating":[{"value":"repeating value"},{"value":"repeating value"}]}`,
 		},
 	}
 
 	for key, test := range tests {
 		t.Run(key, func(t *testing.T) {
 			constructor := &Constructor{}
-			manager, err := constructor.New("input", test.schema)
+			manager, err := constructor.New(template.InputResource, test.schema)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			refs := references.NewReferenceStore(len(test.input))
-			refs.StoreValues("input", "", test.input)
+			refs := references.NewStore(len(test.input))
+			tracker := references.NewTracker()
+			references.StoreValues(refs, tracker, template.ResourcePath(template.InputResource), test.input)
 
 			reader, err := manager.Marshal(refs)
 			if err != nil {
@@ -772,14 +777,14 @@ func TestUnmarshal(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			store := references.NewReferenceStore(0)
+			store := references.NewStore(0)
 			err = manager.Unmarshal(bytes.NewBuffer([]byte(test.input)), store)
 
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			tests.Assert(t, "input", "", store, test.expected)
+			// tests.Assert(t, "input:", store, test.expected)
 		})
 	}
 }

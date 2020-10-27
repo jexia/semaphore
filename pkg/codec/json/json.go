@@ -2,12 +2,15 @@ package json
 
 import (
 	"bufio"
+	"bytes"
+	"fmt"
 	"io"
 
 	"github.com/francoispqt/gojay"
 	"github.com/jexia/semaphore/pkg/codec"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/pkg/specs/template"
 )
 
 // Constructor is capable of constructing new codec managers for the given resource and specs.
@@ -23,6 +26,7 @@ func (constructor *Constructor) Name() string { return "json" }
 type Manager struct {
 	resource string
 	property *specs.Property
+	root     string
 }
 
 // New constructs a new JSON codec manager
@@ -31,10 +35,13 @@ func (constructor *Constructor) New(resource string, specs *specs.ParameterMap) 
 		return nil, ErrUndefinedSpecs{}
 	}
 
-	return &Manager{
+	manager := &Manager{
 		resource: resource,
 		property: specs.Property,
-	}, nil
+		root:     fmt.Sprintf("%s:", resource),
+	}
+
+	return manager, nil
 }
 
 // Name returns the proto codec name
@@ -51,24 +58,20 @@ func (manager *Manager) Marshal(store references.Store) (io.Reader, error) {
 	}
 
 	var (
-		reader, writer = io.Pipe()
-		encoder        = gojay.BorrowEncoder(writer)
+		bb      = &bytes.Buffer{}
+		encoder = gojay.BorrowEncoder(bb)
+		tracker = references.NewTracker()
 	)
 
-	go func() {
-		defer encoder.Release()
-		defer writer.Close()
+	encode(encoder, template.ResourcePath(manager.resource), manager.property.Template, store, tracker)
 
-		encodeElement(encoder, manager.resource, manager.property.Template, store)
+	defer encoder.Release()
+	_, err := encoder.Write()
+	if err != nil {
+		return nil, err
+	}
 
-		_, err := encoder.Write()
-		if err != nil {
-			writer.CloseWithError(err)
-			return
-		}
-	}()
-
-	return reader, nil
+	return bb, nil
 }
 
 // Unmarshal unmarshals the given JSON io reader into the given reference store.
@@ -92,5 +95,6 @@ func (manager *Manager) Unmarshal(reader io.Reader, store references.Store) erro
 	var decoder = gojay.NewDecoder(buff)
 	defer decoder.Release()
 
-	return decodeElement(decoder, manager.resource, manager.property.Path, manager.property.Template, store)
+	tracker := references.NewTracker()
+	return decode(decoder, manager.root, manager.property.Template, store, tracker)
 }

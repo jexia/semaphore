@@ -2,114 +2,65 @@ package references
 
 import (
 	"fmt"
-	"strings"
 	"sync"
 
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/template"
 )
 
-// Store represents the reference store interface
+// Store is a key/value store capable of holding reference values.
+// Reference values could be fetched by providing the absolute path of a property.
+// The reference store is used inside flows and codecs to track properties and their values.
+// Property keys are delimited with a simple dot-notation (ex: meta.key).
+//
+// Arrays are stored by defining the index and property path (ex: items[0].key).
+// When defining an array or object make sure to define the length.
+// The length of objects and properties are used inside implementations as a reference.
 type Store interface {
-	// StoreReference stores the given resource, path and value inside the references store
-	StoreReference(resource string, reference *Reference)
-	// Load attempts to load the defined value for the given resource and path
-	Load(resource string, path string) *Reference
-	// StoreValues stores the given values to the reference store
-	StoreValues(resource string, path string, values map[string]interface{})
-	// StoreValue stores the given value for the given resource and path
-	StoreValue(resource string, path string, value interface{})
-	// StoreEnum stores the given enum on the given path
-	StoreEnum(resource string, path string, enum int32)
+	// Store stores the reference using the given path as key
+	Store(path string, reference *Reference)
+	// Load attempts to load the reference for the given path.
+	// If no reference has been found is a nil value returned.
+	Load(path string) *Reference
+	// Define defines the length of a array or object at the given path.
+	// Any previously defined lengths for the given path will be overridden.
+	Define(path string, length int)
+	// Length returns the length of the given object or array at the given path
+	Length(path string) int
 }
 
 // Reference represents a value reference
 type Reference struct {
-	Path     string
-	Value    interface{}
-	Repeated []Store
-	Enum     *int32
-	mutex    sync.Mutex
+	Value interface{}
+	Enum  *int32
 }
 
-func (reference *Reference) String() string {
-	switch {
-	case reference.Value != nil:
-		return fmt.Sprintf("%s:<%T(%v)>", reference.Path, reference.Value, reference.Value)
-	case reference.Repeated != nil:
-		return fmt.Sprintf("%s:<array(%s)>", reference.Path, reference.Repeated)
-	case reference.Enum != nil:
-		return fmt.Sprintf("%s:<enum(%d)>", reference.Path, *reference.Enum)
-	default:
-		return fmt.Sprintf("%s:<empty>", reference.Path)
-	}
-}
-
-// Repeating prepares the given reference to store repeating values
-func (reference *Reference) Repeating(size int) {
-	reference.Repeated = make([]Store, size)
-}
-
-// Append appends the given store to the repeating value reference.
-// This method uses append, it is advised to use Set & Repeating when the length of the repeated message is known.
-func (reference *Reference) Append(val Store) {
-	reference.mutex.Lock()
-	reference.Repeated = append(reference.Repeated, val)
-	reference.mutex.Unlock()
-}
-
-// Set sets the given repeating value reference on the given index
-func (reference *Reference) Set(index int, val Store) {
-	reference.mutex.Lock()
-	reference.Repeated[index] = val
-	reference.mutex.Unlock()
-}
-
-// NewReferenceStore constructs a new store and allocates the references for the given length
-func NewReferenceStore(size int) Store {
+// NewStore constructs a new store and allocates the references for the given length
+func NewStore(size int) Store {
 	return &store{
-		values: make(map[string]*Reference, size),
+		lengths: make(map[string]int, size),
+		values:  make(map[string]*Reference, size),
 	}
 }
 
 type store struct {
-	values map[string]*Reference
-	mutex  sync.Mutex
+	lengths map[string]int
+	values  map[string]*Reference
+	mutex   sync.RWMutex
 }
 
-func (store *store) String() string {
-	var (
-		separated bool
-		builder   strings.Builder
-	)
-
-	for key, ref := range store.values {
-		if separated {
-			builder.WriteString(", ")
-		} else {
-			separated = true
-		}
-
-		builder.WriteString(fmt.Sprintf("%s:[%s]", key, ref))
-	}
-
-	return builder.String()
-}
-
-// StoreReference stores the given resource, path and value inside the references store
-func (store *store) StoreReference(resource string, reference *Reference) {
-	hash := resource + reference.Path
+// Store stores the given value inside the references store
+func (store *store) Store(path string, reference *Reference) {
 	store.mutex.Lock()
-	store.values[hash] = reference
+	store.values[path] = reference
 	store.mutex.Unlock()
 }
 
-// Load attempts to load the defined value for the given resource and path
-func (store *store) Load(resource string, path string) *Reference {
-	hash := resource + path
-	store.mutex.Lock()
-	ref, has := store.values[hash]
-	store.mutex.Unlock()
+// Load attempts to load the defined value for the given path
+func (store *store) Load(path string) *Reference {
+	store.mutex.RLock()
+	ref, has := store.values[path]
+	store.mutex.RUnlock()
 	if !has {
 		return nil
 	}
@@ -117,138 +68,207 @@ func (store *store) Load(resource string, path string) *Reference {
 	return ref
 }
 
+// Define attempts to load the defined value for the given path
+func (store *store) Define(path string, length int) {
+	store.mutex.Lock()
+	store.lengths[path] = length
+	store.mutex.Unlock()
+}
+
+// Load attempts to load the defined value for the given path
+func (store *store) Length(path string) int {
+	store.mutex.RLock()
+	length, has := store.lengths[path]
+	store.mutex.RUnlock()
+	if !has {
+		return 0
+	}
+
+	return length // returns 0 if not defined
+}
+
+// Tracker tracks the index positions of arrays.
+// Paths represent arrays or objects stored inside a reference store.
+// Paths defined inside references could be resolved to include the current items index.
+// These indexes are required since paths inside the reference store are absolute.
+// Trackers could be nested to track multiple arrays on different or nested paths.
+//
+// The tracker does not perform any mutex locking.
+// Most usecases/implementations are not concurrent.
+//
+// example:
+// track := tracker.Track("items", 0) // sets the current index of "items" at 0
+// path := track.Resolve("items.key") // returns: "items[0].key"
+// track.Next("items")                // increases the index of "items" by one
+type Tracker interface {
+	// Track includes the given path and index to be tracked.
+	// Trackers could be nested to track multiple or nested arrays on different indexes.
+	Track(path string, index int)
+	// Resolve resolves the given path to include all tracked array indexes found inside the given path.
+	// ex: "items.key" - "items[0].key"
+	Resolve(path string) string
+	// Next increases the index of the counter at the given path
+	Next(path string) int
+	// NOTE: remove tracked paths?
+}
+
+// NewTracker constructs a new position tracker
+func NewTracker() Tracker {
+	return &tracker{
+		positions: map[string]int{},
+	}
+}
+
+type tracker struct {
+	positions map[string]int
+}
+
+func (t *tracker) Track(path string, index int) {
+	t.positions[path] = index
+}
+
+func (t *tracker) Resolve(path string) string {
+	if len(t.positions) == 0 {
+		return path
+	}
+
+	// TODO: replace this implementation with a Radix tree
+	result := ""
+	lookup := ""
+
+	parts := template.SplitPath(path)
+
+	for _, part := range parts {
+		result = template.JoinPath(result, part)
+		lookup = template.JoinPath(lookup, part)
+
+		index, has := t.positions[lookup]
+		if !has {
+			continue
+		}
+
+		result += fmt.Sprintf("[%d]", index)
+	}
+
+	return result
+}
+
+func (t *tracker) Next(path string) int {
+	t.positions[path]++
+	return t.positions[path]
+}
+
+// Index returns the path and the provided index as a path
+func Index(path string, index int) string {
+	return fmt.Sprintf("%s[%d]", path, index)
+}
+
 // StoreValues stores the given values to the reference store
-func (store *store) StoreValues(resource string, path string, values map[string]interface{}) {
-	for key, val := range values {
+func StoreValues(store Store, tracker Tracker, path string, values map[string]interface{}) {
+	store.Define(path, len(values))
+
+	for key, value := range values {
 		path := template.JoinPath(path, key)
-		keys, is := val.(map[string]interface{})
+		keys, is := value.(map[string]interface{})
 		if is {
-			store.StoreValues(resource, path, keys)
+			StoreValues(store, tracker, path, keys)
 			continue
 		}
 
-		repeated, is := val.([]map[string]interface{})
+		repeated, is := value.([]map[string]interface{})
 		if is {
-			reference := &Reference{
-				Path: path,
-			}
-
-			store.NewRepeatingMessages(resource, path, reference, repeated)
-			store.StoreReference(resource, reference)
+			NewRepeatingMessages(store, tracker, path, repeated)
 			continue
 		}
 
-		values, is := val.([]interface{})
+		values, is := value.([]interface{})
 		if is {
-			reference := &Reference{
-				Path: path,
-			}
-
-			store.NewRepeating(resource, path, reference, values)
-			store.StoreReference(resource, reference)
+			NewRepeating(store, tracker, path, values)
 			continue
 		}
-
-		enum, is := val.(*EnumVal)
-		if is {
-			store.StoreEnum(resource, path, enum.pos)
-			continue
-		}
-
-		store.StoreValue(resource, path, val)
-	}
-}
-
-// StoreValue stores the given value for the given resource and path
-func (store *store) StoreValue(resource string, path string, value interface{}) {
-	reference := &Reference{
-		Path:  path,
-		Value: value,
-	}
-
-	store.StoreReference(resource, reference)
-}
-
-// StoreEnum stores the given enum for the given resource and path
-func (store *store) StoreEnum(resource string, path string, enum int32) {
-	reference := &Reference{
-		Path: path,
-		Enum: &enum,
-	}
-
-	store.StoreReference(resource, reference)
-}
-
-// NewRepeatingMessages appends the given repeating messages to the given reference
-func (store *store) NewRepeatingMessages(resource string, path string, reference *Reference, values []map[string]interface{}) {
-	reference.Repeating(len(values))
-
-	for index, values := range values {
-		store := NewReferenceStore(len(values))
-		store.StoreValues(resource, path, values)
-		reference.Set(index, store)
-	}
-}
-
-// NewRepeating appends the given repeating values to the given reference
-func (store *store) NewRepeating(resource string, path string, reference *Reference, values []interface{}) {
-	reference.Repeating(len(values))
-
-	for index, value := range values {
-		store := NewReferenceStore(1)
 
 		enum, is := value.(*EnumVal)
 		if is {
-			store.StoreEnum("", "", enum.pos)
-			reference.Set(index, store)
+			store.Store(tracker.Resolve(path), &Reference{
+				Enum: &enum.pos,
+			})
 			continue
 		}
 
-		store.StoreValue("", "", value)
-		reference.Set(index, store)
+		store.Store(tracker.Resolve(path), &Reference{
+			Value: value,
+		})
+	}
+}
+
+// NewRepeatingMessages appends the given repeating messages to the given reference
+func NewRepeatingMessages(store Store, tracker Tracker, path string, values []map[string]interface{}) {
+	tracker.Track(path, 0)
+
+	for _, values := range values {
+		StoreValues(store, tracker, path, values)
+		tracker.Next(path)
+	}
+
+	store.Define(path, len(values))
+}
+
+// NewRepeating appends the given repeating values to the given reference
+func NewRepeating(store Store, tracker Tracker, path string, values []interface{}) {
+	store.Define(path, len(values))
+	tracker.Track(path, 0)
+
+	for _, value := range values {
+		enum, is := value.(*EnumVal)
+		if is {
+			store.Store(tracker.Resolve(path), &Reference{
+				Enum: &enum.pos,
+			})
+
+			tracker.Next(path)
+			continue
+		}
+
+		store.Store(tracker.Resolve(path), &Reference{
+			Value: value,
+		})
+
+		tracker.Next(path)
 	}
 }
 
 // NewPrefixStore fixes all writes and reads from the given store on the set resource and prefix path
-func NewPrefixStore(store Store, resource string, prefix string) Store {
-	return &PrefixStore{
-		resource: resource,
-		path:     prefix,
-		store:    store,
+func NewPrefixStore(store Store, prefix string) Store {
+	return &prefixStore{
+		path:  prefix,
+		store: store,
 	}
 }
 
-// PrefixStore creates a sandbox where all resources stored are forced into the set resource and prefix
-type PrefixStore struct {
-	resource string
-	path     string
-	store    Store
+// prefixStore creates a sandbox where all resources stored are forced into the set resource and prefix
+type prefixStore struct {
+	path  string
+	store Store
 }
 
 // Load attempts to load the defined value for the given resource and path
-func (prefix *PrefixStore) Load(resource string, path string) *Reference {
-	return prefix.store.Load(resource, path)
+func (prefix *prefixStore) Load(path string) *Reference {
+	return prefix.store.Load(path)
 }
 
-// StoreReference stores the given resource, path and value inside the references store
-func (prefix *PrefixStore) StoreReference(resource string, reference *Reference) {
-	reference.Path = template.JoinPath(prefix.path, reference.Path)
-	prefix.store.StoreReference(prefix.resource, reference)
+// Store stores the given value inside the references store
+func (prefix *prefixStore) Store(path string, reference *Reference) {
+	prefix.store.Store(template.JoinPath(prefix.path, path), reference)
 }
 
-// StoreValues stores the given values to the reference store
-func (prefix *PrefixStore) StoreValues(resource string, path string, values map[string]interface{}) {
-	prefix.store.StoreValues(prefix.resource, template.JoinPath(prefix.path, path), values)
+// Define attempts to load the defined value for the given path.
+func (prefix *prefixStore) Define(path string, length int) {
+	prefix.store.Define(template.JoinPath(prefix.path, path), length)
 }
 
-// StoreValue stores the given value for the given resource and path
-func (prefix *PrefixStore) StoreValue(resource string, path string, value interface{}) {
-	prefix.store.StoreValue(prefix.resource, template.JoinPath(prefix.path, path), value)
-}
-
-// StoreEnum stores the given enum for the given resource and path
-func (prefix *PrefixStore) StoreEnum(resource string, path string, enum int32) {
-	prefix.store.StoreEnum(prefix.resource, template.JoinPath(prefix.path, path), enum)
+// Load attempts to load the defined value for the given resource and path
+func (prefix *prefixStore) Length(path string) int {
+	return prefix.store.Length(path)
 }
 
 // Collection represents a map of property references

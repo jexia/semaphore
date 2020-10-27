@@ -19,7 +19,7 @@ func BenchmarkSimpleFetching(b *testing.B) {
 		b.Fatal(err)
 	}
 
-	store := NewReferenceStore(len(data))
+	store := NewStore(len(data))
 	store.StoreValues("input", "", data)
 
 	b.ReportAllocs()
@@ -32,7 +32,7 @@ func BenchmarkSimpleFetching(b *testing.B) {
 
 func BenchmarkStoreSingleValue(b *testing.B) {
 	input := "hello world"
-	store := NewReferenceStore(b.N)
+	store := NewStore(b.N)
 
 	b.ReportAllocs()
 	b.ResetTimer()
@@ -44,7 +44,7 @@ func BenchmarkStoreSingleValue(b *testing.B) {
 
 func BenchmarkStoreSingleReference(b *testing.B) {
 	input := "hello world"
-	store := NewReferenceStore(b.N)
+	store := NewStore(b.N)
 
 	reference := &Reference{
 		Path:  ".",
@@ -73,7 +73,7 @@ func BenchmarkSimpleUnmarshal(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		store := NewReferenceStore(len(data))
+		store := NewStore(len(data))
 		store.StoreValues("input", "", data)
 	}
 }
@@ -87,7 +87,7 @@ func BenchmarkRepeatedUnmarshal(b *testing.B) {
 		b.Fatal(err)
 	}
 
-	store := NewReferenceStore(len(data) * b.N)
+	store := NewStore(len(data) * b.N)
 
 	b.SetBytes(int64(len(input)))
 	b.ReportAllocs()
@@ -107,7 +107,7 @@ func BenchmarkNestedUnmarshal(b *testing.B) {
 		b.Fatal(err)
 	}
 
-	store := NewReferenceStore(len(data) * b.N)
+	store := NewStore(len(data) * b.N)
 
 	b.SetBytes(int64(len(input)))
 	b.ReportAllocs()
@@ -127,7 +127,7 @@ func BenchmarkComplexUnmarshal(b *testing.B) {
 		b.Fatal(err)
 	}
 
-	store := NewReferenceStore(len(data) * b.N)
+	store := NewStore(len(data) * b.N)
 
 	b.SetBytes(int64(len(input)))
 	b.ReportAllocs()
@@ -158,7 +158,7 @@ func TestEnumJSON(t *testing.T) {
 }
 
 func TestStoreReference(t *testing.T) {
-	store := NewReferenceStore(10)
+	store := NewStore(10)
 
 	resource := "input"
 	ref := &Reference{
@@ -182,7 +182,7 @@ func TestStoreReference(t *testing.T) {
 }
 
 func TestStoreLoadUnkownReference(t *testing.T) {
-	store := NewReferenceStore(0)
+	store := NewStore(0)
 	result := store.Load("", "")
 	if result != nil {
 		t.Fatal("unexpected result")
@@ -190,7 +190,7 @@ func TestStoreLoadUnkownReference(t *testing.T) {
 }
 
 func TestStoreValues(t *testing.T) {
-	store := NewReferenceStore(1)
+	store := NewStore(1)
 
 	target := "message"
 	value := "hello world"
@@ -216,7 +216,7 @@ func TestStoreValues(t *testing.T) {
 }
 
 func TestStoreNestedValues(t *testing.T) {
-	store := NewReferenceStore(1)
+	store := NewStore(1)
 
 	nested := "nested"
 	key := "message"
@@ -246,7 +246,7 @@ func TestStoreNestedValues(t *testing.T) {
 }
 
 func TestStoreRepeatedMap(t *testing.T) {
-	store := NewReferenceStore(1)
+	store := NewStore(1)
 
 	nested := "nested"
 	key := "message"
@@ -292,7 +292,7 @@ func TestStoreRepeatedMap(t *testing.T) {
 }
 
 func TestStoreEnum(t *testing.T) {
-	store := NewReferenceStore(1)
+	store := NewStore(1)
 
 	key := "enum"
 	expected := int32(1)
@@ -322,7 +322,7 @@ func TestStoreEnum(t *testing.T) {
 }
 
 func TestStoreRepeatingEnum(t *testing.T) {
-	store := NewReferenceStore(1)
+	store := NewStore(1)
 
 	key := "enum"
 	expected := []interface{}{
@@ -367,7 +367,7 @@ func TestStoreRepeatingEnum(t *testing.T) {
 }
 
 func TestStoreRepeatedValues(t *testing.T) {
-	store := NewReferenceStore(1)
+	store := NewStore(1)
 
 	nested := "nested"
 	value := "hello world"
@@ -405,7 +405,7 @@ func TestStoreRepeatedValues(t *testing.T) {
 }
 
 func TestStoreRepeatedAppend(t *testing.T) {
-	store := NewReferenceStore(1)
+	store := NewStore(1)
 
 	nested := "nested"
 	value := "hello world"
@@ -442,7 +442,7 @@ func TestStoreRepeatedAppend(t *testing.T) {
 	}
 
 	original := len(result.Repeated)
-	result.Append(NewReferenceStore(1))
+	result.Append(NewStore(1))
 
 	if len(result.Repeated) == original {
 		t.Fatal("passed store did not get appended")
@@ -450,7 +450,7 @@ func TestStoreRepeatedAppend(t *testing.T) {
 }
 
 func TestPrefixStoreValue(t *testing.T) {
-	store := NewReferenceStore(1)
+	store := NewStore(1)
 	resource := "input"
 	prefix := "prefix"
 	value := "test"
@@ -479,7 +479,7 @@ func TestPrefixStoreValue(t *testing.T) {
 }
 
 func TestPrefixStoreEnum(t *testing.T) {
-	store := NewReferenceStore(1)
+	store := NewStore(1)
 
 	key := "enum"
 	expected := int32(1)
@@ -510,7 +510,7 @@ func TestPrefixStoreEnum(t *testing.T) {
 }
 
 func TestPrefixStoreValues(t *testing.T) {
-	store := NewReferenceStore(1)
+	store := NewStore(1)
 	resource := "input"
 	prefix := "prefix"
 	path := "key"
@@ -543,7 +543,7 @@ func TestPrefixStoreValues(t *testing.T) {
 }
 
 func TestPrefixStoreReference(t *testing.T) {
-	store := NewReferenceStore(1)
+	store := NewStore(1)
 	resource := "input"
 	prefix := "prefix"
 	path := "key"
@@ -729,14 +729,14 @@ func TestReferenceString(t *testing.T) {
 				Path: "test",
 				Repeated: []Store{
 					func() Store {
-						var store = NewReferenceStore(0)
+						var store = NewStore(0)
 
 						store.StoreValue("four", "two", 42)
 
 						return store
 					}(),
 					func() Store {
-						var store = NewReferenceStore(0)
+						var store = NewStore(0)
 
 						store.StoreValue("four", "three", 43)
 

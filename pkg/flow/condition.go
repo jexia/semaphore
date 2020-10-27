@@ -50,7 +50,7 @@ func (condition *Condition) Eval(ctx *broker.Context, store references.Store) (b
 		}
 
 		if param.Reference != nil {
-			ref := store.Load(param.Reference.Resource, param.Reference.Path)
+			ref := store.Load(param.Reference.String())
 			if ref != nil {
 				value = ref.Value
 			}

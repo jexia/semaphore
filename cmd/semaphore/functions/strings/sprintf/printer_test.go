@@ -164,7 +164,7 @@ func TestTokensPrint(t *testing.T) {
 
 			var (
 				printer = Tokens(tokens)
-				refs    = references.NewReferenceStore(len(test.store))
+				refs    = references.NewStore(len(test.store))
 			)
 
 			refs.StoreValues(template.InputResource, "", test.store)

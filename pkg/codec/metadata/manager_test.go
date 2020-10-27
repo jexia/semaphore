@@ -8,6 +8,7 @@ import (
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/labels"
+	"github.com/jexia/semaphore/pkg/specs/template"
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
@@ -52,7 +53,7 @@ func TestManagerMarshal(t *testing.T) {
 				},
 			}
 
-			store := references.NewReferenceStore(1)
+			store := references.NewStore(1)
 
 			expected := MD{
 				"example": "hello",
@@ -78,8 +79,10 @@ func TestManagerMarshal(t *testing.T) {
 				},
 			}
 
-			store := references.NewReferenceStore(1)
-			store.StoreValue("input", "value", "message")
+			store := references.NewStore(1)
+			store.Store("input:value", &references.Reference{
+				Value: "message",
+			})
 
 			expected := MD{
 				"example": "hello",
@@ -196,7 +199,7 @@ func TestManagerUnmarshal(t *testing.T) {
 			ctx := logger.WithLogger(broker.NewBackground())
 			manager := NewManager(ctx, resource, header)
 
-			store := references.NewReferenceStore(len(input))
+			store := references.NewStore(len(input))
 			manager.Unmarshal(input, store)
 
 			for key, prop := range header {
@@ -204,7 +207,7 @@ func TestManagerUnmarshal(t *testing.T) {
 					continue
 				}
 
-				ref := store.Load(resource, key)
+				ref := store.Load(template.ResourcePath(resource, key))
 				if ref == nil {
 					t.Fatalf("reference not set %s", key)
 				}

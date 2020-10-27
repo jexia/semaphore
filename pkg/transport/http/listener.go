@@ -13,6 +13,7 @@ import (
 	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/codec"
 	"github.com/jexia/semaphore/pkg/codec/metadata"
+	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs/template"
 	"github.com/jexia/semaphore/pkg/transport"
 	"github.com/julienschmidt/httprouter"
@@ -226,11 +227,11 @@ func (handle *Handle) HTTPFunc(w http.ResponseWriter, r *http.Request, ps httpro
 	store := handle.Endpoint.Flow.NewStore()
 
 	for key, value := range r.URL.Query() {
-		store.StoreValue(template.InputResource, key, strings.Join(value, ""))
+		store.Store(template.ResourcePath(template.InputResource, key), &references.Reference{Value: strings.Join(value, "")})
 	}
 
 	for _, param := range ps {
-		store.StoreValue(template.InputResource, param.Key, param.Value)
+		store.Store(template.ResourcePath(template.InputResource, param.Key), &references.Reference{Value: param.Value})
 	}
 
 	if handle.Request != nil {

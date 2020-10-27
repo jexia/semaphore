@@ -14,7 +14,7 @@ func TestResponseObjectNil(t *testing.T) {
 }
 
 func TestResponseObjectInvalidType(t *testing.T) {
-	store := references.NewReferenceStore(0)
+	store := references.NewStore(0)
 	property := &specs.Property{
 		Template: specs.Template{
 			Scalar: &specs.Scalar{},
@@ -366,7 +366,7 @@ func TestResponseObject(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			store := references.NewReferenceStore(0)
+			store := references.NewStore(0)
 			test.populate(t, store)
 
 			response, err := ResponseObject(test.property, store)

@@ -11,6 +11,7 @@ import (
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/labels"
+	"github.com/jexia/semaphore/pkg/specs/template"
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
@@ -46,7 +47,7 @@ func TestConditionEvaluation(t *testing.T) {
 			stack: functions.Stack{
 				"first": &functions.Function{
 					Fn: func(store references.Store) error {
-						store.StoreValue("", ".", 1)
+						store.Store("", &references.Reference{Value: 1})
 						return nil
 					},
 					Returns: &specs.Property{
@@ -64,12 +65,13 @@ func TestConditionEvaluation(t *testing.T) {
 		},
 	}
 
-	store := references.NewReferenceStore(5)
-	store.StoreValue("input", "id", 1)
-	store.StoreValue("input", "name", "john")
-	store.StoreValue("input", "age", 99)
-	store.StoreValue("input", "city", "Amsterdam")
-	store.StoreValue("input", "country", "The Netherlands")
+	store := references.NewStore(5)
+	store.Define(template.ResourcePath("input"), 5)
+	store.Store(template.ResourcePath("input", "id"), &references.Reference{Value: 1})
+	store.Store(template.ResourcePath("input", "name"), &references.Reference{Value: "john"})
+	store.Store(template.ResourcePath("input", "age"), &references.Reference{Value: 99})
+	store.Store(template.ResourcePath("input", "city"), &references.Reference{Value: "Amsterdam"})
+	store.Store(template.ResourcePath("input", "country"), &references.Reference{Value: "The Netherlands"})
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
@@ -107,7 +109,7 @@ func TestInvalidConditionEvaluation(t *testing.T) {
 			stack: functions.Stack{
 				"first": &functions.Function{
 					Fn: func(store references.Store) error {
-						store.StoreValue("", ".", 1)
+						store.Store("", &references.Reference{Value: 1})
 						return errors.New("unexpected error")
 					},
 					Returns: &specs.Property{
@@ -124,12 +126,13 @@ func TestInvalidConditionEvaluation(t *testing.T) {
 		},
 	}
 
-	store := references.NewReferenceStore(5)
-	store.StoreValue("input", "id", 1)
-	store.StoreValue("input", "name", "john")
-	store.StoreValue("input", "age", 99)
-	store.StoreValue("input", "city", "Amsterdam")
-	store.StoreValue("input", "country", "The Netherlands")
+	store := references.NewStore(5)
+	store.Define(template.ResourcePath("input"), 5)
+	store.Store(template.ResourcePath("input", "id"), &references.Reference{Value: 1})
+	store.Store(template.ResourcePath("input", "name"), &references.Reference{Value: "john"})
+	store.Store(template.ResourcePath("input", "age"), &references.Reference{Value: 99})
+	store.Store(template.ResourcePath("input", "city"), &references.Reference{Value: "Amsterdam"})
+	store.Store(template.ResourcePath("input", "country"), &references.Reference{Value: "The Netherlands"})
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {

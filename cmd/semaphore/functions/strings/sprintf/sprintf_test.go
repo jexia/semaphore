@@ -168,7 +168,7 @@ func TestFunction(t *testing.T) {
 			return
 		}
 
-		var refs = references.NewReferenceStore(1)
+		var refs = references.NewStore(1)
 
 		executable(refs)
 	})

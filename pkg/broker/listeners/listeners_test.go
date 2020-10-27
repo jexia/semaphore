@@ -29,7 +29,7 @@ type flow struct {
 	err  error
 }
 
-func (flow *flow) NewStore() references.Store                          { return references.NewReferenceStore(0) }
+func (flow *flow) NewStore() references.Store                          { return references.NewStore(0) }
 func (flow *flow) GetName() string                                     { return flow.name }
 func (flow *flow) Errors() []transport.Error                           { return nil }
 func (flow *flow) Do(ctx context.Context, refs references.Store) error { return flow.err }

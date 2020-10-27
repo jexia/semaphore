@@ -60,7 +60,7 @@ func (array *Array) MarshalXML(encoder *xml.Encoder, _ xml.StartElement) error {
 func (array *Array) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
 	var (
 		path      = buildPath(array.reference.Path, array.name)
-		store     = references.NewReferenceStore(1)
+		store     = references.NewStore(1)
 		reference = array.store.Load(array.reference.Resource, path)
 	)
 

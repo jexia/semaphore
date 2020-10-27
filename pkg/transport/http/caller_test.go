@@ -57,7 +57,7 @@ func TestCaller(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	refs := references.NewReferenceStore(1)
+	refs := references.NewStore(1)
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		want := "/Path?query=value"
 		got := r.URL.String()
@@ -355,7 +355,7 @@ func TestCallerReferencesLookup(t *testing.T) {
 				t.Fatalf("unexpected references %+v", refs)
 			}
 
-			store := references.NewReferenceStore(1)
+			store := references.NewStore(1)
 			ctx := context.Background()
 			req := transport.Request{
 				Method: method,

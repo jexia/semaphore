@@ -5,11 +5,11 @@ import (
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/labels"
+	"github.com/jexia/semaphore/pkg/specs/template"
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
 const (
-	paramClaims = "claims"
 	propSubject = "subject"
 )
 
@@ -59,7 +59,7 @@ func executable(reader Reader, token *specs.Property, newClaims func() Claims) f
 		var value = token.DefaultValue()
 
 		if token.Reference != nil {
-			ref := store.Load(token.Reference.Resource, token.Reference.Path)
+			ref := store.Load(template.ResourcePath(token.Reference.Resource, token.Reference.Path))
 			if ref != nil {
 				value = ref.Value
 			}
@@ -76,7 +76,7 @@ func executable(reader Reader, token *specs.Property, newClaims func() Claims) f
 			return err
 		}
 
-		store.StoreValue(paramClaims, propSubject, claimsObj.Subject())
+		store.Store(propSubject, &references.Reference{Value: claimsObj.Subject()})
 
 		return nil
 	}

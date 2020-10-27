@@ -83,7 +83,7 @@ func TestResolveStatusCode(t *testing.T) {
 		t.Fatal("unexpected empty object")
 	}
 
-	store := references.NewReferenceStore(1)
+	store := references.NewStore(1)
 	store.StoreValue("input", "status", expected)
 
 	result := object.ResolveStatusCode(store)
@@ -99,7 +99,7 @@ func TestResolveStatusCodeNil(t *testing.T) {
 		t.Fatal("unexpected empty object")
 	}
 
-	store := references.NewReferenceStore(0)
+	store := references.NewStore(0)
 	result := object.ResolveStatusCode(store)
 	if result != expected {
 		t.Errorf("unexpected result %d, expected %d", result, expected)
@@ -126,7 +126,7 @@ func TestResolveStatusCodeNilReference(t *testing.T) {
 		t.Fatal("unexpected empty object")
 	}
 
-	store := references.NewReferenceStore(0)
+	store := references.NewStore(0)
 	result := object.ResolveStatusCode(store)
 	if result != expected {
 		t.Errorf("unexpected result %d, expected %d", result, expected)
@@ -152,7 +152,7 @@ func TestResolveStatusMessage(t *testing.T) {
 		t.Fatal("unexpected empty object")
 	}
 
-	store := references.NewReferenceStore(1)
+	store := references.NewStore(1)
 	store.StoreValue("input", "status", expected)
 
 	result := object.ResolveMessage(store)
@@ -168,7 +168,7 @@ func TestResolveStatusMessageNil(t *testing.T) {
 		t.Fatal("unexpected empty object")
 	}
 
-	store := references.NewReferenceStore(0)
+	store := references.NewStore(0)
 	result := object.ResolveMessage(store)
 	if result != expected {
 		t.Errorf("unexpected result %s, expected %s", result, expected)
@@ -195,7 +195,7 @@ func TestResolveStatusMessageNilReference(t *testing.T) {
 		t.Fatal("unexpected empty object")
 	}
 
-	store := references.NewReferenceStore(0)
+	store := references.NewStore(0)
 	result := object.ResolveMessage(store)
 	if result != expected {
 		t.Errorf("unexpected result %s, expected %s", result, expected)

@@ -100,7 +100,7 @@ func TestListener(t *testing.T) {
 		Body:   bytes.NewBuffer([]byte{}),
 	}
 
-	err = dial.SendMsg(context.Background(), rw, rq, references.NewReferenceStore(0))
+	err = dial.SendMsg(context.Background(), rw, rq, references.NewStore(0))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -280,7 +280,7 @@ func TestErrorHandlingListener(t *testing.T) {
 				Body:   bytes.NewBuffer([]byte{}),
 			}
 
-			err = dial.SendMsg(context.Background(), rw, rq, references.NewReferenceStore(0))
+			err = dial.SendMsg(context.Background(), rw, rq, references.NewStore(0))
 			if err != nil {
 				t.Fatalf("unrecoverable err returned '%s'", err)
 			}

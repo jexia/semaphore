@@ -112,7 +112,7 @@ func (manager *Manager) Errors() []transport.Error {
 
 // NewStore constructs a new reference store for the given manager
 func (manager *Manager) NewStore() references.Store {
-	return references.NewReferenceStore(manager.References)
+	return references.NewStore(manager.References)
 }
 
 // Do calls all the nodes inside the manager if a error is returned is a rollback of all the already executed steps triggered.

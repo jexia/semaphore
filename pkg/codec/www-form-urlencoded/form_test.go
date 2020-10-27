@@ -442,7 +442,7 @@ func TestMarshal(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			refs := references.NewReferenceStore(len(test.input))
+			refs := references.NewStore(len(test.input))
 			refs.StoreValues(template.InputResource, "", test.input)
 
 			r, err := manager.Marshal(refs)
