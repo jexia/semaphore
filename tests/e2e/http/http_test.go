@@ -1,11 +1,10 @@
-package e2e
+package http
 
 import (
 	"bytes"
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -13,87 +12,12 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/jexia/semaphore"
-	"github.com/jexia/semaphore/cmd/semaphore/daemon"
-	"github.com/jexia/semaphore/cmd/semaphore/daemon/providers"
-	"github.com/jexia/semaphore/cmd/semaphore/middleware"
-	"github.com/jexia/semaphore/pkg/broker"
-	"github.com/jexia/semaphore/pkg/broker/logger"
-	codecJSON "github.com/jexia/semaphore/pkg/codec/json"
-	codecProto "github.com/jexia/semaphore/pkg/codec/proto"
-	codecXML "github.com/jexia/semaphore/pkg/codec/xml"
-	"github.com/jexia/semaphore/pkg/providers/hcl"
-	"github.com/jexia/semaphore/pkg/providers/protobuffers"
-	transport "github.com/jexia/semaphore/pkg/transport/http"
+	"github.com/jexia/semaphore/tests/e2e"
 )
 
-const (
-	semaphorePort = 8080
-	semaphoreHost = "http://localhost"
-)
+var SemaphoreHTTPAddr = fmt.Sprintf("%s:%d", e2e.SemaphoreHost, e2e.SemaphoreHTTPPort)
 
-var semaphoreURL = fmt.Sprintf("%s:%d", semaphoreHost, semaphorePort)
-
-func EchoHandler(t *testing.T) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		defer func() {
-			if err := r.Body.Close(); err != nil {
-				t.Errorf("failed to close request body: %s", err)
-			}
-		}()
-
-		if _, err := io.Copy(w, r.Body); err != nil {
-			t.Errorf("failed to send the reply: %s", err)
-		}
-	}
-}
-
-func EchoRouter(t *testing.T) http.Handler {
-	var mux = http.NewServeMux()
-
-	mux.Handle("/echo", EchoHandler(t))
-	// TODO: add more handlers
-
-	return mux
-}
-
-func Semaphore(t *testing.T, flow, schema string) *daemon.Client {
-	ctx := logger.WithLogger(broker.NewContext())
-
-	core, err := semaphore.NewOptions(ctx,
-		semaphore.WithLogLevel("*", "error"),
-		semaphore.WithFlows(hcl.FlowsResolver(flow)),
-		semaphore.WithCodec(codecXML.NewConstructor()),
-		semaphore.WithCodec(codecJSON.NewConstructor()),
-		semaphore.WithCodec(codecProto.NewConstructor()),
-		semaphore.WithCaller(transport.NewCaller()),
-	)
-
-	if err != nil {
-		t.Fatalf("cannot instantiate semaphore core: %s", err)
-	}
-
-	options, err := providers.NewOptions(ctx, core,
-		providers.WithEndpoints(hcl.EndpointsResolver(flow)),
-		providers.WithSchema(protobuffers.SchemaResolver([]string{"./proto"}, schema)),
-		providers.WithServices(protobuffers.ServiceResolver([]string{"./proto"}, schema)),
-		providers.WithListener(transport.NewListener(fmt.Sprintf(":%d", semaphorePort))),
-		providers.WithAfterConstructor(middleware.ServiceSelector(flow)),
-	)
-
-	if err != nil {
-		t.Fatalf("unable to configure provider options: %s", err)
-	}
-
-	client, err := daemon.NewClient(ctx, core, options)
-	if err != nil {
-		t.Fatalf("failed to create a semaphore instance: %s", err)
-	}
-
-	return client
-}
-
-func TestSemaphore(t *testing.T) {
+func TestHTTPTransport(t *testing.T) {
 	type test struct {
 		disabled  bool
 		title     string
@@ -110,7 +34,7 @@ func TestSemaphore(t *testing.T) {
 		{
 			title:  "JSON echo",
 			flow:   "./flow/echo.hcl",
-			schema: "./proto/echo.proto",
+			schema: "../proto/echo.proto",
 			path:   "json",
 			request: func(t *testing.T) []byte {
 				var body = map[string]map[string]interface{}{
@@ -162,9 +86,9 @@ func TestSemaphore(t *testing.T) {
 		{
 			title:  "JSON echo with intermediate resource",
 			flow:   "./flow/echo_intermediate.hcl",
-			schema: "./proto/echo.proto",
+			schema: "../proto/echo.proto",
 			resources: map[string]func(t *testing.T) http.Handler{
-				":8081": EchoRouter,
+				":8081": e2e.EchoRouter,
 			},
 			path: "json",
 			request: func(t *testing.T) []byte {
@@ -215,7 +139,7 @@ func TestSemaphore(t *testing.T) {
 			disabled: true, // disabled until XML codec is fixed
 			title:    "XML echo",
 			flow:     "./flow/echo.hcl",
-			schema:   "./proto/echo.proto",
+			schema:   "../proto/echo.proto",
 			path:     "xml",
 			request: func(t *testing.T) []byte {
 				type request struct {
@@ -300,8 +224,8 @@ func TestSemaphore(t *testing.T) {
 			}
 
 			var (
-				semaphore = Semaphore(t, test.flow, test.schema)
-				path      = fmt.Sprintf("%s/%s", semaphoreURL, test.path)
+				semaphore = e2e.Instance(t, test.flow, test.schema)
+				path      = fmt.Sprintf("http://%s/%s", SemaphoreHTTPAddr, test.path)
 				ctype     = fmt.Sprintf("application/%s", test.path)
 				request   = bytes.NewBuffer(test.request)
 			)
@@ -313,7 +237,7 @@ func TestSemaphore(t *testing.T) {
 			select {
 			case <-ready:
 			case err := <-errs:
-				t.Logf("error happened: %s", err)
+				t.Fatalf("error happened: %s", err)
 			}
 
 			res, err := http.Post(path, ctype, request)
