@@ -27,8 +27,10 @@ import (
 	transport "github.com/jexia/semaphore/pkg/transport/http"
 )
 
-const semaphorePort = 8080
-const semaphoreHost = "http://localhost"
+const (
+	semaphorePort = 8080
+	semaphoreHost = "http://localhost"
+)
 
 var semaphoreURL = fmt.Sprintf("%s:%d", semaphoreHost, semaphorePort)
 
