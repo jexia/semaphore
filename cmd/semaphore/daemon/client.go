@@ -113,9 +113,7 @@ func (client *Client) Serve() (<-chan struct{}, <-chan error) {
 
 		wg.Wait()
 
-		errs <- errors.New("Closed")
-
-		// close(errs)
+		close(errs)
 	}()
 
 	return ready, errs

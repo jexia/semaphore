@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -287,8 +286,6 @@ func TestSemaphore(t *testing.T) {
 				testServer.Start()
 				defer testServer.Close()
 			}
-
-			log.Println(string(test.request))
 
 			var (
 				semaphore = Semaphore(t, test.flow, test.schema)
