@@ -81,28 +81,42 @@ func (client *Client) Apply(ctx *broker.Context) error {
 }
 
 // Serve opens all listeners inside the given semaphore client
-func (client *Client) Serve() (result error) {
-	if len(client.providers.Listeners) == 0 {
-		return trace.New(trace.WithMessage("no listeners configured to serve"))
-	}
+func (client *Client) Serve() (<-chan struct{}, <-chan error) {
+	var (
+		errs  = make(chan (error))
+		ready = make(chan (struct{}))
+	)
 
-	wg := sync.WaitGroup{}
-	wg.Add(len(client.providers.Listeners))
+	go func() {
+		if len(client.providers.Listeners) == 0 {
+			errs <- trace.New(trace.WithMessage("no listeners configured to serve"))
 
-	for _, listener := range client.providers.Listeners {
-		logger.Info(client.ctx, "serving listener", zap.String("listener", listener.Name()))
+			return
+		}
 
-		go func(listener transport.Listener) {
-			defer wg.Done()
-			err := listener.Serve()
-			if err != nil {
-				result = err
-			}
-		}(listener)
-	}
+		wg := sync.WaitGroup{}
+		wg.Add(len(client.providers.Listeners))
 
-	wg.Wait()
-	return result
+		for _, listener := range client.providers.Listeners {
+			logger.Info(client.ctx, "serving listener", zap.String("listener", listener.Name()))
+
+			go func(listener transport.Listener) {
+				defer wg.Done()
+
+				if err := listener.Serve(); err != nil {
+					errs <- err
+				}
+			}(listener)
+		}
+
+		close(ready)
+
+		wg.Wait()
+
+		close(errs)
+	}()
+
+	return ready, errs
 }
 
 // Close gracefully closes the given client
