@@ -4,6 +4,12 @@ endpoint "typetest" "http" {
   codec    = "json"
 }
 
+endpoint "typetest" "http" {
+  endpoint = "/xml"
+  method   = "POST"
+  codec    = "xml"
+}
+
 flow "typetest" {
   input "semaphore.typetest.Request" {}
 

@@ -3,9 +3,11 @@ package e2e
 import (
 	"bytes"
 	"encoding/json"
+	"encoding/xml"
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -19,10 +21,13 @@ import (
 	"github.com/jexia/semaphore/pkg/broker/logger"
 	codecJSON "github.com/jexia/semaphore/pkg/codec/json"
 	codecProto "github.com/jexia/semaphore/pkg/codec/proto"
+	codecXML "github.com/jexia/semaphore/pkg/codec/xml"
 	"github.com/jexia/semaphore/pkg/providers/hcl"
 	"github.com/jexia/semaphore/pkg/providers/protobuffers"
 	transport "github.com/jexia/semaphore/pkg/transport/http"
 )
+
+const semaphoreURL = "http://localhost:8080"
 
 func EchoHandler(t *testing.T) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -53,6 +58,7 @@ func Semaphore(t *testing.T, flow, schema string) *daemon.Client {
 	core, err := semaphore.NewOptions(ctx,
 		semaphore.WithLogLevel("*", "error"),
 		semaphore.WithFlows(hcl.FlowsResolver(flow)),
+		semaphore.WithCodec(codecXML.NewConstructor()),
 		semaphore.WithCodec(codecJSON.NewConstructor()),
 		semaphore.WithCodec(codecProto.NewConstructor()),
 		semaphore.WithCaller(transport.NewCaller()),
@@ -87,73 +93,180 @@ func TestSemaphore(t *testing.T) {
 		flow      string
 		schema    string
 		resources map[string]func(*testing.T) http.Handler
-		request   interface{}
+		path      string
+		request   []byte
 		status    int
-		response  interface{}
+		assert    func(t *testing.T, data []byte)
 	}
 
 	tests := []test{
 		{
-			title:  "echo",
+			title:  "JSON echo",
 			flow:   "./flow/echo.hcl",
 			schema: "./proto/echo.proto",
-			request: map[string]map[string]interface{}{
-				"data": map[string]interface{}{
-					"enum":    "ON",
-					"string":  "foo",
-					"integer": 42,
-					"double":  3.14159,
-					"numbers": []float64{1, 2, 3, 4, 5},
-				},
-			},
-			status: http.StatusOK,
-			response: map[string]interface{}{
-				"echo": map[string]interface{}{
-					"enum":    "ON",
-					"string":  "foo",
-					"integer": float64(42),
-					"double":  float64(3.14159),
-					"numbers": []interface{}{
-						float64(1),
-						float64(2),
-						float64(3),
-						float64(4),
-						float64(5),
+			path:   "json",
+			request: func(t *testing.T) []byte {
+				var body = map[string]map[string]interface{}{
+					"data": map[string]interface{}{
+						"enum":    "ON",
+						"string":  "foo",
+						"integer": 42,
+						"double":  3.14159,
+						"numbers": []float64{1, 2, 3, 4, 5},
+						// TODO: send recursive types
 					},
-				},
+				}
+
+				encoded, err := json.Marshal(body)
+				if err != nil {
+					t.Fatalf("unable to marshal the request: %s", err)
+				}
+
+				return encoded
+			}(t),
+			status: http.StatusOK,
+			assert: func(t *testing.T, data []byte) {
+				var response map[string]interface{}
+				if err := json.Unmarshal(data, &response); err != nil {
+					t.Fatalf("failed to unmarshal the response: %s", err)
+				}
+
+				var expected = map[string]interface{}{
+					"echo": map[string]interface{}{
+						"enum":    "ON",
+						"string":  "foo",
+						"integer": float64(42),
+						"double":  float64(3.14159),
+						"numbers": []interface{}{
+							float64(1),
+							float64(2),
+							float64(3),
+							float64(4),
+							float64(5),
+						},
+					},
+				}
+
+				if !reflect.DeepEqual(response, expected) {
+					t.Errorf("the output\n[%+v]\n was expected to be\n[%+v]", response, expected)
+				}
 			},
 		},
 		{
-			title:  "echo with intermediate resource",
+			title:  "XML echo",
+			flow:   "./flow/echo.hcl",
+			schema: "./proto/echo.proto",
+			path:   "xml",
+			request: func(t *testing.T) []byte {
+				type request struct {
+					Enum    string  `xml:"enum"`
+					String  string  `xml:"string"`
+					Integer int     `xml:"integer"`
+					Float   float64 `xml:"double"`
+					Numbers []int   `xml:"numbers"`
+				}
+
+				type data struct {
+					Data request `xml:"data"`
+				}
+
+				var body = data{
+					Data: request{
+						Enum:    "ON",
+						String:  "foo",
+						Integer: 42,
+						Float:   3.14159,
+						Numbers: []int{1, 2, 3, 4, 5},
+						// TODO: check recursive types
+					},
+				}
+
+				encoded, err := xml.Marshal(body)
+				if err != nil {
+					t.Fatalf("unable to marshal the request: %s", err)
+				}
+
+				return encoded
+			}(t),
+			status: http.StatusOK,
+			assert: func(t *testing.T, data []byte) {
+				var response map[string]interface{}
+				if err := xml.Unmarshal(data, &response); err != nil {
+					t.Fatalf("failed to unmarshal the response: %s", err)
+				}
+
+				var expected = map[string]interface{}{
+					"echo": map[string]interface{}{
+						"enum":    "ON",
+						"string":  "foo",
+						"integer": float64(42),
+						"double":  float64(3.14159),
+						"numbers": []interface{}{
+							float64(1),
+							float64(2),
+							float64(3),
+							float64(4),
+							float64(5),
+						},
+					},
+				}
+
+				if !reflect.DeepEqual(response, expected) {
+					t.Errorf("the output\n[%+v]\n was expected to be\n[%+v]", response, expected)
+				}
+			},
+		},
+		{
+			title:  "JSON echo with intermediate resource",
 			flow:   "./flow/echo_intermediate.hcl",
 			schema: "./proto/echo.proto",
 			resources: map[string]func(t *testing.T) http.Handler{
 				":8081": EchoRouter,
 			},
-			request: map[string]map[string]interface{}{
-				"data": map[string]interface{}{
-					"enum":    "ON",
-					"string":  "foo",
-					"integer": 42,
-					"double":  3.14159,
-					"numbers": []float64{1, 2, 3, 4, 5},
-				},
-			},
-			status: http.StatusOK,
-			response: map[string]interface{}{
-				"echo": map[string]interface{}{
-					"enum":    "ON",
-					"string":  "foo",
-					"integer": float64(42),
-					"double":  float64(3.14159),
-					"numbers": []interface{}{
-						float64(1),
-						float64(2),
-						float64(3),
-						float64(4),
-						float64(5),
+			request: func(t *testing.T) []byte {
+				var body = map[string]map[string]interface{}{
+					"data": map[string]interface{}{
+						"enum":    "ON",
+						"string":  "foo",
+						"integer": 42,
+						"double":  3.14159,
+						"numbers": []float64{1, 2, 3, 4, 5},
 					},
-				},
+				}
+
+				encoded, err := json.Marshal(body)
+				if err != nil {
+					t.Fatalf("unable to marshal the request: %s", err)
+				}
+
+				return encoded
+			}(t),
+			status: http.StatusOK,
+			assert: func(t *testing.T, data []byte) {
+				var response map[string]interface{}
+				if err := json.Unmarshal(data, &response); err != nil {
+					t.Fatalf("failed to unmarshal the response: %s", err)
+				}
+
+				var expected = map[string]interface{}{
+					"echo": map[string]interface{}{
+						"enum":    "ON",
+						"string":  "foo",
+						"integer": float64(42),
+						"double":  float64(3.14159),
+						"numbers": []interface{}{
+							float64(1),
+							float64(2),
+							float64(3),
+							float64(4),
+							float64(5),
+						},
+					},
+				}
+
+				if !reflect.DeepEqual(response, expected) {
+					t.Errorf("the output\n[%+v]\n was expected to be\n[%+v]", response, expected)
+				}
 			},
 		},
 	}
@@ -175,7 +288,15 @@ func TestSemaphore(t *testing.T) {
 				defer testServer.Close()
 			}
 
-			var semaphore = Semaphore(t, test.flow, test.schema)
+			log.Println(string(test.request))
+
+			var (
+				semaphore = Semaphore(t, test.flow, test.schema)
+				path      = fmt.Sprintf("%s/%s", semaphoreURL, test.path)
+				ctype     = fmt.Sprintf("application/%s", test.path)
+				request   = bytes.NewBuffer(test.request)
+			)
+
 			defer semaphore.Close()
 
 			ready, errs := semaphore.Serve()
@@ -186,12 +307,7 @@ func TestSemaphore(t *testing.T) {
 				t.Fatalf("error happened: %s", err)
 			}
 
-			req, err := json.Marshal(test.request)
-			if err != nil {
-				t.Fatalf("unable to marshal the request: %s", err)
-			}
-
-			res, err := http.Post(fmt.Sprintf("%s/json", "http://localhost:8080"), "application/json", bytes.NewBuffer(req))
+			res, err := http.Post(path, ctype, request)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -207,14 +323,7 @@ func TestSemaphore(t *testing.T) {
 				t.Fatalf("cannot read the response body: %s", err)
 			}
 
-			var response map[string]interface{}
-			if err := json.Unmarshal(body, &response); err != nil {
-				t.Fatalf("failed to unmarshal the response: %s", err)
-			}
-
-			if !reflect.DeepEqual(response, test.response) {
-				t.Errorf("the output\n[%+v]\n was expected to be\n[%+v]", response, test.response)
-			}
+			test.assert(t, body)
 		})
 	}
 }
