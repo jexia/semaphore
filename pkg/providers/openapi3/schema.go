@@ -134,7 +134,7 @@ func scalar(s *openapi.Schema) (specs.Template, error) {
 
 	return specs.Template{
 		Scalar: &specs.Scalar{
-			Type: t,
+			Type:    t,
 			Default: s.Default,
 		},
 	}, nil

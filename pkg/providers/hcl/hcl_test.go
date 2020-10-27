@@ -26,6 +26,44 @@ func TestResolveService(t *testing.T) {
 	}
 }
 
+func TestDiscoveryClientsResolver(t *testing.T) {
+	var (
+		resolver = DiscoveryClientsResolver("./tests/discovery.pass.hcl")
+		ctx      = logger.WithLogger(broker.NewBackground())
+	)
+
+	clients, err := resolver(ctx)
+	if err != nil {
+		t.Fatalf("DiscoveryClientsResolver()() error: %v", err)
+	}
+
+	t.Run("build client with provider taken from the block name", func(t *testing.T) {
+		consul, ok := clients["consul"]
+		if !ok {
+			t.Errorf("expect clients to include 'consul'")
+			return
+		}
+
+		if consul.Provider() != "consul" {
+			t.Errorf("expect configuration 'consul' to have provider 'consul', but it is '%s'", consul.Provider())
+			return
+		}
+	})
+
+	t.Run("build client with custom name and provider taken from the block option", func(t *testing.T) {
+		consul, ok := clients["foobar"]
+		if !ok {
+			t.Errorf("expect clients to include 'foobar'")
+			return
+		}
+
+		if consul.Provider() != "consul" {
+			t.Errorf("expect configuration 'foobar' to have provider 'consul', but it is '%s'", consul.Provider())
+			return
+		}
+	})
+}
+
 func TestResolveServiceFail(t *testing.T) {
 	tests := map[string]string{
 		"basic": "./tests/services.fail.hcl",

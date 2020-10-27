@@ -1,6 +1,7 @@
 package transport
 
 import (
+	"github.com/jexia/semaphore/pkg/discovery"
 	"testing"
 
 	"github.com/jexia/semaphore/pkg/broker"
@@ -12,7 +13,7 @@ import (
 type MockCaller struct{}
 
 func (mock *MockCaller) Name() string { return "mock" }
-func (mock *MockCaller) Dial(service *specs.Service, functions functions.Custom, options specs.Options) (Call, error) {
+func (mock *MockCaller) Dial(service *specs.Service, functions functions.Custom, options specs.Options, resolver discovery.Resolver) (Call, error) {
 	return nil, nil
 }
 

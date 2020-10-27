@@ -73,6 +73,10 @@ func ServiceSelector(path string) providers.AfterConstructorHandler {
 								service.ResponseCodec = selector.ResponseCodec
 							}
 
+							if selector.Resolver != "" {
+								service.Resolver = selector.Resolver
+							}
+
 							attrs, _ := selector.Options.JustAttributes()
 							for _, attr := range attrs {
 								value, _ := attr.Expr.Value(nil)

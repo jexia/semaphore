@@ -32,8 +32,9 @@ func NewOptions(opts ...EndpointOption) Options {
 // construct and endpoints.
 type Options struct {
 	semaphore.Options
-	stack    functions.Collection
-	services specs.ServiceList
+	stack       functions.Collection
+	services    specs.ServiceList
+	discoveries specs.ServiceDiscoveryClients
 }
 
 // EndpointOption applies the given options to the apply options object.
@@ -60,6 +61,13 @@ func WithCore(conf semaphore.Options) EndpointOption {
 	}
 }
 
+// WithServiceDiscoveries sets the given discovery clients
+func WithServiceDiscoveries(discoveries specs.ServiceDiscoveryClients) EndpointOption {
+	return func(options *Options) {
+		options.discoveries = discoveries
+	}
+}
+
 // Transporters constructs a new transport Endpoints list from the given endpoints and options
 func Transporters(ctx *broker.Context, endpoints specs.EndpointList, flows specs.FlowListInterface, opts ...EndpointOption) (transport.EndpointList, error) {
 	if ctx == nil {
@@ -79,6 +87,7 @@ func Transporters(ctx *broker.Context, endpoints specs.EndpointList, flows specs
 			manager.WithFlowFunctions(options.stack),
 			manager.WithFlowServices(options.services),
 			manager.WithFlowOptions(options.Options),
+			manager.WithServiceDiscoveries(options.discoveries),
 		)
 
 		if err != nil {

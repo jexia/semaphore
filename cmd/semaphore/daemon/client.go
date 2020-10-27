@@ -63,6 +63,7 @@ func (client *Client) Apply(ctx *broker.Context) error {
 
 	transporters, err := endpoints.Transporters(ctx, collection.EndpointList, collection.FlowListInterface,
 		endpoints.WithCore(client.core),
+		endpoints.WithServiceDiscoveries(collection.ServiceDiscoveryClients),
 		endpoints.WithServices(collection.ServiceList),
 		endpoints.WithFunctions(client.stack),
 	)

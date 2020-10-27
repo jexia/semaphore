@@ -20,7 +20,6 @@ func ParseServices(ctx *broker.Context, manifest Manifest) (specs.ServiceList, e
 		if err != nil {
 			return nil, err
 		}
-
 		result[index] = service
 	}
 
@@ -37,6 +36,11 @@ func ParseIntermediateService(parent *broker.Context, manifest Service) (*specs.
 		return nil, err
 	}
 
+	resolver := "default"
+	if manifest.Resolver != "" {
+		resolver = manifest.Resolver
+	}
+
 	result := &specs.Service{
 		Package:            manifest.Package,
 		FullyQualifiedName: template.JoinPath(manifest.Package, manifest.Name),
@@ -47,6 +51,7 @@ func ParseIntermediateService(parent *broker.Context, manifest Service) (*specs.
 		ResponseCodec:      manifest.Codec,
 		Methods:            methods,
 		Options:            ParseIntermediateDefinitionOptions(manifest.Options),
+		Resolver:           resolver,
 	}
 
 	return result, nil

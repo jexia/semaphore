@@ -10,8 +10,9 @@ import (
 // during the construction of a flow manager.
 type FlowOptions struct {
 	semaphore.Options
-	stack    functions.Collection
-	services specs.ServiceList
+	stack       functions.Collection
+	services    specs.ServiceList
+	discoveries specs.ServiceDiscoveryClients
 }
 
 // FlowOption applies the given options to the apply options object.
@@ -28,6 +29,13 @@ func WithFlowFunctions(stack functions.Collection) FlowOption {
 func WithFlowServices(services specs.ServiceList) FlowOption {
 	return func(options *FlowOptions) {
 		options.services = services
+	}
+}
+
+// WithServiceDiscoveries sets the given discoveries
+func WithServiceDiscoveries(discoveries specs.ServiceDiscoveryClients) FlowOption {
+	return func(options *FlowOptions) {
+		options.discoveries = discoveries
 	}
 }
 

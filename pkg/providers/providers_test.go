@@ -2,6 +2,8 @@ package providers
 
 import (
 	"errors"
+	"github.com/jexia/semaphore/pkg/discovery"
+	"reflect"
 	"testing"
 
 	"github.com/jexia/semaphore/pkg/broker"
@@ -190,5 +192,37 @@ func TestNilEndpointResolvers(t *testing.T) {
 	_, err := resolvers.Resolve(ctx)
 	if err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestDefaultServiceResolverClient_Resolver(t *testing.T) {
+	type args struct {
+		host string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    discovery.Resolver
+		wantErr bool
+	}{
+		{
+			"",
+			args{"http://localhost:3000"},
+			discovery.NewPlainResolver("http://localhost:3000"),
+			false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := defaultServiceResolver{}
+			got, err := d.Resolver(tt.args.host)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Resolver() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Resolver() got = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }

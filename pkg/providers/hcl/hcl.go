@@ -2,6 +2,7 @@ package hcl
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -41,6 +42,39 @@ func ServicesResolver(path string) providers.ServicesResolver {
 		}
 
 		return services, nil
+	}
+}
+
+// DiscoveryClientsResolver parses configuration.
+func DiscoveryClientsResolver(path string) providers.ServiceDiscoveryClientsResolver {
+	return func(ctx *broker.Context) (specs.ServiceDiscoveryClients, error) {
+		logger.Debug(ctx, "resolving HCL service discovery configurations", zap.String("path", path))
+
+		definitions, err := ResolvePath(ctx, []string{}, path)
+		if err != nil {
+			return nil, err
+		}
+
+		clients := make(specs.ServiceDiscoveryClients)
+
+		for _, definition := range definitions {
+			result, err := ParseDiscoveryClients(ctx, definition)
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse discovery service configurations: %w", err)
+			}
+
+			for name, client := range result {
+				if _, ok := clients[name]; ok {
+					logger.Warn(ctx,
+						fmt.Sprintf("service discovery configuration with name '%s' already defined and will be overridden", name),
+					)
+				}
+
+				clients[name] = client
+			}
+		}
+
+		return clients, nil
 	}
 }
 

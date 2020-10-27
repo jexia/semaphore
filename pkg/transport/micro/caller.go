@@ -3,6 +3,7 @@ package micro
 import (
 	"context"
 	"fmt"
+	"github.com/jexia/semaphore/pkg/discovery"
 	"io/ioutil"
 
 	"github.com/jexia/semaphore/pkg/broker"
@@ -52,7 +53,7 @@ func (caller *Caller) Name() string {
 }
 
 // Dial constructs a new caller for the given service
-func (caller *Caller) Dial(service *specs.Service, functions functions.Custom, opts specs.Options) (transport.Call, error) {
+func (caller *Caller) Dial(service *specs.Service, _ functions.Custom, _ specs.Options, _ discovery.Resolver) (transport.Call, error) {
 	module := broker.WithModule(caller.ctx, "caller", "go-micro")
 	ctx := logger.WithFields(logger.WithLogger(module), zap.String("service", service.Name))
 
