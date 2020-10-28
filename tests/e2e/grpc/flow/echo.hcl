@@ -1,7 +1,7 @@
 endpoint "typetest" "grpc" {
 	package = "semaphore.typetest"
 	service = "Typetest"
-	method = "Run"
+	method  = "Run"
 }
 
 flow "typetest" {

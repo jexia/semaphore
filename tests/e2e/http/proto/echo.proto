@@ -4,8 +4,6 @@ import "api/annotations.proto";
 
 package semaphore.typetest;
 
-option go_package = "github.com/jexia/semaphore/tests/e2e/proto";
-
 service Typetest {
 	rpc Run(Request) returns (Response) {}
 }

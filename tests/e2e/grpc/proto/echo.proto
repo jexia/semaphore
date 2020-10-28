@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+import "api/annotations.proto";
+
+package semaphore.typetest;
+
+option go_package = "github.com/jexia/semaphore/tests/e2e/grpc/proto";
+
+service Typetest {
+	rpc Run(Request) returns (Response) {}
+}
+
+service External {
+	option (semaphore.api.service) = {
+		host: "127.0.0.1:5052"
+        transport: "grpc"
+        codec: "proto"
+	};
+
+    rpc Post(Data) returns (Data) {};
+}
+
+
+enum Enum {
+	UNKNOWN = 0;
+
+	ON = 1;
+
+	OFF = 2;
+}
+
+message Data {
+	Enum enum = 1;
+
+	string string = 2;
+
+	int64 integer = 3;
+
+	double double = 4;
+
+	repeated int64 numbers = 5;
+
+	// TODO: uncomment once the fix for recursive types is merged
+	// Data dataObject = 6;
+	
+	// repeated Data dataArray = 7;
+}
+
+message Request {
+	Data data = 1;
+}
+
+message Response {
+	Data echo = 1; 
+}

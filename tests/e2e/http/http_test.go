@@ -34,7 +34,7 @@ func TestHTTPTransport(t *testing.T) {
 		{
 			title:  "JSON echo",
 			flow:   "./flow/echo.hcl",
-			schema: "../proto/echo.proto",
+			schema: "./proto/echo.proto",
 			path:   "json",
 			request: func(t *testing.T) []byte {
 				var body = map[string]map[string]interface{}{
@@ -86,7 +86,7 @@ func TestHTTPTransport(t *testing.T) {
 		{
 			title:  "JSON echo with intermediate resource",
 			flow:   "./flow/echo_intermediate.hcl",
-			schema: "../proto/echo.proto",
+			schema: "./proto/echo.proto",
 			resources: map[string]func(t *testing.T) http.Handler{
 				":8081": e2e.EchoRouter,
 			},
@@ -139,7 +139,7 @@ func TestHTTPTransport(t *testing.T) {
 			disabled: true, // disabled until XML codec is fixed
 			title:    "XML echo",
 			flow:     "./flow/echo.hcl",
-			schema:   "../proto/echo.proto",
+			schema:   "./proto/echo.proto",
 			path:     "xml",
 			request: func(t *testing.T) []byte {
 				type request struct {
