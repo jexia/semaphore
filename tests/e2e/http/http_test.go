@@ -13,10 +13,20 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/jexia/semaphore"
+	"github.com/jexia/semaphore/cmd/semaphore/daemon/providers"
+	codecJSON "github.com/jexia/semaphore/pkg/codec/json"
+	codecXML "github.com/jexia/semaphore/pkg/codec/xml"
+	transportHTTP "github.com/jexia/semaphore/pkg/transport/http"
 	"github.com/jexia/semaphore/tests/e2e"
 )
 
-var SemaphoreHTTPAddr = fmt.Sprintf("%s:%d", e2e.SemaphoreHost, e2e.SemaphoreHTTPPort)
+const (
+	SemaphorePort = 8080
+	SemaphoreHost = "localhost"
+)
+
+var SemaphoreHTTPAddr = fmt.Sprintf("%s:%d", SemaphoreHost, SemaphorePort)
 
 // EchoHandler creates an HTTP handler that returns the request body as a response.
 func EchoHandler(t *testing.T) http.HandlerFunc {
@@ -250,7 +260,17 @@ func TestHTTPTransport(t *testing.T) {
 			}
 
 			var (
-				semaphore = e2e.Instance(t, test.flow, test.schema)
+				config = e2e.Config{
+					SemaphoreOptions: []semaphore.Option{
+						semaphore.WithCodec(codecXML.NewConstructor()),
+						semaphore.WithCodec(codecJSON.NewConstructor()),
+						semaphore.WithCaller(transportHTTP.NewCaller()),
+					},
+					ProviderOptions: []providers.Option{
+						providers.WithListener(transportHTTP.NewListener(fmt.Sprintf(":%d", SemaphorePort))),
+					},
+				}
+				semaphore = e2e.Instance(t, test.flow, test.schema, config)
 				path      = fmt.Sprintf("http://%s/%s", SemaphoreHTTPAddr, test.path)
 				ctype     = fmt.Sprintf("application/%s", test.path)
 				request   = bytes.NewBuffer(test.request)

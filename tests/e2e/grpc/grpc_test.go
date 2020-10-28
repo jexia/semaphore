@@ -10,12 +10,22 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jexia/semaphore"
+	"github.com/jexia/semaphore/cmd/semaphore/daemon/providers"
+	codecProto "github.com/jexia/semaphore/pkg/codec/proto"
+	"github.com/jexia/semaphore/pkg/specs"
+	transportGRPC "github.com/jexia/semaphore/pkg/transport/grpc"
 	"github.com/jexia/semaphore/tests/e2e"
 	proto "github.com/jexia/semaphore/tests/e2e/grpc/proto"
 	"google.golang.org/grpc"
 )
 
-var SemaphoreGRPCAddr = fmt.Sprintf("%s:%d", e2e.SemaphoreHost, e2e.SemaphoreGRPCPort)
+const (
+	SemaphorePort = 5051
+	SemaphoreHost = "localhost"
+)
+
+var SemaphoreGRPCAddr = fmt.Sprintf("%s:%d", SemaphoreHost, SemaphorePort)
 
 // convert any interface{} to proto struct and back (use with recursive types).
 func convert(t *testing.T, src, dst interface{}) {
@@ -139,7 +149,18 @@ func TestGRPCTransport(t *testing.T) {
 
 			}
 
-			var semaphore = e2e.Instance(t, test.flow, test.schema)
+			var (
+				config = e2e.Config{
+					SemaphoreOptions: []semaphore.Option{
+						semaphore.WithCodec(codecProto.NewConstructor()),
+						semaphore.WithCaller(transportGRPC.NewCaller()),
+					},
+					ProviderOptions: []providers.Option{
+						providers.WithListener(transportGRPC.NewListener(fmt.Sprintf(":%d", SemaphorePort), specs.Options{})),
+					},
+				}
+				semaphore = e2e.Instance(t, test.flow, test.schema, config)
+			)
 			defer semaphore.Close()
 
 			ready, errs := semaphore.Serve()
