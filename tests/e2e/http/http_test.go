@@ -38,7 +38,7 @@ func TestHTTPTransport(t *testing.T) {
 			path:   "json",
 			request: func(t *testing.T) []byte {
 				var body = map[string]map[string]interface{}{
-					"data": map[string]interface{}{
+					"data": {
 						"enum":    "ON",
 						"string":  "foo",
 						"integer": 42,
@@ -93,7 +93,7 @@ func TestHTTPTransport(t *testing.T) {
 			path: "json",
 			request: func(t *testing.T) []byte {
 				var body = map[string]map[string]interface{}{
-					"data": map[string]interface{}{
+					"data": {
 						"enum":    "ON",
 						"string":  "foo",
 						"integer": 42,
