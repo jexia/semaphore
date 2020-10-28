@@ -55,6 +55,11 @@ func (listener *Listener) Name() string {
 	return "graphql"
 }
 
+// Schema returns the schema of the given listner
+func (listener *Listener) Schema() graphql.Schema {
+	return listener.schema
+}
+
 // Serve opens the GraphQL listener and calls the given handler function on reach request
 func (listener *Listener) Serve() error {
 	listener.server.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
