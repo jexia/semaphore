@@ -16,6 +16,7 @@ import (
 	"github.com/jexia/semaphore/pkg/providers/protobuffers"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/pkg/specs/template"
 	"github.com/jhump/protoreflect/dynamic"
 )
 
@@ -47,71 +48,71 @@ func NewMock() (specs.FlowListInterface, error) {
 	return collection.FlowListInterface, nil
 }
 
-// func ValidateStore(t *testing.T, resource, path string, tmpl specs.Template, input interface{}, store references.Store) {
-// 	switch typed := input.(type) {
-// 	case map[string]interface{}:
-// 		for key, value := range typed {
-// 			property := tmpl.Message[key]
-// 			if property == nil {
-// 				t.Fatalf("property (%s) does not exist in map %s:%s", key, resource, path)
-// 			}
+func ValidateStore(t *testing.T, resource, path string, tmpl specs.Template, input interface{}, store references.Store) {
+	switch typed := input.(type) {
+	case map[string]interface{}:
+		for key, value := range typed {
+			property := tmpl.Message[key]
+			if property == nil {
+				t.Fatalf("property (%s) does not exist in map %s:%s", key, resource, path)
+			}
 
-// 			path := template.JoinPath(path, key)
+			path := template.JoinPath(path, key)
 
-// 			ValidateStore(t, resource, path, property.Template, value, store)
-// 		}
-// 	case []map[string]interface{}:
-// 		repeating := store.Load(resource, path)
-// 		if repeating == nil {
-// 			t.Fatalf("repeating message does not exist in store '%s:%s'", resource, path)
-// 		}
+			ValidateStore(t, resource, path, property.Template, value, store)
+		}
+	case []map[string]interface{}:
+		repeating := store.Load(resource, path)
+		if repeating == nil {
+			t.Fatalf("repeating message does not exist in store '%s:%s'", resource, path)
+		}
 
-// 		tmpl, err := tmpl.Repeated.Template()
-// 		if err != nil {
-// 			t.Fatal(err)
-// 		}
+		tmpl, err := tmpl.Repeated.Template()
+		if err != nil {
+			t.Fatal(err)
+		}
 
-// 		for index, store := range repeating.Repeated {
-// 			ValidateStore(t, resource, path, tmpl, typed[index], store)
-// 		}
-// 	case []interface{}:
-// 		repeating := store.Load(resource, path)
-// 		if repeating == nil {
-// 			t.Fatalf("resource not found %s:%s", resource, path)
-// 		}
+		for index, store := range repeating.Repeated {
+			ValidateStore(t, resource, path, tmpl, typed[index], store)
+		}
+	case []interface{}:
+		repeating := store.Load(resource, path)
+		if repeating == nil {
+			t.Fatalf("resource not found %s:%s", resource, path)
+		}
 
-// 		template, err := tmpl.Repeated.Template()
-// 		if err != nil {
-// 			t.Fatal(err)
-// 		}
+		template, err := tmpl.Repeated.Template()
+		if err != nil {
+			t.Fatal(err)
+		}
 
-// 		for index, store := range repeating.Repeated {
-// 			ValidateStore(t, "", "", template, typed[index], store)
-// 		}
-// 	case *references.EnumVal:
-// 		ref := store.Load(resource, path)
-// 		if ref == nil {
-// 			t.Fatalf("resource not found %s:%s", resource, path)
-// 		}
+		for index, store := range repeating.Repeated {
+			ValidateStore(t, "", "", template, typed[index], store)
+		}
+	case *references.EnumVal:
+		ref := store.Load(resource, path)
+		if ref == nil {
+			t.Fatalf("resource not found %s:%s", resource, path)
+		}
 
-// 		if ref.Enum == nil {
-// 			t.Fatalf("reference enum not set %s:%s", resource, path)
-// 		}
+		if ref.Enum == nil {
+			t.Fatalf("reference enum not set %s:%s", resource, path)
+		}
 
-// 		if *ref.Enum != typed.Pos() {
-// 			t.Fatalf("unexpected enum value at %s:%s '%+v', expected '%+v'", resource, path, ref.Enum, typed.Pos())
-// 		}
-// 	default:
-// 		ref := store.Load(resource, path)
-// 		if ref == nil {
-// 			t.Fatalf("resource not found %s:%s", resource, path)
-// 		}
+		if *ref.Enum != typed.Pos() {
+			t.Fatalf("unexpected enum value at %s:%s '%+v', expected '%+v'", resource, path, ref.Enum, typed.Pos())
+		}
+	default:
+		ref := store.Load(resource, path)
+		if ref == nil {
+			t.Fatalf("resource not found %s:%s", resource, path)
+		}
 
-// 		if ref.Value != typed {
-// 			t.Fatalf("unexpected value at %s '%+v', expected '%+v'", path, ref.Value, typed)
-// 		}
-// 	}
-// }
+		if ref.Value != typed {
+			t.Fatalf("unexpected value at %s '%+v', expected '%+v'", path, ref.Value, typed)
+		}
+	}
+}
 
 func BenchmarkSimpleMarshal(b *testing.B) {
 	input := map[string]interface{}{
@@ -450,7 +451,6 @@ func TestMarshal(t *testing.T) {
 	tests := map[string]map[string]interface{}{
 		"simple": {
 			"message": "hello world",
-			"nested":  map[string]interface{}{},
 		},
 		"nesting": {
 			"nested": map[string]interface{}{
@@ -458,7 +458,6 @@ func TestMarshal(t *testing.T) {
 			},
 		},
 		"repeating": {
-			"nested": map[string]interface{}{},
 			"repeating": []map[string]interface{}{
 				{
 					"value": "repeating value",
@@ -466,18 +465,15 @@ func TestMarshal(t *testing.T) {
 			},
 		},
 		"enum": {
-			"nested": map[string]interface{}{},
 			"status": references.Enum("PENDING", 1),
 		},
 		"repeating_enum": {
-			"nested": map[string]interface{}{},
 			"repeating_status": []interface{}{
 				references.Enum("PENDING", 1),
 				references.Enum("UNKNOWN", 0),
 			},
 		},
 		"repeating_values": {
-			"nested": map[string]interface{}{},
 			"repeating_values": []interface{}{
 				"repeating value",
 				"repeating value",
@@ -642,7 +638,7 @@ func TestUnmarshal(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			// ValidateStore(t, template.InputResource, "", req.Property.Template, input, store)
+			ValidateStore(t, template.InputResource, "", req.Property.Template, input, store)
 		})
 	}
 }

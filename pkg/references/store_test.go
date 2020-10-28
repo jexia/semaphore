@@ -11,22 +11,14 @@ import (
 )
 
 func BenchmarkSimpleFetching(b *testing.B) {
-	input := []byte(`{"message":"hello world"}`)
-
-	data := map[string]interface{}{}
-	err := json.Unmarshal(input, &data)
-	if err != nil {
-		b.Fatal(err)
-	}
-
-	store := NewStore(len(data))
-	store.StoreValues("input", "", data)
+	store := NewStore(1)
+	store.Store("input:message", &Reference{Value: "hello world"})
 
 	b.ReportAllocs()
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		store.Load("input", "message")
+		store.Load("input:message")
 	}
 }
 
@@ -34,28 +26,33 @@ func BenchmarkStoreSingleValue(b *testing.B) {
 	input := "hello world"
 	store := NewStore(b.N)
 
+	keys := make([]string, b.N)
+	for i := 0; i < b.N; i++ {
+		keys[i] = strconv.Itoa(i)
+	}
+
 	b.ReportAllocs()
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		store.StoreValue("input", ".", input)
+		store.Store("input:"+keys[i], &Reference{Value: input})
 	}
 }
 
-func BenchmarkStoreSingleReference(b *testing.B) {
-	input := "hello world"
+func BenchmarkStoreSingleEnum(b *testing.B) {
+	enum := int32(1)
 	store := NewStore(b.N)
 
-	reference := &Reference{
-		Path:  ".",
-		Value: input,
+	keys := make([]string, b.N)
+	for i := 0; i < b.N; i++ {
+		keys[i] = strconv.Itoa(i)
 	}
 
 	b.ReportAllocs()
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		store.StoreReference("input", reference)
+		store.Store("input:"+keys[i], &Reference{Enum: &enum})
 	}
 }
 
@@ -74,7 +71,7 @@ func BenchmarkSimpleUnmarshal(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		store := NewStore(len(data))
-		store.StoreValues("input", "", data)
+		store.Store("input:", &Reference{Value: data})
 	}
 }
 
@@ -94,7 +91,7 @@ func BenchmarkRepeatedUnmarshal(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		store.StoreValues("input", "", data)
+		store.Store("input:", &Reference{Value: data})
 	}
 }
 

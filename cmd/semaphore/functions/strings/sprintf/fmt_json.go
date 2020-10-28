@@ -53,7 +53,7 @@ func (enc encoder) MarshalJSON() ([]byte, error) {
 	case enc.property.Message != nil:
 		return message{property: enc.property, refs: enc.refs}.MarshalJSON()
 	case enc.property.Enum != nil && enc.property.Reference != nil:
-		reference := enc.refs.Load(enc.property.Reference.Resource, enc.property.Reference.Path)
+		reference := enc.refs.Load(enc.property.Reference.String())
 		if reference == nil {
 			return null, nil
 		}
@@ -67,7 +67,7 @@ func (enc encoder) MarshalJSON() ([]byte, error) {
 	case enc.property.Scalar != nil:
 		value := enc.property.Scalar.Default
 
-		var reference = enc.refs.Load(enc.property.Reference.Resource, enc.property.Reference.Path)
+		var reference = enc.refs.Load(enc.property.Reference.String())
 		if reference != nil {
 			value = reference.Value
 		}

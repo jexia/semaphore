@@ -164,6 +164,10 @@ var schema = &specs.ParameterMap{
 						Repeated: specs.Repeated{
 							{
 								Scalar: &specs.Scalar{Type: types.String},
+								Reference: &specs.PropertyReference{
+									Resource: template.InputResource,
+									Path:     "repeating_string",
+								},
 							},
 						},
 					},
@@ -442,10 +446,12 @@ func TestMarshal(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			refs := references.NewStore(len(test.input))
-			refs.StoreValues(template.InputResource, "", test.input)
+			store := references.NewStore(len(test.input))
+			tracker := references.NewTracker()
 
-			r, err := manager.Marshal(refs)
+			references.StoreValues(store, tracker, template.ResourcePath(template.InputResource), test.input)
+
+			r, err := manager.Marshal(store)
 			if err != nil {
 				t.Error(err)
 			}

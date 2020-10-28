@@ -35,11 +35,12 @@ func NewArray(path string, template specs.Template, store references.Store, trac
 // MarshalJSONArray encodes the array into the given gojay encoder.
 func (array *Array) MarshalJSONArray(encoder *gojay.Encoder) {
 	if array.repeated.Reference == nil {
-		array.tracker.Track(array.path, 0)
+		ptrack := array.tracker.Resolve(array.path)
+		array.tracker.Track(ptrack, 0)
 
 		for _, template := range array.repeated.Repeated {
 			encode(encoder, array.path, template, array.store, array.tracker)
-			array.tracker.Next(array.path)
+			array.tracker.Next(ptrack)
 		}
 
 		return
@@ -50,11 +51,12 @@ func (array *Array) MarshalJSONArray(encoder *gojay.Encoder) {
 		return
 	}
 
-	array.tracker.Track(array.path, 0)
+	ptrack := array.tracker.Resolve(array.path)
+	array.tracker.Track(ptrack, 0)
 
 	for index := 0; index < length; index++ {
 		encode(encoder, array.path, array.template, array.store, array.tracker)
-		array.tracker.Next(array.path)
+		array.tracker.Next(ptrack)
 	}
 }
 

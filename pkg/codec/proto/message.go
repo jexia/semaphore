@@ -27,11 +27,6 @@ func (tmpl Message) Marshal(result *dynamic.Message, message *desc.MessageDescri
 			continue
 		}
 
-		length := store.Length(tracker.Resolve(path))
-		if length == 0 {
-			continue
-		}
-
 		switch {
 		case specs.Repeated != nil:
 			err := Repeated(specs.Template).Marshal(result, field, path, store, tracker)
@@ -41,6 +36,11 @@ func (tmpl Message) Marshal(result *dynamic.Message, message *desc.MessageDescri
 		case specs.Message != nil:
 			desc := field.GetMessageType()
 			nested := dynamic.NewMessage(desc)
+
+			length := store.Length(tracker.Resolve(path))
+			if length == 0 {
+				break
+			}
 
 			err := Message(specs.Template).Marshal(nested, desc, path, store, tracker)
 			if err != nil {

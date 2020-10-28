@@ -1,8 +1,6 @@
 package proto
 
 import (
-	"log"
-
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jhump/protoreflect/desc"
@@ -23,8 +21,7 @@ func (tmpl Field) Marshal(setter TrySetter, field *desc.FieldDescriptor, store r
 			break
 		}
 
-		ref := store.Load(tmpl.Reference.String())
-		log.Println(ref, store)
+		ref := store.Load(tracker.Resolve(tmpl.Reference.String()))
 		if ref == nil || ref.Enum == nil {
 			break
 		}
@@ -34,7 +31,7 @@ func (tmpl Field) Marshal(setter TrySetter, field *desc.FieldDescriptor, store r
 		value := tmpl.Scalar.Default
 
 		if tmpl.Reference != nil {
-			ref := store.Load(tmpl.Reference.String())
+			ref := store.Load(tracker.Resolve(tmpl.Reference.String()))
 			if ref != nil && ref.Value != nil {
 				value = ref.Value
 			}

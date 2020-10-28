@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/url"
+	"strings"
 
 	"github.com/jexia/semaphore/pkg/codec"
 	"github.com/jexia/semaphore/pkg/references"
@@ -61,14 +62,16 @@ func (manager *Manager) Property() *specs.Property {
 
 // Marshal marshals the given reference store into a www-form-urlencoded message.
 // This method is called during runtime to encode a new message with the values stored inside the given reference store
-func (manager *Manager) Marshal(refs references.Store) (io.Reader, error) {
+func (manager *Manager) Marshal(store references.Store) (io.Reader, error) {
 	if manager.property == nil {
 		return bytes.NewReader([]byte{}), nil
 	}
 
 	encoder := url.Values{}
-	path := template.JoinPath("", manager.property.Name)
-	err := encode(encoder, path, refs, manager.property.Template)
+	path := template.ResourcePath(manager.resource, manager.property.Name)
+	tracker := references.NewTracker()
+
+	err := encode(encoder, manager.property.Template, path, store, tracker)
 	if err != nil {
 		return nil, fmt.Errorf("failed to encode %s: %w", manager.property.Name, err)
 	}
@@ -87,85 +90,102 @@ func (manager *Manager) Marshal(refs references.Store) (io.Reader, error) {
 // The producing key-value pair examples:
 // user.name=bob&user.age=30&id=100
 // users[0]=bob&users[1]=alice
-func encode(encoded url.Values, path string, store references.Store, tpl specs.Template) error {
+func encode(encoded url.Values, tmpl specs.Template, path string, store references.Store, tracker references.Tracker) error {
 	var (
 		ref *references.Reference
 	)
 
-	if tpl.Reference != nil {
-		ref = store.Load(tpl.Reference.Resource, tpl.Reference.Path)
+	if tmpl.Reference != nil {
+		ref = store.Load(tracker.Resolve(tmpl.Reference.String()))
 	}
 
 	switch {
-	case tpl.Message != nil:
-		for fieldName, field := range tpl.Message {
+	case tmpl.Message != nil:
+		for fieldName, field := range tmpl.Message {
 			path := template.JoinPath(path, fieldName)
-			err := encode(encoded, path, store, field.Template)
+			err := encode(encoded, field.Template, path, store, tracker)
 			if err != nil {
 				return fmt.Errorf("failed to encode message property %s under %s: %w", fieldName, path, err)
 			}
 		}
 
-	case tpl.Scalar != nil:
+	case tmpl.Scalar != nil:
 		var value interface{} // value to cast
 
 		if ref == nil {
-			value = tpl.Scalar.Default
+			value = tmpl.Scalar.Default
 		} else {
 			value = ref.Value
 		}
 
-		casted := castType(tpl.Scalar.Type, value)
+		casted := castType(tmpl.Scalar.Type, value)
 		if casted != "" {
-			encoded.Add(path, casted)
+			encoded.Add(trimResource(tracker.Resolve(path)), casted)
 		}
 
-	case tpl.Enum != nil:
+	case tmpl.Enum != nil:
 		if ref == nil {
 			// no default value for nil. No reference => nothing to encode.
 			break
 		}
 
-		value := tpl.Enum.Positions[*ref.Enum]
+		value := tmpl.Enum.Positions[*ref.Enum]
 		casted := castType(types.Enum, value.Key)
 		if casted != "" {
-			encoded.Add(path, casted)
+			encoded.Add(trimResource(tracker.Resolve(path)), casted)
 		}
 
 	// repeated is described by a static template with a reference
-	case tpl.Repeated != nil && ref != nil:
-		item, err := tpl.Repeated.Template()
+	case tmpl.Repeated != nil && tmpl.Reference != nil:
+		item, err := tmpl.Repeated.Template()
 
 		if err != nil {
 			return fmt.Errorf("failed to encode repeated property %s: %w", path, err)
 		}
 
-		// as item is the static template, it does not have its own Reference.
-		// all repeated values are located in store by empty resource-path identifier.
-		item.Reference = &specs.PropertyReference{Resource: "", Path: ""}
+		length := store.Length(tracker.Resolve(tmpl.Reference.String()))
 
-		for idx, store := range ref.Repeated {
-			path := fmt.Sprintf("%s[%d]", path, idx)
-			err = encode(encoded, path, store, item)
+		rtrack := tracker.Resolve(tmpl.Reference.String())
+		ptrack := tracker.Resolve(path)
+
+		tracker.Track(rtrack, 0)
+		tracker.Track(ptrack, 0)
+
+		for index := 0; index < length; index++ {
+			err = encode(encoded, item, path, store, tracker)
 
 			if err != nil {
 				return fmt.Errorf("failed to encode repeated property item %s: %w", path, err)
 			}
+
+			tracker.Next(rtrack)
+			tracker.Next(ptrack)
 		}
 
 	// repeated does not have a static template but described "inline"
-	case tpl.Repeated != nil && ref == nil:
-		for idx, item := range tpl.Repeated {
-			path := fmt.Sprintf("%s[%d]", path, idx)
-			err := encode(encoded, path, store, item)
+	case tmpl.Repeated != nil && tmpl.Reference == nil:
+		ptrack := tracker.Resolve(path)
+		tracker.Track(ptrack, 0)
+
+		for _, item := range tmpl.Repeated {
+			err := encode(encoded, item, path, store, tracker)
 
 			if err != nil {
 				return fmt.Errorf("failed to encode repeated property item %s: %w", path, err)
 			}
+
+			tracker.Next(ptrack)
 		}
 	}
 
 	return nil
+}
+
+func trimResource(path string) string {
+	if index := strings.Index(path, ":"); index != -1 {
+		return path[index+1:]
+	}
+	return path
 }
 
 // Unmarshal the given www-form-urlencoded io reader into the given reference store.

@@ -1,8 +1,6 @@
 package proto
 
 import (
-	"log"
-
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jhump/protoreflect/desc"
@@ -39,11 +37,12 @@ func (tmpl Repeated) Marshal(message *dynamic.Message, field *desc.FieldDescript
 		panic(err)
 	}
 
-	length := store.Length(tracker.Resolve(path))
-	tracker.Track(path, 0)
+	length := store.Length(tracker.Resolve(tmpl.Reference.String()))
+
+	ptrack := tracker.Resolve(path)
+	tracker.Track(ptrack, 0)
 
 	for index := 0; index < length; index++ {
-		log.Println(repeated.Type())
 		switch {
 		case repeated.Message != nil:
 			desc := field.GetMessageType()
@@ -56,7 +55,6 @@ func (tmpl Repeated) Marshal(message *dynamic.Message, field *desc.FieldDescript
 
 			message.TryAddRepeatedField(field, nested)
 		default:
-			log.Println("--", tmpl.Reference, err, length)
 			err := Field(repeated).Marshal(message.TryAddRepeatedField, field, store, tracker)
 			if err != nil {
 				return err
