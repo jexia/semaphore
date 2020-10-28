@@ -29,9 +29,7 @@ func Instance(t *testing.T, flow, schema string, config Config) *daemon.Client {
 		semaphore.WithFlows(hcl.FlowsResolver(flow)),
 	}
 
-	core, err := semaphore.NewOptions(ctx,
-		append(semaphoreOptions, config.SemaphoreOptions...)...,
-	)
+	core, err := semaphore.NewOptions(ctx, append(semaphoreOptions, config.SemaphoreOptions...)...)
 
 	if err != nil {
 		t.Fatalf("cannot instantiate semaphore core: %s", err)
