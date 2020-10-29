@@ -164,12 +164,13 @@ func TestTokensPrint(t *testing.T) {
 
 			var (
 				printer = Tokens(tokens)
-				refs    = references.NewStore(len(test.store))
+				store   = references.NewStore(len(test.store))
+				tracker = references.NewTracker()
 			)
 
-			refs.StoreValues(template.InputResource, "", test.store)
+			references.StoreValues(store, tracker, template.ResourcePath(template.InputResource), test.store)
 
-			actual, err := printer.Print(refs, test.args...)
+			actual, err := printer.Print(store, test.args...)
 			if err != nil {
 				t.Fatalf("unexpected error %q", err)
 			}
