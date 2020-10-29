@@ -44,46 +44,46 @@ func (e errUnexpectedToken) Error() string {
 	return fmt.Sprintf(`unexpected element "%T", expected one of [%s]`, e.actual, e.printExpected())
 }
 
-type nestedError interface {
-	path() string
-	unwrap() error
-}
+// type nestedError interface {
+// 	path() string
+// 	unwrap() error
+// }
 
-type errStack struct {
-	property string
-	inner    error
-}
+// type errStack struct {
+// 	property string
+// 	inner    error
+// }
 
-func (e errStack) Unwrap() error { return e.inner }
+// func (e errStack) Unwrap() error { return e.inner }
 
-func (e errStack) path() string {
-	casted, ok := e.inner.(nestedError)
-	if !ok {
-		return e.property
-	}
+// func (e errStack) path() string {
+// 	casted, ok := e.inner.(nestedError)
+// 	if !ok {
+// 		return e.property
+// 	}
 
-	return buildPath(e.property, casted.path())
-}
+// 	return buildPath(e.property, casted.path())
+// }
 
-func (e errStack) unwrap() error {
-	caseted, ok := e.inner.(nestedError)
-	if !ok {
-		return e.inner
-	}
+// func (e errStack) unwrap() error {
+// 	caseted, ok := e.inner.(nestedError)
+// 	if !ok {
+// 		return e.inner
+// 	}
 
-	return caseted.unwrap()
-}
+// 	return caseted.unwrap()
+// }
 
-type errFailedToEncode struct{ errStack }
+// type errFailedToEncode struct{ errStack }
 
-func (e errFailedToEncode) Error() string {
-	return fmt.Sprintf("failed to encode element: path '%s': %s", e.path(), e.unwrap())
-}
+// func (e errFailedToEncode) Error() string {
+// 	return fmt.Sprintf("failed to encode element: path '%s': %s", e.path(), e.unwrap())
+// }
 
-type errFailedToDecode struct{ errStack }
+// type errFailedToDecode struct{ errStack }
 
-func (e errFailedToDecode) Unwrap() error { return e.inner }
+// func (e errFailedToDecode) Unwrap() error { return e.inner }
 
-func (e errFailedToDecode) Error() string {
-	return fmt.Sprintf("failed to decode element: path '%s': %s", e.path(), e.unwrap())
-}
+// func (e errFailedToDecode) Error() string {
+// 	return fmt.Sprintf("failed to decode element: path '%s': %s", e.path(), e.unwrap())
+// }

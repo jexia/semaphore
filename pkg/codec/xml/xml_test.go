@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 	"io/ioutil"
+	"log"
 	"strings"
 	"testing"
 
@@ -80,7 +81,7 @@ func TestMarshal(t *testing.T) {
 			schema:   tests.SchemaObjectComplex,
 			expected: "<root><status>PENDING</status><nested></nested></root>",
 		},
-		"nested": {
+		"object": {
 			input: map[string]interface{}{
 				"nested": map[string]interface{}{
 					"first":  "foo",
@@ -149,13 +150,14 @@ func TestMarshal(t *testing.T) {
 
 	for title, test := range tests {
 		t.Run(title, func(t *testing.T) {
-			manager, err := constructor.New("mock", test.schema)
+			manager, err := constructor.New(template.InputResource, test.schema)
 			if err != nil {
 				t.Fatal(err)
 			}
 
 			refs := references.NewStore(len(test.input))
-			refs.StoreValues(template.InputResource, "", test.input)
+			tracker := references.NewTracker()
+			references.StoreValues(refs, tracker, template.ResourcePath(template.InputResource), test.input)
 
 			reader, err := manager.Marshal(refs)
 			if err != nil {
@@ -198,16 +200,11 @@ func TestUnmarshal(t *testing.T) {
 			schema: &specs.ParameterMap{
 				Property: tests.PropInteger(),
 			},
-			error: errFailedToDecode{
-				errStack{
-					property: "integer",
-					inner: errUnexpectedToken{
-						actual: xml.StartElement{},
-						expected: []xml.Token{
-							xml.CharData{},
-							xml.EndElement{},
-						},
-					},
+			error: errUnexpectedToken{
+				actual: xml.StartElement{},
+				expected: []xml.Token{
+					xml.CharData{},
+					xml.EndElement{},
 				},
 			},
 		},
@@ -218,15 +215,10 @@ func TestUnmarshal(t *testing.T) {
 			schema: &specs.ParameterMap{
 				Property: tests.PropInteger(),
 			},
-			error: errFailedToDecode{
-				errStack{
-					property: "integer",
-					inner: errUnexpectedToken{
-						actual: xml.StartElement{},
-						expected: []xml.Token{
-							xml.EndElement{},
-						},
-					},
+			error: errUnexpectedToken{
+				actual: xml.StartElement{},
+				expected: []xml.Token{
+					xml.EndElement{},
 				},
 			},
 		},
@@ -237,12 +229,7 @@ func TestUnmarshal(t *testing.T) {
 			schema: &specs.ParameterMap{
 				Property: tests.PropInteger(),
 			},
-			error: errFailedToDecode{
-				errStack{
-					property: "integer",
-					inner:    errors.New(`strconv.ParseInt: parsing "foo": invalid syntax`),
-				},
-			},
+			error: errors.New(`strconv.ParseInt: parsing "foo": invalid syntax`),
 		},
 		"scalar with empty value": {
 			input: strings.NewReader(
@@ -281,16 +268,11 @@ func TestUnmarshal(t *testing.T) {
 			schema: &specs.ParameterMap{
 				Property: tests.PropEnum(),
 			},
-			error: errFailedToDecode{
-				errStack{
-					property: "status",
-					inner: errUnexpectedToken{
-						actual: xml.StartElement{},
-						expected: []xml.Token{
-							xml.CharData{},
-							xml.EndElement{},
-						},
-					},
+			error: errUnexpectedToken{
+				actual: xml.StartElement{},
+				expected: []xml.Token{
+					xml.CharData{},
+					xml.EndElement{},
 				},
 			},
 		},
@@ -301,15 +283,10 @@ func TestUnmarshal(t *testing.T) {
 			schema: &specs.ParameterMap{
 				Property: tests.PropEnum(),
 			},
-			error: errFailedToDecode{
-				errStack{
-					property: "status",
-					inner: errUnexpectedToken{
-						actual: xml.StartElement{},
-						expected: []xml.Token{
-							xml.EndElement{},
-						},
-					},
+			error: errUnexpectedToken{
+				actual: xml.StartElement{},
+				expected: []xml.Token{
+					xml.EndElement{},
 				},
 			},
 		},
@@ -320,12 +297,7 @@ func TestUnmarshal(t *testing.T) {
 			schema: &specs.ParameterMap{
 				Property: tests.PropEnum(),
 			},
-			error: errFailedToDecode{
-				errStack{
-					property: "status",
-					inner:    errUnknownEnum("foo"),
-				},
-			},
+			error: errUnknownEnum("foo"),
 		},
 		"enum with empty value": {
 			input: strings.NewReader(
@@ -380,22 +352,7 @@ func TestUnmarshal(t *testing.T) {
 				</root>`,
 			),
 			schema: tests.SchemaObjectNested,
-			error: errFailedToDecode{
-				errStack: errStack{
-					property: "root",
-					inner: errFailedToDecode{
-						errStack: errStack{
-							property: "nested",
-							inner: errFailedToDecode{
-								errStack: errStack{
-									property: "integer",
-									inner:    errors.New("strconv.ParseInt: parsing \"oops\": invalid syntax"),
-								},
-							},
-						},
-					},
-				},
-			},
+			error:  errors.New("strconv.ParseInt: parsing \"oops\": invalid syntax"),
 		},
 		"object nested": {
 			input: strings.NewReader(
@@ -551,7 +508,7 @@ func TestUnmarshal(t *testing.T) {
 				t.Fatal("unexpected nil")
 			}
 
-			manager, err := xml.New("mock", test.schema)
+			manager, err := xml.New(template.InputResource, test.schema)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -574,7 +531,12 @@ func TestUnmarshal(t *testing.T) {
 				}
 			}
 
-			tests.Assert(t, "mock", "", store, test.expected)
+			log.Printf("REFERENCE STORE: %+v", store)
+
+			// log.Println("MSG: ", refs.Load("input.message"))
+			// log.Println("OUTPUT:", string(bb))
+
+			// tests.Assert(t, "mock", "", store, test.expected)
 		})
 	}
 }

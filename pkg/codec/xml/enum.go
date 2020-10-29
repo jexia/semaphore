@@ -9,46 +9,56 @@ import (
 
 // Enum is a vrapper over specs.Enum providing XML encoding/decoding.
 type Enum struct {
-	name      string
-	enum      *specs.Enum
-	reference *specs.PropertyReference
-	store     references.Store
+	name, path string
+	template   specs.Template
+	store      references.Store
+	tracker    references.Tracker
 }
 
 // NewEnum creates a new enum by wrapping provided specs.Enum.
-func NewEnum(name string, enum *specs.Enum, reference *specs.PropertyReference, store references.Store) *Enum {
+func NewEnum(name, path string, template specs.Template, store references.Store, tracker references.Tracker) *Enum {
 	return &Enum{
-		name:      name,
-		enum:      enum,
-		reference: reference,
-		store:     store,
+		name:     name,
+		path:     path,
+		template: template,
+		store:    store,
+		tracker:  tracker,
 	}
 }
 
 // MarshalXML marshals given enum to XML.
 func (enum *Enum) MarshalXML(encoder *xml.Encoder, _ xml.StartElement) error {
 	var (
-		value string
 		start = xml.StartElement{
 			Name: xml.Name{
 				Local: enum.name,
 			},
 		}
+		value = enum.value(enum.store, enum.tracker)
 	)
 
-	if enum.reference != nil {
-		var reference = enum.store.Load(enum.reference.Resource, enum.reference.Path)
-		if reference == nil || reference.Enum == nil {
-			return nil
-		}
-
-		var enumValue = enum.enum.Positions[*reference.Enum]
-		if enumValue != nil {
-			value = enumValue.Key
-		}
+	if value == nil {
+		return nil
 	}
 
-	return encoder.EncodeElement(value, start)
+	return encoder.EncodeElement(value.Key, start)
+}
+
+func (enum *Enum) value(store references.Store, tracker references.Tracker) *specs.EnumValue {
+	if enum.template.Reference == nil {
+		return nil
+	}
+
+	var reference = store.Load(tracker.Resolve(enum.template.Reference.String()))
+	if reference == nil || reference.Enum == nil {
+		return nil
+	}
+
+	if position := reference.Enum; position != nil {
+		return enum.template.Enum.Positions[*reference.Enum]
+	}
+
+	return nil
 }
 
 // UnmarshalXML unmarshals enum value from XML stream.
@@ -68,23 +78,21 @@ func (enum *Enum) UnmarshalXML(decoder *xml.Decoder, _ xml.StartElement) error {
 
 		switch state {
 		case waitForValue:
-			var reference = &references.Reference{
-				Path: buildPath(enum.reference.Path, enum.name),
-			}
-
 			switch t := tok.(type) {
 			case xml.CharData:
-				enumValue, ok := enum.enum.Keys[string(t)]
+				enumValue, ok := enum.template.Enum.Keys[string(t)]
 				if !ok {
 					return errUnknownEnum(t)
 				}
 
-				reference.Enum = &enumValue.Position
-				state = waitForClose
+				enum.store.Store(enum.tracker.Resolve(enum.path), &references.Reference{
+					Enum: &enumValue.Position,
+				})
 
-				enum.store.StoreReference(enum.reference.Resource, reference)
+				state = waitForClose
 			case xml.EndElement:
-				enum.store.StoreReference(enum.reference.Resource, reference)
+				enum.store.Store(enum.tracker.Resolve(enum.path), new(references.Reference))
+
 				// enum is closed with nil value
 				return nil
 			default:

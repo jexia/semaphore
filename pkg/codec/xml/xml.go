@@ -2,6 +2,7 @@ package xml
 
 import (
 	"encoding/xml"
+	"fmt"
 	"io"
 
 	"github.com/jexia/semaphore/pkg/codec"
@@ -56,14 +57,17 @@ func (manager *Manager) Marshal(refs references.Store) (io.Reader, error) {
 	var (
 		reader, writer = io.Pipe()
 		encoder        = xml.NewEncoder(writer)
+		tracker        = references.NewTracker()
 	)
 
 	go func() {
 		if err := encodeElement(
 			encoder,
 			manager.property.Name,
+			fmt.Sprintf("%s:", manager.resource),
 			manager.property.Template,
 			refs,
+			tracker,
 		); err != nil {
 			_ = writer.CloseWithError(err)
 
@@ -90,12 +94,15 @@ func (manager *Manager) Unmarshal(reader io.Reader, refs references.Store) error
 		return nil
 	}
 
-	var decoder = xml.NewDecoder(reader)
+	var (
+		decoder = xml.NewDecoder(reader)
+		tracker = references.NewTracker()
+	)
 
 	for {
 		tok, err := decoder.Token()
 		if err == io.EOF {
-			return nil
+			break
 		}
 
 		if err != nil {
@@ -107,11 +114,11 @@ func (manager *Manager) Unmarshal(reader io.Reader, refs references.Store) error
 			if err := decodeElement(
 				decoder,
 				t,
-				manager.resource,
-				"", // prefix
 				manager.property.Name,
+				fmt.Sprintf("%s:", manager.resource),
 				manager.property.Template,
 				refs,
+				tracker,
 			); err != nil {
 				return err
 			}
@@ -132,12 +139,6 @@ func (manager *Manager) Unmarshal(reader io.Reader, refs references.Store) error
 			}
 		}
 	}
-}
 
-func buildPath(prefix, property string) string {
-	if prefix == "" {
-		return property
-	}
-
-	return prefix + "." + property
+	return nil
 }

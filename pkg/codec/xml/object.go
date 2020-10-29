@@ -5,23 +5,25 @@ import (
 
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/pkg/specs/template"
 )
 
 // Object represents an XML object.
 type Object struct {
-	name      string
-	message   specs.Message
-	reference *specs.PropertyReference
-	store     references.Store
+	name, path string
+	template   specs.Template
+	store      references.Store
+	tracker    references.Tracker
 }
 
 // NewObject creates a new object by wrapping provided specs.Message.
-func NewObject(name string, message specs.Message, reference *specs.PropertyReference, store references.Store) *Object {
+func NewObject(name, path string, template specs.Template, store references.Store, tracker references.Tracker) *Object {
 	return &Object{
-		name:      name,
-		message:   message,
-		reference: reference,
-		store:     store,
+		name:     name,
+		path:     path,
+		template: template,
+		store:    store,
+		tracker:  tracker,
 	}
 }
 
@@ -35,8 +37,15 @@ func (object *Object) MarshalXML(encoder *xml.Encoder, _ xml.StartElement) error
 
 	// TODO: properties are now sorted during runtime. This process should be
 	// moved to be prepared before MarshalXML is called.
-	for _, property := range object.message.SortedProperties() {
-		if err := encodeElement(encoder, property.Name, property.Template, object.store); err != nil {
+	for _, property := range object.template.Message.SortedProperties() {
+		if err := encodeElement(
+			encoder,
+			property.Name,
+			template.JoinPath(object.path, property.Name),
+			property.Template,
+			object.store,
+			object.tracker,
+		); err != nil {
 			return err
 		}
 	}
@@ -54,19 +63,20 @@ func (object *Object) UnmarshalXML(decoder *xml.Decoder, _ xml.StartElement) err
 
 		switch t := tok.(type) {
 		case xml.StartElement:
-			property, ok := object.message[t.Name.Local]
+			property, ok := object.template.Message[t.Name.Local]
 			if !ok {
+				// TODO: allow unknown fields
 				return errUndefinedProperty(t.Name.Local)
 			}
 
 			if err := decodeElement(
 				decoder,
-				t,                         // start element
-				object.reference.Resource, // resource name
-				buildPath(object.reference.Path, object.name), // path
-				property.Name,
+				t,             // start element
+				property.Name, // name
+				template.JoinPath(object.path, property.Name), // path
 				property.Template,
 				object.store,
+				object.tracker,
 			); err != nil {
 				return err
 			}

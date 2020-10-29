@@ -1,6 +1,8 @@
 package json
 
 import (
+	"log"
+
 	"github.com/francoispqt/gojay"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
@@ -17,11 +19,15 @@ type Array struct {
 
 // NewArray creates a new array to be JSON encoded/decoded.
 func NewArray(path string, template specs.Template, store references.Store, tracker references.Tracker) *Array {
+	log.Println("T REF:", template.Reference)
+
 	// TODO: find a better implementation/name
 	combi, err := template.Repeated.Template()
 	if err != nil {
 		panic(err)
 	}
+
+	log.Println("C REF:", combi.Reference)
 
 	return &Array{
 		path:     path,
