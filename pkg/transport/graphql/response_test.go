@@ -6,22 +6,24 @@ import (
 	"github.com/go-test/deep"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/pkg/specs/template"
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
 func TestResponseObjectNil(t *testing.T) {
-	ResponseObject(nil, nil)
+	ResponseObject(nil, nil, nil)
 }
 
 func TestResponseObjectInvalidType(t *testing.T) {
 	store := references.NewStore(0)
+	tracker := references.NewTracker()
 	property := &specs.Property{
 		Template: specs.Template{
 			Scalar: &specs.Scalar{},
 		},
 	}
 
-	_, err := ResponseObject(property, store)
+	_, err := ResponseObject(property, store, tracker)
 	if err != ErrInvalidObject {
 		t.Fatalf("unexpected err %s, expected %s", err, ErrInvalidObject)
 	}
@@ -66,7 +68,7 @@ func TestResponseObject(t *testing.T) {
 				},
 			},
 			populate: func(t *testing.T, store references.Store) {
-				store.StoreValue("input", "name", "John Doe")
+				store.Store(template.ResourcePath(template.InputResource, "name"), &references.Reference{Value: "John Doe"})
 			},
 			expected: map[string]interface{}{
 				"name": "John Doe",
@@ -101,7 +103,7 @@ func TestResponseObject(t *testing.T) {
 				},
 			},
 			populate: func(t *testing.T, store references.Store) {
-				store.StoreValue("input", "name", "John Doe")
+				store.Store(template.ResourcePath(template.InputResource, "name"), &references.Reference{Value: "John Doe"})
 			},
 			expected: map[string]interface{}{
 				"nested": map[string]interface{}{
@@ -146,7 +148,8 @@ func TestResponseObject(t *testing.T) {
 				},
 			},
 			populate: func(t *testing.T, store references.Store) {
-				store.StoreValues("input", "", map[string]interface{}{
+				tracker := references.NewTracker()
+				references.StoreValues(store, tracker, template.ResourcePath(template.InputResource), map[string]interface{}{
 					"repeated": []map[string]interface{}{
 						{
 							"name": "John Doe",
@@ -237,7 +240,8 @@ func TestResponseObject(t *testing.T) {
 				},
 			},
 			populate: func(t *testing.T, store references.Store) {
-				store.StoreEnum("input", "status", 0)
+				enum := int32(0)
+				store.Store(template.ResourcePath(template.InputResource, "status"), &references.Reference{Enum: &enum})
 			},
 			expected: map[string]interface{}{
 				"status": "UNKOWN",
@@ -347,14 +351,14 @@ func TestResponseObject(t *testing.T) {
 				},
 			},
 			populate: func(t *testing.T, store references.Store) {
-				store.StoreValues("input", "", map[string]interface{}{
+				tracker := references.NewTracker()
+				references.StoreValues(store, tracker, template.ResourcePath(template.InputResource), map[string]interface{}{
 					"repeated": []map[string]interface{}{
 						{
 							"status": references.Enum("UNKOWN", 0),
 						},
 					},
 				})
-
 			},
 			expected: map[string]interface{}{
 				"repeated": []interface{}{
@@ -367,9 +371,11 @@ func TestResponseObject(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			store := references.NewStore(0)
+			tracker := references.NewTracker()
+
 			test.populate(t, store)
 
-			response, err := ResponseObject(test.property, store)
+			response, err := ResponseObject(test.property, store, tracker)
 			if err != nil {
 				t.Fatal(err)
 			}

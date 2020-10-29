@@ -35,17 +35,18 @@ func (template Scalar) Marshal(encoder *gojay.Encoder, store references.Store, t
 
 // MarshalKey marshals the scalar template as an object field using the given key.
 // The key is not set if the value is `null`.
-func (template Scalar) MarshalKey(encoder *gojay.Encoder, key string, store references.Store, tracker references.Tracker) {
+func (template Scalar) MarshalKey(encoder *gojay.Encoder, key string, store references.Store, tracker references.Tracker) bool {
 	if template.Scalar == nil {
-		return
+		return false
 	}
 
 	value := template.value(store, tracker)
 	if value == nil {
-		return
+		return false
 	}
 
 	AddTypeKey(encoder, key, template.Scalar.Type, value)
+	return true
 }
 
 // Unmarshal attempts to unmarshal the value from the decoder as a scalar and
