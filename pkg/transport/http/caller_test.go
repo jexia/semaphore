@@ -13,6 +13,7 @@ import (
 	"github.com/jexia/semaphore/pkg/codec/json"
 	"github.com/jexia/semaphore/pkg/codec/metadata"
 	"github.com/jexia/semaphore/pkg/references"
+	"github.com/jexia/semaphore/pkg/specs/template"
 	"github.com/jexia/semaphore/pkg/transport"
 )
 
@@ -95,7 +96,7 @@ func TestCaller(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	ref := refs.Load("input", "message")
+	ref := refs.Load("input:message")
 	if ref == nil {
 		t.Fatal("input:message reference not set")
 	}
@@ -361,7 +362,7 @@ func TestCallerReferencesLookup(t *testing.T) {
 				Method: method,
 			}
 
-			store.StoreValue(test.resource, test.path, test.value)
+			store.Store(template.ResourcePath(test.resource, test.path), &references.Reference{Value: test.value})
 
 			rw := &MockResponseWriter{
 				header: metadata.MD{},
