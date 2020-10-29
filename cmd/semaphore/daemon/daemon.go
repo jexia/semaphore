@@ -33,7 +33,6 @@ func init() {
 }
 
 func run(cmd *cobra.Command, args []string) (err error) {
-
 	defer func() {
 		if err != nil {
 			err = prettyerr.StandardErr(err)
@@ -62,19 +61,18 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		return err
 	}
 
-	go sigterm(client)
+	defer client.Close()
 
-	err = client.Serve()
-	if err != nil {
-		return err
-	}
+	_, errs := client.Serve()
 
-	return nil
-}
-
-func sigterm(client *Client) {
 	term := make(chan os.Signal, 1)
 	signal.Notify(term, syscall.SIGINT, syscall.SIGTERM)
-	<-term
-	client.Close()
+
+	// TODO: implement force shutdown
+	select {
+	case <-term:
+	case err = <-errs:
+	}
+
+	return err
 }
