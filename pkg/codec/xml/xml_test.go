@@ -5,7 +5,6 @@ import (
 	"errors"
 	"io"
 	"io/ioutil"
-	"log"
 	"strings"
 	"testing"
 
@@ -530,11 +529,6 @@ func TestUnmarshal(t *testing.T) {
 					t.Fatalf("unexpected error '%s'", err)
 				}
 			}
-
-			log.Printf("REFERENCE STORE: %+v", store)
-
-			// log.Println("MSG: ", refs.Load("input.message"))
-			// log.Println("OUTPUT:", string(bb))
 
 			// tests.Assert(t, "mock", "", store, test.expected)
 		})

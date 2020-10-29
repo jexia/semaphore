@@ -2,7 +2,6 @@ package xml
 
 import (
 	"encoding/xml"
-	"log"
 
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
@@ -15,19 +14,16 @@ type Array struct {
 	repeated   specs.Template
 	store      references.Store
 	tracker    references.Tracker
+	index      int
 }
 
 // NewArray constructs a new XML array encoder/decoder.
 func NewArray(name, path string, template specs.Template, store references.Store, tracker references.Tracker) *Array {
-	log.Println("T REF:", template.Reference)
-
 	// TODO: find a better implementation/name
 	combi, err := template.Repeated.Template()
 	if err != nil {
 		panic(err)
 	}
-
-	log.Println("C REF:", combi.Reference)
 
 	return &Array{
 		name:     name,
@@ -46,7 +42,14 @@ func (array *Array) MarshalXML(encoder *xml.Encoder, _ xml.StartElement) error {
 		array.tracker.Track(ptrack, 0)
 
 		for _, item := range array.repeated.Repeated {
-			if err := encodeElement(encoder, array.name, array.path, item, array.store, array.tracker); err != nil {
+			if err := encodeElement(
+				encoder,
+				array.name,
+				array.path,
+				item,
+				array.store,
+				array.tracker,
+			); err != nil {
 				return err
 			}
 
@@ -65,7 +68,14 @@ func (array *Array) MarshalXML(encoder *xml.Encoder, _ xml.StartElement) error {
 	array.tracker.Track(ptrack, 0)
 
 	for index := 0; index < length; index++ {
-		if err := encodeElement(encoder, array.name, array.path, array.template, array.store, array.tracker); err != nil {
+		if err := encodeElement(
+			encoder,
+			array.name,
+			array.path,
+			array.template,
+			array.store,
+			array.tracker,
+		); err != nil {
 			return err
 		}
 
@@ -77,34 +87,17 @@ func (array *Array) MarshalXML(encoder *xml.Encoder, _ xml.StartElement) error {
 
 // UnmarshalXML decodes XML input into the receiver of type specs.Repeated.
 func (array *Array) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
-	// var (
-	// 	path      = buildPath(array.reference.Path, array.name)
-	// 	store     = references.NewStore(1)
-	// 	reference = array.store.Load(array.reference.Resource, path)
-	// )
+	index := array.store.Length(array.tracker.Resolve(array.path))
+	array.tracker.Track(array.path, index)
+	array.store.Define(array.tracker.Resolve(array.path), index+1)
 
-	// if reference == nil {
-	// 	reference = &references.Reference{
-	// 		Path: path,
-	// 	}
-
-	// 	array.store.StoreReference(array.reference.Resource, reference)
-	// }
-
-	// if err := decodeElement(
-	// 	decoder,
-	// 	start,
-	// 	"", // resource
-	// 	"", // path
-	// 	"", // name
-	// 	array.template,
-	// 	store,
-	// ); err != nil {
-	// 	return err
-	// }
-
-	// // update the reference
-	// reference.Repeated = append(reference.Repeated, store)
-
-	return nil
+	return decodeElement(
+		decoder,
+		start,
+		array.name,
+		array.path,
+		array.template,
+		array.store,
+		array.tracker,
+	)
 }

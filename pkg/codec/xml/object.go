@@ -69,6 +69,8 @@ func (object *Object) UnmarshalXML(decoder *xml.Decoder, _ xml.StartElement) err
 				return errUndefinedProperty(t.Name.Local)
 			}
 
+			// object.store.Define(object.path, len(object.template.Message))
+
 			if err := decodeElement(
 				decoder,
 				t,             // start element
