@@ -460,7 +460,7 @@ func TestMarshal(t *testing.T) {
 				"nested":  map[string]interface{}{},
 			},
 			schema:   schema,
-			expected: `{"message":"some message"}`,
+			expected: `{"message":"some message","nested":{}}`,
 		},
 		"nested": {
 			input: map[string]interface{}{
@@ -477,7 +477,7 @@ func TestMarshal(t *testing.T) {
 				"enum":   references.Enum("PENDING", 2),
 			},
 			schema:   schema,
-			expected: `{"enum":"PENDING"}`,
+			expected: `{"nested":{},"enum":"PENDING"}`,
 		},
 		"repeating_enum": {
 			input: map[string]interface{}{
@@ -487,7 +487,7 @@ func TestMarshal(t *testing.T) {
 				},
 			},
 			schema:   schema,
-			expected: `{"repeating_enum":["UNKNOWN","PENDING"]}`,
+			expected: `{"nested":{},"repeating_enum":["UNKNOWN","PENDING"]}`,
 		},
 		"repeating objects": {
 			input: map[string]interface{}{
@@ -501,7 +501,7 @@ func TestMarshal(t *testing.T) {
 				},
 			},
 			schema:   schema,
-			expected: `{"repeating":[{"value":"repeating value"},{"value":"repeating value"}]}`,
+			expected: `{"nested":{},"repeating":[{"value":"repeating value"},{"value":"repeating value"}]}`,
 		},
 		"repeating values from reference": {
 			input: map[string]interface{}{
@@ -511,7 +511,7 @@ func TestMarshal(t *testing.T) {
 				},
 			},
 			schema:   schema,
-			expected: `{"repeating_values":["repeating one","repeating two"]}`,
+			expected: `{"nested":{},"repeating_values":["repeating one","repeating two"]}`,
 		},
 		"complex": {
 			input: map[string]interface{}{

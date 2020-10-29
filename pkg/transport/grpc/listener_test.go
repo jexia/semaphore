@@ -14,6 +14,7 @@ import (
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/labels"
+	"github.com/jexia/semaphore/pkg/specs/template"
 	"github.com/jexia/semaphore/pkg/specs/types"
 	"github.com/jexia/semaphore/pkg/transport"
 )
@@ -145,8 +146,8 @@ func TestErrorHandlingListener(t *testing.T) {
 		},
 		"reference": {
 			caller: func(store references.Store) {
-				store.StoreValue("error", "status", int64(429))
-				store.StoreValue("error", "message", "reference value")
+				store.Store(template.ResourcePath(template.ErrorResource, "status"), &references.Reference{Value: int64(429)})
+				store.Store(template.ResourcePath(template.ErrorResource, "message"), &references.Reference{Value: "reference value"})
 			},
 			err: &specs.OnError{
 				Status: &specs.Property{
@@ -156,7 +157,7 @@ func TestErrorHandlingListener(t *testing.T) {
 							Type: types.Int64,
 						},
 						Reference: &specs.PropertyReference{
-							Resource: "error",
+							Resource: template.ErrorResource,
 							Path:     "status",
 						},
 					},
@@ -168,7 +169,7 @@ func TestErrorHandlingListener(t *testing.T) {
 							Type: types.String,
 						},
 						Reference: &specs.PropertyReference{
-							Resource: "error",
+							Resource: template.ErrorResource,
 							Path:     "message",
 						},
 					},
@@ -179,8 +180,8 @@ func TestErrorHandlingListener(t *testing.T) {
 		},
 		"input": {
 			caller: func(store references.Store) {
-				store.StoreValue("error", "status", int64(429))
-				store.StoreValue("input", "message", "reference value")
+				store.Store(template.ResourcePath(template.ErrorResource, "status"), &references.Reference{Value: int64(429)})
+				store.Store(template.ResourcePath(template.InputResource, "message"), &references.Reference{Value: "reference value"})
 			},
 			err: &specs.OnError{
 				Status: &specs.Property{
@@ -190,7 +191,7 @@ func TestErrorHandlingListener(t *testing.T) {
 							Type: types.Int64,
 						},
 						Reference: &specs.PropertyReference{
-							Resource: "error",
+							Resource: template.ErrorResource,
 							Path:     "status",
 						},
 					},
@@ -202,7 +203,7 @@ func TestErrorHandlingListener(t *testing.T) {
 							Type: types.String,
 						},
 						Reference: &specs.PropertyReference{
-							Resource: "input",
+							Resource: template.InputResource,
 							Path:     "message",
 						},
 					},

@@ -26,8 +26,8 @@ func encode(encoder *gojay.Encoder, path string, template specs.Template, store 
 
 func encodeKey(encoder *gojay.Encoder, path, key string, template specs.Template, store references.Store, tracker references.Tracker) {
 	typed := template.Type()
-	if typed == types.Message || typed == types.Array {
-		length := store.Length(path)
+	if (typed == types.Message || typed == types.Array) && template.Reference != nil {
+		length := store.Length(tracker.Resolve(template.Reference.String()))
 		if length == 0 {
 			return
 		}
@@ -35,7 +35,7 @@ func encodeKey(encoder *gojay.Encoder, path, key string, template specs.Template
 
 	switch {
 	case typed == types.Message:
-		encoder.AddObjectKey(key, NewObject(path, template, store, tracker))
+		encoder.AddObjectKeyOmitEmpty(key, NewObject(path, template, store, tracker))
 	case template.Repeated != nil:
 		encoder.AddArrayKey(key, NewArray(path, template, store, tracker))
 	case template.Enum != nil:

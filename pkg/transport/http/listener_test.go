@@ -734,7 +734,7 @@ func TestListenerErrorHandling(t *testing.T) {
 														Type: types.Int64,
 													},
 													Reference: &specs.PropertyReference{
-														Resource: "error",
+														Resource: template.ErrorResource,
 														Path:     "status",
 													},
 												},
@@ -748,7 +748,7 @@ func TestListenerErrorHandling(t *testing.T) {
 														Type: types.String,
 													},
 													Reference: &specs.PropertyReference{
-														Resource: "error",
+														Resource: template.ErrorResource,
 														Path:     "message",
 													},
 												},
@@ -805,7 +805,7 @@ func TestListenerErrorHandling(t *testing.T) {
 				"message": "value",
 			},
 			caller: func(store references.Store) {
-				store.Store(template.ResourcePath(template.ErrorResource, "message"), &references.Reference{Value: "value"})
+				store.Store(template.ResourcePath(template.InputResource, "message"), &references.Reference{Value: "value"})
 				store.Store(template.ResourcePath(template.ErrorResource, "status"), &references.Reference{Value: int64(404)})
 			},
 			err: &specs.OnError{
