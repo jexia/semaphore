@@ -5,6 +5,7 @@ import (
 
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/pkg/specs/template"
 )
 
 // Array represents an array of values/references.
@@ -14,7 +15,6 @@ type Array struct {
 	repeated   specs.Template
 	store      references.Store
 	tracker    references.Tracker
-	index      int
 }
 
 // NewArray constructs a new XML array encoder/decoder.
@@ -71,7 +71,7 @@ func (array *Array) MarshalXML(encoder *xml.Encoder, _ xml.StartElement) error {
 		if err := encodeElement(
 			encoder,
 			array.name,
-			array.path,
+			template.JoinPath(array.path, array.name),
 			array.template,
 			array.store,
 			array.tracker,
@@ -87,9 +87,13 @@ func (array *Array) MarshalXML(encoder *xml.Encoder, _ xml.StartElement) error {
 
 // UnmarshalXML decodes XML input into the receiver of type specs.Repeated.
 func (array *Array) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
-	index := array.store.Length(array.tracker.Resolve(array.path))
-	array.tracker.Track(array.path, index)
-	array.store.Define(array.tracker.Resolve(array.path), index+1)
+	var (
+		path  = template.JoinPath(array.path, array.name)
+		index = array.store.Length(array.tracker.Resolve(path))
+	)
+
+	array.tracker.Track(path, index)
+	array.store.Define(array.tracker.Resolve(path), index+1)
 
 	return decodeElement(
 		decoder,
