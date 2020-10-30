@@ -72,107 +72,17 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		return err
 	}
 
-	listner := graphql.Listener{}
-	err = listner.Handle(ctx, transporters, nil)
+	listener := graphql.Listener{}
+	err = listener.Handle(ctx, transporters, nil)
 	if err != nil {
 		return err
 	}
 
-	query := `
-    fragment FullType on __Type {
-		kind
-		name
-		fields(includeDeprecated: true) {
-		  name
-		  args {
-			...InputValue
-		  }
-		  type {
-			...TypeRef
-		  }
-		  isDeprecated
-		  deprecationReason
-		}
-		inputFields {
-		  ...InputValue
-		}
-		interfaces {
-		  ...TypeRef
-		}
-		enumValues(includeDeprecated: true) {
-		  name
-		  isDeprecated
-		  deprecationReason
-		}
-		possibleTypes {
-		  ...TypeRef
-		}
-	  }
-	  fragment InputValue on __InputValue {
-		name
-		type {
-		  ...TypeRef
-		}
-		defaultValue
-	  }
-	  fragment TypeRef on __Type {
-		kind
-		name
-		ofType {
-		  kind
-		  name
-		  ofType {
-			kind
-			name
-			ofType {
-			  kind
-			  name
-			  ofType {
-				kind
-				name
-				ofType {
-				  kind
-				  name
-				  ofType {
-					kind
-					name
-					ofType {
-					  kind
-					  name
-					}
-				  }
-				}
-			  }
-			}
-		  }
-		}
-	  }
-	  query IntrospectionQuery {
-		__schema {
-		  queryType {
-			name
-		  }
-		  mutationType {
-			name
-		  }
-		  types {
-			...FullType
-		  }
-		  directives {
-			name
-			locations
-			args {
-			  ...InputValue
-			}
-		  }
-		}
-	  }
-  `
-	schema := listner.Schema()
+	schema := listener.Schema()
 	params := gql.Params{Schema: schema, RequestString: query}
-	r := gql.Do(params)
+	response := gql.Do(params)
 
-	rJSON, _ := json.MarshalIndent(r, "", "    ")
+	rJSON, _ := json.MarshalIndent(response, "", "    ")
 	fmt.Printf("%s \n", rJSON)
 
 	return nil
