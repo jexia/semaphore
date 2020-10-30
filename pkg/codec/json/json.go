@@ -82,8 +82,9 @@ func (manager *Manager) Unmarshal(reader io.Reader, store references.Store) erro
 	}
 
 	var (
-		buff   = bufio.NewReader(reader)
-		_, err = buff.ReadByte()
+		buff    = bufio.NewReader(reader)
+		tracker = references.NewTracker()
+		_, err  = buff.ReadByte()
 	)
 
 	if err == io.EOF {
@@ -95,6 +96,12 @@ func (manager *Manager) Unmarshal(reader io.Reader, store references.Store) erro
 	var decoder = gojay.NewDecoder(buff)
 	defer decoder.Release()
 
-	tracker := references.NewTracker()
-	return decode(decoder, manager.root, manager.property.Template, store, tracker)
+	return decode(
+		decoder,
+		manager.property.Name,
+		manager.root,
+		manager.property.Template,
+		store,
+		tracker,
+	)
 }

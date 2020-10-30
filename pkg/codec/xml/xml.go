@@ -114,7 +114,7 @@ func (manager *Manager) Unmarshal(reader io.Reader, refs references.Store) error
 			if err := decodeElement(
 				decoder,
 				t,
-				manager.property.Name,
+				"",
 				fmt.Sprintf("%s:", manager.resource),
 				manager.property.Template,
 				refs,

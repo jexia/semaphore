@@ -154,11 +154,11 @@ func TestMarshal(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			refs := references.NewStore(len(test.input))
+			store := references.NewStore(len(test.input))
 			tracker := references.NewTracker()
-			references.StoreValues(refs, tracker, template.ResourcePath(template.InputResource), test.input)
+			references.StoreValues(store, tracker, template.ResourcePath(template.InputResource), test.input)
 
-			reader, err := manager.Marshal(refs)
+			reader, err := manager.Marshal(store)
 			if err != nil {
 				t.Error(err)
 			}
@@ -238,7 +238,7 @@ func TestUnmarshal(t *testing.T) {
 				Property: tests.PropInteger(),
 			},
 			expected: map[string]tests.Expect{
-				"integer": {},
+				"": {},
 			},
 		},
 		"scalar": {
@@ -249,7 +249,7 @@ func TestUnmarshal(t *testing.T) {
 				Property: tests.PropInteger(),
 			},
 			expected: map[string]tests.Expect{
-				"integer": {
+				"": {
 					Scalar: int32(42),
 				},
 			},
@@ -308,7 +308,7 @@ func TestUnmarshal(t *testing.T) {
 				Property: tests.PropEnum(),
 			},
 			expected: map[string]tests.Expect{
-				"status": {
+				"": {
 					Enum: func() *int32 { i := int32(1); return &i }(),
 				},
 			},
@@ -322,10 +322,10 @@ func TestUnmarshal(t *testing.T) {
 			),
 			schema: tests.SchemaObject,
 			expected: map[string]tests.Expect{
-				"root.status": {
+				"status": {
 					Enum: func() *int32 { i := int32(1); return &i }(),
 				},
-				"root.integer": {
+				"integer": {
 					Scalar: int32(42),
 				},
 			},
@@ -355,13 +355,13 @@ func TestUnmarshal(t *testing.T) {
 			),
 			schema: tests.SchemaObjectNested,
 			expected: map[string]tests.Expect{
-				"root.nested.status": {
+				"nested.status": {
 					Enum: func() *int32 { i := int32(1); return &i }(),
 				},
-				"root.nested.integer": {
+				"nested.integer": {
 					Scalar: int32(42),
 				},
-				"root.string": {
+				"string": {
 					Scalar: "foobar",
 				},
 			},
@@ -376,13 +376,13 @@ func TestUnmarshal(t *testing.T) {
 				Property: tests.PropArray(),
 			},
 			expected: map[string]tests.Expect{
-				"array[0]": {
+				"[0]": {
 					Scalar: "foo",
 				},
-				"array[1]": {
+				"[1]": {
 					Scalar: nil,
 				},
-				"array[2]": {
+				"[2]": {
 					Scalar: "bar",
 				},
 			},
@@ -398,16 +398,16 @@ func TestUnmarshal(t *testing.T) {
 			),
 			schema: tests.SchemaNestedArray,
 			expected: map[string]tests.Expect{
-				"root.integer": {
+				"integer": {
 					Scalar: int32(42),
 				},
-				"root.array[0]": {
+				"array[0]": {
 					Scalar: "foo",
 				},
-				"root.array[1]": {
+				"array[1]": {
 					Scalar: nil,
 				},
-				"root.array[2]": {
+				"array[2]": {
 					Scalar: "bar",
 				},
 			},
@@ -433,25 +433,25 @@ func TestUnmarshal(t *testing.T) {
 			),
 			schema: tests.SchemaObjectComplex,
 			expected: map[string]tests.Expect{
-				"root.repeating_string[0]": {
+				"repeating_string[0]": {
 					Scalar: "foo",
 				},
-				"root.repeating_string[1]": {
+				"repeating_string[1]": {
 					Scalar: "bar",
 				},
-				"root.message": {
+				"message": {
 					Scalar: "hello world",
 				},
-				"root.nested.first": {
+				"nested.first": {
 					Scalar: "foo",
 				},
-				"root.nested.second": {
+				"nested.second": {
 					Scalar: "bar",
 				},
-				"root.repeating[0].value": {
+				"repeating[0].value": {
 					Scalar: "repeating one",
 				},
-				"root.repeating[1].value": {
+				"repeating[1].value": {
 					Scalar: "repeating two",
 				},
 			},

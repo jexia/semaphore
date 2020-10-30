@@ -1,8 +1,6 @@
 package json
 
 import (
-	"log"
-
 	"github.com/francoispqt/gojay"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
@@ -19,15 +17,11 @@ type Array struct {
 
 // NewArray creates a new array to be JSON encoded/decoded.
 func NewArray(path string, template specs.Template, store references.Store, tracker references.Tracker) *Array {
-	log.Println("T REF:", template.Reference)
-
 	// TODO: find a better implementation/name
 	combi, err := template.Repeated.Template()
 	if err != nil {
 		panic(err)
 	}
-
-	log.Println("C REF:", combi.Reference)
 
 	return &Array{
 		path:     path,
@@ -69,8 +63,10 @@ func (array *Array) MarshalJSONArray(encoder *gojay.Encoder) {
 // UnmarshalJSONArray unmarshals the given specs into the configured reference store.
 func (array *Array) UnmarshalJSONArray(decoder *gojay.Decoder) error {
 	array.tracker.Track(array.path, decoder.Index())
-	array.store.Define(array.tracker.Resolve(array.path), decoder.Index()+1) // assuming that decoder increments by one
-	return decode(decoder, array.path, array.template, array.store, array.tracker)
+	var path = array.tracker.Resolve(array.path)
+	array.store.Define(path, decoder.Index()+1) // assuming that decoder increments by one
+
+	return decode(decoder, "todo", path, array.template, array.store, array.tracker)
 }
 
 // IsNil returns whether the given array is null or not.

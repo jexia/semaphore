@@ -541,11 +541,11 @@ func TestMarshal(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			refs := references.NewStore(len(test.input))
+			store := references.NewStore(len(test.input))
 			tracker := references.NewTracker()
-			references.StoreValues(refs, tracker, template.ResourcePath(template.InputResource), test.input)
+			references.StoreValues(store, tracker, template.ResourcePath(template.InputResource), test.input)
 
-			reader, err := manager.Marshal(refs)
+			reader, err := manager.Marshal(store)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -585,7 +585,7 @@ func TestUnmarshal(t *testing.T) {
 	type test struct {
 		input    string
 		schema   *specs.ParameterMap
-		expected tests.Expect
+		expected map[string]tests.Expect
 	}
 
 	testsCases := map[string]test{
@@ -599,171 +599,107 @@ func TestUnmarshal(t *testing.T) {
 		"array": {
 			input:  `[null,"bar"]`,
 			schema: tests.SchemaArrayDefaultEmpty,
-			expected: tests.Expect{
-				Nested: map[string]tests.Expect{
-					"array": {
-						Repeated: []tests.Expect{
-							{
-								Value: nil,
-							},
-							{
-								Value: "bar",
-							},
-						},
-					},
+			expected: map[string]tests.Expect{
+				"[0]": {
+					Scalar: nil,
+				},
+				"[1]": {
+					Scalar: "bar",
 				},
 			},
 		},
 		"array of arrays": {
 			input:  `[[null,"bar"]]`,
 			schema: tests.SchemaArrayOfArrays,
-			expected: tests.Expect{
-				Nested: map[string]tests.Expect{
-					"array": {
-						Repeated: []tests.Expect{
-							{
-								Repeated: []tests.Expect{
-									{
-										Value: nil,
-									},
-									{
-										Value: "bar",
-									},
-								},
-							},
-						},
-					},
+			expected: map[string]tests.Expect{
+				"[0][0]": {
+					Scalar: nil,
+				},
+				"[0][1]": {
+					Scalar: "bar",
 				},
 			},
 		},
 		"simple": {
 			input:  `{"message":"some message"}`,
 			schema: schema,
-			expected: tests.Expect{
-				Nested: map[string]tests.Expect{
-					"message": {
-						Value: "some message",
-					},
+			expected: map[string]tests.Expect{
+				"message": {
+					Scalar: "some message",
 				},
 			},
 		},
 		"nested": {
 			input:  `{"nested":{"value":"some message"}}`,
 			schema: schema,
-			expected: tests.Expect{
-				Nested: map[string]tests.Expect{
-					"nested.value": {
-						Value: "some message",
-					},
+			expected: map[string]tests.Expect{
+				"nested.value": {
+					Scalar: "some message",
 				},
 			},
 		},
 		"enum": {
 			input:  `{"enum":"PENDING"}`,
 			schema: schema,
-			expected: tests.Expect{
-				Nested: map[string]tests.Expect{
-					"enum": {
-						Enum: func() *int32 { i := int32(2); return &i }(),
-					},
+			expected: map[string]tests.Expect{
+				"enum": {
+					Enum: func() *int32 { i := int32(2); return &i }(),
 				},
 			},
 		},
 		"repeating_enum": {
 			input:  `{"repeating_enum":["UNKNOWN","PENDING"]}`,
 			schema: schema,
-			expected: tests.Expect{
-				Nested: map[string]tests.Expect{
-					"repeating_enum": {
-						Repeated: []tests.Expect{
-							{
-								Enum: func() *int32 { i := int32(1); return &i }(),
-							},
-							{
-								Enum: func() *int32 { i := int32(2); return &i }(),
-							},
-						},
-					},
+			expected: map[string]tests.Expect{
+				"repeating_enum[0]": {
+					Enum: func() *int32 { i := int32(1); return &i }(),
+				},
+				"repeating_enum[1]": {
+					Enum: func() *int32 { i := int32(2); return &i }(),
 				},
 			},
 		},
 		"repeating_values": {
 			input:  `{"repeating_values":["repeating one","repeating two"]}`,
 			schema: schema,
-			expected: tests.Expect{
-				Nested: map[string]tests.Expect{
-					"repeating_values": {
-						Repeated: []tests.Expect{
-							{
-								Value: "repeating one",
-							},
-							{
-								Value: "repeating two",
-							},
-						},
-					},
+			expected: map[string]tests.Expect{
+				"repeating_values[0]": {
+					Scalar: "repeating one",
+				},
+				"repeating_values[1]": {
+					Scalar: "repeating two",
 				},
 			},
 		},
 		"repeating objects": {
 			input:  `{"repeating":[{"value":"repeating one"},{"value":"repeating two"}]}`,
 			schema: schema,
-			expected: tests.Expect{
-				Nested: map[string]tests.Expect{
-					"repeating": {
-						Repeated: []tests.Expect{
-							{
-								Nested: map[string]tests.Expect{
-									"repeating.value": {
-										Value: "repeating one",
-									},
-								},
-							},
-							{
-								Nested: map[string]tests.Expect{
-									"repeating.value": {
-										Value: "repeating two",
-									},
-								},
-							},
-						},
-					},
+			expected: map[string]tests.Expect{
+				"repeating[0].value": {
+					Scalar: "repeating one",
+				},
+				"repeating[1].value": {
+					Scalar: "repeating two",
 				},
 			},
 		},
 		"complex": {
 			input:  `{"message":"hello world","nested":{"value":"hello nested world"},"repeating":[{"value":"repeating one"},{"value":"repeating two"}]}`,
 			schema: schema,
-			expected: tests.Expect{
-				Nested: map[string]tests.Expect{
-					"message": {
-						Value: "hello world",
-					},
-					"nested": {
-						Nested: map[string]tests.Expect{
-							"value": {
-								Value: "hello nested world",
-							},
-						},
-					},
-					"repeating": {
-						Repeated: []tests.Expect{
-							{
-								Nested: map[string]tests.Expect{
-									"repeating.value": {
-										Value: "repeating one",
-									},
-								},
-							},
-							{
-								Nested: map[string]tests.Expect{
-									"repeating.value": {
-										Value: "repeating two",
-									},
-								},
-							},
-						},
-					},
+			expected: map[string]tests.Expect{
+				"message": {
+					Scalar: "hello world",
+				},
+				"nested.value": {
+					Scalar: "hello nested world",
+				},
+
+				"repeating[0].value": {
+					Scalar: "repeating one",
+				},
+
+				"repeating[1].value": {
+					Scalar: "repeating two",
 				},
 			},
 		},
@@ -772,7 +708,7 @@ func TestUnmarshal(t *testing.T) {
 	for key, test := range testsCases {
 		t.Run(key, func(t *testing.T) {
 			constructor := &Constructor{}
-			manager, err := constructor.New("input", test.schema)
+			manager, err := constructor.New(template.InputResource, test.schema)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -784,7 +720,9 @@ func TestUnmarshal(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			// tests.Assert(t, "input:", store, test.expected)
+			for path, expect := range test.expected {
+				tests.Assert(t, template.InputResource, path, store, expect)
+			}
 		})
 	}
 }
