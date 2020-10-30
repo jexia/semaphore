@@ -98,7 +98,6 @@ func (manager *Manager) Unmarshal(reader io.Reader, store references.Store) erro
 
 	return decode(
 		decoder,
-		manager.property.Name,
 		manager.root,
 		manager.property.Template,
 		store,

@@ -44,7 +44,8 @@ func (object *Object) UnmarshalJSONObject(decoder *gojay.Decoder, key string) er
 	}
 
 	object.store.Define(object.path, len(object.template.Message))
-	return decode(decoder, "todo", template.JoinPath(object.path, key), property.Template, object.store, object.tracker)
+
+	return decode(decoder, template.JoinPath(object.path, key), property.Template, object.store, object.tracker)
 }
 
 // NKeys returns the amount of available keys inside the given object

@@ -63,10 +63,9 @@ func (array *Array) MarshalJSONArray(encoder *gojay.Encoder) {
 // UnmarshalJSONArray unmarshals the given specs into the configured reference store.
 func (array *Array) UnmarshalJSONArray(decoder *gojay.Decoder) error {
 	array.tracker.Track(array.path, decoder.Index())
-	var path = array.tracker.Resolve(array.path)
-	array.store.Define(path, decoder.Index()+1) // assuming that decoder increments by one
+	array.store.Define(array.path, decoder.Index()+1) // assuming that decoder increments by one
 
-	return decode(decoder, "todo", path, array.template, array.store, array.tracker)
+	return decode(decoder, array.tracker.Resolve(array.path), array.template, array.store, array.tracker)
 }
 
 // IsNil returns whether the given array is null or not.

@@ -6,7 +6,7 @@ import (
 	"github.com/jexia/semaphore/pkg/specs"
 )
 
-func decode(decoder *gojay.Decoder, key, path string, template specs.Template, store references.Store, tracker references.Tracker) error {
+func decode(decoder *gojay.Decoder, path string, template specs.Template, store references.Store, tracker references.Tracker) error {
 	switch {
 	case template.Message != nil:
 		return decoder.Object(NewObject(path, template, store, tracker))
