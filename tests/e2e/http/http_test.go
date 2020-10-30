@@ -54,6 +54,10 @@ func EchoRouter(t *testing.T) http.Handler {
 }
 
 func TestHTTPTransport(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
+
 	type test struct {
 		disabled  bool
 		title     string

@@ -48,6 +48,10 @@ func (*external) Post(_ context.Context, input *proto.Data) (*proto.Data, error)
 }
 
 func TestGRPCTransport(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode")
+	}
+
 	type test struct {
 		title     string
 		flow      string
