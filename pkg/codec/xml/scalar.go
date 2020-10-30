@@ -5,6 +5,7 @@ import (
 
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/pkg/specs/template"
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
@@ -72,13 +73,21 @@ func (scalar *Scalar) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement)
 					return err
 				}
 
-				scalar.store.Store(scalar.tracker.Resolve(scalar.path), &references.Reference{
-					Value: value,
-				})
+				scalar.store.Store(
+					scalar.tracker.Resolve(
+						template.JoinPath(scalar.path, scalar.name),
+					),
+					&references.Reference{Value: value},
+				)
 
 				state = waitForClose
 			case xml.EndElement:
-				scalar.store.Store(scalar.tracker.Resolve(scalar.path), new(references.Reference))
+				scalar.store.Store(
+					scalar.tracker.Resolve(
+						template.JoinPath(scalar.path, scalar.name),
+					),
+					new(references.Reference),
+				)
 				// scalar is closed with nil value
 				return nil
 			default:

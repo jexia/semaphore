@@ -5,7 +5,6 @@ import (
 	"errors"
 	"io"
 	"io/ioutil"
-	"log"
 	"strings"
 	"testing"
 
@@ -188,7 +187,7 @@ func TestUnmarshal(t *testing.T) {
 	type test struct {
 		input    io.Reader
 		schema   *specs.ParameterMap
-		expected tests.Expect
+		expected map[string]tests.Expect
 		error    error
 	}
 
@@ -238,12 +237,8 @@ func TestUnmarshal(t *testing.T) {
 			schema: &specs.ParameterMap{
 				Property: tests.PropInteger(),
 			},
-			expected: tests.Expect{
-				Nested: map[string]tests.Expect{
-					"integer": {
-						Value: nil,
-					},
-				},
+			expected: map[string]tests.Expect{
+				"integer": {},
 			},
 		},
 		"scalar": {
@@ -253,11 +248,9 @@ func TestUnmarshal(t *testing.T) {
 			schema: &specs.ParameterMap{
 				Property: tests.PropInteger(),
 			},
-			expected: tests.Expect{
-				Nested: map[string]tests.Expect{
-					"integer": {
-						Value: int32(42),
-					},
+			expected: map[string]tests.Expect{
+				"integer": {
+					Scalar: int32(42),
 				},
 			},
 		},
@@ -314,11 +307,9 @@ func TestUnmarshal(t *testing.T) {
 			schema: &specs.ParameterMap{
 				Property: tests.PropEnum(),
 			},
-			expected: tests.Expect{
-				Nested: map[string]tests.Expect{
-					"status": {
-						Enum: func() *int32 { i := int32(1); return &i }(),
-					},
+			expected: map[string]tests.Expect{
+				"status": {
+					Enum: func() *int32 { i := int32(1); return &i }(),
 				},
 			},
 		},
@@ -330,14 +321,12 @@ func TestUnmarshal(t *testing.T) {
 				</root>`,
 			),
 			schema: tests.SchemaObject,
-			expected: tests.Expect{
-				Nested: map[string]tests.Expect{
-					"root.status": {
-						Enum: func() *int32 { i := int32(1); return &i }(),
-					},
-					"root.integer": {
-						Value: int32(42),
-					},
+			expected: map[string]tests.Expect{
+				"root.status": {
+					Enum: func() *int32 { i := int32(1); return &i }(),
+				},
+				"root.integer": {
+					Scalar: int32(42),
 				},
 			},
 		},
@@ -365,17 +354,15 @@ func TestUnmarshal(t *testing.T) {
 				</root>`,
 			),
 			schema: tests.SchemaObjectNested,
-			expected: tests.Expect{
-				Nested: map[string]tests.Expect{
-					"root.nested.status": {
-						Enum: func() *int32 { i := int32(1); return &i }(),
-					},
-					"root.nested.integer": {
-						Value: int32(42),
-					},
-					"root.string": {
-						Value: "foobar",
-					},
+			expected: map[string]tests.Expect{
+				"root.nested.status": {
+					Enum: func() *int32 { i := int32(1); return &i }(),
+				},
+				"root.nested.integer": {
+					Scalar: int32(42),
+				},
+				"root.string": {
+					Scalar: "foobar",
 				},
 			},
 		},
@@ -388,21 +375,15 @@ func TestUnmarshal(t *testing.T) {
 			schema: &specs.ParameterMap{
 				Property: tests.PropArray(),
 			},
-			expected: tests.Expect{
-				Nested: map[string]tests.Expect{
-					"array": {
-						Repeated: []tests.Expect{
-							{
-								Value: "foo",
-							},
-							{
-								Value: nil,
-							},
-							{
-								Value: "bar",
-							},
-						},
-					},
+			expected: map[string]tests.Expect{
+				"array[0]": {
+					Scalar: "foo",
+				},
+				"array[1]": {
+					Scalar: nil,
+				},
+				"array[2]": {
+					Scalar: "bar",
 				},
 			},
 		},
@@ -416,24 +397,18 @@ func TestUnmarshal(t *testing.T) {
 				</root>`,
 			),
 			schema: tests.SchemaNestedArray,
-			expected: tests.Expect{
-				Nested: map[string]tests.Expect{
-					"root.integer": {
-						Value: int32(42),
-					},
-					"root.array": {
-						Repeated: []tests.Expect{
-							{
-								Value: "foo",
-							},
-							{
-								Value: nil,
-							},
-							{
-								Value: "bar",
-							},
-						},
-					},
+			expected: map[string]tests.Expect{
+				"root.integer": {
+					Scalar: int32(42),
+				},
+				"root.array[0]": {
+					Scalar: "foo",
+				},
+				"root.array[1]": {
+					Scalar: nil,
+				},
+				"root.array[2]": {
+					Scalar: "bar",
 				},
 			},
 		},
@@ -457,45 +432,27 @@ func TestUnmarshal(t *testing.T) {
 			</root>`,
 			),
 			schema: tests.SchemaObjectComplex,
-			expected: tests.Expect{
-				Nested: map[string]tests.Expect{
-					"root.repeating_string": {
-						Repeated: []tests.Expect{
-							{
-								Value: "foo",
-							},
-							{
-								Value: "bar",
-							},
-						},
-					},
-					"root.message": {
-						Value: "hello world",
-					},
-					"root.nested.first": {
-						Value: "foo",
-					},
-					"root.nested.second": {
-						Value: "bar",
-					},
-					"root.repeating": {
-						Repeated: []tests.Expect{
-							{
-								Nested: map[string]tests.Expect{
-									"value": {
-										Value: "repeating one",
-									},
-								},
-							},
-							{
-								Nested: map[string]tests.Expect{
-									"value": {
-										Value: "repeating two",
-									},
-								},
-							},
-						},
-					},
+			expected: map[string]tests.Expect{
+				"root.repeating_string[0]": {
+					Scalar: "foo",
+				},
+				"root.repeating_string[1]": {
+					Scalar: "bar",
+				},
+				"root.message": {
+					Scalar: "hello world",
+				},
+				"root.nested.first": {
+					Scalar: "foo",
+				},
+				"root.nested.second": {
+					Scalar: "bar",
+				},
+				"root.repeating[0].value": {
+					Scalar: "repeating one",
+				},
+				"root.repeating[1].value": {
+					Scalar: "repeating two",
 				},
 			},
 		},
@@ -531,12 +488,9 @@ func TestUnmarshal(t *testing.T) {
 				}
 			}
 
-			log.Printf("REFERENCE STORE: %+v", store)
-
-			// log.Println("MSG: ", refs.Load("input.message"))
-			// log.Println("OUTPUT:", string(bb))
-
-			// tests.Assert(t, "mock", "", store, test.expected)
+			for path, expected := range test.expected {
+				tests.Assert(t, template.InputResource, path, store, expected)
+			}
 		})
 	}
 }

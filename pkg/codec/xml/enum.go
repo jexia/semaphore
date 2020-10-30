@@ -5,6 +5,7 @@ import (
 
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/pkg/specs/template"
 )
 
 // Enum is a vrapper over specs.Enum providing XML encoding/decoding.
@@ -85,13 +86,23 @@ func (enum *Enum) UnmarshalXML(decoder *xml.Decoder, _ xml.StartElement) error {
 					return errUnknownEnum(t)
 				}
 
-				enum.store.Store(enum.tracker.Resolve(enum.path), &references.Reference{
-					Enum: &enumValue.Position,
-				})
+				enum.store.Store(
+					enum.tracker.Resolve(
+						template.JoinPath(enum.path, enum.name),
+					),
+					&references.Reference{
+						Enum: &enumValue.Position,
+					},
+				)
 
 				state = waitForClose
 			case xml.EndElement:
-				enum.store.Store(enum.tracker.Resolve(enum.path), new(references.Reference))
+				enum.store.Store(
+					enum.tracker.Resolve(
+						template.JoinPath(enum.path, enum.name),
+					),
+					new(references.Reference),
+				)
 
 				// enum is closed with nil value
 				return nil
