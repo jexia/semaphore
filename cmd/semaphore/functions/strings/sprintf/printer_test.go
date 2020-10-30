@@ -121,6 +121,10 @@ func TestTokensPrint(t *testing.T) {
 								Scalar: &specs.Scalar{
 									Type: types.Float,
 								},
+								Reference: &specs.PropertyReference{
+									Resource: template.InputResource,
+									Path:     "array",
+								},
 							},
 						},
 					},

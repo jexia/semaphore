@@ -182,7 +182,13 @@ var schema = &specs.ParameterMap{
 							Path:     "repeating_enum",
 						},
 						Repeated: specs.Repeated{
-							{Enum: enum},
+							{
+								Reference: &specs.PropertyReference{
+									Resource: template.InputResource,
+									Path:     "repeating_enum",
+								},
+								Enum: enum,
+							},
 						},
 					},
 				},

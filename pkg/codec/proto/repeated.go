@@ -69,8 +69,11 @@ func (tmpl Repeated) Marshal(message *dynamic.Message, field *desc.FieldDescript
 
 // Unmarshal unmarshals the given repeated field into the given reference store.
 func (tmpl Repeated) Unmarshal(protobuf *dynamic.Message, field *desc.FieldDescriptor, path string, store references.Store, tracker references.Tracker) {
+	tpath := tracker.Resolve(path)
+
 	length := protobuf.FieldLength(field)
-	store.Define(tracker.Resolve(path), length)
+	store.Define(tpath, length)
+	tracker.Track(tpath, 0)
 
 	for index := 0; index < length; index++ {
 		value := protobuf.GetRepeatedField(field, index)
@@ -80,7 +83,9 @@ func (tmpl Repeated) Unmarshal(protobuf *dynamic.Message, field *desc.FieldDescr
 			message := value.(*dynamic.Message)
 			Message(tmpl).Unmarshal(message, path, store, tracker)
 		default:
-			Field(tmpl).Unmarshal(protobuf, field, path, store, tracker)
+			Field(tmpl).Unmarshal(value, path, store, tracker)
 		}
+
+		tracker.Next(tpath)
 	}
 }

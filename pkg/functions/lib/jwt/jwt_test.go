@@ -8,7 +8,6 @@ import (
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/labels"
-	"github.com/jexia/semaphore/pkg/specs/template"
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
@@ -98,7 +97,7 @@ func TestExecutable(t *testing.T) {
 			t.Errorf("uexpected error: %s", err)
 		}
 
-		subject := store.Load(template.ResourcePath(propSubject))
+		subject := store.Load(propSubject)
 		if subject == nil {
 			t.Error("subject must be stored")
 		}

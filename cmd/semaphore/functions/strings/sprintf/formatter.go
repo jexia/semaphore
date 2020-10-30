@@ -32,7 +32,7 @@ func init() {
 }
 
 // Formatter is a function to be called in order to format the argument value.
-type Formatter func(store references.Store, argument *specs.Property) (string, error)
+type Formatter func(store references.Store, tracker references.Tracker, argument *specs.Property) (string, error)
 
 // TypeChecker determines if the provided type can be formatted by the formatter.
 type TypeChecker interface {
@@ -54,7 +54,7 @@ type ValueFormatter func(Precision, interface{}) (string, error)
 // FormatWithFunc does common operations (e.g. retrieves scalar value from the reference store).
 func FormatWithFunc(valueFormatter ValueFormatter) func(Precision) Formatter {
 	return func(precision Precision) Formatter {
-		return func(store references.Store, argument *specs.Property) (string, error) {
+		return func(store references.Store, tracker references.Tracker, argument *specs.Property) (string, error) {
 			var value interface{}
 
 			if argument.Scalar != nil {
@@ -62,7 +62,7 @@ func FormatWithFunc(valueFormatter ValueFormatter) func(Precision) Formatter {
 			}
 
 			if argument.Reference != nil {
-				if ref := store.Load(argument.Reference.String()); ref != nil {
+				if ref := store.Load(tracker.Resolve(argument.Reference.String())); ref != nil {
 					value = ref.Value
 				}
 			}

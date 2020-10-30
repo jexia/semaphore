@@ -191,7 +191,7 @@ func TestUnmarshal(t *testing.T) {
 		error    error
 	}
 
-	testCases := map[string]test{
+	cases := map[string]test{
 		"empty scalar with unexpected element": {
 			input: strings.NewReader(
 				"<integer><unexpected></integer>",
@@ -458,7 +458,7 @@ func TestUnmarshal(t *testing.T) {
 		},
 	}
 
-	for title, test := range testCases {
+	for title, test := range cases {
 		t.Run(title, func(t *testing.T) {
 			xml := NewConstructor()
 			if xml == nil {

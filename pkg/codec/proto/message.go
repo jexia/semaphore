@@ -91,7 +91,7 @@ func (tmpl Message) Unmarshal(protobuf *dynamic.Message, path string, store refe
 			nested := protobuf.GetField(field).(*dynamic.Message)
 			Message(property.Template).Unmarshal(nested, path, store, tracker)
 		default:
-			Field(tmpl).Unmarshal(protobuf, field, path, store, tracker)
+			Field(property.Template).Unmarshal(protobuf.GetField(field), path, store, tracker)
 		}
 	}
 }

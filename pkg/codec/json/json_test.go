@@ -588,7 +588,7 @@ func TestUnmarshal(t *testing.T) {
 		expected map[string]tests.Expect
 	}
 
-	testsCases := map[string]test{
+	cases := map[string]test{
 		"nil schema": {
 			schema: new(specs.ParameterMap),
 		},
@@ -705,7 +705,7 @@ func TestUnmarshal(t *testing.T) {
 		},
 	}
 
-	for key, test := range testsCases {
+	for key, test := range cases {
 		t.Run(key, func(t *testing.T) {
 			constructor := &Constructor{}
 			manager, err := constructor.New(template.InputResource, test.schema)

@@ -20,6 +20,7 @@ func (tokens Tokens) Print(store references.Store, args ...*specs.Property) (str
 	var (
 		verbPos int
 		builder strings.Builder
+		tracker = references.NewTracker()
 	)
 
 	for _, token := range tokens {
@@ -29,7 +30,7 @@ func (tokens Tokens) Print(store references.Store, args ...*specs.Property) (str
 				return "", err
 			}
 		case Verb:
-			str, err := t.Formatter(store, args[verbPos])
+			str, err := t.Formatter(store, tracker, args[verbPos])
 			if err != nil {
 				return "", err
 			}

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/jexia/semaphore/pkg/lookup"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/template"
 )
@@ -56,8 +57,13 @@ func (store *store) Store(path string, reference *Reference) {
 	store.mutex.Unlock()
 }
 
-// Load attempts to load the defined value for the given path
+// Load attempts to load the defined value for the given path.
+// If the path ends with a self reference (.) is it trimmed off.
 func (store *store) Load(path string) *Reference {
+	if len(path) > 0 && string(path[len(path)-1]) == lookup.SelfRef {
+		path = path[:len(path)-1]
+	}
+
 	store.mutex.RLock()
 	ref, has := store.values[path]
 	store.mutex.RUnlock()

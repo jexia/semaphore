@@ -4,7 +4,6 @@ import (
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jhump/protoreflect/desc"
-	"github.com/jhump/protoreflect/dynamic"
 )
 
 // TrySetter represents a protoreflect setter used to define various values
@@ -48,10 +47,9 @@ func (tmpl Field) Marshal(setter TrySetter, field *desc.FieldDescriptor, store r
 }
 
 // Unmarshal unmarshals the given protobuffer field into the given reference store.
-func (tmpl Field) Unmarshal(protobuf *dynamic.Message, field *desc.FieldDescriptor, path string, store references.Store, tracker references.Tracker) {
+func (tmpl Field) Unmarshal(value interface{}, path string, store references.Store, tracker references.Tracker) {
 	switch {
 	case tmpl.Enum != nil:
-		value := protobuf.GetField(field)
 		enum, is := value.(int32)
 		if !is {
 			break
@@ -59,7 +57,6 @@ func (tmpl Field) Unmarshal(protobuf *dynamic.Message, field *desc.FieldDescript
 
 		store.Store(tracker.Resolve(path), &references.Reference{Enum: &enum})
 	case tmpl.Scalar != nil:
-		value := protobuf.GetField(field)
 		store.Store(tracker.Resolve(path), &references.Reference{Value: value})
 	}
 }

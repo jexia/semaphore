@@ -7,9 +7,11 @@ func JoinPath(values ...string) (result string) {
 			continue
 		}
 
-		suffix := string(result[len(result)-1])
-		if len(result) > 0 && (suffix != "." && suffix != ":") {
-			result += "."
+		if len(result) > 0 {
+			suffix := string(result[len(result)-1])
+			if len(result) > 0 && (suffix != "." && suffix != ":") {
+				result += "."
+			}
 		}
 
 		result += value
