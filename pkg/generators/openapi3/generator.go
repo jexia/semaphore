@@ -7,13 +7,15 @@ import (
 	"strings"
 
 	"github.com/jexia/semaphore/pkg/generators/openapi3/types"
+	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/labels"
+	"github.com/jexia/semaphore/pkg/specs/template"
 	transport "github.com/jexia/semaphore/pkg/transport/http"
 )
 
 // Generate generates a openapi v3.0 specification object
-func Generate(endpoints specs.EndpointList, flows specs.FlowListInterface) (*Object, error) {
+func Generate(endpoints specs.EndpointList, flows specs.FlowListInterface, option Options) (*Object, error) {
 	result := Object{
 		Version: "3.0.0",
 	}
@@ -29,7 +31,7 @@ func Generate(endpoints specs.EndpointList, flows specs.FlowListInterface) (*Obj
 			continue
 		}
 
-		err := IncludeEndpoint(&result, endpoint, flow)
+		err := IncludeEndpoint(&result, endpoint, flow, option)
 		if err != nil {
 			return nil, err
 		}
@@ -39,7 +41,7 @@ func Generate(endpoints specs.EndpointList, flows specs.FlowListInterface) (*Obj
 }
 
 // IncludeEndpoint includes the given endpoint into the object paths
-func IncludeEndpoint(object *Object, endpoint *specs.Endpoint, flow specs.FlowInterface) error {
+func IncludeEndpoint(object *Object, endpoint *specs.Endpoint, flow specs.FlowInterface, option Options) error {
 	options, err := transport.ParseEndpointOptions(endpoint.Options)
 	if err != nil {
 		return err
@@ -62,7 +64,7 @@ func IncludeEndpoint(object *Object, endpoint *specs.Endpoint, flow specs.FlowIn
 		object.Paths[path] = &PathItem{}
 	}
 
-	operation := GenerateOperation(object, endpoint, options, flow)
+	operation := GenerateOperation(object, endpoint, options, flow, option)
 	result := object.Paths[path]
 
 	switch options.Method {
@@ -88,7 +90,7 @@ func IncludeEndpoint(object *Object, endpoint *specs.Endpoint, flow specs.FlowIn
 }
 
 // GenerateOperation generates a operation object from the given endpoint and options
-func GenerateOperation(object *Object, endpoint *specs.Endpoint, options *transport.EndpointOptions, flow specs.FlowInterface) *Operation {
+func GenerateOperation(object *Object, endpoint *specs.Endpoint, options *transport.EndpointOptions, flow specs.FlowInterface, option Options) *Operation {
 	input := flow.GetInput()
 	output := flow.GetOutput()
 	result := &Operation{}
@@ -115,17 +117,32 @@ func GenerateOperation(object *Object, endpoint *specs.Endpoint, options *transp
 		}
 
 		if input.Property != nil && flow.GetForward() == nil && RequiresRequestBody(options.Method) {
+			name := input.Schema
+
+			if !option.Has(IncludeNotReferenced) {
+				// NOTE: we have to generate a unique schema name for the newly generated input
+				name = flow.GetName() + "Input"
+			}
+
 			result.RequestBody = &RequestBody{
 				Content: map[string]MediaType{
 					string(transport.ApplicationJSON): {
 						Schema: Schema{
-							Reference: fmt.Sprintf("#/components/schemas/%s", input.Schema),
+							Reference: fmt.Sprintf("#/components/schemas/%s", name),
 						},
 					},
 				},
 			}
 
-			IncludeParameterMap(object, input)
+			parameters := input
+
+			if !option.Has(IncludeNotReferenced) {
+				paths := references.ReferencedResourcePaths(flow, template.InputResource)
+				parameters = references.ReferencedParameterMapPaths(paths, input)
+				parameters.Schema = name
+			}
+
+			IncludeParameterMap(object, parameters)
 		}
 	}
 
@@ -200,7 +217,7 @@ func GenerateSchema(description string, property specs.Template) *Schema {
 		result.Default = property.Scalar.Default
 
 		break
-	case property.Message != nil:
+	case property.Message != nil && len(property.Message) > 0:
 		result.Properties = make(map[string]*Schema, len(property.Message))
 
 		for _, nested := range property.Message {

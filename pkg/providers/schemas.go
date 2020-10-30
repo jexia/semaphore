@@ -161,6 +161,39 @@ func DefineCall(ctx *broker.Context, services specs.ServiceList, schemas specs.S
 	return nil
 }
 
+// ResolveParameterMap ensures that all schema properties are defined inisde the given parameter map
+func ResolveParameterMap(ctx *broker.Context, schemas specs.Schemas, params *specs.ParameterMap, flow specs.FlowInterface) (err error) {
+	if params == nil || params.Schema == "" {
+		return nil
+	}
+
+	schema := schemas.Get(params.Schema)
+	if schema == nil {
+		return ErrUndefinedObject{
+			Schema: params.Schema,
+		}
+	}
+
+	err = ResolveProperty(params.Property, schema.Clone(), flow)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ResolveOnError ensures that all schema properties are defined inside the given on error object
+func ResolveOnError(ctx *broker.Context, schemas specs.Schemas, params *specs.OnError, flow specs.FlowInterface) (err error) {
+	if params.Response != nil {
+		err = ResolveParameterMap(ctx, schemas, params.Response, flow)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func resolveMessage(message, schema specs.Message, flow specs.FlowInterface) error {
 	for _, nested := range message {
 		if nested == nil {
@@ -270,39 +303,6 @@ func ResolveProperty(property, schema *specs.Property, flow specs.FlowInterface)
 		setRepeated(property.Repeated, schema.Repeated)
 
 		break
-	}
-
-	return nil
-}
-
-// ResolveParameterMap ensures that all schema properties are defined inisde the given parameter map
-func ResolveParameterMap(ctx *broker.Context, schemas specs.Schemas, params *specs.ParameterMap, flow specs.FlowInterface) (err error) {
-	if params == nil || params.Schema == "" {
-		return nil
-	}
-
-	schema := schemas.Get(params.Schema)
-	if schema == nil {
-		return ErrUndefinedObject{
-			Schema: params.Schema,
-		}
-	}
-
-	err = ResolveProperty(params.Property, schema.Clone(), flow)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// ResolveOnError ensures that all schema properties are defined inside the given on error object
-func ResolveOnError(ctx *broker.Context, schemas specs.Schemas, params *specs.OnError, flow specs.FlowInterface) (err error) {
-	if params.Response != nil {
-		err = ResolveParameterMap(ctx, schemas, params.Response, flow)
-		if err != nil {
-			return err
-		}
 	}
 
 	return nil
