@@ -56,8 +56,8 @@ func main() {
 		panic(err)
 	}
 
-	err = client.Serve()
-	if err != nil {
+	_, errs := client.Serve()
+	if err := <-errs; err != nil {
 		panic(err)
 	}
 }

@@ -14,8 +14,6 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-var flags = &config.Daemon{}
-
 // Command represents the semaphore daemon command
 var Command = &cobra.Command{
 	Use:   "openapi3",
@@ -27,18 +25,28 @@ var Command = &cobra.Command{
 }
 
 func init() {
-	Command.PersistentFlags().StringSliceVar(&flags.Protobuffers, "proto", []string{}, "If set are all proto definitions found inside the given path passed as schema definitions, all proto definitions are also passed as imports")
-	Command.PersistentFlags().StringSliceVarP(&flags.Files, "file", "f", []string{"config.hcl"}, "Parses the given file as a definition file")
-	Command.PersistentFlags().StringVar(&flags.LogLevel, "level", "warn", "Global logging level, this value will override the defined log level inside the file definitions")
+
 }
 
 func run(cmd *cobra.Command, args []string) (err error) {
+	flags := &config.Daemon{}
+
+	cmd.PersistentFlags().StringSliceVarP(&flags.Protobuffers, "protobuffers", "pb", []string{}, "If set are all proto definitions found inside the given path passed as schema definitions, all proto definitions are also passed as imports")
+	cmd.PersistentFlags().StringSliceVarP(&flags.Files, "file", "f", []string{"config.hcl"}, "Parses the given file as a definition file")
+	cmd.PersistentFlags().StringVar(&flags.LogLevel, "level", "warn", "Global logging level, this value will override the defined log level inside the file definitions")
+	includeNotReferenced := *cmd.PersistentFlags().Bool("include-not-referenced", false, "Include not referenced properties into the generated OpenAPI3 schema")
 
 	defer func() {
 		if err != nil {
 			err = prettyerr.StandardErr(err)
 		}
 	}()
+
+	options := openapi3.DefaultOption
+
+	if includeNotReferenced {
+		options = options | openapi3.IncludeNotReferenced
+	}
 
 	ctx := logger.WithLogger(broker.NewContext())
 	err = config.SetOptions(ctx, flags)
@@ -61,7 +69,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		return err
 	}
 
-	object, err := openapi3.Generate(collection.EndpointList, collection.FlowListInterface)
+	object, err := openapi3.Generate(collection.EndpointList, collection.FlowListInterface, options)
 	if err != nil {
 		return err
 	}
