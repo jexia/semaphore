@@ -1,4 +1,4 @@
-package e2e
+package http
 
 import (
 	"bytes"
@@ -14,26 +14,21 @@ import (
 	"testing"
 
 	"github.com/jexia/semaphore"
-	"github.com/jexia/semaphore/cmd/semaphore/daemon"
 	"github.com/jexia/semaphore/cmd/semaphore/daemon/providers"
-	"github.com/jexia/semaphore/cmd/semaphore/middleware"
-	"github.com/jexia/semaphore/pkg/broker"
-	"github.com/jexia/semaphore/pkg/broker/logger"
 	codecJSON "github.com/jexia/semaphore/pkg/codec/json"
-	codecProto "github.com/jexia/semaphore/pkg/codec/proto"
 	codecXML "github.com/jexia/semaphore/pkg/codec/xml"
-	"github.com/jexia/semaphore/pkg/providers/hcl"
-	"github.com/jexia/semaphore/pkg/providers/protobuffers"
-	transport "github.com/jexia/semaphore/pkg/transport/http"
+	transportHTTP "github.com/jexia/semaphore/pkg/transport/http"
+	"github.com/jexia/semaphore/tests/e2e"
 )
 
 const (
-	semaphorePort = 8080
-	semaphoreHost = "http://localhost"
+	SemaphorePort = 8080
+	SemaphoreHost = "localhost"
 )
 
-var semaphoreURL = fmt.Sprintf("%s:%d", semaphoreHost, semaphorePort)
+var SemaphoreHTTPAddr = fmt.Sprintf("%s:%d", SemaphoreHost, SemaphorePort)
 
+// EchoHandler creates an HTTP handler that returns the request body as a response.
 func EchoHandler(t *testing.T) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
@@ -48,6 +43,7 @@ func EchoHandler(t *testing.T) http.HandlerFunc {
 	}
 }
 
+// EchoRouter creates an HTTP router for testing.
 func EchoRouter(t *testing.T) http.Handler {
 	var mux = http.NewServeMux()
 
@@ -57,43 +53,11 @@ func EchoRouter(t *testing.T) http.Handler {
 	return mux
 }
 
-func Semaphore(t *testing.T, flow, schema string) *daemon.Client {
-	ctx := logger.WithLogger(broker.NewContext())
-
-	core, err := semaphore.NewOptions(ctx,
-		semaphore.WithLogLevel("*", "error"),
-		semaphore.WithFlows(hcl.FlowsResolver(flow)),
-		semaphore.WithCodec(codecXML.NewConstructor()),
-		semaphore.WithCodec(codecJSON.NewConstructor()),
-		semaphore.WithCodec(codecProto.NewConstructor()),
-		semaphore.WithCaller(transport.NewCaller()),
-	)
-
-	if err != nil {
-		t.Fatalf("cannot instantiate semaphore core: %s", err)
+func TestHTTPTransport(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
 	}
 
-	options, err := providers.NewOptions(ctx, core,
-		providers.WithEndpoints(hcl.EndpointsResolver(flow)),
-		providers.WithSchema(protobuffers.SchemaResolver([]string{"./proto"}, schema)),
-		providers.WithServices(protobuffers.ServiceResolver([]string{"./proto"}, schema)),
-		providers.WithListener(transport.NewListener(fmt.Sprintf(":%d", semaphorePort))),
-		providers.WithAfterConstructor(middleware.ServiceSelector(flow)),
-	)
-
-	if err != nil {
-		t.Fatalf("unable to configure provider options: %s", err)
-	}
-
-	client, err := daemon.NewClient(ctx, core, options)
-	if err != nil {
-		t.Fatalf("failed to create a semaphore instance: %s", err)
-	}
-
-	return client
-}
-
-func TestSemaphore(t *testing.T) {
 	type test struct {
 		disabled  bool
 		title     string
@@ -114,7 +78,7 @@ func TestSemaphore(t *testing.T) {
 			path:   "json",
 			request: func(t *testing.T) []byte {
 				var body = map[string]map[string]interface{}{
-					"data": map[string]interface{}{
+					"data": {
 						"enum":    "ON",
 						"string":  "foo",
 						"integer": 42,
@@ -169,7 +133,7 @@ func TestSemaphore(t *testing.T) {
 			path: "json",
 			request: func(t *testing.T) []byte {
 				var body = map[string]map[string]interface{}{
-					"data": map[string]interface{}{
+					"data": {
 						"enum":    "ON",
 						"string":  "foo",
 						"integer": 42,
@@ -300,8 +264,18 @@ func TestSemaphore(t *testing.T) {
 			}
 
 			var (
-				semaphore = Semaphore(t, test.flow, test.schema)
-				path      = fmt.Sprintf("%s/%s", semaphoreURL, test.path)
+				config = e2e.Config{
+					SemaphoreOptions: []semaphore.Option{
+						semaphore.WithCodec(codecXML.NewConstructor()),
+						semaphore.WithCodec(codecJSON.NewConstructor()),
+						semaphore.WithCaller(transportHTTP.NewCaller()),
+					},
+					ProviderOptions: []providers.Option{
+						providers.WithListener(transportHTTP.NewListener(fmt.Sprintf(":%d", SemaphorePort))),
+					},
+				}
+				semaphore = e2e.Instance(t, test.flow, test.schema, config)
+				path      = fmt.Sprintf("http://%s/%s", SemaphoreHTTPAddr, test.path)
 				ctype     = fmt.Sprintf("application/%s", test.path)
 				request   = bytes.NewBuffer(test.request)
 			)
@@ -313,7 +287,7 @@ func TestSemaphore(t *testing.T) {
 			select {
 			case <-ready:
 			case err := <-errs:
-				t.Logf("error happened: %s", err)
+				t.Fatalf("error happened: %s", err)
 			}
 
 			res, err := http.Post(path, ctype, request)
