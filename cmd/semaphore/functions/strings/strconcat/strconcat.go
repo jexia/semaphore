@@ -44,7 +44,7 @@ func Function(args ...*specs.Property) (*specs.Property, functions.Exec, error) 
 			}
 
 			if arg.Reference != nil {
-				ref := store.Load(arg.Reference.Resource, arg.Reference.Path)
+				ref := store.Load(arg.Reference.String())
 				if ref != nil {
 					value = ref.Value.(string)
 				}
@@ -56,7 +56,7 @@ func Function(args ...*specs.Property) (*specs.Property, functions.Exec, error) 
 			}
 		}
 
-		store.StoreValue("", ".", result.String())
+		store.Store("", &references.Reference{Value: result.String()})
 		return nil
 	}
 
