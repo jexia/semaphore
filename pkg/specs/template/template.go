@@ -141,9 +141,10 @@ func ParseContent(path string, name string, content string) (*specs.Property, er
 	}
 
 	return &specs.Property{
-		Name: name,
-		Path: path,
-		Raw:  content,
+		Name:     name,
+		Path:     path,
+		Raw:      content,
+		Template: new(specs.Template),
 	}, nil
 }
 

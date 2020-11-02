@@ -1,8 +1,6 @@
 package specs
 
 import (
-	"fmt"
-
 	"github.com/jexia/semaphore/pkg/specs/metadata"
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
@@ -93,7 +91,17 @@ func (template Template) Compare(expected *Template) (err error) {
 }
 
 func (template *Template) compare(seen map[string]*Template, expected *Template) (err error) {
+	if template.Identifier != "" {
+		if _, ok := seen[template.Identifier]; ok {
+			return nil
+		}
+
+		seen[template.Identifier] = template
+	}
+
 	switch {
+	case template != nil && expected == nil:
+		err = errNilTemplate
 	case expected.Repeated != nil:
 		err = template.Repeated.compare(seen, expected.Repeated)
 	case expected.Scalar != nil:
@@ -105,7 +113,7 @@ func (template *Template) compare(seen map[string]*Template, expected *Template)
 	}
 
 	if err != nil {
-		return fmt.Errorf("type mismatch: %w", err)
+		return errTypeMismatch{err}
 	}
 
 	return nil

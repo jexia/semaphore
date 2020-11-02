@@ -19,7 +19,8 @@ func TestErrUndefinedReference_Prettify(t *testing.T) {
 		expr := SomeExpression{}
 		err := ErrUndefinedReference{
 			Property: &specs.Property{
-				Expr: expr,
+				Expr:     expr,
+				Template: new(specs.Template),
 			},
 		}
 
@@ -34,7 +35,9 @@ func TestErrUndefinedReference_Prettify(t *testing.T) {
 
 	t.Run("does not include nil Expression in details", func(t *testing.T) {
 		err := ErrUndefinedReference{
-			Property: &specs.Property{},
+			Property: &specs.Property{
+				Template: new(specs.Template),
+			},
 		}
 
 		pretty := err.Prettify().Details
