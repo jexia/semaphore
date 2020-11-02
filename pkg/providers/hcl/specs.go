@@ -700,10 +700,11 @@ func ParseIntermediateProperty(ctx *broker.Context, path string, property *hcl.A
 	fqpath := template.JoinPath(path, property.Name)
 	typed := value.Type()
 	result := &specs.Property{
-		Name:  property.Name,
-		Path:  fqpath,
-		Expr:  &Expression{property.Expr},
-		Label: labels.Optional,
+		Name:     property.Name,
+		Path:     fqpath,
+		Expr:     &Expression{property.Expr},
+		Label:    labels.Optional,
+		Template: new(specs.Template),
 	}
 
 	switch {
