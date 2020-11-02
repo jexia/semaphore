@@ -8,4 +8,4 @@ package specs
 //   {Message: &Message{...}},
 // }
 // A given value must be one of these types: string, int32 or the message.
-type OneOf []Template
+type OneOf []*Template
