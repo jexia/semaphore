@@ -1,9 +1,6 @@
 package proto
 
 import (
-	"fmt"
-
-	"github.com/jexia/semaphore/pkg/prettyerr"
 	"github.com/jexia/semaphore/pkg/providers/protobuffers"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/types"
@@ -11,25 +8,50 @@ import (
 	"github.com/jhump/protoreflect/desc/builder"
 )
 
-// NewMessage attempts to construct a new proto message descriptor for the given specs property
-func NewMessage(resource string, message specs.Message) (*desc.MessageDescriptor, error) {
-	msg := builder.NewMessage(resource)
-	err := ConstructMessage(msg, message)
+// NewMessage attempts to construct a new proto descriptor for the given property.
+func NewMessage(property *specs.Property) (*desc.MessageDescriptor, error) {
+	builder, _, err := newMessage(
+		make(map[string]*builder.MessageBuilder),
+		property.Name,
+		property,
+	)
 	if err != nil {
 		return nil, err
 	}
 
-	return msg.Build()
+	if err := builder.TrySetName(property.Name); err != nil {
+		return nil, err
+	}
+
+	return builder.Build()
+}
+
+func newMessage(builders map[string]*builder.MessageBuilder, name string, property *specs.Property) (*builder.MessageBuilder, bool, error) {
+	if property.Template.Identifier != "" {
+		existing, ok := builders[property.Template.Identifier]
+		if ok {
+			return existing, true, nil
+		}
+	}
+
+	builder := builder.NewMessage(name)
+	builders[property.Template.Identifier] = builder
+
+	if err := constructMessage(builders, builder, property.Message); err != nil {
+		return nil, false, err
+	}
+
+	return builder, false, nil
 }
 
 // ConstructMessage constructs a proto message of the given specs into the given message builders
-func ConstructMessage(message *builder.MessageBuilder, spec specs.Message) (err error) {
-	if spec == nil {
-		return nil
-	}
+func ConstructMessage(messageBuilder *builder.MessageBuilder, message specs.Message) (err error) {
+	return constructMessage(make(map[string]*builder.MessageBuilder), messageBuilder, message)
+}
 
-	for _, property := range spec {
-		typed, err := ConstructFieldType(message, property.Name, property.Template)
+func constructMessage(builders map[string]*builder.MessageBuilder, messageBuilder *builder.MessageBuilder, message specs.Message) (err error) {
+	for _, property := range message {
+		typed, err := ConstructFieldType(builders, property.Name+"Type", messageBuilder, property)
 		if err != nil {
 			return err
 		}
@@ -46,8 +68,7 @@ func ConstructMessage(message *builder.MessageBuilder, spec specs.Message) (err 
 			LeadingComment: property.Description,
 		})
 
-		err = message.TryAddField(field.SetNumber(property.Position))
-		if err != nil {
+		if err = messageBuilder.TryAddField(field.SetNumber(property.Position)); err != nil {
 			return err
 		}
 	}
@@ -55,55 +76,39 @@ func ConstructMessage(message *builder.MessageBuilder, spec specs.Message) (err 
 	return nil
 }
 
-// ErrInvalidFieldType is thrown when the given field type is invalid
-type ErrInvalidFieldType struct {
-	template specs.Template
-}
-
-func (e ErrInvalidFieldType) Error() string {
-	return fmt.Sprintf("invalid invalid template field type %s", e.template.Type())
-}
-
-// Prettify returns the prettified version of the given error
-func (e ErrInvalidFieldType) Prettify() prettyerr.Error {
-	return prettyerr.Error{
-		Code:    "InvalidFieldType",
-		Message: e.Error(),
-		Details: map[string]interface{}{
-			"type": e.template.Type(),
-		},
-	}
-}
-
 // ConstructFieldType constructs a field constructor from the given property
-func ConstructFieldType(message *builder.MessageBuilder, key string, template *specs.Template) (*builder.FieldType, error) {
+func ConstructFieldType(builders map[string]*builder.MessageBuilder, name string, message *builder.MessageBuilder, property *specs.Property) (ft *builder.FieldType, err error) {
 	switch {
-	case template.Message != nil:
-		// TODO: appending a fixed prefix is probably not a good idea.
-		nested := builder.NewMessage(key + "Nested")
-		err := ConstructMessage(nested, template.Message)
+	case property.Message != nil:
+		nested, seen, err := newMessage(builders, name, property)
 		if err != nil {
 			return nil, err
 		}
 
-		err = message.TryAddNestedMessage(nested)
-		if err != nil {
-			return nil, err
+		if !seen {
+			if err := message.TryAddNestedMessage(nested); err != nil {
+				return nil, err
+			}
 		}
 
 		return builder.FieldTypeMessage(nested), nil
-	case template.Repeated != nil:
-		field, err := template.Repeated.Template()
+	case property.Repeated != nil:
+		template, err := property.Repeated.Template()
 		if err != nil {
 			return nil, err
 		}
 
 		// TODO: thrown a error when attempting to construct a nested array
-		return ConstructFieldType(message, key, field)
-	case template.Enum != nil:
-		enum := builder.NewEnum(key + "Enum")
+		field := &specs.Property{
+			Name:     property.Name,
+			Template: template,
+		}
 
-		for _, value := range template.Enum.Keys {
+		return ConstructFieldType(builders, name, message, field)
+	case property.Enum != nil:
+		enum := builder.NewEnum(property.Name + "Enum")
+
+		for _, value := range property.Enum.Keys {
 			eval := builder.NewEnumValue(value.Key)
 
 			eval.SetNumber(value.Position)
@@ -111,21 +116,19 @@ func ConstructFieldType(message *builder.MessageBuilder, key string, template *s
 				LeadingComment: value.Description,
 			})
 
-			err := enum.TryAddValue(eval)
-			if err != nil {
+			if err := enum.TryAddValue(eval); err != nil {
 				return nil, err
 			}
 		}
 
-		err := message.TryAddNestedEnum(enum)
-		if err != nil {
+		if err := message.TryAddNestedEnum(enum); err != nil {
 			return nil, err
 		}
 
 		return builder.FieldTypeEnum(enum), nil
-	case template.Scalar != nil:
-		return builder.FieldTypeScalar(protobuffers.ProtoTypes[template.Scalar.Type]), nil
+	case property.Scalar != nil:
+		return builder.FieldTypeScalar(protobuffers.ProtoTypes[property.Scalar.Type]), nil
 	}
 
-	return nil, ErrInvalidFieldType{*template}
+	return nil, ErrInvalidFieldType{*property.Template}
 }

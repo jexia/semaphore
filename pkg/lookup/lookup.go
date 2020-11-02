@@ -215,26 +215,41 @@ func HeaderLookup(header specs.Header) PathLookup {
 }
 
 // PropertyLookup attempts to lookup the given path inside the params collection
-func PropertyLookup(param *specs.Property) PathLookup {
+func PropertyLookup(property *specs.Property) PathLookup {
+	return propertyLookup(make(map[string]*specs.Template), property)
+}
+
+func propertyLookup(seen map[string]*specs.Template, property *specs.Property) PathLookup {
 	return func(path string) *specs.Property {
-		switch {
-		case param == nil:
+		if property == nil || property.Template == nil {
 			return nil
+		}
+
+		if property.Identifier != "" {
+			if _, ok := seen[property.Identifier]; ok {
+				return nil
+			}
+
+			seen[property.Identifier] = property.Template
+		}
+
+		switch {
 		case path == SelfRef:
-			return param
-		case param.Path == path:
-			return param
-		case param.Repeated != nil:
+			return property
+		case property.Path == path:
+			return property
+		case property.Repeated != nil:
 			// TODO: allow to reference indexes
-			var template, _ = param.Repeated.Template()
-			return PropertyLookup(
+			var template, _ = property.Repeated.Template()
+			return propertyLookup(
+				seen,
 				&specs.Property{
 					Template: template,
 				},
 			)(path)
-		case param.Message != nil:
-			for _, nested := range param.Template.Message {
-				lookup := PropertyLookup(nested)(path)
+		case property.Message != nil:
+			for _, nested := range property.Template.Message {
+				lookup := propertyLookup(seen, nested)(path)
 				if lookup != nil {
 					return lookup
 				}

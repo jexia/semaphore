@@ -179,7 +179,7 @@ func BenchmarkSimpleUnmarshal(b *testing.B) {
 	flow := flows.Get("simple")
 	specs := flow.GetNodes().Get("first").Call.Request
 
-	desc, err := NewMessage("MockRequest", specs.Property.Message)
+	desc, err := NewMessage(specs.Property)
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -233,7 +233,7 @@ func BenchmarkNestedUnmarshal(b *testing.B) {
 	flow := flows.Get("nested")
 	specs := flow.GetNodes().Get("first").Call.Request
 
-	desc, err := NewMessage("MockRequest", specs.Property.Message)
+	desc, err := NewMessage(specs.Property)
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -289,7 +289,7 @@ func BenchmarkRepeatedUnmarshal(b *testing.B) {
 	flow := flows.Get("repeated")
 	specs := flow.GetNodes().Get("first").Call.Request
 
-	desc, err := NewMessage("MockRequest", specs.Property.Message)
+	desc, err := NewMessage(specs.Property)
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -370,7 +370,7 @@ func TestMarshal(t *testing.T) {
 
 	flow := flows.Get("complete")
 	req := flow.GetNodes().Get("first").Call.Request
-	desc, err := NewMessage("mock", req.Property.Message)
+	desc, err := NewMessage(req.Property)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -588,7 +588,7 @@ func TestUnmarshal(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			desc, err := NewMessage("input", req.Property.Message)
+			desc, err := NewMessage(req.Property)
 			if err != nil {
 				t.Fatal(err)
 			}

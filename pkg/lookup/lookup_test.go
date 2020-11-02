@@ -1115,15 +1115,17 @@ func TestPropertyLookup(t *testing.T) {
 
 	tests := map[string]*test{
 		"self reference": {
-			path: ".",
+			path: SelfRef,
 			param: &specs.Property{
-				Path: "key",
+				Path:     "key",
+				Template: new(specs.Template),
 			},
 		},
 		"simple": {
 			path: "key",
 			param: &specs.Property{
-				Path: "key",
+				Path:     "key",
+				Template: new(specs.Template),
 			},
 		},
 		"nested": {
@@ -1133,8 +1135,9 @@ func TestPropertyLookup(t *testing.T) {
 				Template: &specs.Template{
 					Message: specs.Message{
 						"nested": {
-							Name: "nested",
-							Path: "key.nested",
+							Name:     "nested",
+							Path:     "key.nested",
+							Template: new(specs.Template),
 						},
 					},
 				},
@@ -1193,7 +1196,12 @@ func TestGetReference(t *testing.T) {
 	prop := "input.request"
 
 	references := ReferenceMap{
-		prop: PropertyLookup(&specs.Property{Path: path}),
+		prop: PropertyLookup(
+			&specs.Property{
+				Path:     path,
+				Template: new(specs.Template),
+			},
+		),
 	}
 
 	result := GetReference(path, prop, references)
@@ -1207,7 +1215,12 @@ func TestUnknownReference(t *testing.T) {
 	prop := "input.request"
 
 	references := ReferenceMap{
-		prop: PropertyLookup(&specs.Property{Path: path}),
+		prop: PropertyLookup(
+			&specs.Property{
+				Path:     path,
+				Template: new(specs.Template),
+			},
+		),
 	}
 
 	result := GetReference(path, "unknown", references)
