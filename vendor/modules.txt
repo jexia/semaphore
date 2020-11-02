@@ -23,7 +23,7 @@ github.com/davecgh/go-spew/spew
 github.com/dgrijalva/jwt-go
 # github.com/fatih/color v1.9.0
 github.com/fatih/color
-# github.com/francoispqt/gojay v1.2.13
+# github.com/francoispqt/gojay v1.2.13 => github.com/Alma-media/gojay v1.2.14
 ## explicit
 github.com/francoispqt/gojay
 # github.com/fsnotify/fsnotify v1.4.7

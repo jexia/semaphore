@@ -33,3 +33,5 @@ require (
 	google.golang.org/protobuf v1.25.0
 	gopkg.in/yaml.v2 v2.3.0
 )
+
+replace github.com/francoispqt/gojay v1.2.13 => github.com/Alma-media/gojay v1.2.14
