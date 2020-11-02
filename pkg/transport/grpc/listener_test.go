@@ -124,7 +124,7 @@ func TestErrorHandlingListener(t *testing.T) {
 			err: &specs.OnError{
 				Status: &specs.Property{
 					Label: labels.Optional,
-					Template: specs.Template{
+					Template: &specs.Template{
 						Scalar: &specs.Scalar{
 							Type:    types.Int64,
 							Default: int64(500),
@@ -133,7 +133,7 @@ func TestErrorHandlingListener(t *testing.T) {
 				},
 				Message: &specs.Property{
 					Label: labels.Optional,
-					Template: specs.Template{
+					Template: &specs.Template{
 						Scalar: &specs.Scalar{
 							Type:    types.String,
 							Default: "database broken",
@@ -152,7 +152,7 @@ func TestErrorHandlingListener(t *testing.T) {
 			err: &specs.OnError{
 				Status: &specs.Property{
 					Label: labels.Optional,
-					Template: specs.Template{
+					Template: &specs.Template{
 						Scalar: &specs.Scalar{
 							Type: types.Int64,
 						},
@@ -164,7 +164,7 @@ func TestErrorHandlingListener(t *testing.T) {
 				},
 				Message: &specs.Property{
 					Label: labels.Optional,
-					Template: specs.Template{
+					Template: &specs.Template{
 						Scalar: &specs.Scalar{
 							Type: types.String,
 						},
@@ -186,7 +186,7 @@ func TestErrorHandlingListener(t *testing.T) {
 			err: &specs.OnError{
 				Status: &specs.Property{
 					Label: labels.Optional,
-					Template: specs.Template{
+					Template: &specs.Template{
 						Scalar: &specs.Scalar{
 							Type: types.Int64,
 						},
@@ -198,7 +198,7 @@ func TestErrorHandlingListener(t *testing.T) {
 				},
 				Message: &specs.Property{
 					Label: labels.Optional,
-					Template: specs.Template{
+					Template: &specs.Template{
 						Scalar: &specs.Scalar{
 							Type: types.String,
 						},

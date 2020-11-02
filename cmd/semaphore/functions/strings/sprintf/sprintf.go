@@ -12,7 +12,7 @@ func sprintfOutputs() *specs.Property {
 	return &specs.Property{
 		Name:  "sprintf",
 		Label: labels.Optional,
-		Template: specs.Template{
+		Template: &specs.Template{
 			Scalar: &specs.Scalar{
 				Type: types.String,
 			},

@@ -322,7 +322,7 @@ func ResolveProperty(ctx *broker.Context, node *specs.Node, property *specs.Prop
 	property.Label = reference.Label
 	property.Reference.Property = reference
 
-	ScopeNestedReferences(&reference.Template, &property.Template)
+	ScopeNestedReferences(reference.Template, property.Template)
 
 	return nil
 }
@@ -422,7 +422,7 @@ func ScopeNestedReferences(source, target *specs.Template) {
 			}
 
 			if len(item.Message) > 0 {
-				ScopeNestedReferences(&item.Template, &nested.Template)
+				ScopeNestedReferences(item.Template, nested.Template)
 			}
 		}
 
@@ -445,7 +445,7 @@ func ScopeNestedReferences(source, target *specs.Template) {
 			}
 
 			if len(item.Message) > 0 {
-				ScopeNestedReferences(&item, &cloned)
+				ScopeNestedReferences(item, cloned)
 			}
 
 			target.Repeated[index] = cloned

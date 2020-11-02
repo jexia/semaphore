@@ -36,13 +36,13 @@ func NewMockOnError() *specs.OnError {
 		Response: &specs.ParameterMap{
 			Property: &specs.Property{
 				Label: labels.Optional,
-				Template: specs.Template{
+				Template: &specs.Template{
 					Message: specs.Message{
 						"status": {
 							Name:  "status",
 							Path:  "status",
 							Label: labels.Optional,
-							Template: specs.Template{
+							Template: &specs.Template{
 								Scalar: &specs.Scalar{
 									Type: types.Int64,
 								},
@@ -56,7 +56,7 @@ func NewMockOnError() *specs.OnError {
 							Name:  "message",
 							Path:  "message",
 							Label: labels.Optional,
-							Template: specs.Template{
+							Template: &specs.Template{
 								Scalar: &specs.Scalar{
 									Type: types.String,
 								},
@@ -72,7 +72,7 @@ func NewMockOnError() *specs.OnError {
 		},
 		Status: &specs.Property{
 			Label: labels.Optional,
-			Template: specs.Template{
+			Template: &specs.Template{
 				Scalar: &specs.Scalar{
 					Type:    types.Int64,
 					Default: 500,
@@ -81,7 +81,7 @@ func NewMockOnError() *specs.OnError {
 		},
 		Message: &specs.Property{
 			Label: labels.Optional,
-			Template: specs.Template{
+			Template: &specs.Template{
 				Scalar: &specs.Scalar{
 					Type:    types.String,
 					Default: "mock error message",
@@ -98,13 +98,13 @@ func BenchmarkSingleNodeCallingJSONCodecParallel(b *testing.B) {
 	req, err := constructor.New("first.request", &specs.ParameterMap{
 		Property: &specs.Property{
 			Label: labels.Optional,
-			Template: specs.Template{
+			Template: &specs.Template{
 				Message: specs.Message{
 					"key": {
 						Name:  "key",
 						Path:  "key",
 						Label: labels.Optional,
-						Template: specs.Template{
+						Template: &specs.Template{
 							Scalar: &specs.Scalar{
 								Type:    types.String,
 								Default: "message",
@@ -123,13 +123,13 @@ func BenchmarkSingleNodeCallingJSONCodecParallel(b *testing.B) {
 	res, err := constructor.New("first.response", &specs.ParameterMap{
 		Property: &specs.Property{
 			Label: labels.Optional,
-			Template: specs.Template{
+			Template: &specs.Template{
 				Message: specs.Message{
 					"key": {
 						Name:  "key",
 						Path:  "key",
 						Label: labels.Optional,
-						Template: specs.Template{
+						Template: &specs.Template{
 							Scalar: &specs.Scalar{
 								Type:    types.String,
 								Default: "message",
@@ -179,13 +179,13 @@ func BenchmarkSingleNodeCallingJSONCodecSerial(b *testing.B) {
 	req, err := constructor.New("first.request", &specs.ParameterMap{
 		Property: &specs.Property{
 			Label: labels.Optional,
-			Template: specs.Template{
+			Template: &specs.Template{
 				Message: specs.Message{
 					"key": {
 						Name:  "key",
 						Path:  "key",
 						Label: labels.Optional,
-						Template: specs.Template{
+						Template: &specs.Template{
 							Scalar: &specs.Scalar{
 								Type:    types.String,
 								Default: "message",
@@ -204,13 +204,13 @@ func BenchmarkSingleNodeCallingJSONCodecSerial(b *testing.B) {
 	res, err := constructor.New("first.response", &specs.ParameterMap{
 		Property: &specs.Property{
 			Label: labels.Optional,
-			Template: specs.Template{
+			Template: &specs.Template{
 				Message: specs.Message{
 					"key": {
 						Name:  "key",
 						Path:  "key",
 						Label: labels.Optional,
-						Template: specs.Template{
+						Template: &specs.Template{
 							Scalar: &specs.Scalar{
 								Type:    types.String,
 								Default: "message",
@@ -356,12 +356,12 @@ func TestConstructingNode(t *testing.T) {
 				Call: &specs.Call{
 					Request: &specs.ParameterMap{
 						Property: &specs.Property{
-							Template: specs.Template{
+							Template: &specs.Template{
 								Message: specs.Message{
 									"first": {
 										Name: "first",
 										Path: "first",
-										Template: specs.Template{
+										Template: &specs.Template{
 											Reference: &specs.PropertyReference{
 												Resource: "input",
 												Path:     "first",
@@ -371,7 +371,7 @@ func TestConstructingNode(t *testing.T) {
 									"second": {
 										Name: "second",
 										Path: "second",
-										Template: specs.Template{
+										Template: &specs.Template{
 											Reference: &specs.PropertyReference{
 												Resource: "input",
 												Path:     "second",
@@ -391,12 +391,12 @@ func TestConstructingNode(t *testing.T) {
 				Call: &specs.Call{
 					Request: &specs.ParameterMap{
 						Property: &specs.Property{
-							Template: specs.Template{
+							Template: &specs.Template{
 								Message: specs.Message{
 									"first": {
 										Name: "first",
 										Path: "first",
-										Template: specs.Template{
+										Template: &specs.Template{
 											Reference: &specs.PropertyReference{
 												Resource: "input",
 												Path:     "first",
@@ -406,7 +406,7 @@ func TestConstructingNode(t *testing.T) {
 									"second": {
 										Name: "second",
 										Path: "second",
-										Template: specs.Template{
+										Template: &specs.Template{
 											Reference: &specs.PropertyReference{
 												Resource: "input",
 												Path:     "first",

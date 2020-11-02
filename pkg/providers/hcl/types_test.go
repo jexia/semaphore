@@ -41,7 +41,7 @@ func TestSetScalar(t *testing.T) {
 		t.Run(input.GoString(), func(t *testing.T) {
 			ctx := logger.WithLogger(broker.NewBackground())
 			property := specs.Property{}
-			err := SetScalar(ctx, &property.Template, input)
+			err := SetScalar(ctx, property.Template, input)
 
 			switch {
 			case expected.error != nil:

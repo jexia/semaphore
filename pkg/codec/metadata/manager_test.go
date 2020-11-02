@@ -19,7 +19,7 @@ func TestNewManager(t *testing.T) {
 			Name:  "example",
 			Path:  "example",
 			Label: labels.Optional,
-			Template: specs.Template{
+			Template: &specs.Template{
 				Scalar: &specs.Scalar{
 					Type: types.String,
 				},
@@ -44,7 +44,7 @@ func TestManagerMarshal(t *testing.T) {
 					Name:  "example",
 					Path:  "example",
 					Label: labels.Optional,
-					Template: specs.Template{
+					Template: &specs.Template{
 						Scalar: &specs.Scalar{
 							Default: "hello",
 							Type:    types.String,
@@ -67,7 +67,7 @@ func TestManagerMarshal(t *testing.T) {
 					Name:  "example",
 					Path:  "example",
 					Label: labels.Optional,
-					Template: specs.Template{
+					Template: &specs.Template{
 						Scalar: &specs.Scalar{
 							Type: types.String,
 						},
@@ -124,7 +124,7 @@ func TestManagerUnmarshal(t *testing.T) {
 					Name:  "example",
 					Path:  "example",
 					Label: labels.Optional,
-					Template: specs.Template{
+					Template: &specs.Template{
 						Scalar: &specs.Scalar{
 							Type: types.String,
 						},
@@ -148,7 +148,7 @@ func TestManagerUnmarshal(t *testing.T) {
 					Name:  "example",
 					Path:  "example",
 					Label: labels.Optional,
-					Template: specs.Template{
+					Template: &specs.Template{
 						Scalar: &specs.Scalar{
 							Type: types.String,
 						},
@@ -172,7 +172,7 @@ func TestManagerUnmarshal(t *testing.T) {
 					Name:  "example",
 					Path:  "example",
 					Label: labels.Optional,
-					Template: specs.Template{
+					Template: &specs.Template{
 						Scalar: &specs.Scalar{
 							Type: types.String,
 						},

@@ -76,7 +76,7 @@ func (e ErrInvalidFieldType) Prettify() prettyerr.Error {
 }
 
 // ConstructFieldType constructs a field constructor from the given property
-func ConstructFieldType(message *builder.MessageBuilder, key string, template specs.Template) (*builder.FieldType, error) {
+func ConstructFieldType(message *builder.MessageBuilder, key string, template *specs.Template) (*builder.FieldType, error) {
 	switch {
 	case template.Message != nil:
 		// TODO: appending a fixed prefix is probably not a good idea.
@@ -127,5 +127,5 @@ func ConstructFieldType(message *builder.MessageBuilder, key string, template sp
 		return builder.FieldTypeScalar(protobuffers.ProtoTypes[template.Scalar.Type]), nil
 	}
 
-	return nil, ErrInvalidFieldType{template}
+	return nil, ErrInvalidFieldType{*template}
 }

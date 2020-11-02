@@ -36,13 +36,13 @@ func NewMockSchemas() specs.Schemas {
 	return specs.Schemas{
 		"com.mock.message": &specs.Property{
 			Label: labels.Optional,
-			Template: specs.Template{
+			Template: &specs.Template{
 				Message: specs.Message{
 					"value": {
 						Name:  "value",
 						Path:  "value",
 						Label: labels.Optional,
-						Template: specs.Template{
+						Template: &specs.Template{
 							Scalar: &specs.Scalar{
 								Type: types.String,
 							},
@@ -52,13 +52,13 @@ func NewMockSchemas() specs.Schemas {
 						Name:  "meta",
 						Path:  "meta",
 						Label: labels.Optional,
-						Template: specs.Template{
+						Template: &specs.Template{
 							Message: specs.Message{
 								"id": {
 									Name:  "id",
 									Path:  "meta.id",
 									Label: labels.Optional,
-									Template: specs.Template{
+									Template: &specs.Template{
 										Scalar: &specs.Scalar{
 											Type: types.String,
 										},
@@ -523,7 +523,7 @@ func TestUndefinedNestedSchemaProperty(t *testing.T) {
 		"single": {
 			Schema: "com.mock.message",
 			Property: &specs.Property{
-				Template: specs.Template{
+				Template: &specs.Template{
 					Message: specs.Message{
 						"meta": nil,
 					},
@@ -533,12 +533,12 @@ func TestUndefinedNestedSchemaProperty(t *testing.T) {
 		"nested": {
 			Schema: "com.mock.message",
 			Property: &specs.Property{
-				Template: specs.Template{
+				Template: &specs.Template{
 					Message: specs.Message{
 						"meta": {
 							Name: "meta",
 							Path: "meta",
-							Template: specs.Template{
+							Template: &specs.Template{
 								Message: specs.Message{
 									"id": nil,
 								},

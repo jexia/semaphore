@@ -109,7 +109,7 @@ func ParseReference(path string, name string, value string) (*specs.Property, er
 		Name: name,
 		Path: JoinPath(path, name),
 		Raw:  value,
-		Template: specs.Template{
+		Template: &specs.Template{
 			Reference: ParsePropertyReference(value),
 		},
 	}
@@ -129,7 +129,7 @@ func ParseContent(path string, name string, content string) (*specs.Property, er
 			Name:  name,
 			Path:  path,
 			Label: labels.Optional,
-			Template: specs.Template{
+			Template: &specs.Template{
 				Scalar: &specs.Scalar{
 					Type:    types.String,
 					Default: matched[1],

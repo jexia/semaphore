@@ -33,7 +33,7 @@ func DefaultOnError(err *specs.OnError) {
 	if err.Status == nil {
 		err.Status = &specs.Property{
 			Label: labels.Optional,
-			Template: specs.Template{
+			Template: &specs.Template{
 				Reference: &specs.PropertyReference{
 					Resource: "error",
 					Path:     "status",
@@ -48,7 +48,7 @@ func DefaultOnError(err *specs.OnError) {
 	if err.Message == nil {
 		err.Message = &specs.Property{
 			Label: labels.Optional,
-			Template: specs.Template{
+			Template: &specs.Template{
 				Reference: &specs.PropertyReference{
 					Resource: "error",
 					Path:     "message",

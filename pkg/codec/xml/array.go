@@ -11,14 +11,14 @@ import (
 // Array represents an array of values/references.
 type Array struct {
 	name, path string
-	template   specs.Template
-	repeated   specs.Template
+	template   *specs.Template
+	repeated   *specs.Template
 	store      references.Store
 	tracker    references.Tracker
 }
 
 // NewArray constructs a new XML array encoder/decoder.
-func NewArray(name, path string, template specs.Template, store references.Store, tracker references.Tracker) *Array {
+func NewArray(name, path string, template *specs.Template, store references.Store, tracker references.Tracker) *Array {
 	// TODO: find a better implementation/name
 	combi, err := template.Repeated.Template()
 	if err != nil {

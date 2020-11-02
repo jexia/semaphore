@@ -56,9 +56,9 @@ func TestParseIntermediateStaticProperty(t *testing.T) {
 				Name:  "array",
 				Path:  "array",
 				Label: labels.Optional,
-				Template: specs.Template{
+				Template: &specs.Template{
 					Repeated: specs.Repeated{
-						specs.Template{
+						&specs.Template{
 							Scalar: &specs.Scalar{
 								Type:    types.String,
 								Default: "foo",
@@ -77,9 +77,9 @@ func TestParseIntermediateStaticProperty(t *testing.T) {
 				Name:  "array",
 				Path:  "array",
 				Label: labels.Optional,
-				Template: specs.Template{
+				Template: &specs.Template{
 					Repeated: specs.Repeated{
-						specs.Template{
+						&specs.Template{
 							Reference: &specs.PropertyReference{
 								Resource: "input",
 								Path:     "message",
@@ -99,15 +99,15 @@ func TestParseIntermediateStaticProperty(t *testing.T) {
 				Name:  "array",
 				Path:  "array",
 				Label: labels.Optional,
-				Template: specs.Template{
+				Template: &specs.Template{
 					Repeated: specs.Repeated{
-						specs.Template{
+						&specs.Template{
 							Scalar: &specs.Scalar{
 								Type:    types.Int64,
 								Default: int64(10),
 							},
 						},
-						specs.Template{
+						&specs.Template{
 							Scalar: &specs.Scalar{
 								Type:    types.Int64,
 								Default: int64(42),
@@ -131,15 +131,15 @@ func TestParseIntermediateStaticProperty(t *testing.T) {
 				Name:  "array",
 				Path:  "array",
 				Label: labels.Optional,
-				Template: specs.Template{
+				Template: &specs.Template{
 					Repeated: specs.Repeated{
-						specs.Template{
+						&specs.Template{
 							Message: specs.Message{
 								"action": {
 									Name:  "action",
 									Path:  "array.action",
 									Label: labels.Optional,
-									Template: specs.Template{
+									Template: &specs.Template{
 										Scalar: &specs.Scalar{
 											Type:    types.String,
 											Default: "create",
@@ -148,13 +148,13 @@ func TestParseIntermediateStaticProperty(t *testing.T) {
 								},
 							},
 						},
-						specs.Template{
+						&specs.Template{
 							Message: specs.Message{
 								"action": {
 									Name:  "action",
 									Path:  "array.action",
 									Label: labels.Optional,
-									Template: specs.Template{
+									Template: &specs.Template{
 										Scalar: &specs.Scalar{
 											Type:    types.String,
 											Default: "update",
@@ -179,14 +179,14 @@ func TestParseIntermediateStaticProperty(t *testing.T) {
 				Name:  "array",
 				Path:  "array",
 				Label: labels.Optional,
-				Template: specs.Template{
+				Template: &specs.Template{
 					Repeated: specs.Repeated{
-						specs.Template{
+						&specs.Template{
 							Message: specs.Message{
 								"id": {
 									Name: "id",
 									Path: "array.id",
-									Template: specs.Template{
+									Template: &specs.Template{
 										Reference: &specs.PropertyReference{
 											Resource: "input",
 											Path:     "id",
@@ -195,7 +195,7 @@ func TestParseIntermediateStaticProperty(t *testing.T) {
 								},
 							},
 						},
-						specs.Template{
+						&specs.Template{
 							Reference: &specs.PropertyReference{
 								Resource: "input",
 								Path:     "name",
@@ -217,21 +217,21 @@ func TestParseIntermediateStaticProperty(t *testing.T) {
 				Name:  "object",
 				Path:  "object",
 				Label: labels.Optional,
-				Template: specs.Template{
+				Template: &specs.Template{
 					Message: specs.Message{
 						"message": {
 							Name:  "message",
 							Path:  "object.message",
 							Label: labels.Optional,
-							Template: specs.Template{
+							Template: &specs.Template{
 								Repeated: specs.Repeated{
-									specs.Template{
+									&specs.Template{
 										Scalar: &specs.Scalar{
 											Type:    types.String,
 											Default: "hello world",
 										},
 									},
-									specs.Template{
+									&specs.Template{
 										Reference: &specs.PropertyReference{
 											Resource: "input",
 											Path:     "message",
@@ -278,7 +278,7 @@ func ValidateProperty(t *testing.T, result *specs.Property, expected *specs.Prop
 	ValidateTemplate(t, result.Path, result.Template, expected.Template)
 }
 
-func ValidateTemplate(t *testing.T, path string, result, expected specs.Template) {
+func ValidateTemplate(t *testing.T, path string, result, expected *specs.Template) {
 	if expected.Scalar != nil && result.Scalar == nil {
 		t.Errorf("property (%q) scalar was expected to be set", path)
 	}

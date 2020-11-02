@@ -27,7 +27,7 @@ func ResponseObject(specs *specs.Property, store references.Store, tracker refer
 }
 
 // ResponseValue constructs a new response used inside a response object
-func ResponseValue(tmpl specs.Template, store references.Store, tracker references.Tracker) (interface{}, error) {
+func ResponseValue(tmpl *specs.Template, store references.Store, tracker references.Tracker) (interface{}, error) {
 	switch {
 	case tmpl.Message != nil:
 		result := make(map[string]interface{}, len(tmpl.Message))

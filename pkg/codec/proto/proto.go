@@ -81,7 +81,7 @@ func (manager *Manager) Marshal(store references.Store) (io.Reader, error) {
 
 	tracker := references.NewTracker()
 	result := dynamic.NewMessage(manager.desc)
-	err := Message(manager.specs.Template).Marshal(result, manager.desc, template.ResourcePath(manager.resource), store, tracker)
+	err := Message(*manager.specs.Template).Marshal(result, manager.desc, template.ResourcePath(manager.resource), store, tracker)
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +113,7 @@ func (manager *Manager) Unmarshal(reader io.Reader, refs references.Store) error
 	}
 
 	tracker := references.NewTracker()
-	Message(manager.specs.Template).Unmarshal(result, template.ResourcePath(manager.resource), refs, tracker)
+	Message(*manager.specs.Template).Unmarshal(result, template.ResourcePath(manager.resource), refs, tracker)
 
 	return nil
 }

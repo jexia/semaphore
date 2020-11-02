@@ -59,7 +59,7 @@ func ReferencedPathsProperty(referenced ReferencedCollection, property *specs.Pr
 // removeNoneReferencedPathsTemplate removes all properties not referenced inside
 // the given paths collection. This ensures that only referenced properties are kept
 // inside the given template.
-func removeNoneReferencedPathsTemplate(referenced ReferencedCollection, path string, template specs.Template) {
+func removeNoneReferencedPathsTemplate(referenced ReferencedCollection, path string, template *specs.Template) {
 	switch {
 	case template.Message != nil:
 		for key, nested := range template.Message {
@@ -145,7 +145,7 @@ func parameterMapReferencedResourcePaths(target ReferencedCollection, parameters
 	}
 }
 
-func propertyReferencedResourcePaths(collection ReferencedCollection, template specs.Template, resource string) {
+func propertyReferencedResourcePaths(collection ReferencedCollection, template *specs.Template, resource string) {
 	if template.Reference != nil && template.Reference.Resource == resource {
 		collection.Set(template.Reference.Path)
 	}

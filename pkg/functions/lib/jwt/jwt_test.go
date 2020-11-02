@@ -21,7 +21,7 @@ func TestExecutable(t *testing.T) {
 			Name:  "claims",
 			Path:  "claims",
 			Label: labels.Required,
-			Template: specs.Template{
+			Template: &specs.Template{
 				Reference: &specs.PropertyReference{
 					Resource: "input",
 					Path:     "authorization",
@@ -123,7 +123,7 @@ func TestNew(t *testing.T) {
 		var (
 			arg = &specs.Property{
 				Label: labels.Required,
-				Template: specs.Template{
+				Template: &specs.Template{
 					Message: specs.Message{},
 				},
 			}
@@ -140,7 +140,7 @@ func TestNew(t *testing.T) {
 		var (
 			arg = &specs.Property{
 				Label: labels.Required,
-				Template: specs.Template{
+				Template: &specs.Template{
 					Scalar: &specs.Scalar{
 						Type: types.String,
 					},

@@ -8,7 +8,7 @@ import (
 	"github.com/jexia/semaphore/pkg/specs"
 )
 
-func encodeElement(encoder *xml.Encoder, name, path string, template specs.Template, store references.Store, tracker references.Tracker) (err error) {
+func encodeElement(encoder *xml.Encoder, name, path string, template *specs.Template, store references.Store, tracker references.Tracker) (err error) {
 	var marshaler xml.Marshaler
 
 	switch {

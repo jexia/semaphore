@@ -10,13 +10,13 @@ import (
 // Object represents a JSON object
 type Object struct {
 	path     string
-	template specs.Template
+	template *specs.Template
 	store    references.Store
 	tracker  references.Tracker
 }
 
 // NewObject constructs a new object encoder/decoder for the given specs
-func NewObject(path string, template specs.Template, store references.Store, tracker references.Tracker) *Object {
+func NewObject(path string, template *specs.Template, store references.Store, tracker references.Tracker) *Object {
 	return &Object{
 		path:     path,
 		template: template,

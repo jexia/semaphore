@@ -185,7 +185,7 @@ func VariableHeaderLookup(header specs.Header) PathLookup {
 	return func(path string) *specs.Property {
 		header[path] = &specs.Property{
 			Path: path,
-			Template: specs.Template{
+			Template: &specs.Template{
 				Scalar: &specs.Scalar{
 					Type:    types.String,
 					Default: "",
@@ -292,7 +292,7 @@ func OnErrLookup(node string, spec *specs.OnError) PathLookup {
 	if spec.Message == nil {
 		spec.Message = &specs.Property{
 			Label: labels.Optional,
-			Template: specs.Template{
+			Template: &specs.Template{
 				Scalar: &specs.Scalar{
 					Type: types.String,
 				},
@@ -303,7 +303,7 @@ func OnErrLookup(node string, spec *specs.OnError) PathLookup {
 	if spec.Status == nil {
 		spec.Status = &specs.Property{
 			Label: labels.Optional,
-			Template: specs.Template{
+			Template: &specs.Template{
 				Scalar: &specs.Scalar{
 					Type: types.Int64,
 				},

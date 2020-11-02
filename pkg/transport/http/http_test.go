@@ -52,12 +52,12 @@ func NewSimpleMockSpecs() *specs.ParameterMap {
 			"Timestamp":     &specs.Property{},
 		},
 		Property: &specs.Property{
-			Template: specs.Template{
+			Template: &specs.Template{
 				Message: specs.Message{
 					"message": {
 						Name: "message",
 						Path: "message",
-						Template: specs.Template{
+						Template: &specs.Template{
 							Scalar: &specs.Scalar{
 								Type: types.String,
 							},

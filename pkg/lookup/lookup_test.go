@@ -130,14 +130,14 @@ func NewInputMockProperty() *specs.Property {
 	return &specs.Property{
 		Path:  "",
 		Label: labels.Optional,
-		Template: specs.Template{
+		Template: &specs.Template{
 			Message: specs.Message{
 				"message": {
 					Position: 0,
 					Name:     "message",
 					Path:     "message",
 					Label:    labels.Optional,
-					Template: specs.Template{
+					Template: &specs.Template{
 						Scalar: &specs.Scalar{
 							Default: "hello world",
 							Type:    types.String,
@@ -149,7 +149,7 @@ func NewInputMockProperty() *specs.Property {
 					Name:     "active",
 					Path:     "active",
 					Label:    labels.Optional,
-					Template: specs.Template{
+					Template: &specs.Template{
 						Scalar: &specs.Scalar{
 							Default: false,
 							Type:    types.Bool,
@@ -161,14 +161,14 @@ func NewInputMockProperty() *specs.Property {
 					Name:     "nested",
 					Path:     "nested",
 					Label:    labels.Optional,
-					Template: specs.Template{
+					Template: &specs.Template{
 						Message: specs.Message{
 							"message": {
 								Position: 0,
 								Name:     "message",
 								Path:     "nested.message",
 								Label:    labels.Optional,
-								Template: specs.Template{
+								Template: &specs.Template{
 									Scalar: &specs.Scalar{
 										Default: "hello nested world",
 										Type:    types.String,
@@ -180,7 +180,7 @@ func NewInputMockProperty() *specs.Property {
 								Name:     "active",
 								Path:     "nested.active",
 								Label:    labels.Optional,
-								Template: specs.Template{
+								Template: &specs.Template{
 									Scalar: &specs.Scalar{
 										Default: false,
 										Type:    types.Bool,
@@ -192,13 +192,13 @@ func NewInputMockProperty() *specs.Property {
 								Name:     "nested",
 								Path:     "nested.nested",
 								Label:    labels.Optional,
-								Template: specs.Template{
+								Template: &specs.Template{
 									Message: specs.Message{
 										"message": {
 											Name:  "message",
 											Path:  "nested.nested.message",
 											Label: labels.Optional,
-											Template: specs.Template{
+											Template: &specs.Template{
 												Scalar: &specs.Scalar{
 													Default: "hello underground world",
 													Type:    types.String,
@@ -209,7 +209,7 @@ func NewInputMockProperty() *specs.Property {
 											Name:  "active",
 											Path:  "nested.nested.active",
 											Label: labels.Optional,
-											Template: specs.Template{
+											Template: &specs.Template{
 												Scalar: &specs.Scalar{
 													Default: false,
 													Type:    types.Bool,
@@ -223,7 +223,7 @@ func NewInputMockProperty() *specs.Property {
 								Name:  "repeated",
 								Path:  "nested.repeated",
 								Label: labels.Optional,
-								Template: specs.Template{
+								Template: &specs.Template{
 									Repeated: specs.Repeated{
 										{
 											Message: specs.Message{
@@ -231,7 +231,7 @@ func NewInputMockProperty() *specs.Property {
 													Name:  "message",
 													Path:  "nested.repeated.message",
 													Label: labels.Optional,
-													Template: specs.Template{
+													Template: &specs.Template{
 														Scalar: &specs.Scalar{
 															Default: "hello repeated underground world",
 															Type:    types.String,
@@ -242,7 +242,7 @@ func NewInputMockProperty() *specs.Property {
 													Name:  "active",
 													Path:  "nested.repeated.active",
 													Label: labels.Optional,
-													Template: specs.Template{
+													Template: &specs.Template{
 														Scalar: &specs.Scalar{
 															Default: false,
 															Type:    types.Bool,
@@ -261,7 +261,7 @@ func NewInputMockProperty() *specs.Property {
 					Name:  "repeated",
 					Path:  "repeated",
 					Label: labels.Optional,
-					Template: specs.Template{
+					Template: &specs.Template{
 						Repeated: specs.Repeated{
 							{
 								Message: specs.Message{
@@ -269,7 +269,7 @@ func NewInputMockProperty() *specs.Property {
 										Name:  "message",
 										Path:  "message",
 										Label: labels.Optional,
-										Template: specs.Template{
+										Template: &specs.Template{
 											Scalar: &specs.Scalar{
 												Default: "hello repeated world",
 												Type:    types.String,
@@ -280,7 +280,7 @@ func NewInputMockProperty() *specs.Property {
 										Name:  "active",
 										Path:  "active",
 										Label: labels.Optional,
-										Template: specs.Template{
+										Template: &specs.Template{
 											Scalar: &specs.Scalar{
 												Default: false,
 												Type:    types.Bool,
@@ -291,7 +291,7 @@ func NewInputMockProperty() *specs.Property {
 										Name:  "repeated",
 										Path:  "repeated.repeated",
 										Label: labels.Optional,
-										Template: specs.Template{
+										Template: &specs.Template{
 											Repeated: specs.Repeated{
 												{
 													Message: specs.Message{
@@ -299,7 +299,7 @@ func NewInputMockProperty() *specs.Property {
 															Name:  "message",
 															Path:  "repeated.message",
 															Label: labels.Optional,
-															Template: specs.Template{
+															Template: &specs.Template{
 																Scalar: &specs.Scalar{
 																	Default: "hello repeated nested world",
 																	Type:    types.String,
@@ -310,7 +310,7 @@ func NewInputMockProperty() *specs.Property {
 															Name:  "active",
 															Path:  "repeated.active",
 															Label: labels.Optional,
-															Template: specs.Template{
+															Template: &specs.Template{
 																Scalar: &specs.Scalar{
 																	Default: false,
 																	Type:    types.Bool,
@@ -336,13 +336,13 @@ func NewResultMockProperty() *specs.Property {
 	return &specs.Property{
 		Path:  "",
 		Label: labels.Optional,
-		Template: specs.Template{
+		Template: &specs.Template{
 			Message: specs.Message{
 				"result": {
 					Name:  "result",
 					Path:  "result",
 					Label: labels.Optional,
-					Template: specs.Template{
+					Template: &specs.Template{
 						Scalar: &specs.Scalar{
 							Default: "hello world",
 							Type:    types.String,
@@ -353,7 +353,7 @@ func NewResultMockProperty() *specs.Property {
 					Name:  "active",
 					Path:  "active",
 					Label: labels.Optional,
-					Template: specs.Template{
+					Template: &specs.Template{
 						Scalar: &specs.Scalar{
 							Default: false,
 							Type:    types.Bool,
@@ -364,13 +364,13 @@ func NewResultMockProperty() *specs.Property {
 					Name:  "nested",
 					Path:  "nested",
 					Label: labels.Optional,
-					Template: specs.Template{
+					Template: &specs.Template{
 						Message: specs.Message{
 							"result": {
 								Name:  "result",
 								Path:  "nested.result",
 								Label: labels.Optional,
-								Template: specs.Template{
+								Template: &specs.Template{
 									Scalar: &specs.Scalar{
 										Default: "hello world",
 										Type:    types.String,
@@ -381,7 +381,7 @@ func NewResultMockProperty() *specs.Property {
 								Name:  "active",
 								Path:  "nested.active",
 								Label: labels.Optional,
-								Template: specs.Template{
+								Template: &specs.Template{
 									Scalar: &specs.Scalar{
 										Default: false,
 										Type:    types.Bool,
@@ -392,13 +392,13 @@ func NewResultMockProperty() *specs.Property {
 								Name:  "nested",
 								Path:  "nested.nested",
 								Label: labels.Optional,
-								Template: specs.Template{
+								Template: &specs.Template{
 									Message: specs.Message{
 										"result": {
 											Name:  "result",
 											Path:  "nested.nested.result",
 											Label: labels.Optional,
-											Template: specs.Template{
+											Template: &specs.Template{
 												Scalar: &specs.Scalar{
 													Default: "hello world",
 													Type:    types.String,
@@ -409,7 +409,7 @@ func NewResultMockProperty() *specs.Property {
 											Name:  "active",
 											Path:  "nested.nested.active",
 											Label: labels.Optional,
-											Template: specs.Template{
+											Template: &specs.Template{
 												Scalar: &specs.Scalar{
 													Default: false,
 													Type:    types.Bool,
@@ -422,7 +422,7 @@ func NewResultMockProperty() *specs.Property {
 							"repeated": {
 								Name: "repeated",
 								Path: "nested.repeated",
-								Template: specs.Template{
+								Template: &specs.Template{
 									Repeated: specs.Repeated{
 										{
 											Message: specs.Message{
@@ -430,7 +430,7 @@ func NewResultMockProperty() *specs.Property {
 													Name:  "result",
 													Path:  "nested.repeated.result",
 													Label: labels.Optional,
-													Template: specs.Template{
+													Template: &specs.Template{
 														Scalar: &specs.Scalar{
 															Default: "hello world",
 															Type:    types.String,
@@ -441,7 +441,7 @@ func NewResultMockProperty() *specs.Property {
 													Name:  "active",
 													Path:  "nested.repeated.active",
 													Label: labels.Optional,
-													Template: specs.Template{
+													Template: &specs.Template{
 														Scalar: &specs.Scalar{
 															Default: false,
 															Type:    types.Bool,
@@ -459,7 +459,7 @@ func NewResultMockProperty() *specs.Property {
 				"repeated": {
 					Name: "repeated",
 					Path: "repeated",
-					Template: specs.Template{
+					Template: &specs.Template{
 						Repeated: specs.Repeated{
 							{
 								Message: specs.Message{
@@ -467,7 +467,7 @@ func NewResultMockProperty() *specs.Property {
 										Name:  "result",
 										Path:  "repeated.result",
 										Label: labels.Optional,
-										Template: specs.Template{
+										Template: &specs.Template{
 											Scalar: &specs.Scalar{
 												Default: "hello repeated world",
 												Type:    types.String,
@@ -478,7 +478,7 @@ func NewResultMockProperty() *specs.Property {
 										Name:  "active",
 										Path:  "repeated.active",
 										Label: labels.Optional,
-										Template: specs.Template{
+										Template: &specs.Template{
 											Scalar: &specs.Scalar{
 												Default: false,
 												Type:    types.Bool,
@@ -489,7 +489,7 @@ func NewResultMockProperty() *specs.Property {
 										Name:  "repeated",
 										Path:  "repeated.repeated",
 										Label: labels.Optional,
-										Template: specs.Template{
+										Template: &specs.Template{
 											Repeated: specs.Repeated{
 												{
 													Message: specs.Message{
@@ -497,7 +497,7 @@ func NewResultMockProperty() *specs.Property {
 															Name:  "result",
 															Path:  "repeated.repeated.result",
 															Label: labels.Optional,
-															Template: specs.Template{
+															Template: &specs.Template{
 																Scalar: &specs.Scalar{
 																	Default: "hello repeated nested world",
 																	Type:    types.String,
@@ -508,7 +508,7 @@ func NewResultMockProperty() *specs.Property {
 															Name:  "active",
 															Path:  "repeated.repeated.active",
 															Label: labels.Optional,
-															Template: specs.Template{
+															Template: &specs.Template{
 																Scalar: &specs.Scalar{
 																	Default: false,
 																	Type:    types.Bool,
@@ -539,7 +539,7 @@ func NewMockCall(name string) *specs.Node {
 					"cookie": &specs.Property{
 						Path:  "cookie",
 						Label: labels.Optional,
-						Template: specs.Template{
+						Template: &specs.Template{
 							Scalar: &specs.Scalar{
 								Default: "mnomnom",
 								Type:    types.String,
@@ -550,14 +550,14 @@ func NewMockCall(name string) *specs.Node {
 				Property: NewResultMockProperty(),
 			},
 			Status: &specs.Property{
-				Template: specs.Template{
+				Template: &specs.Template{
 					Scalar: &specs.Scalar{
 						Type: types.Int64,
 					},
 				},
 			},
 			Message: &specs.Property{
-				Template: specs.Template{
+				Template: &specs.Template{
 					Message: specs.Message{},
 				},
 			},
@@ -565,7 +565,7 @@ func NewMockCall(name string) *specs.Node {
 				"sample": {
 					Path:  "sample",
 					Label: labels.Optional,
-					Template: specs.Template{
+					Template: &specs.Template{
 						Scalar: &specs.Scalar{
 							Default: "mock",
 							Type:    types.String,
@@ -580,7 +580,7 @@ func NewMockCall(name string) *specs.Node {
 					"cookie": &specs.Property{
 						Path:  "cookie",
 						Label: labels.Optional,
-						Template: specs.Template{
+						Template: &specs.Template{
 							Scalar: &specs.Scalar{
 								Default: "mnomnom",
 								Type:    types.String,
@@ -591,13 +591,13 @@ func NewMockCall(name string) *specs.Node {
 				Stack: map[string]*specs.Property{
 					name + "_request": {
 						Label: labels.Optional,
-						Template: specs.Template{
+						Template: &specs.Template{
 							Message: specs.Message{
 								"nested": {
 									Name:  "nested",
 									Path:  "nested",
 									Label: labels.Optional,
-									Template: specs.Template{
+									Template: &specs.Template{
 										Scalar: &specs.Scalar{
 											Type:    types.String,
 											Default: "nested string",
@@ -612,7 +612,7 @@ func NewMockCall(name string) *specs.Node {
 					"message": {
 						Path:  "message",
 						Label: labels.Optional,
-						Template: specs.Template{
+						Template: &specs.Template{
 							Scalar: &specs.Scalar{
 								Default: "default message",
 								Type:    types.String,
@@ -622,7 +622,7 @@ func NewMockCall(name string) *specs.Node {
 					"name": {
 						Path:  "message",
 						Label: labels.Optional,
-						Template: specs.Template{
+						Template: &specs.Template{
 							Scalar: &specs.Scalar{
 								Default: "default name",
 								Type:    types.String,
@@ -631,7 +631,7 @@ func NewMockCall(name string) *specs.Node {
 					},
 					"reference": {
 						Path: "reference",
-						Template: specs.Template{
+						Template: &specs.Template{
 							Reference: &specs.PropertyReference{
 								Resource: name,
 								Path:     "result",
@@ -645,13 +645,13 @@ func NewMockCall(name string) *specs.Node {
 				Stack: map[string]*specs.Property{
 					name + "_response": {
 						Label: labels.Optional,
-						Template: specs.Template{
+						Template: &specs.Template{
 							Message: specs.Message{
 								"nested": {
 									Name:  "nested",
 									Path:  "nested",
 									Label: labels.Optional,
-									Template: specs.Template{
+									Template: &specs.Template{
 										Scalar: &specs.Scalar{
 											Default: "nested string",
 											Type:    types.String,
@@ -666,7 +666,7 @@ func NewMockCall(name string) *specs.Node {
 					"cookie": &specs.Property{
 						Path:  "cookie",
 						Label: labels.Optional,
-						Template: specs.Template{
+						Template: &specs.Template{
 							Scalar: &specs.Scalar{
 								Default: "mnomnom",
 								Type:    types.String,
@@ -693,7 +693,7 @@ func NewMockFlow(name string) *specs.Flow {
 					"message": {
 						Path:  "message",
 						Label: labels.Optional,
-						Template: specs.Template{
+						Template: &specs.Template{
 							Scalar: &specs.Scalar{
 								Default: "default message",
 								Type:    types.String,
@@ -703,7 +703,7 @@ func NewMockFlow(name string) *specs.Flow {
 					"name": {
 						Path:  "message",
 						Label: labels.Optional,
-						Template: specs.Template{
+						Template: &specs.Template{
 							Scalar: &specs.Scalar{
 								Default: "default name",
 								Type:    types.String,
@@ -712,7 +712,7 @@ func NewMockFlow(name string) *specs.Flow {
 					},
 					"reference": {
 						Path: "reference",
-						Template: specs.Template{
+						Template: &specs.Template{
 							Reference: &specs.PropertyReference{
 								Resource: name,
 								Path:     "message",
@@ -1130,7 +1130,7 @@ func TestPropertyLookup(t *testing.T) {
 			path: "key.nested",
 			param: &specs.Property{
 				Path: "key",
-				Template: specs.Template{
+				Template: &specs.Template{
 					Message: specs.Message{
 						"nested": {
 							Name: "nested",

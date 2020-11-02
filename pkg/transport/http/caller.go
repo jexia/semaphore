@@ -240,7 +240,7 @@ func TemplateReferences(value string, functions functions.Custom) ([]*specs.Prop
 		property := &specs.Property{
 			Path:  key,
 			Label: labels.Optional,
-			Template: specs.Template{
+			Template: &specs.Template{
 				Reference: &specs.PropertyReference{
 					Resource: ".params",
 					Path:     path,

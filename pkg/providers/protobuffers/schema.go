@@ -30,7 +30,7 @@ func NewMessage(path string, descriptor *desc.MessageDescriptor) *specs.Property
 		Description: descriptor.GetSourceInfo().GetLeadingComments(),
 		Position:    1,
 		Label:       labels.Optional,
-		Template: specs.Template{
+		Template: &specs.Template{
 			Message: make(specs.Message, len(fields)),
 		},
 		Options: specs.Options{},
@@ -96,7 +96,7 @@ func NewProperty(path string, descriptor *desc.FieldDescriptor) *specs.Property 
 
 	if descriptor.GetLabel() == protobuf.FieldDescriptorProto_LABEL_REPEATED {
 		result.Label = labels.Optional
-		result.Template = specs.Template{
+		result.Template = &specs.Template{
 			Repeated: specs.Repeated{result.Template},
 		}
 	}
