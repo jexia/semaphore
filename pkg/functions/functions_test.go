@@ -153,9 +153,10 @@ func TestParseFunction(t *testing.T) {
 		t.Run(input, func(t *testing.T) {
 			ctx := logger.WithLogger(broker.NewBackground())
 			prop := specs.Property{
-				Name: "",
-				Path: "message",
-				Raw:  input,
+				Name:     "",
+				Path:     "message",
+				Raw:      input,
+				Template: new(specs.Template),
 			}
 
 			err := PrepareFunction(ctx, nil, nil, &prop, make(Stack), custom)
@@ -215,9 +216,10 @@ func TestPrepareFunctions(t *testing.T) {
 										Template: &specs.Template{
 											Message: specs.Message{
 												"fn": &specs.Property{
-													Name: "fn",
-													Path: "fn",
-													Raw:  "mock()",
+													Name:     "fn",
+													Path:     "fn",
+													Raw:      "mock()",
+													Template: new(specs.Template),
 												},
 											},
 										},
@@ -229,9 +231,10 @@ func TestPrepareFunctions(t *testing.T) {
 										Template: &specs.Template{
 											Message: specs.Message{
 												"fn": &specs.Property{
-													Name: "fn",
-													Path: "fn",
-													Raw:  "mock()",
+													Name:     "fn",
+													Path:     "fn",
+													Raw:      "mock()",
+													Template: new(specs.Template),
 												},
 											},
 										},
@@ -246,9 +249,10 @@ func TestPrepareFunctions(t *testing.T) {
 							Template: &specs.Template{
 								Message: specs.Message{
 									"fn": &specs.Property{
-										Name: "fn",
-										Path: "fn",
-										Raw:  "mock()",
+										Name:     "fn",
+										Path:     "fn",
+										Raw:      "mock()",
+										Template: new(specs.Template),
 									},
 								},
 							},
@@ -268,9 +272,10 @@ func TestPrepareFunctions(t *testing.T) {
 								Request: &specs.ParameterMap{
 									Header: specs.Header{
 										"fn": &specs.Property{
-											Name: "fn",
-											Path: "fn",
-											Raw:  "mock(mock())",
+											Name:     "fn",
+											Path:     "fn",
+											Raw:      "mock(mock())",
+											Template: new(specs.Template),
 										},
 									},
 									Property: &specs.Property{
@@ -278,9 +283,10 @@ func TestPrepareFunctions(t *testing.T) {
 										Template: &specs.Template{
 											Message: specs.Message{
 												"fn": &specs.Property{
-													Name: "fn",
-													Path: "fn",
-													Raw:  "mock()",
+													Name:     "fn",
+													Path:     "fn",
+													Raw:      "mock()",
+													Template: new(specs.Template),
 												},
 											},
 										},
@@ -289,9 +295,10 @@ func TestPrepareFunctions(t *testing.T) {
 								Response: &specs.ParameterMap{
 									Header: specs.Header{
 										"fn": &specs.Property{
-											Name: "fn",
-											Path: "fn",
-											Raw:  "mock(mock())",
+											Name:     "fn",
+											Path:     "fn",
+											Raw:      "mock(mock())",
+											Template: new(specs.Template),
 										},
 									},
 									Property: &specs.Property{
@@ -299,9 +306,10 @@ func TestPrepareFunctions(t *testing.T) {
 										Template: &specs.Template{
 											Message: specs.Message{
 												"fn": &specs.Property{
-													Name: "fn",
-													Path: "fn",
-													Raw:  "mock()",
+													Name:     "fn",
+													Path:     "fn",
+													Raw:      "mock()",
+													Template: new(specs.Template),
 												},
 											},
 										},
@@ -324,9 +332,10 @@ func TestPrepareFunctions(t *testing.T) {
 								Request: &specs.ParameterMap{
 									Header: specs.Header{
 										"fn": &specs.Property{
-											Name: "fn",
-											Path: "fn",
-											Raw:  "mock(mock())",
+											Name:     "fn",
+											Path:     "fn",
+											Raw:      "mock(mock())",
+											Template: new(specs.Template),
 										},
 									},
 								},
@@ -336,9 +345,10 @@ func TestPrepareFunctions(t *testing.T) {
 					Output: &specs.ParameterMap{
 						Header: specs.Header{
 							"fn": &specs.Property{
-								Name: "fn",
-								Path: "fn",
-								Raw:  "mock(mock())",
+								Name:     "fn",
+								Path:     "fn",
+								Raw:      "mock(mock())",
+								Template: new(specs.Template),
 							},
 						},
 					},
@@ -359,9 +369,10 @@ func TestPrepareFunctions(t *testing.T) {
 										Template: &specs.Template{
 											Message: specs.Message{
 												"fn": &specs.Property{
-													Name: "fn",
-													Path: "fn",
-													Raw:  "mock()",
+													Name:     "fn",
+													Path:     "fn",
+													Raw:      "mock()",
+													Template: new(specs.Template),
 												},
 											},
 										},
@@ -373,9 +384,10 @@ func TestPrepareFunctions(t *testing.T) {
 										Template: &specs.Template{
 											Message: specs.Message{
 												"fn": &specs.Property{
-													Name: "fn",
-													Path: "fn",
-													Raw:  "mock()",
+													Name:     "fn",
+													Path:     "fn",
+													Raw:      "mock()",
+													Template: new(specs.Template),
 												},
 											},
 										},
@@ -398,9 +410,10 @@ func TestPrepareFunctions(t *testing.T) {
 								Request: &specs.ParameterMap{
 									Header: specs.Header{
 										"fn": &specs.Property{
-											Name: "fn",
-											Path: "fn",
-											Raw:  "mock(mock())",
+											Name:     "fn",
+											Path:     "fn",
+											Raw:      "mock(mock())",
+											Template: new(specs.Template),
 										},
 									},
 									Property: &specs.Property{
@@ -408,9 +421,10 @@ func TestPrepareFunctions(t *testing.T) {
 										Template: &specs.Template{
 											Message: specs.Message{
 												"fn": &specs.Property{
-													Name: "fn",
-													Path: "fn",
-													Raw:  "mock()",
+													Name:     "fn",
+													Path:     "fn",
+													Raw:      "mock()",
+													Template: new(specs.Template),
 												},
 											},
 										},
@@ -419,9 +433,10 @@ func TestPrepareFunctions(t *testing.T) {
 								Response: &specs.ParameterMap{
 									Header: specs.Header{
 										"fn": &specs.Property{
-											Name: "fn",
-											Path: "fn",
-											Raw:  "mock(mock())",
+											Name:     "fn",
+											Path:     "fn",
+											Raw:      "mock(mock())",
+											Template: new(specs.Template),
 										},
 									},
 									Property: &specs.Property{
@@ -429,9 +444,10 @@ func TestPrepareFunctions(t *testing.T) {
 										Template: &specs.Template{
 											Message: specs.Message{
 												"fn": &specs.Property{
-													Name: "fn",
-													Path: "fn",
-													Raw:  "mock()",
+													Name:     "fn",
+													Path:     "fn",
+													Raw:      "mock()",
+													Template: new(specs.Template),
 												},
 											},
 										},
@@ -454,9 +470,10 @@ func TestPrepareFunctions(t *testing.T) {
 								Request: &specs.ParameterMap{
 									Header: specs.Header{
 										"fn": &specs.Property{
-											Name: "fn",
-											Path: "fn",
-											Raw:  "mock(mock())",
+											Name:     "fn",
+											Path:     "fn",
+											Raw:      "mock(mock())",
+											Template: new(specs.Template),
 										},
 									},
 								},
@@ -467,9 +484,10 @@ func TestPrepareFunctions(t *testing.T) {
 						Request: &specs.ParameterMap{
 							Header: specs.Header{
 								"fn": &specs.Property{
-									Name: "fn",
-									Path: "fn",
-									Raw:  "mock(mock())",
+									Name:     "fn",
+									Path:     "fn",
+									Raw:      "mock(mock())",
+									Template: new(specs.Template),
 								},
 							},
 						},
@@ -563,9 +581,10 @@ func TestPrepareFunctions(t *testing.T) {
 										Template: &specs.Template{
 											Message: specs.Message{
 												"fn": &specs.Property{
-													Name: "fn",
-													Path: "fn",
-													Raw:  "mock()",
+													Name:     "fn",
+													Path:     "fn",
+													Raw:      "mock()",
+													Template: new(specs.Template),
 												},
 											},
 										},
@@ -590,9 +609,10 @@ func TestPrepareFunctions(t *testing.T) {
 									Template: &specs.Template{
 										Message: specs.Message{
 											"fn": &specs.Property{
-												Name: "fn",
-												Path: "fn",
-												Raw:  "mock()",
+												Name:     "fn",
+												Path:     "fn",
+												Raw:      "mock()",
+												Template: new(specs.Template),
 											},
 										},
 									},
@@ -614,9 +634,10 @@ func TestPrepareFunctions(t *testing.T) {
 								Response: &specs.ParameterMap{
 									Params: map[string]*specs.Property{
 										"fn": {
-											Name: "fn",
-											Path: "fn",
-											Raw:  "mock(mock())",
+											Name:     "fn",
+											Path:     "fn",
+											Raw:      "mock(mock())",
+											Template: new(specs.Template),
 										},
 									},
 								},
@@ -672,9 +693,10 @@ func TestPrepareFunctionsErr(t *testing.T) {
 										Template: &specs.Template{
 											Message: specs.Message{
 												"fn": &specs.Property{
-													Name: "fn",
-													Path: "fn",
-													Raw:  "mock()",
+													Name:     "fn",
+													Path:     "fn",
+													Raw:      "mock()",
+													Template: new(specs.Template),
 												},
 											},
 										},
@@ -686,9 +708,10 @@ func TestPrepareFunctionsErr(t *testing.T) {
 										Template: &specs.Template{
 											Message: specs.Message{
 												"fn": &specs.Property{
-													Name: "fn",
-													Path: "fn",
-													Raw:  "mock()",
+													Name:     "fn",
+													Path:     "fn",
+													Raw:      "mock()",
+													Template: new(specs.Template),
 												},
 											},
 										},
@@ -703,9 +726,10 @@ func TestPrepareFunctionsErr(t *testing.T) {
 							Template: &specs.Template{
 								Message: specs.Message{
 									"fn": &specs.Property{
-										Name: "fn",
-										Path: "fn",
-										Raw:  "mock()",
+										Name:     "fn",
+										Path:     "fn",
+										Raw:      "mock()",
+										Template: new(specs.Template),
 									},
 								},
 							},
@@ -723,9 +747,10 @@ func TestPrepareFunctionsErr(t *testing.T) {
 								Request: &specs.ParameterMap{
 									Header: specs.Header{
 										"fn": &specs.Property{
-											Name: "fn",
-											Path: "fn",
-											Raw:  "mock(mock())",
+											Name:     "fn",
+											Path:     "fn",
+											Raw:      "mock(mock())",
+											Template: new(specs.Template),
 										},
 									},
 									Property: &specs.Property{
@@ -733,9 +758,10 @@ func TestPrepareFunctionsErr(t *testing.T) {
 										Template: &specs.Template{
 											Message: specs.Message{
 												"fn": &specs.Property{
-													Name: "fn",
-													Path: "fn",
-													Raw:  "mock()",
+													Name:     "fn",
+													Path:     "fn",
+													Raw:      "mock()",
+													Template: new(specs.Template),
 												},
 											},
 										},
@@ -744,9 +770,10 @@ func TestPrepareFunctionsErr(t *testing.T) {
 								Response: &specs.ParameterMap{
 									Header: specs.Header{
 										"fn": &specs.Property{
-											Name: "fn",
-											Path: "fn",
-											Raw:  "mock(mock())",
+											Name:     "fn",
+											Path:     "fn",
+											Raw:      "mock(mock())",
+											Template: new(specs.Template),
 										},
 									},
 									Property: &specs.Property{
@@ -754,9 +781,10 @@ func TestPrepareFunctionsErr(t *testing.T) {
 										Template: &specs.Template{
 											Message: specs.Message{
 												"fn": &specs.Property{
-													Name: "fn",
-													Path: "fn",
-													Raw:  "mock()",
+													Name:     "fn",
+													Path:     "fn",
+													Raw:      "mock()",
+													Template: new(specs.Template),
 												},
 											},
 										},
@@ -777,9 +805,10 @@ func TestPrepareFunctionsErr(t *testing.T) {
 								Request: &specs.ParameterMap{
 									Header: specs.Header{
 										"fn": &specs.Property{
-											Name: "fn",
-											Path: "fn",
-											Raw:  "mock(mock())",
+											Name:     "fn",
+											Path:     "fn",
+											Raw:      "mock(mock())",
+											Template: new(specs.Template),
 										},
 									},
 								},
@@ -789,9 +818,10 @@ func TestPrepareFunctionsErr(t *testing.T) {
 					Output: &specs.ParameterMap{
 						Header: specs.Header{
 							"fn": &specs.Property{
-								Name: "fn",
-								Path: "fn",
-								Raw:  "mock(mock())",
+								Name:     "fn",
+								Path:     "fn",
+								Raw:      "mock(mock())",
+								Template: new(specs.Template),
 							},
 						},
 					},
@@ -810,9 +840,10 @@ func TestPrepareFunctionsErr(t *testing.T) {
 										Template: &specs.Template{
 											Message: specs.Message{
 												"fn": &specs.Property{
-													Name: "fn",
-													Path: "fn",
-													Raw:  "mock()",
+													Name:     "fn",
+													Path:     "fn",
+													Raw:      "mock()",
+													Template: new(specs.Template),
 												},
 											},
 										},
@@ -824,9 +855,10 @@ func TestPrepareFunctionsErr(t *testing.T) {
 										Template: &specs.Template{
 											Message: specs.Message{
 												"fn": &specs.Property{
-													Name: "fn",
-													Path: "fn",
-													Raw:  "mock()",
+													Name:     "fn",
+													Path:     "fn",
+													Raw:      "mock()",
+													Template: new(specs.Template),
 												},
 											},
 										},
@@ -847,9 +879,10 @@ func TestPrepareFunctionsErr(t *testing.T) {
 								Request: &specs.ParameterMap{
 									Header: specs.Header{
 										"fn": &specs.Property{
-											Name: "fn",
-											Path: "fn",
-											Raw:  "mock(mock())",
+											Name:     "fn",
+											Path:     "fn",
+											Raw:      "mock(mock())",
+											Template: new(specs.Template),
 										},
 									},
 									Property: &specs.Property{
@@ -857,9 +890,10 @@ func TestPrepareFunctionsErr(t *testing.T) {
 										Template: &specs.Template{
 											Message: specs.Message{
 												"fn": &specs.Property{
-													Name: "fn",
-													Path: "fn",
-													Raw:  "mock()",
+													Name:     "fn",
+													Path:     "fn",
+													Raw:      "mock()",
+													Template: new(specs.Template),
 												},
 											},
 										},
@@ -868,9 +902,10 @@ func TestPrepareFunctionsErr(t *testing.T) {
 								Response: &specs.ParameterMap{
 									Header: specs.Header{
 										"fn": &specs.Property{
-											Name: "fn",
-											Path: "fn",
-											Raw:  "mock(mock())",
+											Name:     "fn",
+											Path:     "fn",
+											Raw:      "mock(mock())",
+											Template: new(specs.Template),
 										},
 									},
 									Property: &specs.Property{
@@ -878,9 +913,10 @@ func TestPrepareFunctionsErr(t *testing.T) {
 										Template: &specs.Template{
 											Message: specs.Message{
 												"fn": &specs.Property{
-													Name: "fn",
-													Path: "fn",
-													Raw:  "mock()",
+													Name:     "fn",
+													Path:     "fn",
+													Raw:      "mock()",
+													Template: new(specs.Template),
 												},
 											},
 										},
@@ -901,9 +937,10 @@ func TestPrepareFunctionsErr(t *testing.T) {
 								Request: &specs.ParameterMap{
 									Header: specs.Header{
 										"fn": &specs.Property{
-											Name: "fn",
-											Path: "fn",
-											Raw:  "mock(mock())",
+											Name:     "fn",
+											Path:     "fn",
+											Raw:      "mock(mock())",
+											Template: new(specs.Template),
 										},
 									},
 								},
@@ -914,9 +951,10 @@ func TestPrepareFunctionsErr(t *testing.T) {
 						Request: &specs.ParameterMap{
 							Header: specs.Header{
 								"fn": &specs.Property{
-									Name: "fn",
-									Path: "fn",
-									Raw:  "mock(mock())",
+									Name:     "fn",
+									Path:     "fn",
+									Raw:      "mock(mock())",
+									Template: new(specs.Template),
 								},
 							},
 						},
@@ -936,9 +974,10 @@ func TestPrepareFunctionsErr(t *testing.T) {
 										Template: &specs.Template{
 											Message: specs.Message{
 												"fn": &specs.Property{
-													Name: "fn",
-													Path: "fn",
-													Raw:  "mock()",
+													Name:     "fn",
+													Path:     "fn",
+													Raw:      "mock()",
+													Template: new(specs.Template),
 												},
 											},
 										},
@@ -961,9 +1000,10 @@ func TestPrepareFunctionsErr(t *testing.T) {
 									Template: &specs.Template{
 										Message: specs.Message{
 											"fn": &specs.Property{
-												Name: "fn",
-												Path: "fn",
-												Raw:  "mock()",
+												Name:     "fn",
+												Path:     "fn",
+												Raw:      "mock()",
+												Template: new(specs.Template),
 											},
 										},
 									},
@@ -983,9 +1023,10 @@ func TestPrepareFunctionsErr(t *testing.T) {
 								Response: &specs.ParameterMap{
 									Header: specs.Header{
 										"fn": &specs.Property{
-											Name: "fn",
-											Path: "fn",
-											Raw:  "mock(mock())",
+											Name:     "fn",
+											Path:     "fn",
+											Raw:      "mock(mock())",
+											Template: new(specs.Template),
 										},
 									},
 								},
@@ -1004,9 +1045,10 @@ func TestPrepareFunctionsErr(t *testing.T) {
 								Response: &specs.ParameterMap{
 									Params: map[string]*specs.Property{
 										"fn": {
-											Name: "fn",
-											Path: "fn",
-											Raw:  "mock(mock())",
+											Name:     "fn",
+											Path:     "fn",
+											Raw:      "mock(mock())",
+											Template: new(specs.Template),
 										},
 									},
 								},
@@ -1022,9 +1064,10 @@ func TestPrepareFunctionsErr(t *testing.T) {
 					Output: &specs.ParameterMap{
 						Params: map[string]*specs.Property{
 							"fn": {
-								Name: "fn",
-								Path: "fn",
-								Raw:  "mock()",
+								Name:     "fn",
+								Path:     "fn",
+								Raw:      "mock()",
+								Template: new(specs.Template),
 							},
 						},
 					},
@@ -1038,9 +1081,10 @@ func TestPrepareFunctionsErr(t *testing.T) {
 						Request: &specs.ParameterMap{
 							Header: map[string]*specs.Property{
 								"fn": {
-									Name: "fn",
-									Path: "fn",
-									Raw:  "mock()",
+									Name:     "fn",
+									Path:     "fn",
+									Raw:      "mock()",
+									Template: new(specs.Template),
 								},
 							},
 						},
@@ -1086,9 +1130,10 @@ func TestPrepareParameterMapFunctions(t *testing.T) {
 					Template: &specs.Template{
 						Message: specs.Message{
 							"fn": &specs.Property{
-								Name: "fn",
-								Path: "fn",
-								Raw:  "mock()",
+								Name:     "fn",
+								Path:     "fn",
+								Raw:      "mock()",
+								Template: new(specs.Template),
 							},
 						},
 					},
@@ -1100,9 +1145,10 @@ func TestPrepareParameterMapFunctions(t *testing.T) {
 			params: &specs.ParameterMap{
 				Header: specs.Header{
 					"sample": &specs.Property{
-						Name: "fn",
-						Path: "fn",
-						Raw:  "mock()",
+						Name:     "fn",
+						Path:     "fn",
+						Raw:      "mock()",
+						Template: new(specs.Template),
 					},
 				},
 			},
@@ -1121,9 +1167,10 @@ func TestPrepareParameterMapFunctions(t *testing.T) {
 								Template: &specs.Template{
 									Message: specs.Message{
 										"fn": &specs.Property{
-											Name: "fn",
-											Path: "nested.fn",
-											Raw:  "mock()",
+											Name:     "fn",
+											Path:     "nested.fn",
+											Raw:      "mock()",
+											Template: new(specs.Template),
 										},
 									},
 								},
@@ -1141,9 +1188,10 @@ func TestPrepareParameterMapFunctions(t *testing.T) {
 					Template: &specs.Template{
 						Message: specs.Message{
 							"fn": &specs.Property{
-								Name: "fn",
-								Path: "nested.fn",
-								Raw:  "mock(mock(mock()))",
+								Name:     "fn",
+								Path:     "nested.fn",
+								Raw:      "mock(mock(mock()))",
+								Template: new(specs.Template),
 							},
 						},
 					},
