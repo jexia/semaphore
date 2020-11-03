@@ -23,14 +23,15 @@ type Watcher struct {
 	running bool
 }
 
-func newWatcher(address string, updates chan []discovery.Service, plan *watch.Plan) *Watcher {
+func newWatcher(address string, defaultSvcScheme string, updates chan []discovery.Service, plan *watch.Plan) *Watcher {
 	watcher := &Watcher{
-		Mutex:    &sync.Mutex{},
-		plan:     plan,
-		address:  address,
-		services: updates,
-		runCh:    make(chan struct{}),
-		stopCh:   make(chan struct{}),
+		Mutex:         &sync.Mutex{},
+		plan:          plan,
+		address:       address,
+		services:      updates,
+		defaultScheme: defaultSvcScheme,
+		runCh:         make(chan struct{}),
+		stopCh:        make(chan struct{}),
 	}
 
 	return watcher
@@ -76,9 +77,8 @@ func (w *Watcher) Resolve() (string, bool) {
 	}
 
 	svc := w.cache[0]
-
 	uri := url.URL{
-		Scheme: svc.Scheme,
+		Scheme: w.defaultScheme,
 		Host:   fmt.Sprintf("%s:%d", svc.Host, svc.Port),
 	}
 
