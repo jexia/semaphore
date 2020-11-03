@@ -3,7 +3,6 @@ package protobuf
 import (
 	"bytes"
 	"context"
-	"log"
 	"strings"
 	"testing"
 
@@ -82,6 +81,8 @@ var (
 		},
 	}
 
+	// since we are not sure about the order of fields provided by generator
+	// we only can check if all expected lines are there
 	expected = map[string]int{
 		`syntax = "proto3"`:           1,
 		`package semaphore;`:          1,
@@ -156,8 +157,6 @@ func TestGenerate(t *testing.T) {
 			t.Errorf("was expected to meet a substring %q x %d times", substr, occurs)
 		}
 	}
-
-	log.Println(actual)
 }
 
 func count(input, substr string) int {
