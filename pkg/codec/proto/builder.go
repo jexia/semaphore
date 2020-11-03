@@ -3,6 +3,7 @@ package proto
 import (
 	"github.com/jexia/semaphore/pkg/providers/protobuffers"
 	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/pkg/specs/labels"
 	"github.com/jexia/semaphore/pkg/specs/types"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/desc/builder"
@@ -56,7 +57,7 @@ func constructMessage(builders map[string]*builder.MessageBuilder, messageBuilde
 			return err
 		}
 
-		label := protobuffers.ProtoLabels[property.Label]
+		label := protobuffers.ProtoLabels[labels.Optional]
 		if property.Type() == types.Array {
 			label = protobuffers.Repeated
 		}

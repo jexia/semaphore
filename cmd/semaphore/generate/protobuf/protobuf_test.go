@@ -3,6 +3,8 @@ package protobuf
 import (
 	"bytes"
 	"context"
+	"log"
+	"strings"
 	"testing"
 
 	"github.com/jexia/semaphore/pkg/broker"
@@ -67,8 +69,8 @@ var (
 			Identifier: "recursive",
 			Message: specs.Message{
 				"string": &specs.Property{
-					Name:     "text",
-					Path:     "meta.text",
+					Name:     "string",
+					Path:     "meta.string",
 					Position: 1,
 					Template: &specs.Template{
 						Scalar: &specs.Scalar{
@@ -80,23 +82,18 @@ var (
 		},
 	}
 
-	expected = `syntax = "proto3";
-package semaphore;
-message ServiceMockRequest {
-}
-message ServiceMockResponse {
-  string string = 1;
-  int32 integer = 2;
-  metaType meta = 3;
-  message metaType {
-    string text = 1;
-    metaType meta = 3;
-  }
-}
-service service {
-  rpc Mock ( ServiceMockRequest ) returns ( ServiceMockResponse );
-}
-`
+	expected = map[string]int{
+		`syntax = "proto3"`:           1,
+		`package semaphore;`:          1,
+		`message ServiceMockRequest`:  1,
+		`message ServiceMockResponse`: 1,
+		`string string = 1;`:          2,
+		`int32 integer = 2;`:          1,
+		`metaType meta = 3;`:          2,
+		`message metaType`:            1,
+		`service service`:             1,
+		`rpc Mock ( ServiceMockRequest ) returns ( ServiceMockResponse );`: 1,
+	}
 )
 
 func init() {
@@ -152,7 +149,25 @@ func TestGenerate(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if actual := buff.String(); actual != expected {
-		t.Errorf("unexpected output:\n%s", actual)
+	actual := buff.String()
+
+	for substr, occurs := range expected {
+		if total := count(actual, substr); total != occurs {
+			t.Errorf("was expected to meet a substring %q x %d times", substr, occurs)
+		}
 	}
+
+	log.Println(actual)
+}
+
+func count(input, substr string) int {
+	var index int
+
+	index = strings.Index(input, substr)
+
+	if index < 0 {
+		return 0
+	}
+
+	return 1 + count(input[index+1:], substr)
 }
