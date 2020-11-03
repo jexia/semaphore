@@ -144,14 +144,24 @@ func ResolveHeaderReferences(header specs.Header, dependencies specs.Dependencie
 
 // ResolvePropertyReferences moves any property reference into the correct data structure
 func ResolvePropertyReferences(tmpl *specs.Template, dependencies specs.Dependencies) {
+	resolvePropertyReferences(make(specs.ResolvedTemplate), tmpl, dependencies)
+}
+
+func resolvePropertyReferences(resolved specs.ResolvedTemplate, tmpl *specs.Template, dependencies specs.Dependencies) {
+	if resolved.Resolved(tmpl) {
+		return
+	}
+
+	resolved.Resolve(tmpl)
+
 	switch {
 	case tmpl.Repeated != nil:
 		for _, repeated := range tmpl.Repeated {
-			ResolvePropertyReferences(repeated, dependencies)
+			resolvePropertyReferences(resolved, repeated, dependencies)
 		}
 	case tmpl.Message != nil:
 		for _, nested := range tmpl.Message {
-			ResolvePropertyReferences(nested.Template, dependencies)
+			resolvePropertyReferences(resolved, nested.Template, dependencies)
 		}
 	}
 

@@ -1163,7 +1163,6 @@ func TestPrepareParameterMapFunctions(t *testing.T) {
 							"fn": &specs.Property{
 								Name: "nested",
 								Path: "nested",
-
 								Template: &specs.Template{
 									Message: specs.Message{
 										"fn": &specs.Property{

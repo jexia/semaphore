@@ -174,8 +174,9 @@ func TestScopeNestedReferences(t *testing.T) {
 							Template: &specs.Template{
 								Message: specs.Message{
 									"nested": {
-										Name: "nested",
-										Path: "key.nested",
+										Name:     "nested",
+										Path:     "key.nested",
+										Template: new(specs.Template),
 									},
 								},
 							},
@@ -207,12 +208,14 @@ func TestScopeNestedReferences(t *testing.T) {
 							Template: &specs.Template{
 								Message: specs.Message{
 									"first": {
-										Name: "first",
-										Path: "key.first",
+										Name:     "first",
+										Path:     "key.first",
+										Template: new(specs.Template),
 									},
 									"second": {
-										Name: "second",
-										Path: "key.second",
+										Name:     "second",
+										Path:     "key.second",
+										Template: new(specs.Template),
 									},
 								},
 							},

@@ -177,9 +177,19 @@ func TestReferencedResourcePaths(t *testing.T) {
 						},
 						Condition: &specs.Condition{},
 						Intermediate: &specs.ParameterMap{
-							Params:   map[string]*specs.Property{"username": {}},
-							Property: &specs.Property{},
-							Stack:    map[string]*specs.Property{"username": {}},
+							Params: map[string]*specs.Property{
+								"username": {
+									Template: new(specs.Template),
+								},
+							},
+							Property: &specs.Property{
+								Template: new(specs.Template),
+							},
+							Stack: map[string]*specs.Property{
+								"username": {
+									Template: new(specs.Template),
+								},
+							},
 						},
 					},
 				},
