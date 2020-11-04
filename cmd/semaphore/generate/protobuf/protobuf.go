@@ -102,7 +102,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 			return fmt.Errorf("failed to set the output for generator: %w", err)
 		}
 
-		if err := print.DefaultHeader.Print(dst, options); err != nil {
+		if err := print.DefaultHeader(cmd.Version).Print(dst, options); err != nil {
 			return fmt.Errorf("failed to write file header: %w", err)
 		}
 
