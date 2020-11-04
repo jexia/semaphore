@@ -7,8 +7,7 @@ import (
 	"time"
 )
 
-// DefaultHeader is a header which is used for all generators.
-// TODO: use a function to return a header according to the version/time etc.
+// DefaultHeader creates a default header.
 func DefaultHeader(version string) Printer {
 	if version == "" {
 		version = "not set"
