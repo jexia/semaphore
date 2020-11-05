@@ -10,7 +10,7 @@ import (
 // DefaultHeader creates a default header.
 func DefaultHeader(version string) Printer {
 	if version == "" {
-		version = "not set"
+		version = "unknown"
 	}
 
 	return Printer{
