@@ -3,10 +3,12 @@ package graphql
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 
 	gql "github.com/graphql-go/graphql"
 	"github.com/jexia/semaphore/cmd/semaphore/daemon/config"
 	"github.com/jexia/semaphore/cmd/semaphore/daemon/providers"
+	print "github.com/jexia/semaphore/cmd/semaphore/generate/printer"
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/endpoints"
 	"github.com/jexia/semaphore/pkg/broker/logger"
@@ -16,17 +18,24 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var flags = &config.Daemon{}
+var (
+	flags = &config.Daemon{}
 
-// Command represents the semaphore daemon command
-var Command = &cobra.Command{
-	Use:   "graphql",
-	Short: "Generates a graphql specification",
-	Long: `Generates a graphql specification.
+	// Command represents the semaphore daemon command
+	Command = &cobra.Command{
+		Use:   "graphql",
+		Short: "Generates a graphql specification",
+		Long: `Generates a graphql specification.
 *NOTE*: This is a experimental feature and not all features are supported yet.`,
-	RunE:         run,
-	SilenceUsage: true,
-}
+		RunE:         run,
+		SilenceUsage: true,
+	}
+
+	options = print.Options{
+		LineStart: "# ",
+		LineEnd:   "\n",
+	}
+)
 
 func init() {
 	Command.PersistentFlags().StringSliceVar(&flags.Protobuffers, "proto", []string{}, "If set are all proto definitions found inside the given path passed as schema definitions, all proto definitions are also passed as imports")
@@ -78,12 +87,18 @@ func run(cmd *cobra.Command, args []string) (err error) {
 		return err
 	}
 
-	schema := listener.Schema()
-	params := gql.Params{Schema: schema, RequestString: query}
-	response := gql.Do(params)
+	if err := print.DefaultHeader(cmd.Version).Print(os.Stdout, options); err != nil {
+		return fmt.Errorf("failed to write file header: %w", err)
+	}
 
-	rJSON, _ := json.MarshalIndent(response, "", "    ")
-	fmt.Printf("%s \n", rJSON)
+	var (
+		schema   = listener.Schema()
+		params   = gql.Params{Schema: schema, RequestString: query}
+		response = gql.Do(params)
+		encoder  = json.NewEncoder(os.Stdout)
+	)
 
-	return nil
+	encoder.SetIndent("", "  ")
+
+	return encoder.Encode(response)
 }

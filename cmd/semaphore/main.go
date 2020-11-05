@@ -28,6 +28,7 @@ func init() {
 	cmd.AddCommand(daemon.Command)
 	cmd.AddCommand(validate.Command)
 	cmd.AddCommand(generate.Command)
+
 }
 
 func main() {

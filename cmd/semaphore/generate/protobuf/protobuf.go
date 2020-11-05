@@ -10,6 +10,7 @@ import (
 
 	"github.com/jexia/semaphore/cmd/semaphore/daemon/config"
 	"github.com/jexia/semaphore/cmd/semaphore/daemon/providers"
+	print "github.com/jexia/semaphore/cmd/semaphore/generate/printer"
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/endpoints"
 	"github.com/jexia/semaphore/pkg/broker/logger"
@@ -36,6 +37,11 @@ var (
 	}
 
 	output string
+
+	options = print.Options{
+		LineStart: "// ",
+		LineEnd:   "\n",
+	}
 )
 
 func init() {
@@ -46,7 +52,6 @@ func init() {
 }
 
 func run(cmd *cobra.Command, args []string) (err error) {
-
 	defer func() {
 		if err != nil {
 			err = prettyerr.StandardErr(err)
@@ -92,10 +97,13 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	printer := &protoprint.Printer{}
 
 	for key, service := range services {
-
 		dst, err := getOutput(output, key)
 		if err != nil {
 			return fmt.Errorf("failed to set the output for generator: %w", err)
+		}
+
+		if err := print.DefaultHeader(cmd.Version).Print(dst, options); err != nil {
+			return fmt.Errorf("failed to write file header: %w", err)
 		}
 
 		descriptor, err := service.FileDescriptor()
