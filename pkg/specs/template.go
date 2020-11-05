@@ -70,6 +70,23 @@ func (template Template) Clone() Template {
 	return clone
 }
 
+// ShallowClone clones the given template but ignores any nested templates
+func (template Template) ShallowClone() Template {
+	var clone = Template{
+		Reference: template.Reference.Clone(),
+	}
+
+	if template.Scalar != nil {
+		clone.Scalar = template.Scalar.Clone()
+	}
+
+	if template.Enum != nil {
+		clone.Enum = template.Enum.Clone()
+	}
+
+	return clone
+}
+
 // Compare given template against the provided one returning the frst mismatch.
 func (template Template) Compare(expected Template) (err error) {
 	switch {

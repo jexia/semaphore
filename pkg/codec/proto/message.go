@@ -37,11 +37,6 @@ func (tmpl Message) Marshal(result *dynamic.Message, message *desc.MessageDescri
 			desc := field.GetMessageType()
 			nested := dynamic.NewMessage(desc)
 
-			length := store.Length(tracker.Resolve(path))
-			if length == 0 {
-				break
-			}
-
 			err := Message(specs.Template).Marshal(nested, desc, path, store, tracker)
 			if err != nil {
 				return err

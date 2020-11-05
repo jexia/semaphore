@@ -385,6 +385,7 @@ func TestMarshal(t *testing.T) {
 
 	tests := map[string]map[string]interface{}{
 		"simple": {
+			"nested":  map[string]interface{}{},
 			"message": "hello world",
 		},
 		"nesting": {
@@ -393,6 +394,7 @@ func TestMarshal(t *testing.T) {
 			},
 		},
 		"repeating": {
+			"nested": map[string]interface{}{},
 			"repeating": []map[string]interface{}{
 				{
 					"value": "repeating value",
@@ -400,15 +402,18 @@ func TestMarshal(t *testing.T) {
 			},
 		},
 		"enum": {
+			"nested": map[string]interface{}{},
 			"status": references.Enum("PENDING", 1),
 		},
 		"repeating_enum": {
+			"nested": map[string]interface{}{},
 			"repeating_status": []interface{}{
 				references.Enum("PENDING", 1),
 				references.Enum("UNKNOWN", 0),
 			},
 		},
 		"repeating_values": {
+			"nested": map[string]interface{}{},
 			"repeating_values": []interface{}{
 				"repeating value",
 				"repeating value",

@@ -10,7 +10,6 @@ import (
 	"github.com/jexia/semaphore/pkg/codec"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/template"
 )
 
 // Constructor is capable of constructing new codec managers for the given resource and specs.
@@ -63,7 +62,7 @@ func (manager *Manager) Marshal(store references.Store) (io.Reader, error) {
 		tracker = references.NewTracker()
 	)
 
-	encode(encoder, template.ResourcePath(manager.resource), manager.property.Template, store, tracker)
+	encode(encoder, "", manager.property.Template, store, tracker)
 
 	defer encoder.Release()
 	_, err := encoder.Write()

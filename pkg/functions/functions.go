@@ -308,13 +308,15 @@ func PrepareFunction(ctx *broker.Context, node *specs.Node, flow specs.FlowInter
 
 	property.Template = returns.Template
 	property.Label = returns.Label
+
+	resource := template.JoinPath(template.StackResource, ref)
 	property.Reference = &specs.PropertyReference{
-		Resource: template.JoinPath(template.StackResource, ref),
+		Resource: resource,
 		Path:     ".",
 		Property: returns,
 	}
 
-	references.ScopeNestedReferences(&returns.Template, &property.Template)
+	references.ScopeNestedReferences(resource, "", &returns.Template, &property.Template)
 	return nil
 }
 

@@ -13,6 +13,7 @@ import (
 	"github.com/jexia/semaphore/pkg/providers/hcl"
 	"github.com/jexia/semaphore/pkg/providers/mock"
 	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/pkg/specs/template"
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
@@ -125,7 +126,7 @@ func TestUnmarshalFile(t *testing.T) {
 }
 
 func TestScopeNestedReferencesNil(t *testing.T) {
-	ScopeNestedReferences(nil, nil)
+	ScopeNestedReferences("", "", nil, nil)
 }
 
 func TestScopeNestedReferences(t *testing.T) {
@@ -137,7 +138,7 @@ func TestScopeNestedReferences(t *testing.T) {
 	}
 
 	reference := &specs.PropertyReference{
-		Resource: "input",
+		Resource: template.InputResource,
 	}
 
 	tests := map[string]test{
@@ -247,7 +248,7 @@ func TestScopeNestedReferences(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			ScopeNestedReferences(&test.source.Template, &test.target.Template)
+			ScopeNestedReferences(template.InputResource, "", &test.source.Template, &test.target.Template)
 
 			var lookup func(source *specs.Property, target *specs.Property)
 			lookup = func(source *specs.Property, target *specs.Property) {
