@@ -51,7 +51,7 @@ type ResourceBlock struct {
 	Resources  []Resource  `hcl:"resource,block"`
 }
 
-// Before intermediate specification
+// Before intermediate specification.
 type Before ResourceBlock
 
 // Condition represents a condition on which the scoped resources should be executed if true.
@@ -62,7 +62,7 @@ type Condition struct {
 	Conditions []Condition `hcl:"if,block"`
 }
 
-// Flow intermediate specification
+// Flow intermediate specification.
 type Flow struct {
 	Condition `hcl:",remain"`
 
@@ -74,7 +74,7 @@ type Flow struct {
 	Output  *ParameterMap      `hcl:"output,block"`
 }
 
-// BaseParameterMap contains a set of basic fields.
+// BaseParameterMap contains a set of generic fields.
 type BaseParameterMap struct {
 	Nested     []NestedParameterMap   `hcl:"message,block"`
 	Repeated   []RepeatedParameterMap `hcl:"repeated,block"`
@@ -95,38 +95,38 @@ type Resources struct {
 	Properties hcl.Body `hcl:",remain"`
 }
 
-// Endpoint intermediate specification
+// Endpoint intermediate specification.
 type Endpoint struct {
 	Flow     string   `hcl:"flow,label"`
 	Listener string   `hcl:"listener,label"`
 	Options  hcl.Body `hcl:",remain"`
 }
 
-// Header represents a collection of key values
+// Header represents a collection of key values.
 type Header struct {
 	Body hcl.Body `hcl:",remain"`
 }
 
-// InputParameterMap is the initial map of parameter names (keys) and their (templated) values (values)
+// InputParameterMap is the initial map of parameter names (keys) and their (templated) values (values).
 type InputParameterMap struct {
 	Schema  string        `hcl:"schema,label"`
 	Options *BlockOptions `hcl:"options,block"`
 	Header  []string      `hcl:"header,optional"`
 }
 
-// BlockOptions holds the raw options
+// BlockOptions holds the raw options.
 type BlockOptions struct {
 	Body hcl.Body `hcl:",remain"`
 }
 
-// NestedParameterMap is a map of parameter names (keys) and their (templated) values (values)
+// NestedParameterMap is a map of parameter names (keys) and their (templated) values (values).
 type NestedParameterMap struct {
 	BaseParameterMap `hcl:",remain"`
 
 	Name string `hcl:"name,label"`
 }
 
-// InputRepeatedParameterMap is a map of repeated message blocks/values
+// InputRepeatedParameterMap is a map of repeated message blocks/values.
 type InputRepeatedParameterMap struct {
 	Name       string                      `hcl:"name,label"`
 	Nested     []NestedParameterMap        `hcl:"message,block"`
@@ -134,7 +134,7 @@ type InputRepeatedParameterMap struct {
 	Properties hcl.Body                    `hcl:",remain"`
 }
 
-// RepeatedParameterMap is a map of repeated message blocks/values
+// RepeatedParameterMap is a map of repeated message blocks/values.
 type RepeatedParameterMap struct {
 	BaseParameterMap `hcl:",remain"`
 
@@ -142,7 +142,7 @@ type RepeatedParameterMap struct {
 	Template string `hcl:"template,label"`
 }
 
-// Resource intermediate specification
+// Resource intermediate specification.
 type Resource struct {
 	Name         string        `hcl:"name,label"`
 	DependsOn    []string      `hcl:"depends_on,optional"`
@@ -153,14 +153,14 @@ type Resource struct {
 	Error        *ParameterMap `hcl:"error,block"`
 }
 
-// OnError intermediate specification
+// OnError intermediate specification.
 type OnError struct {
 	Schema string        `hcl:"schema,optional"`
 	Params *BlockOptions `hcl:"params,block"`
 	Body   hcl.Body      `hcl:",remain"`
 }
 
-// Function intermediate specification
+// Function intermediate specification.
 type Function struct {
 	Resources `hcl:",remain"`
 
@@ -169,7 +169,7 @@ type Function struct {
 	Output *ParameterMap `hcl:"output,block"`
 }
 
-// Call intermediate specification
+// Call intermediate specification.
 type Call struct {
 	BaseParameterMap `hcl:",remain"`
 
@@ -180,7 +180,7 @@ type Call struct {
 	Header     *Header       `hcl:"header,block"`
 }
 
-// Service specification
+// Service specification.
 type Service struct {
 	Package   string        `hcl:"package,label"`
 	Name      string        `hcl:"name,label"`
@@ -191,7 +191,7 @@ type Service struct {
 	Options   *BlockOptions `hcl:"options,block"`
 }
 
-// ServiceSelector targets any service matchine the given service selector
+// ServiceSelector targets any service matchine the given service selector.
 type ServiceSelector struct {
 	Pattern       string   `hcl:"pattern,label"`
 	Host          string   `hcl:"host,optional"`
@@ -202,7 +202,7 @@ type ServiceSelector struct {
 	Options       hcl.Body `hcl:",remain"`
 }
 
-// Services specification
+// Services specification.
 type Services struct {
 	Selectors []ServiceSelector `hcl:"select,block"`
 }
@@ -215,7 +215,7 @@ type Method struct {
 	Options *BlockOptions `hcl:"options,block"`
 }
 
-// Proxy specification
+// Proxy specification.
 type Proxy struct {
 	Condition `hcl:",remain"`
 
@@ -227,14 +227,14 @@ type Proxy struct {
 	Forward ProxyForward  `hcl:"forward,block"`
 }
 
-// ProxyInput represents the proxy input block
+// ProxyInput represents the proxy input block.
 type ProxyInput struct {
 	Options *BlockOptions `hcl:"options,block"`
 	Header  []string      `hcl:"header,optional"`
 	Params  string        `hcl:"params,optional"`
 }
 
-// ProxyForward specification
+// ProxyForward specification.
 type ProxyForward struct {
 	Service string  `hcl:"service,label"`
 	Header  *Header `hcl:"header,block"`
