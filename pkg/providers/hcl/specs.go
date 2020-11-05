@@ -13,12 +13,6 @@ import (
 	"go.uber.org/zap"
 )
 
-/**
- * TODO: this file has to be refactored to avoid code duplication and
- * type casting. A lot of code duplication is aroundnested and repeated parameter
- * maps. Interfaces have to be created for these types to allow to reuse implementations.
- */
-
 // ParseFlows parses the given intermediate manifest to a flows manifest
 func ParseFlows(ctx *broker.Context, manifest Manifest) (errObject *specs.ParameterMap, _ specs.FlowListInterface, _ error) {
 	logger.Info(ctx, "parsing intermediate manifest to flows manifest")
@@ -71,13 +65,11 @@ func ParseEndpoints(ctx *broker.Context, manifest Manifest) (specs.EndpointList,
 func ParseIntermediateEndpoint(ctx *broker.Context, endpoint Endpoint) *specs.Endpoint {
 	logger.Debug(ctx, "parsing intermediate endpoint to specs")
 
-	result := specs.Endpoint{
+	return &specs.Endpoint{
 		Options:  ParseIntermediateSpecOptions(endpoint.Options),
 		Flow:     endpoint.Flow,
 		Listener: endpoint.Listener,
 	}
-
-	return &result
 }
 
 // ParseIntermediateFlow parses the given intermediate flow to a specs flow
@@ -97,7 +89,6 @@ func ParseIntermediateFlow(ctx *broker.Context, flow Flow) (*specs.Flow, error) 
 	result := specs.Flow{
 		Name:    flow.Name,
 		Input:   input,
-		Nodes:   specs.NodeList{},
 		Output:  output,
 		OnError: &specs.OnError{},
 	}
@@ -129,31 +120,9 @@ func ParseIntermediateFlow(ctx *broker.Context, flow Flow) (*specs.Flow, error) 
 		flow.Resources = append(flow.Resources, resources...)
 	}
 
-	for _, references := range flow.References {
-		nodes, err := ParseIntermediateResources(ctx, before, references)
-		if err != nil {
-			return nil, err
-		}
-
-		result.Nodes = append(result.Nodes, nodes...)
-	}
-
-	for _, intermediate := range flow.Resources {
-		node, err := ParseIntermediateNode(ctx, before, intermediate)
-		if err != nil {
-			return nil, err
-		}
-
-		result.Nodes = append(result.Nodes, node)
-	}
-
-	for _, condition := range flow.Conditions {
-		nodes, err := ParseIntermediateCondition(ctx, before, condition)
-		if err != nil {
-			return nil, err
-		}
-
-		result.Nodes = append(result.Nodes, nodes...)
+	result.Nodes, err = parseIntermediateCondition(ctx, flow.Condition, before)
+	if err != nil {
+		return nil, err
 	}
 
 	return &result, nil
@@ -178,38 +147,6 @@ func DependsOn(dependency *specs.Node, nodes ...*specs.Node) {
 	for _, node := range nodes {
 		node.DependsOn[dependency.ID] = dependency
 	}
-}
-
-// ParseIntermediateInputParameterMap parses the given input parameter map
-func ParseIntermediateInputParameterMap(ctx *broker.Context, params *InputParameterMap) (*specs.ParameterMap, error) {
-	if params == nil {
-		return nil, nil
-	}
-
-	result := &specs.ParameterMap{
-		Schema:  params.Schema,
-		Options: make(specs.Options),
-		Header:  make(specs.Header, len(params.Header)),
-	}
-
-	for _, key := range params.Header {
-		result.Header[key] = &specs.Property{
-			Path:  key,
-			Name:  key,
-			Label: labels.Optional,
-			Template: specs.Template{
-				Scalar: &specs.Scalar{
-					Type: types.String,
-				},
-			},
-		}
-	}
-
-	if params.Options != nil {
-		result.Options = ParseIntermediateSpecOptions(params.Options.Body)
-	}
-
-	return result, nil
 }
 
 // ParseIntermediateProxy parses the given intermediate proxy to a specs proxy
@@ -278,31 +215,9 @@ func ParseIntermediateProxy(ctx *broker.Context, proxy Proxy) (*specs.Proxy, err
 		proxy.Resources = append(proxy.Resources, resources...)
 	}
 
-	for _, references := range proxy.References {
-		nodes, err := ParseIntermediateResources(ctx, before, references)
-		if err != nil {
-			return nil, err
-		}
-
-		result.Nodes = append(result.Nodes, nodes...)
-	}
-
-	for _, node := range proxy.Resources {
-		node, err := ParseIntermediateNode(ctx, before, node)
-		if err != nil {
-			return nil, err
-		}
-
-		result.Nodes = append(result.Nodes, node)
-	}
-
-	for _, condition := range proxy.Conditions {
-		nodes, err := ParseIntermediateCondition(ctx, before, condition)
-		if err != nil {
-			return nil, err
-		}
-
-		result.Nodes = append(result.Nodes, nodes...)
+	result.Nodes, err = parseIntermediateCondition(ctx, proxy.Condition, before)
+	if err != nil {
+		return nil, err
 	}
 
 	return &result, nil
@@ -322,160 +237,6 @@ func ParseIntermediateProxyForward(ctx *broker.Context, proxy ProxyForward) (*sp
 		}
 
 		result.Request.Header = header
-	}
-
-	return &result, nil
-}
-
-// ParseIntermediateParameterMap parses the given intermediate parameter map to a spec parameter map
-func ParseIntermediateParameterMap(ctx *broker.Context, params *ParameterMap) (*specs.ParameterMap, error) {
-	if params == nil {
-		return nil, nil
-	}
-
-	properties, _ := params.Properties.JustAttributes()
-
-	result := specs.ParameterMap{
-		Schema:  params.Schema,
-		Options: make(specs.Options),
-		Property: &specs.Property{
-			Label: labels.Optional,
-			Template: specs.Template{
-				Message: make(specs.Message),
-			},
-		},
-	}
-
-	if params.Header != nil {
-		header, err := ParseIntermediateHeader(ctx, params.Header)
-		if err != nil {
-			return nil, err
-		}
-
-		result.Header = header
-	}
-
-	if params.Options != nil {
-		result.Options = ParseIntermediateSpecOptions(params.Options.Body)
-	}
-
-	for _, attr := range properties {
-		val, _ := attr.Expr.Value(nil)
-		results, err := ParseIntermediateProperty(ctx, "", attr, val)
-		if err != nil {
-			return nil, err
-		}
-
-		result.Property.Message[attr.Name] = results
-	}
-
-	for _, nested := range params.Nested {
-		results, err := ParseIntermediateNestedParameterMap(ctx, nested, nested.Name)
-		if err != nil {
-			return nil, err
-		}
-
-		result.Property.Message[nested.Name] = results
-	}
-
-	for _, repeated := range params.Repeated {
-		results, err := ParseIntermediateRepeatedParameterMap(ctx, repeated, repeated.Name)
-		if err != nil {
-			return nil, err
-		}
-
-		result.Property.Message[repeated.Name] = results
-	}
-
-	return &result, nil
-}
-
-// ParseIntermediateNestedParameterMap parses the given intermediate parameter map to a spec parameter map
-func ParseIntermediateNestedParameterMap(ctx *broker.Context, params NestedParameterMap, path string) (*specs.Property, error) {
-	properties, _ := params.Properties.JustAttributes()
-	result := specs.Property{
-		Name:  params.Name,
-		Path:  path,
-		Label: labels.Optional,
-		Template: specs.Template{
-			Message: make(specs.Message),
-		},
-	}
-
-	for _, nested := range params.Nested {
-		returns, err := ParseIntermediateNestedParameterMap(ctx, nested, template.JoinPath(path, nested.Name))
-		if err != nil {
-			return nil, err
-		}
-
-		result.Message[nested.Name] = returns
-	}
-
-	for _, repeated := range params.Repeated {
-		returns, err := ParseIntermediateRepeatedParameterMap(ctx, repeated, template.JoinPath(path, repeated.Name))
-		if err != nil {
-			return nil, err
-		}
-
-		result.Message[repeated.Name] = returns
-	}
-
-	for _, attr := range properties {
-		val, _ := attr.Expr.Value(nil)
-		returns, err := ParseIntermediateProperty(ctx, path, attr, val)
-		if err != nil {
-			return nil, err
-		}
-
-		result.Message[attr.Name] = returns
-	}
-
-	return &result, nil
-}
-
-// ParseIntermediateRepeatedParameterMap parses the given intermediate repeated parameter map to a spec repeated parameter map
-func ParseIntermediateRepeatedParameterMap(ctx *broker.Context, params RepeatedParameterMap, path string) (*specs.Property, error) {
-	properties, _ := params.Properties.JustAttributes()
-	msg := specs.Template{
-		Message: make(specs.Message),
-	}
-
-	for _, nested := range params.Nested {
-		returns, err := ParseIntermediateNestedParameterMap(ctx, nested, template.JoinPath(path, nested.Name))
-		if err != nil {
-			return nil, err
-		}
-
-		msg.Message[nested.Name] = returns
-	}
-
-	for _, repeated := range params.Repeated {
-		returns, err := ParseIntermediateRepeatedParameterMap(ctx, repeated, template.JoinPath(path, repeated.Name))
-		if err != nil {
-			return nil, err
-		}
-
-		msg.Message[repeated.Name] = returns
-	}
-
-	for _, attr := range properties {
-		val, _ := attr.Expr.Value(nil)
-		returns, err := ParseIntermediateProperty(ctx, path, attr, val)
-		if err != nil {
-			return nil, err
-		}
-
-		msg.Message[attr.Name] = returns
-	}
-
-	result := specs.Property{
-		Name:  params.Name,
-		Path:  path,
-		Label: labels.Optional,
-		Template: specs.Template{
-			Reference: template.ParsePropertyReference(params.Template),
-			Repeated:  specs.Repeated{msg},
-		},
 	}
 
 	return &result, nil
@@ -613,77 +374,6 @@ func ParseIntermediateCall(ctx *broker.Context, call *Call) (*specs.Call, error)
 		Service: call.Service,
 		Method:  call.Method,
 		Request: results,
-	}
-
-	return &result, nil
-}
-
-// ParseIntermediateCallParameterMap parses the given intermediate parameter map to a spec parameter map
-func ParseIntermediateCallParameterMap(ctx *broker.Context, params *Call) (*specs.ParameterMap, error) {
-	if params == nil {
-		return nil, nil
-	}
-
-	result := specs.ParameterMap{
-		Options: make(specs.Options),
-		Property: &specs.Property{
-			Label: labels.Optional,
-			Template: specs.Template{
-				Message: make(specs.Message),
-			},
-		},
-	}
-
-	if params.Parameters != nil {
-		params, err := ParseIntermediateParameters(ctx, params.Parameters.Body)
-		if err != nil {
-			return nil, err
-		}
-
-		result.Params = params
-	}
-
-	if params.Options != nil {
-		result.Options = ParseIntermediateSpecOptions(params.Options.Body)
-	}
-
-	properties, _ := params.Properties.JustAttributes()
-
-	if params.Header != nil {
-		header, err := ParseIntermediateHeader(ctx, params.Header)
-		if err != nil {
-			return nil, err
-		}
-
-		result.Header = header
-	}
-
-	for _, attr := range properties {
-		val, _ := attr.Expr.Value(nil)
-		results, err := ParseIntermediateProperty(ctx, "", attr, val)
-		if err != nil {
-			return nil, err
-		}
-
-		result.Property.Message[results.Name] = results
-	}
-
-	for _, nested := range params.Nested {
-		results, err := ParseIntermediateNestedParameterMap(ctx, nested, nested.Name)
-		if err != nil {
-			return nil, err
-		}
-
-		result.Property.Message[results.Name] = results
-	}
-
-	for _, repeated := range params.Repeated {
-		results, err := ParseIntermediateRepeatedParameterMap(ctx, repeated, repeated.Name)
-		if err != nil {
-			return nil, err
-		}
-
-		result.Property.Message[repeated.Name] = results
 	}
 
 	return &result, nil
@@ -892,4 +582,37 @@ func ParseIntermediateOnError(ctx *broker.Context, onError *OnError) (*specs.OnE
 	}
 
 	return result, nil
+}
+
+func parseIntermediateCondition(ctx *broker.Context, condition Condition, before specs.Dependencies) (specs.NodeList, error) {
+	var nodeList specs.NodeList
+
+	for _, references := range condition.References {
+		nodes, err := ParseIntermediateResources(ctx, before, references)
+		if err != nil {
+			return nil, err
+		}
+
+		nodeList = append(nodeList, nodes...)
+	}
+
+	for _, intermediate := range condition.Resources {
+		node, err := ParseIntermediateNode(ctx, before, intermediate)
+		if err != nil {
+			return nil, err
+		}
+
+		nodeList = append(nodeList, node)
+	}
+
+	for _, condition := range condition.Conditions {
+		nodes, err := ParseIntermediateCondition(ctx, before, condition)
+		if err != nil {
+			return nil, err
+		}
+
+		nodeList = append(nodeList, nodes...)
+	}
+
+	return nodeList, nil
 }

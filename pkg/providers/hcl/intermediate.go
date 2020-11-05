@@ -1,8 +1,6 @@
 package hcl
 
-import (
-	"github.com/hashicorp/hcl/v2"
-)
+import "github.com/hashicorp/hcl/v2"
 
 // Manifest intermediate specs
 type Manifest struct {
@@ -22,12 +20,12 @@ type Manifest struct {
 	ServiceSelector []Services    `hcl:"services,block"`
 }
 
-// GraphQL represents the GraphQL option definitions
+// GraphQL represents the GraphQL option definitions.
 type GraphQL struct {
 	Address string `hcl:"address"`
 }
 
-// HTTP represent the HTTP option definitions
+// HTTP represent the HTTP option definitions.
 type HTTP struct {
 	Address      string   `hcl:"address"`
 	Origin       []string `hcl:"origin,optional"`
@@ -37,54 +35,62 @@ type HTTP struct {
 	WriteTimeout string   `hcl:"write_timeout,optional"`
 }
 
-// GRPC represent the gRPC option definitions
+// GRPC represent the gRPC option definitions.
 type GRPC struct {
 	Address string `hcl:"address"`
 }
 
-// Prometheus represent the prometheus option definitions
+// Prometheus represent the prometheus option definitions.
 type Prometheus struct {
 	Address string `hcl:"address"`
 }
 
-// Before intermediate specification
-type Before struct {
+// ResourceBlock contains resources and references.
+type ResourceBlock struct {
 	References []Resources `hcl:"resources,block"`
 	Resources  []Resource  `hcl:"resource,block"`
 }
 
-// Condition represents a condition on which the scoped resources should be executed if true
+// Before intermediate specification
+type Before ResourceBlock
+
+// Condition represents a condition on which the scoped resources should be executed if true.
 type Condition struct {
+	ResourceBlock `hcl:",remain"`
+
 	Expression string      `hcl:"expression,label"`
 	Conditions []Condition `hcl:"if,block"`
-	References []Resources `hcl:"resources,block"`
-	Resources  []Resource  `hcl:"resource,block"`
 }
 
 // Flow intermediate specification
 type Flow struct {
-	Name       string             `hcl:"name,label"`
-	Error      *ParameterMap      `hcl:"error,block"`
-	OnError    *OnError           `hcl:"on_error,block"`
-	Before     *Before            `hcl:"before,block"`
-	Input      *InputParameterMap `hcl:"input,block"`
-	References []Resources        `hcl:"resources,block"`
-	Resources  []Resource         `hcl:"resource,block"`
-	Conditions []Condition        `hcl:"if,block"`
-	Output     *ParameterMap      `hcl:"output,block"`
+	Condition `hcl:",remain"`
+
+	Name    string             `hcl:"name,label"`
+	Error   *ParameterMap      `hcl:"error,block"`
+	Input   *InputParameterMap `hcl:"input,block"`
+	OnError *OnError           `hcl:"on_error,block"`
+	Before  *Before            `hcl:"before,block"`
+	Output  *ParameterMap      `hcl:"output,block"`
 }
 
-// ParameterMap is the initial map of parameter names (keys) and their (templated) values (values)
-type ParameterMap struct {
-	Schema     string                 `hcl:"schema,label"`
-	Options    *BlockOptions          `hcl:"options,block"`
-	Header     *Header                `hcl:"header,block"`
+// BaseParameterMap contains a set of basic fields.
+type BaseParameterMap struct {
 	Nested     []NestedParameterMap   `hcl:"message,block"`
 	Repeated   []RepeatedParameterMap `hcl:"repeated,block"`
 	Properties hcl.Body               `hcl:",remain"`
 }
 
-// Resources represent a collection of resources which are references or custom defined functions
+// ParameterMap is the initial map of parameter names (keys) and their (templated) values (values).
+type ParameterMap struct {
+	BaseParameterMap `hcl:",remain"`
+
+	Schema  string        `hcl:"schema,label"`
+	Options *BlockOptions `hcl:"options,block"`
+	Header  *Header       `hcl:"header,block"`
+}
+
+// Resources represent a collection of resources which are references or custom defined functions.
 type Resources struct {
 	Properties hcl.Body `hcl:",remain"`
 }
@@ -115,10 +121,9 @@ type BlockOptions struct {
 
 // NestedParameterMap is a map of parameter names (keys) and their (templated) values (values)
 type NestedParameterMap struct {
-	Name       string                 `hcl:"name,label"`
-	Nested     []NestedParameterMap   `hcl:"message,block"`
-	Repeated   []RepeatedParameterMap `hcl:"repeated,block"`
-	Properties hcl.Body               `hcl:",remain"`
+	BaseParameterMap `hcl:",remain"`
+
+	Name string `hcl:"name,label"`
 }
 
 // InputRepeatedParameterMap is a map of repeated message blocks/values
@@ -131,11 +136,10 @@ type InputRepeatedParameterMap struct {
 
 // RepeatedParameterMap is a map of repeated message blocks/values
 type RepeatedParameterMap struct {
-	Name       string                 `hcl:"name,label"`
-	Template   string                 `hcl:"template,label"`
-	Nested     []NestedParameterMap   `hcl:"message,block"`
-	Repeated   []RepeatedParameterMap `hcl:"repeated,block"`
-	Properties hcl.Body               `hcl:",remain"`
+	BaseParameterMap `hcl:",remain"`
+
+	Name     string `hcl:"name,label"`
+	Template string `hcl:"template,label"`
 }
 
 // Resource intermediate specification
@@ -158,23 +162,22 @@ type OnError struct {
 
 // Function intermediate specification
 type Function struct {
-	Name       string        `hcl:"name,label"`
-	Input      *ParameterMap `hcl:"input,block"`
-	References []Resources   `hcl:"resources,block"`
-	Resources  []Resource    `hcl:"resource,block"`
-	Output     *ParameterMap `hcl:"output,block"`
+	Resources `hcl:",remain"`
+
+	Name   string        `hcl:"name,label"`
+	Input  *ParameterMap `hcl:"input,block"`
+	Output *ParameterMap `hcl:"output,block"`
 }
 
 // Call intermediate specification
 type Call struct {
-	Service    string                 `hcl:"service,label"`
-	Method     string                 `hcl:"method,label"`
-	Parameters *BlockOptions          `hcl:"params,block"`
-	Options    *BlockOptions          `hcl:"options,block"`
-	Header     *Header                `hcl:"header,block"`
-	Nested     []NestedParameterMap   `hcl:"message,block"`
-	Repeated   []RepeatedParameterMap `hcl:"repeated,block"`
-	Properties hcl.Body               `hcl:",remain"`
+	BaseParameterMap `hcl:",remain"`
+
+	Service    string        `hcl:"service,label"`
+	Method     string        `hcl:"method,label"`
+	Parameters *BlockOptions `hcl:"params,block"`
+	Options    *BlockOptions `hcl:"options,block"`
+	Header     *Header       `hcl:"header,block"`
 }
 
 // Service specification
@@ -214,15 +217,14 @@ type Method struct {
 
 // Proxy specification
 type Proxy struct {
-	Name       string        `hcl:"name,label"`
-	Input      *ProxyInput   `hcl:"input,block"`
-	OnError    *OnError      `hcl:"on_error,block"`
-	Before     *Before       `hcl:"before,block"`
-	Error      *ParameterMap `hcl:"error,block"`
-	References []Resources   `hcl:"resources,block"`
-	Resources  []Resource    `hcl:"resource,block"`
-	Conditions []Condition   `hcl:"if,block"`
-	Forward    ProxyForward  `hcl:"forward,block"`
+	Condition `hcl:",remain"`
+
+	Name    string        `hcl:"name,label"`
+	Error   *ParameterMap `hcl:"error,block"`
+	Input   *ProxyInput   `hcl:"input,block"`
+	OnError *OnError      `hcl:"on_error,block"`
+	Before  *Before       `hcl:"before,block"`
+	Forward ProxyForward  `hcl:"forward,block"`
 }
 
 // ProxyInput represents the proxy input block
