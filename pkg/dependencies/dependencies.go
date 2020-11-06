@@ -3,7 +3,6 @@ package dependencies
 import (
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
-	"github.com/jexia/semaphore/pkg/broker/trace"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/template"
 )
@@ -71,9 +70,12 @@ func Resolve(manager specs.FlowInterface, dependencies specs.Dependencies, id st
 			continue
 		}
 
-		_, unresolv := unresolved[edge]
-		if unresolv {
-			return trace.New(trace.WithMessage("Resource dependencies, circular dependency detected: %s.%s <-> %s.%s", manager.GetName(), id, manager.GetName(), edge))
+		if _, unresolv := unresolved[edge]; unresolv {
+			return ErrCircularDependency{
+				Flow: manager.GetName(),
+				From: id,
+				To:   edge,
+			}
 		}
 
 		result := manager.GetNodes().Get(edge)
