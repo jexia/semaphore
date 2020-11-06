@@ -36,7 +36,7 @@ func ParseIntermediateService(parent *broker.Context, manifest Service) (*specs.
 		return nil, err
 	}
 
-	resolver := "default"
+	resolver := "dns"
 	if manifest.Resolver != "" {
 		resolver = manifest.Resolver
 	}

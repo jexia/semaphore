@@ -68,7 +68,7 @@ func NewService(descriptor *desc.ServiceDescriptor) *specs.Service {
 		RequestCodec:       options[CodecOption],
 		ResponseCodec:      options[CodecOption],
 		Options:            options,
-		Resolver:           "default",
+		Resolver:           "dns",
 	}
 
 	req := options[RequestCodecOption]

@@ -117,19 +117,19 @@ type ServiceDiscoveryClientsResolver func(ctx *broker.Context) (specs.ServiceDis
 
 type ServiceDiscoveryClientsResolvers []ServiceDiscoveryClientsResolver
 
-// defaultServiceResolver is a factory that builds plain resolver for the given service host.
-type defaultServiceResolver struct{}
+// dnsServiceResolver is a factory that builds plain resolver for the given service host.
+type dnsServiceResolver struct{}
 
-func (d defaultServiceResolver) Resolver(host string) (discovery.Resolver, error) {
+func (d dnsServiceResolver) Resolver(host string) (discovery.Resolver, error) {
 	return discovery.NewPlainResolver(host), nil
 }
 
-func (d defaultServiceResolver) Provider() string {
-	return "default"
+func (d dnsServiceResolver) Provider() string {
+	return "dns"
 }
 
 func (resolvers ServiceDiscoveryClientsResolvers) Resolve(ctx *broker.Context) (specs.ServiceDiscoveryClients, error) {
-	clients := specs.ServiceDiscoveryClients{"default": defaultServiceResolver{}}
+	clients := specs.ServiceDiscoveryClients{"dns": dnsServiceResolver{}}
 
 	for _, resolver := range resolvers {
 		if resolver == nil {

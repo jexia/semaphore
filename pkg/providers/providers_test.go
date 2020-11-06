@@ -214,7 +214,7 @@ func TestDefaultServiceResolverClient_Resolver(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			d := defaultServiceResolver{}
+			d := dnsServiceResolver{}
 			got, err := d.Resolver(tt.args.host)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Resolver() error = %v, wantErr %v", err, tt.wantErr)
