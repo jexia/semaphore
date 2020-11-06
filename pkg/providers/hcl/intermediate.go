@@ -160,15 +160,6 @@ type OnError struct {
 	Body   hcl.Body      `hcl:",remain"`
 }
 
-// Function intermediate specification.
-type Function struct {
-	Resources `hcl:",remain"`
-
-	Name   string        `hcl:"name,label"`
-	Input  *ParameterMap `hcl:"input,block"`
-	Output *ParameterMap `hcl:"output,block"`
-}
-
 // Call intermediate specification.
 type Call struct {
 	BaseParameterMap `hcl:",remain"`
