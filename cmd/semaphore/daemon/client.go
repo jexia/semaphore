@@ -10,7 +10,6 @@ import (
 	"github.com/jexia/semaphore/pkg/broker/endpoints"
 	"github.com/jexia/semaphore/pkg/broker/listeners"
 	"github.com/jexia/semaphore/pkg/broker/logger"
-	"github.com/jexia/semaphore/pkg/broker/trace"
 	"github.com/jexia/semaphore/pkg/functions"
 	"github.com/jexia/semaphore/pkg/transport"
 	"go.uber.org/zap"
@@ -89,7 +88,7 @@ func (client *Client) Serve() (<-chan struct{}, <-chan error) {
 
 	go func() {
 		if len(client.providers.Listeners) == 0 {
-			errs <- trace.New(trace.WithMessage("no listeners configured to serve"))
+			errs <- errors.New("no listeners configured to serve")
 
 			return
 		}
