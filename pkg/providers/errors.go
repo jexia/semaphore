@@ -1,10 +1,14 @@
 package providers
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/jexia/semaphore/pkg/prettyerr"
 )
+
+// ErrLengthMismatch is returned when the length of repeated does not match the schema
+var ErrLengthMismatch = errors.New("the length of repeated does not match the schema")
 
 // ErrUndefinedObject occurs when Object is not found in schema
 type ErrUndefinedObject struct {
