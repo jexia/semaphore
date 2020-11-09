@@ -12,6 +12,7 @@ import (
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/labels"
+	"github.com/jexia/semaphore/pkg/specs/template"
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
@@ -83,8 +84,8 @@ func TestResolveStatusCode(t *testing.T) {
 		t.Fatal("unexpected empty object")
 	}
 
-	store := references.NewReferenceStore(1)
-	store.StoreValue("input", "status", expected)
+	store := references.NewStore(1)
+	store.Store(template.ResourcePath(template.InputResource, "status"), &references.Reference{Value: expected})
 
 	result := object.ResolveStatusCode(store)
 	if int64(result) != expected {
@@ -99,7 +100,7 @@ func TestResolveStatusCodeNil(t *testing.T) {
 		t.Fatal("unexpected empty object")
 	}
 
-	store := references.NewReferenceStore(0)
+	store := references.NewStore(0)
 	result := object.ResolveStatusCode(store)
 	if result != expected {
 		t.Errorf("unexpected result %d, expected %d", result, expected)
@@ -126,7 +127,7 @@ func TestResolveStatusCodeNilReference(t *testing.T) {
 		t.Fatal("unexpected empty object")
 	}
 
-	store := references.NewReferenceStore(0)
+	store := references.NewStore(0)
 	result := object.ResolveStatusCode(store)
 	if result != expected {
 		t.Errorf("unexpected result %d, expected %d", result, expected)
@@ -152,8 +153,8 @@ func TestResolveStatusMessage(t *testing.T) {
 		t.Fatal("unexpected empty object")
 	}
 
-	store := references.NewReferenceStore(1)
-	store.StoreValue("input", "status", expected)
+	store := references.NewStore(1)
+	store.Store(template.ResourcePath(template.InputResource, "status"), &references.Reference{Value: expected})
 
 	result := object.ResolveMessage(store)
 	if result != expected {
@@ -168,7 +169,7 @@ func TestResolveStatusMessageNil(t *testing.T) {
 		t.Fatal("unexpected empty object")
 	}
 
-	store := references.NewReferenceStore(0)
+	store := references.NewStore(0)
 	result := object.ResolveMessage(store)
 	if result != expected {
 		t.Errorf("unexpected result %s, expected %s", result, expected)
@@ -195,7 +196,7 @@ func TestResolveStatusMessageNilReference(t *testing.T) {
 		t.Fatal("unexpected empty object")
 	}
 
-	store := references.NewReferenceStore(0)
+	store := references.NewStore(0)
 	result := object.ResolveMessage(store)
 	if result != expected {
 		t.Errorf("unexpected result %s, expected %s", result, expected)

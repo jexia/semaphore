@@ -82,6 +82,19 @@ func (property *Property) Clone() *Property {
 		return &Property{}
 	}
 
+	result := property.ShallowClone()
+	result.Template = property.Template.Clone()
+	return result
+}
+
+// ShallowClone clones the given property but ignores the defined template and/or
+// nested properties. This method is often used in cases where comparisons between
+// the flow and schema are made and any defined properties are seen as defined values.
+func (property *Property) ShallowClone() *Property {
+	if property == nil {
+		return &Property{}
+	}
+
 	return &Property{
 		Meta:        property.Meta,
 		Position:    property.Position,
@@ -89,12 +102,11 @@ func (property *Property) Clone() *Property {
 		Name:        property.Name,
 		Path:        property.Path,
 
-		Expr:    property.Expr,
-		Raw:     property.Raw,
-		Options: property.Options,
-		Label:   property.Label,
-
-		Template: property.Template.Clone(),
+		Expr:     property.Expr,
+		Raw:      property.Raw,
+		Options:  property.Options,
+		Label:    property.Label,
+		Template: property.Template.ShallowClone(),
 	}
 }
 

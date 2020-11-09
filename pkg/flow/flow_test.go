@@ -332,7 +332,7 @@ func TestAfterManagerFunctions(t *testing.T) {
 				t.Fatal("unexpected result, expected a manager to be returned")
 			}
 
-			store := references.NewReferenceStore(1)
+			store := references.NewStore(1)
 			err := manager.Do(context.Background(), store)
 			if err != nil {
 				t.Fatalf("unexpected error, %s", err)
@@ -399,7 +399,7 @@ func TestAfterManagerFunctionsError(t *testing.T) {
 				t.Fatal("unexpected result, expected a manager to be returned")
 			}
 
-			store := references.NewReferenceStore(1)
+			store := references.NewStore(1)
 			err := manager.Do(context.Background(), store)
 			if err == nil {
 				t.Fatal("unexpected pass expected a error to be returned")

@@ -27,7 +27,7 @@ func sprintfExecutable(printer Printer, args ...*specs.Property) func(store refe
 			return err
 		}
 
-		store.StoreValue("", ".", result)
+		store.Store("", &references.Reference{Value: result})
 
 		return nil
 	}

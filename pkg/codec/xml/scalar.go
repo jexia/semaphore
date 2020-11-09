@@ -5,31 +5,33 @@ import (
 
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/pkg/specs/template"
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
 // Scalar is a wrapper for specs.Scalar providing XML encoding/decoding.
 type Scalar struct {
-	name      string
-	scalar    *specs.Scalar
-	reference *specs.PropertyReference
-	store     references.Store
+	name, path string
+	template   specs.Template
+	store      references.Store
+	tracker    references.Tracker
 }
 
 // NewScalar creates a wrapper for specs.Scalar to be XML encoded/decoded.
-func NewScalar(name string, scalar *specs.Scalar, reference *specs.PropertyReference, store references.Store) *Scalar {
+func NewScalar(name, path string, template specs.Template, store references.Store, tracker references.Tracker) *Scalar {
 	return &Scalar{
-		name:      name,
-		scalar:    scalar,
-		reference: reference,
-		store:     store,
+		name:     name,
+		path:     path,
+		template: template,
+		store:    store,
+		tracker:  tracker,
 	}
 }
 
 // MarshalXML marshals scalar value to XML.
 func (scalar Scalar) MarshalXML(encoder *xml.Encoder, _ xml.StartElement) error {
 	var (
-		value = scalar.scalar.Default
+		value = scalar.template.Scalar.Default
 		start = xml.StartElement{
 			Name: xml.Name{
 				Local: scalar.name,
@@ -37,8 +39,8 @@ func (scalar Scalar) MarshalXML(encoder *xml.Encoder, _ xml.StartElement) error 
 		}
 	)
 
-	if scalar.reference != nil {
-		var reference = scalar.store.Load(scalar.reference.Resource, scalar.reference.Path)
+	if scalar.template.Reference != nil {
+		var reference = scalar.store.Load(scalar.tracker.Resolve(scalar.template.Reference.String()))
 		if reference != nil && reference.Value != nil {
 			value = reference.Value
 		}
@@ -48,7 +50,7 @@ func (scalar Scalar) MarshalXML(encoder *xml.Encoder, _ xml.StartElement) error 
 }
 
 // UnmarshalXML unmarshals scalar value from XML stream.
-func (scalar *Scalar) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) (err error) {
+func (scalar *Scalar) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
 	const (
 		waitForValue int = iota
 		waitForClose
@@ -64,21 +66,28 @@ func (scalar *Scalar) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement)
 
 		switch state {
 		case waitForValue:
-			var reference = &references.Reference{
-				Path: buildPath(scalar.reference.Path, scalar.name),
-			}
-
 			switch t := tok.(type) {
 			case xml.CharData:
-				if reference.Value, err = types.DecodeFromString(string(t), scalar.scalar.Type); err != nil {
+				value, err := types.DecodeFromString(string(t), scalar.template.Scalar.Type)
+				if err != nil {
 					return err
 				}
 
-				scalar.store.StoreReference(scalar.reference.Resource, reference)
+				scalar.store.Store(
+					scalar.tracker.Resolve(
+						template.JoinPath(scalar.path, scalar.name),
+					),
+					&references.Reference{Value: value},
+				)
 
 				state = waitForClose
 			case xml.EndElement:
-				scalar.store.StoreReference(scalar.reference.Resource, reference)
+				scalar.store.Store(
+					scalar.tracker.Resolve(
+						template.JoinPath(scalar.path, scalar.name),
+					),
+					new(references.Reference),
+				)
 				// scalar is closed with nil value
 				return nil
 			default:

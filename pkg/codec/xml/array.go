@@ -5,52 +5,81 @@ import (
 
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/pkg/specs/template"
 )
 
 // Array represents an array of values/references.
 type Array struct {
-	name      string
-	template  specs.Template
-	repeated  specs.Repeated
-	reference *specs.PropertyReference
-	store     references.Store
+	name, path string
+	template   specs.Template
+	repeated   specs.Template
+	store      references.Store
+	tracker    references.Tracker
 }
 
 // NewArray constructs a new XML array encoder/decoder.
-func NewArray(name string, template specs.Template, repeated specs.Repeated, reference *specs.PropertyReference, store references.Store) *Array {
+func NewArray(name, path string, template specs.Template, store references.Store, tracker references.Tracker) *Array {
+	// TODO: find a better implementation/name
+	combi, err := template.Repeated.Template()
+	if err != nil {
+		panic(err)
+	}
+
 	return &Array{
-		name:      name,
-		template:  template,
-		repeated:  repeated,
-		reference: reference,
-		store:     store,
+		name:     name,
+		path:     path,
+		template: combi,
+		repeated: template,
+		store:    store,
+		tracker:  tracker,
 	}
 }
 
 // MarshalXML encodes the given specs object into the provided XML encoder.
 func (array *Array) MarshalXML(encoder *xml.Encoder, _ xml.StartElement) error {
-	if array.reference == nil {
-		for _, item := range array.repeated {
-			if err := encodeElement(encoder, array.name, item, array.store); err != nil {
+	if array.repeated.Reference == nil {
+		ptrack := array.tracker.Resolve(array.path)
+		array.tracker.Track(ptrack, 0)
+
+		for _, item := range array.repeated.Repeated {
+			if err := encodeElement(
+				encoder,
+				array.name,
+				array.path,
+				item,
+				array.store,
+				array.tracker,
+			); err != nil {
 				return err
 			}
+
+			array.tracker.Next(ptrack)
 		}
 
 		return nil
 	}
 
-	var reference = array.store.Load(array.reference.Resource, array.reference.Path)
-	if reference == nil || reference.Repeated == nil {
-		// ignore
+	length := array.store.Length(array.tracker.Resolve(array.repeated.Reference.String()))
+	if length == 0 {
 		return nil
 	}
 
-	array.template.Reference = new(specs.PropertyReference)
+	ptrack := array.tracker.Resolve(array.path)
+	array.tracker.Track(ptrack, 0)
 
-	for _, store := range reference.Repeated {
-		if err := encodeElement(encoder, array.name, array.template, store); err != nil {
+	for index := 0; index < length; index++ {
+		if err := encodeElement(
+			encoder,
+			array.name,
+			template.JoinPath(array.path, array.name),
+			array.template,
+			array.store,
+			array.tracker,
+		); err != nil {
 			return err
 		}
+
+		array.tracker.Next(ptrack)
 	}
 
 	return nil
@@ -59,33 +88,20 @@ func (array *Array) MarshalXML(encoder *xml.Encoder, _ xml.StartElement) error {
 // UnmarshalXML decodes XML input into the receiver of type specs.Repeated.
 func (array *Array) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
 	var (
-		path      = buildPath(array.reference.Path, array.name)
-		store     = references.NewReferenceStore(1)
-		reference = array.store.Load(array.reference.Resource, path)
+		path  = template.JoinPath(array.path, array.name)
+		index = array.store.Length(array.tracker.Resolve(path))
 	)
 
-	if reference == nil {
-		reference = &references.Reference{
-			Path: path,
-		}
+	array.tracker.Track(path, index)
+	array.store.Define(array.tracker.Resolve(path), index+1)
 
-		array.store.StoreReference(array.reference.Resource, reference)
-	}
-
-	if err := decodeElement(
+	return decodeElement(
 		decoder,
 		start,
-		"", // resource
-		"", // path
-		"", // name
+		array.name,
+		array.path,
 		array.template,
-		store,
-	); err != nil {
-		return err
-	}
-
-	// update the reference
-	reference.Repeated = append(reference.Repeated, store)
-
-	return nil
+		array.store,
+		array.tracker,
+	)
 }

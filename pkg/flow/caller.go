@@ -182,7 +182,7 @@ func (caller *caller) HandleErr(w *transport.Writer, reader io.Reader, store ref
 			}
 
 			if caller.err.message.Reference != nil {
-				ref := store.Load(caller.err.message.Reference.Resource, caller.err.message.Reference.Path)
+				ref := store.Load(caller.err.message.Reference.String())
 				if ref != nil {
 					message = ref.Value
 				}
@@ -195,7 +195,7 @@ func (caller *caller) HandleErr(w *transport.Writer, reader io.Reader, store ref
 			}
 
 			if caller.err.status.Reference != nil {
-				ref := store.Load(caller.err.status.Reference.Resource, caller.err.status.Reference.Path)
+				ref := store.Load(caller.err.status.Reference.String())
 				if ref != nil {
 					status = ref.Value
 				}
@@ -229,8 +229,8 @@ func (caller *caller) HandleErr(w *transport.Writer, reader io.Reader, store ref
 		message = w.Message()
 	}
 
-	store.StoreValue(template.ErrorResource, "status", status)
-	store.StoreValue(template.ErrorResource, "message", message)
+	store.Store(template.ResourcePath(template.ErrorResource, "status"), &references.Reference{Value: status})
+	store.Store(template.ResourcePath(template.ErrorResource, "message"), &references.Reference{Value: message})
 
 	return nil
 }
@@ -239,7 +239,7 @@ func (caller *caller) HandleErr(w *transport.Writer, reader io.Reader, store ref
 func ExecuteFunctions(stack functions.Stack, store references.Store) error {
 	for key, function := range stack {
 		resource := template.JoinPath(template.StackResource, key)
-		err := function.Fn(references.NewPrefixStore(store, resource, ""))
+		err := function.Fn(references.NewPrefixStore(store, template.ResourcePath(resource)))
 		if err != nil {
 			return err
 		}

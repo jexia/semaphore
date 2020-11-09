@@ -7,8 +7,8 @@ import (
 )
 
 // ResponseObject constructs the response value send back to the client
-func ResponseObject(specs *specs.Property, refs references.Store) (map[string]interface{}, error) {
-	if specs == nil || refs == nil {
+func ResponseObject(specs *specs.Property, store references.Store, tracker references.Tracker) (map[string]interface{}, error) {
+	if specs == nil || store == nil {
 		return nil, ErrInvalidObject
 	}
 
@@ -16,7 +16,7 @@ func ResponseObject(specs *specs.Property, refs references.Store) (map[string]in
 		return nil, ErrInvalidObject
 	}
 
-	value, err := ResponseValue(specs.Template, refs)
+	value, err := ResponseValue(specs.Template, store, tracker)
 	if err != nil {
 		return nil, err
 	}
@@ -27,12 +27,12 @@ func ResponseObject(specs *specs.Property, refs references.Store) (map[string]in
 }
 
 // ResponseValue constructs a new response used inside a response object
-func ResponseValue(template specs.Template, refs references.Store) (interface{}, error) {
+func ResponseValue(tmpl specs.Template, store references.Store, tracker references.Tracker) (interface{}, error) {
 	switch {
-	case template.Message != nil:
-		result := make(map[string]interface{}, len(template.Message))
-		for _, nested := range template.Message {
-			value, err := ResponseValue(nested.Template, refs)
+	case tmpl.Message != nil:
+		result := make(map[string]interface{}, len(tmpl.Message))
+		for _, nested := range tmpl.Message {
+			value, err := ResponseValue(nested.Template, store, tracker)
 			if err != nil {
 				return nil, err
 			}
@@ -45,27 +45,26 @@ func ResponseValue(template specs.Template, refs references.Store) (interface{},
 		}
 
 		return result, nil
-	case template.Repeated != nil:
+	case tmpl.Repeated != nil:
 		// TODO: implement default types
-		store := refs.Load(template.Reference.Resource, template.Reference.Path)
-		if store == nil {
+
+		rpath := tmpl.Reference.String()
+		length := store.Length(tracker.Resolve(rpath))
+
+		if length == 0 {
 			return nil, nil
 		}
 
-		result := make([]interface{}, 0, len(store.Repeated))
-
-		if len(store.Repeated) == 0 {
-			return result, nil
-		}
-
-		// TODO: cache repeated template
-		template, err := template.Repeated.Template()
+		result := make([]interface{}, 0, length)
+		template, err := tmpl.Repeated.Template()
 		if err != nil {
 			return nil, err
 		}
 
-		for _, store := range store.Repeated {
-			value, err := ResponseValue(template, store)
+		tracker.Track(rpath, 0)
+
+		for index := 0; index < length; index++ {
+			value, err := ResponseValue(template, store, tracker)
 			if err != nil {
 				return nil, err
 			}
@@ -75,25 +74,26 @@ func ResponseValue(template specs.Template, refs references.Store) (interface{},
 			}
 
 			result = append(result, value)
+			tracker.Next(rpath)
 		}
 
 		return result, nil
-	case template.Enum != nil:
-		if template.Reference == nil {
+	case tmpl.Enum != nil:
+		if tmpl.Reference == nil {
 			return nil, nil
 		}
 
-		ref := refs.Load(template.Reference.Resource, template.Reference.Path)
+		ref := store.Load(tracker.Resolve(tmpl.Reference.String()))
 		if ref == nil {
 			return nil, nil
 		}
 
-		return template.Enum.Positions[*ref.Enum].Key, nil
-	case template.Scalar != nil:
-		value := template.Scalar.Default
+		return tmpl.Enum.Positions[*ref.Enum].Key, nil
+	case tmpl.Scalar != nil:
+		value := tmpl.Scalar.Default
 
-		if template.Reference != nil {
-			ref := refs.Load(template.Reference.Resource, template.Reference.Path)
+		if tmpl.Reference != nil {
+			ref := store.Load(tracker.Resolve(tmpl.Reference.String()))
 			if ref != nil {
 				value = ref.Value
 			}

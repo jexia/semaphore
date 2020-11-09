@@ -4,66 +4,39 @@ import (
 	"testing"
 
 	"github.com/jexia/semaphore/pkg/references"
+	"github.com/jexia/semaphore/pkg/specs/template"
 )
 
+// Expect contains expected value.
 type Expect struct {
-	Value    interface{}
-	Enum     *int32
-	Repeated []Expect
-	Nested   map[string]Expect
+	Scalar interface{}
+	Enum   *int32
 }
 
-func buildPath(prefix, property string) string {
-	if prefix == "" {
-		return property
-	}
-
-	return prefix + "." + property
-}
-
+// Assert checks if value under given path matches expected.
 func Assert(t *testing.T, resource, path string, store references.Store, input Expect) {
-	ref := store.Load(resource, path)
+	var reference = store.Load(template.ResourcePath(resource, path))
 
 	switch {
-	case input.Nested != nil:
-		for key, value := range input.Nested {
-			Assert(t, resource, buildPath(path, key), store, value)
-		}
 	case input.Enum != nil:
-		if ref == nil {
+		if reference == nil {
 			t.Fatalf("reference %q was expected to be set", path)
 		}
 
-		if ref.Enum == nil {
+		if reference.Enum == nil {
 			t.Fatalf("reference %q was expected to have a enum value", path)
 		}
 
-		if *input.Enum != *ref.Enum {
-			t.Errorf("reference %q was expected to have enum value [%d], not [%d]", path, *input.Enum, *ref.Enum)
+		if *input.Enum != *reference.Enum {
+			t.Errorf("reference %q was expected to have enum value [%d], not [%d]", path, *input.Enum, *reference.Enum)
 		}
-	case input.Value != nil:
-		if ref == nil {
+	case input.Scalar != nil:
+		if reference == nil {
 			t.Fatalf("reference %q was expected to be set", path)
 		}
 
-		if ref.Value != input.Value {
-			t.Errorf("reference %q was expected to be %T(%v), got %T(%v)", path, input.Value, input.Value, ref.Value, ref.Value)
-		}
-	case input.Repeated != nil:
-		if ref == nil {
-			t.Fatalf("reference %q was expected to be set", path)
-		}
-
-		if ref.Repeated == nil {
-			t.Fatalf("reference %q was expected to have a repeated value", path)
-		}
-
-		if expected, actual := len(input.Repeated), len(ref.Repeated); actual != expected {
-			t.Fatalf("invalid number of repeated values, expected %d, got %d", expected, actual)
-		}
-
-		for index, expected := range input.Repeated {
-			Assert(t, "", "", ref.Repeated[index], expected)
+		if reference.Value != input.Scalar {
+			t.Errorf("reference %q was expected to be %T(%v), got %T(%v)", path, input.Scalar, input.Scalar, reference.Value, reference.Value)
 		}
 	}
 }

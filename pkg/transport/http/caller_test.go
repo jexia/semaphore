@@ -13,6 +13,7 @@ import (
 	"github.com/jexia/semaphore/pkg/codec/json"
 	"github.com/jexia/semaphore/pkg/codec/metadata"
 	"github.com/jexia/semaphore/pkg/references"
+	"github.com/jexia/semaphore/pkg/specs/template"
 	"github.com/jexia/semaphore/pkg/transport"
 )
 
@@ -57,7 +58,7 @@ func TestCaller(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	refs := references.NewReferenceStore(1)
+	refs := references.NewStore(1)
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		want := "/Path?query=value"
 		got := r.URL.String()
@@ -95,7 +96,7 @@ func TestCaller(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	ref := refs.Load("input", "message")
+	ref := refs.Load("input:message")
 	if ref == nil {
 		t.Fatal("input:message reference not set")
 	}
@@ -355,13 +356,13 @@ func TestCallerReferencesLookup(t *testing.T) {
 				t.Fatalf("unexpected references %+v", refs)
 			}
 
-			store := references.NewReferenceStore(1)
+			store := references.NewStore(1)
 			ctx := context.Background()
 			req := transport.Request{
 				Method: method,
 			}
 
-			store.StoreValue(test.resource, test.path, test.value)
+			store.Store(template.ResourcePath(test.resource, test.path), &references.Reference{Value: test.value})
 
 			rw := &MockResponseWriter{
 				header: metadata.MD{},

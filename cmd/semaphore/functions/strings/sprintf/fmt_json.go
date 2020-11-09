@@ -30,8 +30,8 @@ func (json JSON) Formatter(precision Precision) (Formatter, error) {
 }
 
 // FormatJSON prints provided argument in a JSON format.
-func FormatJSON(store references.Store, argument *specs.Property) (string, error) {
-	var property = encoder{refs: store, property: argument}
+func FormatJSON(store references.Store, tracker references.Tracker, argument *specs.Property) (string, error) {
+	var property = encoder{store: store, tracker: tracker, property: argument}
 
 	bb, err := json.Marshal(property)
 	if err != nil {
@@ -43,17 +43,18 @@ func FormatJSON(store references.Store, argument *specs.Property) (string, error
 
 type encoder struct {
 	property *specs.Property
-	refs     references.Store
+	store    references.Store
+	tracker  references.Tracker
 }
 
 func (enc encoder) MarshalJSON() ([]byte, error) {
 	switch {
 	case enc.property.Repeated != nil:
-		return repeated{property: enc.property, refs: enc.refs}.MarshalJSON()
+		return repeated{property: enc.property, store: enc.store, tracker: enc.tracker}.MarshalJSON()
 	case enc.property.Message != nil:
-		return message{property: enc.property, refs: enc.refs}.MarshalJSON()
+		return message{property: enc.property, store: enc.store, tracker: enc.tracker}.MarshalJSON()
 	case enc.property.Enum != nil && enc.property.Reference != nil:
-		reference := enc.refs.Load(enc.property.Reference.Resource, enc.property.Reference.Path)
+		reference := enc.store.Load(enc.tracker.Resolve(enc.property.Reference.String()))
 		if reference == nil {
 			return null, nil
 		}
@@ -67,7 +68,7 @@ func (enc encoder) MarshalJSON() ([]byte, error) {
 	case enc.property.Scalar != nil:
 		value := enc.property.Scalar.Default
 
-		var reference = enc.refs.Load(enc.property.Reference.Resource, enc.property.Reference.Path)
+		var reference = enc.store.Load(enc.tracker.Resolve(enc.property.Reference.String()))
 		if reference != nil {
 			value = reference.Value
 		}
@@ -80,7 +81,8 @@ func (enc encoder) MarshalJSON() ([]byte, error) {
 
 type repeated struct {
 	property *specs.Property
-	refs     references.Store
+	store    references.Store
+	tracker  references.Tracker
 }
 
 func (r repeated) MarshalJSON() ([]byte, error) {
@@ -88,32 +90,31 @@ func (r repeated) MarshalJSON() ([]byte, error) {
 		return null, nil
 	}
 
-	var reference = r.refs.Load(r.property.Reference.Resource, r.property.Reference.Path)
-	if reference == nil || reference.Repeated == nil {
+	path := r.tracker.Resolve(r.property.Reference.String())
+	r.tracker.Track(path, 0)
+	length := r.store.Length(path)
+	if length == 0 {
 		return null, nil
 	}
 
 	var buff = bytes.NewBufferString("[")
+	item, err := r.property.Repeated.Template()
+	if err != nil {
+		return nil, fmt.Errorf("failed to encode repeated item: %w", err)
+	}
 
-	for index, store := range reference.Repeated {
+	for index := 0; index < length; index++ {
 		if index > 0 {
 			buff.WriteString(",")
 		}
 
-		item, err := r.property.Repeated.Template()
-		if err != nil {
-			return nil, fmt.Errorf("failed to encode repeated item: %w", err)
-		}
-
-		// the item template does include its own reference
-		item.Reference = &specs.PropertyReference{}
-
-		bb, err := encoder{property: &specs.Property{Template: item}, refs: store}.MarshalJSON()
+		bb, err := encoder{property: &specs.Property{Template: item}, store: r.store, tracker: r.tracker}.MarshalJSON()
 		if err != nil {
 			return nil, err
 		}
 
 		buff.Write(bb)
+		r.tracker.Next(path)
 	}
 
 	buff.WriteString("]")
@@ -123,7 +124,8 @@ func (r repeated) MarshalJSON() ([]byte, error) {
 
 type message struct {
 	property *specs.Property
-	refs     references.Store
+	store    references.Store
+	tracker  references.Tracker
 }
 
 func (m message) MarshalJSON() ([]byte, error) {
@@ -137,7 +139,7 @@ func (m message) MarshalJSON() ([]byte, error) {
 	)
 
 	for key, prop := range m.property.Message {
-		bb, err := (&encoder{property: prop, refs: m.refs}).MarshalJSON()
+		bb, err := (&encoder{property: prop, store: m.store, tracker: m.tracker}).MarshalJSON()
 		if err != nil {
 			return nil, err
 		}

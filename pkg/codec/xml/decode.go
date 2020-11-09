@@ -8,43 +8,17 @@ import (
 	"github.com/jexia/semaphore/pkg/specs"
 )
 
-func decodeElement(decoder *xml.Decoder, start xml.StartElement, resource, prefix, name string, template specs.Template, store references.Store) (err error) {
-	defer func() {
-		if err != nil {
-			err = errFailedToDecode{
-				errStack{
-					property: name,
-					inner:    err,
-				},
-			}
-		}
-	}()
-
-	var (
-		unmarshaler xml.Unmarshaler
-		reference   = specs.PropertyReference{
-			Resource: resource,
-			Path:     prefix,
-		}
-	)
-
+func decodeElement(decoder *xml.Decoder, start xml.StartElement, name, path string, template specs.Template, store references.Store, tracker references.Tracker) (err error) {
 	switch {
 	case template.Message != nil:
-		unmarshaler = NewObject(name, template.Message, &reference, store)
+		return NewObject(name, path, template, store, tracker).UnmarshalXML(decoder, start)
 	case template.Repeated != nil:
-		schema, err := template.Repeated.Template()
-		if err != nil {
-			return err
-		}
-
-		unmarshaler = NewArray(name, schema, template.Repeated, &reference, store)
+		return NewArray(name, path, template, store, tracker).UnmarshalXML(decoder, start)
 	case template.Enum != nil:
-		unmarshaler = NewEnum(name, template.Enum, &reference, store)
+		return NewEnum(name, path, template, store, tracker).UnmarshalXML(decoder, start)
 	case template.Scalar != nil:
-		unmarshaler = NewScalar(name, template.Scalar, &reference, store)
+		return NewScalar(name, path, template, store, tracker).UnmarshalXML(decoder, start)
 	default:
 		return fmt.Errorf("property '%s' has unknown type", name)
 	}
-
-	return unmarshaler.UnmarshalXML(decoder, start)
 }

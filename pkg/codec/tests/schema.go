@@ -389,12 +389,20 @@ var (
 							},
 							Repeated: specs.Repeated{
 								{
+									Reference: &specs.PropertyReference{
+										Resource: template.InputResource,
+										Path:     "repeating_string",
+									},
 									Scalar: &specs.Scalar{
 										Type:    types.String,
 										Default: "foo",
 									},
 								},
 								{
+									Reference: &specs.PropertyReference{
+										Resource: template.InputResource,
+										Path:     "repeating_string",
+									},
 									Scalar: &specs.Scalar{
 										Type:    types.String,
 										Default: "bar",
@@ -415,6 +423,10 @@ var (
 							},
 							Repeated: specs.Repeated{
 								{
+									Reference: &specs.PropertyReference{
+										Resource: template.InputResource,
+										Path:     "repeating_enum",
+									},
 									Enum: enum,
 								},
 							},

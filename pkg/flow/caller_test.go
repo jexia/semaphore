@@ -288,7 +288,7 @@ func TestCallErrHandling(t *testing.T) {
 	ctx := logger.WithLogger(broker.NewBackground())
 	call := NewCall(ctx, node, options)
 
-	store := references.NewReferenceStore(0)
+	store := references.NewStore(0)
 	err := call.Do(context.Background(), store)
 	if err == nil {
 		t.Fatal("unexpected pass expected a error to be returned")
@@ -314,7 +314,7 @@ func TestTransportStatusCodeHandling(t *testing.T) {
 				options: &CallOptions{
 					Transport: NewMockTransport(nil, transport.StatusOK, nil),
 				},
-				store: references.NewReferenceStore(0),
+				store: references.NewStore(0),
 				err:   nil,
 			}
 		},
@@ -325,7 +325,7 @@ func TestTransportStatusCodeHandling(t *testing.T) {
 					Transport:      NewMockTransport(nil, transport.StatusOK, nil),
 					ExpectedStatus: []int{transport.StatusOK},
 				},
-				store: references.NewReferenceStore(0),
+				store: references.NewStore(0),
 				err:   nil,
 			}
 		},
@@ -336,7 +336,7 @@ func TestTransportStatusCodeHandling(t *testing.T) {
 					Transport:      NewMockTransport(nil, 201, nil),
 					ExpectedStatus: []int{201},
 				},
-				store: references.NewReferenceStore(0),
+				store: references.NewStore(0),
 				err:   nil,
 			}
 		},
@@ -347,7 +347,7 @@ func TestTransportStatusCodeHandling(t *testing.T) {
 					Transport:      NewMockTransport(nil, 300, nil),
 					ExpectedStatus: []int{300},
 				},
-				store: references.NewReferenceStore(0),
+				store: references.NewStore(0),
 				err:   nil,
 			}
 		},
@@ -358,7 +358,7 @@ func TestTransportStatusCodeHandling(t *testing.T) {
 					Transport:      NewMockTransport(nil, 500, nil),
 					ExpectedStatus: []int{transport.StatusOK},
 				},
-				store: references.NewReferenceStore(0),
+				store: references.NewStore(0),
 				err:   ErrAbortFlow,
 			}
 		},
@@ -369,7 +369,7 @@ func TestTransportStatusCodeHandling(t *testing.T) {
 					Transport:      NewMockTransport(nil, 401, nil),
 					ExpectedStatus: []int{transport.StatusOK},
 				},
-				store: references.NewReferenceStore(0),
+				store: references.NewStore(0),
 				err:   ErrAbortFlow,
 			}
 		},
@@ -437,7 +437,7 @@ func TestTransportErrorSchemaDecoding(t *testing.T) {
 					Transport:      NewMockTransport(nil, 500, []byte(message)),
 					Err:            NewOnError(nil, codec, nil, nil),
 				},
-				store:     references.NewReferenceStore(1),
+				store:     references.NewStore(1),
 				reference: "message",
 			}
 		},
@@ -485,7 +485,7 @@ func TestTransportErrorSchemaDecoding(t *testing.T) {
 					Transport:      NewMockTransport(nil, 500, []byte(message)),
 					Err:            NewOnError(nil, codec, nil, nil),
 				},
-				store:     references.NewReferenceStore(1),
+				store:     references.NewStore(1),
 				reference: "meta.message",
 			}
 		},
@@ -506,7 +506,7 @@ func TestTransportErrorSchemaDecoding(t *testing.T) {
 				t.Fatalf("unexpected err '%s', expected '%s'", err, ErrAbortFlow)
 			}
 
-			ref := options.store.Load(template.ErrorResource, options.reference)
+			ref := options.store.Load(template.ResourcePath(template.ErrorResource, options.reference))
 			if ref == nil {
 				t.Fatal("expected reference to be defined")
 			}
@@ -531,7 +531,7 @@ func TestErrFunctionsExecution(t *testing.T) {
 				fn:       counter,
 				expected: 1,
 				node:     &specs.Node{},
-				store:    references.NewReferenceStore(0),
+				store:    references.NewStore(0),
 				options: &CallOptions{
 					Transport: NewMockTransport(nil, 500, nil),
 					Err: &OnError{
@@ -551,7 +551,7 @@ func TestErrFunctionsExecution(t *testing.T) {
 				fn:       counter,
 				expected: 3,
 				node:     &specs.Node{},
-				store:    references.NewReferenceStore(0),
+				store:    references.NewStore(0),
 				options: &CallOptions{
 					Transport: NewMockTransport(nil, 500, nil),
 					Err: &OnError{

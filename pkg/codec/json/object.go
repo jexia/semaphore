@@ -4,50 +4,57 @@ import (
 	"github.com/francoispqt/gojay"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/pkg/specs/template"
 )
 
 // Object represents a JSON object
 type Object struct {
-	resource string
-	message  specs.Message
+	path     string
+	template specs.Template
 	store    references.Store
-	length   int
+	tracker  references.Tracker
 }
 
 // NewObject constructs a new object encoder/decoder for the given specs
-func NewObject(resource string, message specs.Message, store references.Store) *Object {
+func NewObject(path string, template specs.Template, store references.Store, tracker references.Tracker) *Object {
 	return &Object{
-		resource: resource,
-		message:  message,
+		path:     path,
+		template: template,
 		store:    store,
-		length:   len(message),
+		tracker:  tracker,
 	}
 }
 
 // MarshalJSONObject encodes the given specs object into the given gojay encoder
 func (object *Object) MarshalJSONObject(encoder *gojay.Encoder) {
-	for _, prop := range object.message.SortedProperties() {
-		encodeElementKey(encoder, object.resource, prop.Name, prop.Template, object.store)
+	for _, prop := range object.template.Message.SortedProperties() {
+		encodeKey(encoder, template.JoinPath(object.path, prop.Name), prop.Name, prop.Template, object.store, object.tracker)
 	}
 }
 
 // UnmarshalJSONObject unmarshals the given specs into the configured reference store
 func (object *Object) UnmarshalJSONObject(decoder *gojay.Decoder, key string) error {
-	if object == nil {
+	if object.template.Message == nil {
 		return nil
 	}
 
-	property, has := object.message[key]
+	property, has := object.template.Message[key]
 	if !has {
 		return nil
 	}
 
-	return decodeElement(decoder, object.resource, property.Path, property.Template, object.store)
+	object.store.Define(object.path, len(object.template.Message))
+
+	return decode(decoder, template.JoinPath(object.path, key), property.Template, object.store, object.tracker)
 }
 
 // NKeys returns the amount of available keys inside the given object
 func (object *Object) NKeys() int {
-	return object.length
+	if object.template.Message == nil {
+		return 0
+	}
+
+	return len(object.template.Message)
 }
 
 // IsNil returns whether the given object is null or not

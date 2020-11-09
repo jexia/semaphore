@@ -32,12 +32,11 @@ func TestExecutable(t *testing.T) {
 			},
 		}
 
-		store = references.NewReferenceStore(1)
+		store = references.NewStore(1)
 	)
 
 	t.Run("should propagate Reader error", func(t *testing.T) {
-		store.StoreReference("input", &references.Reference{
-			Path:  "authorization",
+		store.Store("input:authorization", &references.Reference{
 			Value: "Bearer expected.jwt",
 		})
 
@@ -55,8 +54,7 @@ func TestExecutable(t *testing.T) {
 	})
 
 	t.Run("should return an error when unable to get authorization value", func(t *testing.T) {
-		store.StoreReference("input", &references.Reference{
-			Path:  "authorization",
+		store.Store("input:authorization", &references.Reference{
 			Value: "invalid.jwt",
 		})
 
@@ -72,8 +70,7 @@ func TestExecutable(t *testing.T) {
 	})
 
 	t.Run("should save the subject to the reference store", func(t *testing.T) {
-		store.StoreReference("input", &references.Reference{
-			Path:  "authorization",
+		store.Store("input:authorization", &references.Reference{
 			Value: "Bearer expected.jwt",
 		})
 
@@ -100,7 +97,7 @@ func TestExecutable(t *testing.T) {
 			t.Errorf("uexpected error: %s", err)
 		}
 
-		subject := store.Load(paramClaims, propSubject)
+		subject := store.Load(propSubject)
 		if subject == nil {
 			t.Error("subject must be stored")
 		}

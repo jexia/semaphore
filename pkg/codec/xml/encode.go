@@ -8,36 +8,20 @@ import (
 	"github.com/jexia/semaphore/pkg/specs"
 )
 
-func encodeElement(encoder *xml.Encoder, name string, template specs.Template, store references.Store) (err error) {
-	defer func() {
-		if err != nil {
-			err = errFailedToEncode{
-				errStack{
-					property: name,
-					inner:    err,
-				},
-			}
-		}
-	}()
-
+func encodeElement(encoder *xml.Encoder, name, path string, template specs.Template, store references.Store, tracker references.Tracker) (err error) {
 	var marshaler xml.Marshaler
 
 	switch {
 	case template.Message != nil:
-		marshaler = NewObject(name, template.Message, template.Reference, store)
+		marshaler = NewObject(name, path, template, store, tracker)
 	case template.Repeated != nil:
-		schema, err := template.Repeated.Template()
-		if err != nil {
-			return err
-		}
-
-		marshaler = NewArray(name, schema, template.Repeated, template.Reference, store)
+		marshaler = NewArray(name, path, template, store, tracker)
 	case template.Enum != nil:
-		marshaler = NewEnum(name, template.Enum, template.Reference, store)
+		marshaler = NewEnum(name, path, template, store, tracker)
 	case template.Scalar != nil:
-		marshaler = NewScalar(name, template.Scalar, template.Reference, store)
+		marshaler = NewScalar(name, path, template, store, tracker)
 	default:
-		return fmt.Errorf("property '%s' has unknown type", name)
+		return fmt.Errorf("property '%s' has unknown type", path)
 	}
 
 	return marshaler.MarshalXML(encoder, xml.StartElement{})

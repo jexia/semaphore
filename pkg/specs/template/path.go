@@ -9,8 +9,11 @@ func JoinPath(values ...string) (result string) {
 			continue
 		}
 
-		if len(result) > 0 && string(result[len(result)-1]) != "." {
-			result += "."
+		if len(result) > 0 {
+			suffix := string(result[len(result)-1])
+			if suffix != "." && suffix != ":" {
+				result += "."
+			}
 		}
 
 		result += value
@@ -34,4 +37,9 @@ func JoinPath(values ...string) (result string) {
 // SplitPath splits the given path into parts
 func SplitPath(path string) []string {
 	return strings.Split(path, PathDelimiter)
+}
+
+// ResourcePath constructs a new path using the given resource and path.
+func ResourcePath(resource string, paths ...string) string {
+	return resource + ReferenceDelimiter + JoinPath(paths...)
 }

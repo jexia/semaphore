@@ -165,7 +165,7 @@ func BenchmarkSingleNodeCallingJSONCodecParallel(b *testing.B) {
 			ctx := context.Background()
 			tracker := NewTracker("", 1)
 			processes := NewProcesses(1)
-			refs := references.NewReferenceStore(0)
+			refs := references.NewStore(0)
 
 			node.Do(ctx, tracker, processes, refs)
 		}
@@ -245,7 +245,7 @@ func BenchmarkSingleNodeCallingJSONCodecSerial(b *testing.B) {
 		ctx := context.Background()
 		tracker := NewTracker("", 1)
 		processes := NewProcesses(1)
-		refs := references.NewReferenceStore(0)
+		refs := references.NewStore(0)
 
 		node.Do(ctx, tracker, processes, refs)
 	}
@@ -263,7 +263,7 @@ func BenchmarkSingleNodeCallingParallel(b *testing.B) {
 			ctx := context.Background()
 			tracker := NewTracker("", 1)
 			processes := NewProcesses(1)
-			refs := references.NewReferenceStore(0)
+			refs := references.NewStore(0)
 
 			node.Do(ctx, tracker, processes, refs)
 		}
@@ -281,7 +281,7 @@ func BenchmarkSingleNodeCallingSerial(b *testing.B) {
 		ctx := context.Background()
 		tracker := NewTracker("", 1)
 		processes := NewProcesses(1)
-		refs := references.NewReferenceStore(0)
+		refs := references.NewStore(0)
 
 		node.Do(ctx, tracker, processes, refs)
 	}
@@ -308,7 +308,7 @@ func BenchmarkBranchedNodeCallingParallel(b *testing.B) {
 			ctx := context.Background()
 			tracker := NewTracker("", len(nodes))
 			processes := NewProcesses(1)
-			refs := references.NewReferenceStore(0)
+			refs := references.NewStore(0)
 
 			nodes[0].Do(ctx, tracker, processes, refs)
 		}
@@ -335,7 +335,7 @@ func BenchmarkBranchedNodeCallingSerial(b *testing.B) {
 		ctx := context.Background()
 		tracker := NewTracker("", len(nodes))
 		processes := NewProcesses(1)
-		refs := references.NewReferenceStore(0)
+		refs := references.NewStore(0)
 
 		nodes[0].Do(ctx, tracker, processes, refs)
 	}
@@ -480,7 +480,7 @@ func TestNodeCalling(t *testing.T) {
 
 	tracker := NewTracker("", len(nodes))
 	processes := NewProcesses(1)
-	refs := references.NewReferenceStore(0)
+	refs := references.NewStore(0)
 
 	nodes[0].Do(context.Background(), tracker, processes, refs)
 	processes.Wait()
@@ -518,7 +518,7 @@ func TestSlowNodeAbortingOnErr(t *testing.T) {
 
 	tracker := NewTracker("", len(nodes))
 	processes := NewProcesses(1)
-	refs := references.NewReferenceStore(0)
+	refs := references.NewStore(0)
 
 	slow.mutex.Lock()
 	failed.mutex.Lock()
@@ -555,7 +555,7 @@ func TestNodeRevert(t *testing.T) {
 
 	tracker := NewTracker("", len(nodes))
 	processes := NewProcesses(1)
-	refs := references.NewReferenceStore(0)
+	refs := references.NewStore(0)
 
 	nodes[len(nodes)-1].Rollback(context.Background(), tracker, processes, refs)
 	processes.Wait()
@@ -590,7 +590,7 @@ func TestNodeBranchesCalling(t *testing.T) {
 
 	tracker := NewTracker("", len(nodes))
 	processes := NewProcesses(1)
-	refs := references.NewReferenceStore(0)
+	refs := references.NewStore(0)
 
 	nodes[0].Do(context.Background(), tracker, processes, refs)
 	processes.Wait()
