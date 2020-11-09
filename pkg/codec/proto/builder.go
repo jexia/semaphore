@@ -1,6 +1,8 @@
 package proto
 
 import (
+	"errors"
+
 	"github.com/jexia/semaphore/pkg/providers/protobuffers"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/labels"
@@ -11,6 +13,10 @@ import (
 
 // NewMessage attempts to construct a new proto descriptor for the given property.
 func NewMessage(property *specs.Property) (*desc.MessageDescriptor, error) {
+	if property.Name == "" {
+		return nil, errors.New("missing required property name, the given object has no name")
+	}
+
 	builder, _, err := newMessage(
 		make(map[string]*builder.MessageBuilder),
 		property.Name,

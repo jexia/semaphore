@@ -6,6 +6,7 @@ import (
 	"github.com/jexia/semaphore/pkg/lookup"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/template"
+	"github.com/jexia/semaphore/pkg/specs/types"
 	"go.uber.org/zap"
 )
 
@@ -332,7 +333,7 @@ func resolveProperty(ctx *broker.Context, resolved *specs.ResolvedProperty, node
 	property.Label = reference.Label
 	property.Reference.Property = reference
 
-	ScopeNestedReferences(reference.Template, property.Template)
+	ScopeNestedReferences(property.Reference.Resource, property.Reference.Path, reference.Template, property.Template)
 
 	return nil
 }
@@ -394,11 +395,11 @@ func InsideProperty(source *specs.Property, target *specs.Property) bool {
 }
 
 // ScopeNestedReferences scopes all nested references available inside the reference property
-func ScopeNestedReferences(source, target *specs.Template) {
-	scopeNestedReferences(make(specs.ResolvedTemplate), source, target)
+func ScopeNestedReferences(resource, path string, source, target *specs.Template) {
+	scopeNestedReferences(make(specs.ResolvedTemplate), resource, path, source, target)
 }
 
-func scopeNestedReferences(resolved specs.ResolvedTemplate, source, target *specs.Template) {
+func scopeNestedReferences(resolved specs.ResolvedTemplate, resource, path string, source, target *specs.Template) {
 	if source == nil || target == nil {
 		return
 	}
@@ -427,29 +428,31 @@ func scopeNestedReferences(resolved specs.ResolvedTemplate, source, target *spec
 		}
 
 		for _, item := range source.Message {
+			path := template.JoinPath(path, item.Name)
 			nested, ok := target.Message[item.Name]
 			if !ok {
-				nested = item.Clone()
+				nested = item.ShallowClone() // We should only shallow clone the given property to avoid unexpected definitions
 				target.Message[item.Name] = nested
 			}
 
 			if nested.Reference == nil {
 				nested.Reference = &specs.PropertyReference{
 					Resource: target.Reference.Resource,
-					Path:     template.JoinPath(target.Reference.Path, item.Name),
+					Path:     path,
 					Property: item,
 				}
 			}
 
-			if len(item.Message) > 0 {
-				scopeNestedReferences(resolved, item.Template, nested.Template)
+			typed := item.Type()
+			if typed == types.Message || typed == types.Array {
+				scopeNestedReferences(resolved, resource, path, item.Template, nested.Template)
 			}
 		}
 
 		break
 	case source.Repeated != nil:
-		if target.Repeated != nil {
-			return
+		if len(target.Repeated) != 0 {
+			break
 		}
 
 		target.Repeated = make(specs.Repeated, len(source.Repeated))
@@ -459,18 +462,13 @@ func scopeNestedReferences(resolved specs.ResolvedTemplate, source, target *spec
 
 			if cloned.Reference == nil {
 				cloned.Reference = &specs.PropertyReference{
-					Resource: target.Reference.Resource,
-					Path:     target.Reference.Path,
+					Resource: resource,
+					Path:     path,
 				}
 			}
 
-			if len(item.Message) > 0 {
-				scopeNestedReferences(resolved, item, cloned)
-			}
-
+			scopeNestedReferences(resolved, resource, path, item, cloned)
 			target.Repeated[index] = cloned
 		}
-
-		break
 	}
 }

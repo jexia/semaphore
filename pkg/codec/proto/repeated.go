@@ -37,10 +37,10 @@ func (tmpl Repeated) Marshal(message *dynamic.Message, field *desc.FieldDescript
 		panic(err)
 	}
 
-	length := store.Length(tracker.Resolve(tmpl.Reference.String()))
+	rpath := tracker.Resolve(tmpl.Reference.String())
+	tracker.Track(rpath, 0)
 
-	ptrack := tracker.Resolve(path)
-	tracker.Track(ptrack, 0)
+	length := store.Length(rpath)
 
 	for index := 0; index < length; index++ {
 		switch {
@@ -61,7 +61,7 @@ func (tmpl Repeated) Marshal(message *dynamic.Message, field *desc.FieldDescript
 			}
 		}
 
-		tracker.Next(path)
+		tracker.Next(rpath)
 	}
 
 	return nil

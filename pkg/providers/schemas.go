@@ -53,7 +53,7 @@ func ResolveFlow(parent *broker.Context, services specs.ServiceList, schemas spe
 	}
 
 	if flow.GetOutput() != nil {
-		err = ResolveParameterMap(ctx, schemas, flow.GetOutput(), flow)
+		_, err = ResolveParameterMapSchema(ctx, schemas, flow.GetOutput())
 		if err != nil {
 			return err
 		}
@@ -105,7 +105,7 @@ func ResolveNode(ctx *broker.Context, services specs.ServiceList, schemas specs.
 // DefineCall defineds the types for the specs call
 func DefineCall(ctx *broker.Context, services specs.ServiceList, schemas specs.Schemas, node *specs.Node, call *specs.Call, flow specs.FlowInterface) (err error) {
 	if call.Request != nil {
-		err = ResolveParameterMap(ctx, schemas, call.Request, flow)
+		_, err = ResolveParameterMapSchema(ctx, schemas, call.Request)
 		if err != nil {
 			return err
 		}
@@ -161,17 +161,27 @@ func DefineCall(ctx *broker.Context, services specs.ServiceList, schemas specs.S
 	return nil
 }
 
-// ResolveParameterMap ensures that all schema properties are defined inisde the given parameter map
-func ResolveParameterMap(ctx *broker.Context, schemas specs.Schemas, params *specs.ParameterMap, flow specs.FlowInterface) (err error) {
+// ResolveParameterMapSchema ensures that the given parameter map schema is available
+func ResolveParameterMapSchema(ctx *broker.Context, schemas specs.Schemas, params *specs.ParameterMap) (_ *specs.Property, err error) {
 	if params == nil || params.Schema == "" {
-		return nil
+		return nil, nil
 	}
 
 	schema := schemas.Get(params.Schema)
 	if schema == nil {
-		return ErrUndefinedObject{
+		return nil, ErrUndefinedObject{
 			Schema: params.Schema,
 		}
+	}
+
+	return schema, nil
+}
+
+// ResolveParameterMap ensures that all schema properties are defined inisde the given parameter map
+func ResolveParameterMap(ctx *broker.Context, schemas specs.Schemas, params *specs.ParameterMap, flow specs.FlowInterface) (err error) {
+	schema, err := ResolveParameterMapSchema(ctx, schemas, params)
+	if err != nil {
+		return err
 	}
 
 	err = ResolveProperty(params.Property, schema.Clone(), flow)
@@ -259,7 +269,7 @@ func setRepeated(repeated, schema specs.Repeated) {
 
 // ResolveProperty ensures that all schema properties are defined inside the given property
 func ResolveProperty(property, schema *specs.Property, flow specs.FlowInterface) error {
-	if property == nil {
+	if property == nil || property.Template == nil {
 		property = schema.Clone()
 		return nil
 	}

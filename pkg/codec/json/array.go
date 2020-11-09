@@ -46,17 +46,17 @@ func (array *Array) MarshalJSONArray(encoder *gojay.Encoder) {
 		return
 	}
 
-	length := array.store.Length(array.tracker.Resolve(array.repeated.Reference.String()))
+	rpath := array.tracker.Resolve(array.repeated.Reference.String())
+	length := array.store.Length(rpath)
 	if length == 0 {
 		return
 	}
 
-	ptrack := array.tracker.Resolve(array.path)
-	array.tracker.Track(ptrack, 0)
+	array.tracker.Track(rpath, 0)
 
 	for index := 0; index < length; index++ {
 		encode(encoder, array.path, array.template, array.store, array.tracker)
-		array.tracker.Next(ptrack)
+		array.tracker.Next(rpath)
 	}
 }
 

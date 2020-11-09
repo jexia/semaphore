@@ -60,6 +60,10 @@ func ReferencedPathsProperty(referenced ReferencedCollection, property *specs.Pr
 // the given paths collection. This ensures that only referenced properties are kept
 // inside the given template.
 func removeNoneReferencedPathsTemplate(referenced ReferencedCollection, path string, template *specs.Template) {
+	if template == nil {
+		return
+	}
+
 	switch {
 	case template.Message != nil:
 		for key, nested := range template.Message {
