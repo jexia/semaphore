@@ -93,6 +93,7 @@ func (property *Property) clone(seen map[string]*Template) *Property {
 	if property.Template != nil {
 		result.Template = property.Template.clone(seen)
 	}
+
 	return result
 }
 

@@ -86,7 +86,7 @@ func (template *Template) clone(seen map[string]*Template) *Template {
 }
 
 // ShallowClone clones the given template but ignores any nested templates
-func (template Template) ShallowClone() *Template {
+func (template *Template) ShallowClone() *Template {
 	var clone = Template{
 		Reference: template.Reference.Clone(),
 	}
