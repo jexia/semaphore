@@ -1,6 +1,8 @@
 package specs
 
-import "github.com/jexia/semaphore/pkg/specs/metadata"
+import (
+	"github.com/jexia/semaphore/pkg/specs/metadata"
+)
 
 // ServiceList represents a collection of services
 type ServiceList []*Service
@@ -34,6 +36,7 @@ type Service struct {
 	Host               string    `json:"host,omitempty"`
 	Methods            []*Method `json:"methods,omitempty"`
 	Options            Options   `json:"options,omitempty"`
+	Resolver           string    `json:"resolver,omitempty"`
 }
 
 // GetMethod attempts to find and return a method matching the given name

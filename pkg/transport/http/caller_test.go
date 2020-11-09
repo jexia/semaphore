@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"github.com/jexia/semaphore/pkg/discovery"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -71,7 +72,8 @@ func TestCaller(t *testing.T) {
 	defer server.Close()
 
 	service := NewMockService(server.URL, "GET", "/Path?query=value")
-	caller, err := NewMockCaller().Dial(service, nil, nil)
+	resolver := discovery.ResolverFunc(func() (string, bool) { return service.Host, true })
+	caller, err := NewMockCaller().Dial(service, nil, nil, resolver)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -113,7 +115,8 @@ func TestCaller(t *testing.T) {
 
 func TestCallerUnknownMethod(t *testing.T) {
 	service := NewMockService("http://localhost", "GET", "/")
-	call, err := NewMockCaller().Dial(service, nil, nil)
+	resolver := discovery.ResolverFunc(func() (string, bool) { return service.Host, true })
+	call, err := NewMockCaller().Dial(service, nil, nil, resolver)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -275,7 +278,8 @@ func TestCallerReferences(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			service := NewMockService("http://localhost", "GET", test.endpoint)
-			call, err := NewMockCaller().Dial(service, nil, nil)
+			resolver := discovery.ResolverFunc(func() (string, bool) { return service.Host, true })
+			call, err := NewMockCaller().Dial(service, nil, nil, resolver)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -345,7 +349,8 @@ func TestCallerReferencesLookup(t *testing.T) {
 			defer server.Close()
 
 			service := NewMockService(server.URL, "GET", test.endpoint)
-			caller, err := NewMockCaller().Dial(service, nil, nil)
+			resolver := discovery.ResolverFunc(func() (string, bool) { return service.Host, true })
+			caller, err := NewMockCaller().Dial(service, nil, nil, resolver)
 			if err != nil {
 				t.Fatal(err)
 			}

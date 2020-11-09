@@ -148,9 +148,10 @@ func NewCore(ctx *broker.Context, flags *Daemon) (semaphore.Options, error) {
 
 // NewProviders constructs new providers options from the given parameters
 func NewProviders(ctx *broker.Context, core semaphore.Options, params *Daemon) (providers.Options, error) {
-	options := []providers.Option{}
+	var options []providers.Option
 
 	for _, path := range params.Files {
+		options = append(options, providers.WithDiscovery(hcl.DiscoveryClientsResolver(path)))
 		options = append(options, providers.WithServices(hcl.ServicesResolver(path)))
 		options = append(options, providers.WithEndpoints(hcl.EndpointsResolver(path)))
 		options = append(options, providers.WithAfterConstructor(middleware.ServiceSelector(path)))

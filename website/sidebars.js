@@ -31,6 +31,10 @@ module.exports = {
     {
       type: 'doc',
       id: 'devops',
+      label: 'Infrastructure',
+      items: [
+        "service_discovery.configuration",
+      ]
     }
   ]
 };

@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"github.com/jexia/semaphore/pkg/discovery"
 	"io/ioutil"
 	"sync"
 
@@ -43,7 +44,7 @@ func (caller *Caller) Name() string {
 }
 
 // Dial constructs a new caller for the given host
-func (caller *Caller) Dial(service *specs.Service, functions functions.Custom, opts specs.Options) (transport.Call, error) {
+func (caller *Caller) Dial(service *specs.Service, functions functions.Custom, opts specs.Options, resolver discovery.Resolver) (transport.Call, error) {
 	module := broker.WithModule(caller.ctx, "caller", "grpc")
 	ctx := logger.WithFields(logger.WithLogger(module), zap.String("service", service.Name))
 
@@ -69,11 +70,12 @@ func (caller *Caller) Dial(service *specs.Service, functions functions.Custom, o
 	}
 
 	result := &Call{
-		ctx:     ctx,
-		service: service.Name,
-		host:    service.Host,
-		methods: methods,
-		options: options,
+		ctx:      ctx,
+		service:  service.Name,
+		host:     service.Host,
+		methods:  methods,
+		options:  options,
+		resolver: resolver,
 	}
 
 	return result, nil
@@ -81,13 +83,22 @@ func (caller *Caller) Dial(service *specs.Service, functions functions.Custom, o
 
 // Call represents the HTTP caller implementation
 type Call struct {
-	ctx     *broker.Context
-	service string
-	host    string
-	methods map[string]*Method
-	options *CallerOptions
-	mutex   sync.Mutex
-	client  *grpc.ClientConn
+	ctx      *broker.Context
+	service  string
+	host     string
+	methods  map[string]*Method
+	options  *CallerOptions
+	mutex    sync.Mutex
+	client   *grpc.ClientConn
+	resolver discovery.Resolver
+}
+
+func (call *Call) Address() string {
+	addr, ok := call.resolver.Resolve()
+	if !ok {
+		return ""
+	}
+	return addr
 }
 
 // GetMethods returns the available methods within the HTTP caller
@@ -121,7 +132,7 @@ func (call *Call) Director(ctx context.Context) (*grpc.ClientConn, error) {
 		return call.client, nil
 	}
 
-	conn, err := grpc.DialContext(ctx, call.host, grpc.WithCodec(Codec()), grpc.WithInsecure())
+	conn, err := grpc.DialContext(ctx, call.Address(), grpc.WithCodec(Codec()), grpc.WithInsecure())
 	if err != nil {
 		return nil, err
 	}

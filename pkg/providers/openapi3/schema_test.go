@@ -21,7 +21,7 @@ func shouldBeScalar(t *testing.T, tpl specs.Template, expected specs.Scalar, opt
 		return false
 	}
 
-	if tpl.Scalar.Type != expected.Type || tpl.Scalar.Default != expected.Default{
+	if tpl.Scalar.Type != expected.Type || tpl.Scalar.Default != expected.Default {
 		t.Errorf(
 			"%s scalar should be of type %s with default value %v, but it is %s (%v)", prefix,
 			expected.Type, expected.Default,

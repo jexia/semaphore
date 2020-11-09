@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package com.semaphore;
+
+message Dog {
+  int32 id = 1;
+  string name = 2;
+  string breed = 3;
+}
+
+message Dogs {
+  repeated Dog dogs = 1;
+}
+
+message Pets {
+  string type = 1;
+  string name = 2;
+}
+
+message Void {}

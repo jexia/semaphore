@@ -9,4 +9,5 @@ type Options struct {
 	HTTP         *HTTP
 	GRPC         *GRPC
 	Prometheus   *Prometheus
+	Discovery    *Discovery
 }

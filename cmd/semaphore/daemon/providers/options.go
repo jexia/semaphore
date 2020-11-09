@@ -39,11 +39,12 @@ type Option func(*broker.Context, *Options)
 // Options represents the available options to resolve the given providers
 type Options struct {
 	semaphore.Options
-	Listeners         transport.ListenerList
-	EndpointResolvers providers.EndpointResolvers
-	ServiceResolvers  providers.ServiceResolvers
-	SchemaResolvers   providers.SchemaResolvers
-	AfterConstructor  AfterConstructor
+	Listeners                 transport.ListenerList
+	EndpointResolvers         providers.EndpointResolvers
+	ServiceResolvers          providers.ServiceResolvers
+	SchemaResolvers           providers.SchemaResolvers
+	AfterConstructor          AfterConstructor
+	DiscoveryServiceResolvers providers.ServiceDiscoveryClientsResolvers
 }
 
 // AfterConstructor is called after the specifications is constructored
@@ -70,6 +71,12 @@ func WithAfterConstructor(wrapper AfterConstructorHandler) Option {
 func WithServices(definition providers.ServicesResolver) Option {
 	return func(ctx *broker.Context, options *Options) {
 		options.ServiceResolvers = append(options.ServiceResolvers, definition)
+	}
+}
+
+func WithDiscovery(definition providers.ServiceDiscoveryClientsResolver) Option {
+	return func(context *broker.Context, options *Options) {
+		options.DiscoveryServiceResolvers = append(options.DiscoveryServiceResolvers, definition)
 	}
 }
 
