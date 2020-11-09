@@ -3,7 +3,6 @@ package providers
 import (
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
-	"github.com/jexia/semaphore/pkg/broker/trace"
 	"github.com/jexia/semaphore/pkg/specs"
 	"go.uber.org/zap"
 )
@@ -212,7 +211,10 @@ func resolveMessage(message, schema specs.Message, flow specs.FlowInterface) err
 
 		object := schema[nested.Name]
 		if object == nil {
-			return trace.New(trace.WithMessage("undefined schema nested message property '%s' in flow '%s'", nested.Name, flow.GetName()))
+			return ErrUndefinedProperty{
+				Property: nested.Name,
+				Flow:     flow.GetName(),
+			}
 		}
 
 		if err := ResolveProperty(nested, object.Clone(), flow); err != nil {
@@ -225,7 +227,7 @@ func resolveMessage(message, schema specs.Message, flow specs.FlowInterface) err
 
 func resolveRepeated(repeated, schema specs.Repeated, flow specs.FlowInterface) error {
 	if len(repeated) != len(schema) {
-		return trace.New(trace.WithMessage("the length of repeated does not match the schema"))
+		return ErrLengthMismatch
 	}
 
 	// FIXME: flow and schema repeated could have different type orders.
