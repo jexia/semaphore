@@ -5,7 +5,7 @@ go 1.14
 require (
 	github.com/Knetic/govaluate v3.0.0+incompatible
 	github.com/actgardner/gogen-avro v7.2.0+incompatible // indirect
-	github.com/actgardner/gogen-avro/v7 v7.2.0
+	github.com/actgardner/gogen-avro/v7 v7.2.0 // indirect
 	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/francoispqt/gojay v1.2.13
