@@ -16,15 +16,13 @@ flow "typetest" {
   output "semaphore.typetest.Response" {
     // oneof = "{{ input:oneof }}"
 
-    // oneof = {
-    //   empty = "{{ input:oneof.empty }}"
+    oneof "oneof" {
+      empty = "{{ input:oneof.empty }}"
 
-    //   single = "{{ input:oneof.single }}"
+      single = "{{ input:oneof.single }}"
 
-    //   plural = "{{ input:oneof.plural }}"
-    // }
-
-    object = "{{ input:object }}"
+      plural = "{{ input:oneof.plural }}"
+    }
 
     array = "{{ input:array }}"
   }

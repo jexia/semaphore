@@ -75,8 +75,17 @@ type Flow struct {
 	Output  *ParameterMap      `hcl:"output,block"`
 }
 
+type OneOf struct {
+	BaseParameterMap `hcl:",remain"`
+
+	Name string `hcl:"type,label"`
+
+	// TODO: ??? Template
+}
+
 // BaseParameterMap contains a set of generic fields.
 type BaseParameterMap struct {
+	OneOf      []OneOf                `hcl:"oneof,block"`
 	Nested     []NestedParameterMap   `hcl:"message,block"`
 	Repeated   []RepeatedParameterMap `hcl:"repeated,block"`
 	Properties hcl.Body               `hcl:",remain"`

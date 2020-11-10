@@ -161,19 +161,20 @@ func repeated(s *openapi.Schema) (specs.Template, error) {
 func oneOf(s *openapi.Schema) (specs.Template, error) {
 	oneOf := make(specs.OneOf, len(s.OneOf))
 
-	// TODO: fixme
-	// for id, ref := range s.OneOf {
-	// 	if ref.Value == nil {
-	// 		return specs.Template{}, fmt.Errorf("type at index %d does not have schemaRef", id)
-	// 	}
+	for id, ref := range s.OneOf {
+		if ref.Value == nil {
+			return specs.Template{}, fmt.Errorf("type at index %d does not have schemaRef", id)
+		}
 
-	// 	tpl, err := newTemplate(ref.Value)
-	// 	if err != nil {
-	// 		return specs.Template{}, fmt.Errorf("failed to build type at index %d: %w", id, err)
-	// 	}
+		tpl, err := newTemplate(ref.Value)
+		if err != nil {
+			return specs.Template{}, fmt.Errorf("failed to build type at index %d: %w", id, err)
+		}
 
-	// 	oneOf[id] = tpl
-	// }
+		oneOf[id] = &specs.Property{
+			Template: tpl,
+		}
+	}
 
 	return specs.Template{
 		OneOf: oneOf,

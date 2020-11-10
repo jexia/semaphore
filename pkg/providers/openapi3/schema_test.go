@@ -118,12 +118,11 @@ func shouldBeOneOf(t *testing.T, tpl specs.Template, checks []testFn, opts ...in
 
 	valid := true
 
-	// TODO: fixme
-	// for i, item := range tpl.OneOf {
-	// 	if !checks[i](t, item) {
-	// 		valid = false
-	// 	}
-	// }
+	for i, item := range tpl.OneOf {
+		if !checks[i](t, item.Template) {
+			valid = false
+		}
+	}
 
 	return valid
 }

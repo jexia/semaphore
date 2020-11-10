@@ -8,6 +8,32 @@ import (
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
+func ParseIntermediateOneOf(ctx *broker.Context, params OneOf, path string) (*specs.Property, error) {
+	message, err := parseBaseParameterMap(ctx, params.BaseParameterMap, path)
+	if err != nil {
+		return nil, err
+	}
+
+	return &specs.Property{
+		Name:  params.Name,
+		Path:  path,
+		Label: labels.Optional,
+		Template: specs.Template{
+			// Reference: template.ParsePropertyReference(params.Template),
+			// TODO: fixme
+			OneOf: func(message specs.Message) []*specs.Property {
+				var oneOf = make([]*specs.Property, 0, len(message))
+
+				for _, property := range message {
+					oneOf = append(oneOf, property)
+				}
+
+				return oneOf
+			}(message),
+		},
+	}, nil
+}
+
 // ParseIntermediateNestedParameterMap parses the given intermediate parameter map to a spec parameter map
 func ParseIntermediateNestedParameterMap(ctx *broker.Context, params NestedParameterMap, path string) (*specs.Property, error) {
 	message, err := parseBaseParameterMap(ctx, params.BaseParameterMap, path)
@@ -194,6 +220,15 @@ func parseBaseParameterMap(ctx *broker.Context, params BaseParameterMap, path st
 		}
 
 		message[repeated.Name] = returns
+	}
+
+	for _, oneOf := range params.OneOf {
+		returns, err := ParseIntermediateOneOf(ctx, oneOf, template.JoinPath(path, oneOf.Name))
+		if err != nil {
+			return nil, err
+		}
+
+		message[oneOf.Name] = returns
 	}
 
 	return message, nil

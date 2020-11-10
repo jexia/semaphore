@@ -13,7 +13,7 @@ import (
 //   {Message: &Message{...}},
 // }
 // A given value must be one of these types: string, int32 or the message.
-type OneOf map[string]*Property
+type OneOf []*Property
 
 func (oneOf OneOf) String() string { return dump(oneOf) }
 
@@ -42,18 +42,13 @@ func (oneOf OneOf) Compare(expected OneOf) error {
 		return fmt.Errorf("expected not to be nil")
 	}
 
-	// if len(oneOf) != len(expected) {
-	// 	return errors.New("number of elements does not match")
-	// }
+	if actual, expected := len(oneOf), len(expected); actual != expected {
+		return fmt.Errorf("number of elements does not match, got %d while expected %d", actual, expected)
+	}
 
-	for key, template := range oneOf {
-		nested, ok := expected[key]
-		if !ok {
-			return fmt.Errorf("oneOf unknown choice '%s'", key)
-		}
-
-		if err := template.Compare(nested); err != nil {
-			return fmt.Errorf("template mismatch: %w", err)
+	for index, property := range oneOf {
+		if err := property.Compare(expected[index]); err != nil {
+			return fmt.Errorf("'oneof' choice mismatch: %w", err)
 		}
 	}
 

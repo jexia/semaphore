@@ -1,6 +1,8 @@
 package protobuffers
 
 import (
+	"log"
+
 	protobuf "github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/labels"
@@ -17,6 +19,8 @@ func NewSchema(descriptors []*desc.FileDescriptor) specs.Schemas {
 			result[message.GetFullyQualifiedName()] = NewMessage("", message)
 		}
 	}
+
+	log.Printf("%s", result)
 
 	return result
 }
@@ -90,14 +94,14 @@ func AddOneOf(message specs.Message, path string, descriptor *desc.FieldDescript
 			Options: specs.Options{},
 			Label:   Labels[descriptor.GetLabel()],
 			Template: specs.Template{
-				OneOf: make(specs.OneOf),
+				OneOf: make(specs.OneOf, 0, len(oneOf.GetChoices())),
 			},
 		}
 
 		message[name] = property
 	}
 
-	property.OneOf[descriptor.GetName()] = NewProperty(path, descriptor)
+	property.OneOf = append(property.OneOf, NewProperty(path, descriptor))
 }
 
 func setTemplate(template *specs.Template, path string, descriptor *desc.FieldDescriptor) {

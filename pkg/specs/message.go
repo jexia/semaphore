@@ -47,10 +47,6 @@ func (message Message) Compare(expected Message) error {
 		return fmt.Errorf("expected not to be nil")
 	}
 
-	// if len(expected) != len(message) {
-	// 	return errors.New("number of elements does not match")
-	// }
-
 	for key, property := range message {
 		nested, ok := expected[key]
 		if !ok {
