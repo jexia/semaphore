@@ -1,9 +1,6 @@
 package proto
 
 import (
-	"fmt"
-
-	"github.com/jexia/semaphore/pkg/prettyerr"
 	"github.com/jexia/semaphore/pkg/providers/protobuffers"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/types"
@@ -13,8 +10,11 @@ import (
 
 // NewMessage attempts to construct a new proto message descriptor for the given specs property
 func NewMessage(resource string, message specs.Message) (*desc.MessageDescriptor, error) {
-	msg := builder.NewMessage(resource)
-	err := ConstructMessage(msg, message)
+	var (
+		msg = builder.NewMessage(resource)
+		err = ConstructMessage(msg, message)
+	)
+
 	if err != nil {
 		return nil, err
 	}
@@ -29,25 +29,20 @@ func ConstructMessage(message *builder.MessageBuilder, spec specs.Message) (err 
 	}
 
 	for _, property := range spec {
-		typed, err := ConstructFieldType(message, property.Name, property.Template)
+		if property.OneOf != nil {
+			if err := ConstructOneOf(message, property.Name, property.Template); err != nil {
+				return err
+			}
+
+			continue
+		}
+
+		field, err := newFieldBuilder(message, property)
 		if err != nil {
 			return err
 		}
 
-		label := protobuffers.ProtoLabels[property.Label]
-		if property.Type() == types.Array {
-			label = protobuffers.Repeated
-		}
-
-		field := builder.NewField(property.Name, typed)
-		field.SetJsonName(property.Name)
-		field.SetLabel(label)
-		field.SetComments(builder.Comments{
-			LeadingComment: property.Description,
-		})
-
-		err = message.TryAddField(field.SetNumber(property.Position))
-		if err != nil {
+		if err := message.TryAddField(field); err != nil {
 			return err
 		}
 	}
@@ -55,24 +50,26 @@ func ConstructMessage(message *builder.MessageBuilder, spec specs.Message) (err 
 	return nil
 }
 
-// ErrInvalidFieldType is thrown when the given field type is invalid
-type ErrInvalidFieldType struct {
-	template specs.Template
-}
-
-func (e ErrInvalidFieldType) Error() string {
-	return fmt.Sprintf("invalid invalid template field type %s", e.template.Type())
-}
-
-// Prettify returns the prettified version of the given error
-func (e ErrInvalidFieldType) Prettify() prettyerr.Error {
-	return prettyerr.Error{
-		Code:    "InvalidFieldType",
-		Message: e.Error(),
-		Details: map[string]interface{}{
-			"type": e.template.Type(),
-		},
+func newFieldBuilder(message *builder.MessageBuilder, property *specs.Property) (*builder.FieldBuilder, error) {
+	fieldType, err := ConstructFieldType(message, property.Name, property.Template)
+	if err != nil {
+		return nil, err
 	}
+
+	field := builder.NewField(property.Name, fieldType)
+
+	label := protobuffers.ProtoLabels[property.Label]
+	if property.Type() == types.Array {
+		label = protobuffers.Repeated
+	}
+
+	field.SetJsonName(property.Name)
+	field.SetLabel(label)
+	field.SetComments(builder.Comments{
+		LeadingComment: property.Description,
+	})
+
+	return field.SetNumber(property.Position), nil
 }
 
 // ConstructFieldType constructs a field constructor from the given property
@@ -80,7 +77,7 @@ func ConstructFieldType(message *builder.MessageBuilder, key string, template sp
 	switch {
 	case template.Message != nil:
 		// TODO: appending a fixed prefix is probably not a good idea.
-		nested := builder.NewMessage(key + "Nested")
+		nested := builder.NewMessage(key + "Type")
 		err := ConstructMessage(nested, template.Message)
 		if err != nil {
 			return nil, err
@@ -128,4 +125,21 @@ func ConstructFieldType(message *builder.MessageBuilder, key string, template sp
 	}
 
 	return nil, ErrInvalidFieldType{template}
+}
+
+func ConstructOneOf(message *builder.MessageBuilder, key string, template specs.Template) error {
+	var oneOf = builder.NewOneOf(key)
+
+	for _, property := range template.OneOf {
+		field, err := newFieldBuilder(message, property)
+		if err != nil {
+			return err
+		}
+
+		if err := oneOf.TryAddChoice(field); err != nil {
+			return err
+		}
+	}
+
+	return message.TryAddOneOf(oneOf)
 }

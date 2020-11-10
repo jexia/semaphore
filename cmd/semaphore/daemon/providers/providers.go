@@ -81,8 +81,6 @@ func Resolve(ctx *broker.Context, mem functions.Collection, options Options) (Co
 		return Collection{}, err
 	}
 
-	log.Println("RESOLVE REFERENCES >>> DONE")
-
 	forwarding.ResolveReferences(ctx, flows, mem)
 
 	err = dependencies.ResolveFlows(ctx, flows)
@@ -90,10 +88,14 @@ func Resolve(ctx *broker.Context, mem functions.Collection, options Options) (Co
 		return Collection{}, err
 	}
 
+	log.Println("RESOLVE FLOWS >>> DONE")
+
 	err = compare.Types(ctx, services, schemas, flows)
 	if err != nil {
 		return Collection{}, err
 	}
+
+	log.Println("COMPARE TYPES >>> DONE")
 
 	if options.AfterConstructor != nil {
 		err = options.AfterConstructor(ctx, flows, endpoints, services, schemas)

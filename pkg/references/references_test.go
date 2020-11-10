@@ -91,7 +91,7 @@ func TestUnmarshalFile(t *testing.T) {
 				}
 
 				if err.Error() != collection.Exception.Message {
-					t.Fatalf("unexpected error message %q, expected %q", err.Error(), collection.Exception.Message)
+					t.Fatalf("unexpected error message:\n%s\nexpected:\n%s", err.Error(), collection.Exception.Message)
 				}
 
 				return
@@ -118,7 +118,7 @@ func TestUnmarshalFile(t *testing.T) {
 				}
 
 				if err.Error() != collection.Exception.Message {
-					t.Fatalf("unexpected error message %q, expected %q", err.Error(), collection.Exception.Message)
+					t.Fatalf("unexpected error message:\n%s\nexpected:\n%s", err.Error(), collection.Exception.Message)
 				}
 			}
 		})

@@ -34,12 +34,6 @@ message Array {
     repeated Data data = 1;
 }
 
-message Nested {
-    bool bool = 1;
-
-    string string = 2;
-}
-
 message Request {
     oneof oneof {
         bool empty = 1;
@@ -49,7 +43,9 @@ message Request {
         Array plural = 3;
     }
 
-    Nested nested = 4;
+    Data object = 4;
+
+    repeated Data array = 5;
 }
 
 message Response {
@@ -61,7 +57,9 @@ message Response {
         Array plural = 3;
     }
 
-    Nested nested = 4;
+    Data object = 4;
+
+    repeated Data array = 5;
 }
 
 

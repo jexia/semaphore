@@ -1,8 +1,6 @@
 package protobuffers
 
 import (
-	"log"
-
 	protobuf "github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/labels"
@@ -19,8 +17,6 @@ func NewSchema(descriptors []*desc.FileDescriptor) specs.Schemas {
 			result[message.GetFullyQualifiedName()] = NewMessage("", message)
 		}
 	}
-
-	// log.Printf("%s", result)
 
 	return result
 }
@@ -47,14 +43,14 @@ func NewMessage(path string, descriptor *desc.MessageDescriptor) *specs.Property
 			continue
 		}
 
-		AddProperty(result.Message, path, field)
+		result.Message[field.GetName()] = NewProperty(path, field)
 	}
 
 	return result
 }
 
-// AddProperty constructs a schema Property with the given field descriptor
-func AddProperty(message specs.Message, path string, descriptor *desc.FieldDescriptor) {
+// NewProperty constructs a schema Property with the given field descriptor
+func NewProperty(path string, descriptor *desc.FieldDescriptor) *specs.Property {
 	path = template.JoinPath(path, descriptor.GetName())
 
 	var property = &specs.Property{
@@ -68,25 +64,31 @@ func AddProperty(message specs.Message, path string, descriptor *desc.FieldDescr
 
 	setTemplate(&property.Template, path, descriptor)
 
-	message[descriptor.GetName()] = property
+	return property
 }
 
 // AddOneOf constructs property of type "oneof"
 func AddOneOf(message specs.Message, path string, descriptor *desc.FieldDescriptor) {
-	name := descriptor.GetOneOf().GetName()
-	path = template.JoinPath(path, name)
+	var (
+		oneOf = descriptor.GetOneOf()
+		name  = oneOf.GetName()
+	)
 
-	log.Println("PATH:", path)
+	path = template.JoinPath(path, name)
 
 	property, ok := message[name]
 	if !ok {
 		property = &specs.Property{
-			Path:        path,
-			Name:        name,
-			Description: descriptor.GetSourceInfo().GetLeadingComments(),
-			Position:    descriptor.GetNumber(),
-			Options:     specs.Options{},
-			Label:       Labels[descriptor.GetLabel()],
+			Path: path,
+			Name: name,
+			Description: func() string {
+				if comments := oneOf.GetSourceInfo().LeadingComments; comments != nil {
+					return *comments
+				}
+				return ""
+			}(),
+			Options: specs.Options{},
+			Label:   Labels[descriptor.GetLabel()],
 			Template: specs.Template{
 				OneOf: make(specs.OneOf),
 			},
@@ -95,12 +97,7 @@ func AddOneOf(message specs.Message, path string, descriptor *desc.FieldDescript
 		message[name] = property
 	}
 
-	var template = specs.Template{}
-	defer func() {
-		property.OneOf[descriptor.GetName()] = template
-	}()
-
-	setTemplate(&template, path, descriptor)
+	property.OneOf[descriptor.GetName()] = NewProperty(path, descriptor)
 }
 
 func setTemplate(template *specs.Template, path string, descriptor *desc.FieldDescriptor) {
@@ -140,7 +137,7 @@ func setTemplate(template *specs.Template, path string, descriptor *desc.FieldDe
 				continue
 			}
 
-			AddProperty(template.Message, path, field)
+			template.Message[field.GetName()] = NewProperty(path, field)
 		}
 
 		break

@@ -13,7 +13,7 @@ import (
 //   {Message: &Message{...}},
 // }
 // A given value must be one of these types: string, int32 or the message.
-type OneOf map[string]Template
+type OneOf map[string]*Property
 
 func (oneOf OneOf) String() string { return dump(oneOf) }
 
@@ -42,9 +42,9 @@ func (oneOf OneOf) Compare(expected OneOf) error {
 		return fmt.Errorf("expected not to be nil")
 	}
 
-	if len(oneOf) != len(expected) {
-		return errors.New("number of elements does not match")
-	}
+	// if len(oneOf) != len(expected) {
+	// 	return errors.New("number of elements does not match")
+	// }
 
 	for key, template := range oneOf {
 		nested, ok := expected[key]

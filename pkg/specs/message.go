@@ -44,17 +44,21 @@ func (message Message) Compare(expected Message) error {
 	}
 
 	if expected != nil && message == nil {
-		return fmt.Errorf("expected to be an object, got %v", nil)
+		return fmt.Errorf("expected not to be nil")
 	}
+
+	// if len(expected) != len(message) {
+	// 	return errors.New("number of elements does not match")
+	// }
 
 	for key, property := range message {
 		nested, ok := expected[key]
 		if !ok {
-			return fmt.Errorf("object has unknown field '%s'", key)
+			return fmt.Errorf("unknown property '%s'", key)
 		}
 
 		if err := property.Compare(nested); err != nil {
-			return fmt.Errorf("object property mismatch: %w", err)
+			return fmt.Errorf("property mismatch: %w", err)
 		}
 	}
 

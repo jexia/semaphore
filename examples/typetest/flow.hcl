@@ -14,12 +14,18 @@ flow "typetest" {
   input "semaphore.typetest.Request" {}
 
   output "semaphore.typetest.Response" {
-    data = {
-      empty = "{{ input:data.empty }}"
-      single = "{{ input:data.single }}"
-      plural = "{{ input:data.plural }}"
-    }
+    // oneof = "{{ input:oneof }}"
 
-    nested = "{{ input:nested }}"
+    // oneof = {
+    //   empty = "{{ input:oneof.empty }}"
+
+    //   single = "{{ input:oneof.single }}"
+
+    //   plural = "{{ input:oneof.plural }}"
+    // }
+
+    object = "{{ input:object }}"
+
+    array = "{{ input:array }}"
   }
 }

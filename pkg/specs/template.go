@@ -10,6 +10,7 @@ import (
 // Template contains property schema. This is a union type (Only one field must be set).
 type Template struct {
 	*metadata.Meta
+
 	Reference *PropertyReference `json:"reference,omitempty"` // Reference represents a property reference made inside the given property
 
 	// Only one of the following fields should be set
@@ -143,5 +144,9 @@ func (template *Template) Define(expected Template) {
 
 	if template.Scalar == nil && expected.Scalar != nil {
 		template.Scalar = expected.Scalar.Clone()
+	}
+
+	if template.OneOf == nil && expected.OneOf != nil {
+		template.OneOf = expected.OneOf.Clone()
 	}
 }
