@@ -3,6 +3,7 @@ package openapi3
 import (
 	"errors"
 	"fmt"
+
 	openapi "github.com/getkin/kin-openapi/openapi3"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/labels"
@@ -170,7 +171,7 @@ func oneOf(s *openapi.Schema) (specs.Template, error) {
 			return specs.Template{}, fmt.Errorf("failed to build type at index %d: %w", id, err)
 		}
 
-		oneOf[id] = tpl
+		oneOf[ref.Value.Type] = tpl
 	}
 
 	return specs.Template{

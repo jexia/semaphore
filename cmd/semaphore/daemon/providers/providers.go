@@ -1,6 +1,8 @@
 package providers
 
 import (
+	"log"
+
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/checks"
 	"github.com/jexia/semaphore/pkg/compare"
@@ -78,6 +80,8 @@ func Resolve(ctx *broker.Context, mem functions.Collection, options Options) (Co
 	if err != nil {
 		return Collection{}, err
 	}
+
+	log.Println("RESOLVE REFERENCES >>> DONE")
 
 	forwarding.ResolveReferences(ctx, flows, mem)
 

@@ -1,11 +1,12 @@
 package openapi3
 
 import (
+	"testing"
+
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/types"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 type testFn func(*testing.T, specs.Template) bool

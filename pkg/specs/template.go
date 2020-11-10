@@ -20,6 +20,8 @@ type Template struct {
 	OneOf    OneOf    `json:"oneOf,omitempty" yaml:"oneOf,omitempty"`
 }
 
+func (template Template) String() string { return dump(template) }
+
 // Type returns the type of the given template.
 func (template Template) Type() types.Type {
 	if template.Message != nil {
@@ -67,6 +69,10 @@ func (template Template) Clone() Template {
 		clone.Message = template.Message.Clone()
 	}
 
+	if template.OneOf != nil {
+		clone.OneOf = template.OneOf.Clone()
+	}
+
 	return clone
 }
 
@@ -92,19 +98,14 @@ func (template Template) Compare(expected Template) (err error) {
 	switch {
 	case expected.Repeated != nil:
 		err = template.Repeated.Compare(expected.Repeated)
-		break
-
 	case expected.Scalar != nil:
 		err = template.Scalar.Compare(expected.Scalar)
-		break
-
 	case expected.Message != nil:
 		err = template.Message.Compare(expected.Message)
-		break
-
 	case expected.Enum != nil:
 		err = template.Enum.Compare(expected.Enum)
-		break
+	case expected.OneOf != nil:
+		err = template.OneOf.Compare(expected.OneOf)
 	}
 
 	if err != nil {

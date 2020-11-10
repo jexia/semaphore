@@ -11,6 +11,8 @@ import (
 // Schemas represents a map string collection of properties
 type Schemas map[string]*Property
 
+func (objects Schemas) String() string { return dump(objects) }
+
 // Get attempts to return the given key from the objects collection
 func (objects Schemas) Get(key string) *Property {
 	if objects == nil {
@@ -54,6 +56,8 @@ type Property struct {
 	Template `json:"template" yaml:"template"`
 }
 
+func (property Property) String() string { return dump(property) }
+
 // DefaultValue returns rge default value for a given property.
 func (property *Property) DefaultValue() interface{} {
 	t := property.Template
@@ -65,6 +69,8 @@ func (property *Property) DefaultValue() interface{} {
 	case t.Repeated != nil:
 		return nil
 	case t.Enum != nil:
+		return nil
+	case t.OneOf != nil:
 		return nil
 	}
 

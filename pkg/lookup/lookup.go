@@ -1,6 +1,7 @@
 package lookup
 
 import (
+	"log"
 	"strings"
 
 	"github.com/jexia/semaphore/pkg/specs"
@@ -217,6 +218,11 @@ func HeaderLookup(header specs.Header) PathLookup {
 // PropertyLookup attempts to lookup the given path inside the params collection
 func PropertyLookup(param *specs.Property) PathLookup {
 	return func(path string) *specs.Property {
+		log.Printf("PROPERTY LOOKUP: %s", path)
+		log.Println()
+		log.Printf("%s", param)
+		log.Println()
+
 		switch {
 		case param == nil:
 			return nil
@@ -233,6 +239,8 @@ func PropertyLookup(param *specs.Property) PathLookup {
 				},
 			)(path)
 		case param.Message != nil:
+			log.Println("LOOKUP MESSAGE _____________________-", path)
+
 			for _, nested := range param.Template.Message {
 				lookup := PropertyLookup(nested)(path)
 				if lookup != nil {
@@ -241,6 +249,17 @@ func PropertyLookup(param *specs.Property) PathLookup {
 			}
 
 			return nil
+		case param.OneOf != nil:
+			// for _, oneof := range param.Template.OneOf {
+			// 	lookup := PropertyLookup(oneof)(path)
+			// 	if lookup != nil {
+			// 		return lookup
+			// 	}
+			// }
+
+			log.Println("_____________________________________-")
+			return nil
+
 		default:
 			return nil
 		}
