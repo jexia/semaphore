@@ -4,6 +4,8 @@ go 1.14
 
 require (
 	github.com/Knetic/govaluate v3.0.0+incompatible
+	github.com/actgardner/gogen-avro v7.2.0+incompatible // indirect
+	github.com/actgardner/gogen-avro/v7 v7.2.0
 	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/francoispqt/gojay v1.2.13
@@ -17,13 +19,14 @@ require (
 	github.com/hashicorp/hcl/v2 v2.3.0
 	github.com/jhump/protoreflect v1.7.0
 	github.com/julienschmidt/httprouter v1.3.0
+	github.com/linkedin/goavro v2.1.0+incompatible // indirect
 	github.com/micro/go-micro/v2 v2.3.0
 	github.com/mitchellh/go-wordwrap v1.0.0 // indirect
 	github.com/prometheus/client_golang v1.2.1
 	github.com/rs/cors v1.7.0
 	github.com/spf13/cobra v0.0.6
 	github.com/spf13/pflag v1.0.5 // indirect
-	github.com/stretchr/testify v1.5.1
+	github.com/stretchr/testify v1.6.1
 	github.com/zclconf/go-cty v1.3.1
 	go.uber.org/zap v1.13.0
 	golang.org/x/net v0.0.0-20200319234117-63522dbf7eec // indirect

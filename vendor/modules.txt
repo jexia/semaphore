@@ -3,6 +3,14 @@ github.com/BurntSushi/toml
 # github.com/Knetic/govaluate v3.0.0+incompatible
 ## explicit
 github.com/Knetic/govaluate
+# github.com/actgardner/gogen-avro v7.2.0+incompatible
+## explicit
+# github.com/actgardner/gogen-avro/v7 v7.2.0
+## explicit
+github.com/actgardner/gogen-avro/v7/generator
+github.com/actgardner/gogen-avro/v7/parser
+github.com/actgardner/gogen-avro/v7/resolver
+github.com/actgardner/gogen-avro/v7/schema
 # github.com/agext/levenshtein v1.2.3
 ## explicit
 github.com/agext/levenshtein
@@ -131,6 +139,8 @@ github.com/julienschmidt/httprouter
 github.com/mattn/go-colorable
 # github.com/mattn/go-isatty v0.0.12
 github.com/mattn/go-isatty
+# github.com/linkedin/goavro v2.1.0+incompatible
+## explicit
 # github.com/matttproud/golang_protobuf_extensions v1.0.1
 github.com/matttproud/golang_protobuf_extensions/pbutil
 # github.com/micro/go-micro/v2 v2.3.0
@@ -244,7 +254,7 @@ github.com/spf13/cobra
 # github.com/spf13/pflag v1.0.5
 ## explicit
 github.com/spf13/pflag
-# github.com/stretchr/testify v1.5.1
+# github.com/stretchr/testify v1.6.1
 ## explicit
 github.com/stretchr/testify/assert
 # github.com/zclconf/go-cty v1.3.1
@@ -422,6 +432,8 @@ google.golang.org/protobuf/types/pluginpb
 # gopkg.in/yaml.v2 v2.3.0
 ## explicit
 gopkg.in/yaml.v2
+# gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776
+gopkg.in/yaml.v3
 # honnef.co/go/tools v0.0.1-2020.1.4
 honnef.co/go/tools/arg
 honnef.co/go/tools/cmd/staticcheck

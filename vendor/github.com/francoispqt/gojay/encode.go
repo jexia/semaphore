@@ -199,9 +199,5 @@ func (enc *Encoder) Write() (int, error) {
 // getPreviousRune returns false when the buffer is empty.
 func (enc *Encoder) getPreviousRune() (byte, bool) {
 	last := len(enc.buf) - 1
-	if last < 0 {
-		return ' ', false
-	}
-
-	return enc.buf[last], true
+	return enc.buf[last]
 }
