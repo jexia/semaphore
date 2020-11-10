@@ -81,6 +81,7 @@ func run(cmd *cobra.Command, args []string) (err error) {
 
 	transporters, err := endpoints.Transporters(ctx, collection.EndpointList, collection.FlowListInterface,
 		endpoints.WithCore(core),
+		endpoints.WithServiceDiscoveries(collection.ServiceDiscoveryClients),
 		endpoints.WithServices(collection.ServiceList),
 		endpoints.WithFunctions(functions.Collection{}),
 	)
