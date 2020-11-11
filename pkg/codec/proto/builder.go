@@ -1,8 +1,6 @@
 package proto
 
 import (
-	"log"
-
 	"github.com/jexia/semaphore/pkg/providers/protobuffers"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/types"
@@ -72,8 +70,6 @@ func newFieldBuilder(message *builder.MessageBuilder, property *specs.Property) 
 	})
 
 	field = field.SetNumber(property.Position)
-
-	log.Println(field)
 
 	return field, nil
 }

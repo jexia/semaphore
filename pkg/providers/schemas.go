@@ -52,7 +52,7 @@ func ResolveFlow(parent *broker.Context, services specs.ServiceList, schemas spe
 	}
 
 	if flow.GetOutput() != nil {
-		_, err = ResolveParameterMapSchema(ctx, schemas, flow.GetOutput())
+		_, err = ResolveParameterMapSchema(ctx, schemas, flow.GetOutput(), flow)
 		if err != nil {
 			return err
 		}
@@ -104,7 +104,7 @@ func ResolveNode(ctx *broker.Context, services specs.ServiceList, schemas specs.
 // DefineCall defineds the types for the specs call
 func DefineCall(ctx *broker.Context, services specs.ServiceList, schemas specs.Schemas, node *specs.Node, call *specs.Call, flow specs.FlowInterface) (err error) {
 	if call.Request != nil {
-		_, err = ResolveParameterMapSchema(ctx, schemas, call.Request)
+		_, err = ResolveParameterMapSchema(ctx, schemas, call.Request, flow)
 		if err != nil {
 			return err
 		}
@@ -161,7 +161,7 @@ func DefineCall(ctx *broker.Context, services specs.ServiceList, schemas specs.S
 }
 
 // ResolveParameterMapSchema ensures that the given parameter map schema is available
-func ResolveParameterMapSchema(ctx *broker.Context, schemas specs.Schemas, params *specs.ParameterMap) (_ *specs.Property, err error) {
+func ResolveParameterMapSchema(ctx *broker.Context, schemas specs.Schemas, params *specs.ParameterMap, flow specs.FlowInterface) (*specs.Property, error) {
 	if params == nil || params.Schema == "" {
 		return nil, nil
 	}
@@ -173,12 +173,16 @@ func ResolveParameterMapSchema(ctx *broker.Context, schemas specs.Schemas, param
 		}
 	}
 
+	if err := ResolveProperty(params.Property, schema, flow); err != nil {
+		return nil, err
+	}
+
 	return schema, nil
 }
 
 // ResolveParameterMap ensures that all schema properties are defined inisde the given parameter map
 func ResolveParameterMap(ctx *broker.Context, schemas specs.Schemas, params *specs.ParameterMap, flow specs.FlowInterface) (err error) {
-	schema, err := ResolveParameterMapSchema(ctx, schemas, params)
+	schema, err := ResolveParameterMapSchema(ctx, schemas, params, flow)
 	if err != nil {
 		return err
 	}
@@ -292,20 +296,14 @@ func ResolveProperty(property, schema *specs.Property, flow specs.FlowInterface)
 				Flow:     flow.GetName(),
 			}
 		}
-
-		property.Label = schema.Label
 	case property.Repeated != nil:
 		if err := resolveRepeated(property.Repeated, schema.Repeated, flow); err != nil {
 			return err
 		}
-
-		property.Label = schema.Label
 	case property.OneOf != nil:
 		if err := resolveOneOf(property.OneOf, schema.OneOf, flow); err != nil {
 			return err
 		}
-
-		property.Label = schema.Label
 	}
 
 	switch {
@@ -328,6 +326,9 @@ func ResolveProperty(property, schema *specs.Property, flow specs.FlowInterface)
 
 		setOneOf(property.OneOf, schema.OneOf)
 	}
+
+	property.Label = schema.Label
+	property.Position = schema.Position
 
 	return nil
 }
