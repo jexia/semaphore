@@ -388,6 +388,12 @@ func InsideProperty(source *specs.Property, target *specs.Property) bool {
 				return true
 			}
 		}
+	case source.OneOf != nil:
+		for _, oneof := range source.OneOf {
+			if InsideProperty(oneof, target) {
+				return true
+			}
+		}
 	}
 
 	return false
