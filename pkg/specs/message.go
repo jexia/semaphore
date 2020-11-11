@@ -48,7 +48,12 @@ func (message Message) Compare(expected Message) error {
 	}
 
 	for key, property := range message {
-		if err := property.Compare(expected[key]); err != nil {
+		nested, ok := expected[key]
+		if !ok {
+			return fmt.Errorf("unknown property '%s'", key)
+		}
+
+		if err := property.Compare(nested); err != nil {
 			return fmt.Errorf("property mismatch: %w", err)
 		}
 	}

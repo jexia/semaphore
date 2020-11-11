@@ -255,20 +255,6 @@ func GenerateSchema(description string, property specs.Template) *Schema {
 			Description: description,
 			Items:       GenerateSchema("", template),
 		}
-	case property.OneOf != nil:
-		// result.
-
-		// Properties = make(map[string]*Schema, len(property.Message))
-
-		// for _, nested := range property.Message {
-		// 	result.Properties[nested.Name] = GenerateSchema(nested.Description, nested.Template)
-
-		// 	if nested.Label == labels.Required {
-		// 		result.Required = append(result.Required, nested.Name)
-		// 	}
-		// }
-
-		break
 	}
 
 	return result

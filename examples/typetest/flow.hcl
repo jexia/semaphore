@@ -26,6 +26,8 @@ flow "typetest" {
       plural = "{{ input:oneof.plural }}"
     }
 
+    object = "{{ input:object }}"
+
     array = "{{ input:array }}"
   }
 }

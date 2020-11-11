@@ -1,6 +1,8 @@
 package proto
 
 import (
+	"log"
+
 	"github.com/jexia/semaphore/pkg/providers/protobuffers"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/types"
@@ -69,7 +71,11 @@ func newFieldBuilder(message *builder.MessageBuilder, property *specs.Property) 
 		LeadingComment: property.Description,
 	})
 
-	return field.SetNumber(property.Position), nil
+	field = field.SetNumber(property.Position)
+
+	log.Println(field)
+
+	return field, nil
 }
 
 // ConstructFieldType constructs a field constructor from the given property

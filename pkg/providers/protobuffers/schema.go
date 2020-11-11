@@ -1,8 +1,6 @@
 package protobuffers
 
 import (
-	"log"
-
 	protobuf "github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/labels"
@@ -19,8 +17,6 @@ func NewSchema(descriptors []*desc.FileDescriptor) specs.Schemas {
 			result[message.GetFullyQualifiedName()] = NewMessage("", message)
 		}
 	}
-
-	log.Printf("%s", result)
 
 	return result
 }

@@ -36,10 +36,6 @@ func (oneOf OneOf) Compare(expected OneOf) error {
 		return fmt.Errorf("expected not to be nil")
 	}
 
-	if actual, expected := len(oneOf), len(expected); actual != expected {
-		return fmt.Errorf("number of elements does not match, got %d while expected %d", actual, expected)
-	}
-
 	for key, property := range oneOf {
 		nested, ok := expected[key]
 		if !ok {

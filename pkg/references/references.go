@@ -271,6 +271,15 @@ func resolveProperty(ctx *broker.Context, node *specs.Node, property *specs.Prop
 		}
 
 		return nil
+	case property.OneOf != nil:
+		for _, nested := range property.OneOf {
+			err := ResolveProperty(ctx, node, nested, flow)
+			if err != nil {
+				return NewErrUnresolvedProperty(err, nested)
+			}
+		}
+
+		return nil
 	default:
 		return nil
 	}
@@ -399,10 +408,31 @@ func ScopeNestedReferences(resource, path string, source, target *specs.Template
 
 		target.Scalar.Default = source.Scalar.Default
 		target.Scalar.Type = source.Scalar.Type
-		break
 	case source.Enum != nil:
 		target.Enum = source.Enum
-		break
+	case source.OneOf != nil:
+		if target.OneOf == nil {
+			target.OneOf = make(specs.OneOf, len(source.OneOf))
+		}
+
+		for _, item := range source.OneOf {
+			path := template.JoinPath(path, item.Name)
+			nested, ok := target.OneOf[item.Name]
+			if !ok {
+				nested = item.ShallowClone() // We should only shallow clone the given property to avoid unexpected definitions
+				target.OneOf[item.Name] = nested
+			}
+
+			if nested.Reference == nil {
+				nested.Reference = &specs.PropertyReference{
+					Resource: target.Reference.Resource,
+					Path:     path,
+					Property: item,
+				}
+			}
+
+			ScopeNestedReferences(resource, path, &item.Template, &nested.Template)
+		}
 	case source.Message != nil:
 		if target.Message == nil {
 			target.Message = make(specs.Message, len(source.Message))
