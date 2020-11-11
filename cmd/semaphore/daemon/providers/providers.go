@@ -1,8 +1,6 @@
 package providers
 
 import (
-	"log"
-
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/checks"
 	"github.com/jexia/semaphore/pkg/compare"
@@ -88,14 +86,10 @@ func Resolve(ctx *broker.Context, mem functions.Collection, options Options) (Co
 		return Collection{}, err
 	}
 
-	log.Println("RESOLVE FLOWS >>> DONE")
-
 	err = compare.Types(ctx, services, schemas, flows)
 	if err != nil {
 		return Collection{}, err
 	}
-
-	log.Println("COMPARE TYPES >>> DONE")
 
 	if options.AfterConstructor != nil {
 		err = options.AfterConstructor(ctx, flows, endpoints, services, schemas)

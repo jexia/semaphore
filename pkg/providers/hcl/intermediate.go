@@ -75,12 +75,11 @@ type Flow struct {
 	Output  *ParameterMap      `hcl:"output,block"`
 }
 
+// OneOf contains choices for 'oneof' types.
 type OneOf struct {
 	BaseParameterMap `hcl:",remain"`
 
 	Name string `hcl:"type,label"`
-
-	// TODO: ??? Template
 }
 
 // BaseParameterMap contains a set of generic fields.

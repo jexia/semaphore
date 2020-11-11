@@ -94,14 +94,14 @@ func AddOneOf(message specs.Message, path string, descriptor *desc.FieldDescript
 			Options: specs.Options{},
 			Label:   Labels[descriptor.GetLabel()],
 			Template: specs.Template{
-				OneOf: make(specs.OneOf, 0, len(oneOf.GetChoices())),
+				OneOf: make(specs.OneOf, len(oneOf.GetChoices())),
 			},
 		}
 
 		message[name] = property
 	}
 
-	property.OneOf = append(property.OneOf, NewProperty(path, descriptor))
+	property.OneOf[descriptor.GetName()] = NewProperty(path, descriptor)
 }
 
 func setTemplate(template *specs.Template, path string, descriptor *desc.FieldDescriptor) {

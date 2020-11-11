@@ -203,6 +203,10 @@ func ResolveOnError(ctx *broker.Context, schemas specs.Schemas, params *specs.On
 	return nil
 }
 
+func resolveOneOf(oneOf, schema specs.OneOf, flow specs.FlowInterface) error {
+	return resolveMessage(specs.Message(oneOf), specs.Message(schema), flow)
+}
+
 func resolveMessage(message, schema specs.Message, flow specs.FlowInterface) error {
 	for _, nested := range message {
 		if nested == nil {
@@ -250,6 +254,10 @@ func resolveRepeated(repeated, schema specs.Repeated, flow specs.FlowInterface) 
 	return nil
 }
 
+func setOneOf(oneOf, schema specs.OneOf) {
+	setMessage(specs.Message(oneOf), specs.Message(schema))
+}
+
 func setMessage(message, schema specs.Message) {
 	// Set any properties not defined inside the flow but available inside the schema
 	for _, prop := range schema {
@@ -286,16 +294,18 @@ func ResolveProperty(property, schema *specs.Property, flow specs.FlowInterface)
 		}
 
 		property.Label = schema.Label
-
-		break
 	case property.Repeated != nil:
 		if err := resolveRepeated(property.Repeated, schema.Repeated, flow); err != nil {
 			return err
 		}
 
 		property.Label = schema.Label
+	case property.OneOf != nil:
+		if err := resolveOneOf(property.OneOf, schema.OneOf, flow); err != nil {
+			return err
+		}
 
-		break
+		property.Label = schema.Label
 	}
 
 	switch {
@@ -305,16 +315,18 @@ func ResolveProperty(property, schema *specs.Property, flow specs.FlowInterface)
 		}
 
 		setMessage(property.Message, schema.Message)
-
-		break
 	case schema.Repeated != nil:
 		if property.Repeated == nil {
 			property.Repeated = schema.Repeated.Clone()
 		}
 
 		setRepeated(property.Repeated, schema.Repeated)
+	case schema.OneOf != nil:
+		if property.OneOf == nil {
+			property.OneOf = schema.OneOf.Clone()
+		}
 
-		break
+		setOneOf(property.OneOf, schema.OneOf)
 	}
 
 	return nil

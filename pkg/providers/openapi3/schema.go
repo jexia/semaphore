@@ -171,7 +171,7 @@ func oneOf(s *openapi.Schema) (specs.Template, error) {
 			return specs.Template{}, fmt.Errorf("failed to build type at index %d: %w", id, err)
 		}
 
-		oneOf[id] = &specs.Property{
+		oneOf[ref.Value.Type] = &specs.Property{
 			Template: tpl,
 		}
 	}

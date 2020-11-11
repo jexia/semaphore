@@ -16,6 +16,8 @@ flow "typetest" {
   output "semaphore.typetest.Response" {
     // oneof = "{{ input:oneof }}"
 
+    // Is this correct? (since only one of the fields can be set) Or we should allow 
+    // references to entire 'oneof' only?
     oneof "oneof" {
       empty = "{{ input:oneof.empty }}"
 

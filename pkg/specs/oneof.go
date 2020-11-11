@@ -13,19 +13,13 @@ import (
 //   {Message: &Message{...}},
 // }
 // A given value must be one of these types: string, int32 or the message.
-type OneOf []*Property
+type OneOf map[string]*Property
 
 func (oneOf OneOf) String() string { return dump(oneOf) }
 
 // Clone OneOf.
 func (oneOf OneOf) Clone() OneOf {
-	var clone = make(OneOf, len(oneOf))
-
-	for key := range oneOf {
-		clone[key] = oneOf[key].Clone()
-	}
-
-	return clone
+	return OneOf(Message(oneOf).Clone())
 }
 
 // Compare checks whether given OneOf mathches the provided one.
@@ -46,8 +40,13 @@ func (oneOf OneOf) Compare(expected OneOf) error {
 		return fmt.Errorf("number of elements does not match, got %d while expected %d", actual, expected)
 	}
 
-	for index, property := range oneOf {
-		if err := property.Compare(expected[index]); err != nil {
+	for key, property := range oneOf {
+		nested, ok := expected[key]
+		if !ok {
+			return fmt.Errorf("unknown choice '%s'", key)
+		}
+
+		if err := property.Compare(nested); err != nil {
 			return fmt.Errorf("'oneof' choice mismatch: %w", err)
 		}
 	}

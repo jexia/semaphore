@@ -8,6 +8,7 @@ import (
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
 
+// ParseIntermediateOneOf parses the given intermediate oneof to a spec oneof
 func ParseIntermediateOneOf(ctx *broker.Context, params OneOf, path string) (*specs.Property, error) {
 	message, err := parseBaseParameterMap(ctx, params.BaseParameterMap, path)
 	if err != nil {
@@ -19,17 +20,7 @@ func ParseIntermediateOneOf(ctx *broker.Context, params OneOf, path string) (*sp
 		Path:  path,
 		Label: labels.Optional,
 		Template: specs.Template{
-			// Reference: template.ParsePropertyReference(params.Template),
-			// TODO: fixme
-			OneOf: func(message specs.Message) []*specs.Property {
-				var oneOf = make([]*specs.Property, 0, len(message))
-
-				for _, property := range message {
-					oneOf = append(oneOf, property)
-				}
-
-				return oneOf
-			}(message),
+			OneOf: specs.OneOf(message),
 		},
 	}, nil
 }
