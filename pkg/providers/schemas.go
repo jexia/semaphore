@@ -188,11 +188,3 @@ func resolveOnErrorSchemaDefinitions(ctx *broker.Context, schemas specs.Schemas,
 
 	return nil
 }
-
-// DefineSchemaPropertyPositions defines property labels and positions
-func DefineSchemaPropertyPositions(property, schema *specs.Property, flow specs.FlowInterface) error {
-	property.Label = schema.Label
-	property.Position = schema.Position
-
-	return nil
-}
