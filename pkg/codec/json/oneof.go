@@ -45,12 +45,13 @@ func (oneOf *OneOf) UnmarshalJSONObject(decoder *gojay.Decoder, key string) erro
 		return errors.New("only a single field is allowed to be set")
 	}
 
-	oneOf.isSet = true
-
 	property, has := oneOf.template.OneOf[key]
 	if !has {
 		return nil
 	}
+
+	// change the state only if the property is known
+	oneOf.isSet = true
 
 	oneOf.store.Define(oneOf.path, len(oneOf.template.Message))
 

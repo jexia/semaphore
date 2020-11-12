@@ -7,6 +7,7 @@ service mock {
     rpc nested(Nested) returns (Empty);
     rpc repeated(Repeated) returns (Empty);
     rpc repeated_values(RepeatedValues) returns (Empty);
+    rpc one_of(OneOf) returns (Empty);
 }
 
 enum Status {
@@ -43,4 +44,12 @@ message Value {
 }
 
 message Empty {
+}
+
+message OneOf {
+    oneof oneof {
+        bool boolean = 1;
+        double numeric = 2;
+        string text = 3;
+    }
 }
