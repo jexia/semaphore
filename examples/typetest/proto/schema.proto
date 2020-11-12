@@ -24,10 +24,6 @@ message Data {
 	double double = 4;
 
 	repeated int64 numbers = 5;
-
-    // TODO: uncomment once recursive types are supported
-    // Data dataObject = 6;
-	// repeated Data dataArray = 7;
 }
 
 message Array {
