@@ -1,6 +1,7 @@
 package openapi3
 
 import (
+	"log"
 	"testing"
 
 	"github.com/getkin/kin-openapi/openapi3"
@@ -97,14 +98,14 @@ func shouldBeRepeated(t *testing.T, tpl specs.Template, check testFn, opts ...in
 	return check(t, item)
 }
 
-func shouldBeOneOf(t *testing.T, tpl specs.Template, checks []testFn, opts ...interface{}) bool {
+func shouldBeOneOf(t *testing.T, tpl specs.Template, checks map[string]testFn, opts ...interface{}) bool {
 	prefix := ""
 	if len(opts) > 0 && opts[0] != nil {
 		prefix = opts[0].(string)
 	}
 
 	if tpl.Type() != types.OneOf {
-		t.Errorf("%s should be oneOf, but it is %s", prefix, tpl.Type())
+		t.Fatalf("%s should be oneOf, but it is %s", prefix, tpl.Type())
 		return false
 	}
 
@@ -112,14 +113,16 @@ func shouldBeOneOf(t *testing.T, tpl specs.Template, checks []testFn, opts ...in
 		return true
 	}
 
+	log.Println(tpl.OneOf)
+
 	if len(tpl.OneOf) != len(checks) {
-		t.Errorf("%s should have length %d, but it is %d", prefix, len(checks), len(tpl.OneOf))
+		t.Fatalf("%s should have length %d, but it is %d", prefix, len(checks), len(tpl.OneOf))
 	}
 
 	valid := true
 
-	for i, item := range tpl.OneOf {
-		if !checks[i](t, item.Template) {
+	for key, item := range tpl.OneOf {
+		if !checks[key](t, item.Template) {
 			valid = false
 		}
 	}
@@ -199,8 +202,8 @@ func Test_newTemplate(t *testing.T) {
 			return
 		}
 
-		shouldBeOneOf(t, got, []testFn{
-			func(t *testing.T, template specs.Template) bool {
+		shouldBeOneOf(t, got, map[string]testFn{
+			"0": func(t *testing.T, template specs.Template) bool {
 				return shouldBeMessage(t, template, map[string]testFn{
 					"name": func(t *testing.T, template specs.Template) bool {
 						return shouldBeScalar(t, template, specs.Scalar{Type: types.String}, "name")
@@ -211,7 +214,7 @@ func Test_newTemplate(t *testing.T) {
 				}, "Cat")
 			},
 
-			func(t *testing.T, template specs.Template) bool {
+			"1": func(t *testing.T, template specs.Template) bool {
 				return shouldBeMessage(t, template, map[string]testFn{
 					"name": func(t *testing.T, template specs.Template) bool {
 						return shouldBeScalar(t, template, specs.Scalar{Type: types.String}, "name")

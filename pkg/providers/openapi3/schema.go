@@ -3,6 +3,7 @@ package openapi3
 import (
 	"errors"
 	"fmt"
+	"strconv"
 
 	openapi "github.com/getkin/kin-openapi/openapi3"
 	"github.com/jexia/semaphore/pkg/specs"
@@ -171,7 +172,7 @@ func oneOf(s *openapi.Schema) (specs.Template, error) {
 			return specs.Template{}, fmt.Errorf("failed to build type at index %d: %w", id, err)
 		}
 
-		oneOf[ref.Value.Type] = &specs.Property{
+		oneOf[strconv.Itoa(id)] = &specs.Property{
 			Template: tpl,
 		}
 	}
