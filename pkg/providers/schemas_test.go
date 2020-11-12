@@ -559,7 +559,7 @@ func TestUndefinedNestedSchemaProperty(t *testing.T) {
 				Name: "mock",
 			}
 
-			err := ResolveParameterMap(ctx, schemas, test, flow)
+			err := resolveParameterMapSchemaDefinitions(ctx, schemas, test, flow)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -580,7 +580,7 @@ func TestSettingUndefinedNested(t *testing.T) {
 		Name: "mock",
 	}
 
-	err := ResolveParameterMap(ctx, schemas, test, flow)
+	err := resolveParameterMapSchemaDefinitions(ctx, schemas, test, flow)
 	if err != nil {
 		t.Fatal(err)
 	}

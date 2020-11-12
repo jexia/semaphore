@@ -1,7 +1,6 @@
 package openapi3
 
 import (
-	"log"
 	"testing"
 
 	"github.com/getkin/kin-openapi/openapi3"
@@ -112,8 +111,6 @@ func shouldBeOneOf(t *testing.T, tpl specs.Template, checks map[string]testFn, o
 	if checks == nil {
 		return true
 	}
-
-	log.Println(tpl.OneOf)
 
 	if len(tpl.OneOf) != len(checks) {
 		t.Fatalf("%s should have length %d, but it is %d", prefix, len(checks), len(tpl.OneOf))

@@ -7,12 +7,14 @@ import (
 	"go.uber.org/zap"
 )
 
-// ResolveSchemas ensures that all schema properties are defined inside the given flows
-func ResolveSchemas(ctx *broker.Context, services specs.ServiceList, schemas specs.Schemas, flows specs.FlowListInterface) (err error) {
+// ResolveSchemaDefinitions ensures that all schema definitions are valid and are
+// available inside the schema collection. Call method input and output schemas
+// are defined and set inside the given calls.
+func ResolveSchemaDefinitions(ctx *broker.Context, services specs.ServiceList, schemas specs.Schemas, flows specs.FlowListInterface) (err error) {
 	logger.Info(ctx, "defining manifest types")
 
 	for _, flow := range flows {
-		err := ResolveFlow(ctx, services, schemas, flow)
+		err := resolveFlowSchemaDefinitions(ctx, services, schemas, flow)
 		if err != nil {
 			return err
 		}
@@ -21,8 +23,7 @@ func ResolveSchemas(ctx *broker.Context, services specs.ServiceList, schemas spe
 	return nil
 }
 
-// ResolveFlow ensures that all schema properties are defined inside the given flow
-func ResolveFlow(parent *broker.Context, services specs.ServiceList, schemas specs.Schemas, flow specs.FlowInterface) (err error) {
+func resolveFlowSchemaDefinitions(parent *broker.Context, services specs.ServiceList, schemas specs.Schemas, flow specs.FlowInterface) (err error) {
 	ctx := logger.WithFields(parent, zap.String("flow", flow.GetName()))
 	logger.Info(ctx, "defining flow types")
 
@@ -38,21 +39,21 @@ func ResolveFlow(parent *broker.Context, services specs.ServiceList, schemas spe
 	}
 
 	if flow.GetOnError() != nil {
-		err = ResolveOnError(ctx, schemas, flow.GetOnError(), flow)
+		err = resolveOnErrorSchemaDefinitions(ctx, schemas, flow.GetOnError(), flow)
 		if err != nil {
 			return err
 		}
 	}
 
 	for _, node := range flow.GetNodes() {
-		err = ResolveNode(ctx, services, schemas, node, flow)
+		err = resolveNodeSchemaDefinitions(ctx, services, schemas, node, flow)
 		if err != nil {
 			return err
 		}
 	}
 
 	if flow.GetOutput() != nil {
-		_, err = ResolveParameterMapSchema(ctx, schemas, flow.GetOutput(), flow)
+		err = resolveParameterMapSchemaDefinitions(ctx, schemas, flow.GetOutput(), flow)
 		if err != nil {
 			return err
 		}
@@ -61,38 +62,38 @@ func ResolveFlow(parent *broker.Context, services specs.ServiceList, schemas spe
 	return nil
 }
 
-// ResolveNode ensures that all schema properties are defined inside the given node
-func ResolveNode(ctx *broker.Context, services specs.ServiceList, schemas specs.Schemas, node *specs.Node, flow specs.FlowInterface) (err error) {
+// resolveNodeSchemaDefinitions ensures that all schema properties are defined inside the given node
+func resolveNodeSchemaDefinitions(ctx *broker.Context, services specs.ServiceList, schemas specs.Schemas, node *specs.Node, flow specs.FlowInterface) (err error) {
 	if node.Condition != nil {
-		err = ResolveParameterMap(ctx, schemas, node.Condition.Params, flow)
+		err = resolveParameterMapSchemaDefinitions(ctx, schemas, node.Condition.Params, flow)
 		if err != nil {
 			return err
 		}
 	}
 
 	if node.Call != nil {
-		err = DefineCall(ctx, services, schemas, node, node.Call, flow)
+		err = defineCallSchemaDefinitions(ctx, services, schemas, node, node.Call, flow)
 		if err != nil {
 			return err
 		}
 	}
 
 	if node.Rollback != nil {
-		err = DefineCall(ctx, services, schemas, node, node.Rollback, flow)
+		err = defineCallSchemaDefinitions(ctx, services, schemas, node, node.Rollback, flow)
 		if err != nil {
 			return err
 		}
 	}
 
 	if node.Intermediate != nil {
-		err = ResolveParameterMap(ctx, schemas, node.Intermediate, flow)
+		err = resolveParameterMapSchemaDefinitions(ctx, schemas, node.Intermediate, flow)
 		if err != nil {
 			return err
 		}
 	}
 
 	if node.OnError != nil {
-		err = ResolveOnError(ctx, schemas, node.OnError, flow)
+		err = resolveOnErrorSchemaDefinitions(ctx, schemas, node.OnError, flow)
 		if err != nil {
 			return err
 		}
@@ -101,10 +102,10 @@ func ResolveNode(ctx *broker.Context, services specs.ServiceList, schemas specs.
 	return nil
 }
 
-// DefineCall defineds the types for the specs call
-func DefineCall(ctx *broker.Context, services specs.ServiceList, schemas specs.Schemas, node *specs.Node, call *specs.Call, flow specs.FlowInterface) (err error) {
+// defineCallSchemaDefinitions defineds the types for the specs call
+func defineCallSchemaDefinitions(ctx *broker.Context, services specs.ServiceList, schemas specs.Schemas, node *specs.Node, call *specs.Call, flow specs.FlowInterface) (err error) {
 	if call.Request != nil {
-		_, err = ResolveParameterMapSchema(ctx, schemas, call.Request, flow)
+		err = resolveParameterMapSchemaDefinitions(ctx, schemas, call.Request, flow)
 		if err != nil {
 			return err
 		}
@@ -151,7 +152,7 @@ func DefineCall(ctx *broker.Context, services specs.ServiceList, schemas specs.S
 	}
 
 	if call.Response != nil {
-		err = ResolveParameterMap(ctx, schemas, call.Response, flow)
+		err = resolveParameterMapSchemaDefinitions(ctx, schemas, call.Response, flow)
 		if err != nil {
 			return err
 		}
@@ -160,175 +161,30 @@ func DefineCall(ctx *broker.Context, services specs.ServiceList, schemas specs.S
 	return nil
 }
 
-// ResolveParameterMapSchema ensures that the given parameter map schema is available
-func ResolveParameterMapSchema(ctx *broker.Context, schemas specs.Schemas, params *specs.ParameterMap, flow specs.FlowInterface) (*specs.Property, error) {
+// resolveParameterMapSchemaDefinitions ensures that the given parameter map schema is available
+func resolveParameterMapSchemaDefinitions(ctx *broker.Context, schemas specs.Schemas, params *specs.ParameterMap, flow specs.FlowInterface) error {
 	if params == nil || params.Schema == "" {
-		return nil, nil
+		return nil
 	}
 
 	schema := schemas.Get(params.Schema)
 	if schema == nil {
-		return nil, ErrUndefinedObject{
+		return ErrUndefinedObject{
 			Schema: params.Schema,
 		}
 	}
 
-	if err := ResolveProperty(params.Property, schema, flow); err != nil {
-		return nil, err
-	}
-
-	return schema, nil
-}
-
-// ResolveParameterMap ensures that all schema properties are defined inisde the given parameter map
-func ResolveParameterMap(ctx *broker.Context, schemas specs.Schemas, params *specs.ParameterMap, flow specs.FlowInterface) (err error) {
-	schema, err := ResolveParameterMapSchema(ctx, schemas, params, flow)
-	if err != nil {
-		return err
-	}
-
-	err = ResolveProperty(params.Property, schema.Clone(), flow)
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
 
-// ResolveOnError ensures that all schema properties are defined inside the given on error object
-func ResolveOnError(ctx *broker.Context, schemas specs.Schemas, params *specs.OnError, flow specs.FlowInterface) (err error) {
+// resolveOnErrorSchemaDefinitions ensures that all schema properties are defined inside the given on error object
+func resolveOnErrorSchemaDefinitions(ctx *broker.Context, schemas specs.Schemas, params *specs.OnError, flow specs.FlowInterface) (err error) {
 	if params.Response != nil {
-		err = ResolveParameterMap(ctx, schemas, params.Response, flow)
+		err = resolveParameterMapSchemaDefinitions(ctx, schemas, params.Response, flow)
 		if err != nil {
 			return err
 		}
 	}
-
-	return nil
-}
-
-func resolveOneOf(oneOf, schema specs.OneOf, flow specs.FlowInterface) error {
-	return resolveMessage(specs.Message(oneOf), specs.Message(schema), flow)
-}
-
-func resolveMessage(message, schema specs.Message, flow specs.FlowInterface) error {
-	for _, nested := range message {
-		if nested == nil {
-			continue
-		}
-
-		object := schema[nested.Name]
-		if object == nil {
-			return ErrUndefinedProperty{
-				Property: nested.Name,
-				Flow:     flow.GetName(),
-			}
-		}
-
-		if err := ResolveProperty(nested, object.Clone(), flow); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func resolveRepeated(repeated, schema specs.Repeated, flow specs.FlowInterface) error {
-	if len(repeated) != len(schema) {
-		return ErrLengthMismatch
-	}
-
-	// FIXME: flow and schema repeated could have different type orders.
-	for pos, template := range repeated {
-		object := schema[pos]
-
-		if err := ResolveProperty(
-			&specs.Property{
-				Template: template,
-			},
-			(&specs.Property{
-				Template: object,
-			}).Clone(),
-			flow,
-		); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func setOneOf(oneOf, schema specs.OneOf) {
-	setMessage(specs.Message(oneOf), specs.Message(schema))
-}
-
-func setMessage(message, schema specs.Message) {
-	// Set any properties not defined inside the flow but available inside the schema
-	for _, prop := range schema {
-		if _, ok := message[prop.Name]; ok {
-			continue
-		}
-
-		message[prop.Name] = prop.Clone()
-	}
-}
-
-func setRepeated(repeated, schema specs.Repeated) {
-	// FIXME: how do we match schemas and repeated?
-	// FIXME: out of range panic
-	for pos, prop := range schema {
-		repeated[pos] = prop.Clone()
-	}
-}
-
-// ResolveProperty ensures that all schema properties are defined inside the given property
-func ResolveProperty(property, schema *specs.Property, flow specs.FlowInterface) error {
-	if property == nil {
-		property = schema.Clone()
-		return nil
-	}
-
-	switch {
-	case property.Message != nil:
-		if err := resolveMessage(property.Message, schema.Message, flow); err != nil {
-			return ErrUndefinedProperty{
-				Property: property.Name,
-				Flow:     flow.GetName(),
-			}
-		}
-	case property.Repeated != nil:
-		if err := resolveRepeated(property.Repeated, schema.Repeated, flow); err != nil {
-			return err
-		}
-	case property.OneOf != nil:
-		if err := resolveOneOf(property.OneOf, schema.OneOf, flow); err != nil {
-			return err
-		}
-	}
-
-	switch {
-	case schema.Message != nil:
-		if property.Message == nil {
-			property.Message = schema.Message.Clone()
-		}
-
-		setMessage(property.Message, schema.Message)
-	case schema.Repeated != nil:
-		if property.Repeated == nil {
-			property.Repeated = schema.Repeated.Clone()
-		}
-
-		setRepeated(property.Repeated, schema.Repeated)
-	case schema.OneOf != nil:
-		if property.OneOf == nil {
-			property.OneOf = schema.OneOf.Clone()
-		}
-
-		setOneOf(property.OneOf, schema.OneOf)
-	}
-
-	property.Label = schema.Label
-	property.Position = schema.Position
 
 	return nil
 }
