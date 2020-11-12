@@ -81,6 +81,8 @@ func Resolve(ctx *broker.Context, mem functions.Collection, options Options) (Co
 
 	forwarding.ResolveReferences(ctx, flows, mem)
 
+	// TODO: define flow property positions and labels from the given schema definition
+
 	err = dependencies.ResolveFlows(ctx, flows)
 	if err != nil {
 		return Collection{}, err
