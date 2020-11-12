@@ -80,6 +80,17 @@ func TestMarshal(t *testing.T) {
 			schema:   tests.SchemaObjectComplex,
 			expected: "<root><status>PENDING</status><nested></nested></root>",
 		},
+		"oneof": {
+			input: map[string]interface{}{
+				"oneof": map[string]interface{}{
+					"string": "foo",
+				},
+			},
+			schema: &specs.ParameterMap{
+				Property: tests.PropOneOf(),
+			},
+			expected: "<oneof><string>foo</string></oneof>",
+		},
 		"object": {
 			input: map[string]interface{}{
 				"nested": map[string]interface{}{
@@ -310,6 +321,19 @@ func TestUnmarshal(t *testing.T) {
 			expected: map[string]tests.Expect{
 				"": {
 					Enum: func() *int32 { i := int32(1); return &i }(),
+				},
+			},
+		},
+		"oneof": {
+			input: strings.NewReader(
+				"<oneof><string>foo</string></oneof>",
+			),
+			schema: &specs.ParameterMap{
+				Property: tests.PropOneOf(),
+			},
+			expected: map[string]tests.Expect{
+				"string": {
+					Scalar: "foo",
 				},
 			},
 		},

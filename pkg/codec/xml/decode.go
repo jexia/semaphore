@@ -14,6 +14,8 @@ func decodeElement(decoder *xml.Decoder, start xml.StartElement, name, path stri
 		return NewObject(name, path, template, store, tracker).UnmarshalXML(decoder, start)
 	case template.Repeated != nil:
 		return NewArray(name, path, template, store, tracker).UnmarshalXML(decoder, start)
+	case template.OneOf != nil:
+		return NewOneOf(name, path, template, store, tracker).UnmarshalXML(decoder, start)
 	case template.Enum != nil:
 		return NewEnum(name, path, template, store, tracker).UnmarshalXML(decoder, start)
 	case template.Scalar != nil:
