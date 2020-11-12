@@ -4,8 +4,6 @@ go 1.14
 
 require (
 	github.com/Knetic/govaluate v3.0.0+incompatible
-	github.com/actgardner/gogen-avro v7.2.0+incompatible // indirect
-	github.com/actgardner/gogen-avro/v7 v7.2.0 // indirect
 	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/francoispqt/gojay v1.2.13
@@ -19,7 +17,6 @@ require (
 	github.com/hashicorp/hcl/v2 v2.3.0
 	github.com/jhump/protoreflect v1.7.0
 	github.com/julienschmidt/httprouter v1.3.0
-	github.com/linkedin/goavro v2.1.0+incompatible // indirect
 	github.com/micro/go-micro/v2 v2.3.0
 	github.com/mitchellh/go-wordwrap v1.0.0 // indirect
 	github.com/prometheus/client_golang v1.2.1
@@ -35,6 +32,7 @@ require (
 	google.golang.org/grpc v1.27.0
 	google.golang.org/protobuf v1.25.0
 	gopkg.in/yaml.v2 v2.3.0
+	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776 // indirect
 )
 
 replace github.com/francoispqt/gojay v1.2.13 => github.com/Alma-media/gojay v1.2.14
