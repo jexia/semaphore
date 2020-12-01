@@ -1,7 +1,8 @@
 package specs
 
 // ResolvedProperty tracks resoved/seen/visited properties in order to escape
-// from the infinite loop.
+// from the infinite loop. The resolved property also trackes previously seen
+// type identifiers allowing to detect recursive type references.
 type ResolvedProperty struct {
 	ResolvedTemplate
 	byIdentifier map[string]struct{}

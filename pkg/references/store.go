@@ -93,29 +93,50 @@ func (store *store) Length(path string) int {
 	return length // returns 0 if not defined
 }
 
-// Tracker tracks the index positions of arrays.
-// Paths represent arrays or objects stored inside a reference store.
-// Paths defined inside references could be resolved to include the current items index.
-// These indexes are required since paths inside the reference store are absolute.
-// Trackers could be nested to track multiple arrays on different or nested paths.
+// Tracker tracks the index positions of arrays and recursive types.
+// Paths represent arrays or objects stored inside a reference store or template
+// identifiers seen before. Paths defined inside references could be resolved to
+// include the current items index. These indexes are required since paths inside
+// the reference store are absolute. Trackers could be nested to track multiple
+// arrays on different or nested paths.
+//
+// Previously seen types inside a path are determained to be recursive types extending
+// the reference to include the nested reference.
 //
 // The tracker does not perform any mutex locking.
 // Most usecases/implementations are not concurrent.
 //
-// example:
+// array position example:
+// ```
 // track := tracker.Track("items", 0) // sets the current index of "items" at 0
 // path := track.Resolve("items.key") // returns: "items[0].key"
 // track.Next("items")                // increases the index of "items" by one
+// ```
+//
+// recursive type example:
+// ```
+// var reference string
+// reference = tracker.Resolve("resource:recursive", "objectType", "input:recursive")           // input:recursive
+// reference = tracker.Resolve("resource:recursive.recursive", "objectType", "input:recursive") // input:recursive.recursive
+// ```
 type Tracker interface {
 	// Track includes the given path and index to be tracked.
 	// Trackers could be nested to track multiple or nested arrays on different indexes.
 	Track(path string, index int)
-	// Resolve resolves the given path to include all tracked array indexes found inside the given path.
-	// ex: "items.key" - "items[0].key"
-	Resolve(path string) string
+	// Resolve resolves the given reference to include all tracked array indexes found inside the given path.
+	// example: "items.key" - "items[0].key"
+	//
+	// A recursive type check is performed to determain whether the given path and
+	// reference includes a recursive type lookup. The unique template identifier
+	// is stored and if seen before is the given reference determained to be a recursive
+	// type.
+	//
+	// example:
+	// path: resource:recursive, template: objectType, reference: input:recursive
+	// path: resource:recursive.recursive, template: objectType, reference: input:recursive.recursive
+	Resolve(reference string) string
 	// Next increases the index of the counter at the given path
 	Next(path string) int
-	// NOTE: remove tracked paths?
 }
 
 // NewTracker constructs a new position tracker
@@ -126,23 +147,24 @@ func NewTracker() Tracker {
 }
 
 type tracker struct {
-	positions map[string]int
+	positions   map[string]int
+	identifiers map[string]string
 }
 
 func (t *tracker) Track(path string, index int) {
 	t.positions[path] = index
 }
 
-func (t *tracker) Resolve(path string) string {
-	if len(t.positions) == 0 {
-		return path
+func (t *tracker) Resolve(reference string) string {
+	if len(t.positions) == 0 && len(t.identifiers) == 0 {
+		return reference
 	}
 
 	// TODO: replace this implementation with a Radix tree
 	result := ""
 	lookup := ""
 
-	parts := template.SplitPath(path)
+	parts := template.SplitPath(reference)
 
 	for _, part := range parts {
 		result = template.JoinPath(result, part)

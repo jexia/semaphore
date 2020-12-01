@@ -10,7 +10,9 @@ import (
 	"go.uber.org/zap"
 )
 
-// Resolve all references inside the given flow list
+// Resolve resolves all property references inside the given flow list.
+// Recursive types are detected and resolved including the recursive type path
+// inside the specs.PropertyReference.
 func Resolve(ctx *broker.Context, flows specs.FlowListInterface) (err error) {
 	logger.Info(ctx, "defining manifest types")
 
@@ -428,7 +430,12 @@ func scopeNestedReferences(resolved specs.ResolvedTemplate, resource, path strin
 		}
 
 		for _, item := range source.Message {
-			path := template.JoinPath(path, item.Name)
+			if resolved.Resolved(item.Template) { // Skip any previously scoped recursive types
+				target.Message[item.Name] = item
+				continue
+			}
+
+			npath := template.JoinPath(path, item.Name)
 			nested, ok := target.Message[item.Name]
 			if !ok {
 				nested = item.ShallowClone() // We should only shallow clone the given property to avoid unexpected definitions
@@ -438,14 +445,14 @@ func scopeNestedReferences(resolved specs.ResolvedTemplate, resource, path strin
 			if nested.Reference == nil {
 				nested.Reference = &specs.PropertyReference{
 					Resource: target.Reference.Resource,
-					Path:     path,
+					Path:     npath,
 					Property: item,
 				}
 			}
 
 			typed := item.Type()
 			if typed == types.Message || typed == types.Array {
-				scopeNestedReferences(resolved, resource, path, item.Template, nested.Template)
+				scopeNestedReferences(resolved, resource, npath, item.Template, nested.Template)
 			}
 		}
 
