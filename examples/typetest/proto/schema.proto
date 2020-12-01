@@ -8,25 +8,17 @@ service Typetest {
 
 enum Enum {
 	UNKNOWN = 0;
-
 	ON = 1;
-
 	OFF = 2;
 }
 
 message Data {
 	Enum enum = 1;
-
 	string string = 2;
-
 	int64 int64 = 3;
-
 	double double = 4;
-
 	repeated int64 numbers = 5;
-
 	Data dataObject = 6;
-
 	repeated Data dataArray = 7;
 }
 
@@ -35,5 +27,9 @@ message Request {
 }
 
 message Response {
-	repeated Data data = 1;
+	string message = 1;
+	// Enum enum = 1;
+	// string string = 2;
+	// int64 int64 = 3;
+	Data dataObject = 2;
 }
