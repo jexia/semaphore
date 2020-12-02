@@ -2,6 +2,7 @@ package config
 
 import (
 	"mime"
+	"path/filepath"
 
 	"github.com/jexia/semaphore"
 	"github.com/jexia/semaphore/cmd/semaphore/daemon/providers"
@@ -69,6 +70,10 @@ type GraphQL struct {
 // read options.
 func SetOptions(ctx *broker.Context, flags *Daemon) error {
 	for _, path := range flags.Files {
+		if mime.TypeByExtension(filepath.Ext(path)) != providers.HCLExtensionType {
+			continue
+		}
+
 		options, err := hcl.GetOptions(ctx, path)
 		if err != nil {
 			return err
@@ -137,7 +142,7 @@ func NewCore(ctx *broker.Context, flags *Daemon) (semaphore.Options, error) {
 	}
 
 	for _, path := range flags.Files {
-		switch mime.TypeByExtension(path) {
+		switch mime.TypeByExtension(filepath.Ext(path)) {
 		case providers.JSONExtensionType:
 			options = append(options, semaphore.WithFlows(jsonSpecs.FlowsResolver(path)))
 		default:
@@ -159,7 +164,7 @@ func NewProviders(ctx *broker.Context, core semaphore.Options, params *Daemon) (
 	var options []providers.Option
 
 	for _, path := range params.Files {
-		switch mime.TypeByExtension(path) {
+		switch mime.TypeByExtension(filepath.Ext(path)) {
 		case providers.JSONExtensionType:
 			options = append(options, providers.WithServices(jsonSpecs.ServicesResolver(path)))
 			options = append(options, providers.WithEndpoints(jsonSpecs.EndpointsResolver(path)))

@@ -126,10 +126,13 @@ func resolvePath(ctx *broker.Context, path string) (collection, error) {
 			return collection{}, err
 		}
 
-		collection := collection{}
-		json.Unmarshal(bb, &collection)
+		content := collection{}
+		err = json.Unmarshal(bb, &content)
+		if err != nil {
+			return collection{}, err
+		}
 
-		result.Append(collection)
+		result.Append(content)
 	}
 
 	logger.Debug(ctx, "resolve path result", zap.String("path", path), zap.Int("manifests", len(files)))

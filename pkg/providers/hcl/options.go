@@ -3,6 +3,7 @@ package hcl
 // Options represents the available options that could be defined inside a HCL definition
 type Options struct {
 	LogLevel     string
+	Includes     []string
 	Protobuffers []string
 	Openapi3     []string
 	GraphQL      *GraphQL
