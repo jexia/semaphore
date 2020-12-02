@@ -12,6 +12,7 @@ import (
 	formencoded "github.com/jexia/semaphore/pkg/codec/www-form-urlencoded"
 	"github.com/jexia/semaphore/pkg/codec/xml"
 	"github.com/jexia/semaphore/pkg/metrics/prometheus"
+	"github.com/jexia/semaphore/pkg/providers/avros"
 	"github.com/jexia/semaphore/pkg/providers/hcl"
 	"github.com/jexia/semaphore/pkg/providers/openapi3"
 	"github.com/jexia/semaphore/pkg/providers/protobuffers"
@@ -33,6 +34,7 @@ type Daemon struct {
 	GRPC         GRPC
 	Prometheus   Prometheus
 	Protobuffers []string
+	Avro         []string
 	Openapi3     []string
 	Files        []string
 }
@@ -97,6 +99,10 @@ func parseHCL(options *hcl.Options, target *Daemon) {
 		target.Protobuffers = append(target.Protobuffers, options.Protobuffers...)
 	}
 
+	if len(options.Avro) > 0 {
+		target.Avro = append(target.Avro, options.Avro...)
+	}
+
 	if len(options.Openapi3) > 0 {
 		target.Protobuffers = append(target.Openapi3, options.Openapi3...)
 	}
@@ -155,6 +161,10 @@ func NewProviders(ctx *broker.Context, core semaphore.Options, params *Daemon) (
 		options = append(options, providers.WithServices(hcl.ServicesResolver(path)))
 		options = append(options, providers.WithEndpoints(hcl.EndpointsResolver(path)))
 		options = append(options, providers.WithAfterConstructor(middleware.ServiceSelector(path)))
+	}
+
+	for _, path := range params.Avro {
+		options = append(options, providers.WithSchema(avros.SchemaResolver(params.Avro, path)))
 	}
 
 	for _, path := range params.Protobuffers {

@@ -23,7 +23,7 @@ require (
 	github.com/rs/cors v1.7.0
 	github.com/spf13/cobra v0.0.6
 	github.com/spf13/pflag v1.0.5 // indirect
-	github.com/stretchr/testify v1.5.1
+	github.com/stretchr/testify v1.6.1
 	github.com/zclconf/go-cty v1.3.1
 	go.uber.org/zap v1.13.0
 	golang.org/x/net v0.0.0-20200319234117-63522dbf7eec // indirect
@@ -32,6 +32,7 @@ require (
 	google.golang.org/grpc v1.27.0
 	google.golang.org/protobuf v1.25.0
 	gopkg.in/yaml.v2 v2.3.0
+	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776 // indirect
 )
 
 replace github.com/francoispqt/gojay v1.2.13 => github.com/Alma-media/gojay v1.2.14

@@ -10,6 +10,7 @@ type Manifest struct {
 	GRPC             *GRPC         `hcl:"grpc,block"`
 	Prometheus       *Prometheus   `hcl:"prometheus,block"`
 	Protobuffers     []string      `hcl:"protobuffers,optional"`
+	Avro             []string      `hcl:"avro,optional"`
 	Openapi3         []string      `hcl:"openapi3,optional"`
 	Include          []string      `hcl:"include,optional"`
 	Error            *ParameterMap `hcl:"error,block"`
@@ -21,7 +22,7 @@ type Manifest struct {
 	DiscoveryServers Discoveries   `hcl:"discovery,block"`
 }
 
-// GraphQL represents the GraphQL option definitions.
+// GraphQL represents the GraphQL option definitions
 type GraphQL struct {
 	Address string `hcl:"address"`
 }

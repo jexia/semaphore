@@ -153,6 +153,10 @@ func GetOptions(ctx *broker.Context, path string) (*Options, error) {
 			options.Protobuffers = append(options.Protobuffers, definition.Protobuffers...)
 		}
 
+		if len(definition.Avro) > 0 {
+			options.Avro = append(options.Avro, definition.Avro...)
+		}
+
 		if len(definition.Openapi3) > 0 {
 			options.Openapi3 = append(options.Openapi3, definition.Openapi3...)
 		}
@@ -222,6 +226,16 @@ func ResolvePath(ctx *broker.Context, ignore []string, path string) ([]Manifest,
 				}
 
 				definition.Protobuffers[index] = proto
+			}
+		}
+
+		if definition.Avro != nil {
+			for index, avro := range definition.Avro {
+				if !filepath.IsAbs(avro) {
+					avro = filepath.Join(filepath.Dir(file.Path), avro)
+				}
+
+				definition.Avro[index] = avro
 			}
 		}
 
