@@ -5,6 +5,7 @@ type Options struct {
 	LogLevel     string
 	Includes     []string
 	Protobuffers []string
+	Avro         []string
 	Openapi3     []string
 	GraphQL      *GraphQL
 	HTTP         *HTTP
