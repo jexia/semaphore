@@ -2,6 +2,7 @@ package providers
 
 import (
 	"fmt"
+
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/discovery"

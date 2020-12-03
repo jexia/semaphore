@@ -24,6 +24,11 @@ func (collection FlowListInterface) Get(name string) FlowInterface {
 // FlowList represents a collection of flows
 type FlowList []*Flow
 
+// Append merges the incoming manifest to the existing (left) manifest
+func (collection *FlowList) Append(list FlowList) {
+	*collection = append(*collection, list...)
+}
+
 // Get attempts to find a flow matching the given name
 func (collection FlowList) Get(name string) *Flow {
 	for _, flow := range collection {
@@ -105,6 +110,11 @@ func (flow *Flow) GetForward() *Call {
 
 // ProxyList represents a collection of proxies
 type ProxyList []*Proxy
+
+// Append merges the incoming manifest to the existing (left) manifest
+func (collection *ProxyList) Append(list ProxyList) {
+	*collection = append(*collection, list...)
+}
 
 // Get attempts to find a proxy matching the given name
 func (collection ProxyList) Get(name string) *Proxy {
