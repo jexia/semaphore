@@ -111,7 +111,9 @@ func resolvePath(ctx *broker.Context, path string) (collection, error) {
 	}
 
 	logger.Debug(ctx, "files found", zap.String("path", path), zap.Int("files", len(files)))
-	result := collection{}
+	result := collection{
+		Schemas: make(specs.Schemas),
+	}
 
 	for _, file := range files {
 		logger.Debug(ctx, "resolving file", zap.String("path", file.Path))
