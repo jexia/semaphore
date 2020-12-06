@@ -8,7 +8,7 @@ import (
 	"github.com/jexia/semaphore/pkg/specs"
 )
 
-func decodeElement(decoder *xml.Decoder, start xml.StartElement, name, path string, template specs.Template, store references.Store, tracker references.Tracker) (err error) {
+func decodeElement(decoder *xml.Decoder, start xml.StartElement, name, path string, template *specs.Template, store references.Store, tracker references.Tracker) (err error) {
 	switch {
 	case template.Message != nil:
 		return NewObject(name, path, template, store, tracker).UnmarshalXML(decoder, start)

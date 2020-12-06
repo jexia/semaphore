@@ -13,7 +13,7 @@ import (
 var ErrInvalidObject = errors.New("graphql only supports object types as root elements")
 
 // NewObject constructs a new graphql object of the given specs
-func NewObject(name string, description string, template specs.Template) (*graphql.Object, error) {
+func NewObject(name string, description string, template *specs.Template) (*graphql.Object, error) {
 	if template.Type() != types.Message {
 		return nil, ErrInvalidObject
 	}
@@ -32,7 +32,7 @@ func NewObject(name string, description string, template specs.Template) (*graph
 }
 
 // NewType constructs a new output type from the given template.
-func NewType(name string, description string, property specs.Template) (graphql.Output, error) {
+func NewType(name string, description string, property *specs.Template) (graphql.Output, error) {
 	switch {
 	case property.Message != nil:
 		fields := graphql.Fields{}

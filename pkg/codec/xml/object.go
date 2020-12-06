@@ -11,13 +11,13 @@ import (
 // Object represents an XML object.
 type Object struct {
 	name, path string
-	template   specs.Template
+	template   *specs.Template
 	store      references.Store
 	tracker    references.Tracker
 }
 
 // NewObject creates a new object by wrapping provided specs.Message.
-func NewObject(name, path string, template specs.Template, store references.Store, tracker references.Tracker) *Object {
+func NewObject(name, path string, template *specs.Template, store references.Store, tracker references.Tracker) *Object {
 	return &Object{
 		name:     name,
 		path:     path,

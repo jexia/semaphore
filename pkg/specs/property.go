@@ -34,6 +34,7 @@ type Property struct {
 	Name        string `json:"name,omitempty" yaml:"name,omitempty"`               // Name represents the name of the given property
 	Path        string `json:"path,omitempty" yaml:"path,omitempty"`               // Path represents the full path to the given property
 	Description string `json:"description,omitempty" yaml:"description,omitempty"` // Description holds the description of the given property used to describe its use
+	Identifier  string `json:"-" yaml:"-"`
 
 	Position int32 `json:"position,omitempty" yaml:"position,omitempty"` // Position of the given property (in array/object)
 
@@ -43,20 +44,21 @@ type Property struct {
 
 	Label labels.Label `json:"label,omitempty" yaml:"label,omitempty"` // Label label describes the usage of a given property ex: optional
 
-	Template `json:"template" yaml:"template"`
+	*Template `json:"template" yaml:"template"`
 }
 
 // DefaultValue returns rge default value for a given property.
 func (property *Property) DefaultValue() interface{} {
-	t := property.Template
 	switch {
-	case t.Scalar != nil:
-		return t.Scalar.Default
-	case t.Message != nil:
+	case property.Template == nil:
 		return nil
-	case t.Repeated != nil:
+	case property.Scalar != nil:
+		return property.Scalar.Default
+	case property.Message != nil:
 		return nil
-	case t.Enum != nil:
+	case property.Repeated != nil:
+		return nil
+	case property.Enum != nil:
 		return nil
 	}
 
@@ -70,12 +72,20 @@ func (property *Property) Empty() bool {
 
 // Clone makes a deep clone of the given property
 func (property *Property) Clone() *Property {
+	return property.clone(make(map[string]*Template))
+}
+
+func (property *Property) clone(seen map[string]*Template) *Property {
 	if property == nil {
 		return &Property{}
 	}
 
 	result := property.ShallowClone()
-	result.Template = property.Template.Clone()
+
+	if property.Template != nil {
+		result.Template = property.Template.clone(seen)
+	}
+
 	return result
 }
 
@@ -87,23 +97,32 @@ func (property *Property) ShallowClone() *Property {
 		return &Property{}
 	}
 
-	return &Property{
+	result := &Property{
 		Meta:        property.Meta,
 		Position:    property.Position,
 		Description: property.Description,
 		Name:        property.Name,
 		Path:        property.Path,
-
-		Expr:     property.Expr,
-		Raw:      property.Raw,
-		Options:  property.Options,
-		Label:    property.Label,
-		Template: property.Template.ShallowClone(),
+		Identifier:  property.Identifier,
+		Expr:        property.Expr,
+		Raw:         property.Raw,
+		Options:     property.Options,
+		Label:       property.Label,
 	}
+
+	if property.Template != nil {
+		result.Template = property.Template.ShallowClone()
+	}
+
+	return result
 }
 
 // Compare checks the given property against the provided one.
 func (property *Property) Compare(expected *Property) error {
+	return property.compare(make(map[string]*Template), expected)
+}
+
+func (property *Property) compare(seen map[string]*Template, expected *Property) error {
 	if expected == nil {
 		return fmt.Errorf("unable to check types for '%s' no schema given", property.Path)
 	}
@@ -124,7 +143,7 @@ func (property *Property) Compare(expected *Property) error {
 		return fmt.Errorf("schema '%s' has a nested object but property does not '%s'", expected.Name, property.Path)
 	}
 
-	if err := property.Template.Compare(expected.Template); err != nil {
+	if err := property.Template.compare(seen, expected.Template); err != nil {
 		return fmt.Errorf("nested schema mismatch under property '%s': %w", property.Path, err)
 	}
 
@@ -133,8 +152,21 @@ func (property *Property) Compare(expected *Property) error {
 
 // Define ensures that all missing nested properties are defined
 func (property *Property) Define(expected *Property) {
+	property.define(make(map[string]*Template), expected)
+}
+
+func (property *Property) define(defined map[string]*Template, expected *Property) {
+	if expected.Identifier != "" {
+		_, ok := defined[property.Identifier]
+		if ok {
+			return
+		}
+
+		defined[property.Identifier] = expected.Template
+	}
+
 	property.Position = expected.Position
-	property.Template.Define(expected.Template)
+	property.Template.define(defined, expected.Template)
 }
 
 // ParameterMap is the initial map of parameter names (keys) and their (templated) values (values)

@@ -177,7 +177,7 @@ func ParseIntermediateProxy(ctx *broker.Context, proxy Proxy) (*specs.Proxy, err
 			input.Header[key] = &specs.Property{
 				Path: key,
 				Name: key,
-				Template: specs.Template{
+				Template: &specs.Template{
 					Scalar: &specs.Scalar{
 						Type: types.String,
 					},
@@ -390,10 +390,11 @@ func ParseIntermediateProperty(ctx *broker.Context, path string, property *hcl.A
 	fqpath := template.JoinPath(path, property.Name)
 	typed := value.Type()
 	result := &specs.Property{
-		Name:  property.Name,
-		Path:  fqpath,
-		Expr:  &Expression{property.Expr},
-		Label: labels.Optional,
+		Name:     property.Name,
+		Path:     fqpath,
+		Expr:     &Expression{property.Expr},
+		Label:    labels.Optional,
+		Template: new(specs.Template),
 	}
 
 	switch {
@@ -445,7 +446,7 @@ func ParseIntermediateProperty(ctx *broker.Context, path string, property *hcl.A
 		result = returns
 		break
 	default:
-		err := SetScalar(ctx, &result.Template, value)
+		err := SetScalar(ctx, result.Template, value)
 		if err != nil {
 			return nil, err
 		}

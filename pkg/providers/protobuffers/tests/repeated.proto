@@ -1,0 +1,40 @@
+
+syntax = "proto3";
+
+package semaphore;
+
+service Service {
+  rpc Mock ( Request ) returns ( Response );
+}
+
+message Request {
+  int32 limit = 1;
+
+  int32 offset = 2;
+}
+
+message Response {
+  repeated Person people = 1;
+}
+
+message Person {
+  string id = 1;
+
+  string name = 2;
+
+  Gender gender = 3;
+
+  Person mother = 4;
+
+  Person father = 5;
+
+  repeated Person children = 6;
+}
+
+enum Gender {
+  UNDEFINED = 0;
+
+  FEMALE = 1;
+
+  MALE = 2;
+}

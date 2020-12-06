@@ -18,7 +18,7 @@ func TestNewArgsNilProperty(t *testing.T) {
 func TestNewArgsUnexpectedType(t *testing.T) {
 	props := &specs.ParameterMap{
 		Property: &specs.Property{
-			Template: specs.Template{
+			Template: &specs.Template{
 				Scalar: &specs.Scalar{
 					Type: types.String,
 				},
@@ -36,7 +36,7 @@ func TestNewArgsUnexpectedType(t *testing.T) {
 func TestNewArgsEmptyMessage(t *testing.T) {
 	props := &specs.ParameterMap{
 		Property: &specs.Property{
-			Template: specs.Template{
+			Template: &specs.Template{
 				Message: specs.Message{},
 			},
 		},
@@ -55,17 +55,17 @@ func TestNewArgsEmptyMessage(t *testing.T) {
 func TestNewArgs(t *testing.T) {
 	tests := map[string]*specs.Property{
 		"message": {
-			Template: specs.Template{
+			Template: &specs.Template{
 				Message: specs.Message{},
 			},
 		},
 		"repeated": {
-			Template: specs.Template{
+			Template: &specs.Template{
 				Repeated: specs.Repeated{},
 			},
 		},
 		"enum": {
-			Template: specs.Template{
+			Template: &specs.Template{
 				Enum: &specs.Enum{
 					Keys: map[string]*specs.EnumValue{
 						"mock": {},
@@ -74,7 +74,7 @@ func TestNewArgs(t *testing.T) {
 			},
 		},
 		"scalar": {
-			Template: specs.Template{
+			Template: &specs.Template{
 				Scalar: &specs.Scalar{
 					Type: types.String,
 				},
@@ -90,7 +90,7 @@ func TestNewArgs(t *testing.T) {
 			props := &specs.ParameterMap{
 				Property: &specs.Property{
 					Name: "mock",
-					Template: specs.Template{
+					Template: &specs.Template{
 						Message: specs.Message{
 							name: input,
 						},
@@ -130,7 +130,7 @@ func TestNewInputArgsObjectUnexpectedType(t *testing.T) {
 
 func TestNewInputArgsObjectNoName(t *testing.T) {
 	prop := &specs.Property{
-		Template: specs.Template{
+		Template: &specs.Template{
 			Message: specs.Message{},
 		},
 	}
@@ -149,7 +149,7 @@ func TestNewInputArgsObjectNoName(t *testing.T) {
 func TestNewInputArgsObjectEmptyMessage(t *testing.T) {
 	prop := &specs.Property{
 		Name: "mock",
-		Template: specs.Template{
+		Template: &specs.Template{
 			Message: specs.Message{},
 		},
 	}
@@ -167,12 +167,12 @@ func TestNewInputArgsObjectEmptyMessage(t *testing.T) {
 func TestNewInputArgsObject(t *testing.T) {
 	tests := map[string]*specs.Property{
 		"message": {
-			Template: specs.Template{
+			Template: &specs.Template{
 				Message: specs.Message{
 					"value": &specs.Property{
 						Name: "value",
 						Path: "value",
-						Template: specs.Template{
+						Template: &specs.Template{
 							Scalar: &specs.Scalar{
 								Type: types.String,
 							},
@@ -182,12 +182,12 @@ func TestNewInputArgsObject(t *testing.T) {
 			},
 		},
 		"repeated": {
-			Template: specs.Template{
+			Template: &specs.Template{
 				Repeated: specs.Repeated{},
 			},
 		},
 		"enum": {
-			Template: specs.Template{
+			Template: &specs.Template{
 				Enum: &specs.Enum{
 					Keys: map[string]*specs.EnumValue{
 						"mock": {},
@@ -196,7 +196,7 @@ func TestNewInputArgsObject(t *testing.T) {
 			},
 		},
 		"scalar": {
-			Template: specs.Template{
+			Template: &specs.Template{
 				Scalar: &specs.Scalar{
 					Type: types.String,
 				},
@@ -212,7 +212,7 @@ func TestNewInputArgsObject(t *testing.T) {
 			prop := &specs.Property{
 				Name: "mock",
 				Path: "mock",
-				Template: specs.Template{
+				Template: &specs.Template{
 					Message: specs.Message{
 						name: input,
 					},

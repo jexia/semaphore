@@ -10,7 +10,9 @@ import (
 	"go.uber.org/zap"
 )
 
-// Resolve all references inside the given flow list
+// Resolve resolves all property references inside the given flow list.
+// Recursive types are detected and resolved including the recursive type path
+// inside the specs.PropertyReference.
 func Resolve(ctx *broker.Context, flows specs.FlowListInterface) (err error) {
 	logger.Info(ctx, "defining manifest types")
 
@@ -247,11 +249,11 @@ func ResolveParams(ctx *broker.Context, node *specs.Node, params map[string]*spe
 	return nil
 }
 
-func resolveProperty(ctx *broker.Context, node *specs.Node, property *specs.Property, flow specs.FlowInterface) error {
+func resolveNested(ctx *broker.Context, resolved *specs.ResolvedProperty, node *specs.Node, property *specs.Property, flow specs.FlowInterface) error {
 	switch {
 	case property.Message != nil:
 		for _, nested := range property.Message {
-			err := ResolveProperty(ctx, node, nested, flow)
+			err := resolveProperty(ctx, resolved, node, nested, flow)
 			if err != nil {
 				return NewErrUnresolvedProperty(err, nested)
 			}
@@ -264,7 +266,7 @@ func resolveProperty(ctx *broker.Context, node *specs.Node, property *specs.Prop
 				Template: repeated,
 			}
 
-			err := ResolveProperty(ctx, node, property, flow)
+			err := resolveProperty(ctx, resolved, node, property, flow)
 			if err != nil {
 				return NewErrUnresolvedProperty(err, property)
 			}
@@ -278,11 +280,21 @@ func resolveProperty(ctx *broker.Context, node *specs.Node, property *specs.Prop
 
 // ResolveProperty resolves all references made within the given property
 func ResolveProperty(ctx *broker.Context, node *specs.Node, property *specs.Property, flow specs.FlowInterface) error {
+	return resolveProperty(ctx, specs.NewResolvedProperty(), node, property, flow)
+}
+
+func resolveProperty(ctx *broker.Context, resolved *specs.ResolvedProperty, node *specs.Node, property *specs.Property, flow specs.FlowInterface) error {
 	if property == nil {
 		return nil
 	}
 
-	if err := resolveProperty(ctx, node, property, flow); err != nil {
+	if resolved.Resolved(property) {
+		return nil
+	}
+
+	resolved.Resolve(property)
+
+	if err := resolveNested(ctx, resolved, node, property, flow); err != nil {
 		return NewErrUnresolvedProperty(err, property)
 	}
 
@@ -308,7 +320,7 @@ func ResolveProperty(ctx *broker.Context, node *specs.Node, property *specs.Prop
 	}
 
 	if reference.Reference != nil && reference.Reference.Property == nil {
-		err := ResolveProperty(ctx, node, reference, flow)
+		err := resolveProperty(ctx, resolved, node, reference, flow)
 		if err != nil {
 			return NewErrUnresolvedProperty(err, reference)
 		}
@@ -323,7 +335,7 @@ func ResolveProperty(ctx *broker.Context, node *specs.Node, property *specs.Prop
 	property.Label = reference.Label
 	property.Reference.Property = reference
 
-	ScopeNestedReferences(property.Reference.Resource, property.Reference.Path, &reference.Template, &property.Template)
+	ScopeNestedReferences(property.Reference.Resource, property.Reference.Path, reference.Template, property.Template)
 
 	return nil
 }
@@ -384,12 +396,21 @@ func InsideProperty(source *specs.Property, target *specs.Property) bool {
 	return false
 }
 
-// ScopeNestedReferences clones all properties on the left side to the target on
-// the right side.
+// ScopeNestedReferences scopes all nested references available inside the reference property
 func ScopeNestedReferences(resource, path string, source, target *specs.Template) {
+	scopeNestedReferences(make(specs.ResolvedTemplate), resource, path, source, target)
+}
+
+func scopeNestedReferences(resolved specs.ResolvedTemplate, resource, path string, source, target *specs.Template) {
 	if source == nil || target == nil {
 		return
 	}
+
+	if resolved.Resolved(source) {
+		return
+	}
+
+	resolved.Resolve(source)
 
 	switch {
 	case source.Scalar != nil:
@@ -409,7 +430,12 @@ func ScopeNestedReferences(resource, path string, source, target *specs.Template
 		}
 
 		for _, item := range source.Message {
-			path := template.JoinPath(path, item.Name)
+			if resolved.Resolved(item.Template) { // Skip any previously scoped recursive types
+				target.Message[item.Name] = item
+				continue
+			}
+
+			npath := template.JoinPath(path, item.Name)
 			nested, ok := target.Message[item.Name]
 			if !ok {
 				nested = item.ShallowClone() // We should only shallow clone the given property to avoid unexpected definitions
@@ -419,14 +445,14 @@ func ScopeNestedReferences(resource, path string, source, target *specs.Template
 			if nested.Reference == nil {
 				nested.Reference = &specs.PropertyReference{
 					Resource: target.Reference.Resource,
-					Path:     path,
+					Path:     npath,
 					Property: item,
 				}
 			}
 
 			typed := item.Type()
 			if typed == types.Message || typed == types.Array {
-				ScopeNestedReferences(resource, path, &item.Template, &nested.Template)
+				scopeNestedReferences(resolved, resource, npath, item.Template, nested.Template)
 			}
 		}
 
@@ -448,7 +474,7 @@ func ScopeNestedReferences(resource, path string, source, target *specs.Template
 				}
 			}
 
-			ScopeNestedReferences(resource, path, &item, &cloned)
+			scopeNestedReferences(resolved, resource, path, item, cloned)
 			target.Repeated[index] = cloned
 		}
 	}

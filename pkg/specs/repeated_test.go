@@ -58,26 +58,26 @@ func TestCompareRepeated(t *testing.T) {
 func TestRepeatedTemplate(t *testing.T) {
 	type test struct {
 		repeated Repeated
-		expected Template
+		expected *Template
 		isError  bool
 	}
 
 	var (
-		foo = Template{
+		foo = &Template{
 			Scalar: &Scalar{
 				Type:    types.String,
 				Default: "foo",
 			},
 		}
 
-		bar = Template{
+		bar = &Template{
 			Scalar: &Scalar{
 				Type:    types.String,
 				Default: "bar",
 			},
 		}
 
-		baz = Template{
+		baz = &Template{
 			Scalar: &Scalar{
 				Type:    types.String,
 				Default: "baz",
@@ -89,7 +89,7 @@ func TestRepeatedTemplate(t *testing.T) {
 			"bar": &Property{Template: bar},
 		}
 
-		objFooBar = Template{
+		objFooBar = &Template{
 			Message: fooBarMsg,
 		}
 
@@ -98,14 +98,14 @@ func TestRepeatedTemplate(t *testing.T) {
 			"baz": &Property{Template: baz},
 		}
 
-		objBarBaz = Template{
+		objBarBaz = &Template{
 			Message: barBazMsg,
 		}
 
 		tests = map[string]test{
 			"strings": {
 				repeated: Repeated{foo, bar, baz},
-				expected: Template{
+				expected: &Template{
 					Scalar: &Scalar{
 						Type: types.String,
 					},
@@ -113,7 +113,7 @@ func TestRepeatedTemplate(t *testing.T) {
 			},
 			"objects": {
 				repeated: Repeated{objFooBar, objFooBar, objFooBar},
-				expected: Template{
+				expected: &Template{
 					Message: fooBarMsg,
 				},
 			},

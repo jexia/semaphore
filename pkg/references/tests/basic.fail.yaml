@@ -1,5 +1,5 @@
 exception:
-  message: "flow 'echo' mismatch: nested schema mismatch under property '': type mismatch: object property mismatch: cannot use type (string) for 'message', expected (int32)"
+  message: "flow 'echo' mismatch: nested schema mismatch under property '': type mismatch: object property 'message' mismatch: cannot use type (string) for 'message', expected (int32)"
 properties:
   com.output:
     label: "optional"

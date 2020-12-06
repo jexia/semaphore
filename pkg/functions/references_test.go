@@ -26,7 +26,7 @@ func TestDefineFunction(t *testing.T) {
 					Arguments: []*specs.Property{
 						{
 							Name: "name",
-							Template: specs.Template{
+							Template: &specs.Template{
 								Reference: &specs.PropertyReference{
 									Resource: "first",
 									Path:     "name",
@@ -47,13 +47,13 @@ func TestDefineFunction(t *testing.T) {
 							Response: &specs.ParameterMap{
 								Property: &specs.Property{
 									Label: labels.Optional,
-									Template: specs.Template{
+									Template: &specs.Template{
 										Message: specs.Message{
 											"name": &specs.Property{
 												Name:  "name",
 												Path:  "name",
 												Label: labels.Optional,
-												Template: specs.Template{
+												Template: &specs.Template{
 													Scalar: &specs.Scalar{
 														Type: types.String,
 													},
@@ -75,7 +75,7 @@ func TestDefineFunction(t *testing.T) {
 			stack: Stack{
 				"sample": &Function{
 					Returns: &specs.Property{
-						Template: specs.Template{
+						Template: &specs.Template{
 							Reference: &specs.PropertyReference{
 								Resource: "first",
 								Path:     "name",
@@ -95,13 +95,13 @@ func TestDefineFunction(t *testing.T) {
 							Response: &specs.ParameterMap{
 								Property: &specs.Property{
 									Label: labels.Optional,
-									Template: specs.Template{
+									Template: &specs.Template{
 										Message: specs.Message{
 											"name": &specs.Property{
 												Name:  "name",
 												Path:  "name",
 												Label: labels.Optional,
-												Template: specs.Template{
+												Template: &specs.Template{
 													Scalar: &specs.Scalar{
 														Type: types.String,
 													},

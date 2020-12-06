@@ -11,13 +11,13 @@ import (
 // Enum is a vrapper over specs.Enum providing XML encoding/decoding.
 type Enum struct {
 	name, path string
-	template   specs.Template
+	template   *specs.Template
 	store      references.Store
 	tracker    references.Tracker
 }
 
 // NewEnum creates a new enum by wrapping provided specs.Enum.
-func NewEnum(name, path string, template specs.Template, store references.Store, tracker references.Tracker) *Enum {
+func NewEnum(name, path string, template *specs.Template, store references.Store, tracker references.Tracker) *Enum {
 	return &Enum{
 		name:     name,
 		path:     path,

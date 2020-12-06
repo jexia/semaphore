@@ -88,7 +88,7 @@ func DefinePropertyPaths(collection *Collection) {
 func definePath(path string, property *specs.Property) {
 	fqpath := template.JoinPath(path, property.Name)
 	property.Path = fqpath
-	walkTemplate(fqpath, &property.Template)
+	walkTemplate(fqpath, property.Template)
 }
 
 func walkTemplate(path string, template *specs.Template) {
@@ -101,7 +101,7 @@ func walkTemplate(path string, template *specs.Template) {
 
 	if template.Repeated != nil {
 		for _, repeated := range template.Repeated {
-			walkTemplate(path, &repeated)
+			walkTemplate(path, repeated)
 		}
 	}
 }

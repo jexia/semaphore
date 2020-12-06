@@ -27,6 +27,8 @@ func (service *Service) FileDescriptor() (*desc.FileDescriptor, error) {
 		protoService = builder.NewService(service.Name)
 	)
 
+	file.IsProto3 = true
+
 	for _, method := range service.Methods {
 		var (
 			name = strings.Title(service.Name) + strings.Title(method.GetName())

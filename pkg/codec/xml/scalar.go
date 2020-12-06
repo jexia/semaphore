@@ -12,13 +12,13 @@ import (
 // Scalar is a wrapper for specs.Scalar providing XML encoding/decoding.
 type Scalar struct {
 	name, path string
-	template   specs.Template
+	template   *specs.Template
 	store      references.Store
 	tracker    references.Tracker
 }
 
 // NewScalar creates a wrapper for specs.Scalar to be XML encoded/decoded.
-func NewScalar(name, path string, template specs.Template, store references.Store, tracker references.Tracker) *Scalar {
+func NewScalar(name, path string, template *specs.Template, store references.Store, tracker references.Tracker) *Scalar {
 	return &Scalar{
 		name:     name,
 		path:     path,

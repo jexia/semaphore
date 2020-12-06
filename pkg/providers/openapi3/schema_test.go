@@ -1,16 +1,17 @@
 package openapi3
 
 import (
+	"testing"
+
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/types"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
-type testFn func(*testing.T, specs.Template) bool
+type testFn func(*testing.T, *specs.Template) bool
 
-func shouldBeScalar(t *testing.T, tpl specs.Template, expected specs.Scalar, opts ...interface{}) bool {
+func shouldBeScalar(t *testing.T, tpl *specs.Template, expected specs.Scalar, opts ...interface{}) bool {
 	prefix := ""
 	if len(opts) > 0 && opts[0] != nil {
 		prefix = opts[0].(string)
@@ -32,7 +33,7 @@ func shouldBeScalar(t *testing.T, tpl specs.Template, expected specs.Scalar, opt
 	return true
 }
 
-func shouldBeMessage(t *testing.T, tpl specs.Template, fields map[string]testFn, opts ...interface{}) bool {
+func shouldBeMessage(t *testing.T, tpl *specs.Template, fields map[string]testFn, opts ...interface{}) bool {
 	prefix := ""
 	if len(opts) > 0 && opts[0] != nil {
 		prefix = opts[0].(string)
@@ -72,7 +73,7 @@ func shouldBeMessage(t *testing.T, tpl specs.Template, fields map[string]testFn,
 	return valid
 }
 
-func shouldBeRepeated(t *testing.T, tpl specs.Template, check testFn, opts ...interface{}) bool {
+func shouldBeRepeated(t *testing.T, tpl *specs.Template, check testFn, opts ...interface{}) bool {
 	prefix := ""
 	if len(opts) > 0 && opts[0] != nil {
 		prefix = opts[0].(string)
@@ -96,7 +97,7 @@ func shouldBeRepeated(t *testing.T, tpl specs.Template, check testFn, opts ...in
 	return check(t, item)
 }
 
-func shouldBeOneOf(t *testing.T, tpl specs.Template, checks []testFn, opts ...interface{}) bool {
+func shouldBeOneOf(t *testing.T, tpl *specs.Template, checks []testFn, opts ...interface{}) bool {
 	prefix := ""
 	if len(opts) > 0 && opts[0] != nil {
 		prefix = opts[0].(string)
@@ -133,7 +134,7 @@ func Test_newTemplate(t *testing.T) {
 	}
 
 	// a helper function to build a property for a particular component
-	build := func(t *testing.T, name string) (specs.Template, error) {
+	build := func(t *testing.T, name string) (*specs.Template, error) {
 		schemaRef, ok := doc.Components.Schemas[name]
 
 		if !ok {
@@ -166,7 +167,7 @@ func Test_newTemplate(t *testing.T) {
 			return
 		}
 
-		shouldBeRepeated(t, got, func(t *testing.T, template specs.Template) bool {
+		shouldBeRepeated(t, got, func(t *testing.T, template *specs.Template) bool {
 			return shouldBeScalar(t, template, specs.Scalar{Type: types.String})
 		})
 	})
@@ -180,10 +181,10 @@ func Test_newTemplate(t *testing.T) {
 		}
 
 		shouldBeMessage(t, got, map[string]testFn{
-			"name": func(t *testing.T, template specs.Template) bool {
+			"name": func(t *testing.T, template *specs.Template) bool {
 				return shouldBeScalar(t, template, specs.Scalar{Type: types.String}, "field 'name'")
 			},
-			"is_good_boy": func(t *testing.T, template specs.Template) bool {
+			"is_good_boy": func(t *testing.T, template *specs.Template) bool {
 				return shouldBeScalar(t, template, specs.Scalar{Type: types.Bool}, "field 'is_good_boy'")
 			},
 		})
@@ -198,23 +199,23 @@ func Test_newTemplate(t *testing.T) {
 		}
 
 		shouldBeOneOf(t, got, []testFn{
-			func(t *testing.T, template specs.Template) bool {
+			func(t *testing.T, template *specs.Template) bool {
 				return shouldBeMessage(t, template, map[string]testFn{
-					"name": func(t *testing.T, template specs.Template) bool {
+					"name": func(t *testing.T, template *specs.Template) bool {
 						return shouldBeScalar(t, template, specs.Scalar{Type: types.String}, "name")
 					},
-					"meow": func(t *testing.T, template specs.Template) bool {
+					"meow": func(t *testing.T, template *specs.Template) bool {
 						return shouldBeScalar(t, template, specs.Scalar{Type: types.Bool}, "meow")
 					},
 				}, "Cat")
 			},
 
-			func(t *testing.T, template specs.Template) bool {
+			func(t *testing.T, template *specs.Template) bool {
 				return shouldBeMessage(t, template, map[string]testFn{
-					"name": func(t *testing.T, template specs.Template) bool {
+					"name": func(t *testing.T, template *specs.Template) bool {
 						return shouldBeScalar(t, template, specs.Scalar{Type: types.String}, "name")
 					},
-					"is_good_boy": func(t *testing.T, template specs.Template) bool {
+					"is_good_boy": func(t *testing.T, template *specs.Template) bool {
 						return shouldBeScalar(t, template, specs.Scalar{Type: types.Bool}, "is_good_boy")
 					},
 				}, "Dog")

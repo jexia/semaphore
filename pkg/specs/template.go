@@ -1,8 +1,6 @@
 package specs
 
 import (
-	"fmt"
-
 	"github.com/jexia/semaphore/pkg/specs/metadata"
 	"github.com/jexia/semaphore/pkg/specs/types"
 )
@@ -10,6 +8,10 @@ import (
 // Template contains property schema. This is a union type (Only one field must be set).
 type Template struct {
 	*metadata.Meta
+
+	// Unique template identifier
+	Identifier string
+
 	Reference *PropertyReference `json:"reference,omitempty"` // Reference represents a property reference made inside the given property
 
 	// Only one of the following fields should be set
@@ -21,34 +23,47 @@ type Template struct {
 }
 
 // Type returns the type of the given template.
-func (template Template) Type() types.Type {
-	if template.Message != nil {
+func (template *Template) Type() types.Type {
+	switch {
+	case template == nil:
+		return types.Unknown
+	case template.Message != nil:
 		return types.Message
-	}
-
-	if template.Repeated != nil {
+	case template.Repeated != nil:
 		return types.Array
-	}
-
-	if template.Enum != nil {
+	case template.Enum != nil:
 		return types.Enum
-	}
-
-	if template.Scalar != nil {
+	case template.Scalar != nil:
 		return template.Scalar.Type
-	}
-
-	if template.OneOf != nil {
+	case template.OneOf != nil:
 		return types.OneOf
+	default:
+		return types.Unknown
 	}
-
-	return types.Unknown
 }
 
 // Clone internal value.
-func (template Template) Clone() Template {
-	var clone = Template{
-		Reference: template.Reference.Clone(),
+func (template Template) Clone() *Template {
+	return template.clone(make(map[string]*Template))
+}
+
+func (template *Template) clone(seen map[string]*Template) *Template {
+	if template == nil {
+		return &Template{}
+	}
+
+	var clone = &Template{
+		Identifier: template.Identifier,
+		Reference:  template.Reference.Clone(),
+	}
+
+	if template.Identifier != "" {
+		existing, ok := seen[template.Identifier]
+		if ok {
+			return existing
+		}
+
+		seen[template.Identifier] = clone
 	}
 
 	if template.Scalar != nil {
@@ -59,19 +74,19 @@ func (template Template) Clone() Template {
 		clone.Enum = template.Enum.Clone()
 	}
 
-	if template.Repeated != nil {
-		clone.Repeated = template.Repeated.Clone()
+	if template.Message != nil {
+		clone.Message = template.Message.clone(seen)
 	}
 
-	if template.Message != nil {
-		clone.Message = template.Message.Clone()
+	if template.Repeated != nil {
+		clone.Repeated = template.Repeated.clone(seen)
 	}
 
 	return clone
 }
 
 // ShallowClone clones the given template but ignores any nested templates
-func (template Template) ShallowClone() Template {
+func (template *Template) ShallowClone() *Template {
 	var clone = Template{
 		Reference: template.Reference.Clone(),
 	}
@@ -84,47 +99,58 @@ func (template Template) ShallowClone() Template {
 		clone.Enum = template.Enum.Clone()
 	}
 
-	return clone
+	return &clone
 }
 
 // Compare given template against the provided one returning the frst mismatch.
-func (template Template) Compare(expected Template) (err error) {
-	switch {
-	case expected.Repeated != nil:
-		err = template.Repeated.Compare(expected.Repeated)
-		break
+func (template Template) Compare(expected *Template) (err error) {
+	return template.compare(make(map[string]*Template), expected)
+}
 
+func (template *Template) compare(seen map[string]*Template, expected *Template) (err error) {
+	if template.Identifier != "" {
+		if _, ok := seen[template.Identifier]; ok {
+			return nil
+		}
+
+		seen[template.Identifier] = template
+	}
+
+	switch {
+	case template != nil && expected == nil:
+		err = errNilTemplate
+	case expected.Repeated != nil:
+		err = template.Repeated.compare(seen, expected.Repeated)
 	case expected.Scalar != nil:
 		err = template.Scalar.Compare(expected.Scalar)
-		break
-
 	case expected.Message != nil:
-		err = template.Message.Compare(expected.Message)
-		break
-
+		err = template.Message.compare(seen, expected.Message)
 	case expected.Enum != nil:
 		err = template.Enum.Compare(expected.Enum)
-		break
 	}
 
 	if err != nil {
-		return fmt.Errorf("type mismatch: %w", err)
+		return errTypeMismatch{err}
 	}
 
 	return nil
 }
 
 // Define ensures that all missing nested template are defined
-func (template *Template) Define(expected Template) {
+func (template *Template) Define(expected *Template) {
+	template.define(make(map[string]*Template), expected)
+}
+
+func (template *Template) define(defined map[string]*Template, expected *Template) {
 	if template.Message != nil && expected.Message != nil {
 		for key, value := range expected.Message {
 			existing, has := template.Message[key]
 			if has {
-				existing.Define(value)
+				existing.define(defined, value)
 				continue
 			}
 
-			template.Message[key] = value.Clone()
+			template.Message[key] = value.clone(defined)
 		}
 	}
 
@@ -133,7 +159,7 @@ func (template *Template) Define(expected Template) {
 	// are overlapping.
 
 	if template.Message == nil && expected.Message != nil {
-		template.Message = expected.Message.Clone()
+		template.Message = expected.Message.clone(defined)
 	}
 
 	if template.Enum == nil && expected.Enum != nil {

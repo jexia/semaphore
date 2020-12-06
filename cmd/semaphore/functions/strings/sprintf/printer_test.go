@@ -30,7 +30,7 @@ func TestTokensPrint(t *testing.T) {
 				{
 					Name: "half",
 					Path: "half",
-					Template: specs.Template{
+					Template: &specs.Template{
 						Reference: &specs.PropertyReference{
 							Resource: template.InputResource,
 							Path:     "half",
@@ -40,7 +40,7 @@ func TestTokensPrint(t *testing.T) {
 				{
 					Name: "half",
 					Path: "half",
-					Template: specs.Template{
+					Template: &specs.Template{
 						Reference: &specs.PropertyReference{
 							Resource: template.InputResource,
 							Path:     "half",
@@ -50,7 +50,7 @@ func TestTokensPrint(t *testing.T) {
 				{
 					Name: "whole",
 					Path: "whole",
-					Template: specs.Template{
+					Template: &specs.Template{
 						Scalar: &specs.Scalar{
 							Default: "whole",
 						},
@@ -68,7 +68,7 @@ func TestTokensPrint(t *testing.T) {
 				{
 					Name: "first",
 					Path: "first",
-					Template: specs.Template{
+					Template: &specs.Template{
 						Scalar: &specs.Scalar{
 							Default: 1.5,
 						},
@@ -77,7 +77,7 @@ func TestTokensPrint(t *testing.T) {
 				{
 					Name: "second",
 					Path: "second",
-					Template: specs.Template{
+					Template: &specs.Template{
 						Reference: &specs.PropertyReference{
 							Resource: template.InputResource,
 							Path:     "second",
@@ -87,7 +87,7 @@ func TestTokensPrint(t *testing.T) {
 				{
 					Name: "message",
 					Path: "message",
-					Template: specs.Template{
+					Template: &specs.Template{
 						Scalar: &specs.Scalar{
 							Default: 2,
 						},
@@ -111,7 +111,7 @@ func TestTokensPrint(t *testing.T) {
 				{
 					Name: "array",
 					Path: "array",
-					Template: specs.Template{
+					Template: &specs.Template{
 						Reference: &specs.PropertyReference{
 							Resource: template.InputResource,
 							Path:     "array",
@@ -132,7 +132,7 @@ func TestTokensPrint(t *testing.T) {
 				{
 					Name: "object",
 					Path: "object",
-					Template: specs.Template{
+					Template: &specs.Template{
 						Reference: &specs.PropertyReference{
 							Resource: template.InputResource,
 							Path:     "object",
@@ -142,7 +142,7 @@ func TestTokensPrint(t *testing.T) {
 								Name:  "e",
 								Path:  "object.e",
 								Label: labels.Optional,
-								Template: specs.Template{
+								Template: &specs.Template{
 									Reference: &specs.PropertyReference{
 										Resource: template.InputResource,
 										Path:     "object.e",

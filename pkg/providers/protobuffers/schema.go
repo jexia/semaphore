@@ -4,7 +4,7 @@ import (
 	protobuf "github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/labels"
-	"github.com/jexia/semaphore/pkg/specs/template"
+	tpl "github.com/jexia/semaphore/pkg/specs/template"
 	"github.com/jhump/protoreflect/desc"
 )
 
@@ -22,39 +22,54 @@ func NewSchema(descriptors []*desc.FileDescriptor) specs.Schemas {
 
 // NewMessage constructs a schema Property with the given message descriptor
 func NewMessage(path string, descriptor *desc.MessageDescriptor) *specs.Property {
-	fields := descriptor.GetFields()
-	result := &specs.Property{
-		Path:        path,
-		Name:        descriptor.GetFullyQualifiedName(),
-		Description: descriptor.GetSourceInfo().GetLeadingComments(),
-		Position:    1,
-		Label:       labels.Optional,
-		Template: specs.Template{
-			Message: make(specs.Message, len(fields)),
-		},
-		Options: specs.Options{},
-	}
+	return newMessage(make(map[string]*specs.Property), make(map[string]*specs.Template), path, descriptor)
+}
+
+func newMessage(seenProperties map[string]*specs.Property, seenTemplates map[string]*specs.Template, path string, descriptor *desc.MessageDescriptor) *specs.Property {
+	var (
+		fields = descriptor.GetFields()
+		result = &specs.Property{
+			Path:        path,
+			Name:        descriptor.GetFullyQualifiedName(),
+			Description: descriptor.GetSourceInfo().GetLeadingComments(),
+			Position:    1,
+			Label:       labels.Optional,
+			Template: &specs.Template{
+				Message: make(specs.Message, len(fields)),
+			},
+			Options: specs.Options{},
+		}
+	)
 
 	for _, field := range fields {
-		result.Message[field.GetName()] = NewProperty(template.JoinPath(path, field.GetName()), field)
+		result.Message[field.GetName()] = GetProperty(seenProperties, seenTemplates, tpl.JoinPath(path, field.GetName()), field)
 	}
 
 	return result
 }
 
-// NewProperty constructs a schema Property with the given field descriptor
-func NewProperty(path string, descriptor *desc.FieldDescriptor) *specs.Property {
-	result := &specs.Property{
-		Path:        path,
-		Name:        descriptor.GetName(),
-		Description: descriptor.GetSourceInfo().GetLeadingComments(),
-		Position:    descriptor.GetNumber(),
-		Options:     specs.Options{},
-		Label:       Labels[descriptor.GetLabel()],
+// GetTemplate creates a new template (data type) if not available yet or returns an existing one
+func GetTemplate(seenProperties map[string]*specs.Property, seenTemplates map[string]*specs.Template, path string, descriptor *desc.FieldDescriptor) *specs.Template {
+	var id = descriptor.GetFullyQualifiedName()
+
+	if messageType := descriptor.GetMessageType(); messageType != nil {
+		id = messageType.GetName()
 	}
+
+	template, ok := seenTemplates[id]
+	if ok {
+		return template
+	}
+
+	template = &specs.Template{
+		Identifier: descriptor.GetFullyQualifiedName(),
+	}
+
+	seenTemplates[id] = template
 
 	switch {
 	case descriptor.GetType() == protobuf.FieldDescriptorProto_TYPE_ENUM:
+		// TODO: implement type registry for enums
 		enum := descriptor.GetEnumType()
 		keys := map[string]*specs.EnumValue{}
 		positions := map[int32]*specs.EnumValue{}
@@ -70,35 +85,61 @@ func NewProperty(path string, descriptor *desc.FieldDescriptor) *specs.Property 
 			positions[value.GetNumber()] = result
 		}
 
-		result.Enum = &specs.Enum{
+		template.Enum = &specs.Enum{
 			Name:        enum.GetName(),
 			Description: enum.GetSourceInfo().GetLeadingComments(),
 			Keys:        keys,
 			Positions:   positions,
 		}
-
-		break
 	case descriptor.GetType() == protobuf.FieldDescriptorProto_TYPE_MESSAGE:
 		var fields = descriptor.GetMessageType().GetFields()
-		result.Message = make(specs.Message, len(fields))
+		template.Message = make(specs.Message, len(fields))
 
 		for _, field := range fields {
-			result.Message[field.GetName()] = NewProperty(template.JoinPath(path, field.GetName()), field)
+			template.Message[field.GetName()] = GetProperty(seenProperties, seenTemplates, tpl.JoinPath(path, field.GetName()), field)
 		}
-
-		break
 	default:
-		result.Scalar = &specs.Scalar{
+		template.Scalar = &specs.Scalar{
 			Type: Types[descriptor.GetType()],
 		}
 	}
 
-	if descriptor.GetLabel() == protobuf.FieldDescriptorProto_LABEL_REPEATED {
-		result.Label = labels.Optional
-		result.Template = specs.Template{
-			Repeated: specs.Repeated{result.Template},
-		}
+	return template
+}
+
+// GetProperty creates a new property (if not exists) otherwise returns an existing one.
+func GetProperty(seenProperties map[string]*specs.Property, seenTemplates map[string]*specs.Template, path string, descriptor *desc.FieldDescriptor) *specs.Property {
+	var id = descriptor.GetFullyQualifiedName()
+
+	property, ok := seenProperties[id]
+	if ok {
+		return property
 	}
 
-	return result
+	property = &specs.Property{
+		Path:        path,
+		Name:        descriptor.GetName(),
+		Identifier:  id,
+		Description: descriptor.GetSourceInfo().GetLeadingComments(),
+		Position:    descriptor.GetNumber(),
+		Options:     specs.Options{},
+		Label:       Labels[descriptor.GetLabel()],
+	}
+
+	seenProperties[id] = property
+
+	template := GetTemplate(seenProperties, seenTemplates, path, descriptor)
+
+	if descriptor.GetLabel() == protobuf.FieldDescriptorProto_LABEL_REPEATED {
+		property.Label = labels.Optional
+		property.Template = &specs.Template{
+			Repeated: specs.Repeated{template},
+		}
+
+		return property
+	}
+
+	property.Template = template
+
+	return property
 }

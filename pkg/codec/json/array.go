@@ -9,14 +9,14 @@ import (
 // Array represents a JSON array.
 type Array struct {
 	path     string
-	template specs.Template
-	repeated specs.Template
+	template *specs.Template
+	repeated *specs.Template
 	tracker  references.Tracker
 	store    references.Store
 }
 
 // NewArray creates a new array to be JSON encoded/decoded.
-func NewArray(path string, template specs.Template, store references.Store, tracker references.Tracker) *Array {
+func NewArray(path string, template *specs.Template, store references.Store, tracker references.Tracker) *Array {
 	// TODO: find a better implementation/name
 	combi, err := template.Repeated.Template()
 	if err != nil {

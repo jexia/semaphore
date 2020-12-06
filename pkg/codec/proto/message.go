@@ -29,7 +29,7 @@ func (tmpl Message) Marshal(result *dynamic.Message, message *desc.MessageDescri
 
 		switch {
 		case specs.Repeated != nil:
-			err := Repeated(specs.Template).Marshal(result, field, path, store, tracker)
+			err := Repeated(*specs.Template).Marshal(result, field, path, store, tracker)
 			if err != nil {
 				return err
 			}
@@ -37,7 +37,7 @@ func (tmpl Message) Marshal(result *dynamic.Message, message *desc.MessageDescri
 			desc := field.GetMessageType()
 			nested := dynamic.NewMessage(desc)
 
-			err := Message(specs.Template).Marshal(nested, desc, path, store, tracker)
+			err := Message(*specs.Template).Marshal(nested, desc, path, store, tracker)
 			if err != nil {
 				return err
 			}
@@ -47,7 +47,7 @@ func (tmpl Message) Marshal(result *dynamic.Message, message *desc.MessageDescri
 				return err
 			}
 		default:
-			err := Field(specs.Template).Marshal(result.TrySetField, field, store, tracker)
+			err := Field(*specs.Template).Marshal(result.TrySetField, field, store, tracker)
 			if err != nil {
 				return err
 			}
@@ -81,12 +81,12 @@ func (tmpl Message) Unmarshal(protobuf *dynamic.Message, path string, store refe
 				panic(err)
 			}
 
-			Repeated(tmpl).Unmarshal(protobuf, field, path, store, tracker)
+			Repeated(*tmpl).Unmarshal(protobuf, field, path, store, tracker)
 		case types.Message:
 			nested := protobuf.GetField(field).(*dynamic.Message)
-			Message(property.Template).Unmarshal(nested, path, store, tracker)
+			Message(*property.Template).Unmarshal(nested, path, store, tracker)
 		default:
-			Field(property.Template).Unmarshal(protobuf.GetField(field), path, store, tracker)
+			Field(*property.Template).Unmarshal(protobuf.GetField(field), path, store, tracker)
 		}
 	}
 }

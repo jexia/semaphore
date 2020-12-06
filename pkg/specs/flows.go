@@ -1,6 +1,10 @@
 package specs
 
-import "github.com/jexia/semaphore/pkg/specs/metadata"
+import (
+	"fmt"
+
+	"github.com/jexia/semaphore/pkg/specs/metadata"
+)
 
 // FlowListInterface represents a collection of flow interfaces
 type FlowListInterface []FlowInterface
@@ -274,6 +278,10 @@ type Call struct {
 	Request    *ParameterMap `json:"request,omitempty"`
 	Response   *ParameterMap `json:"response,omitempty"`
 	Descriptor *Method       `json:"-"`
+}
+
+func (call Call) String() string {
+	return fmt.Sprintf("%s.%s", call.Service, call.Method)
 }
 
 // ErrorHandle represents a error handle object

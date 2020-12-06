@@ -48,14 +48,14 @@ func (tmpl Repeated) Marshal(message *dynamic.Message, field *desc.FieldDescript
 			desc := field.GetMessageType()
 			nested := dynamic.NewMessage(desc)
 
-			err := Message(repeated).Marshal(nested, desc, path, store, tracker)
+			err := Message(*repeated).Marshal(nested, desc, path, store, tracker)
 			if err != nil {
 				return err
 			}
 
 			message.TryAddRepeatedField(field, nested)
 		default:
-			err := Field(repeated).Marshal(message.TryAddRepeatedField, field, store, tracker)
+			err := Field(*repeated).Marshal(message.TryAddRepeatedField, field, store, tracker)
 			if err != nil {
 				return err
 			}

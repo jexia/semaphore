@@ -61,7 +61,7 @@ func TestScalarClean(t *testing.T) {
 func TestScalarUnmarshalInvalidJSON(t *testing.T) {
 	payload := "non json string"
 	prop := Property{
-		Template: Template{
+		Template: &Template{
 			Scalar: &Scalar{},
 		},
 	}

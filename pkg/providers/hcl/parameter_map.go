@@ -19,7 +19,7 @@ func ParseIntermediateNestedParameterMap(ctx *broker.Context, params NestedParam
 		Name:  params.Name,
 		Path:  path,
 		Label: labels.Optional,
-		Template: specs.Template{
+		Template: &specs.Template{
 			Message: message,
 		},
 	}, nil
@@ -36,10 +36,10 @@ func ParseIntermediateRepeatedParameterMap(ctx *broker.Context, params RepeatedP
 		Name:  params.Name,
 		Path:  path,
 		Label: labels.Optional,
-		Template: specs.Template{
+		Template: &specs.Template{
 			Reference: template.ParsePropertyReference(params.Template),
 			Repeated: specs.Repeated{
-				specs.Template{
+				&specs.Template{
 					Message: message,
 				},
 			},
@@ -58,7 +58,7 @@ func ParseIntermediateParameterMap(ctx *broker.Context, params *ParameterMap) (*
 		Options: make(specs.Options),
 		Property: &specs.Property{
 			Label: labels.Optional,
-			Template: specs.Template{
+			Template: &specs.Template{
 				Message: make(specs.Message),
 			},
 		},
@@ -95,7 +95,8 @@ func ParseIntermediateCallParameterMap(ctx *broker.Context, params *Call) (*spec
 	result := specs.ParameterMap{
 		Options: make(specs.Options),
 		Property: &specs.Property{
-			Label: labels.Optional,
+			Label:    labels.Optional,
+			Template: &specs.Template{},
 		},
 	}
 
@@ -147,7 +148,7 @@ func ParseIntermediateInputParameterMap(ctx *broker.Context, params *InputParame
 			Path:  key,
 			Name:  key,
 			Label: labels.Optional,
-			Template: specs.Template{
+			Template: &specs.Template{
 				Scalar: &specs.Scalar{
 					Type: types.String,
 				},

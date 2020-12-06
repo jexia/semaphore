@@ -68,7 +68,7 @@ func TestResolveStatusCode(t *testing.T) {
 	expected := int64(200)
 	status := &specs.Property{
 		Label: labels.Optional,
-		Template: specs.Template{
+		Template: &specs.Template{
 			Scalar: &specs.Scalar{
 				Type: types.Int64,
 			},
@@ -111,7 +111,7 @@ func TestResolveStatusCodeNilReference(t *testing.T) {
 	expected := StatusInternalErr
 	status := &specs.Property{
 		Label: labels.Optional,
-		Template: specs.Template{
+		Template: &specs.Template{
 			Scalar: &specs.Scalar{
 				Type: types.Int64,
 			},
@@ -137,7 +137,7 @@ func TestResolveStatusMessage(t *testing.T) {
 	expected := "unexpected mock err"
 	message := &specs.Property{
 		Label: labels.Optional,
-		Template: specs.Template{
+		Template: &specs.Template{
 			Scalar: &specs.Scalar{
 				Type: types.String,
 			},
@@ -180,7 +180,7 @@ func TestResolveStatusMessageNilReference(t *testing.T) {
 	expected := StatusMessage(StatusInternalErr)
 	message := &specs.Property{
 		Label: labels.Optional,
-		Template: specs.Template{
+		Template: &specs.Template{
 			Scalar: &specs.Scalar{
 				Type: types.Int64,
 			},
@@ -208,7 +208,7 @@ func TestObjectNewMeta(t *testing.T) {
 		Header: specs.Header{
 			"key": &specs.Property{
 				Label: labels.Optional,
-				Template: specs.Template{
+				Template: &specs.Template{
 					Scalar: &specs.Scalar{
 						Type: types.String,
 					},
@@ -247,13 +247,13 @@ func TestObjectNewMetaNil(t *testing.T) {
 func TestNewCodec(t *testing.T) {
 	schema := &specs.ParameterMap{
 		Property: &specs.Property{
-			Template: specs.Template{
+			Template: &specs.Template{
 				Message: specs.Message{
 					"key": {
 						Name:  "key",
 						Path:  "key",
 						Label: labels.Optional,
-						Template: specs.Template{
+						Template: &specs.Template{
 							Scalar: &specs.Scalar{
 								Type: types.String,
 							},
@@ -300,7 +300,7 @@ func TestNewCodecErr(t *testing.T) {
 	schema := &specs.ParameterMap{
 		Property: &specs.Property{
 			Label: labels.Optional,
-			Template: specs.Template{
+			Template: &specs.Template{
 				Scalar: &specs.Scalar{
 					Type: types.String,
 				},
@@ -351,7 +351,7 @@ func TestForwardNewMeta(t *testing.T) {
 	schema := specs.Header{
 		"key": &specs.Property{
 			Label: labels.Optional,
-			Template: specs.Template{
+			Template: &specs.Template{
 				Scalar: &specs.Scalar{
 					Type: types.String,
 				},

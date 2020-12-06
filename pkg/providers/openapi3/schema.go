@@ -3,6 +3,7 @@ package openapi3
 import (
 	"errors"
 	"fmt"
+
 	openapi "github.com/getkin/kin-openapi/openapi3"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/labels"
@@ -48,7 +49,7 @@ func newSchemas(docs swaggers) (specs.Schemas, error) {
 
 // newTemplate builds a Property from the given swagger schemaRef component.
 // the function returns a property without name, the name should be set in the top caller.
-func newTemplate(schema *openapi.Schema) (tpl specs.Template, err error) {
+func newTemplate(schema *openapi.Schema) (tpl *specs.Template, err error) {
 	switch schema.Type {
 	// handle as Message
 	case "object":
@@ -89,19 +90,19 @@ func newTemplate(schema *openapi.Schema) (tpl specs.Template, err error) {
 }
 
 // builds a message template
-func message(s *openapi.Schema) (specs.Template, error) {
+func message(s *openapi.Schema) (*specs.Template, error) {
 	var (
 		message = make(specs.Message, len(s.Properties))
 	)
 
 	for fieldName, ref := range s.Properties {
 		if ref.Value == nil {
-			return specs.Template{}, fmt.Errorf("field '%s' does not have schemaRef", fieldName)
+			return nil, fmt.Errorf("field '%s' does not have schemaRef", fieldName)
 		}
 
 		tpl, err := newTemplate(ref.Value)
 		if err != nil {
-			return specs.Template{}, fmt.Errorf("failed to build field '%s': %w", fieldName, err)
+			return nil, fmt.Errorf("failed to build field '%s': %w", fieldName, err)
 		}
 
 		message[fieldName] = &specs.Property{
@@ -110,13 +111,13 @@ func message(s *openapi.Schema) (specs.Template, error) {
 		}
 	}
 
-	return specs.Template{
+	return &specs.Template{
 		Message: message,
 	}, nil
 }
 
 // builds a scalar template
-func scalar(s *openapi.Schema) (specs.Template, error) {
+func scalar(s *openapi.Schema) (*specs.Template, error) {
 	var t types.Type
 
 	switch s.Type {
@@ -129,10 +130,10 @@ func scalar(s *openapi.Schema) (specs.Template, error) {
 	case "integer":
 		t = types.Int32
 	default:
-		return specs.Template{}, fmt.Errorf("unknown type %s", s.Type)
+		return nil, fmt.Errorf("unknown type %s", s.Type)
 	}
 
-	return specs.Template{
+	return &specs.Template{
 		Scalar: &specs.Scalar{
 			Type:    t,
 			Default: s.Default,
@@ -141,39 +142,39 @@ func scalar(s *openapi.Schema) (specs.Template, error) {
 }
 
 // builds a repeated template
-func repeated(s *openapi.Schema) (specs.Template, error) {
+func repeated(s *openapi.Schema) (*specs.Template, error) {
 	if s.Items == nil {
-		return specs.Template{}, errors.New("empty item schemaRef")
+		return nil, errors.New("empty item schemaRef")
 	}
 
 	item, err := newTemplate(s.Items.Value)
 	if err != nil {
-		return specs.Template{}, fmt.Errorf("failed to build item schemaRef: %w", err)
+		return nil, fmt.Errorf("failed to build item schemaRef: %w", err)
 	}
 
-	return specs.Template{
-		Repeated: []specs.Template{item},
+	return &specs.Template{
+		Repeated: []*specs.Template{item},
 	}, nil
 }
 
 // builds an oneOf template
-func oneOf(s *openapi.Schema) (specs.Template, error) {
+func oneOf(s *openapi.Schema) (*specs.Template, error) {
 	oneOf := make(specs.OneOf, len(s.OneOf))
 
 	for id, ref := range s.OneOf {
 		if ref.Value == nil {
-			return specs.Template{}, fmt.Errorf("type at index %d does not have schemaRef", id)
+			return nil, fmt.Errorf("type at index %d does not have schemaRef", id)
 		}
 
 		tpl, err := newTemplate(ref.Value)
 		if err != nil {
-			return specs.Template{}, fmt.Errorf("failed to build type at index %d: %w", id, err)
+			return nil, fmt.Errorf("failed to build type at index %d: %w", id, err)
 		}
 
 		oneOf[id] = tpl
 	}
 
-	return specs.Template{
+	return &specs.Template{
 		OneOf: oneOf,
 	}, nil
 }

@@ -7,9 +7,10 @@ import (
 // PropertyReference represents a mustach template reference
 type PropertyReference struct {
 	*metadata.Meta
-	Resource string    `json:"resource,omitempty"`
-	Path     string    `json:"path,omitempty"`
-	Property *Property `json:"-"`
+	Resource  string    `json:"resource,omitempty"`
+	Path      string    `json:"path,omitempty"`
+	Recursive string    `json:"recursive,omitempty"`
+	Property  *Property `json:"-"`
 }
 
 // Clone clones the given property reference
@@ -28,7 +29,11 @@ func (reference *PropertyReference) Clone() *PropertyReference {
 
 func (reference *PropertyReference) String() string {
 	if reference == nil {
-		return ""
+		return "<nil>"
+	}
+
+	if reference.Resource == "" && reference.Path == "" {
+		return "<empty>"
 	}
 
 	return reference.Resource + ":" + reference.Path

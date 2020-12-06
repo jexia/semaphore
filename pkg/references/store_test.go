@@ -452,7 +452,7 @@ func TestParameterMapReferences(t *testing.T) {
 			params: &specs.ParameterMap{
 				Header: specs.Header{
 					"key": &specs.Property{
-						Template: specs.Template{
+						Template: &specs.Template{
 							Reference: &specs.PropertyReference{
 								Path: "key",
 							},
@@ -465,7 +465,7 @@ func TestParameterMapReferences(t *testing.T) {
 			count: 1,
 			params: &specs.ParameterMap{
 				Property: &specs.Property{
-					Template: specs.Template{
+					Template: &specs.Template{
 						Reference: &specs.PropertyReference{
 							Path: "key",
 						},
@@ -477,12 +477,12 @@ func TestParameterMapReferences(t *testing.T) {
 			count: 2,
 			params: &specs.ParameterMap{
 				Property: &specs.Property{
-					Template: specs.Template{
+					Template: &specs.Template{
 						Message: specs.Message{
 							"first": {
 								Name: "first",
 								Path: "first",
-								Template: specs.Template{
+								Template: &specs.Template{
 									Reference: &specs.PropertyReference{
 										Path: "key",
 									},
@@ -491,7 +491,7 @@ func TestParameterMapReferences(t *testing.T) {
 							"second": {
 								Name: "second",
 								Path: "second",
-								Template: specs.Template{
+								Template: &specs.Template{
 									Reference: &specs.PropertyReference{
 										Path: "else",
 									},
@@ -506,12 +506,12 @@ func TestParameterMapReferences(t *testing.T) {
 			count: 1,
 			params: &specs.ParameterMap{
 				Property: &specs.Property{
-					Template: specs.Template{
+					Template: &specs.Template{
 						Message: specs.Message{
 							"first": {
 								Name: "first",
 								Path: "first",
-								Template: specs.Template{
+								Template: &specs.Template{
 									Reference: &specs.PropertyReference{
 										Path: "key",
 									},
@@ -520,7 +520,7 @@ func TestParameterMapReferences(t *testing.T) {
 							"second": {
 								Name: "second",
 								Path: "second",
-								Template: specs.Template{
+								Template: &specs.Template{
 									Reference: &specs.PropertyReference{
 										Path: "key",
 									},

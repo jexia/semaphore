@@ -19,7 +19,7 @@ func TestNewEvaluableExpression(t *testing.T) {
 			raw: "{{ input:id }} == {{ input:id }}",
 			params: map[string]*specs.Property{
 				"input:id": {
-					Template: specs.Template{
+					Template: &specs.Template{
 						Reference: &specs.PropertyReference{
 							Resource: "input",
 							Path:     "id",
@@ -32,7 +32,7 @@ func TestNewEvaluableExpression(t *testing.T) {
 			raw: "({{ input:id }} == {{ input:id }}) || {{ input:name }}",
 			params: map[string]*specs.Property{
 				"input:id": {
-					Template: specs.Template{
+					Template: &specs.Template{
 						Reference: &specs.PropertyReference{
 							Resource: "input",
 							Path:     "id",
@@ -40,7 +40,7 @@ func TestNewEvaluableExpression(t *testing.T) {
 					},
 				},
 				"input:name": {
-					Template: specs.Template{
+					Template: &specs.Template{
 						Reference: &specs.PropertyReference{
 							Resource: "input",
 							Path:     "name",
@@ -53,7 +53,7 @@ func TestNewEvaluableExpression(t *testing.T) {
 			raw: "({{ resource:id }} == {{ input:id }})",
 			params: map[string]*specs.Property{
 				"input:id": {
-					Template: specs.Template{
+					Template: &specs.Template{
 						Reference: &specs.PropertyReference{
 							Resource: "input",
 							Path:     "id",
@@ -61,7 +61,7 @@ func TestNewEvaluableExpression(t *testing.T) {
 					},
 				},
 				"resource:id": {
-					Template: specs.Template{
+					Template: &specs.Template{
 						Reference: &specs.PropertyReference{
 							Resource: "resource",
 							Path:     "id",

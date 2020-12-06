@@ -90,7 +90,7 @@ func (manager *Manager) Marshal(store references.Store) (io.Reader, error) {
 // The producing key-value pair examples:
 // user.name=bob&user.age=30&id=100
 // users[0]=bob&users[1]=alice
-func encode(encoded url.Values, tmpl specs.Template, path string, store references.Store, tracker references.Tracker) error {
+func encode(encoded url.Values, tmpl *specs.Template, path string, store references.Store, tracker references.Tracker) error {
 	var (
 		ref *references.Reference
 	)

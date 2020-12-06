@@ -64,8 +64,8 @@ func TestReferencedParameterMapPaths(t *testing.T) {
 			},
 			params: &specs.ParameterMap{
 				Property: &specs.Property{
-					Template: specs.Template{
-						Repeated: []specs.Template{
+					Template: &specs.Template{
+						Repeated: []*specs.Template{
 							{
 								Message: specs.Message{
 									"some.property": &specs.Property{
@@ -94,8 +94,8 @@ func TestReferencedParameterMapPaths(t *testing.T) {
 			},
 			params: &specs.ParameterMap{
 				Property: &specs.Property{
-					Template: specs.Template{
-						Repeated: []specs.Template{
+					Template: &specs.Template{
+						Repeated: []*specs.Template{
 							{
 								Message: specs.Message{
 									"some.property": &specs.Property{
@@ -156,12 +156,12 @@ func TestReferencedResourcePaths(t *testing.T) {
 								Params: map[string]*specs.Property{"some.param": nil},
 								Stack:  map[string]*specs.Property{"stack": nil},
 								Header: map[string]*specs.Property{"Authorization": {
-									Template: specs.Template{
-										Repeated: []specs.Template{
+									Template: &specs.Template{
+										Repeated: []*specs.Template{
 											{
 												Message: specs.Message{
 													"some.property": &specs.Property{
-														Template: specs.Template{
+														Template: &specs.Template{
 															Reference: &specs.PropertyReference{
 																Resource: "user",
 																Path:     "some.property.user",
@@ -177,9 +177,19 @@ func TestReferencedResourcePaths(t *testing.T) {
 						},
 						Condition: &specs.Condition{},
 						Intermediate: &specs.ParameterMap{
-							Params:   map[string]*specs.Property{"username": {}},
-							Property: &specs.Property{},
-							Stack:    map[string]*specs.Property{"username": {}},
+							Params: map[string]*specs.Property{
+								"username": {
+									Template: new(specs.Template),
+								},
+							},
+							Property: &specs.Property{
+								Template: new(specs.Template),
+							},
+							Stack: map[string]*specs.Property{
+								"username": {
+									Template: new(specs.Template),
+								},
+							},
 						},
 					},
 				},
