@@ -13,19 +13,11 @@ type Schemas map[string]*Property
 
 // Get attempts to return the given key from the objects collection
 func (objects Schemas) Get(key string) *Property {
-	if objects == nil {
-		return nil
-	}
-
 	return objects[key]
 }
 
 // Append appends the given objects to the objects collection
 func (objects Schemas) Append(arg Schemas) {
-	if objects == nil {
-		return
-	}
-
 	for key, val := range arg {
 		objects[key] = val
 	}

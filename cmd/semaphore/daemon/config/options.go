@@ -1,6 +1,9 @@
 package config
 
 import (
+	"mime"
+	"path/filepath"
+
 	"github.com/jexia/semaphore"
 	"github.com/jexia/semaphore/cmd/semaphore/daemon/providers"
 	"github.com/jexia/semaphore/cmd/semaphore/middleware"
@@ -11,7 +14,9 @@ import (
 	formencoded "github.com/jexia/semaphore/pkg/codec/www-form-urlencoded"
 	"github.com/jexia/semaphore/pkg/codec/xml"
 	"github.com/jexia/semaphore/pkg/metrics/prometheus"
+	"github.com/jexia/semaphore/pkg/providers/avros"
 	"github.com/jexia/semaphore/pkg/providers/hcl"
+	jsonSpecs "github.com/jexia/semaphore/pkg/providers/json"
 	"github.com/jexia/semaphore/pkg/providers/openapi3"
 	"github.com/jexia/semaphore/pkg/providers/protobuffers"
 	"github.com/jexia/semaphore/pkg/specs"
@@ -32,6 +37,7 @@ type Daemon struct {
 	GRPC         GRPC
 	Prometheus   Prometheus
 	Protobuffers []string
+	Avro         []string
 	Openapi3     []string
 	Files        []string
 }
@@ -65,6 +71,10 @@ type GraphQL struct {
 // read options.
 func SetOptions(ctx *broker.Context, flags *Daemon) error {
 	for _, path := range flags.Files {
+		if mime.TypeByExtension(filepath.Ext(path)) != providers.HCLExtensionType {
+			continue
+		}
+
 		options, err := hcl.GetOptions(ctx, path)
 		if err != nil {
 			return err
@@ -94,6 +104,10 @@ func parseHCL(options *hcl.Options, target *Daemon) {
 
 	if len(options.Protobuffers) > 0 {
 		target.Protobuffers = append(target.Protobuffers, options.Protobuffers...)
+	}
+
+	if len(options.Avro) > 0 {
+		target.Avro = append(target.Avro, options.Avro...)
 	}
 
 	if len(options.Openapi3) > 0 {
@@ -133,7 +147,12 @@ func NewCore(ctx *broker.Context, flags *Daemon) (semaphore.Options, error) {
 	}
 
 	for _, path := range flags.Files {
-		options = append(options, semaphore.WithFlows(hcl.FlowsResolver(path)))
+		switch mime.TypeByExtension(filepath.Ext(path)) {
+		case providers.JSONExtensionType:
+			options = append(options, semaphore.WithFlows(jsonSpecs.FlowsResolver(path)))
+		default:
+			options = append(options, semaphore.WithFlows(hcl.FlowsResolver(path)))
+		}
 	}
 
 	if flags.Prometheus.Address != "" {
@@ -150,10 +169,21 @@ func NewProviders(ctx *broker.Context, core semaphore.Options, params *Daemon) (
 	var options []providers.Option
 
 	for _, path := range params.Files {
-		options = append(options, providers.WithDiscovery(hcl.DiscoveryClientsResolver(path)))
-		options = append(options, providers.WithServices(hcl.ServicesResolver(path)))
-		options = append(options, providers.WithEndpoints(hcl.EndpointsResolver(path)))
-		options = append(options, providers.WithAfterConstructor(middleware.ServiceSelector(path)))
+		switch mime.TypeByExtension(filepath.Ext(path)) {
+		case providers.JSONExtensionType:
+			options = append(options, providers.WithServices(jsonSpecs.ServicesResolver(path)))
+			options = append(options, providers.WithEndpoints(jsonSpecs.EndpointsResolver(path)))
+			options = append(options, providers.WithSchema(jsonSpecs.SchemaResolver(path)))
+		default:
+			options = append(options, providers.WithDiscovery(hcl.DiscoveryClientsResolver(path)))
+			options = append(options, providers.WithServices(hcl.ServicesResolver(path)))
+			options = append(options, providers.WithEndpoints(hcl.EndpointsResolver(path)))
+			options = append(options, providers.WithAfterConstructor(middleware.ServiceSelector(path)))
+		}
+	}
+
+	for _, path := range params.Avro {
+		options = append(options, providers.WithSchema(avros.SchemaResolver(params.Avro, path)))
 	}
 
 	for _, path := range params.Protobuffers {
