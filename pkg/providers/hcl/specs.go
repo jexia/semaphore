@@ -1,6 +1,8 @@
 package hcl
 
 import (
+	"log"
+
 	"github.com/hashicorp/hcl/v2"
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
@@ -156,10 +158,22 @@ func ParseIntermediateProxy(ctx *broker.Context, proxy Proxy) (*specs.Proxy, err
 		return nil, err
 	}
 
+	log.Println(">>>>PROXY REWRITE:", proxy.Rewrite)
+
+	rewrite, err := ParseIntermediateRewriteRules(ctx, proxy.Rewrite)
+	if err != nil {
+		return nil, err
+	}
+
+	log.Println("<<<<<NEW REWRITE>>>>>")
+	log.Println(rewrite)
+	log.Println("<<<<<NEW REWRITE>>>>>")
+
 	result := specs.Proxy{
 		Name:    proxy.Name,
 		Nodes:   specs.NodeList{},
 		Forward: forward,
+		Rewrite: rewrite,
 		OnError: &specs.OnError{},
 	}
 
@@ -240,6 +254,20 @@ func ParseIntermediateProxyForward(ctx *broker.Context, proxy ProxyForward) (*sp
 	}
 
 	return &result, nil
+}
+
+func ParseIntermediateRewriteRules(ctx *broker.Context, rewrite []ProxyRewrite) ([]specs.Rewrite, error) {
+	var parsed = make([]specs.Rewrite, len(rewrite), len(rewrite))
+
+	for index, rule := range rewrite {
+		parsed[index] = specs.Rewrite{
+			Pattern:  rule.Pattern,
+			Template: rule.Template,
+		}
+	}
+
+	// TODO: parse remained rewrite options
+	return parsed, nil
 }
 
 // ParseIntermediateHeader parses the given intermediate header to a spec header

@@ -19,7 +19,7 @@ type Manifest struct {
 	Endpoints        []Endpoint    `hcl:"endpoint,block"`
 	Services         []Service     `hcl:"service,block"`
 	ServiceSelector  []Services    `hcl:"services,block"`
-	DiscoveryServers Discoveries   `hcl:"discovery,block"`
+	DiscoveryServers []Discovery   `hcl:"discovery,block"`
 }
 
 // GraphQL represents the GraphQL option definitions
@@ -214,12 +214,13 @@ type Method struct {
 type Proxy struct {
 	Condition `hcl:",remain"`
 
-	Name    string        `hcl:"name,label"`
-	Error   *ParameterMap `hcl:"error,block"`
-	Input   *ProxyInput   `hcl:"input,block"`
-	OnError *OnError      `hcl:"on_error,block"`
-	Before  *Before       `hcl:"before,block"`
-	Forward ProxyForward  `hcl:"forward,block"`
+	Name    string         `hcl:"name,label"`
+	Error   *ParameterMap  `hcl:"error,block"`
+	Input   *ProxyInput    `hcl:"input,block"`
+	OnError *OnError       `hcl:"on_error,block"`
+	Before  *Before        `hcl:"before,block"`
+	Forward ProxyForward   `hcl:"forward,block"`
+	Rewrite []ProxyRewrite `hcl:"rewrite,block"`
 }
 
 // ProxyInput represents the proxy input block.
@@ -233,6 +234,13 @@ type ProxyInput struct {
 type ProxyForward struct {
 	Service string  `hcl:"service,label"`
 	Header  *Header `hcl:"header,block"`
+}
+
+// ProxyRewrite describes rewrite rules.
+type ProxyRewrite struct {
+	Pattern  string   `hcl:"pattern,label"`
+	Template string   `hcl:"template,label"`
+	Options  hcl.Body `hcl:",remain"`
 }
 
 // Discovery describes a service discovery client configuration
@@ -252,5 +260,3 @@ type Discovery struct {
 	Provider string `hcl:"provider,optional"`
 	Address  string `hcl:"address"`
 }
-
-type Discoveries []Discovery

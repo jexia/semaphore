@@ -50,6 +50,7 @@ type FlowInterface interface {
 	GetOutput() *ParameterMap
 	GetOnError() *OnError
 	GetForward() *Call
+	GetRewrite() []Rewrite
 }
 
 // Flow defines a set of calls that should be called chronologically and produces an output message.
@@ -108,6 +109,11 @@ func (flow *Flow) GetForward() *Call {
 	return nil
 }
 
+// GetRewrite returns the rewrite rules of the given flow
+func (flow *Flow) GetRewrite() []Rewrite {
+	return nil
+}
+
 // ProxyList represents a collection of proxies
 type ProxyList []*Proxy
 
@@ -127,6 +133,12 @@ func (collection ProxyList) Get(name string) *Proxy {
 	return nil
 }
 
+// Rewrite rules.
+type Rewrite struct {
+	Pattern  string `json:"pattern"`
+	Template string `json:"template"`
+}
+
 // Proxy streams the incoming request to the given service.
 // Proxies could define calls that are executed before the request body is forwarded.
 // A proxy forward could ideally be used for file uploads or large messages which could not be stored in memory.
@@ -136,6 +148,7 @@ type Proxy struct {
 	Name    string        `json:"name,omitempty"`
 	Nodes   NodeList      `json:"nodes,omitempty"`
 	Forward *Call         `json:"forward,omitempty"`
+	Rewrite []Rewrite     `json:"rewrite,omitempty"`
 	OnError *OnError      `json:"on_error,omitempty"`
 }
 
@@ -177,6 +190,11 @@ func (proxy *Proxy) GetOutput() *ParameterMap {
 // GetForward returns the proxy forward of the given flow
 func (proxy *Proxy) GetForward() *Call {
 	return proxy.Forward
+}
+
+// GetRewrite returns the rewrite rules of the given flow
+func (proxy *Proxy) GetRewrite() []Rewrite {
+	return proxy.Rewrite
 }
 
 // Evaluable can be evaluated (runs the expression) using provided parameters

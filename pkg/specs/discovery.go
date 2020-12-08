@@ -1,8 +1,6 @@
 package specs
 
-import (
-	"github.com/jexia/semaphore/pkg/discovery"
-)
+import "github.com/jexia/semaphore/pkg/discovery"
 
 type ServiceDiscoveryClient interface {
 	Resolver(host string) (discovery.Resolver, error)
