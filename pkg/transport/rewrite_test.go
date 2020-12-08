@@ -39,6 +39,13 @@ func TestNewRewrite(t *testing.T) {
 			`/foo/bar`,
 			`/foo/bar`,
 		},
+		"rewrite static path": {
+			`/oldPath`,
+			`/newPath`,
+			true,
+			`/oldPath`,
+			`/newPath`,
+		},
 		"rewrite tail": {
 			`/oldPath/(?P<tail>.*)`,
 			`/newPath/<tail>`,

@@ -312,15 +312,15 @@ func (handle *Handle) HTTPFunc(w http.ResponseWriter, r *http.Request, ps httpro
 		var ok bool
 
 		for _, rewrite := range handle.Endpoint.Forward.Rewrite {
-
 			originalURL := r.URL.Path
-
 			// call rewrite until the first match
 			r.URL.Path, ok = rewrite(r.URL.Path)
 			if ok {
 				logger.Debug(
 					handle.ctx,
-					fmt.Sprintf("forwarding %q to %q", originalURL, r.URL.Path),
+					"forwarding HTTP request",
+					zap.String("source", originalURL),
+					zap.String("target", r.URL.Path),
 				)
 
 				break
