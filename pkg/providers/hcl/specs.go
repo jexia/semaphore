@@ -1,8 +1,6 @@
 package hcl
 
 import (
-	"log"
-
 	"github.com/hashicorp/hcl/v2"
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
@@ -158,16 +156,10 @@ func ParseIntermediateProxy(ctx *broker.Context, proxy Proxy) (*specs.Proxy, err
 		return nil, err
 	}
 
-	log.Println(">>>>PROXY REWRITE:", proxy.Rewrite)
-
 	rewrite, err := ParseIntermediateRewriteRules(ctx, proxy.Rewrite)
 	if err != nil {
 		return nil, err
 	}
-
-	log.Println("<<<<<NEW REWRITE>>>>>")
-	log.Println(rewrite)
-	log.Println("<<<<<NEW REWRITE>>>>>")
 
 	result := specs.Proxy{
 		Name:    proxy.Name,

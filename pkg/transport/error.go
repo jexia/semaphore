@@ -59,3 +59,19 @@ func (w *wrapper) Unwrap() error {
 func (w *wrapper) Ptr() specs.ErrorHandle {
 	return w.ErrorHandle
 }
+
+// ErrMalformedTemplate is returned when unable to compile the URL template
+type ErrMalformedTemplate struct {
+	Template string
+	Position int
+	Cause    string
+}
+
+func (e ErrMalformedTemplate) Error() string {
+	var msg = e.Cause + ":\n"
+	for i := 0; i < e.Position; i++ {
+		msg += " "
+	}
+
+	return msg + "↓\n" + e.Template + "\n"
+}
