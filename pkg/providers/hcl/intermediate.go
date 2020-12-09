@@ -19,7 +19,7 @@ type Manifest struct {
 	Endpoints        []Endpoint    `hcl:"endpoint,block"`
 	Services         []Service     `hcl:"service,block"`
 	ServiceSelector  []Services    `hcl:"services,block"`
-	DiscoveryServers Discoveries   `hcl:"discovery,block"`
+	DiscoveryServers []Discovery   `hcl:"discovery,block"`
 }
 
 // GraphQL represents the GraphQL option definitions
@@ -214,12 +214,13 @@ type Method struct {
 type Proxy struct {
 	Condition `hcl:",remain"`
 
-	Name    string        `hcl:"name,label"`
-	Error   *ParameterMap `hcl:"error,block"`
-	Input   *ProxyInput   `hcl:"input,block"`
-	OnError *OnError      `hcl:"on_error,block"`
-	Before  *Before       `hcl:"before,block"`
-	Forward ProxyForward  `hcl:"forward,block"`
+	Name    string         `hcl:"name,label"`
+	Error   *ParameterMap  `hcl:"error,block"`
+	Input   *ProxyInput    `hcl:"input,block"`
+	OnError *OnError       `hcl:"on_error,block"`
+	Before  *Before        `hcl:"before,block"`
+	Forward ProxyForward   `hcl:"forward,block"`
+	Rewrite []ProxyRewrite `hcl:"rewrite,block"`
 }
 
 // ProxyInput represents the proxy input block.
@@ -235,22 +236,43 @@ type ProxyForward struct {
 	Header  *Header `hcl:"header,block"`
 }
 
+// ProxyRewrite describes rewrite rules. Allows rewriting/replacement URL segments
+//
+// Example:
+//
+//	endpoint "test" "http" {
+//		method = "GET"
+//		endpoint = "/prefix/*tail"
+//	}
+//
+//	proxy "test" {
+//		forward "com.semaphore.TestService" {}
+//		rewrite "/prefix/(?P<first>\w+)/(?P<second>\w+)" "/<second>/<first>" {} // swap URL segments
+//		rewrite "/prefix/(?P<tail>.*)" "/<tail>" {} // strip static `/prefix`
+//	}
+//
+// NOTE: multiple rewrite rules can be specified but only one can be applied (the first one which
+// matches the pattern) so put strict rules first (by priority) and keep wildcards in the bottom
+type ProxyRewrite struct {
+	Pattern  string   `hcl:"pattern,label"`
+	Template string   `hcl:"template,label"`
+	Options  hcl.Body `hcl:",remain"`
+}
+
 // Discovery describes a service discovery client configuration
 //
 // Examples:
 //
-// discovery "consul" {
-// 	 address = "http://localhost:8500"
-// }
+//	discovery "consul" {
+//		address = "http://localhost:8500"
+//	}
 //
-// discovery "foobar" {
-//   provider = "consul"
-//	 address = "http://localhost:8500"
-// }
+//	discovery "foobar" {
+//		provider = "consul"
+//		address = "http://localhost:8500"
+//	}
 type Discovery struct {
 	Name     string `hcl:"name,label"`
 	Provider string `hcl:"provider,optional"`
 	Address  string `hcl:"address"`
 }
-
-type Discoveries []Discovery

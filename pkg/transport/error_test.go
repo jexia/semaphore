@@ -70,3 +70,19 @@ func TestWrapperNil(t *testing.T) {
 		t.Errorf("unexpected handle %+v, expected %+v", wrapper.Ptr(), nil)
 	}
 }
+
+func TestErrMalformedTemplate(t *testing.T) {
+	var (
+		err = ErrMalformedTemplate{
+			Template: "something went wrong here",
+			Position: 21,
+			Cause:    "failed to compile the template",
+		}
+
+		expected = "failed to compile the template:\n                     ↓\nsomething went wrong here\n"
+	)
+
+	if actual := err.Error(); actual != expected {
+		t.Errorf("the error:\n%s\nwas expected to be:\n%s", actual, expected)
+	}
+}
