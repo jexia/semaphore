@@ -6,7 +6,6 @@ import (
 
 	"github.com/jexia/semaphore"
 	"github.com/jexia/semaphore/cmd/semaphore/daemon/providers"
-	"github.com/jexia/semaphore/cmd/semaphore/functions"
 	"github.com/jexia/semaphore/cmd/semaphore/middleware"
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
@@ -144,7 +143,7 @@ func NewCore(ctx *broker.Context, flags *Daemon) (semaphore.Options, error) {
 		semaphore.WithCaller(micro.NewCaller("micro-grpc", microGRPC.NewService())),
 		semaphore.WithCaller(grpc.NewCaller()),
 		semaphore.WithCaller(http.NewCaller()),
-		semaphore.WithFunctions(functions.Default),
+		semaphore.WithFunctions(DefaultFunctions),
 	}
 
 	for _, path := range flags.Files {
