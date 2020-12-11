@@ -12,10 +12,12 @@ flow "latest_todo" {
 		}
 	}
 
-	output "com.semaphore.Item" {
-		id = "{{ query:id }}"
-		title = "{{ query:title }}"
-		completed = "{{ query:completed }}"
+	output {
+		payload "com.semaphore.Item" {
+			id = "{{ query:id }}"
+			title = "{{ query:title }}"
+			completed = "{{ query:completed }}"
+		} 
 	}
 }
 
@@ -36,10 +38,12 @@ flow "todo" {
 		}
 	}
 
-	output "com.semaphore.Item" {
-		id = "{{ query:id }}"
-		userId = "{{ query:userId }}"
-		title = "{{ query:title }}"
-		completed = "{{ query:completed }}"
+	output {
+		payload "com.semaphore.Item" {
+			id = "{{ query:id }}"
+			userId = "{{ query:userId }}"
+			title = "{{ query:title }}"
+			completed = "{{ query:completed }}"
+		}
 	}
 }

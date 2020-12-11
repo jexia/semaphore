@@ -2,6 +2,7 @@ package specs
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/jexia/semaphore/pkg/specs/labels"
 	"github.com/jexia/semaphore/pkg/specs/metadata"
@@ -144,9 +145,39 @@ type ParameterMap struct {
 	Schema    string               `json:"schema,omitempty"`
 	Params    map[string]*Property `json:"params,omitempty"`
 	Options   Options              `json:"options,omitempty"`
+	Status    int64                `json:"status,omitempty"`
 	Header    Header               `json:"header,omitempty"`
 	Property  *Property            `json:"property,omitempty"`
 	Stack     map[string]*Property `json:"stack,omitempty"`
+}
+
+func NewParameterMap(schema string) ParameterMap {
+	return ParameterMap{
+		Schema:  schema,
+		Options: make(Options),
+		Property: &Property{
+			Label:    labels.Optional,
+			Template: Template{},
+		},
+		Status: http.StatusOK,
+	}
+}
+
+func (parameters *ParameterMap) StatusCode() *Property {
+	if parameters == nil {
+		return nil
+	}
+
+	return &Property{
+		Name:  "status",
+		Label: labels.Optional,
+		Template: Template{
+			Scalar: &Scalar{
+				Default: parameters.Status,
+				Type:    types.Int64,
+			},
+		},
+	}
 }
 
 // Clone clones the given parameter map

@@ -83,13 +83,18 @@ type BaseParameterMap struct {
 	Properties hcl.Body               `hcl:",remain"`
 }
 
-// ParameterMap is the initial map of parameter names (keys) and their (templated) values (values).
-type ParameterMap struct {
+type OutputParameterMap struct {
 	BaseParameterMap `hcl:",remain"`
 
-	Schema  string        `hcl:"schema,label"`
-	Options *BlockOptions `hcl:"options,block"`
-	Header  *Header       `hcl:"header,block"`
+	Schema string `hcl:"schema,label"`
+}
+
+// ParameterMap is the initial map of parameter names (keys) and their (templated) values (values).
+type ParameterMap struct {
+	Options *BlockOptions       `hcl:"options,block"`
+	Status  *int64              `hcl:"status,optional"`
+	Header  *Header             `hcl:"header,block"`
+	Payload *OutputParameterMap `hcl:"payload,block"`
 }
 
 // Resources represent a collection of resources which are references or custom defined functions.

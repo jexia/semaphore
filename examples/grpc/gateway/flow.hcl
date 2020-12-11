@@ -19,8 +19,12 @@ flow "greeter" {
 		}
 	}
 
-	output "semaphore.greeter.Response" {
-		msg = "{{ user:msg }}"
-		meta = "{{ user:meta }}"
+	output {
+		status = 202
+
+		payload "semaphore.greeter.Response" {
+			msg  = "{{ user:msg }}"
+			meta = "{{ user:meta }}"
+		}
 	}
 }

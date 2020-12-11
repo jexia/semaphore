@@ -1,16 +1,20 @@
 proxy "" {
-  error "proto.Error" {
-    message = "{{ error:message }}"
-    status  = "{{ error:status }}"
+  error {
+    // TODO: fixme
+    status = 400 // "{{ error:status }}"
 
-    message "nested" {
-      message  "nested" {}
-      repeated ""       ""       {}
-    }
+    payload "proto.Error" {
+      message = "{{ error:message }}"
 
-    repeated "" "" {
-      message  "nested" {}
-      repeated ""       ""       {}
+      message "nested" {
+        message "nested" {}
+        repeated "" "" {}
+      }
+
+      repeated "" "" {
+        message "nested" {}
+        repeated "" "" {}
+      }
     }
   }
 

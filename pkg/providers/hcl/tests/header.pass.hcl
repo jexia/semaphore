@@ -15,7 +15,7 @@ flow "echo" {
     }
   }
 
-  output "output" {
+  output {
     header {
       Cookie = "mnomnom"
     }

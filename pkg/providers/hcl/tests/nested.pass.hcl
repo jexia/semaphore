@@ -13,9 +13,11 @@ flow "echo" {
     }
   }
 
-  output "object" {
-    message "nested" {
-      name = "<string>"
+  output {
+    payload "object" {
+      message "nested" {
+        name = "<string>"
+      }
     }
   }
 }

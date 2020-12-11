@@ -297,6 +297,8 @@ func (handle *Handle) HTTPFunc(w http.ResponseWriter, r *http.Request, ps httpro
 				return
 			}
 
+			w.WriteHeader(handle.Response.ResolveStatusCode(store))
+
 			_, err = io.Copy(w, reader)
 			if err != nil {
 				logger.Error(handle.ctx, "unexpected error copying the message body to the client", zap.Error(err))

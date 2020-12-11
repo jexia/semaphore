@@ -4,9 +4,12 @@ endpoint "FetchLatestProject" "http" {
 	codec = "json"
 }
 
-error "proto.Error" {
-	value = "some message"
+error {
 	status = 400
+
+	payload "proto.Error" {
+		value = "some message"
+	}
 }
 
 flow "FetchLatestProject" {
@@ -14,9 +17,13 @@ flow "FetchLatestProject" {
         header = ["Authorization"]
     }
 
-	error "proto.Unauthorized" {
-		message = "{{ error:message }}"
-		status = "{{ error:status }}"
+	error  {
+		// TODO: fixme
+		status = 401 // "{{ error:status }}"
+
+		payload "proto.Unauthorized" {
+			message = "{{ error:message }}"
+		}
 	}
 
 	on_error {
@@ -40,13 +47,15 @@ flow "FetchLatestProject" {
 		}
 	}
 
-	output "proto.Item" {
+	output {
 		header {
 			Username = "{{ user:username }}"
 		}
 
-		id = "{{ query:id }}"
-		title = "{{ query:title }}"
-		completed = "{{ query:completed }}"
+		payload "proto.Item" {
+			id = "{{ query:id }}"
+			title = "{{ query:title }}"
+			completed = "{{ query:completed }}"
+		}
 	}
 }

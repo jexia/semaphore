@@ -16,9 +16,12 @@ endpoint "GlobalHandleError" "http" {
 	codec = "json"
 }
 
-error "proto.Error" {
-	message = "{{ error:message }}"
-	status = "{{ error:status }}"
+error  {
+	status = 400 // "{{ error:status }}"
+	
+	payload "proto.Error" {
+		message = "{{ error:message }}"
+	}
 }
 
 flow "GlobalHandleError" {
@@ -34,7 +37,10 @@ flow "GlobalHandleError" {
 		}
 	}
 
-	output "proto.Empty" {}
+	output {
+		// TODO: omit empty payload
+		payload "proto.Empty" {}
+	}
 }
 
 endpoint "FlowHandleError" "http" {
@@ -46,9 +52,12 @@ endpoint "FlowHandleError" "http" {
 flow "FlowHandleError" {
 	input "proto.Empty" {}
 
-	error "proto.Error" {
-		message = "{{ error:message }}"
-		status = "{{ error:status }}"
+	error {
+		status = 400 // "{{ error:status }}"
+
+		payload "proto.Error" {
+			message = "{{ error:message }}"
+		}
 	}
 
 	on_error {
@@ -61,7 +70,10 @@ flow "FlowHandleError" {
 		}
 	}
 
-	output "proto.Empty" {}
+	output {
+		// TODO: omit empty payload
+		payload "proto.Empty" {}
+	}
 }
 
 endpoint "NodeHandleError" "http" {
@@ -77,9 +89,12 @@ flow "NodeHandleError" {
 		request "proto.Service" "ThrowError" {
 		}
 
-		error "proto.Error" {
-			message = "{{ error:message }}"
-			status = "{{ error:status }}"
+		error {
+			status = 400 // "{{ error:status }}"
+
+			payload "proto.Error" {
+				message = "{{ error:message }}"
+			}
 		}
 
 		on_error {
@@ -88,5 +103,8 @@ flow "NodeHandleError" {
 		}
 	}
 
-	output "proto.Empty" {}
+	output {
+		// TODO: omit empty payload
+		payload "proto.Empty" {}
+	}
 }

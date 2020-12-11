@@ -17,13 +17,18 @@ flow "FetchLatestProject" {
     request "com.semaphore.Users" "Get" {}
   }
 
-  output "com.semaphore.Item" {
+  output {
+    status = 202
+
     header {
       Username = "{{ user:username }}"
     }
 
-    id        = "{{ query:id }}"
-    title     = "{{ query:title }}"
-    completed = "{{ query:completed }}"
+    // TODO: fix panic when message is not defined
+    payload "com.semaphore.Item" {
+      id        = "{{ query:id }}"
+      title     = "{{ query:title }}"
+      completed = "{{ query:completed }}"
+    }
   }
 }

@@ -11,11 +11,13 @@ flow "echo" {
     }
   }
 
-  output "object" {
-    object = {
-      "message": "hello world",
-      "meta": {
-        "id": "{{ getter:output }}"
+  output {
+    payload "object" {
+      object = {
+        "message": "hello world",
+        "meta": {
+          "id": "{{ getter:output }}"
+        }
       }
     }
   }
