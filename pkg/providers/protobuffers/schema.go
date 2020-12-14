@@ -17,7 +17,6 @@ func NewSchema(descriptors []*desc.FileDescriptor) specs.Schemas {
 			result[message.GetFullyQualifiedName()] = NewMessage("", message)
 		}
 	}
-
 	return result
 }
 

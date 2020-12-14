@@ -32,8 +32,9 @@ func NewOptions(opts ...EndpointOption) Options {
 // construct and endpoints.
 type Options struct {
 	semaphore.Options
-	stack    functions.Collection
-	services specs.ServiceList
+	stack       functions.Collection
+	services    specs.ServiceList
+	discoveries specs.ServiceDiscoveryClients
 }
 
 // EndpointOption applies the given options to the apply options object.
@@ -60,6 +61,13 @@ func WithCore(conf semaphore.Options) EndpointOption {
 	}
 }
 
+// WithServiceDiscoveries sets the given discovery clients
+func WithServiceDiscoveries(discoveries specs.ServiceDiscoveryClients) EndpointOption {
+	return func(options *Options) {
+		options.discoveries = discoveries
+	}
+}
+
 // Transporters constructs a new transport Endpoints list from the given endpoints and options
 func Transporters(ctx *broker.Context, endpoints specs.EndpointList, flows specs.FlowListInterface, opts ...EndpointOption) (transport.EndpointList, error) {
 	if ctx == nil {
@@ -79,13 +87,14 @@ func Transporters(ctx *broker.Context, endpoints specs.EndpointList, flows specs
 			manager.WithFlowFunctions(options.stack),
 			manager.WithFlowServices(options.services),
 			manager.WithFlowOptions(options.Options),
+			manager.WithServiceDiscoveries(options.discoveries),
 		)
 
 		if err != nil {
 			return nil, fmt.Errorf("failed to construct flow: %w", err)
 		}
 
-		forward, err := forwarder(selected.GetForward(), options)
+		forward, err := forwarder(selected, options)
 		if err != nil {
 			return nil, fmt.Errorf("failed to construct flow caller: %w", err)
 		}
@@ -97,7 +106,9 @@ func Transporters(ctx *broker.Context, endpoints specs.EndpointList, flows specs
 }
 
 // newForward constructs a flow caller for the given call.
-func forwarder(call *specs.Call, options Options) (*transport.Forward, error) {
+func forwarder(flow specs.FlowInterface, options Options) (*transport.Forward, error) {
+	call := flow.GetForward()
+
 	if call == nil {
 		return nil, nil
 	}
@@ -107,8 +118,19 @@ func forwarder(call *specs.Call, options Options) (*transport.Forward, error) {
 		return nil, ErrUnknownService{Service: call.Service}
 	}
 
+	rewrite := make([]transport.Rewrite, len(flow.GetRewrite()), len(flow.GetRewrite()))
+	for index, item := range flow.GetRewrite() {
+		rewriteFunc, err := transport.NewRewrite(item.Pattern, item.Template)
+		if err != nil {
+			return nil, err
+		}
+
+		rewrite[index] = rewriteFunc
+	}
+
 	result := &transport.Forward{
 		Service: service,
+		Rewrite: rewrite,
 	}
 
 	if call.Request != nil {

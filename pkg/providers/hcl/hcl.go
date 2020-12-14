@@ -2,6 +2,7 @@ package hcl
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -41,6 +42,39 @@ func ServicesResolver(path string) providers.ServicesResolver {
 		}
 
 		return services, nil
+	}
+}
+
+// DiscoveryClientsResolver parses configuration.
+func DiscoveryClientsResolver(path string) providers.ServiceDiscoveryClientsResolver {
+	return func(ctx *broker.Context) (specs.ServiceDiscoveryClients, error) {
+		logger.Debug(ctx, "resolving HCL service discovery configurations", zap.String("path", path))
+
+		definitions, err := ResolvePath(ctx, []string{}, path)
+		if err != nil {
+			return nil, err
+		}
+
+		clients := make(specs.ServiceDiscoveryClients)
+
+		for _, definition := range definitions {
+			result, err := ParseDiscoveryClients(ctx, definition)
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse discovery service configurations: %w", err)
+			}
+
+			for name, client := range result {
+				if _, ok := clients[name]; ok {
+					logger.Warn(ctx,
+						fmt.Sprintf("service discovery configuration with name '%s' already defined and will be overridden", name),
+					)
+				}
+
+				clients[name] = client
+			}
+		}
+
+		return clients, nil
 	}
 }
 
@@ -119,6 +153,10 @@ func GetOptions(ctx *broker.Context, path string) (*Options, error) {
 			options.Protobuffers = append(options.Protobuffers, definition.Protobuffers...)
 		}
 
+		if len(definition.Avro) > 0 {
+			options.Avro = append(options.Avro, definition.Avro...)
+		}
+
 		if len(definition.Openapi3) > 0 {
 			options.Openapi3 = append(options.Openapi3, definition.Openapi3...)
 		}
@@ -188,6 +226,16 @@ func ResolvePath(ctx *broker.Context, ignore []string, path string) ([]Manifest,
 				}
 
 				definition.Protobuffers[index] = proto
+			}
+		}
+
+		if definition.Avro != nil {
+			for index, avro := range definition.Avro {
+				if !filepath.IsAbs(avro) {
+					avro = filepath.Join(filepath.Dir(file.Path), avro)
+				}
+
+				definition.Avro[index] = avro
 			}
 		}
 

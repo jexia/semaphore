@@ -309,6 +309,24 @@ func (handle *Handle) HTTPFunc(w http.ResponseWriter, r *http.Request, ps httpro
 	}
 
 	if handle.Endpoint.Forward != nil {
+		var ok bool
+
+		for _, rewrite := range handle.Endpoint.Forward.Rewrite {
+			originalURL := r.URL.Path
+			// call rewrite until the first match
+			r.URL.Path, ok = rewrite(r.URL.Path)
+			if ok {
+				logger.Debug(
+					handle.ctx,
+					"forwarding HTTP request",
+					zap.String("source", originalURL),
+					zap.String("target", r.URL.Path),
+				)
+
+				break
+			}
+		}
+
 		SetHTTPHeader(r.Header, handle.Proxy.Header.Marshal(store))
 		handle.Proxy.Handle.ServeHTTP(w, r)
 	}

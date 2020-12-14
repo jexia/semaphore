@@ -4,23 +4,25 @@ import "github.com/hashicorp/hcl/v2"
 
 // Manifest intermediate specs
 type Manifest struct {
-	LogLevel        string        `hcl:"log_level,optional"`
-	GraphQL         *GraphQL      `hcl:"graphql,block"`
-	HTTP            *HTTP         `hcl:"http,block"`
-	GRPC            *GRPC         `hcl:"grpc,block"`
-	Prometheus      *Prometheus   `hcl:"prometheus,block"`
-	Protobuffers    []string      `hcl:"protobuffers,optional"`
-	Openapi3        []string      `hcl:"openapi3,optional"`
-	Include         []string      `hcl:"include,optional"`
-	Error           *ParameterMap `hcl:"error,block"`
-	Flows           []Flow        `hcl:"flow,block"`
-	Proxy           []Proxy       `hcl:"proxy,block"`
-	Endpoints       []Endpoint    `hcl:"endpoint,block"`
-	Services        []Service     `hcl:"service,block"`
-	ServiceSelector []Services    `hcl:"services,block"`
+	LogLevel         string        `hcl:"log_level,optional"`
+	GraphQL          *GraphQL      `hcl:"graphql,block"`
+	HTTP             *HTTP         `hcl:"http,block"`
+	GRPC             *GRPC         `hcl:"grpc,block"`
+	Prometheus       *Prometheus   `hcl:"prometheus,block"`
+	Protobuffers     []string      `hcl:"protobuffers,optional"`
+	Avro             []string      `hcl:"avro,optional"`
+	Openapi3         []string      `hcl:"openapi3,optional"`
+	Include          []string      `hcl:"include,optional"`
+	Error            *ParameterMap `hcl:"error,block"`
+	Flows            []Flow        `hcl:"flow,block"`
+	Proxy            []Proxy       `hcl:"proxy,block"`
+	Endpoints        []Endpoint    `hcl:"endpoint,block"`
+	Services         []Service     `hcl:"service,block"`
+	ServiceSelector  []Services    `hcl:"services,block"`
+	DiscoveryServers []Discovery   `hcl:"discovery,block"`
 }
 
-// GraphQL represents the GraphQL option definitions.
+// GraphQL represents the GraphQL option definitions
 type GraphQL struct {
 	Address string `hcl:"address"`
 }
@@ -180,9 +182,10 @@ type Service struct {
 	Host      string        `hcl:"host,optional"`
 	Methods   []Method      `hcl:"method,block"`
 	Options   *BlockOptions `hcl:"options,block"`
+	Resolver  string        `hcl:"resolver,optional"`
 }
 
-// ServiceSelector targets any service matchine the given service selector.
+// ServiceSelector targets any service match in the given service selector.
 type ServiceSelector struct {
 	Pattern       string   `hcl:"pattern,label"`
 	Host          string   `hcl:"host,optional"`
@@ -190,6 +193,7 @@ type ServiceSelector struct {
 	Codec         string   `hcl:"codec,optional"`
 	RequestCodec  string   `hcl:"request_codec,optional"`
 	ResponseCodec string   `hcl:"response_codec,optional"`
+	Resolver      string   `hcl:"resolver,optional"`
 	Options       hcl.Body `hcl:",remain"`
 }
 
@@ -210,12 +214,13 @@ type Method struct {
 type Proxy struct {
 	Condition `hcl:",remain"`
 
-	Name    string        `hcl:"name,label"`
-	Error   *ParameterMap `hcl:"error,block"`
-	Input   *ProxyInput   `hcl:"input,block"`
-	OnError *OnError      `hcl:"on_error,block"`
-	Before  *Before       `hcl:"before,block"`
-	Forward ProxyForward  `hcl:"forward,block"`
+	Name    string         `hcl:"name,label"`
+	Error   *ParameterMap  `hcl:"error,block"`
+	Input   *ProxyInput    `hcl:"input,block"`
+	OnError *OnError       `hcl:"on_error,block"`
+	Before  *Before        `hcl:"before,block"`
+	Forward ProxyForward   `hcl:"forward,block"`
+	Rewrite []ProxyRewrite `hcl:"rewrite,block"`
 }
 
 // ProxyInput represents the proxy input block.
@@ -229,4 +234,45 @@ type ProxyInput struct {
 type ProxyForward struct {
 	Service string  `hcl:"service,label"`
 	Header  *Header `hcl:"header,block"`
+}
+
+// ProxyRewrite describes rewrite rules. Allows rewriting/replacement URL segments
+//
+// Example:
+//
+//	endpoint "test" "http" {
+//		method = "GET"
+//		endpoint = "/prefix/*tail"
+//	}
+//
+//	proxy "test" {
+//		forward "com.semaphore.TestService" {}
+//		rewrite "/prefix/(?P<first>\w+)/(?P<second>\w+)" "/<second>/<first>" {} // swap URL segments
+//		rewrite "/prefix/(?P<tail>.*)" "/<tail>" {} // strip static `/prefix`
+//	}
+//
+// NOTE: multiple rewrite rules can be specified but only one can be applied (the first one which
+// matches the pattern) so put strict rules first (by priority) and keep wildcards in the bottom
+type ProxyRewrite struct {
+	Pattern  string   `hcl:"pattern,label"`
+	Template string   `hcl:"template,label"`
+	Options  hcl.Body `hcl:",remain"`
+}
+
+// Discovery describes a service discovery client configuration
+//
+// Examples:
+//
+//	discovery "consul" {
+//		address = "http://localhost:8500"
+//	}
+//
+//	discovery "foobar" {
+//		provider = "consul"
+//		address = "http://localhost:8500"
+//	}
+type Discovery struct {
+	Name     string `hcl:"name,label"`
+	Provider string `hcl:"provider,optional"`
+	Address  string `hcl:"address"`
 }

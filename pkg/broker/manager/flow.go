@@ -1,6 +1,7 @@
 package manager
 
 import (
+	"fmt"
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/codec"
 	"github.com/jexia/semaphore/pkg/codec/metadata"
@@ -127,7 +128,17 @@ func service(ctx *broker.Context, manager specs.FlowInterface, node *specs.Node,
 		}
 	}
 
-	dialer, err := constructor.Dial(service, options.Functions, service.Options)
+	client, ok := options.discoveries[service.Resolver]
+	if !ok {
+		return nil, fmt.Errorf("service discovery with name '%s' is not registered", service.Resolver)
+	}
+
+	resolver, err := client.Resolver(service.Host)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create service resolver: %w", err)
+	}
+
+	dialer, err := constructor.Dial(service, options.Functions, service.Options, resolver)
 	if err != nil {
 		return nil, err
 	}

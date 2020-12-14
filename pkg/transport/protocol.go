@@ -2,6 +2,7 @@ package transport
 
 import (
 	"context"
+	"github.com/jexia/semaphore/pkg/discovery"
 	"io"
 
 	"github.com/jexia/semaphore/pkg/broker"
@@ -49,7 +50,7 @@ type NewCaller func(ctx *broker.Context) Caller
 // Caller constructs new calls which could be used to call services
 type Caller interface {
 	Name() string
-	Dial(service *specs.Service, functions functions.Custom, options specs.Options) (Call, error)
+	Dial(service *specs.Service, functions functions.Custom, options specs.Options, resolver discovery.Resolver) (Call, error)
 }
 
 // Call is a preconfigured interface for a single service

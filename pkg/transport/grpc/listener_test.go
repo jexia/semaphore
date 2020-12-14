@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/jexia/semaphore/pkg/discovery"
 	"testing"
 	"time"
 
@@ -87,7 +88,10 @@ func TestListener(t *testing.T) {
 		Options: specs.Options{},
 	}
 
-	dial, err := caller.Dial(service, nil, specs.Options{})
+	resolver := discovery.ResolverFunc(func() (string, bool) {
+		return service.Host, true
+	})
+	dial, err := caller.Dial(service, nil, specs.Options{}, resolver)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -267,7 +271,8 @@ func TestErrorHandlingListener(t *testing.T) {
 				Options: specs.Options{},
 			}
 
-			dial, err := caller.Dial(service, nil, specs.Options{})
+			resolver := discovery.ResolverFunc(func() (string, bool) { return service.Host, true })
+			dial, err := caller.Dial(service, nil, specs.Options{}, resolver)
 			if err != nil {
 				t.Fatal(err)
 			}

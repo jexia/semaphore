@@ -1,7 +1,11 @@
 package providers
 
 import (
+	"fmt"
+
 	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/pkg/broker/logger"
+	"github.com/jexia/semaphore/pkg/discovery"
 	"github.com/jexia/semaphore/pkg/specs"
 )
 
@@ -108,3 +112,44 @@ func (resolvers SchemaResolvers) Resolve(ctx *broker.Context) (specs.Schemas, er
 
 // SchemaResolver when called collects the available service(s) with the configured configuration
 type SchemaResolver func(*broker.Context) (specs.Schemas, error)
+
+// ServiceDiscoveryClientsResolver collects all the available service discovery configuration and builds clients for the servers.
+type ServiceDiscoveryClientsResolver func(ctx *broker.Context) (specs.ServiceDiscoveryClients, error)
+
+type ServiceDiscoveryClientsResolvers []ServiceDiscoveryClientsResolver
+
+// dnsServiceResolver is a factory that builds plain resolver for the given service host.
+type dnsServiceResolver struct{}
+
+func (d dnsServiceResolver) Resolver(host string) (discovery.Resolver, error) {
+	return discovery.NewPlainResolver(host), nil
+}
+
+func (d dnsServiceResolver) Provider() string {
+	return "dns"
+}
+
+func (resolvers ServiceDiscoveryClientsResolvers) Resolve(ctx *broker.Context) (specs.ServiceDiscoveryClients, error) {
+	clients := specs.ServiceDiscoveryClients{"dns": dnsServiceResolver{}}
+
+	for _, resolver := range resolvers {
+		if resolver == nil {
+			continue
+		}
+
+		result, err := resolver(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		for name, client := range result {
+			if _, ok := clients[name]; ok {
+				logger.Warn(ctx, fmt.Sprintf("service discovery clients with name '%s' already registered. Overriding with the new configuration.", name))
+			}
+
+			clients[name] = client
+		}
+	}
+
+	return clients, nil
+}

@@ -317,3 +317,40 @@ func ValidateTemplate(t *testing.T, path string, result, expected *specs.Templat
 		ValidateTemplate(t, path, nested, schema)
 	}
 }
+
+func TestParseIntermediateRewriteRules(t *testing.T) {
+	t.Run("parse rewrite rules", func(t *testing.T) {
+		var (
+			ctx   = logger.WithLogger(broker.NewBackground())
+			rules = []ProxyRewrite{
+				{
+					Pattern:  `/foo`,
+					Template: `/bar`,
+				},
+				{
+					Pattern:  `/baz`,
+					Template: `/42`,
+				},
+			}
+			expected = []specs.Rewrite{
+				{
+					Pattern:  `/foo`,
+					Template: `/bar`,
+				},
+				{
+					Pattern:  `/baz`,
+					Template: `/42`,
+				},
+			}
+		)
+
+		actual, err := ParseIntermediateRewriteRules(ctx, rules)
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+
+		if !reflect.DeepEqual(actual, expected) {
+			t.Errorf("the output: %+v was expected to be %+v", actual, expected)
+		}
+	})
+}

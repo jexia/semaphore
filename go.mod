@@ -12,6 +12,7 @@ require (
 	github.com/gogo/protobuf v1.2.2-0.20190723190241-65acae22fc9d // indirect
 	github.com/golang/protobuf v1.4.1
 	github.com/graphql-go/graphql v0.7.9
+	github.com/hashicorp/consul/api v1.7.0
 	github.com/hashicorp/go-immutable-radix v1.2.0
 	github.com/hashicorp/hcl/v2 v2.3.0
 	github.com/jhump/protoreflect v1.7.0
@@ -22,7 +23,7 @@ require (
 	github.com/rs/cors v1.7.0
 	github.com/spf13/cobra v0.0.6
 	github.com/spf13/pflag v1.0.5 // indirect
-	github.com/stretchr/testify v1.5.1
+	github.com/stretchr/testify v1.6.1
 	github.com/zclconf/go-cty v1.3.1
 	go.uber.org/zap v1.13.0
 	golang.org/x/net v0.0.0-20200319234117-63522dbf7eec // indirect
@@ -31,4 +32,7 @@ require (
 	google.golang.org/grpc v1.27.0
 	google.golang.org/protobuf v1.25.0
 	gopkg.in/yaml.v2 v2.3.0
+	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776 // indirect
 )
+
+replace github.com/francoispqt/gojay v1.2.13 => github.com/Alma-media/gojay v1.2.14

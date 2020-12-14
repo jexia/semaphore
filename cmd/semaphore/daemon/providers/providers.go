@@ -1,6 +1,8 @@
 package providers
 
 import (
+	"mime"
+
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/checks"
 	"github.com/jexia/semaphore/pkg/compare"
@@ -12,6 +14,17 @@ import (
 	"github.com/jexia/semaphore/pkg/specs"
 )
 
+// Common file extension types
+var (
+	HCLExtensionType  = "application/hcl"
+	JSONExtensionType = "application/json"
+)
+
+func init() {
+	mime.AddExtensionType(".hcl", HCLExtensionType)
+	mime.AddExtensionType(".json", JSONExtensionType)
+}
+
 // Collection represents a collection of specification lists and objects.
 // These objects could be used to initialize a Semaphore broker.
 type Collection struct {
@@ -19,6 +32,7 @@ type Collection struct {
 	specs.EndpointList
 	specs.ServiceList
 	specs.Schemas
+	specs.ServiceDiscoveryClients
 }
 
 // Resolve collects and constructs the a specs from the given options.
@@ -44,6 +58,11 @@ func Resolve(ctx *broker.Context, mem functions.Collection, options Options) (Co
 	}
 
 	schemas, err := options.SchemaResolvers.Resolve(ctx)
+	if err != nil {
+		return Collection{}, err
+	}
+
+	serviceDiscoveryClients, err := options.DiscoveryServiceResolvers.Resolve(ctx)
 	if err != nil {
 		return Collection{}, err
 	}
@@ -93,10 +112,11 @@ func Resolve(ctx *broker.Context, mem functions.Collection, options Options) (Co
 	}
 
 	result := Collection{
-		FlowListInterface: flows,
-		EndpointList:      endpoints,
-		ServiceList:       services,
-		Schemas:           schemas,
+		FlowListInterface:       flows,
+		EndpointList:            endpoints,
+		ServiceList:             services,
+		Schemas:                 schemas,
+		ServiceDiscoveryClients: serviceDiscoveryClients,
 	}
 
 	return result, nil

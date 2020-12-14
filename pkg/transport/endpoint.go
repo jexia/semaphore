@@ -138,6 +138,7 @@ type Forward struct {
 	Schema  specs.Header
 	Meta    *metadata.Manager
 	Service *specs.Service
+	Rewrite []Rewrite
 }
 
 // NewMeta updates the current object metadata manager
