@@ -53,7 +53,7 @@ flow "FlowHandleError" {
 	input "proto.Empty" {}
 
 	error {
-		status = 400 // "{{ error:status }}"
+		status = 401 // "{{ error:status }}"
 
 		payload "proto.Error" {
 			message = "{{ error:message }}"
@@ -61,7 +61,7 @@ flow "FlowHandleError" {
 	}
 
 	on_error {
-		status = 401
+		status = 402
 		message = "flow error message"
 	}
 
@@ -90,7 +90,7 @@ flow "NodeHandleError" {
 		}
 
 		error {
-			status = 400 // "{{ error:status }}"
+			status = 400
 
 			payload "proto.Error" {
 				message = "{{ error:message }}"
@@ -98,7 +98,7 @@ flow "NodeHandleError" {
 		}
 
 		on_error {
-			status = 401
+			status = 403
 			message = "node error message"
 		}
 	}

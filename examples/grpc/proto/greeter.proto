@@ -28,3 +28,7 @@ message Response {
 message Meta {
 	int64 session = 1;
 }
+
+message Error {
+	string cause = 1;
+}

@@ -19,6 +19,16 @@ flow "greeter" {
 		}
 	}
 
+	on_error {
+		schema = "semaphore.greeter.Error"
+		status = 401
+		cause  = "flow error message"
+
+		// params {
+		// 	prop = ""
+		// }
+	}
+
 	output {
 		status = 202
 
