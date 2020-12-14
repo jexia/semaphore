@@ -9,16 +9,16 @@ import (
 	"github.com/jexia/semaphore/cmd/semaphore/daemon/providers"
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
-	"github.com/jexia/semaphore/pkg/codec/json"
-	"github.com/jexia/semaphore/pkg/codec/proto"
 	"github.com/jexia/semaphore/pkg/functions"
-	"github.com/jexia/semaphore/pkg/providers/hcl"
-	"github.com/jexia/semaphore/pkg/providers/protobuffers"
+	"github.com/jexia/semaphore/pkg/modules/codec/json"
+	"github.com/jexia/semaphore/pkg/modules/codec/proto"
+	"github.com/jexia/semaphore/pkg/modules/providers/hcl"
+	"github.com/jexia/semaphore/pkg/modules/providers/protobuffers"
+	"github.com/jexia/semaphore/pkg/modules/transport/http"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/labels"
 	"github.com/jexia/semaphore/pkg/specs/types"
-	"github.com/jexia/semaphore/pkg/transport/http"
 )
 
 func main() {

@@ -12,9 +12,9 @@ import (
 
 	"github.com/jexia/semaphore"
 	"github.com/jexia/semaphore/cmd/semaphore/daemon/providers"
-	codecProto "github.com/jexia/semaphore/pkg/codec/proto"
+	codecProto "github.com/jexia/semaphore/pkg/modules/codec/proto"
+	transportGRPC "github.com/jexia/semaphore/pkg/modules/transport/grpc"
 	"github.com/jexia/semaphore/pkg/specs"
-	transportGRPC "github.com/jexia/semaphore/pkg/transport/grpc"
 	"github.com/jexia/semaphore/tests/e2e"
 	proto "github.com/jexia/semaphore/tests/e2e/grpc/proto"
 	"google.golang.org/grpc"

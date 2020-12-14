@@ -2,13 +2,14 @@ package transport
 
 import (
 	"context"
-	"github.com/jexia/semaphore/pkg/discovery"
 	"io"
+
+	"github.com/jexia/semaphore/pkg/discovery"
 
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/codec"
-	"github.com/jexia/semaphore/pkg/codec/metadata"
 	"github.com/jexia/semaphore/pkg/functions"
+	"github.com/jexia/semaphore/pkg/modules/codec/metadata"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/specs"
 )

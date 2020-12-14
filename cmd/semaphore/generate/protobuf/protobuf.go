@@ -14,11 +14,11 @@ import (
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/endpoints"
 	"github.com/jexia/semaphore/pkg/broker/logger"
-	"github.com/jexia/semaphore/pkg/codec/proto"
 	"github.com/jexia/semaphore/pkg/functions"
+	"github.com/jexia/semaphore/pkg/modules/codec/proto"
+	"github.com/jexia/semaphore/pkg/modules/transport/grpc"
 	"github.com/jexia/semaphore/pkg/prettyerr"
 	"github.com/jexia/semaphore/pkg/transport"
-	"github.com/jexia/semaphore/pkg/transport/grpc"
 	"github.com/jhump/protoreflect/desc/protoprint"
 	"github.com/spf13/cobra"
 )

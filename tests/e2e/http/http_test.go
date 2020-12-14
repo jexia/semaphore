@@ -15,9 +15,9 @@ import (
 
 	"github.com/jexia/semaphore"
 	"github.com/jexia/semaphore/cmd/semaphore/daemon/providers"
-	codecJSON "github.com/jexia/semaphore/pkg/codec/json"
-	codecXML "github.com/jexia/semaphore/pkg/codec/xml"
-	transportHTTP "github.com/jexia/semaphore/pkg/transport/http"
+	codecJSON "github.com/jexia/semaphore/pkg/modules/codec/json"
+	codecXML "github.com/jexia/semaphore/pkg/modules/codec/xml"
+	transportHTTP "github.com/jexia/semaphore/pkg/modules/transport/http"
 	"github.com/jexia/semaphore/tests/e2e"
 )
 

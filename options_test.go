@@ -6,10 +6,10 @@ import (
 
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
-	"github.com/jexia/semaphore/pkg/codec/json"
 	"github.com/jexia/semaphore/pkg/functions"
+	"github.com/jexia/semaphore/pkg/modules/codec/json"
+	"github.com/jexia/semaphore/pkg/modules/transport/http"
 	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/transport/http"
 	"go.uber.org/zap/zapcore"
 )
 

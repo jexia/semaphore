@@ -10,8 +10,8 @@ import (
 	"github.com/jexia/semaphore/cmd/semaphore/middleware"
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
-	"github.com/jexia/semaphore/pkg/providers/hcl"
-	"github.com/jexia/semaphore/pkg/providers/protobuffers"
+	"github.com/jexia/semaphore/pkg/modules/providers/hcl"
+	"github.com/jexia/semaphore/pkg/modules/providers/protobuffers"
 )
 
 // Config contains the settings of semaphore instance.

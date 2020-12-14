@@ -13,8 +13,8 @@ import (
 	"github.com/jexia/semaphore/pkg/broker/endpoints"
 	"github.com/jexia/semaphore/pkg/broker/logger"
 	"github.com/jexia/semaphore/pkg/functions"
+	"github.com/jexia/semaphore/pkg/modules/transport/graphql"
 	"github.com/jexia/semaphore/pkg/prettyerr"
-	"github.com/jexia/semaphore/pkg/transport/graphql"
 	"github.com/spf13/cobra"
 )
 

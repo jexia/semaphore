@@ -6,7 +6,7 @@ import (
 	"github.com/jexia/semaphore/cmd/semaphore/daemon/providers"
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/broker/logger"
-	"github.com/jexia/semaphore/pkg/providers/hcl"
+	"github.com/jexia/semaphore/pkg/modules/providers/hcl"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/template"
 	"github.com/zclconf/go-cty/cty"

@@ -2,11 +2,12 @@ package manager
 
 import (
 	"fmt"
+
 	"github.com/jexia/semaphore/pkg/broker"
 	"github.com/jexia/semaphore/pkg/codec"
-	"github.com/jexia/semaphore/pkg/codec/metadata"
 	"github.com/jexia/semaphore/pkg/dependencies"
 	"github.com/jexia/semaphore/pkg/flow"
+	"github.com/jexia/semaphore/pkg/modules/codec/metadata"
 	"github.com/jexia/semaphore/pkg/references"
 	"github.com/jexia/semaphore/pkg/references/forwarding"
 	"github.com/jexia/semaphore/pkg/specs"
