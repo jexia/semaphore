@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package com.semaphore;
+
+import "api/annotations.proto";
+
+service Users {
+    option (semaphore.api.service) = {
+        host: "https://jsonplaceholder.typicode.com/"
+        transport: "http"
+        codec: "json"
+    };
+
+    rpc GetUser(Query) returns (User) {
+        option (semaphore.api.http) = {
+            endpoint: "/users/1"
+            method: "GET"
+        };
+    };
+
+    rpc ValidateUser(Query) returns (User) {
+        option (semaphore.api.http) = {
+            endpoint: "/users/1"
+            method: "GET"
+        };
+    };
+}
+
+message Query {
+}
+
+message User {
+    int32 id = 1;
+    string name = 2;
+    string username = 3;
+}
