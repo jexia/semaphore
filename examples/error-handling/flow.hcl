@@ -25,7 +25,9 @@ error  {
 }
 
 flow "GlobalHandleError" {
-	input "proto.Empty" {}
+	input {
+		payload "proto.Empty" {}
+	}
 
 	resource "query" {
 		request "proto.Service" "ThrowError" {
@@ -50,7 +52,9 @@ endpoint "FlowHandleError" "http" {
 }
 
 flow "FlowHandleError" {
-	input "proto.Empty" {}
+	input {
+		payload "proto.Empty" {}
+	}
 
 	error {
 		status = 401 // "{{ error:status }}"
@@ -83,7 +87,9 @@ endpoint "NodeHandleError" "http" {
 }
 
 flow "NodeHandleError" {
-	input "proto.Empty" {}
+	input {
+		payload "proto.Empty" {}
+	}
 
 	resource "query" {
 		request "proto.Service" "ThrowError" {

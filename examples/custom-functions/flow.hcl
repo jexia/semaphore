@@ -1,7 +1,7 @@
 endpoint "FetchLatestProject" "http" {
 	endpoint = "/"
-	method = "GET"
-	codec = "json"
+	method	 = "GET"
+	codec 	 = "json"
 }
 
 error {
@@ -13,12 +13,14 @@ error {
 }
 
 flow "FetchLatestProject" {
-	input "proto.Query" {
+	input {
         header = ["Authorization"]
+
+		payload "proto.Query" {}
     }
 
 	error  {
-		// TODO: fixme
+		// TODO: allow reference
 		status = 401 // "{{ error:status }}"
 
 		payload "proto.Unauthorized" {
@@ -27,7 +29,7 @@ flow "FetchLatestProject" {
 	}
 
 	on_error {
-		status = 401
+		status  = 401
 		message = "on error message"
 	}
 
@@ -53,8 +55,8 @@ flow "FetchLatestProject" {
 		}
 
 		payload "proto.Item" {
-			id = "{{ query:id }}"
-			title = "{{ query:title }}"
+			id 		  = "{{ query:id }}"
+			title 	  = "{{ query:title }}"
 			completed = "{{ query:completed }}"
 		}
 	}

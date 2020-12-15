@@ -1,7 +1,7 @@
 endpoint "user" "http" {
 	endpoint = "/v1/user"
-	method = "GET"
-	codec = "json"
+	method 	 = "GET"
+	codec 	 = "json"
 }
 
 flow "user" {
@@ -10,9 +10,11 @@ flow "user" {
 		}
 	}
 
-	output "com.semaphore.User" {
-        id = "{{ query:id }}"
-        name = "{{ query:name }}"
-        username = "{{ query:username }}"
+	output {
+		payload "com.semaphore.User" {
+			id = "{{ query:id }}"
+			name = "{{ query:name }}"
+			username = "{{ query:username }}"
+		}
     }
 }

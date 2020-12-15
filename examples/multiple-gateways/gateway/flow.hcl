@@ -1,6 +1,6 @@
 endpoint "gateway" "http" {
 	endpoint = "/v1/*endpoint"
-	method = "GET"
+	method 	 = "GET"
 }
 
 proxy "gateway" {

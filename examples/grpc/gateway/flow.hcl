@@ -11,7 +11,9 @@ endpoint "greeter" "grpc" {
 }
 
 flow "greeter" {
-	input "semaphore.greeter.Request" {}
+	input {
+		payload "semaphore.greeter.Request" {}
+	}
 
 	resource "user" {
 		request "semaphore.greeter.Say" "Hello" {
@@ -19,21 +21,9 @@ flow "greeter" {
 		}
 	}
 
-	on_error {
-		schema = "semaphore.greeter.Error"
-		status = 401
-		cause  = "flow error message"
-
-		// params {
-		// 	prop = ""
-		// }
-	}
-
 	output {
-		status = 202
-
 		payload "semaphore.greeter.Response" {
-			msg  = "{{ user:msg }}"
+			msg = "{{ user:msg }}"
 			meta = "{{ user:meta }}"
 		}
 	}

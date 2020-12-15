@@ -5,7 +5,9 @@ endpoint "latest_todo" "graphql" {
 }
 
 flow "latest_todo" {
-	input "com.semaphore.Empty" {}
+	input {
+		payload "com.semaphore.Empty" {}
+	}
 
 	resource "query" {
 		request "com.semaphore.Todo" "First" {
@@ -28,7 +30,9 @@ endpoint "todo" "graphql" {
 }
 
 flow "todo" {
-	input "com.semaphore.Query" {}
+	input {
+		payload "com.semaphore.Query" {}
+	}
 
 	resource "query" {
 		request "com.semaphore.Todo" "Get" {
@@ -40,9 +44,9 @@ flow "todo" {
 
 	output {
 		payload "com.semaphore.Item" {
-			id = "{{ query:id }}"
-			userId = "{{ query:userId }}"
-			title = "{{ query:title }}"
+			id 		  = "{{ query:id }}"
+			userId 	  = "{{ query:userId }}"
+			title 	  = "{{ query:title }}"
 			completed = "{{ query:completed }}"
 		}
 	}
