@@ -24,12 +24,14 @@ flow "typetest" {
     }
   }
 
-  output "semaphore.typetest.Data" {
-    enum    = "{{ echo:enum }}"
-    string  = "{{ echo:string }}"
-    integer = "{{ echo:integer }}"
-    double  = "{{ echo:double }}"
-    numbers = "{{ echo:numbers }}"
+  output {
+    payload "semaphore.typetest.Data" {
+      enum    = "{{ echo:enum }}"
+      string  = "{{ echo:string }}"
+      integer = "{{ echo:integer }}"
+      double  = "{{ echo:double }}"
+      numbers = "{{ echo:numbers }}"
+    }
   }
 }
 

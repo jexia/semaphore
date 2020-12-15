@@ -13,7 +13,9 @@ endpoint "typetest" "http" {
 flow "typetest" {
   input "semaphore.typetest.Request" {}
 
-  output "semaphore.typetest.Response" {
-    echo = "{{ input:data }}"
+  output {
+    payload "semaphore.typetest.Response" {
+      echo = "{{ input:data }}"
+    }
   }
 }

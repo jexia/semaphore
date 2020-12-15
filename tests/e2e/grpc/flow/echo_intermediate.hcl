@@ -17,8 +17,10 @@ flow "typetest" {
     }
   }
 
-  output "semaphore.typetest.Response" {
-    echo = "{{ echo:. }}"
+  output {
+    payload "semaphore.typetest.Response" {
+      echo = "{{ echo:. }}"
+    }
   }
 }
 
