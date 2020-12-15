@@ -89,9 +89,10 @@ type InputParameterMap struct {
 
 // Input is the initial map of parameter names (keys) and their (templated) values (values).
 type Input struct {
-	Options *BlockOptions      `hcl:"options,block"`
-	Header  []string           `hcl:"header,optional"`
-	Payload *InputParameterMap `hcl:"payload,block"`
+	*InputParameterMap `hcl:"payload,block"`
+
+	Options *BlockOptions `hcl:"options,block"`
+	Header  []string      `hcl:"header,optional"`
 }
 
 type OutputParameterMap struct {
@@ -102,10 +103,11 @@ type OutputParameterMap struct {
 
 // Output is the initial map of parameter names (keys) and their (templated) values (values).
 type Output struct {
-	Options *BlockOptions       `hcl:"options,block"`
-	Status  *int64              `hcl:"status,optional"`
-	Header  *Header             `hcl:"header,block"`
-	Payload *OutputParameterMap `hcl:"payload,block"`
+	*OutputParameterMap `hcl:"payload,block"`
+
+	Options *BlockOptions `hcl:"options,block"`
+	Status  *int64        `hcl:"status,optional"`
+	Header  *Header       `hcl:"header,block"`
 }
 
 // Resources represent a collection of resources which are references or custom defined functions.

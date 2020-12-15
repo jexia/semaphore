@@ -55,8 +55,8 @@ func ParseIntermediateParameterMap(ctx *broker.Context, params *Output) (*specs.
 
 	var schema string
 
-	if params.Payload != nil {
-		schema = params.Payload.Schema
+	if params.OutputParameterMap != nil {
+		schema = params.OutputParameterMap.Schema
 	}
 
 	result := specs.NewParameterMap(schema)
@@ -80,12 +80,12 @@ func ParseIntermediateParameterMap(ctx *broker.Context, params *Output) (*specs.
 		result.Options = ParseIntermediateSpecOptions(params.Options.Body)
 	}
 
-	if params.Payload == nil {
+	if params.OutputParameterMap == nil {
 		return &result, nil
 	}
 
 	var err error
-	result.Property.Message, err = parseBaseParameterMap(ctx, params.Payload.BaseParameterMap, "")
+	result.Property.Message, err = parseBaseParameterMap(ctx, params.OutputParameterMap.BaseParameterMap, "")
 	if err != nil {
 		return nil, err
 	}
@@ -144,7 +144,7 @@ func ParseIntermediateInput(ctx *broker.Context, params *Input) (*specs.Paramete
 	}
 
 	result := &specs.ParameterMap{
-		Schema:  params.Payload.Schema,
+		Schema:  params.InputParameterMap.Schema,
 		Options: make(specs.Options),
 		Header:  make(specs.Header, len(params.Header)),
 	}
