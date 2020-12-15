@@ -1,7 +1,7 @@
 proxy "echo" {
-  error {
-    payload "com.unknown" {}
-  }
+    error {
+        payload "com.unknown" {}
+    }
 
-  forward "" {}
+    forward "" {}
 }

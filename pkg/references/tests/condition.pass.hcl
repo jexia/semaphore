@@ -1,23 +1,25 @@
 service "com.semaphore" "caller" {
-  transport = "http"
-  codec     = "json"
-  host      = ""
+    transport = "http"
+    codec     = "json"
+    host      = ""
 }
 
 flow "echo" {
-  input "com.input" {}
-
-  if "{{ input:message }}" {
-    resource "opening" {
-      request "caller" "Open" {
-        message = "{{ input:message }}"
-      }
+    input {
+        payload "com.input" {}
     }
-  }
 
-  output {
-    payload "com.output" {
-      message = "{{ opening:message }}"
+    if "{{ input:message }}" {
+        resource "opening" {
+            request "caller" "Open" {
+                message = "{{ input:message }}"
+            }
+        }
     }
-  }
+
+    output {
+        payload "com.output" {
+            message = "{{ opening:message }}"
+        }
+    }
 }

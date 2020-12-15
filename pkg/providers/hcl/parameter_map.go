@@ -48,7 +48,7 @@ func ParseIntermediateRepeatedParameterMap(ctx *broker.Context, params RepeatedP
 }
 
 // ParseIntermediateParameterMap parses the given intermediate parameter map to a spec parameter map
-func ParseIntermediateParameterMap(ctx *broker.Context, params *ParameterMap) (*specs.ParameterMap, error) {
+func ParseIntermediateParameterMap(ctx *broker.Context, params *Output) (*specs.ParameterMap, error) {
 	if params == nil {
 		return nil, nil
 	}
@@ -137,14 +137,14 @@ func ParseIntermediateCallParameterMap(ctx *broker.Context, params *Call) (*spec
 	return &result, nil
 }
 
-// ParseIntermediateInputParameterMap parses the given input parameter map
-func ParseIntermediateInputParameterMap(ctx *broker.Context, params *InputParameterMap) (*specs.ParameterMap, error) {
+// ParseIntermediateInput parses the given input parameter map
+func ParseIntermediateInput(ctx *broker.Context, params *Input) (*specs.ParameterMap, error) {
 	if params == nil {
 		return nil, nil
 	}
 
 	result := &specs.ParameterMap{
-		Schema:  params.Schema,
+		Schema:  params.Payload.Schema,
 		Options: make(specs.Options),
 		Header:  make(specs.Header, len(params.Header)),
 	}

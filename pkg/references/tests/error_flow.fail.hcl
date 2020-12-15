@@ -1,5 +1,5 @@
 flow "echo" {
-  error {
-    payload "com.unknown" {}
-  }
+    error {
+        payload "com.unknown" {}
+    }
 }

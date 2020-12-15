@@ -1,5 +1,7 @@
 flow "echo" {
-  input "object" {}
+  input {
+    payload "object" {}
+  }
 
   resource "get" {
     request "getter" "Get" {

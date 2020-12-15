@@ -1,5 +1,7 @@
 flow "echo" {
-  input "object" {}
+  input {
+    payload "object" {}
+  }
 
   output {
     payload "object" {

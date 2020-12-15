@@ -76,7 +76,7 @@ func ParseIntermediateEndpoint(ctx *broker.Context, endpoint Endpoint) *specs.En
 func ParseIntermediateFlow(ctx *broker.Context, flow Flow) (*specs.Flow, error) {
 	logger.Info(ctx, "parsing intermediate flow to specs")
 
-	input, err := ParseIntermediateInputParameterMap(ctx, flow.Input)
+	input, err := ParseIntermediateInput(ctx, flow.Input)
 	if err != nil {
 		return nil, err
 	}

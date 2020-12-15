@@ -1,49 +1,51 @@
 protobuffers = ["./*.proto"]
 
 endpoint "CreateUser" "http" {
-  endpoint = "/user"
-  method = "get"
+    endpoint = "/user"
+    method = "get"
 }
 
 endpoint "CreateUser" "http" {
-  endpoint = "/user"
-  method = "post"
+    endpoint = "/user"
+    method = "post"
 }
 
 endpoint "CreateUser" "http" {
-  endpoint = "/user"
-  method = "put"
+    endpoint = "/user"
+    method = "put"
 }
 
 endpoint "CreateUser" "http" {
-  endpoint = "/user"
-  method = "patch"
+    endpoint = "/user"
+    method = "patch"
 }
 
 endpoint "CreateUser" "http" {
-  endpoint = "/user"
-  method = "delete"
+    endpoint = "/user"
+    method = "delete"
 }
 
 endpoint "CreateUser" "http" {
-  endpoint = "/user"
-  method = "options"
+    endpoint = "/user"
+    method = "options"
 }
 
 endpoint "CreateUser" "http" {
-  endpoint = "/user"
-  method = "head"
+    endpoint = "/user"
+    method = "head"
 }
 
 endpoint "CreateUser" "http" {
-  endpoint = "/user"
-  method = "trace"
+    endpoint = "/user"
+    method = "trace"
 }
 
 flow "CreateUser" {
-  input "com.semaphore.User" {}
+    input {
+        payload "com.semaphore.User" {}
+    }
 
-  output {
-    payload "com.semaphore.User" {}
-  }
+    output {
+        payload "com.semaphore.User" {}
+    }
 }

@@ -5,11 +5,13 @@ service "com.semaphore" "caller" {
 }
 
 flow "echo" {
-  input "com.input" {}
-
-  resource "opening" {
-    request "caller" "Open" {
-      repeating = "{{ input:repeating }}"
+    input {
+        payload "com.input" {}
     }
-  }
+
+    resource "opening" {
+        request "caller" "Open" {
+            repeating = "{{ input:repeating }}"
+        }
+    }
 }

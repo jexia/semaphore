@@ -1,7 +1,7 @@
 flow "" {
   resource "" {
     error {
-      // TODO: fixme
+      // TODO: allow references
       status = 400 // "{{ error:status }}"
 
       payload "proto.Error" {

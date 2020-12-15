@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -432,8 +431,6 @@ func TestStoringParams(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	log.Println(res)
 
 	if res.StatusCode != http.StatusOK {
 		t.Fatalf("unexpected status code %d, expected %d", res.StatusCode, http.StatusOK)

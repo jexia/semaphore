@@ -3,7 +3,6 @@ package http
 import (
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -297,8 +296,6 @@ func (handle *Handle) HTTPFunc(w http.ResponseWriter, r *http.Request, ps httpro
 				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
-
-			log.Printf("RESPONSE: %#v", handle.Response)
 
 			w.WriteHeader(handle.Response.ResolveStatusCode(store))
 

@@ -1,5 +1,7 @@
 flow "simple" {
-	input "proto.Simple" {}
+	input {
+		payload "proto.Simple" {}
+	}
 
 	resource "first" {
 		request "proto.mock" "simple" {
@@ -9,7 +11,9 @@ flow "simple" {
 }
 
 flow "nested" {
-	input "proto.Message" {}
+	input {
+		payload "proto.Message" {}
+	}
 
 	resource "first" {
 		request "proto.mock" "nested" {
@@ -21,7 +25,9 @@ flow "nested" {
 }
 
 flow "repeated" {
-	input "proto.Message" {}
+	input {
+		payload "proto.Message" {}
+	}
 
 	resource "first" {
 		request "proto.mock" "repeated" {
@@ -33,7 +39,9 @@ flow "repeated" {
 }
 
 flow "repeated_values" {
-	input "proto.Message" {}
+	input {
+		payload "proto.Message" {}
+	}
 
 	resource "first" {
 		request "proto.mock" "repeated_values" {
