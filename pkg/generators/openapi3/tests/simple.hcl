@@ -8,5 +8,7 @@ endpoint "CreateUser" "http" {
 flow "CreateUser" {
   input "com.semaphore.User" {}
 
-  output "com.semaphore.User" {}
+  output {
+    payload "com.semaphore.User" {}
+  }
 }

@@ -10,5 +10,7 @@ flow "CreateUser" {
     header = ["Authorization", "X-IP"]
   }
 
-  output "com.semaphore.User" {}
+  output {
+    payload "com.semaphore.User" {}
+  }
 }
