@@ -40,7 +40,6 @@ func parseTestAttribute(t *testing.T, config string) *hcl.Attribute {
 	return nil
 }
 
-// TODO: fixme
 func TestParseIntermediateStaticProperty(t *testing.T) {
 	type test struct {
 		template string

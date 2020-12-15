@@ -1,1 +1,3 @@
-error "com.error" {}
+error {
+    payload "com.error" {}
+}

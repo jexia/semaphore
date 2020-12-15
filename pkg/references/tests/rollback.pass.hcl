@@ -17,7 +17,9 @@ flow "echo" {
     }
   }
 
-  output "com.output" {
-    message = "{{ opening:message }}"
+  output {
+    payload "com.output" {
+      message = "{{ opening:message }}"
+    }
   }
 }
