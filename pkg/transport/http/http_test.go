@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io"
 	"net"
+	"net/http"
 	"reflect"
 	"testing"
 
@@ -47,6 +48,7 @@ func NewCallerFunc(fn func(context.Context, references.Store) error) flow.Call {
 
 func NewSimpleMockSpecs() *specs.ParameterMap {
 	return &specs.ParameterMap{
+		Status: http.StatusOK,
 		Header: specs.Header{
 			"Authorization": &specs.Property{},
 			"Timestamp":     &specs.Property{},

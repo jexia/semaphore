@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -25,6 +26,17 @@ import (
 	"github.com/jexia/semaphore/pkg/specs/types"
 	"github.com/jexia/semaphore/pkg/transport"
 )
+
+func statusOK() *specs.Property {
+	return &specs.Property{
+		Template: specs.Template{
+			Scalar: &specs.Scalar{
+				Type:    types.Int64,
+				Default: int64(http.StatusOK),
+			},
+		},
+	}
+}
 
 func NewMockListener(t *testing.T, nodes flow.Nodes, errs transport.Errs) (transport.Listener, string) {
 	var (
@@ -53,7 +65,11 @@ func NewMockListener(t *testing.T, nodes flow.Nodes, errs transport.Errs) (trans
 					MethodOption:   http.MethodPost,
 					CodecOption:    json.Name(),
 				},
-				Response: transport.NewObject(NewSimpleMockSpecs(), nil, nil),
+				Response: transport.NewObject(
+					NewSimpleMockSpecs(),
+					statusOK(),
+					nil,
+				),
 			},
 		}
 	)
@@ -416,6 +432,8 @@ func TestStoringParams(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	log.Println(res)
 
 	if res.StatusCode != http.StatusOK {
 		t.Fatalf("unexpected status code %d, expected %d", res.StatusCode, http.StatusOK)
