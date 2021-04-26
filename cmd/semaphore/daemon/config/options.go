@@ -27,7 +27,7 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-// Daemon configurations
+// Daemon configurations.
 type Daemon struct {
 	LogLevel     string
 	HTTP         HTTP
@@ -40,12 +40,12 @@ type Daemon struct {
 	Files        []string
 }
 
-// Prometheus configurations
+// Prometheus configurations.
 type Prometheus struct {
 	Address string
 }
 
-// HTTP configurations
+// HTTP configurations.
 type HTTP struct {
 	Address      string
 	Origin       []string
@@ -55,12 +55,12 @@ type HTTP struct {
 	WriteTimeout string
 }
 
-// GRPC configurations
+// GRPC configurations.
 type GRPC struct {
 	Address string
 }
 
-// GraphQL configurations
+// GraphQL configurations.
 type GraphQL struct {
 	Address string
 }
@@ -82,13 +82,11 @@ func SetOptions(ctx *broker.Context, flags *Daemon) error {
 	}
 
 	level := zapcore.InfoLevel
-	err := level.UnmarshalText([]byte(flags.LogLevel))
-	if err != nil {
+	if err := level.UnmarshalText([]byte(flags.LogLevel)); err != nil {
 		logger.Error(ctx, "unable to unmarshal log level", zap.String("level", flags.LogLevel))
 	}
 
-	err = logger.SetLevel(ctx, "*", level)
-	if err != nil {
+	if err := logger.SetLevel(ctx, "*", level); err != nil {
 		logger.Error(ctx, "unable to set log level", zap.Error(err))
 	}
 
@@ -109,7 +107,7 @@ func parseHCL(options *hcl.Options, target *Daemon) {
 	}
 
 	if len(options.Openapi3) > 0 {
-		target.Protobuffers = append(target.Openapi3, options.Openapi3...)
+		target.Openapi3 = append(target.Openapi3, options.Openapi3...)
 	}
 
 	if options.GraphQL != nil && target.GraphQL.Address == "" {
@@ -131,7 +129,7 @@ func parseHCL(options *hcl.Options, target *Daemon) {
 	}
 }
 
-// NewCore constructs new core options from the given parameters
+// NewCore constructs new core options from the given parameters.
 func NewCore(ctx *broker.Context, flags *Daemon) (semaphore.Options, error) {
 	options := []semaphore.Option{
 		semaphore.WithCodec(json.NewConstructor()),
@@ -161,7 +159,7 @@ func NewCore(ctx *broker.Context, flags *Daemon) (semaphore.Options, error) {
 	return semaphore.NewOptions(ctx, options...)
 }
 
-// NewProviders constructs new providers options from the given parameters
+// NewProviders constructs new providers options from the given parameters.
 func NewProviders(ctx *broker.Context, core semaphore.Options, params *Daemon) (providers.Options, error) {
 	var options []providers.Option
 
