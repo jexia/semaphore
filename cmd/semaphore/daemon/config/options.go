@@ -23,8 +23,6 @@ import (
 	"github.com/jexia/semaphore/pkg/transport/graphql"
 	"github.com/jexia/semaphore/pkg/transport/grpc"
 	"github.com/jexia/semaphore/pkg/transport/http"
-	"github.com/jexia/semaphore/pkg/transport/micro"
-	microGRPC "github.com/micro/go-micro/v2/service/grpc"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -140,7 +138,6 @@ func NewCore(ctx *broker.Context, flags *Daemon) (semaphore.Options, error) {
 		semaphore.WithCodec(proto.NewConstructor()),
 		semaphore.WithCodec(formencoded.NewConstructor()),
 		semaphore.WithCodec(xml.NewConstructor()),
-		semaphore.WithCaller(micro.NewCaller("micro-grpc", microGRPC.NewService())),
 		semaphore.WithCaller(grpc.NewCaller()),
 		semaphore.WithCaller(http.NewCaller()),
 		semaphore.WithFunctions(DefaultFunctions),
