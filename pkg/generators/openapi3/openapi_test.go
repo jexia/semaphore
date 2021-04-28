@@ -29,14 +29,17 @@ func TestOpenAPI3GenerationWithoutReference(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	ctx := logger.WithLogger(broker.NewBackground())
-	files, err := provider.ResolvePath(ctx, []string{}, path)
+	files, err := provider.ResolvePath(logger.WithLogger(broker.NewBackground()), []string{}, path)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	for _, file := range files {
+		file := file
+
 		t.Run(file.Name(), func(t *testing.T) {
+			t.Parallel()
+
 			ctx := logger.WithLogger(broker.NewBackground())
 
 			options, err := hcl.GetOptions(ctx, file.Path)
@@ -49,7 +52,6 @@ func TestOpenAPI3GenerationWithoutReference(t *testing.T) {
 				semaphore.WithCodec(json.NewConstructor()),
 				semaphore.WithCaller(http.NewCaller()),
 			)
-
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -114,14 +116,17 @@ func TestOpenAPI3GenerationWithReference(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	ctx := logger.WithLogger(broker.NewBackground())
-	files, err := provider.ResolvePath(ctx, []string{}, path)
+	files, err := provider.ResolvePath(logger.WithLogger(broker.NewBackground()), []string{}, path)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	for _, file := range files {
+		file := file
+
 		t.Run(file.Name(), func(t *testing.T) {
+			t.Parallel()
+
 			ctx := logger.WithLogger(broker.NewBackground())
 
 			options, err := hcl.GetOptions(ctx, file.Path)
@@ -134,7 +139,6 @@ func TestOpenAPI3GenerationWithReference(t *testing.T) {
 				semaphore.WithCodec(json.NewConstructor()),
 				semaphore.WithCaller(http.NewCaller()),
 			)
-
 			if err != nil {
 				t.Fatal(err)
 			}
