@@ -29,10 +29,10 @@ module.exports = {
       id: 'functions',
     },
     {
-      type: 'doc',
-      id: 'devops',
+      type: 'category',
       label: 'Infrastructure',
       items: [
+        "devops",
         "service_discovery.configuration",
       ]
     }

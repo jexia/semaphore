@@ -1,8 +1,8 @@
 ---
 id: service_discovery.configuration
 title: Service Discovery Client Configuration
-sidebar_label: Configuration
-slug: /service_discovert/configuration
+sidebar_label: Service Discovery
+slug: /service_discovery/configuration
 ---
 
 ## Intro
