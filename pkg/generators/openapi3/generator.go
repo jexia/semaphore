@@ -147,7 +147,7 @@ func GenerateOperation(object *Object, options *transport.EndpointOptions, flow 
 	}
 
 	if output != nil {
-		if input.Property != nil {
+		if output.Property != nil {
 			result.Responses = map[string]*Response{
 				"default": {
 					Content: map[string]MediaType{
@@ -159,9 +159,9 @@ func GenerateOperation(object *Object, options *transport.EndpointOptions, flow 
 					},
 				},
 			}
-		}
 
-		IncludeParameterMap(object, output)
+			IncludeParameterMap(object, output)
+		}
 	}
 
 	return result
