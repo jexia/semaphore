@@ -14,14 +14,14 @@ import (
 	transport "github.com/jexia/semaphore/pkg/transport/http"
 )
 
-// Generate generates a openapi v3.0 specification object
+// Generate generates a openapi v3.0 specification object.
 func Generate(endpoints specs.EndpointList, flows specs.FlowListInterface, option Options) (*Object, error) {
 	result := Object{
 		Version: "3.0.0",
 	}
 
 	for _, endpoint := range endpoints {
-		// OpenAPI specs are ment for HTTP endpoints
+		// OpenAPI specs are meant for HTTP endpoints
 		if endpoint.Listener != "http" {
 			continue
 		}
@@ -40,7 +40,7 @@ func Generate(endpoints specs.EndpointList, flows specs.FlowListInterface, optio
 	return &result, nil
 }
 
-// IncludeEndpoint includes the given endpoint into the object paths
+// IncludeEndpoint includes the given endpoint into the object paths.
 func IncludeEndpoint(object *Object, endpoint *specs.Endpoint, flow specs.FlowInterface, option Options) error {
 	options, err := transport.ParseEndpointOptions(endpoint.Options)
 	if err != nil {
@@ -64,7 +64,7 @@ func IncludeEndpoint(object *Object, endpoint *specs.Endpoint, flow specs.FlowIn
 		object.Paths[path] = &PathItem{}
 	}
 
-	operation := GenerateOperation(object, endpoint, options, flow, option)
+	operation := GenerateOperation(object, options, flow, option)
 	result := object.Paths[path]
 
 	switch options.Method {
@@ -89,8 +89,8 @@ func IncludeEndpoint(object *Object, endpoint *specs.Endpoint, flow specs.FlowIn
 	return nil
 }
 
-// GenerateOperation generates a operation object from the given endpoint and options
-func GenerateOperation(object *Object, endpoint *specs.Endpoint, options *transport.EndpointOptions, flow specs.FlowInterface, option Options) *Operation {
+// GenerateOperation generates a operation object from the OpenAPI3 object.
+func GenerateOperation(object *Object, options *transport.EndpointOptions, flow specs.FlowInterface, option Options) *Operation {
 	input := flow.GetInput()
 	output := flow.GetOutput()
 	result := &Operation{}
@@ -147,7 +147,7 @@ func GenerateOperation(object *Object, endpoint *specs.Endpoint, options *transp
 	}
 
 	if output != nil {
-		if input.Property != nil {
+		if output.Property != nil {
 			result.Responses = map[string]*Response{
 				"default": {
 					Content: map[string]MediaType{
@@ -159,15 +159,15 @@ func GenerateOperation(object *Object, endpoint *specs.Endpoint, options *transp
 					},
 				},
 			}
-		}
 
-		IncludeParameterMap(object, output)
+			IncludeParameterMap(object, output)
+		}
 	}
 
 	return result
 }
 
-// GenerateParameter includes the given parameter to the available parameters
+// GenerateParameter includes the given parameter to the available parameters.
 func GenerateParameter(key string, required bool, in ParameterIn, property *specs.Property) *Parameter {
 	result := &Parameter{
 		Name:     key,
@@ -188,7 +188,7 @@ func GenerateParameter(key string, required bool, in ParameterIn, property *spec
 	return result
 }
 
-// IncludeParameterMap includes the given parameters into the object schema components
+// IncludeParameterMap includes the given parameters into the object schema components.
 func IncludeParameterMap(object *Object, params *specs.ParameterMap) {
 	if params == nil {
 		return
@@ -205,7 +205,7 @@ func IncludeParameterMap(object *Object, params *specs.ParameterMap) {
 	object.Components.Schemas[params.Schema] = GenerateSchema(params.Property.Description, params.Property.Template)
 }
 
-// GenerateSchema generates a new schema for the given property
+// GenerateSchema generates a new schema for the given property.
 func GenerateSchema(description string, property specs.Template) *Schema {
 	result := &Schema{
 		Description: description,
@@ -215,8 +215,6 @@ func GenerateSchema(description string, property specs.Template) *Schema {
 	switch {
 	case property.Scalar != nil:
 		result.Default = property.Scalar.Default
-
-		break
 	case property.Message != nil && len(property.Message) > 0:
 		result.Properties = make(map[string]*Schema, len(property.Message))
 
@@ -227,8 +225,6 @@ func GenerateSchema(description string, property specs.Template) *Schema {
 				result.Required = append(result.Required, nested.Name)
 			}
 		}
-
-		break
 	case property.Enum != nil:
 		// ensure property enum order
 		result.Enum = make([]interface{}, len(property.Enum.Keys))
@@ -243,8 +239,6 @@ func GenerateSchema(description string, property specs.Template) *Schema {
 		for pos, key := range keys {
 			result.Enum[pos] = property.Enum.Positions[int32(key)].Key
 		}
-
-		break
 	case property.Repeated != nil:
 		template, err := property.Repeated.Template()
 		if err != nil {
