@@ -23,14 +23,14 @@ jobs:
           [ "$VERSION" == "master" ] && VERSION=latest
 
           echo VERSION=$VERSION
-          echo "::set-env name=VERSION::$VERSION"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Build image
         run: docker build --file Dockerfile --build-arg version=v${VERSION} --build-arg build=$(git rev-parse --short HEAD) --build-arg label=release --tag semaphore .
 
       - name: Log into Docker hub
         run: echo "${{ secrets.DOCKER_HUB_TOKEN }}" | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
-      
+
       - name: Push image Docker hub
         run: |
           IMAGE_ID=jxapp/semaphore
@@ -42,7 +42,7 @@ jobs:
 
           docker push $IMAGE_ID:$VERSION
           docker push $IMAGE_ID:latest
-      
+
       - name: Log into Github registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
 
@@ -81,7 +81,7 @@ jobs:
           [ "$VERSION" == "master" ] && VERSION=latest
 
           echo VERSION=$VERSION
-          echo "::set-env name=VERSION::$VERSION"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v2
         with:
@@ -95,4 +95,4 @@ jobs:
           webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
           webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
           file: "./dist/semaphore.rb"
-          message: 'A new Homebrew formula is available for version v${{ env.VERSION }}'
+          message: "A new Homebrew formula is available for version v${{ env.VERSION }}"
