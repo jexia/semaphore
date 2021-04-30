@@ -34,7 +34,7 @@ archives:
   wrap_in_directory: false
 
 brews:
-  - github:
+  - tap:
       owner: jexia
       name: homebrew-cask
     skip_upload: true
