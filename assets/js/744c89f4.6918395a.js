@@ -1,0 +1,1 @@
+(self.webpackChunksemaphore=self.webpackChunksemaphore||[]).push([[302],{6353:function(e){"use strict";e.exports=JSON.parse('{"title":"Recent posts","items":[{"title":"Welcome","permalink":"/semaphore/blog/welcome"}]}')}}]);
