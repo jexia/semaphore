@@ -46,7 +46,7 @@ module.exports = {
           items: [
             {
               label: 'Discord',
-              href: 'https://discord.com/invite/qWByeWG',
+              href: 'http://chat.jexia.com/',
             },
           ],
         },

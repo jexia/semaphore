@@ -2,7 +2,7 @@
 
 ----
 
-- Chat: [Discord](https://chat.jexia.com)
+- Chat: [Discord](http://chat.jexia.com/)
 - Documentation: [Github pages](https://jexia.github.io/semaphore/)
 - Go package documentation: [GoDev](https://pkg.go.dev/github.com/jexia/semaphore)
 
@@ -61,11 +61,11 @@ support@jexia.com
 
 ## Documentation and Getting Started
 
-Documentation is available at [GitBook](https://jexia.gitbook.io/semaphore/).
+Documentation is available at [Github pages](https://jexia.github.io/semaphore/).
 
 If you are new to Semaphore and want to get started with building flows, please
 check out the available [🚀 Examples](https://github.com/jexia/semaphore/tree/master/examples).
-Feel free to reach out to the community on [Discord](https://chat.jexia.com) or by opening a new issue.
+Feel free to reach out to the community on [Discord](http://chat.jexia.com/) or by opening a new issue.
 
 Data streams inside Semaphore are defined as flows. A flow could manipulate,
 deconstruct, and forwarded data in between resources. Flows are exposed through

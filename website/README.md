@@ -2,7 +2,7 @@
 
 ----
 
-- Chat: [Discord](https://chat.jexia.com)
+- Chat: [Discord](http://chat.jexia.com/)
 - Documentation: [Github pages](https://jexia.github.io/semaphore/)
 - Go package documentation: [GoDev](https://pkg.go.dev/github.com/jexia/semaphore)
 
