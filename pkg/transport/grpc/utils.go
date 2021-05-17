@@ -3,7 +3,7 @@ package grpc
 import (
 	"strings"
 
-	"github.com/jexia/semaphore/pkg/codec/metadata"
+	"github.com/jexia/semaphore/v2/pkg/codec/metadata"
 	rpcMeta "google.golang.org/grpc/metadata"
 )
 

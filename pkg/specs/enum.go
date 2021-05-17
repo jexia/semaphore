@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/jexia/semaphore/pkg/specs/metadata"
+	"github.com/jexia/semaphore/v2/pkg/specs/metadata"
 )
 
 // Enum represents a enum configuration

@@ -3,7 +3,7 @@ package endpoints
 import (
 	"fmt"
 
-	"github.com/jexia/semaphore/pkg/prettyerr"
+	"github.com/jexia/semaphore/v2/pkg/prettyerr"
 )
 
 // ErrUnknownService occurs when there is no defined service for the requested method

@@ -1,10 +1,10 @@
 package tests
 
 import (
-	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/labels"
-	"github.com/jexia/semaphore/pkg/specs/template"
-	"github.com/jexia/semaphore/pkg/specs/types"
+	"github.com/jexia/semaphore/v2/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/specs/labels"
+	"github.com/jexia/semaphore/v2/pkg/specs/template"
+	"github.com/jexia/semaphore/v2/pkg/specs/types"
 )
 
 func PropString() *specs.Property {
@@ -133,14 +133,14 @@ var (
 			Template: specs.Template{
 				Message: specs.Message{
 					"integer": func() *specs.Property {
-						var clone = PropInteger()
+						clone := PropInteger()
 						clone.Position = 1
 						clone.Path = "root." + clone.Path
 
 						return clone
 					}(),
 					"array": func() *specs.Property {
-						var clone = PropArray()
+						clone := PropArray()
 						clone.Position = 2
 						clone.Path = "root." + clone.Path
 
@@ -189,14 +189,14 @@ var (
 			Template: specs.Template{
 				Message: specs.Message{
 					"status": func() *specs.Property {
-						var clone = PropEnum()
+						clone := PropEnum()
 						clone.Position = 1
 						clone.Path = "root." + clone.Path
 
 						return clone
 					}(),
 					"integer": func() *specs.Property {
-						var clone = PropInteger()
+						clone := PropInteger()
 						clone.Position = 2
 						clone.Path = "root." + clone.Path
 
@@ -221,14 +221,14 @@ var (
 						Template: specs.Template{
 							Message: specs.Message{
 								"status": func() *specs.Property {
-									var clone = PropEnum()
+									clone := PropEnum()
 									clone.Position = 1
 									clone.Path = "root.nested." + clone.Path
 
 									return clone
 								}(),
 								"integer": func() *specs.Property {
-									var clone = PropInteger()
+									clone := PropInteger()
 									clone.Position = 2
 									clone.Path = "root.nested." + clone.Path
 
@@ -238,7 +238,7 @@ var (
 						},
 					},
 					"string": func() *specs.Property {
-						var clone = PropString()
+						clone := PropString()
 						clone.Position = 2
 						clone.Path = "root." + clone.Path
 

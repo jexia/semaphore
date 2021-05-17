@@ -4,21 +4,21 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/jexia/semaphore"
-	"github.com/jexia/semaphore/cmd/semaphore/daemon"
-	"github.com/jexia/semaphore/cmd/semaphore/daemon/providers"
-	"github.com/jexia/semaphore/pkg/broker"
-	"github.com/jexia/semaphore/pkg/broker/logger"
-	"github.com/jexia/semaphore/pkg/codec/json"
-	"github.com/jexia/semaphore/pkg/codec/proto"
-	"github.com/jexia/semaphore/pkg/functions"
-	"github.com/jexia/semaphore/pkg/providers/hcl"
-	"github.com/jexia/semaphore/pkg/providers/protobuffers"
-	"github.com/jexia/semaphore/pkg/references"
-	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/labels"
-	"github.com/jexia/semaphore/pkg/specs/types"
-	"github.com/jexia/semaphore/pkg/transport/http"
+	"github.com/jexia/semaphore/v2"
+	"github.com/jexia/semaphore/v2/cmd/semaphore/daemon"
+	"github.com/jexia/semaphore/v2/cmd/semaphore/daemon/providers"
+	"github.com/jexia/semaphore/v2/pkg/broker"
+	"github.com/jexia/semaphore/v2/pkg/broker/logger"
+	"github.com/jexia/semaphore/v2/pkg/codec/json"
+	"github.com/jexia/semaphore/v2/pkg/codec/proto"
+	"github.com/jexia/semaphore/v2/pkg/functions"
+	"github.com/jexia/semaphore/v2/pkg/providers/hcl"
+	"github.com/jexia/semaphore/v2/pkg/providers/protobuffers"
+	"github.com/jexia/semaphore/v2/pkg/references"
+	"github.com/jexia/semaphore/v2/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/specs/labels"
+	"github.com/jexia/semaphore/v2/pkg/specs/types"
+	"github.com/jexia/semaphore/v2/pkg/transport/http"
 )
 
 func main() {
@@ -35,7 +35,6 @@ func main() {
 		semaphore.WithCaller(http.NewCaller()),
 		semaphore.WithFunctions(functions),
 	)
-
 	if err != nil {
 		panic(err)
 	}
@@ -46,7 +45,6 @@ func main() {
 		providers.WithServices(protobuffers.ServiceResolver([]string{"./proto"}, "./proto/*.proto")),
 		providers.WithListener(http.NewListener(":8080")),
 	)
-
 	if err != nil {
 		panic(err)
 	}

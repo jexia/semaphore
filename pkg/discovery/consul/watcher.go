@@ -2,11 +2,12 @@ package consul
 
 import (
 	"fmt"
-	"github.com/hashicorp/consul/api"
-	"github.com/hashicorp/consul/api/watch"
-	"github.com/jexia/semaphore/pkg/discovery"
 	"net/url"
 	"sync"
+
+	"github.com/hashicorp/consul/api"
+	"github.com/hashicorp/consul/api/watch"
+	"github.com/jexia/semaphore/v2/pkg/discovery"
 )
 
 type Watcher struct {

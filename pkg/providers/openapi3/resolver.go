@@ -5,10 +5,10 @@ import (
 	"fmt"
 
 	openapi "github.com/getkin/kin-openapi/openapi3"
-	"github.com/jexia/semaphore/pkg/broker"
-	"github.com/jexia/semaphore/pkg/broker/logger"
-	"github.com/jexia/semaphore/pkg/providers"
-	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/broker"
+	"github.com/jexia/semaphore/v2/pkg/broker/logger"
+	"github.com/jexia/semaphore/v2/pkg/providers"
+	"github.com/jexia/semaphore/v2/pkg/specs"
 	"go.uber.org/zap"
 )
 
@@ -34,9 +34,7 @@ type swaggers map[string]*openapi.Swagger
 // imports is a collection of all the files. The file path might include a mask.
 // Example: []string{"/etc/schemas/user.yml", "/etc/schemas/animal_*.yml"} and so on.
 func collect(ctx *broker.Context, imports []string) (swaggers, error) {
-	var (
-		docs = swaggers{} // used to collect all the loaded & parsed swagger files
-	)
+	docs := swaggers{} // used to collect all the loaded & parsed swagger files
 
 	loader := openapi.NewSwaggerLoader()
 
@@ -49,7 +47,6 @@ func collect(ctx *broker.Context, imports []string) (swaggers, error) {
 		// iterate over all the files matched by the single import path
 		for _, file := range files {
 			doc, err := loader.LoadSwaggerFromFile(file.Path)
-
 			if err != nil {
 				return nil, fmt.Errorf("failed to parse openapi file %s: %w", file.Path, err)
 			}
@@ -106,7 +103,6 @@ func SchemaResolver(paths []string) providers.SchemaResolver {
 		}
 
 		schemas, err := newSchemas(docs)
-
 		if err != nil {
 			return nil, fmt.Errorf("failed to build schema: %w", err)
 		}

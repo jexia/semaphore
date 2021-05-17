@@ -2,9 +2,9 @@ package protobuffers
 
 import (
 	"github.com/golang/protobuf/proto"
-	annotations "github.com/jexia/semaphore/api"
-	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/transport/http"
+	annotations "github.com/jexia/semaphore/v2/api"
+	"github.com/jexia/semaphore/v2/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/transport/http"
 	"github.com/jhump/protoreflect/desc"
 )
 

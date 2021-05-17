@@ -5,11 +5,11 @@ import (
 	"io"
 	"io/ioutil"
 
-	"github.com/jexia/semaphore/pkg/codec"
-	"github.com/jexia/semaphore/pkg/references"
-	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/template"
-	"github.com/jexia/semaphore/pkg/specs/types"
+	"github.com/jexia/semaphore/v2/pkg/codec"
+	"github.com/jexia/semaphore/v2/pkg/references"
+	"github.com/jexia/semaphore/v2/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/specs/template"
+	"github.com/jexia/semaphore/v2/pkg/specs/types"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/dynamic"
 )
@@ -20,8 +20,7 @@ func NewConstructor() *Constructor {
 }
 
 // Constructor is capable of constructing new codec managers for the given resource and specs
-type Constructor struct {
-}
+type Constructor struct{}
 
 // Name returns the proto codec constructor name
 func (constructor *Constructor) Name() string {

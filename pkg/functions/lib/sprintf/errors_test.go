@@ -4,8 +4,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/types"
+	"github.com/jexia/semaphore/v2/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/specs/types"
 )
 
 type stringer string
@@ -19,7 +19,7 @@ func TestErrInvalidArguments(t *testing.T) {
 	)
 
 	t.Run("build error message", func(t *testing.T) {
-		var actual = err.Error()
+		actual := err.Error()
 		if actual != expected {
 			t.Errorf("error '%s' was expected to be '%s'", actual, expected)
 		}
@@ -43,7 +43,7 @@ func TestErrCannotFormat(t *testing.T) {
 	)
 
 	t.Run("build error message", func(t *testing.T) {
-		var actual = err.Error()
+		actual := err.Error()
 		if actual != expected {
 			t.Errorf("error '%s' was expected to be '%s'", actual, expected)
 		}
@@ -57,7 +57,7 @@ func TestErrVerbConflict(t *testing.T) {
 	)
 
 	t.Run("build error message", func(t *testing.T) {
-		var actual = err.Error()
+		actual := err.Error()
 		if actual != expected {
 			t.Errorf("error '%s' was expected to be '%s'", actual, expected)
 		}
@@ -76,7 +76,7 @@ func TestErrScanFormat(t *testing.T) {
 	)
 
 	t.Run("build error message", func(t *testing.T) {
-		var actual = err.Error()
+		actual := err.Error()
 		if actual != expected {
 			t.Errorf("message\n%s\n was expected to be%s", actual, expected)
 		}

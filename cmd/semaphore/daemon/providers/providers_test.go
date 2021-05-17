@@ -4,12 +4,12 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/jexia/semaphore"
-	"github.com/jexia/semaphore/pkg/broker"
-	"github.com/jexia/semaphore/pkg/broker/logger"
-	"github.com/jexia/semaphore/pkg/functions"
-	"github.com/jexia/semaphore/pkg/providers"
-	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/v2"
+	"github.com/jexia/semaphore/v2/pkg/broker"
+	"github.com/jexia/semaphore/v2/pkg/broker/logger"
+	"github.com/jexia/semaphore/v2/pkg/functions"
+	"github.com/jexia/semaphore/v2/pkg/providers"
+	"github.com/jexia/semaphore/v2/pkg/specs"
 )
 
 func TestResolve(t *testing.T) {
@@ -40,7 +40,6 @@ func TestResolveBeforeMiddleware(t *testing.T) {
 	if counter != 1 {
 		t.Fatalf("unexpected counter %d, expected %d", counter, 1)
 	}
-
 }
 
 func TestResolveBeforeMiddlewareErr(t *testing.T) {
@@ -64,7 +63,6 @@ func TestResolveBeforeMiddlewareErr(t *testing.T) {
 	if counter != 1 {
 		t.Fatalf("unexpected counter %d, expected %d", counter, 1)
 	}
-
 }
 
 func TestResolveAfterMiddleware(t *testing.T) {

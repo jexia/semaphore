@@ -3,9 +3,9 @@ package graphql
 import (
 	"testing"
 
-	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/types"
-	"github.com/jexia/semaphore/pkg/transport"
+	"github.com/jexia/semaphore/v2/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/specs/types"
+	"github.com/jexia/semaphore/v2/pkg/transport"
 )
 
 func TestNewObjectNil(t *testing.T) {

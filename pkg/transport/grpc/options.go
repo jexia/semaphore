@@ -1,8 +1,8 @@
 package grpc
 
 import (
-	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/transport"
+	"github.com/jexia/semaphore/v2/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/transport"
 )
 
 const (
@@ -15,8 +15,7 @@ const (
 )
 
 // ListenerOptions represents the available HTTP options
-type ListenerOptions struct {
-}
+type ListenerOptions struct{}
 
 // ParseListenerOptions parses the given specs options into HTTP options
 func ParseListenerOptions(options specs.Options) (*ListenerOptions, error) {
@@ -59,8 +58,7 @@ func ParseEndpointOptions(endpoint *transport.Endpoint) (*EndpointOptions, error
 }
 
 // CallerOptions represents the available HTTP options
-type CallerOptions struct {
-}
+type CallerOptions struct{}
 
 // ParseCallerOptions parses the given specs options into HTTP options
 func ParseCallerOptions(options specs.Options) (*CallerOptions, error) {

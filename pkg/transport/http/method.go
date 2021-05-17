@@ -1,6 +1,6 @@
 package http
 
-import "github.com/jexia/semaphore/pkg/specs"
+import "github.com/jexia/semaphore/v2/pkg/specs"
 
 // Method represents a service method
 type Method struct {

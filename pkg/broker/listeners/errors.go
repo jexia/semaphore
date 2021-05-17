@@ -3,7 +3,7 @@ package listeners
 import (
 	"fmt"
 
-	"github.com/jexia/semaphore/pkg/prettyerr"
+	"github.com/jexia/semaphore/v2/pkg/prettyerr"
 )
 
 // ErrNoListener is thrown when no listener has been found

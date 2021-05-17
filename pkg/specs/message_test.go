@@ -3,8 +3,8 @@ package specs
 import (
 	"testing"
 
-	"github.com/jexia/semaphore/pkg/specs/labels"
-	"github.com/jexia/semaphore/pkg/specs/types"
+	"github.com/jexia/semaphore/v2/pkg/specs/labels"
+	"github.com/jexia/semaphore/v2/pkg/specs/types"
 )
 
 func TestCompareMessages(t *testing.T) {

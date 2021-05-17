@@ -3,9 +3,9 @@ package specs
 import (
 	"fmt"
 
-	"github.com/jexia/semaphore/pkg/specs/labels"
-	"github.com/jexia/semaphore/pkg/specs/metadata"
-	"github.com/jexia/semaphore/pkg/specs/types"
+	"github.com/jexia/semaphore/v2/pkg/specs/labels"
+	"github.com/jexia/semaphore/v2/pkg/specs/metadata"
+	"github.com/jexia/semaphore/v2/pkg/specs/types"
 )
 
 // Schemas represents a map string collection of properties

@@ -8,17 +8,17 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/jexia/semaphore/cmd/semaphore/daemon/config"
-	"github.com/jexia/semaphore/cmd/semaphore/daemon/providers"
-	print "github.com/jexia/semaphore/cmd/semaphore/generate/printer"
-	"github.com/jexia/semaphore/pkg/broker"
-	"github.com/jexia/semaphore/pkg/broker/endpoints"
-	"github.com/jexia/semaphore/pkg/broker/logger"
-	"github.com/jexia/semaphore/pkg/codec/proto"
-	"github.com/jexia/semaphore/pkg/functions"
-	"github.com/jexia/semaphore/pkg/prettyerr"
-	"github.com/jexia/semaphore/pkg/transport"
-	"github.com/jexia/semaphore/pkg/transport/grpc"
+	"github.com/jexia/semaphore/v2/cmd/semaphore/daemon/config"
+	"github.com/jexia/semaphore/v2/cmd/semaphore/daemon/providers"
+	print "github.com/jexia/semaphore/v2/cmd/semaphore/generate/printer"
+	"github.com/jexia/semaphore/v2/pkg/broker"
+	"github.com/jexia/semaphore/v2/pkg/broker/endpoints"
+	"github.com/jexia/semaphore/v2/pkg/broker/logger"
+	"github.com/jexia/semaphore/v2/pkg/codec/proto"
+	"github.com/jexia/semaphore/v2/pkg/functions"
+	"github.com/jexia/semaphore/v2/pkg/prettyerr"
+	"github.com/jexia/semaphore/v2/pkg/transport"
+	"github.com/jexia/semaphore/v2/pkg/transport/grpc"
 	"github.com/jhump/protoreflect/desc/protoprint"
 	"github.com/spf13/cobra"
 )
@@ -141,7 +141,7 @@ func getOutput(output, pkg string) (io.WriteCloser, error) {
 }
 
 func generate(ctx *broker.Context, endpoints transport.EndpointList) (map[string]*proto.Service, error) {
-	var services = make(map[string]*proto.Service)
+	services := make(map[string]*proto.Service)
 
 	for _, endpoint := range endpoints {
 		if endpoint.Listener != "grpc" {

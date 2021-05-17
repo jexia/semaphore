@@ -3,7 +3,7 @@ package endpoints
 import (
 	"testing"
 
-	"github.com/jexia/semaphore/pkg/prettyerr"
+	"github.com/jexia/semaphore/v2/pkg/prettyerr"
 )
 
 func TestErrNoServiceForMethod(t *testing.T) {

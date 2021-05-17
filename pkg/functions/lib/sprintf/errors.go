@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/specs"
 )
 
 var (
@@ -56,7 +56,7 @@ type errScanFormat struct {
 func (e errScanFormat) Unwrap() error { return e.inner }
 
 func (e errScanFormat) Error() string {
-	var msg = e.inner.Error() + ":\n"
+	msg := e.inner.Error() + ":\n"
 	for i := 0; i < e.position; i++ {
 		msg += " "
 	}

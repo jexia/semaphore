@@ -1,7 +1,7 @@
 package avros
 
 import (
-	"github.com/jexia/semaphore/pkg/specs/types"
+	"github.com/jexia/semaphore/v2/pkg/specs/types"
 )
 
 // AvroTypes is a lookup table for avro descriptor types

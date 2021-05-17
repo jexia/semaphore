@@ -3,14 +3,15 @@ package openapi3
 import (
 	"errors"
 	"fmt"
+
 	openapi "github.com/getkin/kin-openapi/openapi3"
-	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/labels"
-	"github.com/jexia/semaphore/pkg/specs/types"
+	"github.com/jexia/semaphore/v2/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/specs/labels"
+	"github.com/jexia/semaphore/v2/pkg/specs/types"
 )
 
 func newSchemas(docs swaggers) (specs.Schemas, error) {
-	var result = make(specs.Schemas)
+	result := make(specs.Schemas)
 
 	for file, doc := range docs {
 		endpoints, err := scanPaths(doc.Paths)
@@ -27,7 +28,6 @@ func newSchemas(docs swaggers) (specs.Schemas, error) {
 				}
 
 				tpl, err := newTemplate(object.ref.Value)
-
 				if err != nil {
 					return nil, fmt.Errorf("failed to build property '%s' from file '%s': %w", name, file, err)
 				}
@@ -90,9 +90,7 @@ func newTemplate(schema *openapi.Schema) (tpl specs.Template, err error) {
 
 // builds a message template
 func message(s *openapi.Schema) (specs.Template, error) {
-	var (
-		message = make(specs.Message, len(s.Properties))
-	)
+	message := make(specs.Message, len(s.Properties))
 
 	for fieldName, ref := range s.Properties {
 		if ref.Value == nil {

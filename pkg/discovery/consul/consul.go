@@ -2,8 +2,9 @@ package consul
 
 import (
 	"fmt"
-	"github.com/jexia/semaphore/pkg/discovery"
 	"net/url"
+
+	"github.com/jexia/semaphore/v2/pkg/discovery"
 )
 
 type Consul struct {

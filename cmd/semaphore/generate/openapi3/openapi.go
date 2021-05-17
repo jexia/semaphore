@@ -3,14 +3,14 @@ package openapi3
 import (
 	"os"
 
-	"github.com/jexia/semaphore/cmd/semaphore/daemon/config"
-	"github.com/jexia/semaphore/cmd/semaphore/daemon/providers"
-	print "github.com/jexia/semaphore/cmd/semaphore/generate/printer"
-	"github.com/jexia/semaphore/pkg/broker"
-	"github.com/jexia/semaphore/pkg/broker/logger"
-	"github.com/jexia/semaphore/pkg/functions"
-	"github.com/jexia/semaphore/pkg/generators/openapi3"
-	"github.com/jexia/semaphore/pkg/prettyerr"
+	"github.com/jexia/semaphore/v2/cmd/semaphore/daemon/config"
+	"github.com/jexia/semaphore/v2/cmd/semaphore/daemon/providers"
+	print "github.com/jexia/semaphore/v2/cmd/semaphore/generate/printer"
+	"github.com/jexia/semaphore/v2/pkg/broker"
+	"github.com/jexia/semaphore/v2/pkg/broker/logger"
+	"github.com/jexia/semaphore/v2/pkg/functions"
+	"github.com/jexia/semaphore/v2/pkg/generators/openapi3"
+	"github.com/jexia/semaphore/v2/pkg/prettyerr"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 )

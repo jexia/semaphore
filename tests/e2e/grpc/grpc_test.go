@@ -10,13 +10,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jexia/semaphore"
-	"github.com/jexia/semaphore/cmd/semaphore/daemon/providers"
-	codecProto "github.com/jexia/semaphore/pkg/codec/proto"
-	"github.com/jexia/semaphore/pkg/specs"
-	transportGRPC "github.com/jexia/semaphore/pkg/transport/grpc"
-	"github.com/jexia/semaphore/tests/e2e"
-	proto "github.com/jexia/semaphore/tests/e2e/grpc/proto"
+	"github.com/jexia/semaphore/v2"
+	"github.com/jexia/semaphore/v2/cmd/semaphore/daemon/providers"
+	codecProto "github.com/jexia/semaphore/v2/pkg/codec/proto"
+	"github.com/jexia/semaphore/v2/pkg/specs"
+	transportGRPC "github.com/jexia/semaphore/v2/pkg/transport/grpc"
+	"github.com/jexia/semaphore/v2/tests/e2e"
+	proto "github.com/jexia/semaphore/v2/tests/e2e/grpc/proto"
 	"google.golang.org/grpc"
 )
 

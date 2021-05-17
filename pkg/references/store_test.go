@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/template"
+	"github.com/jexia/semaphore/v2/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/specs/template"
 )
 
 func BenchmarkSimpleFetching(b *testing.B) {

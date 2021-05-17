@@ -4,11 +4,11 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/jexia/semaphore/pkg/specs/types"
+	"github.com/jexia/semaphore/v2/pkg/specs/types"
 )
 
 func TestFloatCanFormat(t *testing.T) {
-	var tests = map[types.Type]bool{
+	tests := map[types.Type]bool{
 		types.Bool:     false,
 		types.Bytes:    false,
 		types.Double:   false,
@@ -47,7 +47,7 @@ func TestFtoa(t *testing.T) {
 		error     error
 	}
 
-	var tests = map[string]test{
+	tests := map[string]test{
 		"nil value":          {error: errNoValue},
 		"not a float type":   {value: int(42), error: errNonFloatType},
 		"float32 with scale": {value: float32(3.14159265), precision: Precision{Scale: 2}, expected: "3.14"},

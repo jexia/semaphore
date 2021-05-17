@@ -5,7 +5,7 @@ import (
 	"errors"
 
 	"github.com/francoispqt/gojay"
-	"github.com/jexia/semaphore/pkg/specs/types"
+	"github.com/jexia/semaphore/v2/pkg/specs/types"
 )
 
 // ErrUnknownType is thrown when the given type is unknown

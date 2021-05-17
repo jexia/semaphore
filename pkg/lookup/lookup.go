@@ -3,10 +3,10 @@ package lookup
 import (
 	"strings"
 
-	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/labels"
-	"github.com/jexia/semaphore/pkg/specs/template"
-	"github.com/jexia/semaphore/pkg/specs/types"
+	"github.com/jexia/semaphore/v2/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/specs/labels"
+	"github.com/jexia/semaphore/v2/pkg/specs/template"
+	"github.com/jexia/semaphore/v2/pkg/specs/types"
 )
 
 // SelfRef represents the syntax used to reference the entire object
@@ -226,7 +226,7 @@ func PropertyLookup(param *specs.Property) PathLookup {
 			return param
 		case param.Repeated != nil:
 			// TODO: allow to reference indexes
-			var template, _ = param.Repeated.Template()
+			template, _ := param.Repeated.Template()
 			return PropertyLookup(
 				&specs.Property{
 					Template: template,

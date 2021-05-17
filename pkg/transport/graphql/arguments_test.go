@@ -3,8 +3,8 @@ package graphql
 import (
 	"testing"
 
-	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/types"
+	"github.com/jexia/semaphore/v2/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/specs/types"
 )
 
 func TestNewArgsNil(t *testing.T) {

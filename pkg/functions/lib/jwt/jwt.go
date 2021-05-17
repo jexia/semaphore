@@ -1,12 +1,12 @@
 package jwt
 
 import (
-	"github.com/jexia/semaphore/pkg/functions"
-	"github.com/jexia/semaphore/pkg/references"
-	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/labels"
-	"github.com/jexia/semaphore/pkg/specs/template"
-	"github.com/jexia/semaphore/pkg/specs/types"
+	"github.com/jexia/semaphore/v2/pkg/functions"
+	"github.com/jexia/semaphore/v2/pkg/references"
+	"github.com/jexia/semaphore/v2/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/specs/labels"
+	"github.com/jexia/semaphore/v2/pkg/specs/template"
+	"github.com/jexia/semaphore/v2/pkg/specs/types"
 )
 
 const (
@@ -56,7 +56,7 @@ func New(reader Reader, newClaims func() Claims) functions.Intermediate {
 
 func executable(reader Reader, token *specs.Property, newClaims func() Claims) func(store references.Store) error {
 	return func(store references.Store) error {
-		var value = token.DefaultValue()
+		value := token.DefaultValue()
 
 		if token.Reference != nil {
 			ref := store.Load(template.ResourcePath(token.Reference.Resource, token.Reference.Path))
@@ -70,7 +70,7 @@ func executable(reader Reader, token *specs.Property, newClaims func() Claims) f
 			return err
 		}
 
-		var claimsObj = newClaims()
+		claimsObj := newClaims()
 
 		if err := reader.Read(authValue, claimsObj); err != nil {
 			return err

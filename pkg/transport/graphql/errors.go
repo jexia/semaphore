@@ -3,8 +3,8 @@ package graphql
 import (
 	"fmt"
 
-	"github.com/jexia/semaphore/pkg/prettyerr"
-	"github.com/jexia/semaphore/pkg/specs/types"
+	"github.com/jexia/semaphore/v2/pkg/prettyerr"
+	"github.com/jexia/semaphore/v2/pkg/specs/types"
 )
 
 type wrapErr struct {

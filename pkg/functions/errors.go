@@ -3,7 +3,7 @@ package functions
 import (
 	"fmt"
 
-	"github.com/jexia/semaphore/pkg/prettyerr"
+	"github.com/jexia/semaphore/v2/pkg/prettyerr"
 )
 
 // ErrUndefinedFunction occurs when custom function is not defined in property but referenced

@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/jexia/semaphore/pkg/references"
-	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/types"
+	"github.com/jexia/semaphore/v2/pkg/references"
+	"github.com/jexia/semaphore/v2/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/specs/types"
 )
 
 var null = []byte("null")
@@ -31,7 +31,7 @@ func (json JSON) Formatter(precision Precision) (Formatter, error) {
 
 // FormatJSON prints provided argument in a JSON format.
 func FormatJSON(store references.Store, tracker references.Tracker, argument *specs.Property) (string, error) {
-	var property = encoder{store: store, tracker: tracker, property: argument}
+	property := encoder{store: store, tracker: tracker, property: argument}
 
 	bb, err := json.Marshal(property)
 	if err != nil {
@@ -59,7 +59,7 @@ func (enc encoder) MarshalJSON() ([]byte, error) {
 			return null, nil
 		}
 
-		var enum = enc.property.Enum.Positions[*reference.Enum]
+		enum := enc.property.Enum.Positions[*reference.Enum]
 		if enum == nil {
 			return json.Marshal(*reference.Enum)
 		}
@@ -68,7 +68,7 @@ func (enc encoder) MarshalJSON() ([]byte, error) {
 	case enc.property.Scalar != nil:
 		value := enc.property.Scalar.Default
 
-		var reference = enc.store.Load(enc.tracker.Resolve(enc.property.Reference.String()))
+		reference := enc.store.Load(enc.tracker.Resolve(enc.property.Reference.String()))
 		if reference != nil {
 			value = reference.Value
 		}
@@ -97,7 +97,7 @@ func (r repeated) MarshalJSON() ([]byte, error) {
 		return null, nil
 	}
 
-	var buff = bytes.NewBufferString("[")
+	buff := bytes.NewBufferString("[")
 	item, err := r.property.Repeated.Template()
 	if err != nil {
 		return nil, fmt.Errorf("failed to encode repeated item: %w", err)

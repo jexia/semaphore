@@ -5,10 +5,10 @@ import (
 	"testing"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/jexia/semaphore/pkg/references"
-	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/labels"
-	"github.com/jexia/semaphore/pkg/specs/types"
+	"github.com/jexia/semaphore/v2/pkg/references"
+	"github.com/jexia/semaphore/v2/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/specs/labels"
+	"github.com/jexia/semaphore/v2/pkg/specs/types"
 )
 
 type claims struct{ jwt.StandardClaims }
@@ -109,7 +109,7 @@ func TestExecutable(t *testing.T) {
 }
 
 func TestNew(t *testing.T) {
-	var fn = New(nil, nil)
+	fn := New(nil, nil)
 
 	t.Run("should return an error when invalid number of argumets provided", func(t *testing.T) {
 		_, _, err := fn()

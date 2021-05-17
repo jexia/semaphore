@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/jexia/semaphore/pkg/prettyerr"
+	"github.com/jexia/semaphore/v2/pkg/prettyerr"
 )
 
 // ErrNilFlowManager is thrown when a nil flow manager has been passed
@@ -17,7 +17,7 @@ type Details struct {
 
 // Details returns error details.
 func (d Details) Details() map[string]interface{} {
-	var details = make(map[string]interface{})
+	details := make(map[string]interface{})
 
 	if d.Flow != "" {
 		details["Flow"] = d.Flow

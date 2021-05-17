@@ -2,9 +2,9 @@ package protobuffers
 
 import (
 	protobuf "github.com/golang/protobuf/protoc-gen-go/descriptor"
-	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/labels"
-	"github.com/jexia/semaphore/pkg/specs/template"
+	"github.com/jexia/semaphore/v2/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/specs/labels"
+	"github.com/jexia/semaphore/v2/pkg/specs/template"
 	"github.com/jhump/protoreflect/desc"
 )
 
@@ -79,7 +79,7 @@ func NewProperty(path string, descriptor *desc.FieldDescriptor) *specs.Property 
 
 		break
 	case descriptor.GetType() == protobuf.FieldDescriptorProto_TYPE_MESSAGE:
-		var fields = descriptor.GetMessageType().GetFields()
+		fields := descriptor.GetMessageType().GetFields()
 		result.Message = make(specs.Message, len(fields))
 
 		for _, field := range fields {

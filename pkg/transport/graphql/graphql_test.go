@@ -11,12 +11,12 @@ import (
 	"time"
 
 	"github.com/go-test/deep"
-	"github.com/jexia/semaphore/pkg/broker"
-	"github.com/jexia/semaphore/pkg/broker/logger"
-	"github.com/jexia/semaphore/pkg/flow"
-	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/types"
-	"github.com/jexia/semaphore/pkg/transport"
+	"github.com/jexia/semaphore/v2/pkg/broker"
+	"github.com/jexia/semaphore/v2/pkg/broker/logger"
+	"github.com/jexia/semaphore/v2/pkg/flow"
+	"github.com/jexia/semaphore/v2/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/specs/types"
+	"github.com/jexia/semaphore/v2/pkg/transport"
 )
 
 func NewSimpleMockSpecs() *specs.ParameterMap {
@@ -154,7 +154,6 @@ func TestNewListener(t *testing.T) {
 			req, err := json.Marshal(req{
 				Query: test.request,
 			})
-
 			if err != nil {
 				t.Fatal(err)
 			}

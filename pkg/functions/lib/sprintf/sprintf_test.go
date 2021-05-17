@@ -5,16 +5,16 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/jexia/semaphore/pkg/references"
-	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/labels"
-	"github.com/jexia/semaphore/pkg/specs/template"
-	"github.com/jexia/semaphore/pkg/specs/types"
+	"github.com/jexia/semaphore/v2/pkg/references"
+	"github.com/jexia/semaphore/v2/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/specs/labels"
+	"github.com/jexia/semaphore/v2/pkg/specs/template"
+	"github.com/jexia/semaphore/v2/pkg/specs/types"
 )
 
 func TestFunction(t *testing.T) {
 	t.Run("should return an error when no arguments provided", func(t *testing.T) {
-		var _, _, err = Function()
+		_, _, err := Function()
 
 		if !errors.Is(err, errNoArguments) {
 			t.Errorf("error '%s' was expected", errNoArguments)
@@ -22,7 +22,7 @@ func TestFunction(t *testing.T) {
 	})
 
 	t.Run("should return an error when the format has invalid type", func(t *testing.T) {
-		var _, _, err = Function(&specs.Property{
+		_, _, err := Function(&specs.Property{
 			Template: specs.Template{
 				Scalar: &specs.Scalar{
 					Type: types.Bool,
@@ -36,7 +36,7 @@ func TestFunction(t *testing.T) {
 	})
 
 	t.Run("should return an error when the format is a reference", func(t *testing.T) {
-		var _, _, err = Function(&specs.Property{
+		_, _, err := Function(&specs.Property{
 			Template: specs.Template{
 				Reference: &specs.PropertyReference{
 					Resource: template.InputResource,
@@ -54,7 +54,7 @@ func TestFunction(t *testing.T) {
 	})
 
 	t.Run("should return an error when the format is missing", func(t *testing.T) {
-		var _, _, err = Function(&specs.Property{
+		_, _, err := Function(&specs.Property{
 			Template: specs.Template{
 				Scalar: &specs.Scalar{
 					Type: types.String,
@@ -68,7 +68,7 @@ func TestFunction(t *testing.T) {
 	})
 
 	t.Run("should propagate scanner error", func(t *testing.T) {
-		var _, _, err = Function(&specs.Property{
+		_, _, err := Function(&specs.Property{
 			Template: specs.Template{
 				Scalar: &specs.Scalar{
 					Type:    types.String,
@@ -83,7 +83,7 @@ func TestFunction(t *testing.T) {
 	})
 
 	t.Run("should return an error when the number of arguments does not match the number of verbs", func(t *testing.T) {
-		var _, _, err = Function(&specs.Property{
+		_, _, err := Function(&specs.Property{
 			Template: specs.Template{
 				Scalar: &specs.Scalar{
 					Type:    types.String,
@@ -98,7 +98,7 @@ func TestFunction(t *testing.T) {
 	})
 
 	t.Run("should return an error when the type of provided argument does not match expected", func(t *testing.T) {
-		var _, _, err = Function(
+		_, _, err := Function(
 			&specs.Property{
 				Template: specs.Template{
 					Scalar: &specs.Scalar{
@@ -168,7 +168,7 @@ func TestFunction(t *testing.T) {
 			return
 		}
 
-		var refs = references.NewStore(1)
+		refs := references.NewStore(1)
 
 		executable(refs)
 	})

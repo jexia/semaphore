@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jexia/semaphore/pkg/broker"
-	"github.com/jexia/semaphore/pkg/broker/logger"
+	"github.com/jexia/semaphore/v2/pkg/broker"
+	"github.com/jexia/semaphore/v2/pkg/broker/logger"
 )
 
 func TempFolderStructure(t *testing.T, files []string, linked map[string]string) string {

@@ -6,7 +6,7 @@ import (
 	"net"
 	"time"
 
-	"github.com/jexia/semaphore/examples/grpc/proto"
+	"github.com/jexia/semaphore/v2/examples/grpc/proto"
 	"google.golang.org/grpc"
 )
 

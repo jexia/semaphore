@@ -1,6 +1,6 @@
 package mock
 
-import "github.com/jexia/semaphore/pkg/specs"
+import "github.com/jexia/semaphore/v2/pkg/specs"
 
 // NewCollection constructs a new schema collection from the given descriptors
 func NewCollection(descriptor Collection) *Collection {

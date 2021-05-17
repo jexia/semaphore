@@ -8,10 +8,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/jexia/semaphore/pkg/codec/tests"
-	"github.com/jexia/semaphore/pkg/references"
-	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/template"
+	"github.com/jexia/semaphore/v2/pkg/codec/tests"
+	"github.com/jexia/semaphore/v2/pkg/references"
+	"github.com/jexia/semaphore/v2/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/specs/template"
 )
 
 func TestName(t *testing.T) {
@@ -43,7 +43,7 @@ func TestName(t *testing.T) {
 }
 
 func TestMarshal(t *testing.T) {
-	var constructor = NewConstructor()
+	constructor := NewConstructor()
 	if constructor == nil {
 		t.Fatal("unexpected nil")
 	}
@@ -54,7 +54,7 @@ func TestMarshal(t *testing.T) {
 		expected string
 	}
 
-	var tests = map[string]test{
+	tests := map[string]test{
 		"array empty": {
 			schema: tests.SchemaArrayDefaultEmpty,
 		},
@@ -470,7 +470,7 @@ func TestUnmarshal(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			var store = references.NewStore(0)
+			store := references.NewStore(0)
 			err = manager.Unmarshal(test.input, store)
 
 			if test.error != nil {

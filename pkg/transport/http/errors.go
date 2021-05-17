@@ -3,7 +3,7 @@ package http
 import (
 	"fmt"
 
-	"github.com/jexia/semaphore/pkg/prettyerr"
+	"github.com/jexia/semaphore/v2/pkg/prettyerr"
 )
 
 // ErrRouteConflict is returned when HTTP route conflict is detected.

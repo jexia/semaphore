@@ -1,7 +1,7 @@
 package graphql
 
 import (
-	"github.com/jexia/semaphore/pkg/transport"
+	"github.com/jexia/semaphore/v2/pkg/transport"
 )
 
 const (

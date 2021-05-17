@@ -1,6 +1,6 @@
 package mock
 
-import "github.com/jexia/semaphore/pkg/specs"
+import "github.com/jexia/semaphore/v2/pkg/specs"
 
 // ServiceManifest formats the given mock collection to a specs service(s) manifest
 func ServiceManifest(collection *Collection) specs.ServiceList {

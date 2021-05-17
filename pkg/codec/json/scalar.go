@@ -2,8 +2,8 @@ package json
 
 import (
 	"github.com/francoispqt/gojay"
-	"github.com/jexia/semaphore/pkg/references"
-	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/references"
+	"github.com/jexia/semaphore/v2/pkg/specs"
 )
 
 // Scalar represents a scalar type such as a string, int or float. The scalar
@@ -12,10 +12,10 @@ import (
 type Scalar specs.Template
 
 func (template Scalar) value(store references.Store, tracker references.Tracker) interface{} {
-	var value = template.Scalar.Default
+	value := template.Scalar.Default
 
 	if template.Reference != nil {
-		var reference = store.Load(tracker.Resolve(template.Reference.String()))
+		reference := store.Load(tracker.Resolve(template.Reference.String()))
 		if reference != nil && reference.Value != nil {
 			value = reference.Value
 		}

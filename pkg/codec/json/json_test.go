@@ -8,17 +8,17 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/jexia/semaphore"
-	"github.com/jexia/semaphore/cmd/semaphore/daemon/providers"
-	"github.com/jexia/semaphore/pkg/broker"
-	"github.com/jexia/semaphore/pkg/broker/logger"
-	"github.com/jexia/semaphore/pkg/codec/tests"
-	"github.com/jexia/semaphore/pkg/functions"
-	"github.com/jexia/semaphore/pkg/providers/hcl"
-	"github.com/jexia/semaphore/pkg/providers/mock"
-	"github.com/jexia/semaphore/pkg/references"
-	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/template"
+	"github.com/jexia/semaphore/v2"
+	"github.com/jexia/semaphore/v2/cmd/semaphore/daemon/providers"
+	"github.com/jexia/semaphore/v2/pkg/broker"
+	"github.com/jexia/semaphore/v2/pkg/broker/logger"
+	"github.com/jexia/semaphore/v2/pkg/codec/tests"
+	"github.com/jexia/semaphore/v2/pkg/functions"
+	"github.com/jexia/semaphore/v2/pkg/providers/hcl"
+	"github.com/jexia/semaphore/v2/pkg/providers/mock"
+	"github.com/jexia/semaphore/v2/pkg/references"
+	"github.com/jexia/semaphore/v2/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/specs/template"
 )
 
 func NewMock() (specs.FlowListInterface, error) {
@@ -39,7 +39,6 @@ func NewMock() (specs.FlowListInterface, error) {
 		providers.WithSchema(mock.SchemaResolver(path)),
 		providers.WithServices(mock.ServicesResolver(path)),
 	)
-
 	if err != nil {
 		return nil, err
 	}
@@ -406,7 +405,7 @@ func TestMarshal(t *testing.T) {
 			},
 			schema: &specs.ParameterMap{
 				Property: func() *specs.Property {
-					var property = tests.PropInteger()
+					property := tests.PropInteger()
 					property.Reference = &specs.PropertyReference{
 						Resource: template.InputResource,
 						Path:     "integer",
@@ -423,7 +422,7 @@ func TestMarshal(t *testing.T) {
 			},
 			schema: &specs.ParameterMap{
 				Property: func() *specs.Property {
-					var property = tests.PropInteger()
+					property := tests.PropInteger()
 					property.Scalar.Default = int32(42)
 
 					return property

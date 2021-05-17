@@ -1,6 +1,6 @@
 package json
 
-import "github.com/jexia/semaphore/pkg/prettyerr"
+import "github.com/jexia/semaphore/v2/pkg/prettyerr"
 
 // ErrUndefinedSpecs occurs when spacs are nil
 type ErrUndefinedSpecs struct{}

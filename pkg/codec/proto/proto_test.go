@@ -7,17 +7,17 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/jexia/semaphore"
-	"github.com/jexia/semaphore/cmd/semaphore/daemon/providers"
-	"github.com/jexia/semaphore/pkg/broker"
-	"github.com/jexia/semaphore/pkg/broker/logger"
-	"github.com/jexia/semaphore/pkg/codec/tests"
-	"github.com/jexia/semaphore/pkg/functions"
-	"github.com/jexia/semaphore/pkg/providers/hcl"
-	"github.com/jexia/semaphore/pkg/providers/protobuffers"
-	"github.com/jexia/semaphore/pkg/references"
-	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/template"
+	"github.com/jexia/semaphore/v2"
+	"github.com/jexia/semaphore/v2/cmd/semaphore/daemon/providers"
+	"github.com/jexia/semaphore/v2/pkg/broker"
+	"github.com/jexia/semaphore/v2/pkg/broker/logger"
+	"github.com/jexia/semaphore/v2/pkg/codec/tests"
+	"github.com/jexia/semaphore/v2/pkg/functions"
+	"github.com/jexia/semaphore/v2/pkg/providers/hcl"
+	"github.com/jexia/semaphore/v2/pkg/providers/protobuffers"
+	"github.com/jexia/semaphore/v2/pkg/references"
+	"github.com/jexia/semaphore/v2/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/specs/template"
 	"github.com/jhump/protoreflect/dynamic"
 )
 
@@ -26,7 +26,6 @@ func NewMock() (specs.FlowListInterface, error) {
 	core, err := semaphore.NewOptions(ctx,
 		semaphore.WithFlows(hcl.FlowsResolver("./tests/*.hcl")),
 	)
-
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +34,6 @@ func NewMock() (specs.FlowListInterface, error) {
 		providers.WithServices(protobuffers.ServiceResolver([]string{"./tests"}, "./tests/*.proto")),
 		providers.WithSchema(protobuffers.SchemaResolver([]string{"./tests"}, "./tests/*.proto")),
 	)
-
 	if err != nil {
 		return nil, err
 	}

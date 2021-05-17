@@ -3,16 +3,17 @@ package http
 import (
 	"context"
 	"fmt"
-	"github.com/jexia/semaphore/pkg/discovery"
 	"io"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 
-	"github.com/jexia/semaphore/pkg/broker"
-	"github.com/jexia/semaphore/pkg/broker/logger"
-	"github.com/jexia/semaphore/pkg/references"
-	"github.com/jexia/semaphore/pkg/transport"
+	"github.com/jexia/semaphore/v2/pkg/discovery"
+
+	"github.com/jexia/semaphore/v2/pkg/broker"
+	"github.com/jexia/semaphore/v2/pkg/broker/logger"
+	"github.com/jexia/semaphore/v2/pkg/references"
+	"github.com/jexia/semaphore/v2/pkg/transport"
 	"go.uber.org/zap"
 )
 

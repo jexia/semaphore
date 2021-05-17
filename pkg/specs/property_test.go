@@ -6,9 +6,9 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/jexia/semaphore/pkg/specs/labels"
-	"github.com/jexia/semaphore/pkg/specs/metadata"
-	"github.com/jexia/semaphore/pkg/specs/types"
+	"github.com/jexia/semaphore/v2/pkg/specs/labels"
+	"github.com/jexia/semaphore/v2/pkg/specs/metadata"
+	"github.com/jexia/semaphore/v2/pkg/specs/types"
 )
 
 func TestPropertyUnmarshalDefault(t *testing.T) {
@@ -629,7 +629,7 @@ func TestPropertyDefaultValue(t *testing.T) {
 		expected interface{}
 	}
 
-	var tests = []test{
+	tests := []test{
 		{
 			property: &Property{
 				Template: Template{

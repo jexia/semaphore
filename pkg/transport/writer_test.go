@@ -3,7 +3,7 @@ package transport
 import (
 	"testing"
 
-	"github.com/jexia/semaphore/pkg/codec/metadata"
+	"github.com/jexia/semaphore/v2/pkg/codec/metadata"
 )
 
 type MockWriterCloser struct{}

@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/jexia/semaphore/pkg/specs/types"
+	"github.com/jexia/semaphore/v2/pkg/specs/types"
 )
 
 func TestScalarClean(t *testing.T) {
@@ -15,7 +15,7 @@ func TestScalarClean(t *testing.T) {
 		expected interface{}
 	}
 
-	var tests = []test{
+	tests := []test{
 		{dataType: types.Int32, value: uint32(42), expected: int32(42)},
 		{dataType: types.Int32, value: uint64(42), expected: int32(42)},
 		{dataType: types.Int32, value: int32(42), expected: int32(42)},
@@ -44,7 +44,7 @@ func TestScalarClean(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(fmt.Sprintf("%T to %s", test.value, test.dataType), func(t *testing.T) {
-			var scalar = &Scalar{
+			scalar := &Scalar{
 				Type:    test.dataType,
 				Default: test.value,
 			}

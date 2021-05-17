@@ -2,11 +2,12 @@ package openapi3
 
 import (
 	"encoding/json"
-	openapi "github.com/getkin/kin-openapi/openapi3"
-	"github.com/jexia/semaphore/pkg/broker"
-	"github.com/jexia/semaphore/pkg/broker/logger"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	openapi "github.com/getkin/kin-openapi/openapi3"
+	"github.com/jexia/semaphore/v2/pkg/broker"
+	"github.com/jexia/semaphore/v2/pkg/broker/logger"
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_getCanonicalName(t *testing.T) {

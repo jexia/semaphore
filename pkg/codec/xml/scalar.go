@@ -3,10 +3,10 @@ package xml
 import (
 	"encoding/xml"
 
-	"github.com/jexia/semaphore/pkg/references"
-	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/template"
-	"github.com/jexia/semaphore/pkg/specs/types"
+	"github.com/jexia/semaphore/v2/pkg/references"
+	"github.com/jexia/semaphore/v2/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/specs/template"
+	"github.com/jexia/semaphore/v2/pkg/specs/types"
 )
 
 // Scalar is a wrapper for specs.Scalar providing XML encoding/decoding.
@@ -40,7 +40,7 @@ func (scalar Scalar) MarshalXML(encoder *xml.Encoder, _ xml.StartElement) error 
 	)
 
 	if scalar.template.Reference != nil {
-		var reference = scalar.store.Load(scalar.tracker.Resolve(scalar.template.Reference.String()))
+		reference := scalar.store.Load(scalar.tracker.Resolve(scalar.template.Reference.String()))
 		if reference != nil && reference.Value != nil {
 			value = reference.Value
 		}

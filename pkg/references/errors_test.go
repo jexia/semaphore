@@ -3,12 +3,11 @@ package references
 import (
 	"testing"
 
-	"github.com/jexia/semaphore/pkg/prettyerr"
-	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/prettyerr"
+	"github.com/jexia/semaphore/v2/pkg/specs"
 )
 
-type SomeExpression struct {
-}
+type SomeExpression struct{}
 
 func (SomeExpression) Position() string {
 	return "7:40"

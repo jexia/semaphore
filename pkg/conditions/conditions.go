@@ -4,14 +4,12 @@ import (
 	"regexp"
 
 	"github.com/Knetic/govaluate"
-	"github.com/jexia/semaphore/pkg/broker"
-	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/template"
+	"github.com/jexia/semaphore/v2/pkg/broker"
+	"github.com/jexia/semaphore/v2/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/specs/template"
 )
 
-var (
-	templatePattern = regexp.MustCompile("{{ *([^}}]+?) *}}")
-)
+var templatePattern = regexp.MustCompile("{{ *([^}}]+?) *}}")
 
 // NewEvaluableExpression constructs a new condition out of the given expression
 func NewEvaluableExpression(ctx *broker.Context, raw string) (*specs.Condition, error) {

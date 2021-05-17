@@ -4,11 +4,11 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/jexia/semaphore/pkg/specs/types"
+	"github.com/jexia/semaphore/v2/pkg/specs/types"
 )
 
 func TestIntCanFormat(t *testing.T) {
-	var tests = map[types.Type]bool{
+	tests := map[types.Type]bool{
 		types.Bool:     false,
 		types.Bytes:    false,
 		types.Double:   false,
@@ -47,7 +47,7 @@ func TestItoa(t *testing.T) {
 		error     error
 	}
 
-	var tests = map[string]test{
+	tests := map[string]test{
 		"nil value":           {error: errNoValue},
 		"not an integer type": {value: true, error: errNonIntegerType},
 		"int":                 {value: int(42), expected: "42"},

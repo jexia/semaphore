@@ -3,9 +3,9 @@ package proto
 import (
 	"testing"
 
-	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/labels"
-	"github.com/jexia/semaphore/pkg/specs/types"
+	"github.com/jexia/semaphore/v2/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/specs/labels"
+	"github.com/jexia/semaphore/v2/pkg/specs/types"
 )
 
 type mockMethod struct {
@@ -65,7 +65,7 @@ func TestServiceDescriptor(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			var service = &Service{
+			service := &Service{
 				Package: "pkg",
 				Name:    "test",
 				Methods: test,

@@ -3,15 +3,15 @@ package providers
 import (
 	"mime"
 
-	"github.com/jexia/semaphore/pkg/broker"
-	"github.com/jexia/semaphore/pkg/checks"
-	"github.com/jexia/semaphore/pkg/compare"
-	"github.com/jexia/semaphore/pkg/dependencies"
-	"github.com/jexia/semaphore/pkg/functions"
-	"github.com/jexia/semaphore/pkg/providers"
-	"github.com/jexia/semaphore/pkg/references"
-	"github.com/jexia/semaphore/pkg/references/forwarding"
-	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/broker"
+	"github.com/jexia/semaphore/v2/pkg/checks"
+	"github.com/jexia/semaphore/v2/pkg/compare"
+	"github.com/jexia/semaphore/v2/pkg/dependencies"
+	"github.com/jexia/semaphore/v2/pkg/functions"
+	"github.com/jexia/semaphore/v2/pkg/providers"
+	"github.com/jexia/semaphore/v2/pkg/references"
+	"github.com/jexia/semaphore/v2/pkg/references/forwarding"
+	"github.com/jexia/semaphore/v2/pkg/specs"
 )
 
 // Common file extension types

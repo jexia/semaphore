@@ -2,13 +2,13 @@ package hcl
 
 import (
 	"github.com/hashicorp/hcl/v2"
-	"github.com/jexia/semaphore/pkg/broker"
-	"github.com/jexia/semaphore/pkg/broker/logger"
-	"github.com/jexia/semaphore/pkg/conditions"
-	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/labels"
-	"github.com/jexia/semaphore/pkg/specs/template"
-	"github.com/jexia/semaphore/pkg/specs/types"
+	"github.com/jexia/semaphore/v2/pkg/broker"
+	"github.com/jexia/semaphore/v2/pkg/broker/logger"
+	"github.com/jexia/semaphore/v2/pkg/conditions"
+	"github.com/jexia/semaphore/v2/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/specs/labels"
+	"github.com/jexia/semaphore/v2/pkg/specs/template"
+	"github.com/jexia/semaphore/v2/pkg/specs/types"
 	"github.com/zclconf/go-cty/cty"
 	"go.uber.org/zap"
 )
@@ -249,7 +249,7 @@ func ParseIntermediateProxyForward(ctx *broker.Context, proxy ProxyForward) (*sp
 }
 
 func ParseIntermediateRewriteRules(ctx *broker.Context, rewrite []ProxyRewrite) ([]specs.Rewrite, error) {
-	var parsed = make([]specs.Rewrite, len(rewrite), len(rewrite))
+	parsed := make([]specs.Rewrite, len(rewrite), len(rewrite))
 
 	for index, rule := range rewrite {
 		parsed[index] = specs.Rewrite{
