@@ -5,11 +5,10 @@ import (
 	"io/ioutil"
 	"sync"
 
-	"github.com/jexia/semaphore/v2/pkg/discovery"
-
 	"github.com/jexia/semaphore/v2/pkg/broker"
 	"github.com/jexia/semaphore/v2/pkg/broker/logger"
 	"github.com/jexia/semaphore/v2/pkg/codec/proto"
+	"github.com/jexia/semaphore/v2/pkg/discovery"
 	"github.com/jexia/semaphore/v2/pkg/functions"
 	"github.com/jexia/semaphore/v2/pkg/references"
 	"github.com/jexia/semaphore/v2/pkg/specs"

@@ -1,8 +1,6 @@
 package transport
 
-import (
-	"github.com/jexia/semaphore/v2/pkg/specs"
-)
+import "github.com/jexia/semaphore/v2/pkg/specs"
 
 // Unwrap returns the result of calling the Unwrap method on err, if err's
 // type contains an transport Error returning error.

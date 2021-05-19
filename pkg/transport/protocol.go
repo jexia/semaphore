@@ -4,11 +4,10 @@ import (
 	"context"
 	"io"
 
-	"github.com/jexia/semaphore/v2/pkg/discovery"
-
 	"github.com/jexia/semaphore/v2/pkg/broker"
 	"github.com/jexia/semaphore/v2/pkg/codec"
 	"github.com/jexia/semaphore/v2/pkg/codec/metadata"
+	"github.com/jexia/semaphore/v2/pkg/discovery"
 	"github.com/jexia/semaphore/v2/pkg/functions"
 	"github.com/jexia/semaphore/v2/pkg/references"
 	"github.com/jexia/semaphore/v2/pkg/specs"

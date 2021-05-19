@@ -3,10 +3,9 @@ package transport
 import (
 	"testing"
 
-	"github.com/jexia/semaphore/v2/pkg/discovery"
-
 	"github.com/jexia/semaphore/v2/pkg/broker"
 	"github.com/jexia/semaphore/v2/pkg/codec"
+	"github.com/jexia/semaphore/v2/pkg/discovery"
 	"github.com/jexia/semaphore/v2/pkg/functions"
 	"github.com/jexia/semaphore/v2/pkg/specs"
 )

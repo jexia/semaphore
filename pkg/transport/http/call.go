@@ -8,10 +8,9 @@ import (
 	"net/http/httputil"
 	"net/url"
 
-	"github.com/jexia/semaphore/v2/pkg/discovery"
-
 	"github.com/jexia/semaphore/v2/pkg/broker"
 	"github.com/jexia/semaphore/v2/pkg/broker/logger"
+	"github.com/jexia/semaphore/v2/pkg/discovery"
 	"github.com/jexia/semaphore/v2/pkg/references"
 	"github.com/jexia/semaphore/v2/pkg/transport"
 	"go.uber.org/zap"

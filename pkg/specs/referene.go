@@ -1,8 +1,6 @@
 package specs
 
-import (
-	"github.com/jexia/semaphore/v2/pkg/specs/metadata"
-)
+import "github.com/jexia/semaphore/v2/pkg/specs/metadata"
 
 // PropertyReference represents a mustach template reference
 type PropertyReference struct {
