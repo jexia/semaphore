@@ -5,19 +5,23 @@ service "com.semaphore" "caller" {
 }
 
 flow "echo" {
-  input "com.input" {}
-
-  resource "opening" {
-    request "caller" "Open" {
-      message = "{{ input:message }}"
+    input {
+        payload "com.input" {}
     }
 
-    rollback "caller" "Open" {
-      message = "{{ opening:message }}"
-    }
-  }
+    resource "opening" {
+        request "caller" "Open" {
+            message = "{{ input:message }}"
+        }
 
-  output "com.output" {
-    message = "{{ opening:message }}"
-  }
+        rollback "caller" "Open" {
+            message = "{{ opening:message }}"
+        }
+    }
+
+    output {
+        payload "com.output" {
+            message = "{{ opening:message }}"
+        }
+    }
 }

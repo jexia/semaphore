@@ -1,12 +1,16 @@
 protobuffers = ["./*.proto"]
 
 endpoint "CreateUser" "grpc" {
-  service = "users"
-  method = "create"
+    service = "users"
+    method = "create"
 }
 
 flow "CreateUser" {
-  input "com.semaphore.User" {}
+    input {
+        payload "com.semaphore.User" {}
+    }
 
-  output "com.semaphore.User" {}
+    output {
+        payload "com.semaphore.User" {}
+    }
 }

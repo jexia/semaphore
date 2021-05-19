@@ -4,11 +4,11 @@ protobuffers = ["./schemas/*.proto"]
 include = ["flow.hcl"]
 
 http {
-  address = ":8080"
+    address = ":8080"
 }
 
 discovery "consul" {
-  address = "http://localhost:8500"
+    address = "http://localhost:8500"
 }
 
 // It's also possible to define a named discovery server client.
@@ -22,18 +22,18 @@ discovery "consul" {
 // }
 
 service "com.semaphore" "awesome-dogs" {
-  transport = "http"
-  codec     = "json"
-  host      = "http://awesome-dogs"
-  resolver  = "consul"
+    transport = "http"
+    codec     = "json"
+    host      = "http://awesome-dogs"
+    resolver  = "consul"
 
-  method "List" {
-    response = "com.semaphore.Dogs"
-    request = "com.semaphore.Void"
+    method "List" {
+        response = "com.semaphore.Dogs"
+        request = "com.semaphore.Void"
 
-    options {
-      endpoint = "/"
-      method = "GET"
+        options {
+            endpoint = "/"
+            method = "GET"
+        }
     }
-  }
 }

@@ -4,22 +4,22 @@ import "github.com/hashicorp/hcl/v2"
 
 // Manifest intermediate specs
 type Manifest struct {
-	LogLevel         string        `hcl:"log_level,optional"`
-	GraphQL          *GraphQL      `hcl:"graphql,block"`
-	HTTP             *HTTP         `hcl:"http,block"`
-	GRPC             *GRPC         `hcl:"grpc,block"`
-	Prometheus       *Prometheus   `hcl:"prometheus,block"`
-	Protobuffers     []string      `hcl:"protobuffers,optional"`
-	Avro             []string      `hcl:"avro,optional"`
-	Openapi3         []string      `hcl:"openapi3,optional"`
-	Include          []string      `hcl:"include,optional"`
-	Error            *ParameterMap `hcl:"error,block"`
-	Flows            []Flow        `hcl:"flow,block"`
-	Proxy            []Proxy       `hcl:"proxy,block"`
-	Endpoints        []Endpoint    `hcl:"endpoint,block"`
-	Services         []Service     `hcl:"service,block"`
-	ServiceSelector  []Services    `hcl:"services,block"`
-	DiscoveryServers []Discovery   `hcl:"discovery,block"`
+	LogLevel         string      `hcl:"log_level,optional"`
+	GraphQL          *GraphQL    `hcl:"graphql,block"`
+	HTTP             *HTTP       `hcl:"http,block"`
+	GRPC             *GRPC       `hcl:"grpc,block"`
+	Prometheus       *Prometheus `hcl:"prometheus,block"`
+	Protobuffers     []string    `hcl:"protobuffers,optional"`
+	Avro             []string    `hcl:"avro,optional"`
+	Openapi3         []string    `hcl:"openapi3,optional"`
+	Include          []string    `hcl:"include,optional"`
+	Error            *Output     `hcl:"error,block"`
+	Flows            []Flow      `hcl:"flow,block"`
+	Proxy            []Proxy     `hcl:"proxy,block"`
+	Endpoints        []Endpoint  `hcl:"endpoint,block"`
+	Services         []Service   `hcl:"service,block"`
+	ServiceSelector  []Services  `hcl:"services,block"`
+	DiscoveryServers []Discovery `hcl:"discovery,block"`
 }
 
 // GraphQL represents the GraphQL option definitions
@@ -68,12 +68,12 @@ type Condition struct {
 type Flow struct {
 	Condition `hcl:",remain"`
 
-	Name    string             `hcl:"name,label"`
-	Error   *ParameterMap      `hcl:"error,block"`
-	Input   *InputParameterMap `hcl:"input,block"`
-	OnError *OnError           `hcl:"on_error,block"`
-	Before  *Before            `hcl:"before,block"`
-	Output  *ParameterMap      `hcl:"output,block"`
+	Name    string   `hcl:"name,label"`
+	Error   *Output  `hcl:"error,block"`
+	Input   *Input   `hcl:"input,block"`
+	OnError *OnError `hcl:"on_error,block"`
+	Before  *Before  `hcl:"before,block"`
+	Output  *Output  `hcl:"output,block"`
 }
 
 // BaseParameterMap contains a set of generic fields.
@@ -83,12 +83,30 @@ type BaseParameterMap struct {
 	Properties hcl.Body               `hcl:",remain"`
 }
 
-// ParameterMap is the initial map of parameter names (keys) and their (templated) values (values).
-type ParameterMap struct {
+type InputParameterMap struct {
+	Schema string `hcl:"schema,label"`
+}
+
+// Input is the initial map of parameter names (keys) and their (templated) values (values).
+type Input struct {
+	*InputParameterMap `hcl:"payload,block"`
+
+	Options *BlockOptions `hcl:"options,block"`
+	Header  []string      `hcl:"header,optional"`
+}
+
+type OutputParameterMap struct {
 	BaseParameterMap `hcl:",remain"`
 
-	Schema  string        `hcl:"schema,label"`
+	Schema string `hcl:"schema,label"`
+}
+
+// Output is the initial map of parameter names (keys) and their (templated) values (values).
+type Output struct {
+	*OutputParameterMap `hcl:"payload,block"`
+
 	Options *BlockOptions `hcl:"options,block"`
+	Status  *int64        `hcl:"status,optional"`
 	Header  *Header       `hcl:"header,block"`
 }
 
@@ -109,13 +127,6 @@ type Header struct {
 	Body hcl.Body `hcl:",remain"`
 }
 
-// InputParameterMap is the initial map of parameter names (keys) and their (templated) values (values).
-type InputParameterMap struct {
-	Schema  string        `hcl:"schema,label"`
-	Options *BlockOptions `hcl:"options,block"`
-	Header  []string      `hcl:"header,optional"`
-}
-
 // BlockOptions holds the raw options.
 type BlockOptions struct {
 	Body hcl.Body `hcl:",remain"`
@@ -128,14 +139,6 @@ type NestedParameterMap struct {
 	Name string `hcl:"name,label"`
 }
 
-// InputRepeatedParameterMap is a map of repeated message blocks/values.
-type InputRepeatedParameterMap struct {
-	Name       string                      `hcl:"name,label"`
-	Nested     []NestedParameterMap        `hcl:"message,block"`
-	Repeated   []InputRepeatedParameterMap `hcl:"repeated,block"`
-	Properties hcl.Body                    `hcl:",remain"`
-}
-
 // RepeatedParameterMap is a map of repeated message blocks/values.
 type RepeatedParameterMap struct {
 	BaseParameterMap `hcl:",remain"`
@@ -146,13 +149,13 @@ type RepeatedParameterMap struct {
 
 // Resource intermediate specification.
 type Resource struct {
-	Name         string        `hcl:"name,label"`
-	DependsOn    []string      `hcl:"depends_on,optional"`
-	Request      *Call         `hcl:"request,block"`
-	Rollback     *Call         `hcl:"rollback,block"`
-	OnError      *OnError      `hcl:"on_error,block"`
-	ExpectStatus []int         `hcl:"expect_status,optional"`
-	Error        *ParameterMap `hcl:"error,block"`
+	Name         string   `hcl:"name,label"`
+	DependsOn    []string `hcl:"depends_on,optional"`
+	Request      *Call    `hcl:"request,block"`
+	Rollback     *Call    `hcl:"rollback,block"`
+	OnError      *OnError `hcl:"on_error,block"`
+	ExpectStatus []int    `hcl:"expect_status,optional"`
+	Error        *Output  `hcl:"error,block"`
 }
 
 // OnError intermediate specification.
@@ -215,7 +218,7 @@ type Proxy struct {
 	Condition `hcl:",remain"`
 
 	Name    string         `hcl:"name,label"`
-	Error   *ParameterMap  `hcl:"error,block"`
+	Error   *Output        `hcl:"error,block"`
 	Input   *ProxyInput    `hcl:"input,block"`
 	OnError *OnError       `hcl:"on_error,block"`
 	Before  *Before        `hcl:"before,block"`

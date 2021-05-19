@@ -1,4 +1,4 @@
-log_level = "$LOG_LEVEL"
+log_level    = "$LOG_LEVEL"
 protobuffers = ["../proto/*.proto"]
 
 include = ["flow.hcl"]

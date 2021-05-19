@@ -1,19 +1,21 @@
 service "com.semaphore" "caller" {
-  transport = "http"
-  codec     = "json"
-  host      = ""
+    transport = "http"
+    codec     = "json"
+    host      = ""
 }
 
 flow "echo" {
-  input "com.input" {
-    header = ["Authorization"]
-  }
+    input {
+        header = ["Authorization"]
 
-  resource "opening" {
-    request "caller" "Open" {
-      header {
-        Authorization = "{{ input.header:Authorization }}"
-      }
+        payload "com.input" {}
     }
-  }
+
+    resource "opening" {
+        request "caller" "Open" {
+            header {
+                Authorization = "{{ input.header:Authorization }}"
+            }
+        }
+    }
 }

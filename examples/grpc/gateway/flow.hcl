@@ -11,7 +11,9 @@ endpoint "greeter" "grpc" {
 }
 
 flow "greeter" {
-	input "semaphore.greeter.Request" {}
+	input {
+		payload "semaphore.greeter.Request" {}
+	}
 
 	resource "user" {
 		request "semaphore.greeter.Say" "Hello" {
@@ -19,8 +21,10 @@ flow "greeter" {
 		}
 	}
 
-	output "semaphore.greeter.Response" {
-		msg = "{{ user:msg }}"
-		meta = "{{ user:meta }}"
+	output {
+		payload "semaphore.greeter.Response" {
+			msg = "{{ user:msg }}"
+			meta = "{{ user:meta }}"
+		}
 	}
 }

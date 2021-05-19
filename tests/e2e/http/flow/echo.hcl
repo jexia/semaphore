@@ -1,19 +1,23 @@
 endpoint "typetest" "http" {
-  endpoint = "/json"
-  method   = "POST"
-  codec    = "json"
+    endpoint = "/json"
+    method   = "POST"
+    codec    = "json"
 }
 
 endpoint "typetest" "http" {
-  endpoint = "/xml"
-  method   = "POST"
-  codec    = "xml"
+    endpoint = "/xml"
+    method   = "POST"
+    codec    = "xml"
 }
 
 flow "typetest" {
-  input "semaphore.typetest.Request" {}
+    input {
+        payload "semaphore.typetest.Request" {}
+    }
 
-  output "semaphore.typetest.Response" {
-    echo = "{{ input:data }}"
-  }
+    output {
+        payload "semaphore.typetest.Response" {
+            echo = "{{ input:data }}"
+        }
+    }
 }

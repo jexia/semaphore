@@ -3,6 +3,7 @@ package openapi3
 import (
 	"errors"
 	"fmt"
+
 	openapi "github.com/getkin/kin-openapi/openapi3"
 	"github.com/jexia/semaphore/pkg/specs"
 	"github.com/jexia/semaphore/pkg/specs/labels"

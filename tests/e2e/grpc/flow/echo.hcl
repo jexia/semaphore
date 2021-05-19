@@ -1,13 +1,17 @@
 endpoint "typetest" "grpc" {
-	package = "semaphore.typetest"
-	service = "Typetest"
-	method  = "Run"
+    package = "semaphore.typetest"
+    service = "Typetest"
+    method  = "Run"
 }
 
 flow "typetest" {
-  input "semaphore.typetest.Request" {}
+    input {
+        payload "semaphore.typetest.Request" {}
+    }
 
-  output "semaphore.typetest.Response" {
-    echo = "{{ input:data }}"
-  }
+    output {
+        payload "semaphore.typetest.Response" {
+            echo = "{{ input:data }}"
+        }
+    }
 }

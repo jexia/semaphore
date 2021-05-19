@@ -1,5 +1,7 @@
 flow "echo" {
-  input "object" {}
+  input {
+    payload "object" {}
+  }
 
   resource "get" {
     request "getter" "Get" {
@@ -13,12 +15,14 @@ flow "echo" {
     }
   }
 
-  output "object" {
-    repeated "nested" "input:nested" {
-      name = "<string>"
+  output {
+    payload "object" {
+      repeated "nested" "input:nested" {
+        name = "<string>"
 
-      repeated "sub" "input:nested.sub" {
-        message = "<string>"
+        repeated "sub" "input:nested.sub" {
+          message = "<string>"
+        }
       }
     }
   }

@@ -1,5 +1,7 @@
 flow "complete" {
-	input "proto.Message" {}
+	input {
+		payload "proto.Message" {}
+	}
 
 	resource "first" {
 		request "proto.test" "complete" {
@@ -14,7 +16,7 @@ flow "complete" {
 			}
 
 			repeating_values = "{{ input:repeating_values }}"
-			status = "{{ input:status }}"
+			status 			 = "{{ input:status }}"
 			repeating_status = "{{ input:repeating_status }}"
 		}
 	}

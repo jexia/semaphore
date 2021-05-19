@@ -5,7 +5,7 @@ protobuffers = ["./proto/*.proto"]
 include = ["flow.hcl"]
 
 http {
-  address = ":8080"
+    address = ":8080"
 }
 
 services {}

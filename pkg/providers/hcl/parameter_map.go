@@ -48,20 +48,23 @@ func ParseIntermediateRepeatedParameterMap(ctx *broker.Context, params RepeatedP
 }
 
 // ParseIntermediateParameterMap parses the given intermediate parameter map to a spec parameter map
-func ParseIntermediateParameterMap(ctx *broker.Context, params *ParameterMap) (*specs.ParameterMap, error) {
+func ParseIntermediateParameterMap(ctx *broker.Context, params *Output) (*specs.ParameterMap, error) {
 	if params == nil {
 		return nil, nil
 	}
 
-	result := specs.ParameterMap{
-		Schema:  params.Schema,
-		Options: make(specs.Options),
-		Property: &specs.Property{
-			Label: labels.Optional,
-			Template: specs.Template{
-				Message: make(specs.Message),
-			},
-		},
+	var schema string
+
+	if params.OutputParameterMap != nil {
+		schema = params.OutputParameterMap.Schema
+	}
+
+	result := specs.NewParameterMap(schema)
+
+	result.Property.Template.Message = make(specs.Message)
+
+	if params.Status != nil {
+		result.Status = *params.Status
 	}
 
 	if params.Header != nil {
@@ -77,8 +80,12 @@ func ParseIntermediateParameterMap(ctx *broker.Context, params *ParameterMap) (*
 		result.Options = ParseIntermediateSpecOptions(params.Options.Body)
 	}
 
+	if params.OutputParameterMap == nil {
+		return &result, nil
+	}
+
 	var err error
-	result.Property.Message, err = parseBaseParameterMap(ctx, params.BaseParameterMap, "")
+	result.Property.Message, err = parseBaseParameterMap(ctx, params.OutputParameterMap.BaseParameterMap, "")
 	if err != nil {
 		return nil, err
 	}
@@ -130,14 +137,14 @@ func ParseIntermediateCallParameterMap(ctx *broker.Context, params *Call) (*spec
 	return &result, nil
 }
 
-// ParseIntermediateInputParameterMap parses the given input parameter map
-func ParseIntermediateInputParameterMap(ctx *broker.Context, params *InputParameterMap) (*specs.ParameterMap, error) {
+// ParseIntermediateInput parses the given input parameter map
+func ParseIntermediateInput(ctx *broker.Context, params *Input) (*specs.ParameterMap, error) {
 	if params == nil {
 		return nil, nil
 	}
 
 	result := &specs.ParameterMap{
-		Schema:  params.Schema,
+		Schema:  params.InputParameterMap.Schema,
 		Options: make(specs.Options),
 		Header:  make(specs.Header, len(params.Header)),
 	}

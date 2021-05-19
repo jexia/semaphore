@@ -26,6 +26,17 @@ import (
 	"github.com/jexia/semaphore/pkg/transport"
 )
 
+func statusOK() *specs.Property {
+	return &specs.Property{
+		Template: specs.Template{
+			Scalar: &specs.Scalar{
+				Type:    types.Int64,
+				Default: int64(http.StatusOK),
+			},
+		},
+	}
+}
+
 func NewMockListener(t *testing.T, nodes flow.Nodes, errs transport.Errs) (transport.Listener, string) {
 	var (
 		port   = AvailablePort(t)
@@ -53,7 +64,11 @@ func NewMockListener(t *testing.T, nodes flow.Nodes, errs transport.Errs) (trans
 					MethodOption:   http.MethodPost,
 					CodecOption:    json.Name(),
 				},
-				Response: transport.NewObject(NewSimpleMockSpecs(), nil, nil),
+				Response: transport.NewObject(
+					NewSimpleMockSpecs(),
+					statusOK(),
+					nil,
+				),
 			},
 		}
 	)

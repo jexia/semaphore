@@ -23,7 +23,7 @@ func parseTestAttribute(t *testing.T, config string) *hcl.Attribute {
 		t.Fatalf("unexpected error: %s", diags.Error())
 	}
 
-	var parameterMap ParameterMap
+	var parameterMap OutputParameterMap
 
 	diags = gohcl.DecodeBody(file.Body, nil, &parameterMap)
 	if diags.HasErrors() {

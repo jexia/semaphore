@@ -156,6 +156,7 @@ func ResolveCall(ctx *broker.Context, node *specs.Node, call *specs.Call, flow s
 
 // ResolveParameterMap resolves all references made within the given parameter map
 func ResolveParameterMap(ctx *broker.Context, node *specs.Node, params *specs.ParameterMap, flow specs.FlowInterface) (err error) {
+	// TODO: resolve status if needed
 	for _, header := range params.Header {
 		err = ResolveProperty(ctx, node, header, flow)
 		if err != nil {

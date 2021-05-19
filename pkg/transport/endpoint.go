@@ -17,7 +17,7 @@ func NewEndpoint(listener string, flow Flow, forward *Forward, options specs.Opt
 		Forward:  forward,
 		Options:  options,
 		Request:  NewObject(request, nil, nil),
-		Response: NewObject(response, nil, nil),
+		Response: NewObject(response, response.StatusCode(), nil),
 	}
 
 	return result
@@ -28,7 +28,7 @@ func NewObject(schema *specs.ParameterMap, status *specs.Property, message *spec
 	return &Object{
 		Definition: schema,
 		StatusCode: status,
-		Message:    message,
+		Payload:    message,
 	}
 }
 
@@ -36,7 +36,7 @@ func NewObject(schema *specs.ParameterMap, status *specs.Property, message *spec
 type Object struct {
 	Definition *specs.ParameterMap
 	StatusCode *specs.Property
-	Message    *specs.Property
+	Payload    *specs.Property
 	Codec      codec.Manager
 	Meta       *metadata.Manager
 }
@@ -68,13 +68,13 @@ func (object *Object) ResolveStatusCode(store references.Store) int {
 // If no message property has been defined or the property is not a string.
 // Is a internal server error message returned.
 func (object *Object) ResolveMessage(store references.Store) string {
-	if object.Message == nil {
+	if object.Payload == nil {
 		return StatusMessage(StatusInternalErr)
 	}
 
-	result := object.Message.Scalar.Default
-	if object.Message.Reference != nil {
-		ref := store.Load(object.Message.Reference.String())
+	result := object.Payload.Scalar.Default
+	if object.Payload.Reference != nil {
+		ref := store.Load(object.Payload.Reference.String())
 		if ref != nil && ref.Value != nil {
 			result = ref.Value
 		}
