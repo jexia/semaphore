@@ -41,3 +41,13 @@ flow "repeated_values" {
 		}
 	}
 }
+
+flow "oneof" {
+	input "proto.Message" {}
+
+	resource "first" {
+		request "proto.mock" "one_of" {
+			oneof = "{{ input:oneof }}"
+		}
+	}
+}

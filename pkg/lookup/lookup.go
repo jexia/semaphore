@@ -241,6 +241,15 @@ func PropertyLookup(param *specs.Property) PathLookup {
 			}
 
 			return nil
+		case param.OneOf != nil:
+			for _, oneof := range param.Template.OneOf {
+				lookup := PropertyLookup(oneof)(path)
+				if lookup != nil {
+					return lookup
+				}
+			}
+
+			return nil
 		default:
 			return nil
 		}

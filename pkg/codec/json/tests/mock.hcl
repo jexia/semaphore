@@ -61,3 +61,13 @@ flow "repeating_enum" {
     }
   }
 }
+
+flow "one_of" {
+  input "com.complete.input" {}
+
+  resource "first" {
+    request "mock" "one_of" {
+      oneof = "{{ input:oneof }}"
+    }
+  }
+}

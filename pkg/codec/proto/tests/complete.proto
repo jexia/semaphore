@@ -26,6 +26,11 @@ message Message {
     repeated string repeating_values = 4;
     MessageStatus status = 5;
     repeated MessageStatus repeating_status = 6;
+    oneof oneof {
+        bool boolean = 7;
+        double numeric = 8;
+        string text = 9;
+    }
 }
 
 message Empty {

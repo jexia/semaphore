@@ -56,6 +56,7 @@ type Schema struct {
 	Properties  map[string]*Schema `json:"properties,omitempty" yaml:"properties,omitempty"`
 	Default     interface{}        `json:"default,omitempty" yaml:"default,omitempty"`
 	Enum        []interface{}      `json:"enum,omitempty" yaml:"enum,omitempty"`
+	OneOf       []*Schema          `json:"oneof,omitempty" yaml:"oneof"`
 }
 
 // PathItem describes the operations available on a single path.

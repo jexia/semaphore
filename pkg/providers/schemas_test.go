@@ -202,7 +202,7 @@ func TestDefineSchemas(t *testing.T) {
 			services := NewMockServices()
 			schemas := NewMockSchemas()
 
-			err := ResolveSchemas(ctx, services, schemas, flows)
+			err := ResolveSchemaDefinitions(ctx, services, schemas, flows)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -365,7 +365,7 @@ func TestDefineSchemasUnknown(t *testing.T) {
 			services := NewMockServices()
 			schemas := NewMockSchemas()
 
-			err := ResolveSchemas(ctx, services, schemas, flows)
+			err := ResolveSchemaDefinitions(ctx, services, schemas, flows)
 			if err == nil {
 				t.Fatal("unexpected pass")
 			}
@@ -559,7 +559,7 @@ func TestUndefinedNestedSchemaProperty(t *testing.T) {
 				Name: "mock",
 			}
 
-			err := ResolveParameterMap(ctx, schemas, test, flow)
+			err := resolveParameterMapSchemaDefinitions(ctx, schemas, test, flow)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -580,7 +580,7 @@ func TestSettingUndefinedNested(t *testing.T) {
 		Name: "mock",
 	}
 
-	err := ResolveParameterMap(ctx, schemas, test, flow)
+	err := resolveParameterMapSchemaDefinitions(ctx, schemas, test, flow)
 	if err != nil {
 		t.Fatal(err)
 	}

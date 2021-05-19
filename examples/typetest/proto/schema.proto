@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package semaphore.typetest;
+
+service Typetest {
+	rpc Run(Request) returns (Response) {}
+}
+
+enum Enum {
+	UNKNOWN = 0;
+
+	ON = 1;
+
+	OFF = 2;
+}
+
+message Data {
+	Enum enum = 1;
+
+	string string = 2;
+
+	int64 int64 = 3;
+
+	double double = 4;
+
+	repeated int64 numbers = 5;
+}
+
+message Array {
+    repeated Data data = 1;
+}
+
+message Request {
+    oneof oneof {
+        bool empty = 1;
+
+        Data single = 2;
+
+        Array plural = 3;
+    }
+
+    Data object = 4;
+
+    repeated Data array = 5;
+}
+
+message Response {
+    oneof oneof {
+        bool empty = 1;
+
+        Data single = 2;
+
+        Array plural = 3;
+    }
+
+    Data object = 4;
+
+    repeated Data array = 5;
+}
+
+

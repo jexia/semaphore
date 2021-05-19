@@ -36,7 +36,13 @@ func NewMessage(path string, descriptor *desc.MessageDescriptor) *specs.Property
 	}
 
 	for _, field := range fields {
-		result.Message[field.GetName()] = NewProperty(template.JoinPath(path, field.GetName()), field)
+		if oneof := field.GetOneOf(); oneof != nil {
+			AddOneOf(result.Message, path, field)
+
+			continue
+		}
+
+		result.Message[field.GetName()] = NewProperty(path, field)
 	}
 
 	return result
@@ -44,7 +50,9 @@ func NewMessage(path string, descriptor *desc.MessageDescriptor) *specs.Property
 
 // NewProperty constructs a schema Property with the given field descriptor
 func NewProperty(path string, descriptor *desc.FieldDescriptor) *specs.Property {
-	result := &specs.Property{
+	path = template.JoinPath(path, descriptor.GetName())
+
+	var property = &specs.Property{
 		Path:        path,
 		Name:        descriptor.GetName(),
 		Description: descriptor.GetSourceInfo().GetLeadingComments(),
@@ -53,6 +61,45 @@ func NewProperty(path string, descriptor *desc.FieldDescriptor) *specs.Property 
 		Label:       Labels[descriptor.GetLabel()],
 	}
 
+	setTemplate(&property.Template, path, descriptor)
+
+	return property
+}
+
+// AddOneOf constructs property of type "oneof"
+func AddOneOf(message specs.Message, path string, descriptor *desc.FieldDescriptor) {
+	var (
+		oneOf = descriptor.GetOneOf()
+		name  = oneOf.GetName()
+	)
+
+	path = template.JoinPath(path, name)
+
+	property, ok := message[name]
+	if !ok {
+		property = &specs.Property{
+			Path: path,
+			Name: name,
+			Description: func() string {
+				if comments := oneOf.GetSourceInfo().LeadingComments; comments != nil {
+					return *comments
+				}
+				return ""
+			}(),
+			Options: specs.Options{},
+			Label:   Labels[descriptor.GetLabel()],
+			Template: specs.Template{
+				OneOf: make(specs.OneOf, len(oneOf.GetChoices())),
+			},
+		}
+
+		message[name] = property
+	}
+
+	property.OneOf[descriptor.GetName()] = NewProperty(path, descriptor)
+}
+
+func setTemplate(template *specs.Template, path string, descriptor *desc.FieldDescriptor) {
 	switch {
 	case descriptor.GetType() == protobuf.FieldDescriptorProto_TYPE_ENUM:
 		enum := descriptor.GetEnumType()
@@ -70,7 +117,7 @@ func NewProperty(path string, descriptor *desc.FieldDescriptor) *specs.Property 
 			positions[value.GetNumber()] = result
 		}
 
-		result.Enum = &specs.Enum{
+		template.Enum = &specs.Enum{
 			Name:        enum.GetName(),
 			Description: enum.GetSourceInfo().GetLeadingComments(),
 			Keys:        keys,
@@ -80,25 +127,28 @@ func NewProperty(path string, descriptor *desc.FieldDescriptor) *specs.Property 
 		break
 	case descriptor.GetType() == protobuf.FieldDescriptorProto_TYPE_MESSAGE:
 		var fields = descriptor.GetMessageType().GetFields()
-		result.Message = make(specs.Message, len(fields))
+		template.Message = make(specs.Message, len(fields))
 
 		for _, field := range fields {
-			result.Message[field.GetName()] = NewProperty(template.JoinPath(path, field.GetName()), field)
+			if oneof := field.GetOneOf(); oneof != nil {
+				AddOneOf(template.Message, path, field)
+
+				continue
+			}
+
+			template.Message[field.GetName()] = NewProperty(path, field)
 		}
 
 		break
 	default:
-		result.Scalar = &specs.Scalar{
+		template.Scalar = &specs.Scalar{
 			Type: Types[descriptor.GetType()],
 		}
 	}
 
 	if descriptor.GetLabel() == protobuf.FieldDescriptorProto_LABEL_REPEATED {
-		result.Label = labels.Optional
-		result.Template = specs.Template{
-			Repeated: specs.Repeated{result.Template},
+		*template = specs.Template{
+			Repeated: specs.Repeated{*template},
 		}
 	}
-
-	return result
 }

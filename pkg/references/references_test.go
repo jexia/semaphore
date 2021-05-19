@@ -62,7 +62,7 @@ func TestUnmarshalFile(t *testing.T) {
 			}
 
 			err = func() (err error) {
-				err = providers.ResolveSchemas(ctx, services, schemas, flows)
+				err = providers.ResolveSchemaDefinitions(ctx, services, schemas, flows)
 				if err != nil {
 					return err
 				}
@@ -91,7 +91,7 @@ func TestUnmarshalFile(t *testing.T) {
 				}
 
 				if err.Error() != collection.Exception.Message {
-					t.Fatalf("unexpected error message %q, expected %q", err.Error(), collection.Exception.Message)
+					t.Fatalf("unexpected error message:\n%s\nexpected:\n%s", err.Error(), collection.Exception.Message)
 				}
 
 				return
@@ -118,7 +118,7 @@ func TestUnmarshalFile(t *testing.T) {
 				}
 
 				if err.Error() != collection.Exception.Message {
-					t.Fatalf("unexpected error message %q, expected %q", err.Error(), collection.Exception.Message)
+					t.Fatalf("unexpected error message:\n%s\nexpected:\n%s", err.Error(), collection.Exception.Message)
 				}
 			}
 		})

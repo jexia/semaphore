@@ -17,6 +17,8 @@ func encode(encoder *gojay.Encoder, path string, template specs.Template, store 
 		encoder.Array(NewArray(path, template, store, tracker))
 	case template.Enum != nil:
 		Enum(template).Marshal(encoder, store, tracker)
+	case template.OneOf != nil:
+		encoder.Object(NewOneOf(path, template, store, tracker))
 	default:
 		Scalar(template).Marshal(encoder, store, tracker)
 	}
@@ -40,6 +42,8 @@ func encodeKey(encoder *gojay.Encoder, path, key string, template specs.Template
 		encoder.AddArrayKey(key, NewArray(path, template, store, tracker))
 	case template.Enum != nil:
 		Enum(template).MarshalKey(encoder, key, store, tracker)
+	case template.OneOf != nil:
+		encoder.AddObjectKeyOmitEmpty(key, NewOneOf(path, template, store, tracker))
 	default:
 		Scalar(template).MarshalKey(encoder, key, store, tracker)
 	}

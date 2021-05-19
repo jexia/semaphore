@@ -460,7 +460,7 @@ func TestMarshal(t *testing.T) {
 				"nested":  map[string]interface{}{},
 			},
 			schema:   schema,
-			expected: `{"message":"some message","nested":{}}`,
+			expected: `{"message":"some message","nested":{},"oneof":{}}`,
 		},
 		"nested": {
 			input: map[string]interface{}{
@@ -469,7 +469,7 @@ func TestMarshal(t *testing.T) {
 				},
 			},
 			schema:   schema,
-			expected: `{"nested":{"value":"some message"}}`,
+			expected: `{"nested":{"value":"some message"},"oneof":{}}`,
 		},
 		"enum": {
 			input: map[string]interface{}{
@@ -477,7 +477,16 @@ func TestMarshal(t *testing.T) {
 				"enum":   references.Enum("PENDING", 2),
 			},
 			schema:   schema,
-			expected: `{"nested":{},"enum":"PENDING"}`,
+			expected: `{"nested":{},"enum":"PENDING","oneof":{}}`,
+		},
+		"oneof": {
+			input: map[string]interface{}{
+				"oneof": map[string]interface{}{
+					"number": int64(42),
+				},
+			},
+			schema:   schema,
+			expected: `{"nested":{},"oneof":{"number":42}}`,
 		},
 		"repeating_enum": {
 			input: map[string]interface{}{
@@ -487,7 +496,7 @@ func TestMarshal(t *testing.T) {
 				},
 			},
 			schema:   schema,
-			expected: `{"nested":{},"repeating_enum":["UNKNOWN","PENDING"]}`,
+			expected: `{"nested":{},"repeating_enum":["UNKNOWN","PENDING"],"oneof":{}}`,
 		},
 		"repeating objects": {
 			input: map[string]interface{}{
@@ -501,7 +510,7 @@ func TestMarshal(t *testing.T) {
 				},
 			},
 			schema:   schema,
-			expected: `{"nested":{},"repeating":[{"value":"repeating value"},{"value":"repeating value"}]}`,
+			expected: `{"nested":{},"repeating":[{"value":"repeating value"},{"value":"repeating value"}],"oneof":{}}`,
 		},
 		"repeating values from reference": {
 			input: map[string]interface{}{
@@ -511,7 +520,7 @@ func TestMarshal(t *testing.T) {
 				},
 			},
 			schema:   schema,
-			expected: `{"nested":{},"repeating_values":["repeating one","repeating two"]}`,
+			expected: `{"nested":{},"repeating_values":["repeating one","repeating two"],"oneof":{}}`,
 		},
 		"complex": {
 			input: map[string]interface{}{
@@ -527,9 +536,12 @@ func TestMarshal(t *testing.T) {
 						"value": "repeating value",
 					},
 				},
+				"oneof": map[string]interface{}{
+					"string": "foo",
+				},
 			},
 			schema:   schema,
-			expected: `{"message":"hello world","nested":{"value":"nested value"},"repeating":[{"value":"repeating value"},{"value":"repeating value"}]}`,
+			expected: `{"message":"hello world","nested":{"value":"nested value"},"repeating":[{"value":"repeating value"},{"value":"repeating value"}],"oneof":{"string":"foo"}}`,
 		},
 	}
 
@@ -684,7 +696,7 @@ func TestUnmarshal(t *testing.T) {
 			},
 		},
 		"complex": {
-			input:  `{"message":"hello world","nested":{"value":"hello nested world"},"repeating":[{"value":"repeating one"},{"value":"repeating two"}]}`,
+			input:  `{"message":"hello world","nested":{"value":"hello nested world"},"repeating":[{"value":"repeating one"},{"value":"repeating two"}],"oneof":{"string":"foo"}}`,
 			schema: schema,
 			expected: map[string]tests.Expect{
 				"message": {
@@ -700,6 +712,9 @@ func TestUnmarshal(t *testing.T) {
 
 				"repeating[1].value": {
 					Scalar: "repeating two",
+				},
+				"oneof.string": {
+					Scalar: "foo",
 				},
 			},
 		},

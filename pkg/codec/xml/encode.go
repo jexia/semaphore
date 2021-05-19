@@ -16,6 +16,8 @@ func encodeElement(encoder *xml.Encoder, name, path string, template specs.Templ
 		marshaler = NewObject(name, path, template, store, tracker)
 	case template.Repeated != nil:
 		marshaler = NewArray(name, path, template, store, tracker)
+	case template.OneOf != nil:
+		marshaler = NewOneOf(name, path, template, store, tracker)
 	case template.Enum != nil:
 		marshaler = NewEnum(name, path, template, store, tracker)
 	case template.Scalar != nil:

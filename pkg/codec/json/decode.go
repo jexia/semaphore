@@ -16,6 +16,8 @@ func decode(decoder *gojay.Decoder, path string, template specs.Template, store 
 		return Enum(template).Unmarshal(decoder, path, store, tracker)
 	case template.Scalar != nil:
 		return Scalar(template).Unmarshal(decoder, path, store, tracker)
+	case template.OneOf != nil:
+		return decoder.Object(NewOneOf(path, template, store, tracker))
 	}
 
 	return nil

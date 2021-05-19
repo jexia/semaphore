@@ -95,6 +95,30 @@ properties:
                       key: "PENDING"
                       position: 2
                       description: "pending status"
+        "oneof":
+          position: 7
+          name: "oneof"
+          label: "optional"
+          template:
+            oneOf:
+              "bool":
+                name: "bool"
+                label: "optional"
+                template:
+                  scalar:
+                    type: "boolean"
+              "number":
+                name: "number"
+                label: "optional"
+                template:
+                  scalar:
+                    type: "int64"
+              "string":
+                name: "string"
+                label: "optional"
+                template:
+                  scalar:
+                    type: "string"                
   com.complete.output:
     label: "optional"
     template:
@@ -232,6 +256,35 @@ properties:
                 template:
                   scalar:
                     type: "string"
+  com.one_of.input:
+    label: "optional"
+    template:
+      message:
+        "oneof":
+          label: optional
+          template:
+            oneOf:
+              "bool":
+                name: "bool"
+                label: "optional"
+                position: 1
+                template:
+                  scalar:
+                    type: "boolean"
+              "number":
+                name: "number"
+                label: "optional"
+                position: 2
+                template:
+                  scalar:
+                    type: "int64"
+              "string":
+                name: "string"
+                label: "optional"
+                position: 3
+                template:
+                  scalar:
+                    type: "string"     
 services:
   mock:
     methods:
@@ -255,4 +308,7 @@ services:
         output: "com.simple.output"
       repeating_enum:
         input: "com.repeating_enum.input"
+        output: "com.simple.output"
+      one_of:
+        input: "com.one_of.input"
         output: "com.simple.output"

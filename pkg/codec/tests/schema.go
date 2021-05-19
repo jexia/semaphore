@@ -57,6 +57,42 @@ func PropEnum() *specs.Property {
 	}
 }
 
+func PropOneOf() *specs.Property {
+	return &specs.Property{
+		Name:  "oneof",
+		Path:  "oneof",
+		Label: labels.Required,
+		Template: specs.Template{
+			OneOf: specs.OneOf{
+				"integer": func() *specs.Property {
+					var property = PropInteger()
+					property.Position = 1
+					property.Path = "oneof.integer"
+
+					property.Reference = &specs.PropertyReference{
+						Resource: template.InputResource,
+						Path:     "oneof.integer",
+					}
+
+					return property
+				}(),
+				"string": func() *specs.Property {
+					var property = PropString()
+					property.Position = 2
+					property.Path = "oneof.string"
+
+					property.Reference = &specs.PropertyReference{
+						Resource: template.InputResource,
+						Path:     "oneof.string",
+					}
+
+					return property
+				}(),
+			},
+		},
+	}
+}
+
 var (
 	enum = &specs.Enum{
 		Keys: map[string]*specs.EnumValue{

@@ -10,6 +10,7 @@ import (
 // Template contains property schema. This is a union type (Only one field must be set).
 type Template struct {
 	*metadata.Meta
+
 	Reference *PropertyReference `json:"reference,omitempty"` // Reference represents a property reference made inside the given property
 
 	// Only one of the following fields should be set
@@ -19,6 +20,8 @@ type Template struct {
 	Message  Message  `json:"message,omitempty" yaml:"message,omitempty"`
 	OneOf    OneOf    `json:"oneOf,omitempty" yaml:"oneOf,omitempty"`
 }
+
+func (template Template) String() string { return dump(template) }
 
 // Type returns the type of the given template.
 func (template Template) Type() types.Type {
@@ -67,6 +70,10 @@ func (template Template) Clone() Template {
 		clone.Message = template.Message.Clone()
 	}
 
+	if template.OneOf != nil {
+		clone.OneOf = template.OneOf.Clone()
+	}
+
 	return clone
 }
 
@@ -92,19 +99,14 @@ func (template Template) Compare(expected Template) (err error) {
 	switch {
 	case expected.Repeated != nil:
 		err = template.Repeated.Compare(expected.Repeated)
-		break
-
 	case expected.Scalar != nil:
 		err = template.Scalar.Compare(expected.Scalar)
-		break
-
 	case expected.Message != nil:
 		err = template.Message.Compare(expected.Message)
-		break
-
 	case expected.Enum != nil:
 		err = template.Enum.Compare(expected.Enum)
-		break
+	case expected.OneOf != nil:
+		err = template.OneOf.Compare(expected.OneOf)
 	}
 
 	if err != nil {
@@ -142,5 +144,9 @@ func (template *Template) Define(expected Template) {
 
 	if template.Scalar == nil && expected.Scalar != nil {
 		template.Scalar = expected.Scalar.Clone()
+	}
+
+	if template.OneOf == nil && expected.OneOf != nil {
+		template.OneOf = expected.OneOf.Clone()
 	}
 }
