@@ -1,11 +1,12 @@
 package openapi3
 
 import (
-	"github.com/getkin/kin-openapi/openapi3"
-	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/types"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/jexia/semaphore/v2/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/specs/types"
+	"github.com/stretchr/testify/assert"
 )
 
 type testFn func(*testing.T, specs.Template) bool
@@ -149,7 +150,6 @@ func Test_newTemplate(t *testing.T) {
 
 	t.Run("test scalar", func(t *testing.T) {
 		got, err := build(t, "RandomName")
-
 		if err != nil {
 			t.Errorf("newTemplate() unexpected error: %s", err)
 			return
@@ -160,7 +160,6 @@ func Test_newTemplate(t *testing.T) {
 
 	t.Run("test repeated of scalars", func(t *testing.T) {
 		got, err := build(t, "DogNames")
-
 		if err != nil {
 			t.Errorf("newTemplate() unexpected error: %s", err)
 			return
@@ -173,7 +172,6 @@ func Test_newTemplate(t *testing.T) {
 
 	t.Run("test message", func(t *testing.T) {
 		got, err := build(t, "Dog")
-
 		if err != nil {
 			t.Errorf("newTemplate() unexpected error: %s", err)
 			return
@@ -191,7 +189,6 @@ func Test_newTemplate(t *testing.T) {
 
 	t.Run("test oneOf", func(t *testing.T) {
 		got, err := build(t, "Pet")
-
 		if err != nil {
 			t.Errorf("newTemplate() unexpected error: %s", err)
 			return
@@ -237,7 +234,6 @@ func Test_scalar(t *testing.T) {
 			t.Run(oapiType, func(t *testing.T) {
 				schema := &openapi3.Schema{Type: oapiType}
 				got, err := scalar(schema)
-
 				if err != nil {
 					t.Errorf("scalar() error = %v", err)
 					return
@@ -253,7 +249,6 @@ func Test_scalar(t *testing.T) {
 	t.Run("should support default value", func(t *testing.T) {
 		schema := &openapi3.Schema{Type: "string", Default: "foo"}
 		got, err := scalar(schema)
-
 		if err != nil {
 			t.Errorf("scalar() error = %v", err)
 			return

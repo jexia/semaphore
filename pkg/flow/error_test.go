@@ -3,7 +3,7 @@ package flow
 import (
 	"testing"
 
-	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/specs"
 )
 
 func TestNewErrorNil(t *testing.T) {

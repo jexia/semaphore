@@ -2,15 +2,16 @@ package manager
 
 import (
 	"fmt"
-	"github.com/jexia/semaphore/pkg/broker"
-	"github.com/jexia/semaphore/pkg/codec"
-	"github.com/jexia/semaphore/pkg/codec/metadata"
-	"github.com/jexia/semaphore/pkg/dependencies"
-	"github.com/jexia/semaphore/pkg/flow"
-	"github.com/jexia/semaphore/pkg/references"
-	"github.com/jexia/semaphore/pkg/references/forwarding"
-	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/template"
+
+	"github.com/jexia/semaphore/v2/pkg/broker"
+	"github.com/jexia/semaphore/v2/pkg/codec"
+	"github.com/jexia/semaphore/v2/pkg/codec/metadata"
+	"github.com/jexia/semaphore/v2/pkg/dependencies"
+	"github.com/jexia/semaphore/v2/pkg/flow"
+	"github.com/jexia/semaphore/v2/pkg/references"
+	"github.com/jexia/semaphore/v2/pkg/references/forwarding"
+	"github.com/jexia/semaphore/v2/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/specs/template"
 )
 
 // NewFlow constructs a new flow manager from the given configurations

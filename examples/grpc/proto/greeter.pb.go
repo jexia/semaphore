@@ -7,12 +7,13 @@
 package proto
 
 import (
-	proto "github.com/golang/protobuf/proto"
-	_ "github.com/jexia/semaphore/api"
-	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
-	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
 	sync "sync"
+
+	proto "github.com/golang/protobuf/proto"
+	_ "github.com/jexia/semaphore/v2/api"
+	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
+	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 )
 
 const (
@@ -216,12 +217,15 @@ func file_proto_greeter_proto_rawDescGZIP() []byte {
 	return file_proto_greeter_proto_rawDescData
 }
 
-var file_proto_greeter_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
-var file_proto_greeter_proto_goTypes = []interface{}{
-	(*Request)(nil),  // 0: semaphore.greeter.Request
-	(*Response)(nil), // 1: semaphore.greeter.Response
-	(*Meta)(nil),     // 2: semaphore.greeter.Meta
-}
+var (
+	file_proto_greeter_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+	file_proto_greeter_proto_goTypes  = []interface{}{
+		(*Request)(nil),  // 0: semaphore.greeter.Request
+		(*Response)(nil), // 1: semaphore.greeter.Response
+		(*Meta)(nil),     // 2: semaphore.greeter.Meta
+	}
+)
+
 var file_proto_greeter_proto_depIdxs = []int32{
 	2, // 0: semaphore.greeter.Response.meta:type_name -> semaphore.greeter.Meta
 	0, // 1: semaphore.greeter.Say.Hello:input_type -> semaphore.greeter.Request

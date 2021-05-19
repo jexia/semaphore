@@ -1,4 +1,4 @@
-module github.com/jexia/semaphore
+module github.com/jexia/semaphore/v2
 
 go 1.14
 

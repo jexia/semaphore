@@ -8,11 +8,11 @@ import (
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/gohcl"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
-	"github.com/jexia/semaphore/pkg/broker"
-	"github.com/jexia/semaphore/pkg/broker/logger"
-	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/labels"
-	"github.com/jexia/semaphore/pkg/specs/types"
+	"github.com/jexia/semaphore/v2/pkg/broker"
+	"github.com/jexia/semaphore/v2/pkg/broker/logger"
+	"github.com/jexia/semaphore/v2/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/specs/labels"
+	"github.com/jexia/semaphore/v2/pkg/specs/types"
 )
 
 func parseTestAttribute(t *testing.T, config string) *hcl.Attribute {
@@ -46,7 +46,7 @@ func TestParseIntermediateStaticProperty(t *testing.T) {
 		expected *specs.Property
 	}
 
-	var tests = map[string]test{
+	tests := map[string]test{
 		"array single": {
 			template: `
 				array = [

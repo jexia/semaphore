@@ -13,17 +13,17 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jexia/semaphore/pkg/broker"
-	"github.com/jexia/semaphore/pkg/broker/logger"
-	"github.com/jexia/semaphore/pkg/codec"
-	"github.com/jexia/semaphore/pkg/codec/json"
-	"github.com/jexia/semaphore/pkg/flow"
-	"github.com/jexia/semaphore/pkg/references"
-	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/labels"
-	"github.com/jexia/semaphore/pkg/specs/template"
-	"github.com/jexia/semaphore/pkg/specs/types"
-	"github.com/jexia/semaphore/pkg/transport"
+	"github.com/jexia/semaphore/v2/pkg/broker"
+	"github.com/jexia/semaphore/v2/pkg/broker/logger"
+	"github.com/jexia/semaphore/v2/pkg/codec"
+	"github.com/jexia/semaphore/v2/pkg/codec/json"
+	"github.com/jexia/semaphore/v2/pkg/flow"
+	"github.com/jexia/semaphore/v2/pkg/references"
+	"github.com/jexia/semaphore/v2/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/specs/labels"
+	"github.com/jexia/semaphore/v2/pkg/specs/template"
+	"github.com/jexia/semaphore/v2/pkg/specs/types"
+	"github.com/jexia/semaphore/v2/pkg/transport"
 )
 
 func NewMockListener(t *testing.T, nodes flow.Nodes, errs transport.Errs) (transport.Listener, string) {

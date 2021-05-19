@@ -3,7 +3,7 @@ package compare
 import (
 	"fmt"
 
-	"github.com/jexia/semaphore/pkg/prettyerr"
+	"github.com/jexia/semaphore/v2/pkg/prettyerr"
 )
 
 // ErrHeaderTypeMismatch occurs when expected header is not revieved

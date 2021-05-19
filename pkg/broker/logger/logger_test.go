@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/jexia/semaphore/pkg/broker"
+	"github.com/jexia/semaphore/v2/pkg/broker"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )

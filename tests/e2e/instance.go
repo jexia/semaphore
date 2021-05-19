@@ -4,14 +4,14 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/jexia/semaphore"
-	"github.com/jexia/semaphore/cmd/semaphore/daemon"
-	"github.com/jexia/semaphore/cmd/semaphore/daemon/providers"
-	"github.com/jexia/semaphore/cmd/semaphore/middleware"
-	"github.com/jexia/semaphore/pkg/broker"
-	"github.com/jexia/semaphore/pkg/broker/logger"
-	"github.com/jexia/semaphore/pkg/providers/hcl"
-	"github.com/jexia/semaphore/pkg/providers/protobuffers"
+	"github.com/jexia/semaphore/v2"
+	"github.com/jexia/semaphore/v2/cmd/semaphore/daemon"
+	"github.com/jexia/semaphore/v2/cmd/semaphore/daemon/providers"
+	"github.com/jexia/semaphore/v2/cmd/semaphore/middleware"
+	"github.com/jexia/semaphore/v2/pkg/broker"
+	"github.com/jexia/semaphore/v2/pkg/broker/logger"
+	"github.com/jexia/semaphore/v2/pkg/providers/hcl"
+	"github.com/jexia/semaphore/v2/pkg/providers/protobuffers"
 )
 
 // Config contains the settings of semaphore instance.
@@ -24,18 +24,17 @@ type Config struct {
 func Instance(t *testing.T, flow, schema string, config Config) *daemon.Client { // callers
 	ctx := logger.WithLogger(broker.NewContext())
 
-	var semaphoreOptions = []semaphore.Option{
+	semaphoreOptions := []semaphore.Option{
 		semaphore.WithLogLevel("*", "error"),
 		semaphore.WithFlows(hcl.FlowsResolver(flow)),
 	}
 
 	core, err := semaphore.NewOptions(ctx, append(semaphoreOptions, config.SemaphoreOptions...)...)
-
 	if err != nil {
 		t.Fatalf("cannot instantiate semaphore core: %s", err)
 	}
 
-	var providerOptions = []providers.Option{
+	providerOptions := []providers.Option{
 		providers.WithEndpoints(hcl.EndpointsResolver(flow)),
 		providers.WithSchema(protobuffers.SchemaResolver([]string{filepath.Dir(schema)}, schema)),
 		providers.WithServices(protobuffers.ServiceResolver([]string{filepath.Dir(schema)}, schema)),
@@ -43,7 +42,6 @@ func Instance(t *testing.T, flow, schema string, config Config) *daemon.Client {
 	}
 
 	options, err := providers.NewOptions(ctx, core, append(providerOptions, config.ProviderOptions...)...)
-
 	if err != nil {
 		t.Fatalf("unable to configure provider options: %s", err)
 	}

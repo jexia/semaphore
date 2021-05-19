@@ -4,15 +4,17 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/jexia/semaphore/cmd/semaphore/daemon"
-	"github.com/jexia/semaphore/cmd/semaphore/generate"
-	"github.com/jexia/semaphore/cmd/semaphore/validate"
+	"github.com/jexia/semaphore/v2/cmd/semaphore/daemon"
+	"github.com/jexia/semaphore/v2/cmd/semaphore/generate"
+	"github.com/jexia/semaphore/v2/cmd/semaphore/validate"
 	"github.com/spf13/cobra"
 )
 
-var version string
-var build string
-var label string
+var (
+	version string
+	build   string
+	label   string
+)
 
 var cmd = &cobra.Command{
 	Use:     "semaphore",
@@ -28,7 +30,6 @@ func init() {
 	cmd.AddCommand(daemon.Command)
 	cmd.AddCommand(validate.Command)
 	cmd.AddCommand(generate.Command)
-
 }
 
 func main() {

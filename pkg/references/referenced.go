@@ -1,8 +1,8 @@
 package references
 
 import (
-	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/template"
+	"github.com/jexia/semaphore/v2/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/specs/template"
 )
 
 // ReferencedCollection contains a collection of paths

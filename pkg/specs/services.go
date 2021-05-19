@@ -1,8 +1,6 @@
 package specs
 
-import (
-	"github.com/jexia/semaphore/pkg/specs/metadata"
-)
+import "github.com/jexia/semaphore/v2/pkg/specs/metadata"
 
 // ServiceList represents a collection of services
 type ServiceList []*Service

@@ -1,6 +1,6 @@
 package specs
 
-import "github.com/jexia/semaphore/pkg/specs/metadata"
+import "github.com/jexia/semaphore/v2/pkg/specs/metadata"
 
 // FlowListInterface represents a collection of flow interfaces
 type FlowListInterface []FlowInterface

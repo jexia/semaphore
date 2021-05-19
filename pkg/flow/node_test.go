@@ -6,15 +6,15 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jexia/semaphore/pkg/broker"
-	"github.com/jexia/semaphore/pkg/broker/logger"
-	"github.com/jexia/semaphore/pkg/codec/json"
-	"github.com/jexia/semaphore/pkg/conditions"
-	"github.com/jexia/semaphore/pkg/functions"
-	"github.com/jexia/semaphore/pkg/references"
-	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/labels"
-	"github.com/jexia/semaphore/pkg/specs/types"
+	"github.com/jexia/semaphore/v2/pkg/broker"
+	"github.com/jexia/semaphore/v2/pkg/broker/logger"
+	"github.com/jexia/semaphore/v2/pkg/codec/json"
+	"github.com/jexia/semaphore/v2/pkg/conditions"
+	"github.com/jexia/semaphore/v2/pkg/functions"
+	"github.com/jexia/semaphore/v2/pkg/references"
+	"github.com/jexia/semaphore/v2/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/specs/labels"
+	"github.com/jexia/semaphore/v2/pkg/specs/types"
 )
 
 func NewMockNode(name string, caller Call, rollback Call) *Node {
@@ -115,7 +115,6 @@ func BenchmarkSingleNodeCallingJSONCodecParallel(b *testing.B) {
 			},
 		},
 	})
-
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -140,7 +139,6 @@ func BenchmarkSingleNodeCallingJSONCodecParallel(b *testing.B) {
 			},
 		},
 	})
-
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -196,7 +194,6 @@ func BenchmarkSingleNodeCallingJSONCodecSerial(b *testing.B) {
 			},
 		},
 	})
-
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -221,7 +218,6 @@ func BenchmarkSingleNodeCallingJSONCodecSerial(b *testing.B) {
 			},
 		},
 	})
-
 	if err != nil {
 		b.Fatal(err)
 	}

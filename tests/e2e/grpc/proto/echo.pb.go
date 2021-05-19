@@ -7,12 +7,13 @@
 package proto
 
 import (
-	proto "github.com/golang/protobuf/proto"
-	_ "github.com/jexia/semaphore/api"
-	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
-	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
 	sync "sync"
+
+	proto "github.com/golang/protobuf/proto"
+	_ "github.com/jexia/semaphore/v2/api"
+	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
+	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 )
 
 const (
@@ -303,14 +304,17 @@ func file_proto_echo_proto_rawDescGZIP() []byte {
 	return file_proto_echo_proto_rawDescData
 }
 
-var file_proto_echo_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_proto_echo_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
-var file_proto_echo_proto_goTypes = []interface{}{
-	(Enum)(0),        // 0: semaphore.typetest.Enum
-	(*Data)(nil),     // 1: semaphore.typetest.Data
-	(*Request)(nil),  // 2: semaphore.typetest.Request
-	(*Response)(nil), // 3: semaphore.typetest.Response
-}
+var (
+	file_proto_echo_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+	file_proto_echo_proto_msgTypes  = make([]protoimpl.MessageInfo, 3)
+	file_proto_echo_proto_goTypes   = []interface{}{
+		(Enum)(0),        // 0: semaphore.typetest.Enum
+		(*Data)(nil),     // 1: semaphore.typetest.Data
+		(*Request)(nil),  // 2: semaphore.typetest.Request
+		(*Response)(nil), // 3: semaphore.typetest.Response
+	}
+)
+
 var file_proto_echo_proto_depIdxs = []int32{
 	0, // 0: semaphore.typetest.Data.enum:type_name -> semaphore.typetest.Enum
 	1, // 1: semaphore.typetest.Request.data:type_name -> semaphore.typetest.Data

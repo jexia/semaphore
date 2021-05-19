@@ -4,11 +4,11 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/jexia/semaphore/pkg/specs/types"
+	"github.com/jexia/semaphore/v2/pkg/specs/types"
 )
 
 func TestStringCanFormat(t *testing.T) {
-	var tests = map[types.Type]bool{
+	tests := map[types.Type]bool{
 		types.Bool:     false,
 		types.Bytes:    false,
 		types.Double:   false,
@@ -47,7 +47,7 @@ func TestStrtoa(t *testing.T) {
 		error     error
 	}
 
-	var tests = map[string]test{
+	tests := map[string]test{
 		"nil value":        {error: errNoValue},
 		"not a float type": {value: true, error: errNonStringType},
 		"unlimited string": {value: "this is a string with unlimited length", expected: "this is a string with unlimited length"},

@@ -3,8 +3,8 @@ package specs
 import (
 	"fmt"
 
-	"github.com/jexia/semaphore/pkg/prettyerr"
-	"github.com/jexia/semaphore/pkg/specs/labels"
+	"github.com/jexia/semaphore/v2/pkg/prettyerr"
+	"github.com/jexia/semaphore/v2/pkg/specs/labels"
 )
 
 // ErrUndefinedSchema occurs when schema is not found at path

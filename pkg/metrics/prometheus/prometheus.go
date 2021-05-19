@@ -5,11 +5,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/jexia/semaphore"
-	"github.com/jexia/semaphore/pkg/broker"
-	"github.com/jexia/semaphore/pkg/broker/logger"
-	"github.com/jexia/semaphore/pkg/flow"
-	"github.com/jexia/semaphore/pkg/references"
+	"github.com/jexia/semaphore/v2"
+	"github.com/jexia/semaphore/v2/pkg/broker"
+	"github.com/jexia/semaphore/v2/pkg/broker/logger"
+	"github.com/jexia/semaphore/v2/pkg/flow"
+	"github.com/jexia/semaphore/v2/pkg/references"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/zap"
@@ -56,10 +56,8 @@ func New(addr string) semaphore.Middleware {
 // CtxKey context key type
 type CtxKey string
 
-var (
-	// StartTimeCtx context time value
-	StartTimeCtx = CtxKey("start-time")
-)
+// StartTimeCtx context time value
+var StartTimeCtx = CtxKey("start-time")
 
 // NewCollector constructs a new prometheus collector
 func NewCollector() (Collector, error) {

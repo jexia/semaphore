@@ -4,20 +4,19 @@ import (
 	"errors"
 	"sync"
 
-	"github.com/jexia/semaphore"
-	"github.com/jexia/semaphore/cmd/semaphore/daemon/providers"
-	"github.com/jexia/semaphore/pkg/broker"
-	"github.com/jexia/semaphore/pkg/broker/endpoints"
-	"github.com/jexia/semaphore/pkg/broker/listeners"
-	"github.com/jexia/semaphore/pkg/broker/logger"
-	"github.com/jexia/semaphore/pkg/functions"
-	"github.com/jexia/semaphore/pkg/transport"
+	"github.com/jexia/semaphore/v2"
+	"github.com/jexia/semaphore/v2/cmd/semaphore/daemon/providers"
+	"github.com/jexia/semaphore/v2/pkg/broker"
+	"github.com/jexia/semaphore/v2/pkg/broker/endpoints"
+	"github.com/jexia/semaphore/v2/pkg/broker/listeners"
+	"github.com/jexia/semaphore/v2/pkg/broker/logger"
+	"github.com/jexia/semaphore/v2/pkg/functions"
+	"github.com/jexia/semaphore/v2/pkg/transport"
 	"go.uber.org/zap"
 )
 
 // NewClient constructs a new Semaphore instance
 func NewClient(ctx *broker.Context, core semaphore.Options, provider providers.Options) (*Client, error) {
-
 	if ctx == nil {
 		return nil, errors.New("nil context")
 	}
@@ -67,7 +66,6 @@ func (client *Client) Apply(ctx *broker.Context) error {
 		endpoints.WithServices(collection.ServiceList),
 		endpoints.WithFunctions(client.stack),
 	)
-
 	if err != nil {
 		return err
 	}

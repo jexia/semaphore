@@ -6,11 +6,11 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/jexia/semaphore/pkg/broker"
-	"github.com/jexia/semaphore/pkg/broker/logger"
-	"github.com/jexia/semaphore/pkg/references"
-	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/template"
+	"github.com/jexia/semaphore/v2/pkg/broker"
+	"github.com/jexia/semaphore/v2/pkg/broker/logger"
+	"github.com/jexia/semaphore/v2/pkg/references"
+	"github.com/jexia/semaphore/v2/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/specs/template"
 	"go.uber.org/zap"
 )
 
@@ -56,10 +56,8 @@ type Function struct {
 	Returns   *specs.Property
 }
 
-var (
-	// FunctionPattern is the matching pattern for custom defined functions
-	FunctionPattern = regexp.MustCompile(`(\w+)\((.*)\)$`)
-)
+// FunctionPattern is the matching pattern for custom defined functions
+var FunctionPattern = regexp.MustCompile(`(\w+)\((.*)\)$`)
 
 const (
 	// ArgumentDelimiter represents the character delimiting function arguments

@@ -3,9 +3,9 @@ package xml
 import (
 	"encoding/xml"
 
-	"github.com/jexia/semaphore/pkg/references"
-	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/template"
+	"github.com/jexia/semaphore/v2/pkg/references"
+	"github.com/jexia/semaphore/v2/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/specs/template"
 )
 
 // Enum is a vrapper over specs.Enum providing XML encoding/decoding.
@@ -50,7 +50,7 @@ func (enum *Enum) value(store references.Store, tracker references.Tracker) *spe
 		return nil
 	}
 
-	var reference = store.Load(tracker.Resolve(enum.template.Reference.String()))
+	reference := store.Load(tracker.Resolve(enum.template.Reference.String()))
 	if reference == nil || reference.Enum == nil {
 		return nil
 	}

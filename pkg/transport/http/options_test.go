@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/specs"
 )
 
 func TestParseEndpointOptions(t *testing.T) {

@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/jexia/semaphore/pkg/lookup"
-	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/template"
+	"github.com/jexia/semaphore/v2/pkg/lookup"
+	"github.com/jexia/semaphore/v2/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/specs/template"
 )
 
 // Store is a key/value store capable of holding reference values.

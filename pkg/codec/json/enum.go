@@ -2,9 +2,9 @@ package json
 
 import (
 	"github.com/francoispqt/gojay"
-	"github.com/jexia/semaphore/pkg/references"
-	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/types"
+	"github.com/jexia/semaphore/v2/pkg/references"
+	"github.com/jexia/semaphore/v2/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/specs/types"
 )
 
 // Enum represents a enum type template. This type is used to encode or decode
@@ -17,7 +17,7 @@ func (template *Enum) value(store references.Store, tracker references.Tracker) 
 		return nil
 	}
 
-	var reference = store.Load(tracker.Resolve(template.Reference.String()))
+	reference := store.Load(tracker.Resolve(template.Reference.String()))
 	if reference == nil || reference.Enum == nil {
 		return nil
 	}
@@ -43,7 +43,7 @@ func (template Enum) Marshal(encoder *gojay.Encoder, store references.Store, tra
 // MarshalKey marshals the enum template as an object field using the given key.
 // The key is not set if the enum value is `null`.
 func (template Enum) MarshalKey(encoder *gojay.Encoder, key string, store references.Store, tracker references.Tracker) {
-	var value = template.value(store, tracker)
+	value := template.value(store, tracker)
 	if value == nil {
 		return
 	}

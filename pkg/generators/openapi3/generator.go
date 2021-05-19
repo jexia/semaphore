@@ -6,12 +6,12 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/jexia/semaphore/pkg/generators/openapi3/types"
-	"github.com/jexia/semaphore/pkg/references"
-	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/labels"
-	"github.com/jexia/semaphore/pkg/specs/template"
-	transport "github.com/jexia/semaphore/pkg/transport/http"
+	"github.com/jexia/semaphore/v2/pkg/generators/openapi3/types"
+	"github.com/jexia/semaphore/v2/pkg/references"
+	"github.com/jexia/semaphore/v2/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/specs/labels"
+	"github.com/jexia/semaphore/v2/pkg/specs/template"
+	transport "github.com/jexia/semaphore/v2/pkg/transport/http"
 )
 
 // Generate generates a openapi v3.0 specification object.

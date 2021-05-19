@@ -1,11 +1,11 @@
 package sprintf
 
 import (
-	"github.com/jexia/semaphore/pkg/functions"
-	"github.com/jexia/semaphore/pkg/references"
-	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/labels"
-	"github.com/jexia/semaphore/pkg/specs/types"
+	"github.com/jexia/semaphore/v2/pkg/functions"
+	"github.com/jexia/semaphore/v2/pkg/references"
+	"github.com/jexia/semaphore/v2/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/specs/labels"
+	"github.com/jexia/semaphore/v2/pkg/specs/types"
 )
 
 func sprintfOutputs() *specs.Property {
@@ -39,7 +39,7 @@ func Function(args ...*specs.Property) (*specs.Property, functions.Exec, error) 
 		return nil, nil, errNoArguments
 	}
 
-	var format = args[0]
+	format := args[0]
 
 	if format.Type() != types.String {
 		return nil, nil, errInvalidFormat

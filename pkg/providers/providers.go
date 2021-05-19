@@ -3,10 +3,10 @@ package providers
 import (
 	"fmt"
 
-	"github.com/jexia/semaphore/pkg/broker"
-	"github.com/jexia/semaphore/pkg/broker/logger"
-	"github.com/jexia/semaphore/pkg/discovery"
-	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/broker"
+	"github.com/jexia/semaphore/v2/pkg/broker/logger"
+	"github.com/jexia/semaphore/v2/pkg/discovery"
+	"github.com/jexia/semaphore/v2/pkg/specs"
 )
 
 // FlowsResolvers represents a collection of flows resolvers

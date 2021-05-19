@@ -3,11 +3,11 @@ package semaphore
 import (
 	"context"
 
-	"github.com/jexia/semaphore/pkg/broker"
-	"github.com/jexia/semaphore/pkg/flow"
-	"github.com/jexia/semaphore/pkg/functions"
-	"github.com/jexia/semaphore/pkg/references"
-	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/broker"
+	"github.com/jexia/semaphore/v2/pkg/flow"
+	"github.com/jexia/semaphore/v2/pkg/functions"
+	"github.com/jexia/semaphore/v2/pkg/references"
+	"github.com/jexia/semaphore/v2/pkg/specs"
 )
 
 // WithMiddleware initialises the given middleware and defines all options

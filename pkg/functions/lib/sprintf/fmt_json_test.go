@@ -3,11 +3,11 @@ package sprintf
 import (
 	"testing"
 
-	"github.com/jexia/semaphore/pkg/specs/types"
+	"github.com/jexia/semaphore/v2/pkg/specs/types"
 )
 
 func TestJSONCanFormat(t *testing.T) {
-	var tests = map[types.Type]bool{
+	tests := map[types.Type]bool{
 		types.Bool:     true,
 		types.Bytes:    true,
 		types.Double:   true,

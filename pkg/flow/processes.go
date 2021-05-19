@@ -3,7 +3,7 @@ package flow
 import (
 	"sync"
 
-	"github.com/jexia/semaphore/pkg/transport"
+	"github.com/jexia/semaphore/v2/pkg/transport"
 )
 
 // NewProcesses constructs a new processes tracker.

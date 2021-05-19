@@ -2,8 +2,8 @@ package json
 
 import (
 	"github.com/francoispqt/gojay"
-	"github.com/jexia/semaphore/pkg/references"
-	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/references"
+	"github.com/jexia/semaphore/v2/pkg/specs"
 )
 
 // Array represents a JSON array.

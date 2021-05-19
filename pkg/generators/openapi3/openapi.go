@@ -1,6 +1,6 @@
 package openapi3
 
-import "github.com/jexia/semaphore/pkg/generators/openapi3/types"
+import "github.com/jexia/semaphore/v2/pkg/generators/openapi3/types"
 
 // Object represents the version 3 open api specification
 type Object struct {

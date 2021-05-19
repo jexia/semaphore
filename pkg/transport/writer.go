@@ -3,7 +3,7 @@ package transport
 import (
 	"io"
 
-	"github.com/jexia/semaphore/pkg/codec/metadata"
+	"github.com/jexia/semaphore/v2/pkg/codec/metadata"
 )
 
 const (

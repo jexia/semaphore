@@ -1,6 +1,6 @@
 package types
 
-import "github.com/jexia/semaphore/pkg/specs/types"
+import "github.com/jexia/semaphore/v2/pkg/specs/types"
 
 // Type represents a openapi3 type
 type Type string

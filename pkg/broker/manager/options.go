@@ -1,9 +1,9 @@
 package manager
 
 import (
-	"github.com/jexia/semaphore"
-	"github.com/jexia/semaphore/pkg/functions"
-	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/v2"
+	"github.com/jexia/semaphore/v2/pkg/functions"
+	"github.com/jexia/semaphore/v2/pkg/specs"
 )
 
 // FlowOptions represents a collection of options which are used

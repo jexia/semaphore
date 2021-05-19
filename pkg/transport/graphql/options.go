@@ -1,8 +1,6 @@
 package graphql
 
-import (
-	"github.com/jexia/semaphore/pkg/transport"
-)
+import "github.com/jexia/semaphore/v2/pkg/transport"
 
 const (
 	// PathOption represents the object name option key

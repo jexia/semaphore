@@ -3,7 +3,7 @@ package proto
 import (
 	"fmt"
 
-	"github.com/jexia/semaphore/pkg/prettyerr"
+	"github.com/jexia/semaphore/v2/pkg/prettyerr"
 )
 
 // ErrUndefinedSpecs occurs when spacs are nil

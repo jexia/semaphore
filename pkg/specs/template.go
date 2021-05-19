@@ -3,8 +3,8 @@ package specs
 import (
 	"fmt"
 
-	"github.com/jexia/semaphore/pkg/specs/metadata"
-	"github.com/jexia/semaphore/pkg/specs/types"
+	"github.com/jexia/semaphore/v2/pkg/specs/metadata"
+	"github.com/jexia/semaphore/v2/pkg/specs/types"
 )
 
 // Template contains property schema. This is a union type (Only one field must be set).
@@ -47,7 +47,7 @@ func (template Template) Type() types.Type {
 
 // Clone internal value.
 func (template Template) Clone() Template {
-	var clone = Template{
+	clone := Template{
 		Reference: template.Reference.Clone(),
 	}
 
@@ -72,7 +72,7 @@ func (template Template) Clone() Template {
 
 // ShallowClone clones the given template but ignores any nested templates
 func (template Template) ShallowClone() Template {
-	var clone = Template{
+	clone := Template{
 		Reference: template.Reference.Clone(),
 	}
 

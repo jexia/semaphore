@@ -1,10 +1,10 @@
 package flow
 
 import (
-	"github.com/jexia/semaphore/pkg/codec"
-	"github.com/jexia/semaphore/pkg/codec/metadata"
-	"github.com/jexia/semaphore/pkg/functions"
-	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/codec"
+	"github.com/jexia/semaphore/v2/pkg/codec/metadata"
+	"github.com/jexia/semaphore/v2/pkg/functions"
+	"github.com/jexia/semaphore/v2/pkg/specs"
 )
 
 // NewOnError constructs a new error for the given codec and header manager

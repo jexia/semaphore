@@ -2,24 +2,23 @@ package http
 
 import (
 	"context"
-	"github.com/jexia/semaphore/pkg/discovery"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	"github.com/jexia/semaphore/pkg/broker"
-	"github.com/jexia/semaphore/pkg/broker/logger"
-	"github.com/jexia/semaphore/pkg/codec/json"
-	"github.com/jexia/semaphore/pkg/codec/metadata"
-	"github.com/jexia/semaphore/pkg/references"
-	"github.com/jexia/semaphore/pkg/specs/template"
-	"github.com/jexia/semaphore/pkg/transport"
+	"github.com/jexia/semaphore/v2/pkg/broker"
+	"github.com/jexia/semaphore/v2/pkg/broker/logger"
+	"github.com/jexia/semaphore/v2/pkg/codec/json"
+	"github.com/jexia/semaphore/v2/pkg/codec/metadata"
+	"github.com/jexia/semaphore/v2/pkg/discovery"
+	"github.com/jexia/semaphore/v2/pkg/references"
+	"github.com/jexia/semaphore/v2/pkg/specs/template"
+	"github.com/jexia/semaphore/v2/pkg/transport"
 )
 
-type DiscardWriter struct {
-}
+type DiscardWriter struct{}
 
 func (d *DiscardWriter) Write(b []byte) (int, error) {
 	return ioutil.Discard.Write(b)

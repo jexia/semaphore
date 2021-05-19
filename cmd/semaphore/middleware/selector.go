@@ -3,12 +3,12 @@ package middleware
 import (
 	"path/filepath"
 
-	"github.com/jexia/semaphore/cmd/semaphore/daemon/providers"
-	"github.com/jexia/semaphore/pkg/broker"
-	"github.com/jexia/semaphore/pkg/broker/logger"
-	"github.com/jexia/semaphore/pkg/providers/hcl"
-	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/template"
+	"github.com/jexia/semaphore/v2/cmd/semaphore/daemon/providers"
+	"github.com/jexia/semaphore/v2/pkg/broker"
+	"github.com/jexia/semaphore/v2/pkg/broker/logger"
+	"github.com/jexia/semaphore/v2/pkg/providers/hcl"
+	"github.com/jexia/semaphore/v2/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/specs/template"
 	"github.com/zclconf/go-cty/cty"
 	"go.uber.org/zap"
 )

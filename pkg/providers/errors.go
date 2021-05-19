@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/jexia/semaphore/pkg/prettyerr"
+	"github.com/jexia/semaphore/v2/pkg/prettyerr"
 )
 
 // ErrLengthMismatch is returned when the length of repeated does not match the schema

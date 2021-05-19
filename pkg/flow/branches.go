@@ -1,7 +1,7 @@
 package flow
 
 import (
-	"github.com/jexia/semaphore/pkg/lookup"
+	"github.com/jexia/semaphore/v2/pkg/lookup"
 )
 
 // ConstructBranches constructs the node branches based on the made references

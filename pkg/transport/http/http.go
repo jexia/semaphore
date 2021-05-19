@@ -5,8 +5,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/jexia/semaphore/pkg/codec/metadata"
-	"github.com/jexia/semaphore/pkg/transport"
+	"github.com/jexia/semaphore/v2/pkg/codec/metadata"
+	"github.com/jexia/semaphore/v2/pkg/transport"
 )
 
 // AppendHTTPHeader appends the given HTTP header into a transport header

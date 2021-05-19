@@ -7,9 +7,9 @@ import (
 	"io"
 
 	"github.com/francoispqt/gojay"
-	"github.com/jexia/semaphore/pkg/codec"
-	"github.com/jexia/semaphore/pkg/references"
-	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/codec"
+	"github.com/jexia/semaphore/v2/pkg/references"
+	"github.com/jexia/semaphore/v2/pkg/specs"
 )
 
 // Constructor is capable of constructing new codec managers for the given resource and specs.
@@ -92,7 +92,7 @@ func (manager *Manager) Unmarshal(reader io.Reader, store references.Store) erro
 
 	_ = buff.UnreadByte()
 
-	var decoder = gojay.NewDecoder(buff)
+	decoder := gojay.NewDecoder(buff)
 	defer decoder.Release()
 
 	return decode(

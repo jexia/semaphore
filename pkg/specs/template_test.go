@@ -1,8 +1,9 @@
 package specs
 
 import (
-	"github.com/jexia/semaphore/pkg/specs/types"
 	"testing"
+
+	"github.com/jexia/semaphore/v2/pkg/specs/types"
 )
 
 func TestTemplate_Type(t *testing.T) {

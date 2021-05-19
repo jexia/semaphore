@@ -1,10 +1,10 @@
 package avros
 
 import (
-	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/labels"
-	"github.com/jexia/semaphore/pkg/specs/template"
-	"github.com/jexia/semaphore/pkg/specs/types"
+	"github.com/jexia/semaphore/v2/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/specs/labels"
+	"github.com/jexia/semaphore/v2/pkg/specs/template"
+	"github.com/jexia/semaphore/v2/pkg/specs/types"
 )
 
 // AvroSchema impliments avro high level schema

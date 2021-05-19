@@ -6,10 +6,10 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/jexia/semaphore/pkg/broker"
-	"github.com/jexia/semaphore/pkg/broker/logger"
-	"github.com/jexia/semaphore/pkg/providers"
-	"github.com/jexia/semaphore/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/broker"
+	"github.com/jexia/semaphore/v2/pkg/broker/logger"
+	"github.com/jexia/semaphore/v2/pkg/providers"
+	"github.com/jexia/semaphore/v2/pkg/specs"
 	"go.uber.org/zap"
 )
 
@@ -86,7 +86,6 @@ func SchemaResolver(imports []string, path string) providers.SchemaResolver {
 // UnmarshalFiles attempts to parse the given HCL files to intermediate resources.
 // Files are parsed based from the given import paths
 func UnmarshalFiles(imports []string, files []*providers.FileInfo) ([]*AvroSchema, error) {
-
 	results := make([]*AvroSchema, 0)
 	for _, file := range files {
 		schema, err := ioutil.ReadFile(file.Path)

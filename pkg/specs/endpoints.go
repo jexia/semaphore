@@ -1,6 +1,6 @@
 package specs
 
-import "github.com/jexia/semaphore/pkg/specs/metadata"
+import "github.com/jexia/semaphore/v2/pkg/specs/metadata"
 
 // EndpointList represents a collection of endpoints
 type EndpointList []*Endpoint

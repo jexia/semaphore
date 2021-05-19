@@ -8,11 +8,11 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/jexia/semaphore/pkg/codec"
-	"github.com/jexia/semaphore/pkg/references"
-	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/template"
-	"github.com/jexia/semaphore/pkg/specs/types"
+	"github.com/jexia/semaphore/v2/pkg/codec"
+	"github.com/jexia/semaphore/v2/pkg/references"
+	"github.com/jexia/semaphore/v2/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/specs/template"
+	"github.com/jexia/semaphore/v2/pkg/specs/types"
 )
 
 // Name represents the codec
@@ -24,8 +24,7 @@ func NewConstructor() *Constructor {
 }
 
 // Constructor is capable of constructing new codec managers for the given resource and specs
-type Constructor struct {
-}
+type Constructor struct{}
 
 // Name returns the name of the www-form-urlencoded codec constructor
 func (constructor *Constructor) Name() string {
@@ -91,9 +90,7 @@ func (manager *Manager) Marshal(store references.Store) (io.Reader, error) {
 // user.name=bob&user.age=30&id=100
 // users[0]=bob&users[1]=alice
 func encode(encoded url.Values, tmpl specs.Template, path string, store references.Store, tracker references.Tracker) error {
-	var (
-		ref *references.Reference
-	)
+	var ref *references.Reference
 
 	if tmpl.Reference != nil {
 		ref = store.Load(tracker.Resolve(tmpl.Reference.String()))
@@ -138,7 +135,6 @@ func encode(encoded url.Values, tmpl specs.Template, path string, store referenc
 	// repeated is described by a static template with a reference
 	case tmpl.Repeated != nil && tmpl.Reference != nil:
 		item, err := tmpl.Repeated.Template()
-
 		if err != nil {
 			return fmt.Errorf("failed to encode repeated property %s: %w", path, err)
 		}
@@ -169,7 +165,6 @@ func encode(encoded url.Values, tmpl specs.Template, path string, store referenc
 
 		for _, item := range tmpl.Repeated {
 			err := encode(encoded, item, path, store, tracker)
-
 			if err != nil {
 				return fmt.Errorf("failed to encode repeated property item %s: %w", path, err)
 			}

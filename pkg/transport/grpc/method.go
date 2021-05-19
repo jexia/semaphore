@@ -3,9 +3,9 @@ package grpc
 import (
 	"fmt"
 
-	"github.com/jexia/semaphore/pkg/codec/proto"
-	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/transport"
+	"github.com/jexia/semaphore/v2/pkg/codec/proto"
+	"github.com/jexia/semaphore/v2/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/transport"
 )
 
 // Method represents a gRPC endpoint

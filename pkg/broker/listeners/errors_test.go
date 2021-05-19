@@ -3,7 +3,7 @@ package listeners
 import (
 	"testing"
 
-	"github.com/jexia/semaphore/pkg/prettyerr"
+	"github.com/jexia/semaphore/v2/pkg/prettyerr"
 )
 
 func TestErrNoListener_Error(t *testing.T) {

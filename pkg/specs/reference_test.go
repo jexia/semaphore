@@ -3,7 +3,7 @@ package specs
 import (
 	"testing"
 
-	"github.com/jexia/semaphore/pkg/specs/metadata"
+	"github.com/jexia/semaphore/v2/pkg/specs/metadata"
 )
 
 func TestPropertyReferenceClone(t *testing.T) {

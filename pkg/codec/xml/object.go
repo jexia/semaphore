@@ -3,9 +3,9 @@ package xml
 import (
 	"encoding/xml"
 
-	"github.com/jexia/semaphore/pkg/references"
-	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/template"
+	"github.com/jexia/semaphore/v2/pkg/references"
+	"github.com/jexia/semaphore/v2/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/specs/template"
 )
 
 // Object represents an XML object.
@@ -29,7 +29,7 @@ func NewObject(name, path string, template specs.Template, store references.Stor
 
 // MarshalXML encodes the given specs object into the given XML encoder.
 func (object *Object) MarshalXML(encoder *xml.Encoder, _ xml.StartElement) error {
-	var start = xml.StartElement{Name: xml.Name{Local: object.name}}
+	start := xml.StartElement{Name: xml.Name{Local: object.name}}
 
 	if err := encoder.EncodeToken(start); err != nil {
 		return err

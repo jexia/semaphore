@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"regexp"
 
-	"github.com/jexia/semaphore/pkg/broker"
-	"github.com/jexia/semaphore/pkg/broker/logger"
+	"github.com/jexia/semaphore/v2/pkg/broker"
+	"github.com/jexia/semaphore/v2/pkg/broker/logger"
 	"go.uber.org/zap"
 )
 
@@ -103,7 +103,6 @@ func walk(ctx *broker.Context, absolute string, target string, resolved map[stri
 
 		return nil
 	})
-
 	if err != nil {
 		return nil, err
 	}

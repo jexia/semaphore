@@ -3,11 +3,11 @@ package template
 import (
 	"testing"
 
-	"github.com/jexia/semaphore/pkg/broker"
-	"github.com/jexia/semaphore/pkg/broker/logger"
-	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/labels"
-	"github.com/jexia/semaphore/pkg/specs/types"
+	"github.com/jexia/semaphore/v2/pkg/broker"
+	"github.com/jexia/semaphore/v2/pkg/broker/logger"
+	"github.com/jexia/semaphore/v2/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/specs/labels"
+	"github.com/jexia/semaphore/v2/pkg/specs/types"
 )
 
 func CompareProperties(t *testing.T, actual, expected *specs.Property) {
@@ -37,7 +37,7 @@ func CompareProperties(t *testing.T, actual, expected *specs.Property) {
 }
 
 func TestGetTemplateContent(t *testing.T) {
-	var tests = map[string]string{
+	tests := map[string]string{
 		"{{ input:message }}":            "input:message",
 		"{{input:message }}":             "input:message",
 		"{{ input:message}}":             "input:message",
@@ -352,7 +352,7 @@ func TestParseReferenceTemplates(t *testing.T) {
 }
 
 func TestIsTemplate(t *testing.T) {
-	var tests = map[string]bool{
+	tests := map[string]bool{
 		"{{ resource:path }}": true,
 		"{{resource:path}}":   true,
 		"resource:path":       false,

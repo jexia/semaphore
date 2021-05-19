@@ -13,12 +13,12 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/jexia/semaphore"
-	"github.com/jexia/semaphore/cmd/semaphore/daemon/providers"
-	codecJSON "github.com/jexia/semaphore/pkg/codec/json"
-	codecXML "github.com/jexia/semaphore/pkg/codec/xml"
-	transportHTTP "github.com/jexia/semaphore/pkg/transport/http"
-	"github.com/jexia/semaphore/tests/e2e"
+	"github.com/jexia/semaphore/v2"
+	"github.com/jexia/semaphore/v2/cmd/semaphore/daemon/providers"
+	codecJSON "github.com/jexia/semaphore/v2/pkg/codec/json"
+	codecXML "github.com/jexia/semaphore/v2/pkg/codec/xml"
+	transportHTTP "github.com/jexia/semaphore/v2/pkg/transport/http"
+	"github.com/jexia/semaphore/v2/tests/e2e"
 )
 
 const (
@@ -45,7 +45,7 @@ func EchoHandler(t *testing.T) http.HandlerFunc {
 
 // EchoRouter creates an HTTP router for testing.
 func EchoRouter(t *testing.T) http.Handler {
-	var mux = http.NewServeMux()
+	mux := http.NewServeMux()
 
 	mux.Handle("/echo", EchoHandler(t))
 	// TODO: add more handlers
@@ -77,7 +77,7 @@ func TestHTTPTransport(t *testing.T) {
 			schema: "./proto/echo.proto",
 			path:   "json",
 			request: func(t *testing.T) []byte {
-				var body = map[string]map[string]interface{}{
+				body := map[string]map[string]interface{}{
 					"data": {
 						"enum":    "ON",
 						"string":  "foo",
@@ -102,7 +102,7 @@ func TestHTTPTransport(t *testing.T) {
 					t.Fatalf("failed to unmarshal the response: %s", err)
 				}
 
-				var expected = map[string]interface{}{
+				expected := map[string]interface{}{
 					"echo": map[string]interface{}{
 						"enum":    "ON",
 						"string":  "foo",
@@ -132,7 +132,7 @@ func TestHTTPTransport(t *testing.T) {
 			},
 			path: "json",
 			request: func(t *testing.T) []byte {
-				var body = map[string]map[string]interface{}{
+				body := map[string]map[string]interface{}{
 					"data": {
 						"enum":    "ON",
 						"string":  "foo",
@@ -156,7 +156,7 @@ func TestHTTPTransport(t *testing.T) {
 					t.Fatalf("failed to unmarshal the response: %s", err)
 				}
 
-				var expected = map[string]interface{}{
+				expected := map[string]interface{}{
 					"enum":    "ON",
 					"string":  "foo",
 					"integer": float64(42),
@@ -194,7 +194,7 @@ func TestHTTPTransport(t *testing.T) {
 					Data request `xml:"data"`
 				}
 
-				var body = data{
+				body := data{
 					Data: request{
 						Enum:    "ON",
 						String:  "foo",
@@ -219,7 +219,7 @@ func TestHTTPTransport(t *testing.T) {
 					t.Fatalf("failed to unmarshal the response: %s", err)
 				}
 
-				var expected = map[string]interface{}{
+				expected := map[string]interface{}{
 					"echo": map[string]interface{}{
 						"enum":    "ON",
 						"string":  "foo",
@@ -255,7 +255,7 @@ func TestHTTPTransport(t *testing.T) {
 				}
 				defer listener.Close()
 
-				var testServer = httptest.NewUnstartedServer(handler(t))
+				testServer := httptest.NewUnstartedServer(handler(t))
 				testServer.Listener.Close()
 				testServer.Listener = listener
 

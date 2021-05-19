@@ -1,9 +1,9 @@
 package generate
 
 import (
-	"github.com/jexia/semaphore/cmd/semaphore/generate/graphql"
-	"github.com/jexia/semaphore/cmd/semaphore/generate/openapi3"
-	"github.com/jexia/semaphore/cmd/semaphore/generate/protobuf"
+	"github.com/jexia/semaphore/v2/cmd/semaphore/generate/graphql"
+	"github.com/jexia/semaphore/v2/cmd/semaphore/generate/openapi3"
+	"github.com/jexia/semaphore/v2/cmd/semaphore/generate/protobuf"
 
 	"github.com/spf13/cobra"
 )

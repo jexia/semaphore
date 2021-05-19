@@ -1,9 +1,9 @@
 package config
 
 import (
-	"github.com/jexia/semaphore/pkg/functions"
-	"github.com/jexia/semaphore/pkg/functions/lib/sprintf"
-	"github.com/jexia/semaphore/pkg/functions/lib/strconcat"
+	"github.com/jexia/semaphore/v2/pkg/functions"
+	"github.com/jexia/semaphore/v2/pkg/functions/lib/sprintf"
+	"github.com/jexia/semaphore/v2/pkg/functions/lib/strconcat"
 )
 
 // DefaultFunctions represents the default functions collection

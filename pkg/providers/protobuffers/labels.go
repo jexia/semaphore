@@ -2,7 +2,7 @@ package protobuffers
 
 import (
 	"github.com/golang/protobuf/protoc-gen-go/descriptor"
-	"github.com/jexia/semaphore/pkg/specs/labels"
+	"github.com/jexia/semaphore/v2/pkg/specs/labels"
 )
 
 const (

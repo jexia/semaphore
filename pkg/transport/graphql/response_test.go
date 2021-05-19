@@ -4,10 +4,10 @@ import (
 	"testing"
 
 	"github.com/go-test/deep"
-	"github.com/jexia/semaphore/pkg/references"
-	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/template"
-	"github.com/jexia/semaphore/pkg/specs/types"
+	"github.com/jexia/semaphore/v2/pkg/references"
+	"github.com/jexia/semaphore/v2/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/specs/template"
+	"github.com/jexia/semaphore/v2/pkg/specs/types"
 )
 
 func TestResponseObjectNil(t *testing.T) {
@@ -156,7 +156,6 @@ func TestResponseObject(t *testing.T) {
 						},
 					},
 				})
-
 			},
 			expected: map[string]interface{}{
 				"repeated": []interface{}{

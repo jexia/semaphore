@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/jexia/semaphore/pkg/specs/types"
+	"github.com/jexia/semaphore/v2/pkg/specs/types"
 )
 
 // Float formatter.
@@ -28,7 +28,7 @@ func (fl Float) Formatter(precision Precision) (Formatter, error) {
 }
 
 func ftoa(precision Precision, value interface{}) (string, error) {
-	var format = "%"
+	format := "%"
 
 	if precision.Width > 0 {
 		format += strconv.FormatInt(precision.Width, 10)

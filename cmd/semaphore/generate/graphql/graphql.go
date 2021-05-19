@@ -6,15 +6,15 @@ import (
 	"os"
 
 	gql "github.com/graphql-go/graphql"
-	"github.com/jexia/semaphore/cmd/semaphore/daemon/config"
-	"github.com/jexia/semaphore/cmd/semaphore/daemon/providers"
-	print "github.com/jexia/semaphore/cmd/semaphore/generate/printer"
-	"github.com/jexia/semaphore/pkg/broker"
-	"github.com/jexia/semaphore/pkg/broker/endpoints"
-	"github.com/jexia/semaphore/pkg/broker/logger"
-	"github.com/jexia/semaphore/pkg/functions"
-	"github.com/jexia/semaphore/pkg/prettyerr"
-	"github.com/jexia/semaphore/pkg/transport/graphql"
+	"github.com/jexia/semaphore/v2/cmd/semaphore/daemon/config"
+	"github.com/jexia/semaphore/v2/cmd/semaphore/daemon/providers"
+	print "github.com/jexia/semaphore/v2/cmd/semaphore/generate/printer"
+	"github.com/jexia/semaphore/v2/pkg/broker"
+	"github.com/jexia/semaphore/v2/pkg/broker/endpoints"
+	"github.com/jexia/semaphore/v2/pkg/broker/logger"
+	"github.com/jexia/semaphore/v2/pkg/functions"
+	"github.com/jexia/semaphore/v2/pkg/prettyerr"
+	"github.com/jexia/semaphore/v2/pkg/transport/graphql"
 	"github.com/spf13/cobra"
 )
 
@@ -44,7 +44,6 @@ func init() {
 }
 
 func run(cmd *cobra.Command, args []string) (err error) {
-
 	defer func() {
 		if err != nil {
 			err = prettyerr.StandardErr(err)

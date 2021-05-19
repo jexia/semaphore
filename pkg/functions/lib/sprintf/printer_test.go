@@ -4,11 +4,11 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/jexia/semaphore/pkg/references"
-	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/specs/labels"
-	"github.com/jexia/semaphore/pkg/specs/template"
-	"github.com/jexia/semaphore/pkg/specs/types"
+	"github.com/jexia/semaphore/v2/pkg/references"
+	"github.com/jexia/semaphore/v2/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/specs/labels"
+	"github.com/jexia/semaphore/v2/pkg/specs/template"
+	"github.com/jexia/semaphore/v2/pkg/specs/types"
 )
 
 func TestTokensPrint(t *testing.T) {
@@ -19,7 +19,7 @@ func TestTokensPrint(t *testing.T) {
 		expected string
 	}
 
-	var tests = map[string]test{
+	tests := map[string]test{
 		"test with string arguments": {
 			format:   "note that a %s of the policeman + another %s of the policeman != the %s policeman",
 			expected: "note that a half of the policeman + another half of the policeman != the whole policeman",

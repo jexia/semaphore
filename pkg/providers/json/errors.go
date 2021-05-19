@@ -3,7 +3,7 @@ package json
 import (
 	"fmt"
 
-	"github.com/jexia/semaphore/pkg/prettyerr"
+	"github.com/jexia/semaphore/v2/pkg/prettyerr"
 )
 
 type wrapErr struct {

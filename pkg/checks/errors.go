@@ -3,7 +3,7 @@ package checks
 import (
 	"fmt"
 
-	"github.com/jexia/semaphore/pkg/prettyerr"
+	"github.com/jexia/semaphore/v2/pkg/prettyerr"
 )
 
 // ErrFlowDuplicate occurs when FlowDuplicates finds several flows with the same name

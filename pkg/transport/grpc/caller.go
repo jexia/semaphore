@@ -2,17 +2,17 @@ package grpc
 
 import (
 	"context"
-	"github.com/jexia/semaphore/pkg/discovery"
 	"io/ioutil"
 	"sync"
 
-	"github.com/jexia/semaphore/pkg/broker"
-	"github.com/jexia/semaphore/pkg/broker/logger"
-	"github.com/jexia/semaphore/pkg/codec/proto"
-	"github.com/jexia/semaphore/pkg/functions"
-	"github.com/jexia/semaphore/pkg/references"
-	"github.com/jexia/semaphore/pkg/specs"
-	"github.com/jexia/semaphore/pkg/transport"
+	"github.com/jexia/semaphore/v2/pkg/broker"
+	"github.com/jexia/semaphore/v2/pkg/broker/logger"
+	"github.com/jexia/semaphore/v2/pkg/codec/proto"
+	"github.com/jexia/semaphore/v2/pkg/discovery"
+	"github.com/jexia/semaphore/v2/pkg/functions"
+	"github.com/jexia/semaphore/v2/pkg/references"
+	"github.com/jexia/semaphore/v2/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/transport"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
@@ -205,7 +205,6 @@ func (call *Call) SendMsg(ctx context.Context, rw transport.ResponseWriter, pr *
 		if err != nil {
 			logger.Error(call.ctx, "unable to write the response body", zap.Error(err))
 		}
-
 	}()
 
 	return nil
