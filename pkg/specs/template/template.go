@@ -7,16 +7,15 @@ import (
 	"github.com/jexia/semaphore/v2/pkg/broker"
 	"github.com/jexia/semaphore/v2/pkg/broker/logger"
 	"github.com/jexia/semaphore/v2/pkg/specs"
-	"github.com/jexia/semaphore/v2/pkg/specs/labels"
 	"github.com/jexia/semaphore/v2/pkg/specs/types"
 	"go.uber.org/zap"
 )
 
 var (
-	// ReferencePattern is the matching pattern for references
-	ReferencePattern = regexp.MustCompile(`^[a-zA-Z0-9_\-\.]*:[a-zA-Z0-9\^\&\%\$@_\-\.]*$`)
-	// StringPattern is the matching pattern for strings
-	StringPattern = regexp.MustCompile(`^\'(.+)\'$`)
+	// referencePattern is the matching pattern for references
+	referencePattern = regexp.MustCompile(`^[a-zA-Z0-9_\-\.]*:[a-zA-Z0-9\^\&\%\$@_\-\.]*$`)
+	// stringPattern is the matching pattern for strings
+	stringPattern = regexp.MustCompile(`^\'(.+)\'$`)
 )
 
 const (
@@ -56,6 +55,16 @@ const (
 // Is checks whether the given value is a template
 func Is(value string) bool {
 	return strings.HasPrefix(value, TemplateOpen) && strings.HasSuffix(value, TemplateClose)
+}
+
+// IsReference returns true if the given value is a reference value
+func IsReference(value string) bool {
+	return referencePattern.MatchString(value)
+}
+
+// IsString returns true if the given value is a string value
+func IsString(value string) bool {
+	return stringPattern.MatchString(value)
 }
 
 // GetTemplateContent trims the opening and closing tags from the given template value
@@ -98,66 +107,52 @@ func ParsePropertyReference(value string) *specs.PropertyReference {
 }
 
 // ParseReference parses the given value as a template reference
-func ParseReference(path string, name string, value string) (*specs.Property, error) {
+func ParseReference(value string) (specs.Template, error) {
 	if strings.Count(value, "..") > 0 {
-		return nil, ErrPathNotFound{
+		return specs.Template{}, ErrPathNotFound{
 			Path: value,
 		}
 	}
 
-	prop := &specs.Property{
-		Name: name,
-		Path: JoinPath(path, name),
-		Raw:  value,
-		Template: specs.Template{
-			Reference: ParsePropertyReference(value),
-		},
+	result := specs.Template{
+		Reference: ParsePropertyReference(value),
 	}
 
-	return prop, nil
+	return result, nil
 }
 
 // ParseContent parses the given template function
-func ParseContent(path string, name string, content string) (*specs.Property, error) {
-	if ReferencePattern.MatchString(content) {
-		return ParseReference(path, name, content)
+func ParseContent(content string) (specs.Template, error) {
+	if IsReference(content) {
+		return ParseReference(content)
 	}
 
-	if StringPattern.MatchString(content) {
-		matched := StringPattern.FindStringSubmatch(content)
-		result := &specs.Property{
-			Name:  name,
-			Path:  path,
-			Label: labels.Optional,
-			Template: specs.Template{
-				Scalar: &specs.Scalar{
-					Type:    types.String,
-					Default: matched[1],
-				},
+	if IsString(content) {
+		matched := stringPattern.FindStringSubmatch(content)
+		result := specs.Template{
+			Scalar: &specs.Scalar{
+				Type:    types.String,
+				Default: matched[1],
 			},
 		}
 
 		return result, nil
 	}
 
-	return &specs.Property{
-		Name: name,
-		Path: path,
-		Raw:  content,
-	}, nil
+	return specs.Template{}, nil
 }
 
-// Parse parses the given value template and sets the resource and path
-func Parse(ctx *broker.Context, path string, name string, value string) (*specs.Property, error) {
+// Parse parses the given value template, note that path is only used for debugging
+func Parse(ctx *broker.Context, path string, value string) (specs.Template, error) {
 	content := GetTemplateContent(value)
-	logger.Debug(ctx, "parsing property template", zap.String("path", path), zap.String("template", content))
+	logger.Debug(ctx, "parsing value template", zap.String("path", path), zap.String("content", content))
 
-	result, err := ParseContent(path, name, content)
+	result, err := ParseContent(content)
 	if err != nil {
-		return nil, err
+		return result, err
 	}
 
-	logger.Debug(ctx, "template results in property with type",
+	logger.Debug(ctx, "parsed template results",
 		zap.String("path", path),
 		zap.Any("default", result.DefaultValue()),
 		zap.String("reference", result.Reference.String()),

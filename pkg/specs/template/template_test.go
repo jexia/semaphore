@@ -6,11 +6,10 @@ import (
 	"github.com/jexia/semaphore/v2/pkg/broker"
 	"github.com/jexia/semaphore/v2/pkg/broker/logger"
 	"github.com/jexia/semaphore/v2/pkg/specs"
-	"github.com/jexia/semaphore/v2/pkg/specs/labels"
 	"github.com/jexia/semaphore/v2/pkg/specs/types"
 )
 
-func CompareProperties(t *testing.T, actual, expected *specs.Property) {
+func CompareTemplates(t *testing.T, actual, expected specs.Template) {
 	if err := actual.Compare(expected); err != nil {
 		t.Errorf("unexpected property: %s", err)
 	}
@@ -56,190 +55,119 @@ func TestGetTemplateContent(t *testing.T) {
 }
 
 func TestParseTemplateContent(t *testing.T) {
-	var (
-		name  = ""
-		path  = "message"
-		tests = map[string]*specs.Property{
-			"'prefix'": {
-				Name:  name,
-				Path:  path,
-				Label: labels.Optional,
-				Template: specs.Template{
-					Scalar: &specs.Scalar{
-						Type:    types.String,
-						Default: "prefix",
-					},
-				},
+	tests := map[string]specs.Template{
+		"'prefix'": {
+			Scalar: &specs.Scalar{
+				Type:    types.String,
+				Default: "prefix",
 			},
-			"'edge''": {
-				Name:  name,
-				Path:  path,
-				Label: labels.Optional,
-				Template: specs.Template{
-					Scalar: &specs.Scalar{
-						Type:    types.String,
-						Default: "edge'",
-					},
-				},
+		},
+		"'edge''": {
+			Scalar: &specs.Scalar{
+				Type:    types.String,
+				Default: "edge'",
 			},
-			"input:message": {
-				Name: name,
-				Path: path,
-				Template: specs.Template{
-					Reference: &specs.PropertyReference{
-						Resource: "input",
-						Path:     "message",
-					},
-				},
+		},
+		"input:message": {
+			Reference: &specs.PropertyReference{
+				Resource: "input",
+				Path:     "message",
 			},
-			"input:user-id": {
-				Name: name,
-				Path: path,
-				Template: specs.Template{
-					Reference: &specs.PropertyReference{
-						Resource: "input",
-						Path:     "user-id",
-					},
-				},
+		},
+		"input:user-id": {
+			Reference: &specs.PropertyReference{
+				Resource: "input",
+				Path:     "user-id",
 			},
-			"input.header:Authorization": {
-				Name: name,
-				Path: path,
-				Template: specs.Template{
-					Reference: &specs.PropertyReference{
-						Resource: "input.header",
-						Path:     "authorization",
-					},
-				},
+		},
+		"input.header:Authorization": {
+			Reference: &specs.PropertyReference{
+				Resource: "input.header",
+				Path:     "authorization",
 			},
-			"input.header:User-Id": {
-				Name: name,
-				Path: path,
-				Template: specs.Template{
-					Reference: &specs.PropertyReference{
-						Resource: "input.header",
-						Path:     "user-id",
-					},
-				},
+		},
+		"input.header:User-Id": {
+			Reference: &specs.PropertyReference{
+				Resource: "input.header",
+				Path:     "user-id",
 			},
-			"input.header:": {
-				Path: path,
-				Template: specs.Template{
-					Reference: &specs.PropertyReference{
-						Resource: "input.header",
-					},
-				},
+		},
+		"input.header:": {
+			Reference: &specs.PropertyReference{
+				Resource: "input.header",
 			},
-		}
-	)
+		},
+	}
 
 	for input, expected := range tests {
 		t.Run(input, func(t *testing.T) {
-			property, err := ParseContent(path, name, input)
+			property, err := ParseContent(input)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			if property.Path != expected.Path {
-				t.Errorf("unexpected path '%s', expected '%s'", property.Path, expected.Path)
-			}
-
-			CompareProperties(t, property, expected)
+			CompareTemplates(t, property, expected)
 		})
 	}
 }
 
 func TestParseReference(t *testing.T) {
-	var (
-		name  = ""
-		path  = "message"
-		tests = map[string]*specs.Property{
-			"input:message": {
-				Name: name,
-				Path: path,
-				Template: specs.Template{
-					Reference: &specs.PropertyReference{
-						Resource: "input",
-						Path:     "message",
-					},
-				},
+	tests := map[string]specs.Template{
+		"input:message": {
+			Reference: &specs.PropertyReference{
+				Resource: "input",
+				Path:     "message",
 			},
-			"input:user-id": {
-				Name: name,
-				Path: path,
-				Template: specs.Template{
-					Reference: &specs.PropertyReference{
-						Resource: "input",
-						Path:     "user-id",
-					},
-				},
+		},
+		"input:user-id": {
+			Reference: &specs.PropertyReference{
+				Resource: "input",
+				Path:     "user-id",
 			},
-			"input.header:Authorization": {
-				Name: name,
-				Path: path,
-				Template: specs.Template{
-					Reference: &specs.PropertyReference{
-						Resource: "input.header",
-						Path:     "authorization",
-					},
-				},
+		},
+		"input.header:Authorization": {
+			Reference: &specs.PropertyReference{
+				Resource: "input.header",
+				Path:     "authorization",
 			},
-			"input.header:User-Id": {
-				Name: name,
-				Path: path,
-				Template: specs.Template{
-					Reference: &specs.PropertyReference{
-						Resource: "input.header",
-						Path:     "user-id",
-					},
-				},
+		},
+		"input.header:User-Id": {
+			Reference: &specs.PropertyReference{
+				Resource: "input.header",
+				Path:     "user-id",
 			},
-			"input:": {
-				Path: path,
-				Template: specs.Template{
-					Reference: &specs.PropertyReference{
-						Resource: "input",
-					},
-				},
+		},
+		"input:": {
+			Reference: &specs.PropertyReference{
+				Resource: "input",
 			},
-			"input.header:": {
-				Path: path,
-				Template: specs.Template{
-					Reference: &specs.PropertyReference{
-						Resource: "input.header",
-					},
-				},
+		},
+		"input.header:": {
+			Reference: &specs.PropertyReference{
+				Resource: "input.header",
 			},
-			"input": {
-				Path: path,
-				Template: specs.Template{
-					Reference: &specs.PropertyReference{
-						Resource: "input",
-					},
-				},
+		},
+		"input": {
+			Reference: &specs.PropertyReference{
+				Resource: "input",
 			},
-		}
-	)
+		},
+	}
 
 	for input, expected := range tests {
 		t.Run(input, func(t *testing.T) {
-			property, err := ParseReference(path, name, input)
+			property, err := ParseReference(input)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			if property.Path != expected.Path {
-				t.Errorf("unexpected path '%s', expected '%s'", property.Path, expected.Path)
-			}
-
-			CompareProperties(t, property, expected)
+			CompareTemplates(t, property, expected)
 		})
 	}
 }
 
 func TestParseReferenceErr(t *testing.T) {
 	var (
-		name  = ""
 		path  = "message"
 		tests = []string{
 			"input:..",
@@ -249,7 +177,7 @@ func TestParseReferenceErr(t *testing.T) {
 	for _, input := range tests {
 		t.Run(input, func(t *testing.T) {
 			ctx := logger.WithLogger(broker.NewBackground())
-			_, err := Parse(ctx, path, name, input)
+			_, err := Parse(ctx, path, input)
 			if err == nil {
 				t.Fatal("unexpected pass")
 			}
@@ -258,18 +186,14 @@ func TestParseReferenceErr(t *testing.T) {
 }
 
 func TestUnknownReferencePattern(t *testing.T) {
-	var (
-		name  = ""
-		path  = "message"
-		tests = []string{
-			"input",
-			"value",
-		}
-	)
+	tests := []string{
+		"input",
+		"value",
+	}
 
 	for _, input := range tests {
 		t.Run(input, func(t *testing.T) {
-			_, err := ParseContent(path, name, input)
+			_, err := ParseContent(input)
 			if err != nil {
 				t.Fatalf("unexpected err %s", err)
 			}
@@ -278,75 +202,54 @@ func TestUnknownReferencePattern(t *testing.T) {
 }
 
 func TestParseReferenceTemplates(t *testing.T) {
-	var (
-		name  = ""
-		tests = map[string]*specs.Property{
-			"{{ input:message }}": {
-				Path: "message",
-				Template: specs.Template{
-					Reference: &specs.PropertyReference{
-						Resource: "input",
-						Path:     "message",
-					},
-				},
+	tests := map[string]specs.Template{
+		"{{ input:message }}": {
+			Reference: &specs.PropertyReference{
+				Resource: "input",
+				Path:     "message",
 			},
-			"{{ input.prop:message }}": {
-				Path: "message",
-				Template: specs.Template{
-					Reference: &specs.PropertyReference{
-						Resource: "input.prop",
-						Path:     "message",
-					},
-				},
+		},
+		"{{ input.prop:message }}": {
+			Reference: &specs.PropertyReference{
+				Resource: "input.prop",
+				Path:     "message",
 			},
-			"{{ input.prop:user-id }}": {
-				Path: "message",
-				Template: specs.Template{
-					Reference: &specs.PropertyReference{
-						Resource: "input.prop",
-						Path:     "user-id",
-					},
-				},
+		},
+		"{{ input.prop:user-id }}": {
+			Reference: &specs.PropertyReference{
+				Resource: "input.prop",
+				Path:     "user-id",
 			},
-			"{{ input:user-id }}": {
-				Path: "message",
-				Template: specs.Template{
-					Reference: &specs.PropertyReference{
-						Resource: "input",
-						Path:     "user-id",
-					},
-				},
+		},
+		"{{ input:user-id }}": {
+			Reference: &specs.PropertyReference{
+				Resource: "input",
+				Path:     "user-id",
 			},
-			"{{ input.prop:message.prop }}": {
-				Path: "message.prop",
-				Template: specs.Template{
-					Reference: &specs.PropertyReference{
-						Resource: "input.prop",
-						Path:     "message.prop",
-					},
-				},
+		},
+		"{{ input.prop:message.prop }}": {
+			Reference: &specs.PropertyReference{
+				Resource: "input.prop",
+				Path:     "message.prop",
 			},
-			"{{ input:message.prop }}": {
-				Path: "messsage.prop",
-				Template: specs.Template{
-					Reference: &specs.PropertyReference{
-						Resource: "input",
-						Path:     "message.prop",
-					},
-				},
+		},
+		"{{ input:message.prop }}": {
+			Reference: &specs.PropertyReference{
+				Resource: "input",
+				Path:     "message.prop",
 			},
-		}
-	)
+		},
+	}
 
 	for input, expected := range tests {
 		t.Run(input, func(t *testing.T) {
 			ctx := logger.WithLogger(broker.NewBackground())
-			property, err := Parse(ctx, expected.Path, name, input)
+			template, err := Parse(ctx, "", input)
 			if err != nil {
 				t.Error(err)
 			}
 
-			CompareProperties(t, property, expected)
+			CompareTemplates(t, template, expected)
 		})
 	}
 }

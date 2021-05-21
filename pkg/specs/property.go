@@ -46,21 +46,9 @@ type Property struct {
 	Template `json:"template" yaml:"template"`
 }
 
-// DefaultValue returns rge default value for a given property.
+// DefaultValue returns the default value for a given property.
 func (property *Property) DefaultValue() interface{} {
-	t := property.Template
-	switch {
-	case t.Scalar != nil:
-		return t.Scalar.Default
-	case t.Message != nil:
-		return nil
-	case t.Repeated != nil:
-		return nil
-	case t.Enum != nil:
-		return nil
-	}
-
-	return nil
+	return property.Template.DefaultValue()
 }
 
 // Empty checks if the property has any defined type

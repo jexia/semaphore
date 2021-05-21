@@ -6,6 +6,7 @@ import (
 	"github.com/Knetic/govaluate"
 	"github.com/jexia/semaphore/v2/pkg/broker"
 	"github.com/jexia/semaphore/v2/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/specs/labels"
 	"github.com/jexia/semaphore/v2/pkg/specs/template"
 )
 
@@ -24,12 +25,26 @@ func NewEvaluableExpression(ctx *broker.Context, raw string) (*specs.Condition, 
 	}
 
 	for _, ref := range expression.Vars() {
-		prop, err := template.Parse(ctx, "", ref, ref)
+		expressionTemplate, err := template.Parse(ctx, "", ref)
 		if err != nil {
 			return nil, err
 		}
 
-		params.Params[ref] = prop
+		// TODO Better use ParseTemplateProperty() when it is moved (see issue #194)
+		param := &specs.Property{
+			Name:     ref,
+			Path:     "",
+			Template: expressionTemplate,
+		}
+
+		if expressionTemplate.Reference == nil {
+			param.Label = labels.Optional
+		} else {
+			// TODO Only Template.Reference got their Raw set (other types not), does this make sense?!
+			param.Raw = ref
+		}
+
+		params.Params[ref] = param
 	}
 
 	result := &specs.Condition{

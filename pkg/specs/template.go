@@ -45,6 +45,22 @@ func (template Template) Type() types.Type {
 	return types.Unknown
 }
 
+// Return the default value for the template (type), assuming the current type has a default.
+func (template Template) DefaultValue() interface{} {
+	switch {
+	case template.Scalar != nil:
+		return template.Scalar.Default
+	case template.Message != nil:
+		return nil
+	case template.Repeated != nil:
+		return nil
+	case template.Enum != nil:
+		return nil
+	}
+
+	return nil
+}
+
 // Clone internal value.
 func (template Template) Clone() Template {
 	clone := Template{
