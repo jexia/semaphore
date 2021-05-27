@@ -10,6 +10,7 @@ import (
 	"github.com/jexia/semaphore/v2/pkg/broker/logger"
 	"github.com/jexia/semaphore/v2/pkg/references"
 	"github.com/jexia/semaphore/v2/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/specs/labels"
 	"github.com/jexia/semaphore/v2/pkg/specs/template"
 	"go.uber.org/zap"
 )
@@ -272,22 +273,38 @@ func PrepareFunction(ctx *broker.Context, node *specs.Node, flow specs.FlowInter
 	arguments := make([]*specs.Property, len(args))
 
 	for index, arg := range args {
-		result, err := template.ParseContent(property.Path, property.Name, strings.TrimSpace(arg))
+		content := strings.TrimSpace(arg)
+		argTemplate, err := template.ParseContent(content)
 		if err != nil {
 			return err
 		}
 
-		err = references.ResolveProperty(ctx, node, result, flow)
+		// TODO Better use ParseTemplateProperty() when it is moved (see issue #194)
+		argProperty := &specs.Property{
+			Name:     property.Name,
+			Path:     property.Path,
+			Raw:      content,
+			Template: argTemplate,
+		}
+
+		if argTemplate.Reference == nil {
+			argProperty.Label = labels.Optional
+		} else {
+			// TODO Only Template.Reference got their Raw set (other types not), does this make sense?!
+			argProperty.Raw = content
+		}
+
+		err = references.ResolveProperty(ctx, node, argProperty, flow)
 		if err != nil {
 			return err
 		}
 
-		err = PrepareFunction(ctx, node, flow, result, stack, methods)
+		err = PrepareFunction(ctx, node, flow, argProperty, stack, methods)
 		if err != nil {
 			return err
 		}
 
-		arguments[index] = result
+		arguments[index] = argProperty
 	}
 
 	returns, handle, err := methods[fn](arguments...)

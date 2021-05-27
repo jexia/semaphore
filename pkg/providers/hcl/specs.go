@@ -289,8 +289,8 @@ func ParseIntermediateSpecOptions(options hcl.Body) specs.Options {
 	result := specs.Options{}
 	attrs, _ := options.JustAttributes()
 
-	for key, val := range attrs {
-		val, _ := val.Expr.Value(nil)
+	for key, attr := range attrs {
+		val, _ := attr.Expr.Value(nil)
 		if val.Type() != cty.String {
 			continue
 		}
@@ -399,7 +399,7 @@ func ParseIntermediateCall(ctx *broker.Context, call *Call) (*specs.Call, error)
 	return &result, nil
 }
 
-// ParseIntermediateProperty parses the given intermediate property to a spec property
+// ParseIntermediateProperty parses the given intermediate property to a spec property.
 func ParseIntermediateProperty(ctx *broker.Context, path string, property *hcl.Attribute, value cty.Value) (*specs.Property, error) {
 	if property == nil {
 		return nil, nil
@@ -407,35 +407,61 @@ func ParseIntermediateProperty(ctx *broker.Context, path string, property *hcl.A
 
 	logger.Debug(ctx, "parsing intermediate property to specs", zap.String("path", path))
 
-	fqpath := template.JoinPath(path, property.Name)
-	typed := value.Type()
-	result := &specs.Property{
-		Name:  property.Name,
-		Path:  fqpath,
-		Expr:  &Expression{property.Expr},
-		Label: labels.Optional,
+	resultTemplate, err := parseIntermediateTemplate(ctx, path, property, value)
+	if err != nil {
+		return nil, err
 	}
+
+	var (
+		result *specs.Property
+		fqpath = template.JoinPath(path, property.Name)
+	)
+
+	switch {
+	case value.Type() == cty.String && template.Is(value.AsString()):
+		result = ParseTemplateProperty(path, property.Name, value.AsString(), resultTemplate)
+	default:
+		// Default property
+		result = &specs.Property{
+			Name:     property.Name,
+			Path:     fqpath,
+			Expr:     &Expression{property.Expr},
+			Label:    labels.Optional,
+			Template: resultTemplate,
+		}
+	}
+
+	return result, nil
+}
+
+func parseIntermediateTemplate(ctx *broker.Context, path string, property *hcl.Attribute, value cty.Value) (specs.Template, error) {
+	logger.Debug(ctx, "parsing intermediate template to specs", zap.String("path", path))
+
+	var (
+		result    specs.Template
+		resultErr error
+		fqpath    = template.JoinPath(path, property.Name)
+		typed     = value.Type()
+	)
 
 	switch {
 	case typed.IsTupleType():
 		result.Repeated = make(specs.Repeated, 0, typed.Length())
 
-		value.ForEachElement(func(key cty.Value, value cty.Value) (stop bool) {
+		value.ForEachElement(func(_ cty.Value, value cty.Value) (stop bool) {
 			attr := &hcl.Attribute{
 				Expr: property.Expr,
 			}
 
-			// TODO: refactor to return template
-			item, err := ParseIntermediateProperty(ctx, fqpath, attr, value)
+			item, err := parseIntermediateTemplate(ctx, fqpath, attr, value)
 			if err != nil {
 				return true
 			}
 
-			result.Repeated = append(result.Repeated, item.Template)
+			result.Repeated = append(result.Repeated, item)
+
 			return false
 		})
-
-		break
 	case typed.IsObjectType():
 		result.Message = specs.Message{}
 
@@ -451,29 +477,16 @@ func ParseIntermediateProperty(ctx *broker.Context, path string, property *hcl.A
 			}
 
 			result.Message[key.AsString()] = item
+
 			return false
 		})
-
-		break
 	case typed == cty.String && template.Is(value.AsString()):
-		// TODO: refactor and return template
-		returns, err := template.Parse(ctx, path, result.Name, value.AsString())
-		if err != nil {
-			return nil, err
-		}
-
-		result = returns
-		break
+		result, resultErr = template.Parse(ctx, path, value.AsString())
 	default:
-		err := SetScalar(ctx, &result.Template, value)
-		if err != nil {
-			return nil, err
-		}
-
-		break
+		resultErr = SetScalar(ctx, &result, value)
 	}
 
-	return result, nil
+	return result, resultErr
 }
 
 // ParseIntermediateBefore parses the given before into a collection of dependencies
@@ -511,8 +524,8 @@ func ParseIntermediateResources(ctx *broker.Context, dependencies specs.Dependen
 
 		node := &specs.Node{
 			Type:      specs.NodeIntermediate,
-			DependsOn: DependenciesExcept(dependencies, prop.Name),
-			ID:        prop.Name,
+			DependsOn: DependenciesExcept(dependencies, attr.Name),
+			ID:        attr.Name,
 			Intermediate: &specs.ParameterMap{
 				Property: prop,
 			},
@@ -635,4 +648,32 @@ func parseIntermediateCondition(ctx *broker.Context, condition Condition, before
 	}
 
 	return nodeList, nil
+}
+
+// ParseTemplateProperty returns the correct property for the given template (raw value)
+func ParseTemplateProperty(path string, name string, value string, parsedTemplate specs.Template) *specs.Property {
+	content := template.GetTemplateContent(value)
+
+	switch {
+	case template.IsReference(content):
+		return &specs.Property{
+			Name:     name,
+			Path:     JoinPath(path, name),
+			Raw:      content,
+			Template: parsedTemplate,
+		}
+	case template.IsString(content):
+		return &specs.Property{
+			Name:     name,
+			Path:     path,
+			Label:    labels.Optional,
+			Template: parsedTemplate,
+		}
+	default:
+		return &specs.Property{
+			Name: name,
+			Path: path,
+			Raw:  content,
+		}
+	}
 }

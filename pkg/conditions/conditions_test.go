@@ -6,6 +6,7 @@ import (
 	"github.com/jexia/semaphore/v2/pkg/broker"
 	"github.com/jexia/semaphore/v2/pkg/broker/logger"
 	"github.com/jexia/semaphore/v2/pkg/specs"
+	"github.com/jexia/semaphore/v2/pkg/specs/labels"
 )
 
 func TestNewEvaluableExpression(t *testing.T) {
@@ -15,6 +16,15 @@ func TestNewEvaluableExpression(t *testing.T) {
 	}
 
 	tests := []test{
+		{
+			raw: "{{ id }} == 1",
+			params: map[string]*specs.Property{
+				"id": {
+					Label:    labels.Optional,
+					Template: specs.Template{},
+				},
+			},
+		},
 		{
 			raw: "{{ input:id }} == {{ input:id }}",
 			params: map[string]*specs.Property{
@@ -73,11 +83,16 @@ func TestNewEvaluableExpression(t *testing.T) {
 	}
 
 	for _, test := range tests {
+		test := test
 		t.Run(test.raw, func(t *testing.T) {
 			ctx := logger.WithLogger(broker.NewBackground())
 			condition, err := NewEvaluableExpression(ctx, test.raw)
 			if err != nil {
 				t.Fatal(err)
+			}
+
+			if len(test.params) != len(condition.Params.Params) {
+				t.Fatalf("expected number of params %d, actual %d", len(test.params), len(condition.Params.Params))
 			}
 
 			for key, param := range condition.Params.Params {
@@ -86,6 +101,9 @@ func TestNewEvaluableExpression(t *testing.T) {
 					t.Fatalf("unexpected result, expected %s to be set", key)
 				}
 
+				if param.Label != expected.Label {
+					t.Fatalf("unexpected label %q, expected %q", param.Label, expected.Label)
+				}
 				if expected.Reference != nil && param.Reference == nil {
 					t.Fatalf("unexpected reference %s, reference not set", key)
 				}
@@ -98,14 +116,6 @@ func TestNewEvaluableExpression(t *testing.T) {
 					if param.Reference.Path != expected.Reference.Path {
 						t.Fatalf("unexpected path '%+v', expected '%+v'", param.Reference.Path, expected.Reference.Path)
 					}
-				}
-
-				if param.Type() != expected.Type() {
-					t.Fatalf("unexpected type '%+v', expected '%+v'", param.Type(), expected.Type())
-				}
-
-				if param.Label != expected.Label {
-					t.Fatalf("unexpected label '%+v', expected '%+v'", param.Label, expected.Label)
 				}
 			}
 		})
