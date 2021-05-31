@@ -5,7 +5,6 @@ import (
 
 	"github.com/jexia/semaphore/v2/pkg/references"
 	"github.com/jexia/semaphore/v2/pkg/specs"
-	"github.com/jexia/semaphore/v2/pkg/specs/template"
 )
 
 // Array represents an array of values/references.
@@ -71,7 +70,7 @@ func (array *Array) MarshalXML(encoder *xml.Encoder, _ xml.StartElement) error {
 		if err := encodeElement(
 			encoder,
 			array.name,
-			template.JoinPath(array.path, array.name),
+			specs.JoinPath(array.path, array.name),
 			array.template,
 			array.store,
 			array.tracker,
@@ -88,7 +87,7 @@ func (array *Array) MarshalXML(encoder *xml.Encoder, _ xml.StartElement) error {
 // UnmarshalXML decodes XML input into the receiver of type specs.Repeated.
 func (array *Array) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
 	var (
-		path  = template.JoinPath(array.path, array.name)
+		path  = specs.JoinPath(array.path, array.name)
 		index = array.store.Length(array.tracker.Resolve(path))
 	)
 

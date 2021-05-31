@@ -2,9 +2,53 @@ package specs
 
 import (
 	"fmt"
+	"regexp"
+	"strings"
 
+	"github.com/jexia/semaphore/v2/pkg/broker"
+	"github.com/jexia/semaphore/v2/pkg/broker/logger"
 	"github.com/jexia/semaphore/v2/pkg/specs/metadata"
 	"github.com/jexia/semaphore/v2/pkg/specs/types"
+	"go.uber.org/zap"
+)
+
+var (
+	// referencePattern is the matching pattern for references
+	referencePattern = regexp.MustCompile(`^[a-zA-Z0-9_\-\.]*:[a-zA-Z0-9\^\&\%\$@_\-\.]*$`)
+	// stringPattern is the matching pattern for strings
+	stringPattern = regexp.MustCompile(`^\'(.+)\'$`)
+)
+
+const (
+	// TemplateOpen tag
+	TemplateOpen = "{{"
+	// TemplateClose tag
+	TemplateClose = "}}"
+
+	// PathDelimiter represents the path reference delimiter
+	PathDelimiter = "."
+
+	// InputResource key
+	InputResource = "input"
+	// OutputResource key
+	OutputResource = "output"
+	// StackResource property
+	StackResource = "stack"
+	// ParamsResource property
+	ParamsResource = "params"
+	// RequestResource property
+	RequestResource = "request"
+	// HeaderResource property
+	HeaderResource = "header"
+	// ResponseResource property
+	ResponseResource = "response"
+	// ErrorResource property
+	ErrorResource = "error"
+
+	// DefaultInputResource represents the default input property on resource select
+	DefaultInputResource = RequestResource
+	// DefaultCallResource represents the default call property on resource select
+	DefaultCallResource = ResponseResource
 )
 
 // Template contains property schema. This is a union type (Only one field must be set).
@@ -103,24 +147,20 @@ func (template Template) ShallowClone() Template {
 	return clone
 }
 
-// Compare given template against the provided one returning the frst mismatch.
+// Compare given template against the provided one returning the first mismatch.
 func (template Template) Compare(expected Template) (err error) {
 	switch {
 	case expected.Repeated != nil:
 		err = template.Repeated.Compare(expected.Repeated)
-		break
 
 	case expected.Scalar != nil:
 		err = template.Scalar.Compare(expected.Scalar)
-		break
 
 	case expected.Message != nil:
 		err = template.Message.Compare(expected.Message)
-		break
 
 	case expected.Enum != nil:
 		err = template.Enum.Compare(expected.Enum)
-		break
 	}
 
 	if err != nil {
@@ -137,6 +177,7 @@ func (template *Template) Define(expected Template) {
 			existing, has := template.Message[key]
 			if has {
 				existing.Define(value)
+
 				continue
 			}
 
@@ -159,4 +200,82 @@ func (template *Template) Define(expected Template) {
 	if template.Scalar == nil && expected.Scalar != nil {
 		template.Scalar = expected.Scalar.Clone()
 	}
+}
+
+// IsTemplate checks whether the given value is a template
+func IsTemplate(value string) bool {
+	return strings.HasPrefix(value, TemplateOpen) && strings.HasSuffix(value, TemplateClose)
+}
+
+// IsReference returns true if the given value is a reference value
+func IsReference(value string) bool {
+	return referencePattern.MatchString(value)
+}
+
+// IsString returns true if the given value is a string value
+func IsString(value string) bool {
+	return stringPattern.MatchString(value)
+}
+
+// GetTemplateContent trims the opening and closing tags from the given template value
+func GetTemplateContent(value string) string {
+	value = strings.Replace(value, TemplateOpen, "", 1)
+	value = strings.Replace(value, TemplateClose, "", 1)
+	value = strings.TrimSpace(value)
+	return value
+}
+
+// ParseTemplateReference parses the given value as a template reference.
+func ParseTemplateReference(value string) (Template, error) {
+	if strings.Count(value, "..") > 0 {
+		return Template{}, ErrPathNotFound{
+			Path: value,
+		}
+	}
+
+	result := Template{
+		Reference: ParsePropertyReference(value),
+	}
+
+	return result, nil
+}
+
+// ParseTemplateContent parses the given template function.
+func ParseTemplateContent(content string) (Template, error) {
+	if IsReference(content) {
+		return ParseTemplateReference(content)
+	}
+
+	if IsString(content) {
+		matched := stringPattern.FindStringSubmatch(content)
+		result := Template{
+			Scalar: &Scalar{
+				Type:    types.String,
+				Default: matched[1],
+			},
+		}
+
+		return result, nil
+	}
+
+	return Template{}, nil
+}
+
+// ParseTemplate parses the given value template, note that path is only used for debugging.
+func ParseTemplate(ctx *broker.Context, path string, value string) (Template, error) {
+	content := GetTemplateContent(value)
+	logger.Debug(ctx, "parsing value template", zap.String("path", path), zap.String("content", content))
+
+	result, err := ParseTemplateContent(content)
+	if err != nil {
+		return result, err
+	}
+
+	logger.Debug(ctx, "parsed template results",
+		zap.String("path", path),
+		zap.Any("default", result.DefaultValue()),
+		zap.String("reference", result.Reference.String()),
+	)
+
+	return result, nil
 }

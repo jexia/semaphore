@@ -6,7 +6,6 @@ import (
 
 	"github.com/jexia/semaphore/v2/pkg/lookup"
 	"github.com/jexia/semaphore/v2/pkg/specs"
-	"github.com/jexia/semaphore/v2/pkg/specs/template"
 )
 
 // Store is a key/value store capable of holding reference values.
@@ -142,11 +141,11 @@ func (t *tracker) Resolve(path string) string {
 	result := ""
 	lookup := ""
 
-	parts := template.SplitPath(path)
+	parts := specs.SplitPath(path)
 
 	for _, part := range parts {
-		result = template.JoinPath(result, part)
-		lookup = template.JoinPath(lookup, part)
+		result = specs.JoinPath(result, part)
+		lookup = specs.JoinPath(lookup, part)
 
 		index, has := t.positions[lookup]
 		if !has {
@@ -174,7 +173,7 @@ func StoreValues(store Store, tracker Tracker, path string, values map[string]in
 	store.Define(path, len(values))
 
 	for key, value := range values {
-		path := template.JoinPath(path, key)
+		path := specs.JoinPath(path, key)
 		keys, is := value.(map[string]interface{})
 		if is {
 			StoreValues(store, tracker, path, keys)
@@ -264,12 +263,12 @@ func (prefix *prefixStore) Load(path string) *Reference {
 
 // Store stores the given value inside the references store
 func (prefix *prefixStore) Store(path string, reference *Reference) {
-	prefix.store.Store(template.JoinPath(prefix.path, path), reference)
+	prefix.store.Store(specs.JoinPath(prefix.path, path), reference)
 }
 
 // Define attempts to load the defined value for the given path.
 func (prefix *prefixStore) Define(path string, length int) {
-	prefix.store.Define(template.JoinPath(prefix.path, path), length)
+	prefix.store.Define(specs.JoinPath(prefix.path, path), length)
 }
 
 // Load attempts to load the defined value for the given resource and path

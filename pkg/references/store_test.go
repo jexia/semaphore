@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/jexia/semaphore/v2/pkg/specs"
-	"github.com/jexia/semaphore/v2/pkg/specs/template"
 )
 
 func BenchmarkSimpleFetching(b *testing.B) {
@@ -116,7 +115,7 @@ func TestEnumJSON(t *testing.T) {
 func TestStoreReference(t *testing.T) {
 	store := NewStore(10)
 
-	path := template.ResourcePath(template.InputResource, "key")
+	path := specs.ResourcePath(specs.InputResource, "key")
 	ref := &Reference{
 		Value: "hello world",
 	}
@@ -152,8 +151,8 @@ func TestStoreValues(t *testing.T) {
 		target: value,
 	}
 
-	StoreValues(store, tracker, template.ResourcePath(resource), values)
-	result := store.Load(template.ResourcePath(resource, target))
+	StoreValues(store, tracker, specs.ResourcePath(resource), values)
+	result := store.Load(specs.ResourcePath(resource, target))
 	if result == nil {
 		t.Fatal("did not return reference")
 	}
@@ -178,9 +177,9 @@ func TestStoreNestedValues(t *testing.T) {
 		},
 	}
 
-	StoreValues(store, tracker, template.ResourcePath(resource), values)
+	StoreValues(store, tracker, specs.ResourcePath(resource), values)
 
-	result := store.Load(template.ResourcePath(resource, nested, key))
+	result := store.Load(specs.ResourcePath(resource, nested, key))
 	if result == nil {
 		t.Fatal("did not return reference")
 	}
@@ -207,15 +206,15 @@ func TestStoreRepeatedMap(t *testing.T) {
 		},
 	}
 
-	StoreValues(store, tracker, template.ResourcePath(resource), values)
+	StoreValues(store, tracker, specs.ResourcePath(resource), values)
 
-	length := store.Length(template.ResourcePath(resource, nested))
+	length := store.Length(specs.ResourcePath(resource, nested))
 	if length != 1 {
 		t.Fatalf("unexpected repeated length %d, expected 1", length)
 	}
 
-	arrayp := template.ResourcePath(resource, nested)
-	path := template.ResourcePath(resource, nested, key)
+	arrayp := specs.ResourcePath(resource, nested)
+	path := specs.ResourcePath(resource, nested, key)
 	tracker.Track(arrayp, 0)
 
 	for index := 0; index < length; index++ {
@@ -244,9 +243,9 @@ func TestStoreEnum(t *testing.T) {
 		key: Enum("PENDING", expected),
 	}
 
-	StoreValues(store, tracker, template.ResourcePath(resource), values)
+	StoreValues(store, tracker, specs.ResourcePath(resource), values)
 
-	path := template.ResourcePath(resource, key)
+	path := specs.ResourcePath(resource, key)
 	result := store.Load(path)
 	if result == nil {
 		t.Fatal("did not return reference")
@@ -276,9 +275,9 @@ func TestStoreRepeatingEnum(t *testing.T) {
 		key: expected,
 	}
 
-	StoreValues(store, tracker, template.ResourcePath(resource), values)
+	StoreValues(store, tracker, specs.ResourcePath(resource), values)
 
-	path := template.ResourcePath(resource, key)
+	path := specs.ResourcePath(resource, key)
 	length := store.Length(path)
 	if length != len(expected) {
 		t.Fatalf("unexpected repeated store length %d, expected %d", length, len(expected))
@@ -317,14 +316,14 @@ func TestStoreRepeatedValues(t *testing.T) {
 		},
 	}
 
-	StoreValues(store, tracker, template.ResourcePath(resource), values)
+	StoreValues(store, tracker, specs.ResourcePath(resource), values)
 
-	length := store.Length(template.ResourcePath(resource, "nested"))
+	length := store.Length(specs.ResourcePath(resource, "nested"))
 	if length != 1 {
 		t.Errorf("unexpected length %d, expected 1", length)
 	}
 
-	result := store.Load(template.ResourcePath(resource, "nested[0]"))
+	result := store.Load(specs.ResourcePath(resource, "nested[0]"))
 	if result == nil {
 		t.Fatal("did not return reference")
 	}
@@ -343,10 +342,10 @@ func TestPrefixStoreEnum(t *testing.T) {
 
 	resource := "input"
 
-	pstore := NewPrefixStore(store, template.ResourcePath(resource, prefix))
+	pstore := NewPrefixStore(store, specs.ResourcePath(resource, prefix))
 	pstore.Store(path, &Reference{Enum: &expected})
 
-	result := store.Load(template.ResourcePath(resource, prefix, path))
+	result := store.Load(specs.ResourcePath(resource, prefix, path))
 	if result == nil {
 		t.Fatal("did not return reference")
 	}
@@ -371,12 +370,12 @@ func TestPrefixStoreValues(t *testing.T) {
 		"key": "value",
 	}
 
-	pstore := NewPrefixStore(store, template.ResourcePath(resource, prefix))
+	pstore := NewPrefixStore(store, specs.ResourcePath(resource, prefix))
 	tracker := NewTracker()
 
 	StoreValues(pstore, tracker, "", values)
 
-	ref := store.Load(template.ResourcePath(resource, prefix, path))
+	ref := store.Load(specs.ResourcePath(resource, prefix, path))
 	if ref == nil {
 		t.Fatal("unable to load reference from prefix store")
 	}
@@ -385,7 +384,7 @@ func TestPrefixStoreValues(t *testing.T) {
 		t.Fatalf("unexpected value '%s', expected '%s'", ref.Value, value)
 	}
 
-	ref = store.Load(template.ResourcePath(resource, prefix, path))
+	ref = store.Load(specs.ResourcePath(resource, prefix, path))
 	if ref == nil {
 		t.Fatal("unable to load reference from reference store")
 	}
@@ -402,15 +401,15 @@ func TestPrefixStoreValue(t *testing.T) {
 	path := "key"
 	value := "message"
 
-	pstore := NewPrefixStore(store, template.ResourcePath(resource, prefix))
+	pstore := NewPrefixStore(store, specs.ResourcePath(resource, prefix))
 	pstore.Store(path, &Reference{Value: value})
 
-	ref := store.Load(template.ResourcePath(resource, prefix, path))
+	ref := store.Load(specs.ResourcePath(resource, prefix, path))
 	if ref == nil {
 		t.Fatal("unable to load reference from prefix store")
 	}
 
-	ref = store.Load(template.ResourcePath(resource, prefix, path))
+	ref = store.Load(specs.ResourcePath(resource, prefix, path))
 	if ref == nil {
 		t.Fatal("unable to load reference from reference store")
 	}

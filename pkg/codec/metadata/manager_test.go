@@ -8,7 +8,6 @@ import (
 	"github.com/jexia/semaphore/v2/pkg/references"
 	"github.com/jexia/semaphore/v2/pkg/specs"
 	"github.com/jexia/semaphore/v2/pkg/specs/labels"
-	"github.com/jexia/semaphore/v2/pkg/specs/template"
 	"github.com/jexia/semaphore/v2/pkg/specs/types"
 )
 
@@ -207,7 +206,7 @@ func TestManagerUnmarshal(t *testing.T) {
 					continue
 				}
 
-				ref := store.Load(template.ResourcePath(resource, key))
+				ref := store.Load(specs.ResourcePath(resource, key))
 				if ref == nil {
 					t.Fatalf("reference not set %s", key)
 				}

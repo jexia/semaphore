@@ -5,7 +5,6 @@ import (
 	"github.com/jexia/semaphore/v2/pkg/broker/logger"
 	"github.com/jexia/semaphore/v2/pkg/lookup"
 	"github.com/jexia/semaphore/v2/pkg/specs"
-	"github.com/jexia/semaphore/v2/pkg/specs/template"
 	"github.com/jexia/semaphore/v2/pkg/specs/types"
 	"go.uber.org/zap"
 )
@@ -290,7 +289,7 @@ func ResolveProperty(ctx *broker.Context, node *specs.Node, property *specs.Prop
 		return nil
 	}
 
-	breakpoint := template.OutputResource
+	breakpoint := specs.OutputResource
 	if node != nil {
 		breakpoint = node.ID
 
@@ -409,7 +408,7 @@ func ScopeNestedReferences(resource, path string, source, target *specs.Template
 		}
 
 		for _, item := range source.Message {
-			path := template.JoinPath(path, item.Name)
+			path := specs.JoinPath(path, item.Name)
 			nested, ok := target.Message[item.Name]
 			if !ok {
 				nested = item.ShallowClone() // We should only shallow clone the given property to avoid unexpected definitions

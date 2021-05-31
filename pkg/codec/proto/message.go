@@ -3,7 +3,6 @@ package proto
 import (
 	"github.com/jexia/semaphore/v2/pkg/references"
 	"github.com/jexia/semaphore/v2/pkg/specs"
-	"github.com/jexia/semaphore/v2/pkg/specs/template"
 	"github.com/jexia/semaphore/v2/pkg/specs/types"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/dynamic"
@@ -21,7 +20,7 @@ func (tmpl Message) Marshal(result *dynamic.Message, message *desc.MessageDescri
 
 	for _, field := range message.GetFields() {
 		name := field.GetName()
-		path := template.JoinPath(root, name)
+		path := specs.JoinPath(root, name)
 		specs, has := tmpl.Message[name]
 		if !has {
 			continue
@@ -72,7 +71,7 @@ func (tmpl Message) Unmarshal(protobuf *dynamic.Message, path string, store refe
 			continue
 		}
 
-		path := template.JoinPath(path, field.GetName())
+		path := specs.JoinPath(path, field.GetName())
 
 		switch property.Type() {
 		case types.Array:

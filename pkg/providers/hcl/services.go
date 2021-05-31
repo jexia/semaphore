@@ -4,7 +4,6 @@ import (
 	"github.com/jexia/semaphore/v2/pkg/broker"
 	"github.com/jexia/semaphore/v2/pkg/broker/logger"
 	"github.com/jexia/semaphore/v2/pkg/specs"
-	"github.com/jexia/semaphore/v2/pkg/specs/template"
 	"github.com/zclconf/go-cty/cty"
 	"go.uber.org/zap"
 )
@@ -43,7 +42,7 @@ func ParseIntermediateService(parent *broker.Context, manifest Service) (*specs.
 
 	result := &specs.Service{
 		Package:            manifest.Package,
-		FullyQualifiedName: template.JoinPath(manifest.Package, manifest.Name),
+		FullyQualifiedName: specs.JoinPath(manifest.Package, manifest.Name),
 		Name:               manifest.Name,
 		Transport:          manifest.Transport,
 		Host:               manifest.Host,

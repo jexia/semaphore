@@ -5,7 +5,6 @@ import (
 	"github.com/jexia/semaphore/v2/pkg/broker/logger"
 	"github.com/jexia/semaphore/v2/pkg/functions"
 	"github.com/jexia/semaphore/v2/pkg/specs"
-	"github.com/jexia/semaphore/v2/pkg/specs/template"
 )
 
 // ResolveReferences resolves all references inside the given manifest by forwarding references.
@@ -159,7 +158,7 @@ func ResolvePropertyReferences(tmpl *specs.Template, dependencies specs.Dependen
 		return
 	}
 
-	dependency := template.SplitPath(tmpl.Reference.Resource)[0]
+	dependency := specs.SplitPath(tmpl.Reference.Resource)[0]
 	dependencies[dependency] = nil
 
 	ScopePropertyReference(tmpl)

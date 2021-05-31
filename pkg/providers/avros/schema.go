@@ -3,7 +3,6 @@ package avros
 import (
 	"github.com/jexia/semaphore/v2/pkg/specs"
 	"github.com/jexia/semaphore/v2/pkg/specs/labels"
-	"github.com/jexia/semaphore/v2/pkg/specs/template"
 	"github.com/jexia/semaphore/v2/pkg/specs/types"
 )
 
@@ -41,7 +40,7 @@ func NewMessage(path string, message *AvroSchema) *specs.Property {
 	}
 
 	for _, field := range message.Fields {
-		result.Message[field.Name] = NewProperty(template.JoinPath(message.Namespace, message.Name, field.Name), field)
+		result.Message[field.Name] = NewProperty(specs.JoinPath(message.Namespace, message.Name, field.Name), field)
 	}
 
 	return result
@@ -77,7 +76,7 @@ func NewProperty(path string, message *AvroSchema) *specs.Property {
 		fields := message.Fields
 		result.Message = make(specs.Message, len(fields))
 		for _, field := range fields {
-			result.Message[field.Name] = NewProperty(template.JoinPath(path, message.Name, field.Name), field)
+			result.Message[field.Name] = NewProperty(specs.JoinPath(path, message.Name, field.Name), field)
 		}
 		break
 	default:

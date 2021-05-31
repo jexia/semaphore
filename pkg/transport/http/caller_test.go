@@ -14,7 +14,7 @@ import (
 	"github.com/jexia/semaphore/v2/pkg/codec/metadata"
 	"github.com/jexia/semaphore/v2/pkg/discovery"
 	"github.com/jexia/semaphore/v2/pkg/references"
-	"github.com/jexia/semaphore/v2/pkg/specs/template"
+	"github.com/jexia/semaphore/v2/pkg/specs"
 	"github.com/jexia/semaphore/v2/pkg/transport"
 )
 
@@ -366,7 +366,7 @@ func TestCallerReferencesLookup(t *testing.T) {
 				Method: method,
 			}
 
-			store.Store(template.ResourcePath(test.resource, test.path), &references.Reference{Value: test.value})
+			store.Store(specs.ResourcePath(test.resource, test.path), &references.Reference{Value: test.value})
 
 			rw := &MockResponseWriter{
 				header: metadata.MD{},

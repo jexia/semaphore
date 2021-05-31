@@ -39,7 +39,7 @@ func (repeated Repeated) Template() (Template, error) {
 
 // Clone repeated.
 func (repeated Repeated) Clone() Repeated {
-	var clone = make([]Template, len(repeated))
+	clone := make([]Template, len(repeated))
 
 	for index, template := range repeated {
 		clone[index] = template.Clone()

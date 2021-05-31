@@ -7,7 +7,6 @@ import (
 	"github.com/jexia/semaphore/v2/pkg/broker"
 	"github.com/jexia/semaphore/v2/pkg/specs"
 	"github.com/jexia/semaphore/v2/pkg/specs/labels"
-	"github.com/jexia/semaphore/v2/pkg/specs/template"
 )
 
 var templatePattern = regexp.MustCompile("{{ *([^}}]+?) *}}")
@@ -25,7 +24,7 @@ func NewEvaluableExpression(ctx *broker.Context, raw string) (*specs.Condition, 
 	}
 
 	for _, ref := range expression.Vars() {
-		expressionTemplate, err := template.Parse(ctx, "", ref)
+		expressionTemplate, err := specs.ParseTemplate(ctx, "", ref)
 		if err != nil {
 			return nil, err
 		}

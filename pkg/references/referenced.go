@@ -2,7 +2,6 @@ package references
 
 import (
 	"github.com/jexia/semaphore/v2/pkg/specs"
-	"github.com/jexia/semaphore/v2/pkg/specs/template"
 )
 
 // ReferencedCollection contains a collection of paths
@@ -15,10 +14,10 @@ type ReferencedCollection map[string]struct{}
 // ex: "meta.info.name" results in: "meta", "meta.info", "meta.info.name"
 func (collection ReferencedCollection) Set(path string) {
 	absolute := ""
-	parts := template.SplitPath(path)
+	parts := specs.SplitPath(path)
 
 	for _, part := range parts {
-		current := template.JoinPath(absolute, part)
+		current := specs.JoinPath(absolute, part)
 		collection[current] = struct{}{}
 		absolute = current
 	}

@@ -4,7 +4,6 @@ import (
 	"github.com/jexia/semaphore/v2/pkg/broker"
 	"github.com/jexia/semaphore/v2/pkg/broker/logger"
 	"github.com/jexia/semaphore/v2/pkg/specs"
-	"github.com/jexia/semaphore/v2/pkg/specs/template"
 )
 
 // Unresolved represents a collection of unresolved references
@@ -44,7 +43,7 @@ func ResolveFlows(ctx *broker.Context, flows specs.FlowListInterface) error {
 
 		output := flow.GetOutput()
 		if output != nil {
-			err := Resolve(flow, output.DependsOn, template.OutputResource, make(Unresolved))
+			err := Resolve(flow, output.DependsOn, specs.OutputResource, make(Unresolved))
 			if err != nil {
 				return err
 			}

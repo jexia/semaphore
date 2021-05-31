@@ -12,7 +12,6 @@ import (
 	"github.com/jexia/semaphore/v2/pkg/references"
 	"github.com/jexia/semaphore/v2/pkg/specs"
 	"github.com/jexia/semaphore/v2/pkg/specs/labels"
-	"github.com/jexia/semaphore/v2/pkg/specs/template"
 	"github.com/jexia/semaphore/v2/pkg/specs/types"
 )
 
@@ -85,7 +84,7 @@ func TestResolveStatusCode(t *testing.T) {
 	}
 
 	store := references.NewStore(1)
-	store.Store(template.ResourcePath(template.InputResource, "status"), &references.Reference{Value: expected})
+	store.Store(specs.ResourcePath(specs.InputResource, "status"), &references.Reference{Value: expected})
 
 	result := object.ResolveStatusCode(store)
 	if int64(result) != expected {
@@ -155,7 +154,7 @@ func TestResolveStatusMessage(t *testing.T) {
 	}
 
 	store := references.NewStore(1)
-	store.Store(template.ResourcePath(template.InputResource, "status"), &references.Reference{Value: expected})
+	store.Store(specs.ResourcePath(specs.InputResource, "status"), &references.Reference{Value: expected})
 
 	result := object.ResolveMessage(store)
 	if result != expected {

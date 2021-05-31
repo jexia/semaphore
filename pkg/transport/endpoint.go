@@ -6,7 +6,6 @@ import (
 	"github.com/jexia/semaphore/v2/pkg/codec/metadata"
 	"github.com/jexia/semaphore/v2/pkg/references"
 	"github.com/jexia/semaphore/v2/pkg/specs"
-	"github.com/jexia/semaphore/v2/pkg/specs/template"
 )
 
 // NewEndpoint constructs a new transport endpoint.
@@ -167,10 +166,10 @@ type Endpoint struct {
 // NewCodec updates the endpoint request and response codecs and metadata managers.
 // If a forwarding service is set is the request codec ignored.
 func (endpoint *Endpoint) NewCodec(ctx *broker.Context, request codec.Constructor, response codec.Constructor) (err error) {
-	endpoint.Request.NewMeta(ctx, template.InputResource)
+	endpoint.Request.NewMeta(ctx, specs.InputResource)
 
 	if endpoint.Forward == nil && endpoint.Request != nil {
-		err = endpoint.Request.NewCodec(ctx, template.InputResource, request)
+		err = endpoint.Request.NewCodec(ctx, specs.InputResource, request)
 		if err != nil {
 			return err
 		}
@@ -184,8 +183,8 @@ func (endpoint *Endpoint) NewCodec(ctx *broker.Context, request codec.Constructo
 		for _, handle := range endpoint.Flow.Errors() {
 			object := NewObject(handle.GetResponse(), handle.GetStatusCode(), handle.GetMessage())
 
-			object.NewMeta(ctx, template.ErrorResource)
-			err = object.NewCodec(ctx, template.ErrorResource, response)
+			object.NewMeta(ctx, specs.ErrorResource)
+			err = object.NewCodec(ctx, specs.ErrorResource, response)
 			if err != nil {
 				return err
 			}
@@ -194,12 +193,12 @@ func (endpoint *Endpoint) NewCodec(ctx *broker.Context, request codec.Constructo
 		}
 	}
 
-	endpoint.Response.NewMeta(ctx, template.OutputResource)
-	err = endpoint.Response.NewCodec(ctx, template.OutputResource, response)
+	endpoint.Response.NewMeta(ctx, specs.OutputResource)
+	err = endpoint.Response.NewCodec(ctx, specs.OutputResource, response)
 	if err != nil {
 		return err
 	}
 
-	endpoint.Forward.NewMeta(ctx, template.OutputResource)
+	endpoint.Forward.NewMeta(ctx, specs.OutputResource)
 	return nil
 }

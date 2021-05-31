@@ -27,7 +27,6 @@ func TextFormatter(stack Errors, nodeTemplate string) (string, error) {
 
 	defaultTpl, _ := template.New("node").Funcs(funcs).Parse(DefaultTextFormat)
 	tpl, err := template.New("node").Funcs(funcs).Parse(nodeTemplate)
-
 	if err != nil {
 		err = fmt.Errorf("failed to parse template: %w", err)
 		// Append failed to parse template error to stack

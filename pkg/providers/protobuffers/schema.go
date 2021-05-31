@@ -4,7 +4,6 @@ import (
 	protobuf "github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/jexia/semaphore/v2/pkg/specs"
 	"github.com/jexia/semaphore/v2/pkg/specs/labels"
-	"github.com/jexia/semaphore/v2/pkg/specs/template"
 	"github.com/jhump/protoreflect/desc"
 )
 
@@ -36,7 +35,7 @@ func NewMessage(path string, descriptor *desc.MessageDescriptor) *specs.Property
 	}
 
 	for _, field := range fields {
-		result.Message[field.GetName()] = NewProperty(template.JoinPath(path, field.GetName()), field)
+		result.Message[field.GetName()] = NewProperty(specs.JoinPath(path, field.GetName()), field)
 	}
 
 	return result
@@ -83,7 +82,7 @@ func NewProperty(path string, descriptor *desc.FieldDescriptor) *specs.Property 
 		result.Message = make(specs.Message, len(fields))
 
 		for _, field := range fields {
-			result.Message[field.GetName()] = NewProperty(template.JoinPath(path, field.GetName()), field)
+			result.Message[field.GetName()] = NewProperty(specs.JoinPath(path, field.GetName()), field)
 		}
 
 		break

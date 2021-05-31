@@ -8,7 +8,6 @@ import (
 	"github.com/jexia/semaphore/v2/pkg/references"
 	"github.com/jexia/semaphore/v2/pkg/specs"
 	"github.com/jexia/semaphore/v2/pkg/specs/labels"
-	"github.com/jexia/semaphore/v2/pkg/specs/template"
 	"github.com/jexia/semaphore/v2/pkg/specs/types"
 )
 
@@ -39,7 +38,7 @@ func TestFunction(t *testing.T) {
 		_, _, err := Function(&specs.Property{
 			Template: specs.Template{
 				Reference: &specs.PropertyReference{
-					Resource: template.InputResource,
+					Resource: specs.InputResource,
 					Path:     "reference",
 				},
 				Scalar: &specs.Scalar{

@@ -7,7 +7,6 @@ import (
 	"github.com/jexia/semaphore/v2/pkg/references"
 	"github.com/jexia/semaphore/v2/pkg/specs"
 	"github.com/jexia/semaphore/v2/pkg/specs/labels"
-	"github.com/jexia/semaphore/v2/pkg/specs/template"
 	"github.com/jexia/semaphore/v2/pkg/specs/types"
 )
 
@@ -32,7 +31,7 @@ func TestTokensPrint(t *testing.T) {
 					Path: "half",
 					Template: specs.Template{
 						Reference: &specs.PropertyReference{
-							Resource: template.InputResource,
+							Resource: specs.InputResource,
 							Path:     "half",
 						},
 					},
@@ -42,7 +41,7 @@ func TestTokensPrint(t *testing.T) {
 					Path: "half",
 					Template: specs.Template{
 						Reference: &specs.PropertyReference{
-							Resource: template.InputResource,
+							Resource: specs.InputResource,
 							Path:     "half",
 						},
 					},
@@ -79,7 +78,7 @@ func TestTokensPrint(t *testing.T) {
 					Path: "second",
 					Template: specs.Template{
 						Reference: &specs.PropertyReference{
-							Resource: template.InputResource,
+							Resource: specs.InputResource,
 							Path:     "second",
 						},
 					},
@@ -113,7 +112,7 @@ func TestTokensPrint(t *testing.T) {
 					Path: "array",
 					Template: specs.Template{
 						Reference: &specs.PropertyReference{
-							Resource: template.InputResource,
+							Resource: specs.InputResource,
 							Path:     "array",
 						},
 						Repeated: specs.Repeated{
@@ -122,7 +121,7 @@ func TestTokensPrint(t *testing.T) {
 									Type: types.Float,
 								},
 								Reference: &specs.PropertyReference{
-									Resource: template.InputResource,
+									Resource: specs.InputResource,
 									Path:     "array",
 								},
 							},
@@ -134,7 +133,7 @@ func TestTokensPrint(t *testing.T) {
 					Path: "object",
 					Template: specs.Template{
 						Reference: &specs.PropertyReference{
-							Resource: template.InputResource,
+							Resource: specs.InputResource,
 							Path:     "object",
 						},
 						Message: map[string]*specs.Property{
@@ -144,7 +143,7 @@ func TestTokensPrint(t *testing.T) {
 								Label: labels.Optional,
 								Template: specs.Template{
 									Reference: &specs.PropertyReference{
-										Resource: template.InputResource,
+										Resource: specs.InputResource,
 										Path:     "object.e",
 									},
 									Scalar: &specs.Scalar{
@@ -172,7 +171,7 @@ func TestTokensPrint(t *testing.T) {
 				tracker = references.NewTracker()
 			)
 
-			references.StoreValues(store, tracker, template.ResourcePath(template.InputResource), test.store)
+			references.StoreValues(store, tracker, specs.ResourcePath(specs.InputResource), test.store)
 
 			actual, err := printer.Print(store, test.args...)
 			if err != nil {

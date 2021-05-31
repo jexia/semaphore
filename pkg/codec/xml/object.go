@@ -5,7 +5,6 @@ import (
 
 	"github.com/jexia/semaphore/v2/pkg/references"
 	"github.com/jexia/semaphore/v2/pkg/specs"
-	"github.com/jexia/semaphore/v2/pkg/specs/template"
 )
 
 // Object represents an XML object.
@@ -41,7 +40,7 @@ func (object *Object) MarshalXML(encoder *xml.Encoder, _ xml.StartElement) error
 		if err := encodeElement(
 			encoder,
 			property.Name,
-			template.JoinPath(object.path, property.Name),
+			specs.JoinPath(object.path, property.Name),
 			property.Template,
 			object.store,
 			object.tracker,
@@ -73,9 +72,9 @@ func (object *Object) UnmarshalXML(decoder *xml.Decoder, _ xml.StartElement) err
 
 			if err := decodeElement(
 				decoder,
-				t,             // start element
-				property.Name, // name
-				template.JoinPath(object.path, object.name), // path
+				t,                                        // start element
+				property.Name,                            // name
+				specs.JoinPath(object.path, object.name), // path
 				property.Template,
 				object.store,
 				object.tracker,

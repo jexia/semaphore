@@ -7,7 +7,6 @@ import (
 	"github.com/jexia/semaphore/v2/pkg/broker/logger"
 	"github.com/jexia/semaphore/v2/pkg/references"
 	"github.com/jexia/semaphore/v2/pkg/specs"
-	"github.com/jexia/semaphore/v2/pkg/specs/template"
 	"go.uber.org/zap"
 )
 
@@ -20,7 +19,7 @@ func NewManager(ctx *broker.Context, resource string, params specs.Header) *Mana
 
 	return &Manager{
 		Context:  ctx,
-		Resource: template.JoinPath(resource, template.HeaderResource),
+		Resource: specs.JoinPath(resource, specs.HeaderResource),
 		Params:   params,
 		Keys:     keys,
 	}

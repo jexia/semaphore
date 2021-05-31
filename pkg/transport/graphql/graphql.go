@@ -13,7 +13,6 @@ import (
 	"github.com/jexia/semaphore/v2/pkg/codec"
 	"github.com/jexia/semaphore/v2/pkg/references"
 	"github.com/jexia/semaphore/v2/pkg/specs"
-	"github.com/jexia/semaphore/v2/pkg/specs/template"
 	"github.com/jexia/semaphore/v2/pkg/transport"
 	"go.uber.org/zap"
 )
@@ -120,7 +119,7 @@ func (listener *Listener) Handle(ctx *broker.Context, endpoints []*transport.End
 				store := endpoint.Flow.NewStore()
 				ctx := context.Background()
 
-				store.Store(template.ResourcePath(template.InputResource), &references.Reference{Value: p.Args})
+				store.Store(specs.ResourcePath(specs.InputResource), &references.Reference{Value: p.Args})
 
 				err = endpoint.Flow.Do(ctx, store)
 				if err != nil {

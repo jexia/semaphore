@@ -11,7 +11,6 @@ import (
 	"github.com/jexia/semaphore/v2/pkg/references"
 	"github.com/jexia/semaphore/v2/pkg/specs"
 	"github.com/jexia/semaphore/v2/pkg/specs/labels"
-	"github.com/jexia/semaphore/v2/pkg/specs/template"
 	"go.uber.org/zap"
 )
 
@@ -274,7 +273,7 @@ func PrepareFunction(ctx *broker.Context, node *specs.Node, flow specs.FlowInter
 
 	for index, arg := range args {
 		content := strings.TrimSpace(arg)
-		argTemplate, err := template.ParseContent(content)
+		argTemplate, err := specs.ParseTemplateContent(content)
 		if err != nil {
 			return err
 		}
@@ -324,7 +323,7 @@ func PrepareFunction(ctx *broker.Context, node *specs.Node, flow specs.FlowInter
 	property.Template = returns.Template
 	property.Label = returns.Label
 
-	resource := template.JoinPath(template.StackResource, ref)
+	resource := specs.JoinPath(specs.StackResource, ref)
 	property.Reference = &specs.PropertyReference{
 		Resource: resource,
 		Path:     ".",

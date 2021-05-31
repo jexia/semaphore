@@ -14,7 +14,7 @@ import (
 	"github.com/jexia/semaphore/v2/pkg/codec"
 	"github.com/jexia/semaphore/v2/pkg/codec/metadata"
 	"github.com/jexia/semaphore/v2/pkg/references"
-	"github.com/jexia/semaphore/v2/pkg/specs/template"
+	"github.com/jexia/semaphore/v2/pkg/specs"
 	"github.com/jexia/semaphore/v2/pkg/transport"
 	"github.com/julienschmidt/httprouter"
 	"go.uber.org/zap"
@@ -227,11 +227,11 @@ func (handle *Handle) HTTPFunc(w http.ResponseWriter, r *http.Request, ps httpro
 	store := handle.Endpoint.Flow.NewStore()
 
 	for key, value := range r.URL.Query() {
-		store.Store(template.ResourcePath(template.InputResource, key), &references.Reference{Value: strings.Join(value, "")})
+		store.Store(specs.ResourcePath(specs.InputResource, key), &references.Reference{Value: strings.Join(value, "")})
 	}
 
 	for _, param := range ps {
-		store.Store(template.ResourcePath(template.InputResource, param.Key), &references.Reference{Value: param.Value})
+		store.Store(specs.ResourcePath(specs.InputResource, param.Key), &references.Reference{Value: param.Value})
 	}
 
 	if handle.Request != nil {
