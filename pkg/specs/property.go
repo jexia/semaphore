@@ -90,6 +90,34 @@ func (property *Property) ShallowClone() *Property {
 	}
 }
 
+// ParseTemplateProperty returns the correct property for the given (parsed)template.
+func ParseTemplateProperty(path string, name string, value string, parsedTemplate Template) *Property {
+	content := GetTemplateContent(value)
+
+	switch {
+	case IsReference(content):
+		return &Property{
+			Name:     name,
+			Path:     JoinPath(path, name),
+			Raw:      content,
+			Template: parsedTemplate,
+		}
+	case IsString(content):
+		return &Property{
+			Name:     name,
+			Path:     path,
+			Label:    labels.Optional,
+			Template: parsedTemplate,
+		}
+	default:
+		return &Property{
+			Name: name,
+			Path: path,
+			Raw:  content,
+		}
+	}
+}
+
 // Compare checks the given property against the provided one.
 func (property *Property) Compare(expected *Property) error {
 	if expected == nil {

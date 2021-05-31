@@ -6,7 +6,6 @@ import (
 	"github.com/jexia/semaphore/v2/pkg/broker"
 	"github.com/jexia/semaphore/v2/pkg/broker/logger"
 	"github.com/jexia/semaphore/v2/pkg/specs"
-	"github.com/jexia/semaphore/v2/pkg/specs/labels"
 )
 
 func TestNewEvaluableExpression(t *testing.T) {
@@ -20,7 +19,6 @@ func TestNewEvaluableExpression(t *testing.T) {
 			raw: "{{ id }} == 1",
 			params: map[string]*specs.Property{
 				"id": {
-					Label:    labels.Optional,
 					Template: specs.Template{},
 				},
 			},

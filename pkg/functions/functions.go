@@ -10,7 +10,6 @@ import (
 	"github.com/jexia/semaphore/v2/pkg/broker/logger"
 	"github.com/jexia/semaphore/v2/pkg/references"
 	"github.com/jexia/semaphore/v2/pkg/specs"
-	"github.com/jexia/semaphore/v2/pkg/specs/labels"
 	"go.uber.org/zap"
 )
 
@@ -278,20 +277,7 @@ func PrepareFunction(ctx *broker.Context, node *specs.Node, flow specs.FlowInter
 			return err
 		}
 
-		// TODO Better use ParseTemplateProperty() when it is moved (see issue #194)
-		argProperty := &specs.Property{
-			Name:     property.Name,
-			Path:     property.Path,
-			Raw:      content,
-			Template: argTemplate,
-		}
-
-		if argTemplate.Reference == nil {
-			argProperty.Label = labels.Optional
-		} else {
-			// TODO Only Template.Reference got their Raw set (other types not), does this make sense?!
-			argProperty.Raw = content
-		}
+		argProperty := specs.ParseTemplateProperty(property.Path, property.Name, content, argTemplate)
 
 		err = references.ResolveProperty(ctx, node, argProperty, flow)
 		if err != nil {

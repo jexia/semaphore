@@ -418,7 +418,7 @@ func ParseIntermediateProperty(ctx *broker.Context, path string, property *hcl.A
 
 	switch {
 	case value.Type() == cty.String && specs.IsTemplate(value.AsString()):
-		result = ParseTemplateProperty(path, property.Name, value.AsString(), resultTemplate)
+		result = specs.ParseTemplateProperty(path, property.Name, value.AsString(), resultTemplate)
 	default:
 		// Default property
 		result = &specs.Property{
@@ -647,32 +647,4 @@ func parseIntermediateCondition(ctx *broker.Context, condition Condition, before
 	}
 
 	return nodeList, nil
-}
-
-// ParseTemplateProperty returns the correct property for the given template (raw value)
-func ParseTemplateProperty(path string, name string, value string, parsedTemplate specs.Template) *specs.Property {
-	content := specs.GetTemplateContent(value)
-
-	switch {
-	case specs.IsReference(content):
-		return &specs.Property{
-			Name:     name,
-			Path:     JoinPath(path, name),
-			Raw:      content,
-			Template: parsedTemplate,
-		}
-	case specs.IsString(content):
-		return &specs.Property{
-			Name:     name,
-			Path:     path,
-			Label:    labels.Optional,
-			Template: parsedTemplate,
-		}
-	default:
-		return &specs.Property{
-			Name: name,
-			Path: path,
-			Raw:  content,
-		}
-	}
 }
