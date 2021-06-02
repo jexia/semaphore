@@ -8,13 +8,13 @@ import (
 )
 
 type Consul struct {
-	address  string
 	watchers map[string]*Watcher
 }
 
-func New(address string) *Consul {
+// New creates a new Consul manager that keeps track of the Consul resolvers.
+func New() *Consul {
 	return &Consul{
-		address: address,
+		watchers: make(map[string]*Watcher),
 	}
 }
 
@@ -28,19 +28,22 @@ func (c *Consul) Resolver(address string) (discovery.Resolver, error) {
 	}
 
 	name := uri.Host
-
 	if watcher, ok := c.watchers[name]; ok {
 		return watcher, nil
 	}
 
+	// Create a new watcher
 	ch := make(chan []discovery.Service)
+
 	plan, err := NewWatcherPlan(name, nil, ch)
 	if err != nil {
-		return nil, fmt.Errorf("failed to build a watching plan: %c", err)
+		return nil, fmt.Errorf("failed to build a watching plan: %w", err)
 	}
 
-	watcher := newWatcher(c.address, uri.Scheme, ch, plan)
+	watcher := newWatcher(uri.Host, uri.Scheme, ch, plan)
 	watcher.Run()
+
+	c.watchers[name] = watcher
 
 	return watcher, nil
 }
