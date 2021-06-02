@@ -8,21 +8,23 @@ import (
 )
 
 type Consul struct {
+	address  string
 	watchers map[string]*Watcher
 }
 
-// New creates a new Consul manager that keeps track of the Consul resolvers.
-func New() *Consul {
+// New creates a new Consul manager connected to the serverAddress that keeps track of the Consul resolvers.
+func New(serverAddress string) *Consul {
 	return &Consul{
+		address:  serverAddress,
 		watchers: make(map[string]*Watcher),
 	}
 }
 
 // Resolver returns a service resolver based on the continuous watcher (*Watcher type), that
 // is subscribed to all the changes related to the service name.
-// The (*Watcher).Resolve() is able to return new service address if the address has been changed.
-func (c *Consul) Resolver(address string) (discovery.Resolver, error) {
-	uri, err := url.Parse(address)
+// The (*Watcher).Resolve() is able to return new service address if the host has been changed.
+func (c *Consul) Resolver(host string) (discovery.Resolver, error) {
+	uri, err := url.Parse(host)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse the raw service address: %w", err)
 	}
@@ -40,7 +42,7 @@ func (c *Consul) Resolver(address string) (discovery.Resolver, error) {
 		return nil, fmt.Errorf("failed to build a watching plan: %w", err)
 	}
 
-	watcher := newWatcher(uri.Host, uri.Scheme, ch, plan)
+	watcher := newWatcher(c.address, uri.Scheme, ch, plan)
 	watcher.Run()
 
 	c.watchers[name] = watcher

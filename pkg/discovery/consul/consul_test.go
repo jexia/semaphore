@@ -16,7 +16,7 @@ func TestResolver(t *testing.T) {
 
 	t.Run("should return a watcher", func(t *testing.T) {
 		t.Parallel()
-		consul := New()
+		consul := New(srv.URL)
 
 		t.Cleanup(func() {
 			for _, watcher := range consul.watchers {
@@ -40,7 +40,7 @@ func TestResolver(t *testing.T) {
 
 	t.Run("should return a cached watcher", func(t *testing.T) {
 		t.Parallel()
-		consul := New()
+		consul := New(srv.URL)
 
 		t.Cleanup(func() {
 			for _, watcher := range consul.watchers {

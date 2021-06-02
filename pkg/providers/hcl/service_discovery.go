@@ -37,7 +37,7 @@ func ParseDiscoveryClients(ctx *broker.Context, manifest Manifest) (specs.Servic
 func newServiceDiscoveryClient(dsc Discovery) (specs.ServiceDiscoveryClient, error) {
 	switch dsc.Provider {
 	case "consul":
-		return consul.New(), nil
+		return consul.New(dsc.Address), nil
 
 	default:
 		return nil, fmt.Errorf("unknown provider %q", dsc.Provider)
