@@ -5,7 +5,6 @@ import (
 
 	"github.com/jexia/semaphore/v2/pkg/references"
 	"github.com/jexia/semaphore/v2/pkg/specs"
-	"github.com/jexia/semaphore/v2/pkg/specs/template"
 	"github.com/jexia/semaphore/v2/pkg/specs/types"
 )
 
@@ -75,7 +74,7 @@ func (scalar *Scalar) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement)
 
 				scalar.store.Store(
 					scalar.tracker.Resolve(
-						template.JoinPath(scalar.path, scalar.name),
+						specs.JoinPath(scalar.path, scalar.name),
 					),
 					&references.Reference{Value: value},
 				)
@@ -84,7 +83,7 @@ func (scalar *Scalar) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement)
 			case xml.EndElement:
 				scalar.store.Store(
 					scalar.tracker.Resolve(
-						template.JoinPath(scalar.path, scalar.name),
+						specs.JoinPath(scalar.path, scalar.name),
 					),
 					new(references.Reference),
 				)

@@ -7,7 +7,6 @@ import (
 	"github.com/jexia/semaphore/v2/pkg/references"
 	"github.com/jexia/semaphore/v2/pkg/specs"
 	"github.com/jexia/semaphore/v2/pkg/specs/labels"
-	"github.com/jexia/semaphore/v2/pkg/specs/template"
 	"github.com/jexia/semaphore/v2/pkg/specs/types"
 )
 
@@ -96,7 +95,7 @@ var schema = &specs.ParameterMap{
 					Label: labels.Optional,
 					Template: specs.Template{
 						Reference: &specs.PropertyReference{
-							Resource: template.InputResource,
+							Resource: specs.InputResource,
 							Path:     "message",
 						},
 						Scalar: &specs.Scalar{
@@ -110,7 +109,7 @@ var schema = &specs.ParameterMap{
 					Label: labels.Optional,
 					Template: specs.Template{
 						Reference: &specs.PropertyReference{
-							Resource: template.InputResource,
+							Resource: specs.InputResource,
 							Path:     "status",
 						},
 						Enum: enum,
@@ -128,7 +127,7 @@ var schema = &specs.ParameterMap{
 								Label: labels.Optional,
 								Template: specs.Template{
 									Reference: &specs.PropertyReference{
-										Resource: template.InputResource,
+										Resource: specs.InputResource,
 										Path:     "nested.first",
 									},
 									Scalar: &specs.Scalar{
@@ -142,7 +141,7 @@ var schema = &specs.ParameterMap{
 								Label: labels.Optional,
 								Template: specs.Template{
 									Reference: &specs.PropertyReference{
-										Resource: template.InputResource,
+										Resource: specs.InputResource,
 										Path:     "nested.second",
 									},
 									Scalar: &specs.Scalar{
@@ -158,14 +157,14 @@ var schema = &specs.ParameterMap{
 					Path: "repeating_string",
 					Template: specs.Template{
 						Reference: &specs.PropertyReference{
-							Resource: template.InputResource,
+							Resource: specs.InputResource,
 							Path:     "repeating_string",
 						},
 						Repeated: specs.Repeated{
 							{
 								Scalar: &specs.Scalar{Type: types.String},
 								Reference: &specs.PropertyReference{
-									Resource: template.InputResource,
+									Resource: specs.InputResource,
 									Path:     "repeating_string",
 								},
 							},
@@ -178,13 +177,13 @@ var schema = &specs.ParameterMap{
 					Label: labels.Optional,
 					Template: specs.Template{
 						Reference: &specs.PropertyReference{
-							Resource: template.InputResource,
+							Resource: specs.InputResource,
 							Path:     "repeating_enum",
 						},
 						Repeated: specs.Repeated{
 							{
 								Reference: &specs.PropertyReference{
-									Resource: template.InputResource,
+									Resource: specs.InputResource,
 									Path:     "repeating_enum",
 								},
 								Enum: enum,
@@ -198,7 +197,7 @@ var schema = &specs.ParameterMap{
 					Label: labels.Optional,
 					Template: specs.Template{
 						Reference: &specs.PropertyReference{
-							Resource: template.InputResource,
+							Resource: specs.InputResource,
 							Path:     "repeating",
 						},
 						Repeated: specs.Repeated{
@@ -210,7 +209,7 @@ var schema = &specs.ParameterMap{
 										Label: labels.Optional,
 										Template: specs.Template{
 											Reference: &specs.PropertyReference{
-												Resource: template.InputResource,
+												Resource: specs.InputResource,
 												Path:     "repeating.value",
 											},
 											Scalar: &specs.Scalar{
@@ -455,7 +454,7 @@ func TestMarshal(t *testing.T) {
 			store := references.NewStore(len(test.input))
 			tracker := references.NewTracker()
 
-			references.StoreValues(store, tracker, template.ResourcePath(template.InputResource), test.input)
+			references.StoreValues(store, tracker, specs.ResourcePath(specs.InputResource), test.input)
 
 			r, err := manager.Marshal(store)
 			if err != nil {

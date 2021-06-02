@@ -5,7 +5,6 @@ import (
 
 	"github.com/jexia/semaphore/v2/pkg/specs"
 	"github.com/jexia/semaphore/v2/pkg/specs/labels"
-	"github.com/jexia/semaphore/v2/pkg/specs/template"
 	"github.com/jexia/semaphore/v2/pkg/specs/types"
 )
 
@@ -35,8 +34,8 @@ func TestGetFlow(t *testing.T) {
 
 func TestGetDefaultProp(t *testing.T) {
 	tests := map[string]string{
-		template.InputResource: template.RequestResource,
-		"unknown":              template.ResponseResource,
+		specs.InputResource: specs.RequestResource,
+		"unknown":           specs.ResponseResource,
 	}
 
 	for input, expected := range tests {
@@ -88,7 +87,7 @@ func TestGetNextResource(t *testing.T) {
 		},
 		"output": {
 			breakpoint: "last",
-			expected:   template.OutputResource,
+			expected:   specs.OutputResource,
 			manager: &specs.Flow{
 				Nodes: specs.NodeList{
 					{
@@ -737,21 +736,21 @@ func TestGetAvailableResources(t *testing.T) {
 	tests := map[string]func() ([]string, map[string]ReferenceMap){
 		"input and first": func() ([]string, map[string]ReferenceMap) {
 			flow := NewMockFlow("first")
-			expected := []string{template.StackResource, template.ErrorResource, "input", "first", "second", "third"}
+			expected := []string{specs.StackResource, specs.ErrorResource, "input", "first", "second", "third"}
 
 			result := GetAvailableResources(flow, "second")
 			return expected, result
 		},
 		"input": func() ([]string, map[string]ReferenceMap) {
 			flow := NewMockFlow("first")
-			expected := []string{template.StackResource, template.ErrorResource, "input", "first", "second", "third"}
+			expected := []string{specs.StackResource, specs.ErrorResource, "input", "first", "second", "third"}
 
 			result := GetAvailableResources(flow, "first")
 			return expected, result
 		},
 		"output": func() ([]string, map[string]ReferenceMap) {
 			flow := NewMockFlow("first")
-			expected := []string{template.StackResource, template.ErrorResource, "input", "first", "second", "third"}
+			expected := []string{specs.StackResource, specs.ErrorResource, "input", "first", "second", "third"}
 
 			result := GetAvailableResources(flow, "output")
 			return expected, result
@@ -768,14 +767,14 @@ func TestGetAvailableResources(t *testing.T) {
 				},
 			}
 
-			expected := []string{template.StackResource}
+			expected := []string{specs.StackResource}
 
 			result := GetAvailableResources(flow, "output")
 			return expected, result
 		},
 		"stack lookup request": func() ([]string, map[string]ReferenceMap) {
 			flow := NewMockFlow("first")
-			expected := []string{template.StackResource, template.ErrorResource, "input", "first", "second", "third"}
+			expected := []string{specs.StackResource, specs.ErrorResource, "input", "first", "second", "third"}
 
 			flow.Nodes[0].Call.Request.Stack = map[string]*specs.Property{
 				"ref": {
@@ -788,7 +787,7 @@ func TestGetAvailableResources(t *testing.T) {
 		},
 		"stack lookup response": func() ([]string, map[string]ReferenceMap) {
 			flow := NewMockFlow("first")
-			expected := []string{template.StackResource, template.ErrorResource, "input", "first", "second", "third"}
+			expected := []string{specs.StackResource, specs.ErrorResource, "input", "first", "second", "third"}
 
 			flow.Nodes[0].Call.Response.Stack = map[string]*specs.Property{
 				"ref": {
@@ -801,7 +800,7 @@ func TestGetAvailableResources(t *testing.T) {
 		},
 		"stack lookup intermediate": func() ([]string, map[string]ReferenceMap) {
 			flow := NewMockFlow("first")
-			expected := []string{template.StackResource, template.ErrorResource, "input", "first", "second", "third"}
+			expected := []string{specs.StackResource, specs.ErrorResource, "input", "first", "second", "third"}
 
 			flow.Nodes[0].Intermediate = flow.Nodes[0].Call.Request
 			flow.Nodes[0].Call = nil
@@ -849,18 +848,18 @@ func TestSkipMissingParameters(t *testing.T) {
 
 	tests := []test{
 		{
-			name: template.ErrorResource,
+			name: specs.ErrorResource,
 		},
 		{
-			name: template.StackResource,
+			name: specs.StackResource,
 		},
 		{
 			name:  "first",
-			empty: []string{template.RequestResource, template.HeaderResource},
+			empty: []string{specs.RequestResource, specs.HeaderResource},
 		},
 		{
 			name:  "second",
-			empty: []string{template.RequestResource, template.HeaderResource},
+			empty: []string{specs.RequestResource, specs.HeaderResource},
 		},
 		{
 			name: "third",
@@ -904,7 +903,7 @@ func NewPropertyReference(resource string, path string) *specs.PropertyReference
 func TestGetResourceOutputReference(t *testing.T) {
 	var (
 		flow       = NewMockFlow("first")
-		resources  = GetNextResource(flow, template.OutputResource)
+		resources  = GetNextResource(flow, specs.OutputResource)
 		breakpoint = "first"
 		tests      = map[[2]string]*specs.Property{
 			{"", "result"}:                                 flow.Nodes[0].Call.Response.Property.Message["result"],

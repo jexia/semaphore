@@ -17,7 +17,6 @@ import (
 	"github.com/jexia/semaphore/v2/pkg/providers/protobuffers"
 	"github.com/jexia/semaphore/v2/pkg/references"
 	"github.com/jexia/semaphore/v2/pkg/specs"
-	"github.com/jexia/semaphore/v2/pkg/specs/template"
 	"github.com/jhump/protoreflect/dynamic"
 )
 
@@ -610,7 +609,7 @@ func TestUnmarshal(t *testing.T) {
 			store := references.NewStore(len(test.schema))
 
 			constructor := NewConstructor()
-			manager, err := constructor.New(template.InputResource, req)
+			manager, err := constructor.New(specs.InputResource, req)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -621,7 +620,7 @@ func TestUnmarshal(t *testing.T) {
 			}
 
 			for path, expect := range test.expected {
-				tests.Assert(t, template.InputResource, path, store, expect)
+				tests.Assert(t, specs.InputResource, path, store, expect)
 			}
 		})
 	}

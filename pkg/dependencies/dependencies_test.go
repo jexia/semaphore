@@ -6,7 +6,6 @@ import (
 	"github.com/jexia/semaphore/v2/pkg/broker"
 	"github.com/jexia/semaphore/v2/pkg/broker/logger"
 	"github.com/jexia/semaphore/v2/pkg/specs"
-	"github.com/jexia/semaphore/v2/pkg/specs/template"
 )
 
 func TestResolveDependencies(t *testing.T) {
@@ -308,7 +307,7 @@ func TestFlowCircularDependenciesDetection(t *testing.T) {
 						ID: "first",
 						Intermediate: &specs.ParameterMap{
 							DependsOn: map[string]*specs.Node{
-								template.OutputResource: nil,
+								specs.OutputResource: nil,
 							},
 						},
 					},

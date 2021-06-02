@@ -5,7 +5,6 @@ import (
 
 	"github.com/jexia/semaphore/v2/pkg/specs"
 	"github.com/jexia/semaphore/v2/pkg/specs/labels"
-	"github.com/jexia/semaphore/v2/pkg/specs/template"
 	"github.com/jexia/semaphore/v2/pkg/specs/types"
 )
 
@@ -20,13 +19,13 @@ type PathLookup func(path string) *specs.Property
 
 // ParseResource parses the given resource into the resource and props
 func ParseResource(resource string) (string, string) {
-	resources := template.SplitPath(resource)
+	resources := specs.SplitPath(resource)
 
 	target := resources[0]
 	prop := GetDefaultProp(target)
 
 	if len(resources) > 1 {
-		prop = template.JoinPath(resources[1:]...)
+		prop = specs.JoinPath(resources[1:]...)
 	}
 
 	return target, prop
@@ -34,15 +33,15 @@ func ParseResource(resource string) (string, string) {
 
 // GetDefaultProp returns the default resource for the given resource
 func GetDefaultProp(resource string) string {
-	if resource == template.InputResource {
-		return template.RequestResource
+	if resource == specs.InputResource {
+		return specs.RequestResource
 	}
 
-	if resource == template.ErrorResource {
-		return template.ResponseResource
+	if resource == specs.ErrorResource {
+		return specs.ResponseResource
 	}
 
-	return template.ResponseResource
+	return specs.ResponseResource
 }
 
 // GetNextResource returns the resource after the given breakpoint
@@ -52,7 +51,7 @@ func GetNextResource(flow specs.FlowInterface, breakpoint string) string {
 			nodes := flow.GetNodes()
 			next := index + 1
 			if next >= len(nodes) {
-				return template.OutputResource
+				return specs.OutputResource
 			}
 
 			return nodes[next].ID
@@ -67,20 +66,20 @@ func GetNextResource(flow specs.FlowInterface, breakpoint string) string {
 func GetAvailableResources(flow specs.FlowInterface, breakpoint string) map[string]ReferenceMap {
 	length := len(flow.GetNodes()) + 2
 	references := make(map[string]ReferenceMap, length)
-	references[template.StackResource] = ReferenceMap{}
+	references[specs.StackResource] = ReferenceMap{}
 
 	if flow.GetInput() != nil {
-		references[template.InputResource] = ReferenceMap{
-			template.RequestResource: PropertyLookup(flow.GetInput().Property),
-			template.HeaderResource:  HeaderLookup(flow.GetInput().Header),
+		references[specs.InputResource] = ReferenceMap{
+			specs.RequestResource: PropertyLookup(flow.GetInput().Property),
+			specs.HeaderResource:  HeaderLookup(flow.GetInput().Header),
 		}
 	}
 
-	if breakpoint == template.OutputResource {
+	if breakpoint == specs.OutputResource {
 		if flow.GetOnError() != nil {
-			references[template.ErrorResource] = ReferenceMap{
-				template.ResponseResource: OnErrLookup(template.OutputResource, flow.GetOnError()),
-				template.ParamsResource:   ParamsLookup(flow.GetOnError().Params, flow, ""),
+			references[specs.ErrorResource] = ReferenceMap{
+				specs.ResponseResource: OnErrLookup(specs.OutputResource, flow.GetOnError()),
+				specs.ParamsResource:   ParamsLookup(flow.GetOnError().Params, flow, ""),
 			}
 		}
 	}
@@ -91,47 +90,47 @@ func GetAvailableResources(flow specs.FlowInterface, breakpoint string) map[stri
 		if node.Intermediate != nil {
 			if node.Intermediate.Stack != nil {
 				for key, returns := range node.Intermediate.Stack {
-					references[template.StackResource][key] = PropertyLookup(returns)
+					references[specs.StackResource][key] = PropertyLookup(returns)
 				}
 			}
 
-			references[node.ID][template.ResponseResource] = PropertyLookup(node.Intermediate.Property)
-			references[node.ID][template.HeaderResource] = VariableHeaderLookup(node.Intermediate.Header)
+			references[node.ID][specs.ResponseResource] = PropertyLookup(node.Intermediate.Property)
+			references[node.ID][specs.HeaderResource] = VariableHeaderLookup(node.Intermediate.Header)
 		}
 
 		if node.Call != nil {
 			if node.Call.Request != nil {
 				if node.Call.Request.Stack != nil {
 					for key, returns := range node.Call.Request.Stack {
-						references[template.StackResource][key] = PropertyLookup(returns)
+						references[specs.StackResource][key] = PropertyLookup(returns)
 					}
 				}
 
-				references[node.ID][template.ParamsResource] = ParamsLookup(node.Call.Request.Params, flow, breakpoint)
-				references[node.ID][template.RequestResource] = PropertyLookup(node.Call.Request.Property)
+				references[node.ID][specs.ParamsResource] = ParamsLookup(node.Call.Request.Params, flow, breakpoint)
+				references[node.ID][specs.RequestResource] = PropertyLookup(node.Call.Request.Property)
 			}
 
 			if node.Call.Response != nil {
 				if node.Call.Response.Stack != nil {
 					for key, returns := range node.Call.Response.Stack {
-						references[template.StackResource][key] = PropertyLookup(returns)
+						references[specs.StackResource][key] = PropertyLookup(returns)
 					}
 				}
 
-				references[node.ID][template.ResponseResource] = PropertyLookup(node.Call.Response.Property)
-				references[node.ID][template.HeaderResource] = VariableHeaderLookup(node.Call.Response.Header)
+				references[node.ID][specs.ResponseResource] = PropertyLookup(node.Call.Response.Property)
+				references[node.ID][specs.HeaderResource] = VariableHeaderLookup(node.Call.Response.Header)
 			}
 		}
 
 		if node.ID == breakpoint {
 			if node.GetOnError() != nil {
-				references[template.ErrorResource] = ReferenceMap{
-					template.ResponseResource: OnErrLookup(node.ID, node.GetOnError()),
-					template.ParamsResource:   ParamsLookup(node.GetOnError().Params, flow, breakpoint),
+				references[specs.ErrorResource] = ReferenceMap{
+					specs.ResponseResource: OnErrLookup(node.ID, node.GetOnError()),
+					specs.ParamsResource:   ParamsLookup(node.GetOnError().Params, flow, breakpoint),
 				}
 
 				if node.GetOnError().Response != nil {
-					references[node.ID][template.ErrorResource] = PropertyLookup(node.GetOnError().Response.Property)
+					references[node.ID][specs.ErrorResource] = PropertyLookup(node.GetOnError().Response.Property)
 				}
 			}
 		}
@@ -140,7 +139,7 @@ func GetAvailableResources(flow specs.FlowInterface, breakpoint string) map[stri
 	if flow.GetOutput() != nil {
 		if flow.GetOutput().Stack != nil {
 			for key, returns := range flow.GetOutput().Stack {
-				references[template.StackResource][key] = PropertyLookup(returns)
+				references[specs.StackResource][key] = PropertyLookup(returns)
 			}
 		}
 	}
@@ -311,11 +310,11 @@ func OnErrLookup(node string, spec *specs.OnError) PathLookup {
 		}
 	}
 
-	if spec.Message.Reference != nil && spec.Message.Reference.Resource == template.ErrorResource {
+	if spec.Message.Reference != nil && spec.Message.Reference.Resource == specs.ErrorResource {
 		spec.Message.Reference.Property = spec.Message
 	}
 
-	if spec.Status.Reference != nil && spec.Status.Reference.Resource == template.ErrorResource {
+	if spec.Status.Reference != nil && spec.Status.Reference.Resource == specs.ErrorResource {
 		spec.Status.Reference.Property = spec.Status
 	}
 
@@ -339,5 +338,5 @@ func ResolveSelfReference(path string, resource string) string {
 		return path
 	}
 
-	return template.JoinPath(resource, path[1:])
+	return specs.JoinPath(resource, path[1:])
 }

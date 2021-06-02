@@ -13,7 +13,6 @@ import (
 	"github.com/jexia/semaphore/v2/pkg/references"
 	"github.com/jexia/semaphore/v2/pkg/specs"
 	"github.com/jexia/semaphore/v2/pkg/specs/labels"
-	"github.com/jexia/semaphore/v2/pkg/specs/template"
 	"github.com/jexia/semaphore/v2/pkg/specs/types"
 	"github.com/jexia/semaphore/v2/pkg/transport"
 )
@@ -406,7 +405,7 @@ func TestTransportErrorSchemaDecoding(t *testing.T) {
 			message := `{"message": "something went wrong"}`
 
 			constructor := json.NewConstructor()
-			codec, err := constructor.New(template.ErrorResource, &specs.ParameterMap{
+			codec, err := constructor.New(specs.ErrorResource, &specs.ParameterMap{
 				Property: &specs.Property{
 					Label: labels.Optional,
 					Template: specs.Template{
@@ -444,7 +443,7 @@ func TestTransportErrorSchemaDecoding(t *testing.T) {
 			message := `{"meta": { "message": "something went wrong" }}`
 
 			constructor := json.NewConstructor()
-			codec, err := constructor.New(template.ErrorResource, &specs.ParameterMap{
+			codec, err := constructor.New(specs.ErrorResource, &specs.ParameterMap{
 				Property: &specs.Property{
 					Label: labels.Optional,
 					Template: specs.Template{
@@ -504,7 +503,7 @@ func TestTransportErrorSchemaDecoding(t *testing.T) {
 				t.Fatalf("unexpected err '%s', expected '%s'", err, ErrAbortFlow)
 			}
 
-			ref := options.store.Load(template.ResourcePath(template.ErrorResource, options.reference))
+			ref := options.store.Load(specs.ResourcePath(specs.ErrorResource, options.reference))
 			if ref == nil {
 				t.Fatal("expected reference to be defined")
 			}

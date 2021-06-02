@@ -8,7 +8,6 @@ import (
 	"github.com/jexia/semaphore/v2/pkg/broker"
 	"github.com/jexia/semaphore/v2/pkg/providers"
 	"github.com/jexia/semaphore/v2/pkg/specs"
-	"github.com/jexia/semaphore/v2/pkg/specs/template"
 	"gopkg.in/yaml.v2"
 )
 
@@ -86,7 +85,7 @@ func DefinePropertyPaths(collection *Collection) {
 }
 
 func definePath(path string, property *specs.Property) {
-	fqpath := template.JoinPath(path, property.Name)
+	fqpath := specs.JoinPath(path, property.Name)
 	property.Path = fqpath
 	walkTemplate(fqpath, &property.Template)
 }

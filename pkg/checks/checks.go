@@ -6,14 +6,13 @@ import (
 	"github.com/jexia/semaphore/v2/pkg/broker"
 	"github.com/jexia/semaphore/v2/pkg/broker/logger"
 	"github.com/jexia/semaphore/v2/pkg/specs"
-	"github.com/jexia/semaphore/v2/pkg/specs/template"
 )
 
 // ReservedKeywords represents a list with reserved keywords
 var ReservedKeywords = []string{
-	template.InputResource,
-	template.ErrorResource,
-	template.StackResource,
+	specs.InputResource,
+	specs.ErrorResource,
+	specs.StackResource,
 }
 
 // FlowDuplicates checks for duplicate definitions

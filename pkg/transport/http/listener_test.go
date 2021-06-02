@@ -21,7 +21,6 @@ import (
 	"github.com/jexia/semaphore/v2/pkg/references"
 	"github.com/jexia/semaphore/v2/pkg/specs"
 	"github.com/jexia/semaphore/v2/pkg/specs/labels"
-	"github.com/jexia/semaphore/v2/pkg/specs/template"
 	"github.com/jexia/semaphore/v2/pkg/specs/types"
 	"github.com/jexia/semaphore/v2/pkg/transport"
 )
@@ -379,7 +378,7 @@ func TestStoringParams(t *testing.T) {
 	called := 0
 
 	call := NewCallerFunc(func(ctx context.Context, refs references.Store) error {
-		ref := refs.Load(template.ResourcePath("input", path))
+		ref := refs.Load(specs.ResourcePath("input", path))
 		if ref == nil {
 			t.Fatal("reference not set")
 		}
@@ -499,8 +498,8 @@ func TestListenerErrorHandling(t *testing.T) {
 				"message": "value",
 			},
 			caller: func(store references.Store) {
-				store.Store(template.ResourcePath(template.ErrorResource, "message"), &references.Reference{Value: "value"})
-				store.Store(template.ResourcePath(template.ErrorResource, "status"), &references.Reference{Value: int64(500)})
+				store.Store(specs.ResourcePath(specs.ErrorResource, "message"), &references.Reference{Value: "value"})
+				store.Store(specs.ResourcePath(specs.ErrorResource, "status"), &references.Reference{Value: int64(500)})
 			},
 			err: &specs.OnError{
 				Response: &specs.ParameterMap{
@@ -569,9 +568,9 @@ func TestListenerErrorHandling(t *testing.T) {
 				"message": "value",
 			},
 			caller: func(store references.Store) {
-				store.Store(template.ResourcePath(template.ErrorResource, "message"), &references.Reference{Value: "value"})
-				store.Store(template.ResourcePath(template.ErrorResource, "status"), &references.Reference{Value: int64(500)})
-				store.Store(template.ResourcePath(template.InputResource, "status"), &references.Reference{Value: int64(401)})
+				store.Store(specs.ResourcePath(specs.ErrorResource, "message"), &references.Reference{Value: "value"})
+				store.Store(specs.ResourcePath(specs.ErrorResource, "status"), &references.Reference{Value: int64(500)})
+				store.Store(specs.ResourcePath(specs.InputResource, "status"), &references.Reference{Value: int64(401)})
 			},
 			err: &specs.OnError{
 				Response: &specs.ParameterMap{
@@ -641,8 +640,8 @@ func TestListenerErrorHandling(t *testing.T) {
 				"message": "value",
 			},
 			caller: func(store references.Store) {
-				store.Store(template.ResourcePath(template.ErrorResource, "message"), &references.Reference{Value: "value"})
-				store.Store(template.ResourcePath(template.ErrorResource, "status"), &references.Reference{Value: int64(404)})
+				store.Store(specs.ResourcePath(specs.ErrorResource, "message"), &references.Reference{Value: "value"})
+				store.Store(specs.ResourcePath(specs.ErrorResource, "status"), &references.Reference{Value: int64(404)})
 			},
 			err: &specs.OnError{
 				Response: &specs.ParameterMap{
@@ -712,8 +711,8 @@ func TestListenerErrorHandling(t *testing.T) {
 				"message": "value",
 			},
 			caller: func(store references.Store) {
-				store.Store(template.ResourcePath(template.ErrorResource, "message"), &references.Reference{Value: "value"})
-				store.Store(template.ResourcePath(template.ErrorResource, "status"), &references.Reference{Value: int64(404)})
+				store.Store(specs.ResourcePath(specs.ErrorResource, "message"), &references.Reference{Value: "value"})
+				store.Store(specs.ResourcePath(specs.ErrorResource, "status"), &references.Reference{Value: int64(404)})
 			},
 			err: &specs.OnError{
 				Response: &specs.ParameterMap{
@@ -734,7 +733,7 @@ func TestListenerErrorHandling(t *testing.T) {
 														Type: types.Int64,
 													},
 													Reference: &specs.PropertyReference{
-														Resource: template.ErrorResource,
+														Resource: specs.ErrorResource,
 														Path:     "status",
 													},
 												},
@@ -748,7 +747,7 @@ func TestListenerErrorHandling(t *testing.T) {
 														Type: types.String,
 													},
 													Reference: &specs.PropertyReference{
-														Resource: template.ErrorResource,
+														Resource: specs.ErrorResource,
 														Path:     "message",
 													},
 												},
@@ -805,8 +804,8 @@ func TestListenerErrorHandling(t *testing.T) {
 				"message": "value",
 			},
 			caller: func(store references.Store) {
-				store.Store(template.ResourcePath(template.InputResource, "message"), &references.Reference{Value: "value"})
-				store.Store(template.ResourcePath(template.ErrorResource, "status"), &references.Reference{Value: int64(404)})
+				store.Store(specs.ResourcePath(specs.InputResource, "message"), &references.Reference{Value: "value"})
+				store.Store(specs.ResourcePath(specs.ErrorResource, "status"), &references.Reference{Value: int64(404)})
 			},
 			err: &specs.OnError{
 				Response: nil,

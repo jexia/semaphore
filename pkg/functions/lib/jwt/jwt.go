@@ -5,7 +5,6 @@ import (
 	"github.com/jexia/semaphore/v2/pkg/references"
 	"github.com/jexia/semaphore/v2/pkg/specs"
 	"github.com/jexia/semaphore/v2/pkg/specs/labels"
-	"github.com/jexia/semaphore/v2/pkg/specs/template"
 	"github.com/jexia/semaphore/v2/pkg/specs/types"
 )
 
@@ -59,7 +58,7 @@ func executable(reader Reader, token *specs.Property, newClaims func() Claims) f
 		value := token.DefaultValue()
 
 		if token.Reference != nil {
-			ref := store.Load(template.ResourcePath(token.Reference.Resource, token.Reference.Path))
+			ref := store.Load(specs.ResourcePath(token.Reference.Resource, token.Reference.Path))
 			if ref != nil {
 				value = ref.Value
 			}

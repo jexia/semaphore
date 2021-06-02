@@ -3,7 +3,6 @@ package tests
 import (
 	"github.com/jexia/semaphore/v2/pkg/specs"
 	"github.com/jexia/semaphore/v2/pkg/specs/labels"
-	"github.com/jexia/semaphore/v2/pkg/specs/template"
 	"github.com/jexia/semaphore/v2/pkg/specs/types"
 )
 
@@ -108,7 +107,7 @@ var (
 				Repeated: specs.Repeated{
 					{
 						Reference: &specs.PropertyReference{
-							Resource: template.InputResource,
+							Resource: specs.InputResource,
 							Path:     "string",
 						},
 						Scalar: &specs.Scalar{
@@ -162,7 +161,7 @@ var (
 						Repeated: specs.Repeated{
 							{
 								Reference: &specs.PropertyReference{
-									Resource: template.InputResource,
+									Resource: specs.InputResource,
 									Path:     "string",
 								},
 								Scalar: &specs.Scalar{
@@ -273,7 +272,7 @@ var (
 						Label:    labels.Optional,
 						Template: specs.Template{
 							Reference: &specs.PropertyReference{
-								Resource: template.InputResource,
+								Resource: specs.InputResource,
 								Path:     "numeric",
 							},
 							Scalar: &specs.Scalar{
@@ -288,7 +287,7 @@ var (
 						Label:    labels.Optional,
 						Template: specs.Template{
 							Reference: &specs.PropertyReference{
-								Resource: template.InputResource,
+								Resource: specs.InputResource,
 								Path:     "message",
 							},
 							Scalar: &specs.Scalar{
@@ -303,7 +302,7 @@ var (
 						Label:    labels.Optional,
 						Template: specs.Template{
 							Reference: &specs.PropertyReference{
-								Resource: template.InputResource,
+								Resource: specs.InputResource,
 								Path:     "another_message",
 							},
 							Scalar: &specs.Scalar{
@@ -318,7 +317,7 @@ var (
 						Label:    labels.Optional,
 						Template: specs.Template{
 							Reference: &specs.PropertyReference{
-								Resource: template.InputResource,
+								Resource: specs.InputResource,
 								Path:     "status",
 							},
 							Enum: enum,
@@ -331,7 +330,7 @@ var (
 						Label:    labels.Optional,
 						Template: specs.Template{
 							Reference: &specs.PropertyReference{
-								Resource: template.InputResource,
+								Resource: specs.InputResource,
 								Path:     "another_status",
 							},
 							Enum: enum,
@@ -351,7 +350,7 @@ var (
 									Label:    labels.Optional,
 									Template: specs.Template{
 										Reference: &specs.PropertyReference{
-											Resource: template.InputResource,
+											Resource: specs.InputResource,
 											Path:     "nested.first",
 										},
 										Scalar: &specs.Scalar{
@@ -366,7 +365,7 @@ var (
 									Label:    labels.Optional,
 									Template: specs.Template{
 										Reference: &specs.PropertyReference{
-											Resource: template.InputResource,
+											Resource: specs.InputResource,
 											Path:     "nested.second",
 										},
 										Scalar: &specs.Scalar{
@@ -384,13 +383,13 @@ var (
 						Label:    labels.Optional,
 						Template: specs.Template{
 							Reference: &specs.PropertyReference{
-								Resource: template.InputResource,
+								Resource: specs.InputResource,
 								Path:     "repeating_string",
 							},
 							Repeated: specs.Repeated{
 								{
 									Reference: &specs.PropertyReference{
-										Resource: template.InputResource,
+										Resource: specs.InputResource,
 										Path:     "repeating_string",
 									},
 									Scalar: &specs.Scalar{
@@ -400,7 +399,7 @@ var (
 								},
 								{
 									Reference: &specs.PropertyReference{
-										Resource: template.InputResource,
+										Resource: specs.InputResource,
 										Path:     "repeating_string",
 									},
 									Scalar: &specs.Scalar{
@@ -418,13 +417,13 @@ var (
 						Label:    labels.Optional,
 						Template: specs.Template{
 							Reference: &specs.PropertyReference{
-								Resource: template.InputResource,
+								Resource: specs.InputResource,
 								Path:     "repeating_enum",
 							},
 							Repeated: specs.Repeated{
 								{
 									Reference: &specs.PropertyReference{
-										Resource: template.InputResource,
+										Resource: specs.InputResource,
 										Path:     "repeating_enum",
 									},
 									Enum: enum,
@@ -439,7 +438,7 @@ var (
 						Label:    labels.Optional,
 						Template: specs.Template{
 							Reference: &specs.PropertyReference{
-								Resource: template.InputResource,
+								Resource: specs.InputResource,
 								Path:     "repeating_numeric",
 							},
 							Scalar: &specs.Scalar{
@@ -454,7 +453,7 @@ var (
 						Label:    labels.Optional,
 						Template: specs.Template{
 							Reference: &specs.PropertyReference{
-								Resource: template.InputResource,
+								Resource: specs.InputResource,
 								Path:     "repeating",
 							},
 							Repeated: specs.Repeated{
@@ -467,7 +466,7 @@ var (
 											Label:    labels.Optional,
 											Template: specs.Template{
 												Reference: &specs.PropertyReference{
-													Resource: template.InputResource,
+													Resource: specs.InputResource,
 													Path:     "repeating.value",
 												},
 												Scalar: &specs.Scalar{

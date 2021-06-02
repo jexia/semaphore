@@ -4,7 +4,6 @@ import (
 	"github.com/francoispqt/gojay"
 	"github.com/jexia/semaphore/v2/pkg/references"
 	"github.com/jexia/semaphore/v2/pkg/specs"
-	"github.com/jexia/semaphore/v2/pkg/specs/template"
 )
 
 // Object represents a JSON object
@@ -28,7 +27,7 @@ func NewObject(path string, template specs.Template, store references.Store, tra
 // MarshalJSONObject encodes the given specs object into the given gojay encoder
 func (object *Object) MarshalJSONObject(encoder *gojay.Encoder) {
 	for _, prop := range object.template.Message.SortedProperties() {
-		encodeKey(encoder, template.JoinPath(object.path, prop.Name), prop.Name, prop.Template, object.store, object.tracker)
+		encodeKey(encoder, specs.JoinPath(object.path, prop.Name), prop.Name, prop.Template, object.store, object.tracker)
 	}
 }
 
@@ -45,7 +44,7 @@ func (object *Object) UnmarshalJSONObject(decoder *gojay.Decoder, key string) er
 
 	object.store.Define(object.path, len(object.template.Message))
 
-	return decode(decoder, template.JoinPath(object.path, key), property.Template, object.store, object.tracker)
+	return decode(decoder, specs.JoinPath(object.path, key), property.Template, object.store, object.tracker)
 }
 
 // NKeys returns the amount of available keys inside the given object

@@ -10,7 +10,6 @@ import (
 	"github.com/jexia/semaphore/v2/pkg/references"
 	"github.com/jexia/semaphore/v2/pkg/specs"
 	"github.com/jexia/semaphore/v2/pkg/specs/labels"
-	"github.com/jexia/semaphore/v2/pkg/specs/template"
 	transport "github.com/jexia/semaphore/v2/pkg/transport/http"
 )
 
@@ -137,7 +136,7 @@ func GenerateOperation(object *Object, options *transport.EndpointOptions, flow 
 			parameters := input
 
 			if !option.Has(IncludeNotReferenced) {
-				paths := references.ReferencedResourcePaths(flow, template.InputResource)
+				paths := references.ReferencedResourcePaths(flow, specs.InputResource)
 				parameters = references.ReferencedParameterMapPaths(paths, input)
 				parameters.Schema = name
 			}

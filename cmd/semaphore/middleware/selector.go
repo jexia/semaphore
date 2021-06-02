@@ -8,7 +8,6 @@ import (
 	"github.com/jexia/semaphore/v2/pkg/broker/logger"
 	"github.com/jexia/semaphore/v2/pkg/providers/hcl"
 	"github.com/jexia/semaphore/v2/pkg/specs"
-	"github.com/jexia/semaphore/v2/pkg/specs/template"
 	"github.com/zclconf/go-cty/cty"
 	"go.uber.org/zap"
 )
@@ -26,7 +25,7 @@ func ServiceSelector(path string) providers.AfterConstructorHandler {
 				for _, srvs := range definition.ServiceSelector {
 					for _, selector := range srvs.Selectors {
 						for _, service := range services {
-							name := template.JoinPath(service.Package, service.Name)
+							name := specs.JoinPath(service.Package, service.Name)
 							matched, err := filepath.Match(selector.Pattern, name)
 							if err != nil {
 								return err

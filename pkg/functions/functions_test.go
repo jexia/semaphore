@@ -11,7 +11,6 @@ import (
 	"github.com/jexia/semaphore/v2/pkg/references"
 	"github.com/jexia/semaphore/v2/pkg/specs"
 	"github.com/jexia/semaphore/v2/pkg/specs/labels"
-	"github.com/jexia/semaphore/v2/pkg/specs/template"
 	"github.com/jexia/semaphore/v2/pkg/specs/types"
 )
 
@@ -1247,7 +1246,7 @@ func TestFunctionsNestedReferences(t *testing.T) {
 			t.Fatal("nested reference not set")
 		}
 
-		if !strings.HasPrefix(nested.Reference.Resource, template.StackResource) {
+		if !strings.HasPrefix(nested.Reference.Resource, specs.StackResource) {
 			t.Errorf("nested does not reference stack, %+v", nested.Reference.Resource)
 		}
 

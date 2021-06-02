@@ -11,7 +11,6 @@ import (
 	"github.com/jexia/semaphore/v2/pkg/references"
 	"github.com/jexia/semaphore/v2/pkg/references/forwarding"
 	"github.com/jexia/semaphore/v2/pkg/specs"
-	"github.com/jexia/semaphore/v2/pkg/specs/template"
 )
 
 // NewFlow constructs a new flow manager from the given configurations
@@ -247,7 +246,7 @@ func errorHandler(ctx *broker.Context, node *specs.Node, constructor codec.Const
 	var meta *metadata.Manager
 
 	if handle.Response != nil && constructor != nil {
-		manager, err := constructor.New(template.JoinPath(node.ID, template.ErrorResource), handle.Response)
+		manager, err := constructor.New(specs.JoinPath(node.ID, specs.ErrorResource), handle.Response)
 		if err != nil {
 			return nil, err
 		}

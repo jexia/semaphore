@@ -6,6 +6,53 @@ import (
 	"github.com/jexia/semaphore/v2/pkg/specs/metadata"
 )
 
+func TestParsePropertyReference(t *testing.T) {
+	tests := map[string]Template{
+		// Simple/default
+		"input:message": {
+			Reference: &PropertyReference{
+				Resource: "input",
+				Path:     "message",
+			},
+		},
+		// Lowercase path
+		"input.header:Authorization": {
+			Reference: &PropertyReference{
+				Resource: "input.header",
+				Path:     "authorization",
+			},
+		},
+		// No path
+		"input:": {
+			Reference: &PropertyReference{
+				Resource: "input",
+			},
+		},
+		// No path complex(er)
+		"input.header:": {
+			Reference: &PropertyReference{
+				Resource: "input.header",
+			},
+		},
+		// No delimiter
+		"input": {
+			Reference: &PropertyReference{
+				Resource: "input",
+			},
+		},
+	}
+
+	for input, expected := range tests {
+		t.Run(input, func(t *testing.T) {
+			propertyReference := ParsePropertyReference(input)
+
+			CompareTemplates(t, Template{
+				Reference: propertyReference,
+			}, expected)
+		})
+	}
+}
+
 func TestPropertyReferenceClone(t *testing.T) {
 	reference := &PropertyReference{
 		Meta:     metadata.WithValue(nil, nil, nil),

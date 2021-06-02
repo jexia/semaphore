@@ -13,7 +13,6 @@ import (
 	"github.com/jexia/semaphore/v2/pkg/functions"
 	"github.com/jexia/semaphore/v2/pkg/references"
 	"github.com/jexia/semaphore/v2/pkg/specs"
-	"github.com/jexia/semaphore/v2/pkg/specs/template"
 	"github.com/jexia/semaphore/v2/pkg/transport"
 	"go.uber.org/zap"
 )
@@ -229,8 +228,8 @@ func (caller *caller) HandleErr(w *transport.Writer, reader io.Reader, store ref
 		message = w.Message()
 	}
 
-	store.Store(template.ResourcePath(template.ErrorResource, "status"), &references.Reference{Value: status})
-	store.Store(template.ResourcePath(template.ErrorResource, "message"), &references.Reference{Value: message})
+	store.Store(specs.ResourcePath(specs.ErrorResource, "status"), &references.Reference{Value: status})
+	store.Store(specs.ResourcePath(specs.ErrorResource, "message"), &references.Reference{Value: message})
 
 	return nil
 }
@@ -238,8 +237,8 @@ func (caller *caller) HandleErr(w *transport.Writer, reader io.Reader, store ref
 // ExecuteFunctions executes the given functions and writes the results to the given store
 func ExecuteFunctions(stack functions.Stack, store references.Store) error {
 	for key, function := range stack {
-		resource := template.JoinPath(template.StackResource, key)
-		err := function.Fn(references.NewPrefixStore(store, template.ResourcePath(resource)))
+		resource := specs.JoinPath(specs.StackResource, key)
+		err := function.Fn(references.NewPrefixStore(store, specs.ResourcePath(resource)))
 		if err != nil {
 			return err
 		}

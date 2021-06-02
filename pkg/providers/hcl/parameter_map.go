@@ -4,7 +4,6 @@ import (
 	"github.com/jexia/semaphore/v2/pkg/broker"
 	"github.com/jexia/semaphore/v2/pkg/specs"
 	"github.com/jexia/semaphore/v2/pkg/specs/labels"
-	"github.com/jexia/semaphore/v2/pkg/specs/template"
 	"github.com/jexia/semaphore/v2/pkg/specs/types"
 )
 
@@ -37,7 +36,7 @@ func ParseIntermediateRepeatedParameterMap(ctx *broker.Context, params RepeatedP
 		Path:  path,
 		Label: labels.Optional,
 		Template: specs.Template{
-			Reference: template.ParsePropertyReference(params.Template),
+			Reference: specs.ParsePropertyReference(params.Template),
 			Repeated: specs.Repeated{
 				specs.Template{
 					Message: message,
@@ -179,7 +178,7 @@ func parseBaseParameterMap(ctx *broker.Context, params BaseParameterMap, path st
 	}
 
 	for _, nested := range params.Nested {
-		returns, err := ParseIntermediateNestedParameterMap(ctx, nested, template.JoinPath(path, nested.Name))
+		returns, err := ParseIntermediateNestedParameterMap(ctx, nested, specs.JoinPath(path, nested.Name))
 		if err != nil {
 			return nil, err
 		}
@@ -188,7 +187,7 @@ func parseBaseParameterMap(ctx *broker.Context, params BaseParameterMap, path st
 	}
 
 	for _, repeated := range params.Repeated {
-		returns, err := ParseIntermediateRepeatedParameterMap(ctx, repeated, template.JoinPath(path, repeated.Name))
+		returns, err := ParseIntermediateRepeatedParameterMap(ctx, repeated, specs.JoinPath(path, repeated.Name))
 		if err != nil {
 			return nil, err
 		}

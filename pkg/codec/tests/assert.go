@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/jexia/semaphore/v2/pkg/references"
-	"github.com/jexia/semaphore/v2/pkg/specs/template"
+	"github.com/jexia/semaphore/v2/pkg/specs"
 )
 
 // Expect contains expected value.
@@ -15,7 +15,7 @@ type Expect struct {
 
 // Assert checks if value under given path matches expected.
 func Assert(t *testing.T, resource, path string, store references.Store, input Expect) {
-	reference := store.Load(template.ResourcePath(resource, path))
+	reference := store.Load(specs.ResourcePath(resource, path))
 
 	switch {
 	case input.Enum != nil:

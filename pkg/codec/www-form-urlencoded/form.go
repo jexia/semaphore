@@ -11,7 +11,6 @@ import (
 	"github.com/jexia/semaphore/v2/pkg/codec"
 	"github.com/jexia/semaphore/v2/pkg/references"
 	"github.com/jexia/semaphore/v2/pkg/specs"
-	"github.com/jexia/semaphore/v2/pkg/specs/template"
 	"github.com/jexia/semaphore/v2/pkg/specs/types"
 )
 
@@ -67,7 +66,7 @@ func (manager *Manager) Marshal(store references.Store) (io.Reader, error) {
 	}
 
 	encoder := url.Values{}
-	path := template.ResourcePath(manager.resource, manager.property.Name)
+	path := specs.ResourcePath(manager.resource, manager.property.Name)
 	tracker := references.NewTracker()
 
 	err := encode(encoder, manager.property.Template, path, store, tracker)
@@ -99,7 +98,7 @@ func encode(encoded url.Values, tmpl specs.Template, path string, store referenc
 	switch {
 	case tmpl.Message != nil:
 		for fieldName, field := range tmpl.Message {
-			path := template.JoinPath(path, fieldName)
+			path := specs.JoinPath(path, fieldName)
 			err := encode(encoded, field.Template, path, store, tracker)
 			if err != nil {
 				return fmt.Errorf("failed to encode message property %s under %s: %w", fieldName, path, err)

@@ -5,7 +5,6 @@ import (
 
 	"github.com/jexia/semaphore/v2/pkg/references"
 	"github.com/jexia/semaphore/v2/pkg/specs"
-	"github.com/jexia/semaphore/v2/pkg/specs/template"
 )
 
 // Enum is a vrapper over specs.Enum providing XML encoding/decoding.
@@ -88,7 +87,7 @@ func (enum *Enum) UnmarshalXML(decoder *xml.Decoder, _ xml.StartElement) error {
 
 				enum.store.Store(
 					enum.tracker.Resolve(
-						template.JoinPath(enum.path, enum.name),
+						specs.JoinPath(enum.path, enum.name),
 					),
 					&references.Reference{
 						Enum: &enumValue.Position,
@@ -99,7 +98,7 @@ func (enum *Enum) UnmarshalXML(decoder *xml.Decoder, _ xml.StartElement) error {
 			case xml.EndElement:
 				enum.store.Store(
 					enum.tracker.Resolve(
-						template.JoinPath(enum.path, enum.name),
+						specs.JoinPath(enum.path, enum.name),
 					),
 					new(references.Reference),
 				)

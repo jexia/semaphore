@@ -7,7 +7,6 @@ import (
 	"github.com/jexia/semaphore/v2/pkg/conditions"
 	"github.com/jexia/semaphore/v2/pkg/specs"
 	"github.com/jexia/semaphore/v2/pkg/specs/labels"
-	"github.com/jexia/semaphore/v2/pkg/specs/template"
 	"github.com/jexia/semaphore/v2/pkg/specs/types"
 	"github.com/zclconf/go-cty/cty"
 	"go.uber.org/zap"
@@ -414,12 +413,12 @@ func ParseIntermediateProperty(ctx *broker.Context, path string, property *hcl.A
 
 	var (
 		result *specs.Property
-		fqpath = template.JoinPath(path, property.Name)
+		fqpath = specs.JoinPath(path, property.Name)
 	)
 
 	switch {
-	case value.Type() == cty.String && template.Is(value.AsString()):
-		result = ParseTemplateProperty(path, property.Name, value.AsString(), resultTemplate)
+	case value.Type() == cty.String && specs.IsTemplate(value.AsString()):
+		result = specs.ParseTemplateProperty(path, property.Name, value.AsString(), resultTemplate)
 	default:
 		// Default property
 		result = &specs.Property{
@@ -440,7 +439,7 @@ func parseIntermediateTemplate(ctx *broker.Context, path string, property *hcl.A
 	var (
 		result    specs.Template
 		resultErr error
-		fqpath    = template.JoinPath(path, property.Name)
+		fqpath    = specs.JoinPath(path, property.Name)
 		typed     = value.Type()
 	)
 
@@ -480,8 +479,8 @@ func parseIntermediateTemplate(ctx *broker.Context, path string, property *hcl.A
 
 			return false
 		})
-	case typed == cty.String && template.Is(value.AsString()):
-		result, resultErr = template.Parse(ctx, path, value.AsString())
+	case typed == cty.String && specs.IsTemplate(value.AsString()):
+		result, resultErr = specs.ParseTemplate(ctx, path, value.AsString())
 	default:
 		resultErr = SetScalar(ctx, &result, value)
 	}
@@ -648,32 +647,4 @@ func parseIntermediateCondition(ctx *broker.Context, condition Condition, before
 	}
 
 	return nodeList, nil
-}
-
-// ParseTemplateProperty returns the correct property for the given template (raw value)
-func ParseTemplateProperty(path string, name string, value string, parsedTemplate specs.Template) *specs.Property {
-	content := template.GetTemplateContent(value)
-
-	switch {
-	case template.IsReference(content):
-		return &specs.Property{
-			Name:     name,
-			Path:     JoinPath(path, name),
-			Raw:      content,
-			Template: parsedTemplate,
-		}
-	case template.IsString(content):
-		return &specs.Property{
-			Name:     name,
-			Path:     path,
-			Label:    labels.Optional,
-			Template: parsedTemplate,
-		}
-	default:
-		return &specs.Property{
-			Name: name,
-			Path: path,
-			Raw:  content,
-		}
-	}
 }

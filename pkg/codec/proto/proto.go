@@ -8,7 +8,6 @@ import (
 	"github.com/jexia/semaphore/v2/pkg/codec"
 	"github.com/jexia/semaphore/v2/pkg/references"
 	"github.com/jexia/semaphore/v2/pkg/specs"
-	"github.com/jexia/semaphore/v2/pkg/specs/template"
 	"github.com/jexia/semaphore/v2/pkg/specs/types"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/dynamic"
@@ -80,7 +79,7 @@ func (manager *Manager) Marshal(store references.Store) (io.Reader, error) {
 
 	tracker := references.NewTracker()
 	result := dynamic.NewMessage(manager.desc)
-	err := Message(manager.specs.Template).Marshal(result, manager.desc, template.ResourcePath(manager.resource), store, tracker)
+	err := Message(manager.specs.Template).Marshal(result, manager.desc, specs.ResourcePath(manager.resource), store, tracker)
 	if err != nil {
 		return nil, err
 	}
@@ -112,7 +111,7 @@ func (manager *Manager) Unmarshal(reader io.Reader, refs references.Store) error
 	}
 
 	tracker := references.NewTracker()
-	Message(manager.specs.Template).Unmarshal(result, template.ResourcePath(manager.resource), refs, tracker)
+	Message(manager.specs.Template).Unmarshal(result, specs.ResourcePath(manager.resource), refs, tracker)
 
 	return nil
 }

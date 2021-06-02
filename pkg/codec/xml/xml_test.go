@@ -11,7 +11,6 @@ import (
 	"github.com/jexia/semaphore/v2/pkg/codec/tests"
 	"github.com/jexia/semaphore/v2/pkg/references"
 	"github.com/jexia/semaphore/v2/pkg/specs"
-	"github.com/jexia/semaphore/v2/pkg/specs/template"
 )
 
 func TestName(t *testing.T) {
@@ -149,14 +148,14 @@ func TestMarshal(t *testing.T) {
 
 	for title, test := range tests {
 		t.Run(title, func(t *testing.T) {
-			manager, err := constructor.New(template.InputResource, test.schema)
+			manager, err := constructor.New(specs.InputResource, test.schema)
 			if err != nil {
 				t.Fatal(err)
 			}
 
 			store := references.NewStore(len(test.input))
 			tracker := references.NewTracker()
-			references.StoreValues(store, tracker, template.ResourcePath(template.InputResource), test.input)
+			references.StoreValues(store, tracker, specs.ResourcePath(specs.InputResource), test.input)
 
 			reader, err := manager.Marshal(store)
 			if err != nil {
@@ -465,7 +464,7 @@ func TestUnmarshal(t *testing.T) {
 				t.Fatal("unexpected nil")
 			}
 
-			manager, err := xml.New(template.InputResource, test.schema)
+			manager, err := xml.New(specs.InputResource, test.schema)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -489,7 +488,7 @@ func TestUnmarshal(t *testing.T) {
 			}
 
 			for path, expected := range test.expected {
-				tests.Assert(t, template.InputResource, path, store, expected)
+				tests.Assert(t, specs.InputResource, path, store, expected)
 			}
 		})
 	}

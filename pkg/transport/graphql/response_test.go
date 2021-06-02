@@ -6,7 +6,6 @@ import (
 	"github.com/go-test/deep"
 	"github.com/jexia/semaphore/v2/pkg/references"
 	"github.com/jexia/semaphore/v2/pkg/specs"
-	"github.com/jexia/semaphore/v2/pkg/specs/template"
 	"github.com/jexia/semaphore/v2/pkg/specs/types"
 )
 
@@ -68,7 +67,7 @@ func TestResponseObject(t *testing.T) {
 				},
 			},
 			populate: func(t *testing.T, store references.Store) {
-				store.Store(template.ResourcePath(template.InputResource, "name"), &references.Reference{Value: "John Doe"})
+				store.Store(specs.ResourcePath(specs.InputResource, "name"), &references.Reference{Value: "John Doe"})
 			},
 			expected: map[string]interface{}{
 				"name": "John Doe",
@@ -103,7 +102,7 @@ func TestResponseObject(t *testing.T) {
 				},
 			},
 			populate: func(t *testing.T, store references.Store) {
-				store.Store(template.ResourcePath(template.InputResource, "name"), &references.Reference{Value: "John Doe"})
+				store.Store(specs.ResourcePath(specs.InputResource, "name"), &references.Reference{Value: "John Doe"})
 			},
 			expected: map[string]interface{}{
 				"nested": map[string]interface{}{
@@ -149,7 +148,7 @@ func TestResponseObject(t *testing.T) {
 			},
 			populate: func(t *testing.T, store references.Store) {
 				tracker := references.NewTracker()
-				references.StoreValues(store, tracker, template.ResourcePath(template.InputResource), map[string]interface{}{
+				references.StoreValues(store, tracker, specs.ResourcePath(specs.InputResource), map[string]interface{}{
 					"repeated": []map[string]interface{}{
 						{
 							"name": "John Doe",
@@ -240,7 +239,7 @@ func TestResponseObject(t *testing.T) {
 			},
 			populate: func(t *testing.T, store references.Store) {
 				enum := int32(0)
-				store.Store(template.ResourcePath(template.InputResource, "status"), &references.Reference{Enum: &enum})
+				store.Store(specs.ResourcePath(specs.InputResource, "status"), &references.Reference{Enum: &enum})
 			},
 			expected: map[string]interface{}{
 				"status": "UNKOWN",
@@ -351,7 +350,7 @@ func TestResponseObject(t *testing.T) {
 			},
 			populate: func(t *testing.T, store references.Store) {
 				tracker := references.NewTracker()
-				references.StoreValues(store, tracker, template.ResourcePath(template.InputResource), map[string]interface{}{
+				references.StoreValues(store, tracker, specs.ResourcePath(specs.InputResource), map[string]interface{}{
 					"repeated": []map[string]interface{}{
 						{
 							"status": references.Enum("UNKOWN", 0),
