@@ -31,7 +31,7 @@ func TestSplitPath(t *testing.T) {
 	for input, expected := range tests {
 		result := SplitPath(input)
 		if len(result) != len(expected) {
-			t.Errorf("unexepcted result %v, expected %v", result, expected)
+			t.Errorf("unexpected result %v, expected %v", result, expected)
 		}
 
 		for index, part := range result {
@@ -43,24 +43,24 @@ func TestSplitPath(t *testing.T) {
 }
 
 func TestPathError(t *testing.T) {
-	type fields struct {
-		Path string
-	}
 	tests := []struct {
-		name   string
-		fields fields
-		want   string
+		name string
+		path string
+		want string
 	}{
 		{
-			"return the formatted error",
-			fields{Path: "/semaphore"},
-			"unable to resolve path '/semaphore'",
+			name: "return the formatted error",
+			path: "/semaphore",
+			want: "unable to resolve path '/semaphore'",
 		},
 	}
+
 	for _, tt := range tests {
+		tt := tt
+
 		t.Run(tt.name, func(t *testing.T) {
 			e := ErrPathNotFound{
-				Path: "/semaphore",
+				Path: tt.path,
 			}
 			if got := e.Prettify(); got.Message != tt.want {
 				t.Errorf("Error() = %v, want %v", got, tt.want)
