@@ -40,6 +40,6 @@ func newServiceDiscoveryClient(dsc Discovery) (specs.ServiceDiscoveryClient, err
 		return consul.New(dsc.Address), nil
 
 	default:
-		return nil, fmt.Errorf("unknown provider '%s'", dsc.Provider)
+		return nil, fmt.Errorf("unknown provider %q", dsc.Provider)
 	}
 }
